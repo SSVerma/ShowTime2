@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">ShowTime</string>
+    <string name="home">Home</string>
+    <string name="explore">Explore</string>
+    <string name="library">Library</string>
+    <string name="account">Account</string>
+    <string name="popuplar">Popular</string>
+    <string name="latest">Latest</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="top_rated">Top Rated</string>
+    <string name="search">Search</string>
+    <string name="see_all">See All</string>
+    <string name="movie">Movie</string>
+    <string name="tv_show">TV Show</string>
+    <string name="people">People</string>
+    <string name="retry">Retry</string>
+    <string name="trending_today">Trending Today</string>
+    <string name="free">Free</string>
+    <string name="streaming_now">Streaming Now</string>
+    <string name="now_in_cinemas">Now in Cinemas</string>
+</resources>
