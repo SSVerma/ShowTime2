@@ -3,6 +3,8 @@ package com.ssverma.showtime.api
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.ssverma.showtime.data.remote.response.TmdbErrorPayload
+import com.ssverma.showtime.domain.ApiData
+import com.ssverma.showtime.domain.Result
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +27,7 @@ private fun mapTmdbErrorPayload(errorBody: ResponseBody?): TmdbErrorPayload? {
 suspend fun <T> makeTmdbApiRequest(
     apiCall: suspend () -> Response<T>,
     defaultErrorMessage: String = DEFAULT_ERROR_MESSAGE
-): Resource<T> {
+): Result<ApiData<T>> {
     return makeApiRequest(
         apiCall = apiCall,
         provideErrorMessage = { errorPayload, _ ->
@@ -41,7 +43,7 @@ fun <T> makeTmdbApiRequest(
     coroutineScope: CoroutineScope = GlobalScope,
     defaultErrorMessage: String = DEFAULT_ERROR_MESSAGE,
     apiCall: suspend () -> Response<T>,
-): Flow<Resource<T>> {
+): Flow<Result<ApiData<T>>> {
     return makeApiRequest(
         apiCall = apiCall,
         coroutineScope = coroutineScope,

@@ -2,13 +2,13 @@ package com.ssverma.showtime.ui.home
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +22,6 @@ import androidx.navigation.compose.*
 import com.ssverma.showtime.AppDestinations
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.common.AppIcons
-import com.ssverma.showtime.ui.common.Chip
 import com.ssverma.showtime.ui.library.LibraryScreen
 import com.ssverma.showtime.ui.movie.MovieScreen
 import com.ssverma.showtime.ui.people.PeopleScreen
@@ -165,23 +164,4 @@ fun HomePageAppBar(modifier: Modifier = Modifier) {
             )
         }
     }
-}
-
-@Composable
-fun HomeCategories(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        content = {
-            items(viewModel.movieCategories) { category ->
-                Chip(
-                    text = stringResource(id = category.nameRes),
-                    onClick = {
-                        viewModel.onCategorySelected(movieCategory = category)
-                    }
-                )
-            }
-        }
-    )
 }

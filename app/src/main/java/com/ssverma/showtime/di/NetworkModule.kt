@@ -2,7 +2,7 @@ package com.ssverma.showtime.di
 
 import com.ssverma.showtime.BuildConfig
 import com.ssverma.showtime.api.TmdbApiService
-import com.ssverma.showtime.api.interceptor.RequestInterceptor
+import com.ssverma.showtime.api.interceptor.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,11 +36,11 @@ class NetworkModule {
     @Provides
     fun provideHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
-        requestInterceptor: RequestInterceptor
+        authInterceptor: AuthInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .addInterceptor(requestInterceptor)
+            .addInterceptor(authInterceptor)
             .build()
     }
 

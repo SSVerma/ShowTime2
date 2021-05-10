@@ -11,20 +11,27 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssverma.showtime.data.domain.Movie
+import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.ui.common.AppIcons
 import com.ssverma.showtime.ui.common.NetworkImage
 
 @Composable
 fun MovieItem(movie: Movie, modifier: Modifier = Modifier, imageModifier: Modifier = Modifier) {
-    Column(modifier = modifier.width(DEFAULT_MOVIE_ITEM_WIDTH)) {
-        MoviePoster(movie = movie, modifier = imageModifier)
+    Column(modifier = modifier) {
+        MoviePoster(
+            movie = movie,
+            modifier = Modifier
+                .width(DefaultMoviePosterWidth)
+                .aspectRatio(TmdbPosterAspectRatio)
+                .then(imageModifier)
+        )
         Spacer(modifier = Modifier.size(4.dp))
         Text(
             text = movie.title,
-            maxLines = 2,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.subtitle1
+            style = MaterialTheme.typography.subtitle1,
+            modifier = Modifier.widthIn(max = DefaultMoviePosterWidth)
         )
     }
 }
@@ -37,7 +44,7 @@ fun MoviePoster(movie: Movie, modifier: Modifier = Modifier) {
                 url = movie.posterImageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
-                modifier = modifier.aspectRatio(3 / 4f)
+                modifier = modifier
             )
             Popularity(votePercentage = movie.voteAvgPercentage)
             IconButton(
@@ -78,4 +85,5 @@ fun Popularity(
     }
 }
 
-private val DEFAULT_MOVIE_ITEM_WIDTH = 200.dp
+private val DefaultMoviePosterWidth = 200.dp
+private const val TmdbPosterAspectRatio = 1 / 1.5f

@@ -1,5 +1,8 @@
 package com.ssverma.showtime.api
 
+import com.ssverma.showtime.domain.ApiData
+import com.ssverma.showtime.domain.DataOrigin
+import com.ssverma.showtime.domain.Result
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -10,17 +13,17 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 import java.io.IOException
 
-private suspend fun <T, E> makeApiRequest(
-    apiCall: suspend () -> Response<T>,
+private suspend fun <S, E> makeApiRequest(
+    apiCall: suspend () -> Response<S>,
     provideErrorMessage: (errorPayload: E?, errorBody: ResponseBody?) -> String,
     provideErrorPayload: (errorBody: ResponseBody?) -> E?,
-    onRetryResult: ((Resource<T>) -> Unit)?,
+    onRetryResult: ((Result<ApiData<S>>) -> Unit)?,
     coroutineScope: CoroutineScope?
-): Resource<T> {
+): Result<ApiData<S>> {
 
     val onRetry: (() -> Unit)? = onRetryResult?.let {
         {
-            it.invoke(Resource.Loading())
+            it.invoke(Result.Loading())
             coroutineScope?.launch {
                 val retryResult = withContext(Dispatchers.IO) {
                     makeApiRequest(
@@ -39,64 +42,68 @@ private suspend fun <T, E> makeApiRequest(
     try {
 
         val apiResponse = apiCall()
+        val responseBody = apiResponse.body()
 
-        if (!apiResponse.isSuccessful || apiResponse.body() == null) {
+        if (!apiResponse.isSuccessful || responseBody == null) {
             val errorPayload = provideErrorPayload(apiResponse.errorBody())
 
-            return ApiResource.Error(
-                displayErrorMessage = provideErrorMessage(errorPayload, apiResponse.errorBody()),
-                debugErrorMessage = apiResponse.errorBody()?.toString(),
-                response = apiResponse,
-                errorPayload = errorPayload,
+            return Result.Error(
+                displayMessage = provideErrorMessage(errorPayload, apiResponse.errorBody()),
+                cause = IOException("Api request unsuccessful"),
+                payload = errorPayload,
                 retry = onRetry
             )
         }
 
-        return ApiResource.Success(data = apiResponse.body()!!, response = apiResponse)
+        return Result.Success(
+            data = ApiData.Success(
+                data = responseBody,
+                response = apiResponse
+            ),
+            origin = DataOrigin.Remote
+        )
 
     } catch (e: IOException) {
         e.printStackTrace()
-        return ApiResource.Error<T, E>(
-            displayErrorMessage = provideErrorMessage(null, null),
-            debugErrorMessage = e.cause?.toString(),
-            response = null,
-            errorPayload = null,
+        return Result.Error(
+            displayMessage = provideErrorMessage(null, null),
+            cause = e,
             retry = onRetry
         )
     }
 }
 
 
-fun <T, E> makeApiRequest(
+fun <S, E> makeApiRequest(
     coroutineScope: CoroutineScope,
-    apiCall: suspend () -> Response<T>,
+    apiCall: suspend () -> Response<S>,
     provideErrorMessage: (errorPayload: E?, errorBody: ResponseBody?) -> String,
     provideErrorPayload: (errorBody: ResponseBody?) -> E?
-): Flow<Resource<T>> {
-    val result = MutableStateFlow<Resource<T>>(value = Resource.Loading())
+): Flow<Result<ApiData<S>>> {
+    val data: MutableStateFlow<Result<ApiData<S>>> = MutableStateFlow(value = Result.Loading())
 
     coroutineScope.launch {
-        result.value = withContext(Dispatchers.IO) {
+        data.value = withContext(Dispatchers.IO) {
             makeApiRequest(
                 apiCall = apiCall,
                 provideErrorMessage = provideErrorMessage,
                 provideErrorPayload = provideErrorPayload,
                 coroutineScope = coroutineScope,
                 onRetryResult = {
-                    result.value = it
+                    data.value = it
                 }
             )
         }
     }
 
-    return result
+    return data
 }
 
-suspend fun <T, E> makeApiRequest(
-    apiCall: suspend () -> Response<T>,
+suspend fun <S, E> makeApiRequest(
+    apiCall: suspend () -> Response<S>,
     provideErrorMessage: (errorPayload: E?, errorBody: ResponseBody?) -> String,
     provideErrorPayload: (errorBody: ResponseBody?) -> E?,
-): Resource<T> {
+): Result<ApiData<S>> {
     return makeApiRequest(
         apiCall = apiCall,
         provideErrorMessage = provideErrorMessage,

@@ -1,4 +1,4 @@
-package com.ssverma.showtime.data.domain
+package com.ssverma.showtime.domain.model
 
 import com.ssverma.showtime.api.TMDB_IMAGE_BASE_URL
 import com.ssverma.showtime.data.remote.response.RemoteMovie
@@ -42,9 +42,6 @@ fun RemoteMovie.asMovie(): Movie {
     )
 }
 
-/*suspend*/ fun List<RemoteMovie>.asMovies(): List<Movie> {
-//    return withContext(Dispatchers.Default) {
-//        this@asMovies.map { it.asMovie() }
-//    }
+fun List<RemoteMovie>.asMovies(): List<Movie> {
     return map { it.asMovie() }
 }

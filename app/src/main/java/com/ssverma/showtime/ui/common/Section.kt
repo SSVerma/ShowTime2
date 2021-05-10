@@ -24,7 +24,7 @@ fun SectionHeader(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    avatarUrl: String? = null,
+    leadingIconUrl: String? = null,
     onTrailingActionClicked: (() -> Unit)? = null,
     @StringRes trailingActionTextRes: Int = R.string.see_all,
     textColor: Color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
@@ -33,9 +33,9 @@ fun SectionHeader(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth()
     ) {
-        if (!avatarUrl.isNullOrEmpty()) {
+        if (!leadingIconUrl.isNullOrEmpty()) {
             NetworkImage(
-                url = avatarUrl,
+                url = leadingIconUrl,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(end = 16.dp)
@@ -44,6 +44,12 @@ fun SectionHeader(
             )
         }
         Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.SemiBold),
+                color = textColor,
+                modifier = Modifier.fillMaxWidth()
+            )
             if (!subtitle.isNullOrEmpty()) {
                 Text(
                     text = subtitle,
@@ -51,12 +57,6 @@ fun SectionHeader(
                     color = textColor
                 )
             }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.SemiBold),
-                color = textColor,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
         onTrailingActionClicked?.let {
             TextButton(onClick = it, modifier = Modifier.padding(end = 8.dp)) {
