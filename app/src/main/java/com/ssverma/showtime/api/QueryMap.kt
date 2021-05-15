@@ -2,12 +2,16 @@ package com.ssverma.showtime.api
 
 object DiscoverMovieQueryMap {
     fun of(
+        sortBy: String? = null,
         primaryReleaseDateLte: String? = null,
         primaryReleaseDateGte: String? = null,
         monetizationType: String? = null,
         releaseType: QueryMultiValue? = null
     ): Map<String, String> {
         return mutableMapOf<String, String>().apply {
+            sortBy?.let {
+                put("sort_by", it)
+            }
             primaryReleaseDateLte?.let {
                 put("primary_release_date.lte", it)
             }

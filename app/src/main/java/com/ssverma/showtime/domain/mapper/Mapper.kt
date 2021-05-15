@@ -1,6 +1,5 @@
 package com.ssverma.showtime.domain.mapper
 
-import com.ssverma.showtime.domain.ApiData
 import com.ssverma.showtime.domain.Result
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -50,23 +49,4 @@ abstract class ResultMapper<I, O>(
     }
 
     abstract suspend fun mapValue(input: I): O
-}
-
-abstract class RemoteToDomainMapper<I, O>(
-    private val coroutineDispatcher: CoroutineDispatcher
-) : ResultMapper<ApiData<I>, O>(coroutineDispatcher) {
-    override suspend fun mapValue(input: ApiData<I>): O {
-        return withContext(coroutineDispatcher) {
-            when (input) {
-                is ApiData.Success -> {
-                    mapValue(input)
-                }
-                is ApiData.Error -> {
-                    Any() as O
-                }
-            }
-        }
-    }
-
-    abstract suspend fun mapValue(input: ApiData.Success<I>): O
 }

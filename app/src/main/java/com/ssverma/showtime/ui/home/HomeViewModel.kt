@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.ssverma.showtime.api.DiscoverMovieQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
-import com.ssverma.showtime.data.MovieCategory
-import com.ssverma.showtime.domain.model.ApiTiedConstants
+import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.MovieRepository
 import com.ssverma.showtime.data.repository.UnsplashRepository
+import com.ssverma.showtime.ui.movie.movieReleaseType
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatAsIso
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,34 +23,30 @@ class HomeViewModel @Inject constructor(
 
 //    val mockMovies = movieRepository.fetchMockMovies().asLiveData()
 
-    val popularMovies = movieRepository.fetchPopularMovies().asLiveData()
     val topRatedMovies = movieRepository.fetchTopRatedMovies().asLiveData()
-
     val dailyTrendingMovies = movieRepository.fetchDailyTrendingMovies().asLiveData()
 
     val genres = movieRepository.fetchMovieGenre().asLiveData()
 
-    val nowPlayingMovies = movieRepository.discoverMovies(
+    val popularMovies = movieRepository.discoverMovies(
+        queryMap = DiscoverMovieQueryMap.of(
+            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PopularityDesc,
+            releaseType = movieReleaseType,
+        )
+    ).asLiveData()
+
+    val nowInCinemasMovies = movieRepository.discoverMovies(
         queryMap = DiscoverMovieQueryMap.of(
             primaryReleaseDateLte = DateUtils.currentDate().formatAsIso(),
-            releaseType = QueryMultiValue.orBuilder()
-                .or(ApiTiedConstants.AvailableReleaseTypes.Theatrical)
-                .or(ApiTiedConstants.AvailableReleaseTypes.TheatricalLimited)
-                .build()
+            releaseType = movieReleaseType,
         )
     ).asLiveData()
 
     val upcomingMovies = movieRepository.discoverMovies(
         queryMap = DiscoverMovieQueryMap.of(
             primaryReleaseDateGte = DateUtils.currentDate().plusDays(1).formatAsIso(),
-            releaseType = QueryMultiValue.orBuilder()
-                .or(ApiTiedConstants.AvailableReleaseTypes.Theatrical)
-                .or(ApiTiedConstants.AvailableReleaseTypes.TheatricalLimited)
-                .build()
+            releaseType = movieReleaseType,
+            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PrimaryReleaseDateAsc
         )
     ).asLiveData()
-
-    fun onCategorySelected(movieCategory: MovieCategory) {
-        //
-    }
 }

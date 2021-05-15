@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
+import com.ssverma.showtime.AppActions
 import com.ssverma.showtime.AppDestinations
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.common.AppIcons
@@ -35,25 +36,25 @@ sealed class BottomNavScreen(
     val tabIcon: ImageVector
 ) {
     object Home : BottomNavScreen(
-        route = AppDestinations.BottomNavDestinations.MOVIE_ROUTE,
+        route = AppDestinations.BottomNavDestinations.MovieRoute,
         tabTitleStringRes = R.string.movie,
         tabIcon = AppIcons.Home
     )
 
     object Explore : BottomNavScreen(
-        route = AppDestinations.BottomNavDestinations.TV_SHOW_ROUTE,
+        route = AppDestinations.BottomNavDestinations.TvShowRoute,
         tabTitleStringRes = R.string.tv_show,
         tabIcon = AppIcons.Face
     )
 
     object People : BottomNavScreen(
-        route = AppDestinations.BottomNavDestinations.PEOPLE_ROUTE,
+        route = AppDestinations.BottomNavDestinations.PeopleRoute,
         tabTitleStringRes = R.string.people,
         tabIcon = AppIcons.Person
     )
 
     object Library : BottomNavScreen(
-        route = AppDestinations.BottomNavDestinations.LIBRARY_ROUTE,
+        route = AppDestinations.BottomNavDestinations.LibraryRoute,
         tabTitleStringRes = R.string.library,
         tabIcon = AppIcons.Star
     )
@@ -67,8 +68,8 @@ private val bottomTabs = listOf(
 )
 
 @Composable
-fun HomePage(viewModel: HomeViewModel) {
-    val navController = rememberNavController()
+fun HomePage(viewModel: HomeViewModel, actions: AppActions) {
+    val bottomNavController = rememberNavController()
 
     Scaffold(
         backgroundColor = MaterialTheme.colors.surface,
@@ -77,7 +78,7 @@ fun HomePage(viewModel: HomeViewModel) {
                 modifier = Modifier.navigationBarsHeight(additional = 56.dp),
                 backgroundColor = MaterialTheme.colors.surface
             ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
                 bottomTabs.forEach { screen ->
                     BottomNavigationItem(
@@ -93,7 +94,7 @@ fun HomePage(viewModel: HomeViewModel) {
                         unselectedContentColor = LocalContentColor.current,
                         modifier = Modifier.navigationBarsPadding(),
                         onClick = {
-                            navController.navigate(screen.route) {
+                            bottomNavController.navigate(screen.route) {
                                 launchSingleTop = true
                             }
                         }
@@ -104,19 +105,24 @@ fun HomePage(viewModel: HomeViewModel) {
 
     ) {
         NavHost(
-            navController = navController,
-            startDestination = AppDestinations.BottomNavDestinations.MOVIE_ROUTE
+            navController = bottomNavController,
+            startDestination = AppDestinations.BottomNavDestinations.MovieRoute
         ) {
-            composable(AppDestinations.BottomNavDestinations.MOVIE_ROUTE) {
-                MovieScreen(viewModel)
+            composable(AppDestinations.BottomNavDestinations.MovieRoute) {
+                MovieScreen(
+                    viewModel = viewModel,
+                    onNavigateToMovieList = { titleRes, type ->
+                        actions.navigateToMovieList(titleRes, type)
+                    }
+                )
             }
-            composable(AppDestinations.BottomNavDestinations.TV_SHOW_ROUTE) {
+            composable(AppDestinations.BottomNavDestinations.TvShowRoute) {
                 TvShowScreen()
             }
-            composable(AppDestinations.BottomNavDestinations.PEOPLE_ROUTE) {
+            composable(AppDestinations.BottomNavDestinations.PeopleRoute) {
                 PeopleScreen()
             }
-            composable(AppDestinations.BottomNavDestinations.LIBRARY_ROUTE) {
+            composable(AppDestinations.BottomNavDestinations.LibraryRoute) {
                 LibraryScreen()
             }
         }

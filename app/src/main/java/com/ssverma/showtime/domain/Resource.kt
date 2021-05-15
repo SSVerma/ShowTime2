@@ -25,13 +25,7 @@ sealed class Result<T> {
     ) : Result<T>()
 }
 
-sealed class ApiData<T> {
-    data class Success<T>(
-        val data: T,
-        val response: Response<T>
-    ) : ApiData<T>()
-
-    data class Error<T>(
-        val response: Response<T>?
-    ) : ApiData<T>()
-}
+data class ApiData<T>(
+    val payload: T,
+    val response: Response<T>
+)

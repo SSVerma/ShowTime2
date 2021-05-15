@@ -1,6 +1,8 @@
 package com.ssverma.showtime.ui.movie
 
 import MovieItem
+import ScoreIndicator
+import ValueIndicator
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -28,53 +30,113 @@ import com.ssverma.showtime.ui.home.HomeViewModel
 import dev.chrisbanes.accompanist.insets.statusBarsHeight
 
 @Composable
-fun MovieScreen(viewModel: HomeViewModel) {
-    MovieContent(viewModel = viewModel)
+fun MovieScreen(
+    viewModel: HomeViewModel,
+    onNavigateToMovieList: (titleRes: Int, type: String) -> Unit
+) {
+    MovieContent(
+        viewModel = viewModel,
+        onNavigateToMovieList = onNavigateToMovieList
+    )
 }
 
 @Composable
-private fun MovieContent(viewModel: HomeViewModel) {
+private fun MovieContent(
+    viewModel: HomeViewModel,
+    onNavigateToMovieList: (titleRes: Int, type: String) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(state = rememberScrollState())
             .animateContentSize()
     ) {
-        HeaderSection(viewModel = viewModel)
+        HeaderSection(viewModel = viewModel, onNavigateToMovieList = onNavigateToMovieList)
+
+        //Popular
         MoviesSection(
             liveMovies = viewModel.popularMovies,
             sectionTitleRes = R.string.popuplar,
             subtitleRes = R.string.popular_info,
             onViewAllClicked = {
-                //
+                onNavigateToMovieList(R.string.popuplar, MovieListingType.Popular)
             }
-        )
-        MoviesSection(liveMovies = viewModel.topRatedMovies, sectionTitleRes = R.string.top_rated)
+        ) {
+            MovieItem(
+                title = it.title,
+                posterImageUrl = it.posterImageUrl,
+                indicator = { ValueIndicator(value = it.displayPopularity) }
+            )
+        }
+
+        //Top rated
         MoviesSection(
-            liveMovies = viewModel.nowPlayingMovies,
-            sectionTitleRes = R.string.now_in_cinemas
-        )
-        MoviesSection(liveMovies = viewModel.upcomingMovies, sectionTitleRes = R.string.upcoming)
+            liveMovies = viewModel.topRatedMovies,
+            sectionTitleRes = R.string.top_rated,
+            onViewAllClicked = {
+                onNavigateToMovieList(R.string.top_rated, MovieListingType.TopRated)
+            }
+        ) {
+            MovieItem(
+                title = it.title,
+                posterImageUrl = it.posterImageUrl,
+                indicator = { ScoreIndicator(score = it.voteAvgPercentage) }
+            )
+        }
+
+        //Released
+        MoviesSection(
+            liveMovies = viewModel.nowInCinemasMovies,
+            sectionTitleRes = R.string.now_in_cinemas,
+            onViewAllClicked = {
+                onNavigateToMovieList(R.string.now_in_cinemas, MovieListingType.NowInCinemas)
+            }
+        ) {
+            MovieItem(
+                title = it.title,
+                posterImageUrl = it.posterImageUrl
+            )
+        }
+
+        //Upcoming
+        MoviesSection(
+            liveMovies = viewModel.upcomingMovies,
+            sectionTitleRes = R.string.upcoming,
+            onViewAllClicked = {
+                onNavigateToMovieList(R.string.upcoming, MovieListingType.Upcoming)
+            }
+        ) {
+            MovieItem(
+                title = it.title,
+                posterImageUrl = it.posterImageUrl,
+                indicator = {
+                    it.displayReleaseDate?.let { date ->
+                        ValueIndicator(value = date)
+                    }
+                }
+            )
+        }
         Spacer(modifier = Modifier.height(160.dp))
     }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-private fun MoviesSection(
+fun MoviesSection(
     liveMovies: LiveData<Result<List<Movie>>>,
     @StringRes sectionTitleRes: Int,
     modifier: Modifier = Modifier,
     @StringRes subtitleRes: Int = 0,
     leadingIconUrl: String? = null,
-    onViewAllClicked: (() -> Unit)? = null
+    onViewAllClicked: (() -> Unit)? = null,
+    content: @Composable (movie: Movie) -> Unit
 ) {
 
     var shouldVisible by remember { mutableStateOf(true) }
 
     AnimatedVisibility(
         visible = shouldVisible,
-        modifier = modifier.padding(top = DefaultMovieSectionSpacing)
+        modifier = modifier.padding(top = 32.dp)
     ) {
         Section(
             sectionHeader = {
@@ -92,24 +154,18 @@ private fun MoviesSection(
                 loading = { SectionLoadingIndicator() }
             ) { movies ->
 
-                if (movies.isEmpty()) {
-                    shouldVisible = false
-                } else {
-                    shouldVisible = true
-                    HorizontalList(
-                        itemContent = { movie ->
-                            MovieItem(movie = movie)
-                        },
-                        items = movies
-                    )
-                }
+                shouldVisible = movies.isNotEmpty()
+                HorizontalList(items = movies) { content(it) }
             }
         }
     }
 }
 
 @Composable
-fun HeaderSection(viewModel: HomeViewModel) {
+fun HeaderSection(
+    viewModel: HomeViewModel,
+    onNavigateToMovieList: (titleRes: Int, type: String) -> Unit
+) {
     val blurColor = MaterialTheme.colors.surface
     val scrimColor = MaterialTheme.colors.onSurface
 
@@ -149,8 +205,16 @@ fun HeaderSection(viewModel: HomeViewModel) {
             MovieGenres(liveGenres = viewModel.genres)
             MoviesSection(
                 liveMovies = viewModel.dailyTrendingMovies,
-                sectionTitleRes = R.string.trending_today
-            )
+                sectionTitleRes = R.string.trending_today,
+                onViewAllClicked = {
+                    onNavigateToMovieList(R.string.trending_today, MovieListingType.Trending)
+                }
+            ) {
+                MovieItem(
+                    title = it.title,
+                    posterImageUrl = it.posterImageUrl
+                )
+            }
         }
     }
 }
@@ -161,12 +225,9 @@ fun MovieGenres(liveGenres: LiveData<Result<List<Genre>>>) {
         observable = liveGenres,
         loading = { SectionLoadingIndicator() }
     ) { genres ->
-        HorizontalList(
-            itemContent = { genre ->
-                GenreItem(genre = genre)
-            },
-            items = genres,
-        )
+        HorizontalList(genres) {
+            GenreItem(genre = it)
+        }
     }
 }
 

@@ -1,6 +1,8 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
@@ -11,24 +13,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.ui.common.AppIcons
 import com.ssverma.showtime.ui.common.NetworkImage
 
 @Composable
-fun MovieItem(movie: Movie, modifier: Modifier = Modifier, imageModifier: Modifier = Modifier) {
+fun MovieItem(
+    title: String,
+    posterImageUrl: String,
+    modifier: Modifier = Modifier,
+    indicator: (@Composable () -> Unit)? = null,
+    onOverflowIconClick: (() -> Unit)? = null,
+    titleMaxLines: Int = 1
+) {
     Column(modifier = modifier) {
         MoviePoster(
-            movie = movie,
+            posterImageUrl = posterImageUrl,
+            indicator = indicator,
+            onOverflowIconClick = onOverflowIconClick,
             modifier = Modifier
                 .width(DefaultMoviePosterWidth)
                 .aspectRatio(TmdbPosterAspectRatio)
-                .then(imageModifier)
         )
         Spacer(modifier = Modifier.size(4.dp))
         Text(
-            text = movie.title,
-            maxLines = 1,
+            text = title,
+            maxLines = titleMaxLines,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.subtitle1,
             modifier = Modifier.widthIn(max = DefaultMoviePosterWidth)
@@ -37,32 +46,56 @@ fun MovieItem(movie: Movie, modifier: Modifier = Modifier, imageModifier: Modifi
 }
 
 @Composable
-fun MoviePoster(movie: Movie, modifier: Modifier = Modifier) {
-    Card {
+fun MoviePoster(
+    posterImageUrl: String,
+    modifier: Modifier = Modifier,
+    indicator: (@Composable () -> Unit)? = null,
+    onOverflowIconClick: (() -> Unit)? = null
+) {
+    Card(modifier = modifier) {
         Box {
             NetworkImage(
-                url = movie.posterImageUrl,
+                url = posterImageUrl,
                 contentDescription = null,
-                contentScale = ContentScale.FillWidth,
-                modifier = modifier
+                contentScale = ContentScale.Crop,
             )
-            Popularity(votePercentage = movie.voteAvgPercentage)
-            IconButton(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopEnd)
-                    .size(24.dp),
-                onClick = { /*TODO*/ }) {
-                Icon(imageVector = AppIcons.MoreVert, contentDescription = null)
+            indicator?.let { it() }
+            onOverflowIconClick?.let {
+                IconButton(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.TopEnd)
+                        .size(24.dp),
+                    onClick = it
+                ) {
+                    Icon(imageVector = AppIcons.MoreVert, contentDescription = null)
+                }
             }
         }
     }
 }
 
 @Composable
-fun Popularity(
-    votePercentage: Float,
-) {
+fun ValueIndicator(value: String, modifier: Modifier = Modifier) {
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colors.surface,
+        modifier = modifier
+            .padding(start = 4.dp, top = 4.dp)
+            .border(1.dp, MaterialTheme.colors.primary, RoundedCornerShape(50))
+    ) {
+        Text(
+            text = value,
+            color = MaterialTheme.colors.onSurface,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier
+                .padding(horizontal = 6.dp, vertical = 4.dp)
+        )
+    }
+}
+
+@Composable
+fun ScoreIndicator(score: Float) {
     Box(
         modifier = Modifier
             .padding(4.dp)
@@ -70,14 +103,14 @@ fun Popularity(
             .background(color = MaterialTheme.colors.surface)
     ) {
         CircularProgressIndicator(
-            progress = votePercentage / 100f,
+            progress = score / 100f,
+            strokeWidth = 1.dp,
             modifier = Modifier
-                .padding(2.dp)
                 .size(36.dp)
                 .align(Alignment.TopStart)
         )
         Text(
-            text = "${votePercentage.toInt()}%",
+            text = "${score.toInt()}%",
             modifier = Modifier.align(Alignment.Center),
             color = MaterialTheme.colors.onSurface,
             style = MaterialTheme.typography.caption.copy(fontSize = 10.sp)

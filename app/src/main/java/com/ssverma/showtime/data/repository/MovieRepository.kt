@@ -1,8 +1,14 @@
 package com.ssverma.showtime.data.repository
 
-import com.ssverma.showtime.domain.Result
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.ssverma.showtime.api.TMDB_API_PAGE_SIZE
 import com.ssverma.showtime.api.TmdbApiService
+import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.api.makeTmdbApiRequest
+import com.ssverma.showtime.data.remote.MoviePagingSource
+import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.extension.asDomainFlow
 import kotlinx.coroutines.flow.Flow
@@ -11,19 +17,59 @@ import javax.inject.Inject
 class MovieRepository @Inject constructor(
     private val tmdbApiService: TmdbApiService
 ) {
-    fun fetchMockMovies(): Flow<Result<List<Movie>>> {
-        return makeTmdbApiRequest {
-            tmdbApiService.getMockMovies()
-        }.asDomainFlow {
-            it.data.results?.asMovies() ?: emptyList()
-        }
+    fun fetchMockMoviesGradually(): Flow<PagingData<Movie>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = { MoviePagingSource { tmdbApiService.getMockMovies(page = it) } }
+        ).flow
+    }
+
+    fun discoverMoviesGradually(queryMap: Map<String, String> = emptyMap()): Flow<PagingData<Movie>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                MoviePagingSource {
+                    tmdbApiService.getDiscoveredMovies(
+                        queryMap = queryMap,
+                        page = it
+                    )
+                }
+            }
+        ).flow
+    }
+
+    fun fetchTrendingMoviesGradually(
+        timeWindow: String = TmdbApiTiedConstants.AvailableTimeWindows.DAY
+    ): Flow<PagingData<Movie>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                MoviePagingSource {
+                    tmdbApiService.getTrendingMovies(
+                        timeWindow = timeWindow,
+                        page = it
+                    )
+                }
+            }
+        ).flow
+    }
+
+    fun fetchTopRatedMoviesGradually(): Flow<PagingData<Movie>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                MoviePagingSource {
+                    tmdbApiService.getTopRatedMovies(page = it)
+                }
+            }
+        ).flow
     }
 
     fun fetchLatestMovie(): Flow<Result<Movie>> {
         return makeTmdbApiRequest {
             tmdbApiService.getLatestMovie()
         }.asDomainFlow {
-            it.data.asMovie()
+            it.payload.asMovie()
         }
     }
 
@@ -31,7 +77,7 @@ class MovieRepository @Inject constructor(
         return makeTmdbApiRequest {
             tmdbApiService.getMovie(movieId = movieId)
         }.asDomainFlow {
-            it.data.asMovie()
+            it.payload.asMovie()
         }
     }
 
@@ -39,7 +85,7 @@ class MovieRepository @Inject constructor(
         return makeTmdbApiRequest {
             tmdbApiService.getPopularMovies()
         }.asDomainFlow {
-            it.data.results?.asMovies() ?: emptyList()
+            it.payload.results?.asMovies() ?: emptyList()
         }
     }
 
@@ -47,15 +93,15 @@ class MovieRepository @Inject constructor(
         return makeTmdbApiRequest {
             tmdbApiService.getTopRatedMovies()
         }.asDomainFlow {
-            it.data.results?.asMovies() ?: emptyList()
+            it.payload.results?.asMovies() ?: emptyList()
         }
     }
 
     fun fetchDailyTrendingMovies(): Flow<Result<List<Movie>>> {
         return makeTmdbApiRequest {
-            tmdbApiService.getTrendingMovies(timeWindow = ApiTiedConstants.AvailableTimeWindows.DAY)
+            tmdbApiService.getTrendingMovies(timeWindow = TmdbApiTiedConstants.AvailableTimeWindows.DAY)
         }.asDomainFlow {
-            it.data.results?.asMovies() ?: emptyList()
+            it.payload.results?.asMovies() ?: emptyList()
         }
     }
 
@@ -65,7 +111,7 @@ class MovieRepository @Inject constructor(
                 queryMap = queryMap
             )
         }.asDomainFlow {
-            it.data.results?.asMovies() ?: emptyList()
+            it.payload.results?.asMovies() ?: emptyList()
         }
     }
 
@@ -73,7 +119,7 @@ class MovieRepository @Inject constructor(
         return makeTmdbApiRequest {
             tmdbApiService.getMovieGenres()
         }.asDomainFlow {
-            it.data.genres?.asGenres() ?: emptyList()
+            it.payload.genres?.asGenres() ?: emptyList()
         }
     }
 }

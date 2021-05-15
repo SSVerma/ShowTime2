@@ -5,7 +5,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import com.ssverma.showtime.R
 
 private val DarkColorPalette = darkColors(
     primary = yellow200,
@@ -21,6 +23,10 @@ private val LightColorPalette = lightColors(
     onPrimary = Color.Black
 )
 
+private val LightImages = Images(errorIllustration = R.drawable.illustration_error_light)
+
+private val DarkImages = Images(errorIllustration = R.drawable.illustration_error_dark)
+
 @Composable
 fun ShowTimeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colors = if (darkTheme) {
@@ -29,10 +35,16 @@ fun ShowTimeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composab
         LightColorPalette
     }
 
-    MaterialTheme(
-        colors = colors,
-        typography = Typography,
-        shapes = Shapes,
-        content = content
-    )
+    val images = if (darkTheme) DarkImages else LightImages
+
+    CompositionLocalProvider(
+        LocalImages provides images
+    ) {
+        MaterialTheme(
+            colors = colors,
+            typography = Typography,
+            shapes = Shapes,
+            content = content
+        )
+    }
 }

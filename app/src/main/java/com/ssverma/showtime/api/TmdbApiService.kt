@@ -1,6 +1,5 @@
 package com.ssverma.showtime.api
 
-import com.ssverma.showtime.domain.model.ApiTiedConstants
 import com.ssverma.showtime.data.remote.response.GenrePayload
 import com.ssverma.showtime.data.remote.response.PagedPayload
 import com.ssverma.showtime.data.remote.response.RemoteMovie
@@ -12,7 +11,7 @@ import retrofit2.http.QueryMap
 
 interface TmdbApiService {
     @GET("https://demo3320320.mockable.io/movies")
-    suspend fun getMockMovies(): Response<PagedPayload<RemoteMovie>>
+    suspend fun getMockMovies(@Query("page") page: Int): Response<PagedPayload<RemoteMovie>>
 
     @GET("3/movie/latest")
     suspend fun getLatestMovie(): Response<RemoteMovie>
@@ -22,9 +21,10 @@ interface TmdbApiService {
         @Path("movieId") movieId: Int
     ): Response<RemoteMovie>
 
-    @GET("3/trending/${ApiTiedConstants.AvailableMediaTypes.MOVIE}/{timeWindow}")
+    @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.MOVIE}/{timeWindow}")
     suspend fun getTrendingMovies(
-        @Path("timeWindow") timeWindow: String
+        @Path("timeWindow") timeWindow: String,
+        @Query("page") page: Int = 1
     ): Response<PagedPayload<RemoteMovie>>
 
     @GET("3/movie/popular")

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
+import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
@@ -49,15 +50,15 @@ private suspend fun <S, E> makeApiRequest(
 
             return Result.Error(
                 displayMessage = provideErrorMessage(errorPayload, apiResponse.errorBody()),
-                cause = IOException("Api request unsuccessful"),
+                cause = HttpException(apiResponse),
                 payload = errorPayload,
                 retry = onRetry
             )
         }
 
         return Result.Success(
-            data = ApiData.Success(
-                data = responseBody,
+            data = ApiData(
+                payload = responseBody,
                 response = apiResponse
             ),
             origin = DataOrigin.Remote

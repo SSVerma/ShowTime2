@@ -107,10 +107,10 @@ fun <T> HorizontalListSection(
 
 @Composable
 fun <T> HorizontalList(
-    itemContent: @Composable (item: T) -> Unit,
+    items: List<T>,
     contentPadding: PaddingValues = SectionListContentPadding,
     horizontalArrangement: Arrangement.Horizontal = SectionListHorizontalArrangement,
-    items: List<T>
+    itemContent: @Composable (item: T) -> Unit
 ) {
     LazyRow(
         contentPadding = contentPadding,

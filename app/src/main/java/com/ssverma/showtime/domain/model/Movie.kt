@@ -2,7 +2,7 @@ package com.ssverma.showtime.domain.model
 
 import com.ssverma.showtime.api.TMDB_IMAGE_BASE_URL
 import com.ssverma.showtime.data.remote.response.RemoteMovie
-import com.ssverma.showtime.utils.CoreUtils
+import com.ssverma.showtime.utils.*
 
 class Movie(
     val id: Int,
@@ -19,7 +19,8 @@ class Movie(
     val displayReleaseDate: String?,
     val revenue: Long,
     val runtime: Int,
-    val popularity: Float
+    val popularity: Float,
+    val displayPopularity: String
 )
 
 fun RemoteMovie.asMovie(): Movie {
@@ -35,10 +36,11 @@ fun RemoteMovie.asMovie(): Movie {
         videoAvailable = videoAvailable,
         voteAvgPercentage = voteAvg * 10f,
         voteCount = voteCount,
-        displayReleaseDate = releaseDate,
+        displayReleaseDate = DateUtils.parseIsoDate(releaseDate)?.formatLocally(),
         revenue = revenue,
         runtime = runtime,
-        popularity = popularity
+        popularity = popularity,
+        displayPopularity = FormatterUtils.toRangeSymbol(popularity)
     )
 }
 

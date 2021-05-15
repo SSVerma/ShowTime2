@@ -81,6 +81,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha04"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
     implementation "androidx.compose.runtime:runtime-livedata:1.0.0-beta06"
+    implementation "androidx.paging:paging-compose:1.0.0-alpha08"
 
     /*Compose Utils*/
     implementation "dev.chrisbanes.accompanist:accompanist-coil:0.6.1"

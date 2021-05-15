@@ -4,13 +4,14 @@ import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.time.format.FormatStyle
 
 object DateUtils {
     fun currentDate(): LocalDate {
         return LocalDate.now()
     }
 
-    fun parseIsoDate(date: String): LocalDate? {
+    fun parseIsoDate(date: String?): LocalDate? {
         return try {
             LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE)
         } catch (e: DateTimeParseException) {
@@ -34,4 +35,8 @@ object DateUtils {
 
 fun LocalDate.formatAsIso(): String? {
     return DateUtils.formatDate(this, DateTimeFormatter.ISO_LOCAL_DATE)
+}
+
+fun LocalDate.formatLocally(formatStyle: FormatStyle = FormatStyle.MEDIUM): String? {
+    return DateUtils.formatDate(this, DateTimeFormatter.ofLocalizedDate(formatStyle))
 }
