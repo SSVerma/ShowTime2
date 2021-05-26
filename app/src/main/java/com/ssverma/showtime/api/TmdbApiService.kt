@@ -39,7 +39,7 @@ interface TmdbApiService {
 
     @GET("4/discover/movie")
     suspend fun getDiscoveredMovies(
-        @QueryMap(encoded = false) queryMap: Map<String, String?>,
+        @QueryMap(encoded = false) queryMap: Map<String, String>,
         @Query("page", encoded = false) page: Int = 1
     ): Response<PagedPayload<RemoteMovie>>
 

@@ -1,19 +1,20 @@
 package com.ssverma.showtime.ui.common
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.showtime.R
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
 
 val AppIcons = Icons.Default
 
@@ -33,21 +34,27 @@ fun AppLoadingIndicator(modifier: Modifier = Modifier) {
 fun AppTopAppBar(
     title: String,
     onBackPressed: () -> Unit,
-    actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
+    @DrawableRes navIconRes: Int = R.drawable.ic_arrow_back,
+    actions: @Composable RowScope.() -> Unit = {},
+    backgroundColor: Color = MaterialTheme.colors.surface,
+    contentColor: Color = contentColorFor(backgroundColor = backgroundColor),
+    elevation: Dp = AppBarDefaults.TopAppBarElevation
 ) {
     TopAppBar(
         title = { Text(text = title) },
+        contentColor = contentColor,
         navigationIcon = {
             IconButton(onClick = onBackPressed) {
                 Icon(
-                    imageVector = AppIcons.ArrowBack,
+                    painter = painterResource(id = navIconRes),
                     contentDescription = stringResource(R.string.back)
                 )
             }
         },
-        backgroundColor = MaterialTheme.colors.surface,
+        backgroundColor = backgroundColor,
         actions = actions,
-        modifier = modifier.statusBarsPadding()
+        elevation = elevation,
+        modifier = modifier
     )
 }

@@ -10,9 +10,8 @@ import androidx.compose.ui.graphics.Color
 import com.ssverma.showtime.R
 
 private val DarkColorPalette = darkColors(
-    primary = yellow200,
-    secondary = blue200,
-    onSecondary = Color.Black,
+    primary = blue200,
+    secondary = yellow200,
     surface = yellowDark
 )
 

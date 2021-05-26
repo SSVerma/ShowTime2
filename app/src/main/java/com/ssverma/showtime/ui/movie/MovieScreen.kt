@@ -32,7 +32,7 @@ import dev.chrisbanes.accompanist.insets.statusBarsHeight
 @Composable
 fun MovieScreen(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (titleRes: Int, type: String) -> Unit
+    onNavigateToMovieList: (type: MovieListingType) -> Unit
 ) {
     MovieContent(
         viewModel = viewModel,
@@ -43,7 +43,7 @@ fun MovieScreen(
 @Composable
 private fun MovieContent(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (titleRes: Int, type: String) -> Unit
+    onNavigateToMovieList: (type: MovieListingType) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -59,7 +59,7 @@ private fun MovieContent(
             sectionTitleRes = R.string.popuplar,
             subtitleRes = R.string.popular_info,
             onViewAllClicked = {
-                onNavigateToMovieList(R.string.popuplar, MovieListingType.Popular)
+                onNavigateToMovieList(MovieListingType.Popular)
             }
         ) {
             MovieItem(
@@ -74,7 +74,7 @@ private fun MovieContent(
             liveMovies = viewModel.topRatedMovies,
             sectionTitleRes = R.string.top_rated,
             onViewAllClicked = {
-                onNavigateToMovieList(R.string.top_rated, MovieListingType.TopRated)
+                onNavigateToMovieList(MovieListingType.TopRated)
             }
         ) {
             MovieItem(
@@ -89,7 +89,7 @@ private fun MovieContent(
             liveMovies = viewModel.nowInCinemasMovies,
             sectionTitleRes = R.string.now_in_cinemas,
             onViewAllClicked = {
-                onNavigateToMovieList(R.string.now_in_cinemas, MovieListingType.NowInCinemas)
+                onNavigateToMovieList(MovieListingType.NowInCinemas)
             }
         ) {
             MovieItem(
@@ -103,7 +103,7 @@ private fun MovieContent(
             liveMovies = viewModel.upcomingMovies,
             sectionTitleRes = R.string.upcoming,
             onViewAllClicked = {
-                onNavigateToMovieList(R.string.upcoming, MovieListingType.Upcoming)
+                onNavigateToMovieList(MovieListingType.Upcoming)
             }
         ) {
             MovieItem(
@@ -164,7 +164,7 @@ fun MoviesSection(
 @Composable
 fun HeaderSection(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (titleRes: Int, type: String) -> Unit
+    onNavigateToMovieList: (type: MovieListingType) -> Unit
 ) {
     val blurColor = MaterialTheme.colors.surface
     val scrimColor = MaterialTheme.colors.onSurface
@@ -207,7 +207,7 @@ fun HeaderSection(
                 liveMovies = viewModel.dailyTrendingMovies,
                 sectionTitleRes = R.string.trending_today,
                 onViewAllClicked = {
-                    onNavigateToMovieList(R.string.trending_today, MovieListingType.Trending)
+                    onNavigateToMovieList(MovieListingType.TrendingToday)
                 }
             ) {
                 MovieItem(

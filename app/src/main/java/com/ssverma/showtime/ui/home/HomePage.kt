@@ -111,8 +111,8 @@ fun HomePage(viewModel: HomeViewModel, actions: AppActions) {
             composable(AppDestinations.BottomNavDestinations.MovieRoute) {
                 MovieScreen(
                     viewModel = viewModel,
-                    onNavigateToMovieList = { titleRes, type ->
-                        actions.navigateToMovieList(titleRes, type)
+                    onNavigateToMovieList = { type ->
+                        actions.navigateToMovieList(type)
                     }
                 )
             }

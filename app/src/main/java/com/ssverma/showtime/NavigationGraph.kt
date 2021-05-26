@@ -1,9 +1,7 @@
 package com.ssverma.showtime
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -12,6 +10,7 @@ import com.ssverma.showtime.ui.home.HomePage
 import com.ssverma.showtime.ui.home.HomeViewModel
 import com.ssverma.showtime.ui.movie.MovieListScreen
 import com.ssverma.showtime.ui.movie.MovieListViewModel
+import com.ssverma.showtime.ui.movie.MovieListingType
 
 object AppDestinations {
     object BottomNavDestinations {
@@ -25,20 +24,18 @@ object AppDestinations {
 
     object MovieListDestination {
         private const val baseRoute = "movie-list"
-        const val ArgTitle = "title"
         const val ArgType = "type"
 
         val arguments = listOf(
-            navArgument(ArgTitle) { type = NavType.IntType },
-            navArgument(ArgType) { type = NavType.StringType }
+            navArgument(ArgType) { type = NavType.EnumType(MovieListingType::class.java) }
         )
 
         fun route(): String {
-            return "$baseRoute/{$ArgTitle}/{$ArgType}"
+            return "$baseRoute/{$ArgType}"
         }
 
-        fun to(@StringRes title: Int, type: String): String {
-            return "$baseRoute/$title/$type"
+        fun to(type: MovieListingType): String {
+            return "$baseRoute/$type"
         }
     }
 }
@@ -63,15 +60,9 @@ fun NavGraph(startDestination: String = AppDestinations.HomePageRoute) {
             route = AppDestinations.MovieListDestination.route(),
             arguments = AppDestinations.MovieListDestination.arguments,
         ) {
-
-            val titleRes = it.arguments?.getInt(AppDestinations.MovieListDestination.ArgTitle) ?: 0
-            val type = it.arguments?.getString(AppDestinations.MovieListDestination.ArgType)
-
             val viewModel = hiltNavGraphViewModel<MovieListViewModel>(it)
 
             MovieListScreen(
-                title = stringResource(id = titleRes),
-                type = type!!,
                 viewModel = viewModel,
                 onBackPressed = actions.onBackPress
             )
@@ -84,9 +75,9 @@ class AppActions(navController: NavHostController) {
         navController.navigateUp()
     }
 
-    val navigateToMovieList: (titleRes: Int, type: String) -> Unit = { titleRes, type ->
+    val navigateToMovieList: (type: MovieListingType) -> Unit = { type ->
         navController.navigate(
-            AppDestinations.MovieListDestination.to(titleRes, type)
+            AppDestinations.MovieListDestination.to(type)
         )
     }
 }

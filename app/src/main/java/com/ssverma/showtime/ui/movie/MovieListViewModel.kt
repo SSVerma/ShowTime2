@@ -1,9 +1,11 @@
 package com.ssverma.showtime.ui.movie
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.ssverma.showtime.AppDestinations
 import com.ssverma.showtime.api.DiscoverMovieQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
 import com.ssverma.showtime.api.TmdbApiTiedConstants
@@ -14,8 +16,7 @@ import com.ssverma.showtime.utils.formatAsIso
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 val movieReleaseType = QueryMultiValue.orBuilder()
@@ -24,33 +25,43 @@ val movieReleaseType = QueryMultiValue.orBuilder()
 
 @HiltViewModel
 class MovieListViewModel @Inject constructor(
-    private val movieRepository: MovieRepository
+    private val movieRepository: MovieRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private var movieListingType = ""
+    private val appliedFilters = MutableStateFlow(mapOf<String, String>())
 
-    private val filters = MutableStateFlow(mapOf<String, String>())
+    val listingType =
+        savedStateHandle.get<MovieListingType>(AppDestinations.MovieListDestination.ArgType)
+            ?: throw IllegalStateException("Movie listing type not provided")
 
-    val pagedMovies: Flow<PagingData<Movie>> = filters.transform {
-        val pagedMovies = when (movieListingType) {
-            MovieListingType.Trending -> {
+    val filterApplicable = when (listingType) {
+        MovieListingType.TrendingToday,
+        MovieListingType.TopRated -> false
+        else -> true
+    }
+
+    val pagedMovies: Flow<PagingData<Movie>> = appliedFilters.flatMapLatest {
+        when (listingType) {
+            MovieListingType.TrendingToday -> {
                 movieRepository.fetchTrendingMoviesGradually()
             }
             MovieListingType.TopRated -> {
                 movieRepository.fetchTopRatedMoviesGradually()
             }
             else -> {
-                movieRepository.discoverMoviesGradually(filters.value)
+                movieRepository.discoverMoviesGradually(appliedFilters.value)
             }
         }.cachedIn(viewModelScope)
-
-        pagedMovies.collect {
-            emit(it)
-        }
     }
 
-    fun onMovieTypeAvailable(type: String) {
-        this.movieListingType = type
+    val filters = movieRepository.loadMovieFilters()
+
+    init {
+        fetchMovies(listingType)
+    }
+
+    private fun fetchMovies(type: MovieListingType) {
         val filterMap = when (type) {
             MovieListingType.Popular -> {
                 DiscoverMovieQueryMap.of(
@@ -74,7 +85,11 @@ class MovieListViewModel @Inject constructor(
             else -> DiscoverMovieQueryMap.of()
         }
 
-        filters.value = filterMap
+        appliedFilters.value = filterMap
+    }
+
+    fun onFiltersApplied(appliedFilters: Map<String, String>) {
+        this.appliedFilters.value = appliedFilters
     }
 
 }

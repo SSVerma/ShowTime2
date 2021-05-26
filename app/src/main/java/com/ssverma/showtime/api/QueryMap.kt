@@ -6,23 +6,47 @@ object DiscoverMovieQueryMap {
         primaryReleaseDateLte: String? = null,
         primaryReleaseDateGte: String? = null,
         monetizationType: String? = null,
-        releaseType: QueryMultiValue? = null
+        releaseType: QueryMultiValue? = null,
+        genres: QueryMultiValue? = null,
+        keywords: QueryMultiValue? = null,
+        voteAvgLte: String? = null,
+        voteAvgGte: String? = null,
+        runtimeLte: String? = null,
+        runtimeGte: String? = null,
     ): Map<String, String> {
         return mutableMapOf<String, String>().apply {
             sortBy?.let {
-                put("sort_by", it)
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.sortBy, it)
             }
             primaryReleaseDateLte?.let {
-                put("primary_release_date.lte", it)
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.primaryReleaseDateLte, it)
             }
             primaryReleaseDateGte?.let {
-                put("primary_release_date.gte", it)
-            }
-            releaseType?.asFormattedValues()?.let {
-                put("with_release_type", it)
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.primaryReleaseDateGte, it)
             }
             monetizationType?.let {
-                put("with_watch_monetization_types", it)
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.withMonetizationType, it)
+            }
+            releaseType?.asFormattedValues()?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.releaseType, it)
+            }
+            genres?.asFormattedValues()?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.withGenres, it)
+            }
+            keywords?.asFormattedValues()?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.withKeywords, it)
+            }
+            voteAvgLte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.voteAvgLte, it)
+            }
+            voteAvgGte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.voteAvgGte, it)
+            }
+            runtimeLte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.runtimeLte, it)
+            }
+            runtimeGte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.runtimeGte, it)
             }
         }
     }

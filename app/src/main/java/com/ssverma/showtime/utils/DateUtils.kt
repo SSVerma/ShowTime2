@@ -13,7 +13,7 @@ object DateUtils {
 
     fun parseIsoDate(date: String?): LocalDate? {
         return try {
-            LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE)
+            date?.let { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
         } catch (e: DateTimeParseException) {
             e.printStackTrace()
             null
