@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
+import com.google.accompanist.insets.statusBarsHeight
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.Genre
@@ -27,7 +28,6 @@ import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.home.HomeViewModel
-import dev.chrisbanes.accompanist.insets.statusBarsHeight
 
 @Composable
 fun MovieScreen(
@@ -169,7 +169,7 @@ fun HeaderSection(
     val blurColor = MaterialTheme.colors.surface
     val scrimColor = MaterialTheme.colors.onSurface
 
-    Box {
+    Box(modifier = Modifier.background(color = MaterialTheme.colors.onSurface)) {
         NetworkImage(
             url = viewModel.movieBackdrop,
             contentDescription = null,

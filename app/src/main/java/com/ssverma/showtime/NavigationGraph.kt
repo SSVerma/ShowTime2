@@ -3,6 +3,7 @@ package com.ssverma.showtime
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltNavGraphViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
@@ -52,7 +53,7 @@ fun NavGraph(startDestination: String = AppDestinations.HomePageRoute) {
     ) {
 
         composable(AppDestinations.HomePageRoute) {
-            val viewModel = hiltNavGraphViewModel<HomeViewModel>(it)
+            val viewModel = hiltViewModel<HomeViewModel>(it)
             HomePage(viewModel, actions)
         }
 
@@ -60,7 +61,7 @@ fun NavGraph(startDestination: String = AppDestinations.HomePageRoute) {
             route = AppDestinations.MovieListDestination.route(),
             arguments = AppDestinations.MovieListDestination.arguments,
         ) {
-            val viewModel = hiltNavGraphViewModel<MovieListViewModel>(it)
+            val viewModel = hiltViewModel<MovieListViewModel>(it)
 
             MovieListScreen(
                 viewModel = viewModel,

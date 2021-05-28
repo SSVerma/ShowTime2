@@ -17,14 +17,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.ui.FiltersScreen
 import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.PagedContent
 import com.ssverma.showtime.ui.common.PagedGrid
-import dev.chrisbanes.accompanist.insets.navigationBarsPadding
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

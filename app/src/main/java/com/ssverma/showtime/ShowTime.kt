@@ -1,11 +1,11 @@
 package com.ssverma.showtime
 
 import androidx.compose.runtime.Composable
+import com.google.accompanist.insets.ProvideWindowInsets
 import com.ssverma.showtime.ui.theme.ShowTimeTheme
-import dev.chrisbanes.accompanist.insets.ProvideWindowInsets
 
 @Composable
-fun ShowTimeApp() {
+fun ShowTime() {
     ShowTimeTheme {
         ProvideWindowInsets {
             NavGraph()

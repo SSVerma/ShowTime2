@@ -1,5 +1,6 @@
 package com.ssverma.showtime.ui.common
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,7 +8,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import dev.chrisbanes.accompanist.coil.CoilImage
+import com.google.accompanist.coil.rememberCoilPainter
+import com.google.accompanist.imageloading.ImageLoadState
 
 @Composable
 fun NetworkImage(
@@ -18,19 +20,26 @@ fun NetworkImage(
     placeholder: @Composable () -> Unit = { DefaultImagePlaceHolder() },
     fadeIn: Boolean = true
 ) {
-    CoilImage(
-        data = url,
-        modifier = modifier,
-        contentDescription = contentDescription,
-        contentScale = contentScale,
-        fadeIn = fadeIn,
-        loading = {
-            placeholder()
-        },
-        error = {
+    val painter = rememberCoilPainter(
+        request = url,
+        fadeIn = fadeIn
+    )
+
+    when (painter.loadState) {
+        is ImageLoadState.Success -> {
+            Image(
+                painter = painter,
+                contentDescription = contentDescription,
+                contentScale = contentScale,
+                modifier = modifier
+            )
+        }
+        is ImageLoadState.Empty,
+        is ImageLoadState.Loading,
+        is ImageLoadState.Error -> {
             placeholder()
         }
-    )
+    }
 }
 
 @Composable

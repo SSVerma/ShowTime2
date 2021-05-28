@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.*
+import com.google.accompanist.insets.navigationBarsHeight
+import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.AppActions
 import com.ssverma.showtime.AppDestinations
 import com.ssverma.showtime.R
@@ -27,8 +29,6 @@ import com.ssverma.showtime.ui.library.LibraryScreen
 import com.ssverma.showtime.ui.movie.MovieScreen
 import com.ssverma.showtime.ui.people.PeopleScreen
 import com.ssverma.showtime.ui.tv.TvShowScreen
-import dev.chrisbanes.accompanist.insets.navigationBarsHeight
-import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 
 sealed class BottomNavScreen(
     val route: String,
@@ -79,7 +79,7 @@ fun HomePage(viewModel: HomeViewModel, actions: AppActions) {
                 backgroundColor = MaterialTheme.colors.surface
             ) {
                 val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
+                val currentRoute = navBackStackEntry?.destination?.route
                 bottomTabs.forEach { screen ->
                     BottomNavigationItem(
                         icon = {
@@ -96,6 +96,10 @@ fun HomePage(viewModel: HomeViewModel, actions: AppActions) {
                         onClick = {
                             bottomNavController.navigate(screen.route) {
                                 launchSingleTop = true
+                                restoreState = true
+                                popUpTo(bottomNavController.graph.startDestinationRoute!!) {
+                                    saveState = true
+                                }
                             }
                         }
                     )

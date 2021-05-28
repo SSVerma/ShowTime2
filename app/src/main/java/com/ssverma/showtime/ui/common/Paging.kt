@@ -39,7 +39,7 @@ fun <T : Any> PagedList(
         modifier = modifier
     ) {
         items(pagingItems.itemCount) { index ->
-            val pagingItem = pagingItems[index]
+            val pagingItem = pagingItems.getAsState(index = index).value
             if (pagingItem == null) {
                 placeholderItemContent()
             } else {
@@ -79,7 +79,7 @@ fun <T : Any> PagedGrid(
         modifier = modifier
     ) {
         items(pagingItems.itemCount) { index ->
-            val pagingItem = pagingItems[index]
+            val pagingItem = pagingItems.getAsState(index = index).value
             if (pagingItem == null) {
                 placeholderItemContent()
             } else {

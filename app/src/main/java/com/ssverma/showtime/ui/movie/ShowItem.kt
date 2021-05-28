@@ -58,6 +58,7 @@ fun MoviePoster(
                 url = posterImageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                modifier = modifier
             )
             indicator?.let { it() }
             onOverflowIconClick?.let {
