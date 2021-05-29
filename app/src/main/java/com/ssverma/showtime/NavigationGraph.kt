@@ -2,19 +2,26 @@ package com.ssverma.showtime
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.hilt.navigation.compose.hiltNavGraphViewModel
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.*
-import com.ssverma.showtime.ui.home.HomePage
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navArgument
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.ssverma.showtime.ui.home.HomeViewModel
+import com.ssverma.showtime.ui.library.LibraryScreen
 import com.ssverma.showtime.ui.movie.MovieListScreen
 import com.ssverma.showtime.ui.movie.MovieListViewModel
 import com.ssverma.showtime.ui.movie.MovieListingType
+import com.ssverma.showtime.ui.movie.MovieScreen
+import com.ssverma.showtime.ui.people.PeopleScreen
+import com.ssverma.showtime.ui.tv.TvShowScreen
 
 object AppDestinations {
-    object BottomNavDestinations {
+    object HomeBottomNavDestinations {
         const val MovieRoute = "movie"
         const val TvShowRoute = "tv-show"
         const val PeopleRoute = "people"
@@ -35,26 +42,49 @@ object AppDestinations {
             return "$baseRoute/{$ArgType}"
         }
 
-        fun to(type: MovieListingType): String {
+        fun launch(type: MovieListingType): String {
             return "$baseRoute/$type"
         }
     }
 }
 
 @Composable
-fun NavGraph(startDestination: String = AppDestinations.HomePageRoute) {
-    val navController = rememberNavController()
+fun NavGraph(
+    modifier: Modifier,
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = AppDestinations.HomePageRoute
+) {
 
     val actions = remember(navController) { AppActions(navController) }
 
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        modifier = modifier
     ) {
 
-        composable(AppDestinations.HomePageRoute) {
-            val viewModel = hiltViewModel<HomeViewModel>(it)
-            HomePage(viewModel, actions)
+        navigation(
+            startDestination = AppDestinations.HomeBottomNavDestinations.MovieRoute,
+            route = AppDestinations.HomePageRoute
+        ) {
+            composable(AppDestinations.HomeBottomNavDestinations.MovieRoute) {
+                val viewModel = hiltViewModel<HomeViewModel>(it)
+                MovieScreen(
+                    viewModel = viewModel,
+                    onNavigateToMovieList = { type ->
+                        actions.navigateToMovieList(type)
+                    }
+                )
+            }
+            composable(AppDestinations.HomeBottomNavDestinations.TvShowRoute) {
+                TvShowScreen()
+            }
+            composable(AppDestinations.HomeBottomNavDestinations.PeopleRoute) {
+                PeopleScreen()
+            }
+            composable(AppDestinations.HomeBottomNavDestinations.LibraryRoute) {
+                LibraryScreen()
+            }
         }
 
         composable(
@@ -78,7 +108,7 @@ class AppActions(navController: NavHostController) {
 
     val navigateToMovieList: (type: MovieListingType) -> Unit = { type ->
         navController.navigate(
-            AppDestinations.MovieListDestination.to(type)
+            AppDestinations.MovieListDestination.launch(type)
         )
     }
 }
