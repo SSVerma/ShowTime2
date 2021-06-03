@@ -17,45 +17,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ssverma.showtime.AppDestinations
 import com.ssverma.showtime.R
+import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.ui.common.AppIcons
 
-sealed class BottomNavScreen(
+sealed class HomeBottomNavScreen(
     val route: String,
-    @StringRes val tabTitleStringRes: Int,
+    @StringRes val tabTitleRes: Int,
     val tabIcon: ImageVector
 ) {
-    object Movie : BottomNavScreen(
-        route = AppDestinations.HomeBottomNavDestinations.MovieRoute,
-        tabTitleStringRes = R.string.movie,
+    object Movie : HomeBottomNavScreen(
+        route = AppDestination.HomeBottomNavDestination.Movie.placeholderRoute.asRoutableString(),
+        tabTitleRes = R.string.movie,
         tabIcon = AppIcons.Home
     )
 
-    object Tv : BottomNavScreen(
-        route = AppDestinations.HomeBottomNavDestinations.TvShowRoute,
-        tabTitleStringRes = R.string.tv_show,
+    object Tv : HomeBottomNavScreen(
+        route = AppDestination.HomeBottomNavDestination.Tv.placeholderRoute.asRoutableString(),
+        tabTitleRes = R.string.tv_show,
         tabIcon = AppIcons.Face
     )
 
-    object People : BottomNavScreen(
-        route = AppDestinations.HomeBottomNavDestinations.PeopleRoute,
-        tabTitleStringRes = R.string.people,
+    object People : HomeBottomNavScreen(
+        route = AppDestination.HomeBottomNavDestination.People.placeholderRoute.asRoutableString(),
+        tabTitleRes = R.string.people,
         tabIcon = AppIcons.Person
     )
 
-    object Library : BottomNavScreen(
-        route = AppDestinations.HomeBottomNavDestinations.LibraryRoute,
-        tabTitleStringRes = R.string.library,
+    object Library : HomeBottomNavScreen(
+        route = AppDestination.HomeBottomNavDestination.Library.placeholderRoute.asRoutableString(),
+        tabTitleRes = R.string.library,
         tabIcon = AppIcons.Star
     )
 }
 
 val homeBottomNavScreens = listOf(
-    BottomNavScreen.Movie,
-    BottomNavScreen.Tv,
-    BottomNavScreen.People,
-    BottomNavScreen.Library,
+    HomeBottomNavScreen.Movie,
+    HomeBottomNavScreen.Tv,
+    HomeBottomNavScreen.People,
+    HomeBottomNavScreen.Library,
 )
 
 @Composable

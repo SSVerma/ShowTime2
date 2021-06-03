@@ -5,12 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.showtime.AppDestinations
+import com.ssverma.showtime.R
 import com.ssverma.showtime.api.DiscoverMovieQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
 import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.MovieRepository
 import com.ssverma.showtime.domain.model.Movie
+import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatAsIso
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,9 +32,16 @@ class MovieListViewModel @Inject constructor(
 
     private val appliedFilters = MutableStateFlow(mapOf<String, String>())
 
+    private val genreId = savedStateHandle.get<Int>(AppDestination.MovieList.ArgGenreId)
+
     val listingType =
-        savedStateHandle.get<MovieListingType>(AppDestinations.MovieListDestination.ArgType)
+        savedStateHandle.get<MovieListingType>(AppDestination.MovieList.ArgListingType)
             ?: throw IllegalStateException("Movie listing type not provided")
+
+    val titleRes = savedStateHandle.get<Int>(AppDestination.MovieList.ArgTitleRes)
+        ?: R.string.movies
+
+    val title = savedStateHandle.get<String>(AppDestination.MovieList.ArgTitle)
 
     val filterApplicable = when (listingType) {
         MovieListingType.TrendingToday,
@@ -82,6 +90,16 @@ class MovieListViewModel @Inject constructor(
                     sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PrimaryReleaseDateAsc
                 )
             }
+
+            MovieListingType.Genre -> {
+                val genreId = genreId
+                    ?: throw IllegalArgumentException("Provide genre id when listing type is $type")
+
+                DiscoverMovieQueryMap.of(
+                    genres = QueryMultiValue.orBuilder().or(genreId).build()
+                )
+            }
+
             else -> DiscoverMovieQueryMap.of()
         }
 

@@ -71,7 +71,7 @@ object TmdbApiTiedConstants {
         const val runtimeLte = "with_runtime.lte"
         const val withMonetizationType = "with_watch_monetization_types"
         const val withPeople = "with_people"
-        const val withGenres = "with_generes"
+        const val withGenres = "with_genres"
         const val withKeywords = "with_keywords"
         const val sortBy = "sort_by"
     }

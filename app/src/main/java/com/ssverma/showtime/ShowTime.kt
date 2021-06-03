@@ -9,13 +9,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination
+import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.navigationBarsPadding
-import com.ssverma.showtime.ui.home.BottomNavScreen
+import com.ssverma.showtime.navigation.ShowTimeNavHost
+import com.ssverma.showtime.ui.home.HomeBottomNavScreen
 import com.ssverma.showtime.ui.home.homeBottomNavScreens
 import com.ssverma.showtime.ui.theme.ShowTimeTheme
 
@@ -31,7 +34,7 @@ fun ShowTime() {
                     ShowTimeBottomBar(navController = navController, bottomNavScreens)
                 }
             ) { innerPaddingModifier ->
-                NavGraph(
+                ShowTimeNavHost(
                     navController = navController,
                     modifier = Modifier.padding(innerPaddingModifier)
                 )
@@ -42,7 +45,7 @@ fun ShowTime() {
 
 private fun showBottomBar(
     backStackEntry: NavBackStackEntry?,
-    bottomNavScreens: List<BottomNavScreen>
+    bottomNavScreens: List<HomeBottomNavScreen>
 ): Boolean {
     val routes = bottomNavScreens.map { it.route }
     return routes.contains(backStackEntry?.destination?.route)
@@ -51,11 +54,11 @@ private fun showBottomBar(
 @Composable
 fun ShowTimeBottomBar(
     navController: NavHostController,
-    bottomNavScreens: List<BottomNavScreen>
+    bottomNavScreens: List<HomeBottomNavScreen>
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-        ?: BottomNavScreen.Movie.route
+        ?: HomeBottomNavScreen.Movie.route
 
     if (!showBottomBar(navBackStackEntry, bottomNavScreens)) {
         return
@@ -70,10 +73,10 @@ fun ShowTimeBottomBar(
                 icon = {
                     Icon(
                         imageVector = screen.tabIcon,
-                        contentDescription = stringResource(id = screen.tabTitleStringRes)
+                        contentDescription = stringResource(id = screen.tabTitleRes)
                     )
                 },
-                label = { Text(text = stringResource(id = screen.tabTitleStringRes)) },
+                label = { Text(text = stringResource(id = screen.tabTitleRes)) },
                 selected = currentRoute == screen.route,
                 selectedContentColor = MaterialTheme.colors.primary,
                 unselectedContentColor = LocalContentColor.current,
@@ -83,7 +86,7 @@ fun ShowTimeBottomBar(
                         navController.navigate(screen.route) {
                             launchSingleTop = true
                             restoreState = true
-                            popUpTo(BottomNavScreen.Movie.route) {
+                            popUpTo(findStartDestination(navController.graph).id) {
                                 saveState = true
                             }
                         }
@@ -92,4 +95,11 @@ fun ShowTimeBottomBar(
             )
         }
     }
+}
+
+private val NavGraph.startDestination: NavDestination?
+    get() = findNode(startDestinationId)
+
+private tailrec fun findStartDestination(graph: NavDestination): NavDestination {
+    return if (graph is NavGraph) findStartDestination(graph.startDestination!!) else graph
 }

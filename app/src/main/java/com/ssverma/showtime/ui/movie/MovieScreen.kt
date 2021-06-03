@@ -32,7 +32,7 @@ import com.ssverma.showtime.ui.home.HomeViewModel
 @Composable
 fun MovieScreen(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (type: MovieListingType) -> Unit
+    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit
 ) {
     MovieContent(
         viewModel = viewModel,
@@ -43,7 +43,7 @@ fun MovieScreen(
 @Composable
 private fun MovieContent(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (type: MovieListingType) -> Unit
+    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -59,7 +59,12 @@ private fun MovieContent(
             sectionTitleRes = R.string.popuplar,
             subtitleRes = R.string.popular_info,
             onViewAllClicked = {
-                onNavigateToMovieList(MovieListingType.Popular)
+                onNavigateToMovieList(
+                    MovieListLaunchable(
+                        listingType = MovieListingType.Popular,
+                        titleRes = R.string.popuplar
+                    )
+                )
             }
         ) {
             MovieItem(
@@ -74,7 +79,12 @@ private fun MovieContent(
             liveMovies = viewModel.topRatedMovies,
             sectionTitleRes = R.string.top_rated,
             onViewAllClicked = {
-                onNavigateToMovieList(MovieListingType.TopRated)
+                onNavigateToMovieList(
+                    MovieListLaunchable(
+                        listingType = MovieListingType.TopRated,
+                        titleRes = R.string.top_rated
+                    )
+                )
             }
         ) {
             MovieItem(
@@ -89,7 +99,12 @@ private fun MovieContent(
             liveMovies = viewModel.nowInCinemasMovies,
             sectionTitleRes = R.string.now_in_cinemas,
             onViewAllClicked = {
-                onNavigateToMovieList(MovieListingType.NowInCinemas)
+                onNavigateToMovieList(
+                    MovieListLaunchable(
+                        listingType = MovieListingType.NowInCinemas,
+                        titleRes = R.string.now_in_cinemas
+                    )
+                )
             }
         ) {
             MovieItem(
@@ -103,7 +118,12 @@ private fun MovieContent(
             liveMovies = viewModel.upcomingMovies,
             sectionTitleRes = R.string.upcoming,
             onViewAllClicked = {
-                onNavigateToMovieList(MovieListingType.Upcoming)
+                onNavigateToMovieList(
+                    MovieListLaunchable(
+                        listingType = MovieListingType.Upcoming,
+                        titleRes = R.string.upcoming
+                    )
+                )
             }
         ) {
             MovieItem(
@@ -164,7 +184,7 @@ fun MoviesSection(
 @Composable
 fun HeaderSection(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (type: MovieListingType) -> Unit
+    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit
 ) {
     val blurColor = MaterialTheme.colors.surface
     val scrimColor = MaterialTheme.colors.onSurface
@@ -202,12 +222,28 @@ fun HeaderSection(
             Spacer(modifier = Modifier.statusBarsHeight())
             HomePageAppBar()
             Spacer(modifier = Modifier.height(DefaultMovieSectionSpacing))
-            MovieGenres(liveGenres = viewModel.genres)
+            MovieGenres(
+                liveGenres = viewModel.genres,
+                onGenreClicked = {
+                    onNavigateToMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.Genre,
+                            title = it.name,
+                            genre = it
+                        )
+                    )
+                }
+            )
             MoviesSection(
                 liveMovies = viewModel.dailyTrendingMovies,
                 sectionTitleRes = R.string.trending_today,
                 onViewAllClicked = {
-                    onNavigateToMovieList(MovieListingType.TrendingToday)
+                    onNavigateToMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.TrendingToday,
+                            titleRes = R.string.trending_today
+                        )
+                    )
                 }
             ) {
                 MovieItem(
@@ -220,13 +256,16 @@ fun HeaderSection(
 }
 
 @Composable
-fun MovieGenres(liveGenres: LiveData<Result<List<Genre>>>) {
+fun MovieGenres(liveGenres: LiveData<Result<List<Genre>>>, onGenreClicked: (genre: Genre) -> Unit) {
     DriveCompose(
         observable = liveGenres,
         loading = { SectionLoadingIndicator() }
     ) { genres ->
         HorizontalList(genres) {
-            GenreItem(genre = it)
+            GenreItem(
+                genre = it,
+                onGenreClicked = { onGenreClicked(it) }
+            )
         }
     }
 }

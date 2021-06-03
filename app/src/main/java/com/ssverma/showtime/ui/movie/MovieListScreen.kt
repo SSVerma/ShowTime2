@@ -19,6 +19,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
+import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.ui.FiltersScreen
 import com.ssverma.showtime.ui.common.AppTopAppBar
@@ -27,15 +28,21 @@ import com.ssverma.showtime.ui.common.PagedGrid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-enum class MovieListingType(
-    @StringRes val titleRes: Int
-) {
-    TrendingToday(R.string.trending_today),
-    Popular(R.string.popuplar),
-    TopRated(R.string.top_rated),
-    NowInCinemas(R.string.now_in_cinemas),
-    Upcoming(R.string.upcoming),
+enum class MovieListingType {
+    TrendingToday,
+    Popular,
+    TopRated,
+    NowInCinemas,
+    Upcoming,
+    Genre
 }
+
+data class MovieListLaunchable(
+    val listingType: MovieListingType,
+    @StringRes val titleRes: Int = 0,
+    val title: String? = null,
+    val genre: Genre? = null
+)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -103,14 +110,14 @@ private fun MovieListAppBar(
         R.drawable.ic_close
     }
 
-    val titleRes = if (backdropScaffoldState.isConcealed) {
-        viewModel.listingType.titleRes
+    val title = if (backdropScaffoldState.isConcealed) {
+        viewModel.title ?: stringResource(id = viewModel.titleRes)
     } else {
-        R.string.filter
+        stringResource(id = R.string.filter)
     }
 
     AppTopAppBar(
-        title = stringResource(id = titleRes),
+        title = title,
         backgroundColor = MaterialTheme.colors.primary,
         contentColor = MaterialTheme.colors.surface,
         elevation = 0.dp,
