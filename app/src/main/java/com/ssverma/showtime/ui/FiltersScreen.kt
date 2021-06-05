@@ -20,12 +20,13 @@ import java.time.LocalDate
 
 @Composable
 fun FiltersScreen(
+    modifier: Modifier = Modifier,
     filterGroups: List<FilterGroup>,
     onFilterApplied: (Map<String, String>) -> Unit
 ) {
     val filterState = rememberFilterState(filterGroups = filterGroups)
 
-    Box {
+    Box(modifier) {
         FilterContent(filterGroups, filterState)
         ExtendedFloatingActionButton(
             text = { Text(text = stringResource(id = R.string.apply)) },
@@ -87,7 +88,7 @@ fun FilterContent(filterGroups: List<FilterGroup>, filterState: FilterState) {
             }
         }
 
-        item {
+        item(key = "footer") {
             Spacer(modifier = Modifier.height(ApplyButtonHeight + ApplyButtonVerticalSpacing))
         }
     }
