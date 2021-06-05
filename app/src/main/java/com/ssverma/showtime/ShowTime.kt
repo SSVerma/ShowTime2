@@ -18,20 +18,21 @@ import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.navigation.ShowTimeNavHost
-import com.ssverma.showtime.ui.home.HomeBottomNavScreen
-import com.ssverma.showtime.ui.home.homeBottomNavScreens
+import com.ssverma.showtime.navigation.navigateTo
+import com.ssverma.showtime.ui.home.HomeBottomNavItem
+import com.ssverma.showtime.ui.home.homeBottomNavItems
 import com.ssverma.showtime.ui.theme.ShowTimeTheme
 
 @Composable
 fun ShowTime() {
     ProvideWindowInsets {
         ShowTimeTheme {
-            val bottomNavScreens = remember { homeBottomNavScreens }
+            val bottomNavItems = remember { homeBottomNavItems }
             val navController = rememberNavController()
 
             Scaffold(
                 bottomBar = {
-                    ShowTimeBottomBar(navController = navController, bottomNavScreens)
+                    ShowTimeBottomBar(navController = navController, bottomNavItems)
                 }
             ) { innerPaddingModifier ->
                 ShowTimeNavHost(
@@ -45,45 +46,49 @@ fun ShowTime() {
 
 private fun showBottomBar(
     backStackEntry: NavBackStackEntry?,
-    bottomNavScreens: List<HomeBottomNavScreen>
+    bottomNavScreens: List<HomeBottomNavItem>
 ): Boolean {
-    val routes = bottomNavScreens.map { it.route }
+    val routes = bottomNavScreens.map { it.linkedDestination.placeholderRoute.asRoutableString() }
     return routes.contains(backStackEntry?.destination?.route)
 }
 
 @Composable
 fun ShowTimeBottomBar(
     navController: NavHostController,
-    bottomNavScreens: List<HomeBottomNavScreen>
+    bottomNavItems: List<HomeBottomNavItem>
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-        ?: HomeBottomNavScreen.Movie.route
 
-    if (!showBottomBar(navBackStackEntry, bottomNavScreens)) {
+    if (!showBottomBar(navBackStackEntry, bottomNavItems)) {
         return
     }
+
+    val currentPlaceholderRoute = navBackStackEntry?.destination?.route
+        ?: HomeBottomNavItem.Movie.linkedDestination.placeholderRoute.asRoutableString()
 
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.background,
         modifier = Modifier.navigationBarsHeight(additional = 56.dp)
     ) {
-        bottomNavScreens.forEach { screen ->
+        bottomNavItems.forEach { navItem ->
+            val navItemDestinationRoute =
+                navItem.linkedDestination.placeholderRoute.asRoutableString()
+
             BottomNavigationItem(
                 icon = {
                     Icon(
-                        imageVector = screen.tabIcon,
-                        contentDescription = stringResource(id = screen.tabTitleRes)
+                        imageVector = navItem.tabIcon,
+                        contentDescription = stringResource(id = navItem.tabTitleRes)
                     )
                 },
-                label = { Text(text = stringResource(id = screen.tabTitleRes)) },
-                selected = currentRoute == screen.route,
+                label = { Text(text = stringResource(id = navItem.tabTitleRes)) },
+                selected = currentPlaceholderRoute == navItemDestinationRoute,
                 selectedContentColor = MaterialTheme.colors.primary,
                 unselectedContentColor = LocalContentColor.current,
                 modifier = Modifier.navigationBarsPadding(),
                 onClick = {
-                    if (screen.route != currentRoute) {
-                        navController.navigate(screen.route) {
+                    if (navItemDestinationRoute != currentPlaceholderRoute) {
+                        navController.navigateTo(navItem.linkedDestination.actualRoute) {
                             launchSingleTop = true
                             restoreState = true
                             popUpTo(findStartDestination(navController.graph).id) {

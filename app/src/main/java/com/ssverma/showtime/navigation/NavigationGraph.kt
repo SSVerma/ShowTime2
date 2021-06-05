@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.*
+import androidx.navigation.compose.NamedNavArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,17 +21,17 @@ import com.ssverma.showtime.ui.tv.TvShowScreen
 fun ShowTimeNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = AppDestination.Home.placeholderRoute.asRoutableString()
+    startDestination: StandaloneDestination = AppDestination.Home //TODO: Make Destination when start dest arg supported in nav compose
 ) {
 
     NavHost(
         navController = navController,
-        startDestination = startDestination,
+        startDestination = startDestination.placeholderRoute(),
         modifier = modifier
     ) {
 
         navigation(
-            destination = AppDestination.Home,
+            graphDestination = AppDestination.Home,
             startDestination = AppDestination.HomeBottomNavDestination.Movie
         ) {
             composable(AppDestination.HomeBottomNavDestination.Movie) {
@@ -67,29 +68,75 @@ fun ShowTimeNavHost(
     }
 }
 
-private fun <T> NavGraphBuilder.composable(
-    destination: Destination<T>,
+private fun NavGraphBuilder.composable(
+    destination: Destination,
     content: @Composable (NavBackStackEntry) -> Unit
 ) {
     composable(
-        route = destination.placeholderRoute.asRoutableString(),
+        route = destination.placeholderRoute(),
         arguments = destination.arguments(),
         content = content
     )
 }
 
-private fun <T> NavGraphBuilder.navigation(
-    destination: Destination<T>,
-    startDestination: Destination<T>,
+//private fun <T> NavGraphBuilder.composable(
+//    destination: DependentDestination<T>,
+//    content: @Composable (NavBackStackEntry) -> Unit
+//) {
+//    composable(
+//        route = destination.placeholderRoute.asRoutableString(),
+//        arguments = destination.arguments(),
+//        content = content
+//    )
+//}
+
+//private fun <T> NavGraphBuilder.navigation(
+//    destination: DependentDestination<T>,
+//    startDestination: DependentDestination<T>,
+//    builder: NavGraphBuilder.() -> Unit
+//) {
+//    navigation(
+//        route = destination.placeholderRoute.asRoutableString(),
+//        startDestination = startDestination.placeholderRoute.asRoutableString(),
+//        builder = builder
+//    )
+//}
+
+private fun NavGraphBuilder.navigation(
+    graphDestination: Destination,
+    startDestination: Destination,
     builder: NavGraphBuilder.() -> Unit
 ) {
     navigation(
-        route = destination.placeholderRoute.asRoutableString(),
-        startDestination = startDestination.placeholderRoute.asRoutableString(),
+        route = graphDestination.placeholderRoute(),
+        startDestination = startDestination.placeholderRoute(),
         builder = builder
     )
 }
 
 fun NavController.navigateTo(route: ActualRoute) {
     navigate(route = route.asRoutableString())
+}
+
+fun NavController.navigateTo(route: ActualRoute, builder: NavOptionsBuilder.() -> Unit) {
+    navigate(
+        route = route.asRoutableString(),
+        builder = builder
+    )
+}
+
+private fun Destination.placeholderRoute(): String {
+    return when (this) {
+        is StandaloneDestination -> {
+            placeholderRoute.asRoutableString()
+        }
+        is DependentDestination<*> -> {
+            placeholderRoute.asRoutableString()
+        }
+        else -> identifier
+    }
+}
+
+private fun Destination.arguments(): List<NamedNavArgument> {
+    return if (this is DependentDestination<*>) arguments() else emptyList()
 }

@@ -19,43 +19,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ssverma.showtime.R
 import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.navigation.StandaloneDestination
 import com.ssverma.showtime.ui.common.AppIcons
 
-sealed class HomeBottomNavScreen(
-    val route: String,
+sealed class HomeBottomNavItem(
+    val linkedDestination: StandaloneDestination,
     @StringRes val tabTitleRes: Int,
     val tabIcon: ImageVector
 ) {
-    object Movie : HomeBottomNavScreen(
-        route = AppDestination.HomeBottomNavDestination.Movie.placeholderRoute.asRoutableString(),
+    object Movie : HomeBottomNavItem(
+        linkedDestination = AppDestination.HomeBottomNavDestination.Movie,
         tabTitleRes = R.string.movie,
         tabIcon = AppIcons.Home
     )
 
-    object Tv : HomeBottomNavScreen(
-        route = AppDestination.HomeBottomNavDestination.Tv.placeholderRoute.asRoutableString(),
+    object Tv : HomeBottomNavItem(
+        linkedDestination = AppDestination.HomeBottomNavDestination.Tv,
         tabTitleRes = R.string.tv_show,
         tabIcon = AppIcons.Face
     )
 
-    object People : HomeBottomNavScreen(
-        route = AppDestination.HomeBottomNavDestination.People.placeholderRoute.asRoutableString(),
+    object People : HomeBottomNavItem(
+        linkedDestination = AppDestination.HomeBottomNavDestination.People,
         tabTitleRes = R.string.people,
         tabIcon = AppIcons.Person
     )
 
-    object Library : HomeBottomNavScreen(
-        route = AppDestination.HomeBottomNavDestination.Library.placeholderRoute.asRoutableString(),
+    object Library : HomeBottomNavItem(
+        linkedDestination = AppDestination.HomeBottomNavDestination.Library,
         tabTitleRes = R.string.library,
         tabIcon = AppIcons.Star
     )
 }
 
-val homeBottomNavScreens = listOf(
-    HomeBottomNavScreen.Movie,
-    HomeBottomNavScreen.Tv,
-    HomeBottomNavScreen.People,
-    HomeBottomNavScreen.Library,
+val homeBottomNavItems = listOf(
+    HomeBottomNavItem.Movie,
+    HomeBottomNavItem.Tv,
+    HomeBottomNavItem.People,
+    HomeBottomNavItem.Library,
 )
 
 @Composable

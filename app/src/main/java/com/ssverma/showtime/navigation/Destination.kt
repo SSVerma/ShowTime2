@@ -7,90 +7,73 @@ import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.movie.MovieListLaunchable
 import com.ssverma.showtime.ui.movie.MovieListingType
 
-interface Destination<T> {
-    val placeholderRoute: PlaceholderRoute
-    fun actualRoute(input: T): ActualRoute
-    fun arguments(): List<NamedNavArgument> = emptyList()
+interface Destination {
+    val identifier: String
 }
 
-sealed class AppDestination<T>(
-    internal val identifier: String
-) : Destination<T> {
-    object Home : AppDestination<Nothing?>("home") {
-        override val placeholderRoute: PlaceholderRoute
-            get() = Route.placeholderOf(identifier).build()
+abstract class StandaloneDestination(override val identifier: String) : Destination {
+    val placeholderRoute: PlaceholderRoute
+        get() = Route.placeholderOf(identifier).build()
 
-        override fun actualRoute(input: Nothing?): ActualRoute {
-            return Route.actualOf(identifier).build()
-        }
+    val actualRoute: ActualRoute
+        get() = Route.actualOf(identifier).build()
+}
+
+abstract class DependentDestination<T>(override val identifier: String) : Destination {
+    val placeholderRoute: PlaceholderRoute
+        get() = placeholderRoute(Route.placeholderOf(identifier))
+
+    abstract fun placeholderRoute(
+        builder: PlaceholderRoute.PlaceHolderRouteBuilder
+    ): PlaceholderRoute
+
+    abstract fun actualRoute(
+        input: T,
+        builder: ActualRoute.ActualRouteBuilder = Route.actualOf(identifier)
+    ): ActualRoute
+
+    abstract fun arguments(): List<NamedNavArgument>
+}
+
+sealed class AppDestination(
+    override val identifier: String
+) : Destination {
+    object Home : StandaloneDestination("home")
+
+    sealed class HomeBottomNavDestination(identifier: String) : StandaloneDestination(identifier) {
+        object Movie : HomeBottomNavDestination("home/movie")
+
+        object Tv : HomeBottomNavDestination("home/tv")
+
+        object People : HomeBottomNavDestination("home/people")
+
+        object Library : HomeBottomNavDestination("home/library")
     }
 
-    sealed class HomeBottomNavDestination(identifier: String) :
-        AppDestination<Nothing?>(identifier) {
-        object Movie : HomeBottomNavDestination("home/movie") {
-            override val placeholderRoute: PlaceholderRoute
-                get() = Route.placeholderOf(identifier).build()
-
-            override fun actualRoute(input: Nothing?): ActualRoute {
-                return Route.actualOf(identifier).build()
-            }
-
-        }
-
-        object Tv : HomeBottomNavDestination("home/tv") {
-            override val placeholderRoute: PlaceholderRoute
-                get() = Route.placeholderOf(identifier).build()
-
-            override fun actualRoute(input: Nothing?): ActualRoute {
-                return Route.actualOf(identifier).build()
-            }
-
-        }
-
-        object People : HomeBottomNavDestination("home/people") {
-            override val placeholderRoute: PlaceholderRoute
-                get() = Route.placeholderOf(identifier).build()
-
-            override fun actualRoute(input: Nothing?): ActualRoute {
-                return Route.actualOf(identifier).build()
-            }
-
-        }
-
-        object Library : HomeBottomNavDestination("home/library") {
-            override val placeholderRoute: PlaceholderRoute
-                get() = Route.placeholderOf(identifier).build()
-
-            override fun actualRoute(input: Nothing?): ActualRoute {
-                return Route.actualOf(identifier).build()
-            }
-
-        }
-    }
-
-    object MovieList : AppDestination<MovieListLaunchable>("movie-list") {
+    object MovieList : DependentDestination<MovieListLaunchable>("movie-list") {
         const val ArgListingType = "type"
         const val ArgTitleRes = "titleRes"
         const val ArgTitle = "title"
         const val ArgGenreId = "genreId"
 
-        override val placeholderRoute: PlaceholderRoute
-            get() = Route.placeholderOf(identifier)
-                .mandatoryArg(ArgListingType)
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder.mandatoryArg(ArgListingType)
                 .optionalArg(ArgTitleRes)
                 .optionalArg(ArgTitle)
                 .optionalArg(ArgGenreId)
                 .build()
+        }
 
-        override fun actualRoute(input: MovieListLaunchable): ActualRoute {
-            return Route.actualOf(identifier)
-                .mandatoryArg(ArgListingType, input.listingType.name)
+        override fun actualRoute(
+            input: MovieListLaunchable,
+            builder: ActualRoute.ActualRouteBuilder,
+        ): ActualRoute {
+            return builder.mandatoryArg(ArgListingType, input.listingType.name)
                 .optionalArg(ArgTitleRes, input.titleRes.toString())
                 .optionalArg(ArgTitle, input.title)
                 .optionalArg(ArgGenreId, input.genre?.id ?: 0)
                 .build()
         }
-
 
         override fun arguments(): List<NamedNavArgument> {
             return listOf(
