@@ -26,16 +26,20 @@ fun ShowTimeNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = startDestination.placeholderRoute(),
+        startDestination = startDestination.placeholderRouteString(),
         modifier = modifier
     ) {
 
+        val graphDestination = AppDestination.Home
+
         navigation(
-            graphDestination = AppDestination.Home,
+            graphDestination = graphDestination,
             startDestination = AppDestination.HomeBottomNavDestination.Movie
         ) {
             composable(AppDestination.HomeBottomNavDestination.Movie) {
-                val viewModel = hiltViewModel<HomeViewModel>(it)
+                val viewModel = hiltViewModel<HomeViewModel>(
+                    navController.getBackStackEntry(graphDestination.placeholderRouteString())
+                )
                 MovieScreen(
                     viewModel = viewModel,
                     onNavigateToMovieList = { launchable ->
@@ -73,34 +77,11 @@ private fun NavGraphBuilder.composable(
     content: @Composable (NavBackStackEntry) -> Unit
 ) {
     composable(
-        route = destination.placeholderRoute(),
+        route = destination.placeholderRouteString(),
         arguments = destination.arguments(),
         content = content
     )
 }
-
-//private fun <T> NavGraphBuilder.composable(
-//    destination: DependentDestination<T>,
-//    content: @Composable (NavBackStackEntry) -> Unit
-//) {
-//    composable(
-//        route = destination.placeholderRoute.asRoutableString(),
-//        arguments = destination.arguments(),
-//        content = content
-//    )
-//}
-
-//private fun <T> NavGraphBuilder.navigation(
-//    destination: DependentDestination<T>,
-//    startDestination: DependentDestination<T>,
-//    builder: NavGraphBuilder.() -> Unit
-//) {
-//    navigation(
-//        route = destination.placeholderRoute.asRoutableString(),
-//        startDestination = startDestination.placeholderRoute.asRoutableString(),
-//        builder = builder
-//    )
-//}
 
 private fun NavGraphBuilder.navigation(
     graphDestination: Destination,
@@ -108,8 +89,8 @@ private fun NavGraphBuilder.navigation(
     builder: NavGraphBuilder.() -> Unit
 ) {
     navigation(
-        route = graphDestination.placeholderRoute(),
-        startDestination = startDestination.placeholderRoute(),
+        route = graphDestination.placeholderRouteString(),
+        startDestination = startDestination.placeholderRouteString(),
         builder = builder
     )
 }
@@ -125,7 +106,7 @@ fun NavController.navigateTo(route: ActualRoute, builder: NavOptionsBuilder.() -
     )
 }
 
-private fun Destination.placeholderRoute(): String {
+private fun Destination.placeholderRouteString(): String {
     return when (this) {
         is StandaloneDestination -> {
             placeholderRoute.asRoutableString()

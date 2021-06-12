@@ -58,6 +58,8 @@ fun MovieListScreen(
 
     BackdropScaffold(
         scaffoldState = backdropScaffoldState,
+        backLayerBackgroundColor = MaterialTheme.colors.background,
+        frontLayerBackgroundColor = MaterialTheme.colors.background,
         appBar = {
             MovieListAppBar(
                 backdropScaffoldState,
@@ -118,8 +120,7 @@ private fun MovieListAppBar(
 
     AppTopAppBar(
         title = title,
-        backgroundColor = MaterialTheme.colors.primary,
-        contentColor = MaterialTheme.colors.surface,
+        backgroundColor = MaterialTheme.colors.background,
         elevation = 0.dp,
         onBackPressed = {
             if (backdropScaffoldState.isConcealed) {

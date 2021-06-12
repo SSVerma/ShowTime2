@@ -136,7 +136,7 @@ private fun MovieContent(
                 }
             )
         }
-        Spacer(modifier = Modifier.height(160.dp))
+        Spacer(modifier = Modifier.height(FooterSpacerHeight))
     }
 }
 
@@ -186,10 +186,10 @@ fun HeaderSection(
     viewModel: HomeViewModel,
     onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit
 ) {
-    val blurColor = MaterialTheme.colors.surface
-    val scrimColor = MaterialTheme.colors.onSurface
+    val blurColor = MaterialTheme.colors.background
+    val scrimColor = MaterialTheme.colors.onBackground
 
-    Box(modifier = Modifier.background(color = MaterialTheme.colors.onSurface)) {
+    Box(modifier = Modifier.background(color = scrimColor)) {
         NetworkImage(
             url = viewModel.movieBackdrop,
             contentDescription = null,
@@ -271,3 +271,4 @@ fun MovieGenres(liveGenres: LiveData<Result<List<Genre>>>, onGenreClicked: (genr
 }
 
 private val DefaultMovieSectionSpacing = 32.dp
+private val FooterSpacerHeight = 56.dp

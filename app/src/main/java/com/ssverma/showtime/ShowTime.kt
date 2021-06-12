@@ -68,7 +68,8 @@ fun ShowTimeBottomBar(
 
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.background,
-        modifier = Modifier.navigationBarsHeight(additional = 56.dp)
+        modifier = Modifier.navigationBarsHeight(additional = 56.dp),
+        elevation = 16.dp
     ) {
         bottomNavItems.forEach { navItem ->
             val navItemDestinationRoute =
@@ -84,7 +85,7 @@ fun ShowTimeBottomBar(
                 label = { Text(text = stringResource(id = navItem.tabTitleRes)) },
                 selected = currentPlaceholderRoute == navItemDestinationRoute,
                 selectedContentColor = MaterialTheme.colors.primary,
-                unselectedContentColor = LocalContentColor.current,
+                unselectedContentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.87f),
                 modifier = Modifier.navigationBarsPadding(),
                 onClick = {
                     if (navItemDestinationRoute != currentPlaceholderRoute) {

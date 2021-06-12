@@ -80,14 +80,14 @@ fun MoviePoster(
 fun ValueIndicator(value: String, modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(50),
-        color = MaterialTheme.colors.surface,
+        color = MaterialTheme.colors.background,
         modifier = modifier
             .padding(start = 4.dp, top = 4.dp)
             .border(1.dp, MaterialTheme.colors.primary, RoundedCornerShape(50))
     ) {
         Text(
             text = value,
-            color = MaterialTheme.colors.onSurface,
+            color = MaterialTheme.colors.onBackground,
             style = MaterialTheme.typography.caption,
             modifier = Modifier
                 .padding(horizontal = 6.dp, vertical = 4.dp)
@@ -101,7 +101,7 @@ fun ScoreIndicator(score: Float) {
         modifier = Modifier
             .padding(4.dp)
             .clip(CircleShape)
-            .background(color = MaterialTheme.colors.surface)
+            .background(color = MaterialTheme.colors.background)
     ) {
         CircularProgressIndicator(
             progress = score / 100f,
@@ -113,7 +113,7 @@ fun ScoreIndicator(score: Float) {
         Text(
             text = "${score.toInt()}%",
             modifier = Modifier.align(Alignment.Center),
-            color = MaterialTheme.colors.onSurface,
+            color = MaterialTheme.colors.onBackground,
             style = MaterialTheme.typography.caption.copy(fontSize = 10.sp)
         )
     }

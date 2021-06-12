@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 fun Chip(
     modifier: Modifier = Modifier,
     shape: Shape = RectangleShape,
-    backgroundColor: Color = MaterialTheme.colors.surface,
+    backgroundColor: Color = MaterialTheme.colors.background,
     contentColor: Color = contentColorFor(backgroundColor),
     border: BorderStroke? = null,
     elevation: Dp = 0.dp,
@@ -50,7 +50,7 @@ fun Chip(
 fun DefaultSelectedChip(
     modifier: Modifier = Modifier,
     shape: Shape = RectangleShape,
-    backgroundColor: Color = MaterialTheme.colors.onSurface,
+    backgroundColor: Color = MaterialTheme.colors.onBackground,
     contentColor: Color = contentColorFor(backgroundColor),
     border: BorderStroke? = null,
     elevation: Dp = 4.dp,

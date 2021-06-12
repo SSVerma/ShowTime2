@@ -5,12 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -22,15 +24,23 @@ fun SliderScale(
     current: Float,
     onValueChange: (now: Float) -> Unit,
     modifier: Modifier = Modifier,
-    primaryLineModifier: Modifier = Modifier,
-    secondaryLineModifier: Modifier = Modifier,
+    primaryIndicatorModifier: Modifier = Modifier,
+    secondaryIndicatorModifier: Modifier = Modifier,
     showLabel: Boolean = true,
-    labelTextStyle: TextStyle = MaterialTheme.typography.caption,
-    sliderColors: SliderColors = SliderDefaults.colors()
+    labelTextStyle: TextStyle = MaterialTheme.typography.caption.copy(
+        color = MaterialTheme.colors.onSurface
+    ),
+    sliderColors: SliderColors = SliderDefaults.colors(
+        inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.24f),
+        inactiveTickColor = Color.Transparent
+    ),
+    scaleDimensions: ScaleDimensions = SliderScaleDefaults.scaleDimensions
 ) {
 
     val secondarySteps = remember(max, min, secondaryGap) { (max - min) / secondaryGap }
     val primarySteps = remember(primaryGap, secondaryGap) { primaryGap / secondaryGap }
+
+    var sliderValue by remember { mutableStateOf(value = current) }
 
     Column(modifier = modifier) {
         Box(contentAlignment = Alignment.Center) {
@@ -46,22 +56,28 @@ fun SliderScale(
 
                     if (primaryIndicator) {
                         Box(
-                            primaryLineModifier
-                                .width(2.dp)
-                                .height(20.dp)
+                            primaryIndicatorModifier
+                                .width(scaleDimensions.primaryIndicatorWidth)
+                                .height(scaleDimensions.primaryIndicatorHeight)
                                 .background(
-                                    color = sliderColors.thumbColor(enabled = true).value,
-                                    shape = RoundedCornerShape(4.dp)
+                                    color = sliderColors.trackColor(
+                                        enabled = true,
+                                        active = secondaryGap * i <= sliderValue
+                                    ).value,
+                                    shape = SliderScaleDefaults.primaryIndicatorShape
                                 )
                         )
                     } else {
                         Box(
-                            secondaryLineModifier
-                                .width(2.dp)
-                                .height(10.dp)
+                            secondaryIndicatorModifier
+                                .width(scaleDimensions.secondaryIndicatorWidth)
+                                .height(scaleDimensions.secondaryIndicatorHeight)
                                 .background(
-                                    color = sliderColors.thumbColor(enabled = false).value,
-                                    shape = RoundedCornerShape(4.dp)
+                                    color = sliderColors.trackColor(
+                                        enabled = true,
+                                        active = secondaryGap * i <= sliderValue
+                                    ).value,
+                                    shape = SliderScaleDefaults.secondaryIndicatorShape
                                 )
                         )
                     }
@@ -72,7 +88,10 @@ fun SliderScale(
                 steps = if (secondarySteps == 0) 0 else secondarySteps - 1,
                 valueRange = min.toFloat()..max.toFloat(),
                 value = current,
-                onValueChange = onValueChange
+                onValueChange = {
+                    sliderValue = it
+                    onValueChange(it)
+                }
             )
         }
         if (showLabel) {
@@ -96,6 +115,25 @@ fun SliderScale(
             }
         }
     }
+}
+
+data class ScaleDimensions(
+    val primaryIndicatorHeight: Dp,
+    val primaryIndicatorWidth: Dp,
+    val secondaryIndicatorHeight: Dp,
+    val secondaryIndicatorWidth: Dp,
+)
+
+object SliderScaleDefaults {
+    val scaleDimensions = ScaleDimensions(
+        primaryIndicatorHeight = 20.dp,
+        primaryIndicatorWidth = 2.dp,
+        secondaryIndicatorHeight = 10.dp,
+        secondaryIndicatorWidth = 1.dp
+    )
+
+    val primaryIndicatorShape = RoundedCornerShape(16.dp)
+    val secondaryIndicatorShape = RoundedCornerShape(4.dp)
 }
 
 @Preview

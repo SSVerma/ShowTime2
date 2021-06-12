@@ -10,16 +10,27 @@ import androidx.compose.ui.graphics.Color
 import com.ssverma.showtime.R
 
 private val DarkColorPalette = darkColors(
-    primary = blue200,
+    primary = darkGreen200,
+    primaryVariant = darkGreen800,
     secondary = yellow200,
-    surface = yellowDark
+    background = gray900,
+    surface = gray800,
+    onPrimary = gray900,
+    onSecondary = gray900,
+    onBackground = Color.White,
+    onSurface = white100,
 )
 
 private val LightColorPalette = lightColors(
-    primary = red500,
-    secondary = yellow200,
-    primaryVariant = red600,
-    onPrimary = Color.Black
+    primary = blue600,
+    primaryVariant = blue800,
+    secondary = green600,
+    background = Color.White,
+    surface = white100,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onBackground = gray900,
+    onSurface = gray900,
 )
 
 private val LightImages = Images(errorIllustration = R.drawable.illustration_error_light)

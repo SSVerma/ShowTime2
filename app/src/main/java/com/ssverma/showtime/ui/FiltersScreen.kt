@@ -3,7 +3,10 @@ package com.ssverma.showtime.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.ExtendedFloatingActionButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,11 +32,12 @@ fun FiltersScreen(
     Box(modifier) {
         FilterContent(filterGroups, filterState)
         ExtendedFloatingActionButton(
-            text = { Text(text = stringResource(id = R.string.apply)) },
+            text = {
+                Text(text = stringResource(id = R.string.apply), color = MaterialTheme.colors.onSecondary)
+                   },
             onClick = {
                 onFilterApplied(filterState.asDiscoverMap())
             },
-            backgroundColor = MaterialTheme.colors.secondary,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .height(ApplyButtonHeight)
@@ -69,11 +73,6 @@ fun FilterContent(filterGroups: List<FilterGroup>, filterState: FilterState) {
                             primaryGap = group.rangeFilter.primaryGap,
                             min = group.rangeFilter.min,
                             max = group.rangeFilter.max,
-                            sliderColors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colors.surface,
-                                activeTrackColor = MaterialTheme.colors.surface
-                            ),
-                            labelTextStyle = MaterialTheme.typography.caption.copy(color = MaterialTheme.colors.surface),
                             modifier = Modifier.padding(horizontal = 16.dp),
                             current = filterState.of(group).toValue?.toFloat() ?: 0f,
                             onValueChange = {
@@ -105,14 +104,15 @@ private fun FilterGroupItem(
         Text(
             text = title,
             style = MaterialTheme.typography.h6,
-            color = MaterialTheme.colors.surface,
+            color = MaterialTheme.colors.onSurface,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
         )
         content()
         Spacer(modifier = Modifier.height(16.dp))
         if (showDivider) {
             Divider(
-                color = MaterialTheme.colors.surface.copy(alpha = 0.37f)
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.37f),
+                thickness = 0.5.dp
             )
         }
     }

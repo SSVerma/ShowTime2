@@ -19,13 +19,14 @@ fun NonSelectedFilterChip(
     Chip(
         modifier = modifier,
         shape = RoundedCornerShape(50),
-        border = BorderStroke(width = 2.dp, color = MaterialTheme.colors.surface),
-        backgroundColor = MaterialTheme.colors.primary
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.56f)
+        ),
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.subtitle1,
-            color = MaterialTheme.colors.surface
+            style = MaterialTheme.typography.subtitle1
         )
     }
 }
@@ -38,12 +39,12 @@ fun SelectedFilterChip(
     DefaultSelectedChip(
         modifier = modifier,
         shape = RoundedCornerShape(50),
-        backgroundColor = MaterialTheme.colors.surface,
+        backgroundColor = MaterialTheme.colors.primary
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.onSurface
+            color = MaterialTheme.colors.onPrimary
         )
     }
 }
