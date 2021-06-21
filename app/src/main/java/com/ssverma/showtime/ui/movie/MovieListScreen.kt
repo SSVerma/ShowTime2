@@ -48,7 +48,8 @@ data class MovieListLaunchable(
 @Composable
 fun MovieListScreen(
     viewModel: MovieListViewModel,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    openMovieDetails: (movieId: Int) -> Unit
 ) {
     val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
 
@@ -88,7 +89,13 @@ fun MovieListScreen(
         },
         frontLayerContent = {
             PagedContent(pagingItems = moviePagingItems) {
-                MoviesGrid(moviePagingItems = it, viewModel.listingType)
+                MoviesGrid(
+                    moviePagingItems = it,
+                    type = viewModel.listingType,
+                    openMovieDetails = { movie ->
+                        openMovieDetails(movie)
+                    }
+                )
             }
         },
         headerHeight = BackdropScaffoldDefaults.HeaderHeight + BackdropScaffoldDefaults.HeaderHeight,
@@ -156,7 +163,11 @@ private fun MovieListAppBar(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MoviesGrid(moviePagingItems: LazyPagingItems<Movie>, type: MovieListingType) {
+fun MoviesGrid(
+    moviePagingItems: LazyPagingItems<Movie>,
+    type: MovieListingType,
+    openMovieDetails: (movieId: Int) -> Unit
+) {
     PagedGrid(
         pagingItems = moviePagingItems,
         contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp)
@@ -168,7 +179,8 @@ fun MoviesGrid(moviePagingItems: LazyPagingItems<Movie>, type: MovieListingType)
                 .fillMaxWidth()
                 .padding(end = 12.dp, bottom = 12.dp),
             titleMaxLines = 2,
-            indicator = { Indicator(type = type, movie = it) }
+            indicator = { Indicator(type = type, movie = it) },
+            onClick = { openMovieDetails(it.id) }
         )
     }
 }

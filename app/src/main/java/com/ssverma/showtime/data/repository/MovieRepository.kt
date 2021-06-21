@@ -27,6 +27,12 @@ class MovieRepository @Inject constructor(
         ).flow
     }
 
+    fun fetchMockMovieDetails(): Flow<Result<Movie>> {
+        return makeTmdbApiRequest {
+            tmdbApiService.getMockMovieDetails()
+        }.asDomainFlow { it.payload.asMovie() }
+    }
+
     fun discoverMoviesGradually(queryMap: Map<String, String> = emptyMap()): Flow<PagingData<Movie>> {
         return Pager(
             config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
@@ -76,9 +82,9 @@ class MovieRepository @Inject constructor(
         }
     }
 
-    fun fetchMovie(movieId: Int): Flow<Result<Movie>> {
+    fun fetchMovieDetails(movieId: Int, queryMap: Map<String, String>): Flow<Result<Movie>> {
         return makeTmdbApiRequest {
-            tmdbApiService.getMovie(movieId = movieId)
+            tmdbApiService.getMovieDetails(movieId = movieId, queryMap = queryMap)
         }.asDomainFlow {
             it.payload.asMovie()
         }

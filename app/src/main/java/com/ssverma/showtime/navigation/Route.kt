@@ -82,6 +82,10 @@ class ActualRoute private constructor(
             return this
         }
 
+        fun <T : Number> mandatoryArg(key: String, value: T): ActualRouteBuilder {
+            return this.mandatoryArg(key, value.toString())
+        }
+
         fun optionalArg(key: String, value: String?): ActualRouteBuilder {
             this.optionalArgs[key] = value
             return this

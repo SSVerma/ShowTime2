@@ -4,9 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -104,4 +105,45 @@ fun AppTopAppBar(
         elevation = elevation,
         modifier = modifier
     )
+}
+
+@Composable
+fun Emphasize(
+    contentAlpha: Float = ContentAlpha.medium,
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(LocalContentAlpha provides contentAlpha) {
+        content()
+    }
+}
+
+@Composable
+fun Avatar(
+    imageUrl: String,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    contentScale: ContentScale = ContentScale.Crop,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .border(
+                width = 2.dp,
+                color = MaterialTheme.colors.primaryVariant,
+                shape = CircleShape
+            )
+            .padding(4.dp)
+            .clip(CircleShape)
+            .clickable { onClick() }
+    ) {
+        NetworkImage(
+            url = imageUrl,
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+        )
+    }
 }

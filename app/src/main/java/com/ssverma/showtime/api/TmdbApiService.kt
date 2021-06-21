@@ -13,12 +13,16 @@ interface TmdbApiService {
     @GET("https://demo3320320.mockable.io/movies")
     suspend fun getMockMovies(@Query("page") page: Int): Response<PagedPayload<RemoteMovie>>
 
+    @GET("https://demo3320320.mockable.io/movieDetails")
+    suspend fun getMockMovieDetails(): Response<RemoteMovie>
+
     @GET("3/movie/latest")
     suspend fun getLatestMovie(): Response<RemoteMovie>
 
     @GET("3/movie/{movieId}")
-    suspend fun getMovie(
-        @Path("movieId") movieId: Int
+    suspend fun getMovieDetails(
+        @Path("movieId") movieId: Int,
+        @QueryMap queryMap: Map<String, String>,
     ): Response<RemoteMovie>
 
     @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.MOVIE}/{timeWindow}")
@@ -39,7 +43,7 @@ interface TmdbApiService {
 
     @GET("4/discover/movie")
     suspend fun getDiscoveredMovies(
-        @QueryMap(encoded = false) queryMap: Map<String, String>,
+        @QueryMap queryMap: Map<String, String>,
         @Query("page", encoded = false) page: Int = 1
     ): Response<PagedPayload<RemoteMovie>>
 

@@ -94,4 +94,28 @@ sealed class AppDestination(
             )
         }
     }
+
+    object MovieDetails : DependentDestination<Int>("movie") {
+        const val ArgMovieId = "movieId"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(ArgMovieId)
+                .build()
+        }
+
+        override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(ArgMovieId, input)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(ArgMovieId) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
 }

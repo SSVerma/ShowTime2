@@ -23,13 +23,15 @@ fun MovieItem(
     modifier: Modifier = Modifier,
     indicator: (@Composable () -> Unit)? = null,
     onOverflowIconClick: (() -> Unit)? = null,
-    titleMaxLines: Int = 1
+    titleMaxLines: Int = 1,
+    onClick: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
         MoviePoster(
             posterImageUrl = posterImageUrl,
             indicator = indicator,
             onOverflowIconClick = onOverflowIconClick,
+            onClick = onClick,
             modifier = Modifier
                 .width(DefaultMoviePosterWidth)
                 .aspectRatio(TmdbPosterAspectRatio)
@@ -45,14 +47,19 @@ fun MovieItem(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MoviePoster(
     posterImageUrl: String,
     modifier: Modifier = Modifier,
     indicator: (@Composable () -> Unit)? = null,
-    onOverflowIconClick: (() -> Unit)? = null
+    onOverflowIconClick: (() -> Unit)? = null,
+    onClick: () -> Unit,
 ) {
-    Card(modifier = modifier) {
+    Card(
+        modifier = modifier,
+        onClick = onClick
+    ) {
         Box {
             NetworkImage(
                 url = posterImageUrl,
@@ -121,3 +128,4 @@ fun ScoreIndicator(score: Float) {
 
 private val DefaultMoviePosterWidth = 200.dp
 private const val TmdbPosterAspectRatio = 1 / 1.5f
+const val TmdbBackdropAspectRatio = 16 / 9f

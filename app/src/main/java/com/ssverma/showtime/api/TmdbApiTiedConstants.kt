@@ -1,7 +1,13 @@
 package com.ssverma.showtime.api
 
+import com.ssverma.showtime.utils.CoreUtils
+
 const val TMDB_API_PAGE_SIZE = 20
 const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500" //TODO: Fetch from configs
+
+fun String?.convertToFullTmdbImageUrl(): String {
+    return CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, this)
+}
 
 object TmdbApiTiedConstants {
 
@@ -75,4 +81,23 @@ object TmdbApiTiedConstants {
         const val withKeywords = "with_keywords"
         const val sortBy = "sort_by"
     }
+
+    object AvailableVideoSites {
+        const val Youtube = "YouTube"
+        const val Vimeo = "Vimeo"
+    }
+
+    object MovieDetailsAppendableResponseTypes {
+        const val Keywords = "keywords"
+        const val Credits = "credits"
+        const val Images = "images"
+        const val Videos = "videos"
+        const val Lists = "lists"
+        const val Reviews = "reviews"
+        const val Similar = "similar"
+    }
+
+    const val MovieDetailsAppendToResponse = "append_to_response"
 }
+
+//append_to_response=keywords,alternative_titles,changes,credits,images,keywords,lists,releases,reviews,similar,translations,videos

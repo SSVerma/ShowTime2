@@ -32,18 +32,21 @@ import com.ssverma.showtime.ui.home.HomeViewModel
 @Composable
 fun MovieScreen(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit
+    openMovieList: (launchable: MovieListLaunchable) -> Unit,
+    openMovieDetails: (movieId: Int) -> Unit
 ) {
     MovieContent(
         viewModel = viewModel,
-        onNavigateToMovieList = onNavigateToMovieList
+        openMovieList = openMovieList,
+        openMovieDetails = openMovieDetails
     )
 }
 
 @Composable
 private fun MovieContent(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit
+    openMovieList: (launchable: MovieListLaunchable) -> Unit,
+    openMovieDetails: (movieId: Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -51,7 +54,12 @@ private fun MovieContent(
             .verticalScroll(state = rememberScrollState())
             .animateContentSize()
     ) {
-        HeaderSection(viewModel = viewModel, onNavigateToMovieList = onNavigateToMovieList)
+
+        HeaderSection(
+            viewModel = viewModel,
+            onNavigateToMovieList = openMovieList,
+            openMovieDetails = openMovieDetails
+        )
 
         //Popular
         MoviesSection(
@@ -59,7 +67,7 @@ private fun MovieContent(
             sectionTitleRes = R.string.popuplar,
             subtitleRes = R.string.popular_info,
             onViewAllClicked = {
-                onNavigateToMovieList(
+                openMovieList(
                     MovieListLaunchable(
                         listingType = MovieListingType.Popular,
                         titleRes = R.string.popuplar
@@ -70,7 +78,8 @@ private fun MovieContent(
             MovieItem(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
-                indicator = { ValueIndicator(value = it.displayPopularity) }
+                indicator = { ValueIndicator(value = it.displayPopularity) },
+                onClick = { openMovieDetails(it.id) }
             )
         }
 
@@ -79,7 +88,7 @@ private fun MovieContent(
             liveMovies = viewModel.topRatedMovies,
             sectionTitleRes = R.string.top_rated,
             onViewAllClicked = {
-                onNavigateToMovieList(
+                openMovieList(
                     MovieListLaunchable(
                         listingType = MovieListingType.TopRated,
                         titleRes = R.string.top_rated
@@ -90,7 +99,8 @@ private fun MovieContent(
             MovieItem(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
-                indicator = { ScoreIndicator(score = it.voteAvgPercentage) }
+                indicator = { ScoreIndicator(score = it.voteAvgPercentage) },
+                onClick = { openMovieDetails(it.id) }
             )
         }
 
@@ -99,7 +109,7 @@ private fun MovieContent(
             liveMovies = viewModel.nowInCinemasMovies,
             sectionTitleRes = R.string.now_in_cinemas,
             onViewAllClicked = {
-                onNavigateToMovieList(
+                openMovieList(
                     MovieListLaunchable(
                         listingType = MovieListingType.NowInCinemas,
                         titleRes = R.string.now_in_cinemas
@@ -109,7 +119,8 @@ private fun MovieContent(
         ) {
             MovieItem(
                 title = it.title,
-                posterImageUrl = it.posterImageUrl
+                posterImageUrl = it.posterImageUrl,
+                onClick = { openMovieDetails(it.id) }
             )
         }
 
@@ -118,7 +129,7 @@ private fun MovieContent(
             liveMovies = viewModel.upcomingMovies,
             sectionTitleRes = R.string.upcoming,
             onViewAllClicked = {
-                onNavigateToMovieList(
+                openMovieList(
                     MovieListLaunchable(
                         listingType = MovieListingType.Upcoming,
                         titleRes = R.string.upcoming
@@ -133,7 +144,8 @@ private fun MovieContent(
                     it.displayReleaseDate?.let { date ->
                         ValueIndicator(value = date)
                     }
-                }
+                },
+                onClick = { openMovieDetails(it.id) }
             )
         }
         Spacer(modifier = Modifier.height(FooterSpacerHeight))
@@ -184,7 +196,8 @@ fun MoviesSection(
 @Composable
 fun HeaderSection(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit
+    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit,
+    openMovieDetails: (movieId: Int) -> Unit
 ) {
     val blurColor = MaterialTheme.colors.background
     val scrimColor = MaterialTheme.colors.onBackground
@@ -248,7 +261,8 @@ fun HeaderSection(
             ) {
                 MovieItem(
                     title = it.title,
-                    posterImageUrl = it.posterImageUrl
+                    posterImageUrl = it.posterImageUrl,
+                    onClick = { openMovieDetails(it.id) }
                 )
             }
         }

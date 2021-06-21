@@ -6,8 +6,8 @@ class RemoteMovie(
     @SerializedName("id")
     val id: Int,
 
-    @SerializedName("tmdb_id")
-    val tmdbId: String?,
+    @SerializedName("imdb_id")
+    val imdbId: String?,
 
     @SerializedName("backdrop_path")
     val backdropPath: String?,
@@ -23,6 +23,9 @@ class RemoteMovie(
 
     @SerializedName("tagline")
     val tagline: String?,
+
+    @SerializedName("overview")
+    val overview: String?,
 
     @SerializedName("status")
     val status: String?,
@@ -46,5 +49,32 @@ class RemoteMovie(
     val runtime: Int,
 
     @SerializedName("popularity")
-    val popularity: Float
+    val popularity: Float,
+
+    @SerializedName("original_language")
+    val originalLanguage: String?,
+
+    @SerializedName("credits")
+    val credit: RemoteCredit?,
+
+    @SerializedName("keywords")
+    val keywordPayload: KeywordPayload?,
+
+    @SerializedName("images")
+    val imagePayload: ImagePayload?,
+
+    @SerializedName("videos")
+    val videoPayload: VideoPayload?,
+
+    @SerializedName("generes")
+    val genres: List<RemoteGenre>?,
+
+    @SerializedName("belongs_to_collection")
+    val collection: RemoteMovieCollection?,
+
+    @SerializedName("reviews")
+    val reviews: PagedPayload<RemoteReview>?,
+
+    @SerializedName("similar")
+    val similarMovies: PagedPayload<RemoteMovie>?
 )

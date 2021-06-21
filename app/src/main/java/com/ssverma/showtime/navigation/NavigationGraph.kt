@@ -10,9 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ssverma.showtime.ui.home.HomeViewModel
 import com.ssverma.showtime.ui.library.LibraryScreen
-import com.ssverma.showtime.ui.movie.MovieListScreen
-import com.ssverma.showtime.ui.movie.MovieListViewModel
-import com.ssverma.showtime.ui.movie.MovieScreen
+import com.ssverma.showtime.ui.movie.*
 import com.ssverma.showtime.ui.people.PeopleScreen
 import com.ssverma.showtime.ui.tv.TvShowScreen
 
@@ -42,8 +40,11 @@ fun ShowTimeNavHost(
                 )
                 MovieScreen(
                     viewModel = viewModel,
-                    onNavigateToMovieList = { launchable ->
+                    openMovieList = { launchable ->
                         navController.navigateTo(AppDestination.MovieList.actualRoute(launchable))
+                    },
+                    openMovieDetails = { movieId ->
+                        navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
                     }
                 )
             }
@@ -66,7 +67,22 @@ fun ShowTimeNavHost(
 
             MovieListScreen(
                 viewModel = viewModel,
-                onBackPressed = { navController.popBackStack() }
+                onBackPressed = { navController.popBackStack() },
+                openMovieDetails = { movieId ->
+                    navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
+                }
+            )
+        }
+
+        composable(AppDestination.MovieDetails) {
+            val viewModel = hiltViewModel<MovieDetailsViewModel>(it)
+
+            MovieDetailsScreen(
+                viewModel = viewModel,
+                onBackPressed = { navController.popBackStack() },
+                openMovieDetails = { movieId ->
+                    navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
+                }
             )
         }
     }
@@ -96,7 +112,9 @@ private fun NavGraphBuilder.navigation(
 }
 
 fun NavController.navigateTo(route: ActualRoute) {
-    navigate(route = route.asRoutableString())
+    navigate(route = route.asRoutableString()) {
+        saveState()
+    }
 }
 
 fun NavController.navigateTo(route: ActualRoute, builder: NavOptionsBuilder.() -> Unit) {
