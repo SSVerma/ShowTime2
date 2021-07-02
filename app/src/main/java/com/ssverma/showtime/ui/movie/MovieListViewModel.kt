@@ -60,8 +60,8 @@ class MovieListViewModel @Inject constructor(
             else -> {
                 movieRepository.discoverMoviesGradually(appliedFilters.value)
             }
-        }.cachedIn(viewModelScope)
-    }
+        }
+    }.cachedIn(viewModelScope)
 
     val filters = movieRepository.loadMovieFilters()
 

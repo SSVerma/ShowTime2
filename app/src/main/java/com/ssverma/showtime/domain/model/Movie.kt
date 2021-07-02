@@ -82,5 +82,16 @@ suspend fun List<RemoteMovie>.asMovies(): List<Movie> {
 }
 
 fun Movie.imageShots(): List<ImageShot> {
-    return (posters + backdrops).shuffled()
+    return (backdrops + posters)
+}
+
+fun Movie.topImageShots(
+    max: Int = 9,
+    from: List<ImageShot> = imageShots(),
+): List<ImageShot> {
+    return if (from.size <= max) {
+        from
+    } else {
+        from.subList(0, max)
+    }
 }

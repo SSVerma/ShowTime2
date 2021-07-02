@@ -85,7 +85,7 @@ fun AppTopAppBar(
     modifier: Modifier = Modifier,
     @DrawableRes navIconRes: Int = R.drawable.ic_arrow_back,
     actions: @Composable RowScope.() -> Unit = {},
-    backgroundColor: Color = MaterialTheme.colors.surface,
+    backgroundColor: Color = MaterialTheme.colors.background,
     contentColor: Color = contentColorFor(backgroundColor = backgroundColor),
     elevation: Dp = AppBarDefaults.TopAppBarElevation
 ) {

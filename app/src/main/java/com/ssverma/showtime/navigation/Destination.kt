@@ -35,10 +35,12 @@ abstract class DependentDestination<T>(override val identifier: String) : Destin
     abstract fun arguments(): List<NamedNavArgument>
 }
 
+abstract class GraphDestination(override val identifier: String): StandaloneDestination(identifier)
+
 sealed class AppDestination(
     override val identifier: String
 ) : Destination {
-    object Home : StandaloneDestination("home")
+    object Home : GraphDestination("home")
 
     sealed class HomeBottomNavDestination(identifier: String) : StandaloneDestination(identifier) {
         object Movie : HomeBottomNavDestination("home/movie")
@@ -117,5 +119,34 @@ sealed class AppDestination(
                 },
             )
         }
+    }
+
+    object MovieDetailsGraph : GraphDestination("movieInfo")
+
+    object ImageShots : StandaloneDestination("shots/image")
+
+    object ImagePager : DependentDestination<Int>("imagePager") {
+        const val PageIndex = "pageIndex"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(PageIndex)
+                .build()
+        }
+
+        override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(PageIndex, input)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(PageIndex) {
+                    type = NavType.IntType
+                },
+            )
+        }
+
     }
 }

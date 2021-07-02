@@ -160,7 +160,7 @@ fun MoviesSection(
     modifier: Modifier = Modifier,
     @StringRes subtitleRes: Int = 0,
     leadingIconUrl: String? = null,
-    onViewAllClicked: (() -> Unit)? = null,
+    onViewAllClicked: () -> Unit = {},
     content: @Composable (movie: Movie) -> Unit
 ) {
 

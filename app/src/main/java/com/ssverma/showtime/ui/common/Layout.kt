@@ -7,17 +7,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Dp
 import kotlin.math.ceil
+import kotlin.math.min
 
 @Composable
 fun <T> VerticalGrid(
     items: List<T>,
     @IntRange(from = 1) columnCount: Int,
     modifier: Modifier = Modifier,
+    max: Int = items.size,
     verticalArrangement: Arrangement.Vertical = Arrangement.SpaceEvenly,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceEvenly,
     itemContent: @Composable (index: Int, item: T) -> Unit
 ) {
-    val rowCount = ceil(items.size / columnCount.toDouble()).toInt()
+    val rowCount = ceil(min(max, items.size) / columnCount.toDouble()).toInt()
 
     Column(
         modifier = modifier,

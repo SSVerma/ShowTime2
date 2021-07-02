@@ -18,8 +18,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -39,13 +42,22 @@ import com.ssverma.showtime.ui.common.*
 fun MovieDetailsScreen(
     viewModel: MovieDetailsViewModel,
     onBackPressed: () -> Unit,
-    openMovieDetails: (movieId: Int) -> Unit
+    openMovieDetails: (movieId: Int) -> Unit,
+    openImageShotsList: () -> Unit,
+    openImageShot: (pageIndex: Int) -> Unit
 ) {
     Surface(
         color = MaterialTheme.colors.background
     ) {
-        DriveCompose(observable = viewModel.liveMockMovie) {
-            MovieContent(it, onBackPressed, openMovieDetails)
+        DriveCompose(observable = viewModel.liveMovieDetails) {
+            MovieContent(
+                movie = it,
+                viewModel = viewModel,
+                onBackPressed = onBackPressed,
+                openMovieDetails = openMovieDetails,
+                openImageShotsList = openImageShotsList,
+                openImageShot = openImageShot
+            )
         }
     }
 }
@@ -53,10 +65,15 @@ fun MovieDetailsScreen(
 @Composable
 fun MovieContent(
     movie: Movie,
+    viewModel: MovieDetailsViewModel,
     onBackPressed: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
+    openImageShotsList: () -> Unit,
+    openImageShot: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val imageShots by viewModel.imageShots.observeAsState(emptyList())
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -131,7 +148,9 @@ fun MovieContent(
         /*Image shots*/
         item {
             ImageShotsSection(
-                images = movie.backdrops,
+                imageShots = imageShots,
+                openImageShotsList = openImageShotsList,
+                openImageShot = openImageShot,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
@@ -311,7 +330,10 @@ fun OverviewSection(
 ) {
     Section(
         sectionHeader = {
-            SectionHeader(title = stringResource(id = R.string.overview))
+            SectionHeader(
+                title = stringResource(id = R.string.overview),
+                hideTrailingAction = true
+            )
         },
         hideIf = overview.isEmpty(),
         headerContentSpacing = SectionContentHeaderSpacing,
@@ -374,55 +396,67 @@ fun HighlightItem(
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun ImageShotsSection(
-    images: List<ImageShot>,
+    imageShots: List<ImageShot>,
+    openImageShotsList: () -> Unit,
+    openImageShot: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-    val topShots = remember {
-        if (images.size <= MaxImageShots) {
-            images
-        } else {
-            images.subList(0, MaxImageShots)
-        }
-    }
 
     Section(
         sectionHeader = {
             SectionHeader(
                 title = stringResource(id = R.string.shots),
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onTrailingActionClicked = {
-                    //TODO
-                }
+                onTrailingActionClicked = openImageShotsList,
+                hideTrailingAction = imageShots.size <= MaxImageShots
             )
         },
         headerContentSpacing = SectionContentHeaderSpacing,
-        hideIf = topShots.isEmpty(),
+        hideIf = imageShots.isEmpty(),
         modifier = modifier
     ) {
         VerticalGrid(
-            items = topShots,
+            items = imageShots,
             columnCount = 3,
+            max = MaxImageShots,
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.padding(horizontal = 16.dp)
-        ) { _, item ->
-            Card(
-                shape = MaterialTheme.shapes.medium.copy(CornerSize(16.dp)),
-                elevation = 0.dp,
-                onClick = {
-                    //
-                },
+        ) { index, item ->
+            ImageShotItem(
+                imageShot = item,
+                onClick = { openImageShot(index) },
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .aspectRatio(item.aspectRatio)
-            ) {
-                NetworkImage(
-                    url = item.imageUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+                    .aspectRatio(imageShots.first().aspectRatio)
+            )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ImageShotItem(
+    imageShot: ImageShot,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colors.surface,
+    contentScale: ContentScale = ContentScale.Fit,
+    shape: Shape = MaterialTheme.shapes.medium.copy(CornerSize(16.dp))
+) {
+    Card(
+        shape = shape,
+        elevation = 0.dp,
+        onClick = onClick,
+        modifier = modifier,
+        backgroundColor = backgroundColor
+    ) {
+        NetworkImage(
+            url = imageShot.imageUrl,
+            contentDescription = null,
+            contentScale = contentScale,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
@@ -433,14 +467,6 @@ fun VideoShotsSection(
     modifier: Modifier = Modifier
 ) {
 
-    val topShots = remember {
-        if (videos.size <= MaxVideoShots) {
-            videos
-        } else {
-            videos.subList(0, MaxVideoShots)
-        }
-    }
-
     Section(
         sectionHeader = {
             SectionHeader(
@@ -450,14 +476,16 @@ fun VideoShotsSection(
                 onTrailingActionClicked = {
                     //TODO
                 },
+                hideTrailingAction = videos.size <= MaxVideoShots
             )
         },
-        hideIf = topShots.isNullOrEmpty(),
+        hideIf = videos.isNullOrEmpty(),
         modifier = modifier
     ) {
         VerticalGrid(
-            items = topShots,
+            items = videos,
             columnCount = 2,
+            max = MaxVideoShots,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -536,7 +564,8 @@ fun ReviewsSection(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 onTrailingActionClicked = {
                     //TODO
-                }
+                },
+                hideTrailingAction = reviews.size <= MaxReviews
             )
         },
         hideIf = reviews.isEmpty(),
@@ -591,7 +620,6 @@ fun ReviewItem(
                     .animateContentSize()
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -600,22 +628,30 @@ fun ReviewItem(
                         stringResource(id = R.string.unknown) else review.author.name
 
                     /*Author*/
-                    Text(
-                        text = authorName,
-                        style = MaterialTheme.typography.subtitle1.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colors.primary.copy(alpha = 0.16f),
-                                shape = MaterialTheme.shapes.medium
-                            )
-                            .padding(horizontal = 4.dp)
-                    )
+                    BoxWithConstraints {
+                        Text(
+                            text = authorName,
+                            style = MaterialTheme.typography.subtitle1.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .background(
+                                    color = MaterialTheme.colors.primary.copy(alpha = 0.16f),
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .padding(horizontal = 4.dp)
+                                .widthIn(max = maxWidth / 2)
+                        )
+                    }
 
                     /*Timestamp*/
                     review.displayCreatedAt?.let {
-                        Text(text = it, style = MaterialTheme.typography.caption)
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.caption,
+                            textAlign = TextAlign.End
+                        )
                     }
                 }
 
@@ -652,22 +688,44 @@ fun CreditSection(
         modifier = modifier
     ) {
         HorizontalList(items = casts) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Avatar(
-                    imageUrl = it.avatarImageUrl,
-                    onClick = {
-                        //TODO
-                    },
-                    modifier = Modifier.size(80.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = it.name, style = MaterialTheme.typography.body1)
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(text = it.character, style = MaterialTheme.typography.caption)
-            }
+            CastItem(
+                cast = it,
+                onClick = {},
+                modifier = Modifier.width(104.dp)
+            )
         }
+    }
+}
+
+@Composable
+fun CastItem(
+    cast: Cast,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Avatar(
+            imageUrl = cast.avatarImageUrl,
+            onClick = onClick,
+            modifier = Modifier.size(80.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = cast.name,
+            style = MaterialTheme.typography.body1,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = cast.character,
+            style = MaterialTheme.typography.caption,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -682,9 +740,7 @@ fun SimilarMoviesSection(
             SectionHeader(
                 title = stringResource(id = R.string.similar_movies),
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onTrailingActionClicked = {
-                    //TODO
-                }
+                hideTrailingAction = true
             )
         },
         headerContentSpacing = SectionContentHeaderSpacing,
@@ -707,5 +763,5 @@ private val SurfaceCornerRoundSize = 12.dp
 private val SectionVerticalSpacing = 32.dp
 private val SectionContentHeaderSpacing = 16.dp
 private const val MaxImageShots = 9
-private const val MaxVideoShots = 6
+private const val MaxVideoShots = 4
 private const val MaxReviews = 3

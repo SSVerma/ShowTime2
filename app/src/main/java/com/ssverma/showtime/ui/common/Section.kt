@@ -53,7 +53,8 @@ fun SectionHeader(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     leadingIconUrl: String? = null,
-    onTrailingActionClicked: (() -> Unit)? = null,
+    onTrailingActionClicked: () -> Unit = {},
+    hideTrailingAction: Boolean = false,
     @StringRes trailingActionTextRes: Int = R.string.see_all,
     textColor: Color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
 ) {
@@ -94,8 +95,8 @@ fun SectionHeader(
             }
         },
         trailingContent = {
-            onTrailingActionClicked?.let {
-                TextButton(onClick = it) {
+            if (!hideTrailingAction) {
+                TextButton(onClick = onTrailingActionClicked) {
                     Text(text = stringResource(id = trailingActionTextRes))
                 }
             }

@@ -84,8 +84,10 @@ dependencies {
     implementation "androidx.paging:paging-compose:1.0.0-alpha10"
 
     /*Compose Utils*/
-    implementation "com.google.accompanist:accompanist-coil:0.12.0"
-    implementation "com.google.accompanist:accompanist-insets:0.12.0"
+    implementation "com.google.accompanist:accompanist-coil:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
 
     /*DI*/
     implementation "com.google.dagger:hilt-android:2.36"

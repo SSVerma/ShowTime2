@@ -47,6 +47,6 @@ fun DefaultImagePlaceHolder() {
     Spacer(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.54f))
+            .background(MaterialTheme.colors.surface.copy(alpha = 0.54f))
     )
 }
