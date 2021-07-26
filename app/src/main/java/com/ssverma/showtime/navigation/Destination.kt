@@ -35,7 +35,7 @@ abstract class DependentDestination<T>(override val identifier: String) : Destin
     abstract fun arguments(): List<NamedNavArgument>
 }
 
-abstract class GraphDestination(override val identifier: String): StandaloneDestination(identifier)
+abstract class GraphDestination(override val identifier: String) : StandaloneDestination(identifier)
 
 sealed class AppDestination(
     override val identifier: String
@@ -123,6 +123,30 @@ sealed class AppDestination(
 
     object MovieDetailsGraph : GraphDestination("movieInfo")
 
+    object MovieReviews : DependentDestination<Int>("movie/reviews") {
+        const val MovieId = "movieId"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(MovieId)
+                .build()
+        }
+
+        override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(MovieId, input)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(MovieId) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
+
     object ImageShots : StandaloneDestination("shots/image")
 
     object ImagePager : DependentDestination<Int>("imagePager") {
@@ -147,6 +171,5 @@ sealed class AppDestination(
                 },
             )
         }
-
     }
 }

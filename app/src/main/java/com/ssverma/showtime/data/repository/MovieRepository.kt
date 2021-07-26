@@ -10,6 +10,7 @@ import com.ssverma.showtime.api.makeTmdbApiRequest
 import com.ssverma.showtime.data.FilterGroup
 import com.ssverma.showtime.data.movieFilterGroups
 import com.ssverma.showtime.data.remote.MoviePagingSource
+import com.ssverma.showtime.data.remote.ReviewsPagingSource
 import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.extension.asDomainFlow
@@ -137,5 +138,16 @@ class MovieRepository @Inject constructor(
         return flow {
             emit(movieFilterGroups())
         }
+    }
+
+    fun fetchMovieReviewsGradually(movieId: Int): Flow<PagingData<Review>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                ReviewsPagingSource { page ->
+                    tmdbApiService.getMovieReviews(movieId = movieId, page = page)
+                }
+            }
+        ).flow
     }
 }

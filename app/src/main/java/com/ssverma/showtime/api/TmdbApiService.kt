@@ -3,6 +3,7 @@ package com.ssverma.showtime.api
 import com.ssverma.showtime.data.remote.response.GenrePayload
 import com.ssverma.showtime.data.remote.response.PagedPayload
 import com.ssverma.showtime.data.remote.response.RemoteMovie
+import com.ssverma.showtime.data.remote.response.RemoteReview
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -49,4 +50,10 @@ interface TmdbApiService {
 
     @GET("3/genre/movie/list")
     suspend fun getMovieGenres(): Response<GenrePayload>
+
+    @GET("3/movie/{movieId}/reviews")
+    suspend fun getMovieReviews(
+        @Path("movieId") movieId: Int,
+        @Query("page") page: Int
+    ): Response<PagedPayload<RemoteReview>>
 }

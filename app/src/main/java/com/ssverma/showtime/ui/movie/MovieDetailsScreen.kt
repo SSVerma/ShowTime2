@@ -44,7 +44,8 @@ fun MovieDetailsScreen(
     onBackPressed: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openImageShotsList: () -> Unit,
-    openImageShot: (pageIndex: Int) -> Unit
+    openImageShot: (pageIndex: Int) -> Unit,
+    openReviewsList: (movieId: Int) -> Unit
 ) {
     Surface(
         color = MaterialTheme.colors.background
@@ -56,7 +57,8 @@ fun MovieDetailsScreen(
                 onBackPressed = onBackPressed,
                 openMovieDetails = openMovieDetails,
                 openImageShotsList = openImageShotsList,
-                openImageShot = openImageShot
+                openImageShot = openImageShot,
+                openReviewsList = { openReviewsList(it.id) }
             )
         }
     }
@@ -70,6 +72,7 @@ fun MovieContent(
     openMovieDetails: (movieId: Int) -> Unit,
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
+    openReviewsList: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val imageShots by viewModel.imageShots.observeAsState(emptyList())
@@ -141,7 +144,7 @@ fun MovieContent(
         item {
             CreditSection(
                 casts = movie.casts,
-                modifier = Modifier.padding(top = SectionContentHeaderSpacing)
+                modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
 
@@ -167,6 +170,7 @@ fun MovieContent(
         item {
             ReviewsSection(
                 reviews = movie.reviews,
+                onReviewsViewAllClick = openReviewsList,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
@@ -401,7 +405,6 @@ fun ImageShotsSection(
     openImageShot: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     Section(
         sectionHeader = {
             SectionHeader(
@@ -466,35 +469,28 @@ fun VideoShotsSection(
     videos: List<Video>,
     modifier: Modifier = Modifier
 ) {
-
     Section(
         sectionHeader = {
             SectionHeader(
                 title = stringResource(id = R.string.videos),
                 subtitle = stringResource(id = R.string.video_header_subtitle),
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onTrailingActionClicked = {
-                    //TODO
-                },
-                hideTrailingAction = videos.size <= MaxVideoShots
+                hideTrailingAction = true
             )
         },
         hideIf = videos.isNullOrEmpty(),
+        headerContentSpacing = SectionContentHeaderSpacing,
         modifier = modifier
     ) {
-        VerticalGrid(
-            items = videos,
-            columnCount = 2,
-            max = MaxVideoShots,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(horizontal = 16.dp)
-        ) { _, item ->
+        HorizontalList(items = videos) {
             VideoItem(
-                video = item,
+                video = it,
                 onVideoClick = {
                     //
-                }
+                },
+                modifier = Modifier
+                    .width(VideoIteWidth)
+                    .height(VideoIteHeight)
             )
         }
     }
@@ -553,6 +549,7 @@ fun VideoItem(
 @Composable
 fun ReviewsSection(
     reviews: List<Review>,
+    onReviewsViewAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val reviewCount = if (reviews.size < MaxReviews) reviews.size else MaxReviews
@@ -562,12 +559,11 @@ fun ReviewsSection(
             SectionHeader(
                 title = stringResource(id = R.string.reviews),
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onTrailingActionClicked = {
-                    //TODO
-                },
+                onTrailingActionClicked = onReviewsViewAllClick,
                 hideTrailingAction = reviews.size <= MaxReviews
             )
         },
+        headerContentSpacing = SectionContentHeaderSpacing,
         hideIf = reviews.isEmpty(),
         modifier = modifier
     ) {
@@ -678,9 +674,7 @@ fun CreditSection(
             SectionHeader(
                 title = stringResource(id = R.string.casts),
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onTrailingActionClicked = {
-                    //TODO
-                }
+                hideTrailingAction = true
             )
         },
         headerContentSpacing = SectionContentHeaderSpacing,
@@ -763,5 +757,6 @@ private val SurfaceCornerRoundSize = 12.dp
 private val SectionVerticalSpacing = 32.dp
 private val SectionContentHeaderSpacing = 16.dp
 private const val MaxImageShots = 9
-private const val MaxVideoShots = 4
 private const val MaxReviews = 3
+private val VideoIteWidth = 200.dp
+private val VideoIteHeight = 112.5.dp

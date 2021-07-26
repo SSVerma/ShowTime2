@@ -108,8 +108,11 @@ fun ShowTimeNavHost(
                     openImageShotsList = {
                         navController.navigateTo(AppDestination.ImageShots.actualRoute)
                     },
-                    openImageShot = {
-                        navController.navigateTo(AppDestination.ImagePager.actualRoute(it))
+                    openImageShot = { index ->
+                        navController.navigateTo(AppDestination.ImagePager.actualRoute(index))
+                    },
+                    openReviewsList = { movieId ->
+                        navController.navigateTo(AppDestination.MovieReviews.actualRoute(movieId))
                     }
                 )
             }
@@ -140,6 +143,14 @@ fun ShowTimeNavHost(
                     defaultPageIndex = it.navBackStackEntry.arguments?.getInt(AppDestination.ImagePager.PageIndex)
                         ?: 0,
                     onBackPressed = { navController.popBackStack() }
+                )
+            }
+
+            composable(destination = AppDestination.MovieReviews) {
+                val viewModel = hiltViewModel<MovieReviewsViewModel>(it)
+                MovieReviewsScreen(
+                    viewModel = viewModel,
+                    onBackPress = { navController.popBackStack() }
                 )
             }
         }
