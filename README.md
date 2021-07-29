@@ -27,12 +27,10 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
   <tr>
     <td>Filter</td>
     <td>Filter</td>
-    <td>Filter Video</td>
   </tr>
   <tr>
     <td><img src="screenshots/filter_dark.png" width=270></td>
     <td><img src="screenshots/filter_light.png" width=270></td>
-    <td><img src="screenshots/filter.webm" width=270></td>
   </tr>
 </table>
 
@@ -99,7 +97,7 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
 
 ## Architecture
 
-ShowTime demonstrates uses of [***MVVM***](https://developer.android.com/jetpack/docs/guide#recommended-app-arch) architecture.
+ShowTime demonstrates uses of [MVVM](https://developer.android.com/jetpack/docs/guide#recommended-app-arch) architecture.
 
 ## API Key
 
