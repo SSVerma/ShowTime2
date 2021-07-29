@@ -70,7 +70,7 @@ suspend fun RemoteMovie.asMovie(): Movie {
         videos = videoPayload?.videos?.filterYoutubeVideos() ?: emptyList(),
         generes = genres?.asGenres() ?: emptyList(),
         movieCollection = collection?.asMovieCollection(),
-        reviews = reviews?.results?.asReviews() ?: emptyList(),
+        reviews = reviews?.results?.asReviews()?.asReversed() ?: emptyList(),
         similarMovies = similarMovies?.results?.asMovies() ?: emptyList()
     )
 }

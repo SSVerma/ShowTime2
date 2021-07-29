@@ -1,11 +1,9 @@
 package com.ssverma.showtime.ui
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -78,7 +76,6 @@ fun ImagePager(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(vertical = 16.dp, horizontal = 32.dp)
-                .horizontalScroll(rememberScrollState())
         )
     }
 

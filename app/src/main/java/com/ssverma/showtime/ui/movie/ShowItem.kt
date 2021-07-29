@@ -21,6 +21,7 @@ fun MovieItem(
     title: String,
     posterImageUrl: String,
     modifier: Modifier = Modifier,
+    posterModifier: Modifier = Modifier,
     indicator: (@Composable () -> Unit)? = null,
     onOverflowIconClick: (() -> Unit)? = null,
     titleMaxLines: Int = 1,
@@ -32,7 +33,7 @@ fun MovieItem(
             indicator = indicator,
             onOverflowIconClick = onOverflowIconClick,
             onClick = onClick,
-            modifier = Modifier
+            modifier = posterModifier
                 .width(DefaultMoviePosterWidth)
                 .aspectRatio(TmdbPosterAspectRatio)
         )
@@ -126,6 +127,6 @@ fun ScoreIndicator(score: Float) {
     }
 }
 
-private val DefaultMoviePosterWidth = 200.dp
+private val DefaultMoviePosterWidth = 140.dp
 private const val TmdbPosterAspectRatio = 1 / 1.5f
 const val TmdbBackdropAspectRatio = 16 / 9f

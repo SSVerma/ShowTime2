@@ -1,5 +1,6 @@
 package com.ssverma.showtime.ui.movie
 
+import android.app.Application
 import androidx.lifecycle.*
 import com.ssverma.showtime.api.MovieDetailsQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
@@ -10,12 +11,11 @@ import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.domain.model.imageShots
 import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-private const val MaxImageShots = 9
 
 val movieDetailsAppendable = QueryMultiValue.andBuilder()
     .and(TmdbApiTiedConstants.MovieDetailsAppendableResponseTypes.Credits)
@@ -28,8 +28,9 @@ val movieDetailsAppendable = QueryMultiValue.andBuilder()
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
     movieRepository: MovieRepository,
-    savedStateHandle: SavedStateHandle
-) : ViewModel() {
+    savedStateHandle: SavedStateHandle,
+    application: Application
+) : AndroidViewModel(application) {
 
     private val movieId = savedStateHandle.get<Int>(AppDestination.MovieDetails.ArgMovieId) ?: 0
 
@@ -49,6 +50,16 @@ class MovieDetailsViewModel @Inject constructor(
                     _liveImageShots.postValue(imageShots)
                 }
             }
+        }
+    }
+
+    fun openYoutubeApp(videoId: String) {
+        AppUtils.dispatchOpenYoutubeIntent(getApplication(), videoId)
+    }
+
+    fun onPlayTrailerClicked(movie: Movie) {
+        movie.videos.firstOrNull()?.let {
+            openYoutubeApp(it.key)
         }
     }
 }

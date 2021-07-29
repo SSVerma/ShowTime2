@@ -10,7 +10,7 @@ private const val YoutubeThumbnailUrl = "https://img.youtube.com/vi/"
 
 data class Video(
     val id: String,
-    val key: String?,
+    val key: String,
     val iso6391: String?,
     val site: String,
     val type: String
@@ -19,7 +19,7 @@ data class Video(
 fun RemoteVideo.asVideo(): Video {
     return Video(
         id = id ?: "",
-        key = key,
+        key = key ?: "",
         iso6391 = iso6391,
         site = site ?: "",
         type = type ?: ""

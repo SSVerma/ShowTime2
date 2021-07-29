@@ -58,7 +58,10 @@ fun MovieDetailsScreen(
                 openMovieDetails = openMovieDetails,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
-                openReviewsList = { openReviewsList(it.id) }
+                openReviewsList = { openReviewsList(it.id) },
+                openYoutube = { videoId ->
+                    viewModel.openYoutubeApp(videoId = videoId)
+                }
             )
         }
     }
@@ -73,6 +76,7 @@ fun MovieContent(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: () -> Unit,
+    openYoutube: (videoId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val imageShots by viewModel.imageShots.observeAsState(emptyList())
@@ -87,7 +91,8 @@ fun MovieContent(
         item {
             BackdropHeader(
                 backdropImageUrl = movie.backdropImageUrl,
-                onCloseIconClick = onBackPressed
+                onCloseIconClick = onBackPressed,
+                onTrailerFabClick = { viewModel.onPlayTrailerClicked(movie) }
             )
         }
 
@@ -162,6 +167,7 @@ fun MovieContent(
         item {
             VideoShotsSection(
                 videos = movie.videos,
+                onVideoClick = { openYoutube(it.key) },
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
@@ -195,7 +201,8 @@ fun MovieContent(
 fun BackdropHeader(
     modifier: Modifier = Modifier,
     backdropImageUrl: String,
-    onCloseIconClick: () -> Unit
+    onCloseIconClick: () -> Unit,
+    onTrailerFabClick: () -> Unit,
 ) {
 
     ConstraintLayout(modifier) {
@@ -260,7 +267,7 @@ fun BackdropHeader(
 
         /*Trailer Action*/
         FloatingActionButton(
-            onClick = { /*TODO*/ },
+            onClick = onTrailerFabClick,
             modifier = Modifier
                 .padding(start = 16.dp)
                 .constrainAs(refTrailerFab) {
@@ -467,6 +474,7 @@ fun ImageShotItem(
 @Composable
 fun VideoShotsSection(
     videos: List<Video>,
+    onVideoClick: (video: Video) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Section(
@@ -486,7 +494,7 @@ fun VideoShotsSection(
             VideoItem(
                 video = it,
                 onVideoClick = {
-                    //
+                    onVideoClick(it)
                 },
                 modifier = Modifier
                     .width(VideoIteWidth)
@@ -746,7 +754,9 @@ fun SimilarMoviesSection(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
                 modifier = Modifier.width(100.dp),
-                onClick = { openMovieDetails(it.id) }
+                onClick = {
+                    openMovieDetails(it.id)
+                }
             )
         }
     }

@@ -178,6 +178,7 @@ fun MoviesGrid(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(end = 12.dp, bottom = 12.dp),
+            posterModifier = Modifier.fillMaxWidth(),
             titleMaxLines = 2,
             indicator = { Indicator(type = type, movie = it) },
             onClick = { openMovieDetails(it.id) }
