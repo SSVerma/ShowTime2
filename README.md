@@ -27,40 +27,25 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
   <tr>
     <td>Filter</td>
     <td>Filter</td>
+    <td>Filter</td>
   </tr>
   <tr>
     <td><img src="screenshots/filter_dark.png" width=270></td>
     <td><img src="screenshots/filter_light.png" width=270></td>
+    <td><img src="screenshots/filter.gif" width=270></td>
   </tr>
 </table>
 
 <table>
   <tr>
-    <td>Movie Details - 1</td>
-    <td>Movie Details - 1</td>
-    <td>Movie Details - 2</td>
-    <td>Movie Details - 2</td>
+    <td>Movie Details</td>
+    <td>Movie Details</td>
+    <td>Movie Details</td>
   </tr>
   <tr>
     <td><img src="screenshots/movie_details_1_dark.png" width=270></td>
     <td><img src="screenshots/movie_details_1_light.png" width=270></td>
-    <td><img src="screenshots/movie_details_2_dark.png" width=270></td>
-    <td><img src="screenshots/movie_details_2_light.png" width=270></td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td>Movie Details - 3</td>
-    <td>Movie Details - 3</td>
-    <td>Movie Details - 4</td>
-    <td>Movie Details - 4</td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/movie_details_3_dark.png" width=270></td>
-    <td><img src="screenshots/movie_details_3_light.png" width=270></td>
-    <td><img src="screenshots/movie_details_4_dark.png" width=270></td>
-    <td><img src="screenshots/movie_details_4_light.png" width=270></td>
+    <td><img src="screenshots/movie_details_dark.gif" width=270></td>
   </tr>
 </table>
 
