@@ -1,7 +1,10 @@
 package com.ssverma.showtime.ui
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -9,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -19,6 +23,7 @@ import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.StaggeredVerticalGrid
+import com.ssverma.showtime.ui.common.VerticalGrid
 import com.ssverma.showtime.ui.movie.ImageShotItem
 
 @Composable
@@ -40,31 +45,33 @@ fun ImageShotsListScreen(
             imageShots = imageShots,
             openImagePager = openImagePager,
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
         )
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ImageShotsContent(
     imageShots: List<ImageShot>,
     openImagePager: (pageIndex: Int) -> Unit,
-    modifier: Modifier = Modifier,
-    columnWidth: Dp = 160.dp
+    modifier: Modifier = Modifier
 ) {
-    StaggeredVerticalGrid(
-        items = imageShots,
-        maxColumnWidth = columnWidth,
+
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+        contentPadding = PaddingValues(8.dp),
         modifier = modifier
-    ) { index, item ->
-        ImageShotItem(
-            imageShot = item,
-            onClick = {
-                openImagePager(index)
-            },
-            modifier = Modifier.padding(2.dp)
-        )
+    ) {
+        itemsIndexed(imageShots) { index, item ->
+            ImageShotItem(
+                imageShot = item,
+                onClick = { openImagePager(index) },
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .aspectRatio(imageShots.first().aspectRatio)
+                    .padding(4.dp)
+            )
+        }
     }
 }

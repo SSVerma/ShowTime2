@@ -1,14 +1,21 @@
 package com.ssverma.showtime.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.navigation.*
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NamedNavArgument
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.navigation
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.ImageShotsListScreen
 import com.ssverma.showtime.ui.home.HomeViewModel
@@ -18,16 +25,32 @@ import com.ssverma.showtime.ui.people.PeopleScreen
 import com.ssverma.showtime.ui.tv.TvShowScreen
 
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ShowTimeNavHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
+    navController: NavHostController = rememberAnimatedNavController(),
     startDestination: StandaloneDestination = AppDestination.Home
 ) {
 
-    NavHost(
+    AnimatedNavHost(
         navController = navController,
         startDestination = startDestination.placeholderRouteString(),
+        enterTransition = { _, _ ->
+            slideIntoContainer(AnimatedContentScope.SlideDirection.Up, animationSpec = tween(300))
+        },
+        exitTransition = { _, _ ->
+            slideOutOfContainer(
+                AnimatedContentScope.SlideDirection.Down,
+                animationSpec = tween(280)
+            )
+        },
+        popEnterTransition = { _, _ ->
+            slideIntoContainer(AnimatedContentScope.SlideDirection.Down, animationSpec = tween(300))
+        },
+//        popExitTransition = { _, _ ->
+//            slideOutOfContainer(AnimatedContentScope.SlideDirection.Up, animationSpec = tween(700))
+//        },
         modifier = modifier
     ) {
 
@@ -88,78 +111,69 @@ fun ShowTimeNavHost(
             )
         }
 
-        navigation(
-            graphDestination = AppDestination.MovieDetailsGraph,
-            startDestination = AppDestination.MovieDetails
-        ) {
+        composable(destination = AppDestination.MovieDetails) {
+            MovieDetailsScreen(
+                viewModel = hiltViewModel(),
+                onBackPressed = { navController.popBackStack() },
+                openMovieDetails = { movieId ->
+                    navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
+                },
+                openImageShotsList = {
+                    navController.navigateTo(AppDestination.ImageShots.actualRoute)
+                },
+                openImageShot = { index ->
+                    navController.navigateTo(AppDestination.ImagePager.actualRoute(index))
+                },
+                openReviewsList = { movieId ->
+                    navController.navigateTo(AppDestination.MovieReviews.actualRoute(movieId))
+                }
+            )
+        }
 
-            composable<MovieDetailsViewModel>(
-                graphDestination = AppDestination.MovieDetailsGraph,
-                destination = AppDestination.MovieDetails,
-                navController = navController
-            ) {
-
-                MovieDetailsScreen(
-                    viewModel = it.graphScopedViewModel,
-                    onBackPressed = { navController.popBackStack() },
-                    openMovieDetails = { movieId ->
-                        navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
-                    },
-                    openImageShotsList = {
-                        navController.navigateTo(AppDestination.ImageShots.actualRoute)
-                    },
-                    openImageShot = { index ->
-                        navController.navigateTo(AppDestination.ImagePager.actualRoute(index))
-                    },
-                    openReviewsList = { movieId ->
-                        navController.navigateTo(AppDestination.MovieReviews.actualRoute(movieId))
-                    }
+        composable(AppDestination.ImageShots) {
+            val movieDetailsViewModel = hiltViewModel<MovieDetailsViewModel>(
+                navController.getBackStackEntry(
+                    AppDestination.MovieDetails.placeholderRouteString()
                 )
-            }
+            )
+            ImageShotsListScreen(
+                liveImageShots = movieDetailsViewModel.imageShots,
+                onBackPressed = { navController.popBackStack() },
+                openImagePager = {
+                    navController.navigateTo(AppDestination.ImagePager.actualRoute(it))
+                }
+            )
+        }
 
-            composable<MovieDetailsViewModel>(
-                graphDestination = AppDestination.MovieDetailsGraph,
-                destination = AppDestination.ImageShots,
-                navController = navController
-            ) {
-
-                ImageShotsListScreen(
-                    liveImageShots = it.graphScopedViewModel.imageShots,
-                    onBackPressed = { navController.popBackStack() },
-                    openImagePager = {
-                        navController.navigateTo(AppDestination.ImagePager.actualRoute(it))
-                    }
+        composable(AppDestination.ImagePager) {
+            val movieDetailsViewModel = hiltViewModel<MovieDetailsViewModel>(
+                navController.getBackStackEntry(
+                    AppDestination.MovieDetails.placeholderRouteString()
                 )
-            }
+            )
 
-            composable<MovieDetailsViewModel>(
-                graphDestination = AppDestination.MovieDetailsGraph,
-                destination = AppDestination.ImagePager,
-                navController = navController
-            ) {
+            ImagePagerScreen(
+                liveImageShots = movieDetailsViewModel.imageShots,
+                defaultPageIndex = it.arguments?.getInt(AppDestination.ImagePager.PageIndex)
+                    ?: 0,
+                onBackPressed = { navController.popBackStack() }
+            )
+        }
 
-                ImagePagerScreen(
-                    liveImageShots = it.graphScopedViewModel.imageShots,
-                    defaultPageIndex = it.navBackStackEntry.arguments?.getInt(AppDestination.ImagePager.PageIndex)
-                        ?: 0,
-                    onBackPressed = { navController.popBackStack() }
-                )
-            }
-
-            composable(destination = AppDestination.MovieReviews) {
-                val viewModel = hiltViewModel<MovieReviewsViewModel>(it)
-                MovieReviewsScreen(
-                    viewModel = viewModel,
-                    onBackPress = { navController.popBackStack() }
-                )
-            }
+        composable(destination = AppDestination.MovieReviews) {
+            val viewModel = hiltViewModel<MovieReviewsViewModel>(it)
+            MovieReviewsScreen(
+                viewModel = viewModel,
+                onBackPress = { navController.popBackStack() }
+            )
         }
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 private fun NavGraphBuilder.composable(
     destination: Destination,
-    content: @Composable (NavBackStackEntry) -> Unit
+    content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
 ) {
     composable(
         route = destination.placeholderRouteString(),
@@ -168,6 +182,7 @@ private fun NavGraphBuilder.composable(
     )
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 private inline fun <reified T : ViewModel> NavGraphBuilder.composable(
     graphDestination: GraphDestination,
     destination: Destination,
@@ -179,6 +194,7 @@ private inline fun <reified T : ViewModel> NavGraphBuilder.composable(
         arguments = destination.arguments(),
     ) {
         val viewModel = hiltViewModel<T>(
+//            it
             navController.getBackStackEntry(graphDestination.placeholderRouteString())
         )
         content(
@@ -190,6 +206,7 @@ private inline fun <reified T : ViewModel> NavGraphBuilder.composable(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 private fun NavGraphBuilder.navigation(
     graphDestination: GraphDestination,
     startDestination: Destination,
@@ -221,7 +238,10 @@ private fun Destination.placeholderRouteString(): String {
         is DependentDestination<*> -> {
             placeholderRoute.asRoutableString()
         }
-        else -> identifier
+        is GraphDestination -> {
+            placeholderRoute.asRoutableString()
+        }
+        else -> throw IllegalStateException("Invalid destination")
     }
 }
 

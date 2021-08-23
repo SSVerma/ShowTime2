@@ -20,12 +20,12 @@ if (debugConfigFile != null && debugConfigFile.canRead()) {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         applicationId "com.ssverma.showtime"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -73,21 +73,24 @@ dependencies {
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.ui:ui-tooling:$compose_version"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
-    implementation "androidx.activity:activity-compose:1.3.0"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-beta01"
+    implementation "androidx.activity:activity-compose:1.3.1"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-beta02"
 
     /*AAC*/
-    implementation "androidx.navigation:navigation-compose:2.4.0-alpha04"
+    implementation "androidx.navigation:navigation-compose:2.4.0-alpha07"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
-    implementation "androidx.compose.runtime:runtime-livedata:1.0.0"
+    implementation "androidx.compose.runtime:runtime-livedata:1.0.1"
     implementation "androidx.paging:paging-compose:1.0.0-alpha12"
 
     /*Compose Utils*/
-    implementation "com.google.accompanist:accompanist-coil:$accompanist_version"
     implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
     implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
+
+    /*Image Handling*/
+    implementation "io.coil-kt:coil-compose:1.3.2"
 
     /*DI*/
     implementation "com.google.dagger:hilt-android:2.36"

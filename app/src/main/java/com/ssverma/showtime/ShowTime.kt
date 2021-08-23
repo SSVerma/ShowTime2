@@ -1,5 +1,6 @@
 package com.ssverma.showtime
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -17,18 +18,20 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssverma.showtime.navigation.ShowTimeNavHost
 import com.ssverma.showtime.navigation.navigateTo
 import com.ssverma.showtime.ui.home.HomeBottomNavItem
 import com.ssverma.showtime.ui.home.homeBottomNavItems
 import com.ssverma.showtime.ui.theme.ShowTimeTheme
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ShowTime() {
     ProvideWindowInsets {
         ShowTimeTheme {
             val bottomNavItems = remember { homeBottomNavItems }
-            val navController = rememberNavController()
+            val navController = rememberAnimatedNavController()
 
             Scaffold(
                 bottomBar = {

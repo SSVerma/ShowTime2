@@ -8,9 +8,11 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import com.google.accompanist.coil.rememberCoilPainter
-import com.google.accompanist.imageloading.ImageLoadState
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.ImagePainter
+import coil.compose.rememberImagePainter
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun NetworkImage(
     url: String,
@@ -20,26 +22,33 @@ fun NetworkImage(
     placeholder: @Composable () -> Unit = { DefaultImagePlaceHolder() },
     fadeIn: Boolean = true
 ) {
-    val painter = rememberCoilPainter(
-        request = url,
-        fadeIn = fadeIn
+    val painter = rememberImagePainter(
+        data = url,
+        builder = { crossfade(fadeIn) }
     )
 
-    when (painter.loadState) {
-        is ImageLoadState.Success -> {
-            Image(
-                painter = painter,
-                contentDescription = contentDescription,
-                contentScale = contentScale,
-                modifier = modifier
-            )
-        }
-        is ImageLoadState.Empty,
-        is ImageLoadState.Loading,
-        is ImageLoadState.Error -> {
-            placeholder()
-        }
-    }
+    Image(
+        painter = painter,
+        contentDescription = contentDescription,
+        contentScale = contentScale,
+        modifier = modifier
+    )
+
+//    when (painter.state) {
+//        is ImagePainter.State.Success -> {
+//            Image(
+//                painter = painter,
+//                contentDescription = contentDescription,
+//                contentScale = contentScale,
+//                modifier = modifier
+//            )
+//        }
+//        is ImagePainter.State.Empty,
+//        is ImagePainter.State.Loading,
+//        is ImagePainter.State.Error -> {
+//            placeholder()
+//        }
+//    }
 }
 
 @Composable
