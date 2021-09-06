@@ -255,7 +255,9 @@ fun BackdropHeader(
                     color = MaterialTheme.colors.background,
                     shape = MaterialTheme.shapes.medium.copy(
                         topStart = CornerSize(SurfaceCornerRoundSize),
-                        topEnd = CornerSize(SurfaceCornerRoundSize)
+                        topEnd = CornerSize(SurfaceCornerRoundSize),
+                        bottomStart = CornerSize(0.dp),
+                        bottomEnd = CornerSize(0.dp)
                     ),
                 )
                 .constrainAs(refRoundedSurface) {

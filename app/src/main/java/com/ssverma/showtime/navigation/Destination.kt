@@ -88,6 +88,7 @@ sealed class AppDestination(
                 navArgument(ArgTitle) {
                     type = NavType.StringType
                     nullable = true
+                    defaultValue = null
                 },
                 navArgument(ArgGenreId) {
                     type = NavType.IntType

@@ -3,6 +3,7 @@ package com.ssverma.showtime.navigation
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -131,11 +132,9 @@ fun ShowTimeNavHost(
         }
 
         composable(AppDestination.ImageShots) {
-            val movieDetailsViewModel = hiltViewModel<MovieDetailsViewModel>(
-                navController.getBackStackEntry(
-                    AppDestination.MovieDetails.placeholderRouteString()
-                )
-            )
+            val movieDetailsViewModel: MovieDetailsViewModel =
+                navController.destinationViewModel(destination = AppDestination.MovieDetails)
+
             ImageShotsListScreen(
                 liveImageShots = movieDetailsViewModel.imageShots,
                 onBackPressed = { navController.popBackStack() },
@@ -146,11 +145,8 @@ fun ShowTimeNavHost(
         }
 
         composable(AppDestination.ImagePager) {
-            val movieDetailsViewModel = hiltViewModel<MovieDetailsViewModel>(
-                navController.getBackStackEntry(
-                    AppDestination.MovieDetails.placeholderRouteString()
-                )
-            )
+            val movieDetailsViewModel = navController
+                .destinationViewModel<MovieDetailsViewModel>(destination = AppDestination.MovieDetails)
 
             ImagePagerScreen(
                 liveImageShots = movieDetailsViewModel.imageShots,
@@ -170,6 +166,13 @@ fun ShowTimeNavHost(
     }
 }
 
+@Composable
+private inline fun <reified VM : ViewModel> NavController.destinationViewModel(destination: Destination): VM {
+    return hiltViewModel(
+        remember { getBackStackEntry(destination.placeholderRouteString()) }
+    )
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 private fun NavGraphBuilder.composable(
     destination: Destination,
@@ -183,20 +186,17 @@ private fun NavGraphBuilder.composable(
 }
 
 @OptIn(ExperimentalAnimationApi::class)
-private inline fun <reified T : ViewModel> NavGraphBuilder.composable(
+private inline fun <reified VM : ViewModel> NavGraphBuilder.composable(
     graphDestination: GraphDestination,
     destination: Destination,
     navController: NavHostController,
-    crossinline content: @Composable (navGraphElement: NavGraphElement<T>) -> Unit
+    crossinline content: @Composable (navGraphElement: NavGraphElement<VM>) -> Unit
 ) {
     composable(
         route = destination.placeholderRouteString(),
         arguments = destination.arguments(),
     ) {
-        val viewModel = hiltViewModel<T>(
-//            it
-            navController.getBackStackEntry(graphDestination.placeholderRouteString())
-        )
+        val viewModel = navController.destinationViewModel<VM>(destination = graphDestination)
         content(
             NavGraphElement(
                 graphScopedViewModel = viewModel,

@@ -77,10 +77,10 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-beta02"
 
     /*AAC*/
-    implementation "androidx.navigation:navigation-compose:2.4.0-alpha07"
+    implementation "androidx.navigation:navigation-compose:2.4.0-alpha08"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
-    implementation "androidx.compose.runtime:runtime-livedata:1.0.1"
+    implementation "androidx.compose.runtime:runtime-livedata:1.0.2"
     implementation "androidx.paging:paging-compose:1.0.0-alpha12"
 
     /*Compose Utils*/
