@@ -21,3 +21,7 @@ fun <R, D> Flow<Result<ApiData<R>>>.asDomainFlow(
 
     return map { mapper.map(it) }.flowOn(coroutineDispatcher)
 }
+
+fun String?.emptyIfNull(): String {
+    return this ?: ""
+}

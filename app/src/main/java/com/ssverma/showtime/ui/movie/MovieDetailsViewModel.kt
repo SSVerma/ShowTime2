@@ -2,7 +2,7 @@ package com.ssverma.showtime.ui.movie
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.ssverma.showtime.api.MovieDetailsQueryMap
+import com.ssverma.showtime.api.AppendableQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
 import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.MovieRepository
@@ -40,7 +40,7 @@ class MovieDetailsViewModel @Inject constructor(
     val liveMovieDetails: LiveData<Result<Movie>> = liveData {
         movieRepository.fetchMovieDetails(
             movieId = movieId,
-            queryMap = MovieDetailsQueryMap.of(appendToResponse = movieDetailsAppendable)
+            queryMap = AppendableQueryMap.of(appendToResponse = movieDetailsAppendable)
         ).collect {
             emit(it)
 

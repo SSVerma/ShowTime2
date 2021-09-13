@@ -1,5 +1,6 @@
 package com.ssverma.showtime.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +32,11 @@ fun ImagePagerScreen(
 ) {
     val imageShots by liveImageShots.observeAsState(initial = emptyList())
 
-    Column(modifier = Modifier.systemBarsPadding()) {
+    Column(
+        modifier = Modifier
+            .systemBarsPadding()
+            .background(color = MaterialTheme.colors.background)
+    ) {
         AppTopAppBar(
             title = "",
             onBackPressed = onBackPressed,
@@ -79,7 +84,7 @@ fun ImagePager(
         )
     }
 
-    LaunchedEffect(pagerState) {
+    LaunchedEffect(pagerState, defaultPageIndex) {
         if (defaultPageIndex >= 0 && defaultPageIndex < imageShots.size) {
             pagerState.scrollToPage(defaultPageIndex)
         }

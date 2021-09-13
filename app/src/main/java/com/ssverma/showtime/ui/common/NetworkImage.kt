@@ -19,7 +19,7 @@ fun NetworkImage(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
-    placeholder: @Composable () -> Unit = { DefaultImagePlaceHolder() },
+    placeholder: @Composable () -> Unit = { DefaultImagePlaceHolder(modifier) },
     fadeIn: Boolean = true
 ) {
     val painter = rememberImagePainter(
@@ -27,35 +27,35 @@ fun NetworkImage(
         builder = { crossfade(fadeIn) }
     )
 
-    Image(
-        painter = painter,
-        contentDescription = contentDescription,
-        contentScale = contentScale,
-        modifier = modifier
-    )
-
-//    when (painter.state) {
-//        is ImagePainter.State.Success -> {
-//            Image(
-//                painter = painter,
-//                contentDescription = contentDescription,
-//                contentScale = contentScale,
-//                modifier = modifier
-//            )
-//        }
-//        is ImagePainter.State.Empty,
-//        is ImagePainter.State.Loading,
-//        is ImagePainter.State.Error -> {
-//            placeholder()
-//        }
-//    }
+    when (painter.state) {
+        is ImagePainter.State.Success -> {
+            Image(
+                painter = painter,
+                contentDescription = contentDescription,
+                contentScale = contentScale,
+                modifier = modifier
+            )
+        }
+        is ImagePainter.State.Empty -> {
+            Image(
+                painter = painter,
+                contentDescription = contentDescription,
+                contentScale = contentScale,
+                modifier = modifier
+            )
+        }
+        is ImagePainter.State.Loading,
+        is ImagePainter.State.Error -> {
+            placeholder()
+        }
+    }
 }
 
 @Composable
-fun DefaultImagePlaceHolder() {
+fun DefaultImagePlaceHolder(modifier: Modifier = Modifier) {
     Spacer(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.surface.copy(alpha = 0.54f))
+            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.32f))
     )
 }

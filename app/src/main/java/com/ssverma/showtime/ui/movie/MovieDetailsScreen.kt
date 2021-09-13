@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
@@ -33,7 +32,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.ui.common.*
@@ -45,7 +43,8 @@ fun MovieDetailsScreen(
     openMovieDetails: (movieId: Int) -> Unit,
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
-    openReviewsList: (movieId: Int) -> Unit
+    openReviewsList: (movieId: Int) -> Unit,
+    openPersonDetails: (personId: Int) -> Unit,
 ) {
     Surface(
         color = MaterialTheme.colors.background
@@ -61,7 +60,8 @@ fun MovieDetailsScreen(
                 openReviewsList = { openReviewsList(it.id) },
                 openYoutube = { videoId ->
                     viewModel.openYoutubeApp(videoId = videoId)
-                }
+                },
+                openPersonDetails = openPersonDetails
             )
         }
     }
@@ -77,6 +77,7 @@ fun MovieContent(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
+    openPersonDetails: (personId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val imageShots by viewModel.imageShots.observeAsState(emptyList())
@@ -149,6 +150,7 @@ fun MovieContent(
         item {
             CreditSection(
                 casts = movie.casts,
+                onPersonClick = openPersonDetails,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
@@ -228,22 +230,7 @@ fun BackdropHeader(
             )
 
             /*Navigation action*/
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colors.surface.copy(alpha = 0.54f),
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(start = 16.dp, top = 8.dp)
-                    .size(40.dp)
-            ) {
-                IconButton(onClick = onCloseIconClick) {
-                    Icon(
-                        imageVector = AppIcons.ArrowBack,
-                        contentDescription = null,
-                        tint = MaterialTheme.colors.onSurface
-                    )
-                }
-            }
+            BackdropNavigationAction(onIconClick = onCloseIconClick)
         }
 
         /*Rounded surface*/
@@ -364,14 +351,17 @@ fun OverviewSection(
 @Composable
 fun Highlights(
     highlights: List<Highlight>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    columnCount: Int = 3,
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(24.dp),
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceAround
 ) {
 
     VerticalGrid(
         items = highlights,
-        columnCount = 3,
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
+        columnCount = columnCount,
+        verticalArrangement = verticalArrangement,
+        horizontalArrangement = horizontalArrangement,
         modifier = modifier
     ) { _, item ->
         HighlightItem(
@@ -401,6 +391,7 @@ fun HighlightItem(
         Text(
             text = value,
             style = MaterialTheme.typography.body2,
+            textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 4.dp)
         )
     }
@@ -677,6 +668,7 @@ fun ReviewItem(
 @Composable
 fun CreditSection(
     casts: List<Cast>,
+    onPersonClick: (personId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Section(
@@ -694,7 +686,9 @@ fun CreditSection(
         HorizontalList(items = casts) {
             CastItem(
                 cast = it,
-                onClick = {},
+                onClick = {
+                    onPersonClick(it.id)
+                },
                 modifier = Modifier.width(104.dp)
             )
         }

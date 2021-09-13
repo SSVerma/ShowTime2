@@ -1,21 +1,19 @@
 package com.ssverma.showtime.navigation
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavOptionsBuilder
+import androidx.navigation.*
 import androidx.navigation.compose.NamedNavArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.navigation
 import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.navigation
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.ImageShotsListScreen
@@ -23,6 +21,7 @@ import com.ssverma.showtime.ui.home.HomeViewModel
 import com.ssverma.showtime.ui.library.LibraryScreen
 import com.ssverma.showtime.ui.movie.*
 import com.ssverma.showtime.ui.people.PeopleScreen
+import com.ssverma.showtime.ui.people.PersonDetailsScreen
 import com.ssverma.showtime.ui.tv.TvShowScreen
 
 
@@ -127,6 +126,9 @@ fun ShowTimeNavHost(
                 },
                 openReviewsList = { movieId ->
                     navController.navigateTo(AppDestination.MovieReviews.actualRoute(movieId))
+                },
+                openPersonDetails = { personId ->
+                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
                 }
             )
         }
@@ -160,6 +162,13 @@ fun ShowTimeNavHost(
             val viewModel = hiltViewModel<MovieReviewsViewModel>(it)
             MovieReviewsScreen(
                 viewModel = viewModel,
+                onBackPress = { navController.popBackStack() }
+            )
+        }
+
+        composable(destination = AppDestination.PersonDetails) {
+            PersonDetailsScreen(
+                viewModel = hiltViewModel(it),
                 onBackPress = { navController.popBackStack() }
             )
         }

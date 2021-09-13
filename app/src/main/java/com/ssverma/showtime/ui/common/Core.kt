@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -19,11 +20,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 
 val AppIcons = Icons.Default
@@ -145,5 +148,29 @@ fun Avatar(
                 .fillMaxSize()
                 .clip(CircleShape)
         )
+    }
+}
+
+@Composable
+fun BackdropNavigationAction(
+    onIconClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector = AppIcons.ArrowBack
+) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colors.surface.copy(alpha = 0.54f),
+        modifier = modifier
+            .statusBarsPadding()
+            .padding(start = 16.dp, top = 8.dp)
+            .size(40.dp)
+    ) {
+        IconButton(onClick = onIconClick) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colors.onSurface
+            )
+        }
     }
 }

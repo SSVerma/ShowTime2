@@ -173,4 +173,28 @@ sealed class AppDestination(
             )
         }
     }
+
+    object PersonDetails : DependentDestination<Int>("person") {
+        const val PersonId = "personId"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(PersonId)
+                .build()
+        }
+
+        override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(PersonId, input)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(PersonId) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
 }

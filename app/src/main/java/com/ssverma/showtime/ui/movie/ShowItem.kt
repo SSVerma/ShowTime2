@@ -128,5 +128,5 @@ fun ScoreIndicator(score: Float) {
 }
 
 private val DefaultMoviePosterWidth = 140.dp
-private const val TmdbPosterAspectRatio = 1 / 1.5f
+const val TmdbPosterAspectRatio = 1 / 1.5f
 const val TmdbBackdropAspectRatio = 16 / 9f

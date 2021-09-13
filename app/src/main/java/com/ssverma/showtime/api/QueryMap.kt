@@ -52,13 +52,13 @@ object DiscoverMovieQueryMap {
     }
 }
 
-object MovieDetailsQueryMap {
+object AppendableQueryMap {
     fun of(
         appendToResponse: QueryMultiValue.AndBuilder? = null
     ): Map<String, String> {
         return mutableMapOf<String, String>().apply {
             appendToResponse?.build()?.asFormattedValues()?.let {
-                put(TmdbApiTiedConstants.MovieDetailsAppendToResponse, it)
+                put(TmdbApiTiedConstants.AppendToResponse, it)
             }
         }
     }

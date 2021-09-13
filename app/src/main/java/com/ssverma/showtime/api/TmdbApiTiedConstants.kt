@@ -97,7 +97,18 @@ object TmdbApiTiedConstants {
         const val Similar = "similar"
     }
 
-    const val MovieDetailsAppendToResponse = "append_to_response"
+    object AvailableMediaType {
+        const val Movie = "movie"
+        const val Tv = "tv"
+    }
+
+    object PersonDetailsAppendableResponseTypes {
+        const val Images = "images"
+        const val Credits = "combined_credits"
+    }
+
+    const val AppendToResponse = "append_to_response"
 }
 
 //append_to_response=keywords,alternative_titles,changes,credits,images,keywords,lists,releases,reviews,similar,translations,videos
+//https://api.themoviedb.org/3/person/287?api_key=###&append_to_response=images,combined_credits
