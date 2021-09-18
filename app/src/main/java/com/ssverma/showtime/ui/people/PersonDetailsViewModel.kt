@@ -19,9 +19,9 @@ val personDetailsAppendable = QueryMultiValue.andBuilder()
     .and(TmdbApiTiedConstants.PersonDetailsAppendableResponseTypes.Images)
 
 @HiltViewModel
-class PersonViewModel @Inject constructor(
+class PersonDetailsViewModel @Inject constructor(
     private val personRepository: PersonRepository,
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val personId = savedStateHandle.get<Int>(AppDestination.PersonDetails.PersonId) ?: 0

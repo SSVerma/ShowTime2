@@ -8,10 +8,10 @@ object TmdbMediaTypeMapper : Mapper<String, MediaType>() {
     override suspend fun map(input: String): MediaType {
         return when (input) {
             TmdbApiTiedConstants.AvailableMediaType.Movie -> {
-                MediaType.Movie(displayNameRes = R.string.movie, input)
+                MediaType.Movie
             }
             TmdbApiTiedConstants.AvailableMediaType.Tv -> {
-                MediaType.Tv(displayNameRes = R.string.tv, input)
+                MediaType.Tv
             }
             else -> {
                 MediaType.Unknown

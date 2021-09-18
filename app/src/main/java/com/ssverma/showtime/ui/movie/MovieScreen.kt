@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -233,7 +234,11 @@ fun HeaderSection(
                 )
         ) {
             Spacer(modifier = Modifier.statusBarsHeight())
-            HomePageAppBar()
+            HomePageAppBar(
+                elevation = 0.dp,
+                backgroundColor = Color.Transparent,
+                contentColor = Color.White
+            )
             Spacer(modifier = Modifier.height(DefaultMovieSectionSpacing))
             MovieGenres(
                 liveGenres = viewModel.genres,

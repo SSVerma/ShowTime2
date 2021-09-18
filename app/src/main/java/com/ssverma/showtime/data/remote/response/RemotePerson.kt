@@ -9,6 +9,9 @@ class RemotePerson(
     @SerializedName("name")
     val name: String?,
 
+    @SerializedName("biography")
+    val biography: String?,
+
     @SerializedName("profile_path")
     val profilePath: String?,
 
@@ -28,7 +31,10 @@ class RemotePerson(
     val personImage: RemotePersonImage?,
 
     @SerializedName("combined_credits")
-    val credit: RemotePersonCredit?
+    val credit: RemotePersonCredit?,
+
+    @SerializedName("known_for")
+    val popularMedia: List<RemotePersonMedia>?
 )
 
 class RemotePersonImage(

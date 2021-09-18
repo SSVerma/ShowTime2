@@ -1,9 +1,7 @@
 package com.ssverma.showtime.navigation
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.*
+import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,8 +18,8 @@ import com.ssverma.showtime.ui.ImageShotsListScreen
 import com.ssverma.showtime.ui.home.HomeViewModel
 import com.ssverma.showtime.ui.library.LibraryScreen
 import com.ssverma.showtime.ui.movie.*
-import com.ssverma.showtime.ui.people.PeopleScreen
 import com.ssverma.showtime.ui.people.PersonDetailsScreen
+import com.ssverma.showtime.ui.people.PersonScreen
 import com.ssverma.showtime.ui.tv.TvShowScreen
 
 
@@ -32,31 +30,41 @@ fun ShowTimeNavHost(
     navController: NavHostController = rememberAnimatedNavController(),
     startDestination: StandaloneDestination = AppDestination.Home
 ) {
+    val springStiffness = 1100f
 
     AnimatedNavHost(
         navController = navController,
         startDestination = startDestination.placeholderRouteString(),
         enterTransition = { _, _ ->
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up, animationSpec = tween(300))
+            slideIntoContainer(
+                AnimatedContentScope.SlideDirection.Up,
+                animationSpec = spring(stiffness = springStiffness)
+            )
         },
         exitTransition = { _, _ ->
             slideOutOfContainer(
-                AnimatedContentScope.SlideDirection.Down,
-                animationSpec = tween(280)
+                AnimatedContentScope.SlideDirection.Up,
+                animationSpec = spring(stiffness = springStiffness)
             )
         },
         popEnterTransition = { _, _ ->
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Down, animationSpec = tween(300))
+            slideIntoContainer(
+                AnimatedContentScope.SlideDirection.Down,
+                animationSpec = spring(stiffness = springStiffness)
+            )
         },
-//        popExitTransition = { _, _ ->
-//            slideOutOfContainer(AnimatedContentScope.SlideDirection.Up, animationSpec = tween(700))
-//        },
+        popExitTransition = { _, _ ->
+            slideOutOfContainer(
+                AnimatedContentScope.SlideDirection.Down,
+                animationSpec = spring(stiffness = springStiffness)
+            )
+        },
         modifier = modifier
     ) {
 
         navigation(
             graphDestination = AppDestination.Home,
-            startDestination = AppDestination.HomeBottomNavDestination.Movie
+            startDestination = AppDestination.HomeBottomNavDestination.Movie,
         ) {
             composable<HomeViewModel>(
                 graphDestination = AppDestination.Home,
@@ -87,7 +95,12 @@ fun ShowTimeNavHost(
                 destination = AppDestination.HomeBottomNavDestination.People,
                 navController = navController
             ) {
-                PeopleScreen()
+                PersonScreen(
+                    viewModel = it.graphScopedViewModel,
+                    openPersonDetailsScreen = { personId ->
+                        navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
+                    }
+                )
             }
 
             composable<HomeViewModel>(
@@ -169,7 +182,13 @@ fun ShowTimeNavHost(
         composable(destination = AppDestination.PersonDetails) {
             PersonDetailsScreen(
                 viewModel = hiltViewModel(it),
-                onBackPress = { navController.popBackStack() }
+                onBackPress = { navController.popBackStack() },
+                openMovieDetails = { movieId ->
+                    navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
+                },
+                openTvShowDetails = { tvShowId ->
+                    //TODO
+                }
             )
         }
     }
@@ -219,11 +238,27 @@ private inline fun <reified VM : ViewModel> NavGraphBuilder.composable(
 private fun NavGraphBuilder.navigation(
     graphDestination: GraphDestination,
     startDestination: Destination,
+    enterTransition: (
+    AnimatedContentScope<String>.(initial: NavBackStackEntry, target: NavBackStackEntry) -> EnterTransition
+    )? = null,
+    exitTransition: (
+    AnimatedContentScope<String>.(initial: NavBackStackEntry, target: NavBackStackEntry) -> ExitTransition
+    )? = null,
+    popEnterTransition: (
+    AnimatedContentScope<String>.(initial: NavBackStackEntry, target: NavBackStackEntry) -> EnterTransition
+    )? = enterTransition,
+    popExitTransition: (
+    AnimatedContentScope<String>.(initial: NavBackStackEntry, target: NavBackStackEntry) -> ExitTransition
+    )? = exitTransition,
     builder: NavGraphBuilder.() -> Unit
 ) {
     navigation(
         route = graphDestination.placeholderRouteString(),
         startDestination = startDestination.placeholderRouteString(),
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition,
         builder = builder
     )
 }

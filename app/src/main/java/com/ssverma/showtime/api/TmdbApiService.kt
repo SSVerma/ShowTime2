@@ -59,4 +59,9 @@ interface TmdbApiService {
         @Path("personId") personId: Int,
         @QueryMap queryMap: Map<String, String>,
     ): Response<RemotePerson>
+
+    @GET("3/person/popular")
+    suspend fun getPopularPersons(
+        @Query("page") page: Int = 1
+    ): Response<PagedPayload<RemotePerson>>
 }

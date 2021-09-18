@@ -30,6 +30,34 @@ fun <T : Any> PagedList(
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
     itemContent: @Composable (item: T) -> Unit
 ) {
+    PagedListIndexed(
+        pagingItems = pagingItems,
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
+        pagingLoadingIndicator = pagingLoadingIndicator,
+        placeholderItemContent = placeholderItemContent
+    ) { _, item ->
+        itemContent(item)
+    }
+}
+
+@Composable
+fun <T : Any> PagedListIndexed(
+    pagingItems: LazyPagingItems<T>,
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
+    placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
+    itemContent: @Composable (index: Int, item: T) -> Unit
+) {
     LazyColumn(
         contentPadding = contentPadding,
         state = state,
@@ -39,11 +67,11 @@ fun <T : Any> PagedList(
         modifier = modifier
     ) {
         items(pagingItems.itemCount) { index ->
-            val pagingItem = pagingItems.getAsState(index = index).value
+            val pagingItem = pagingItems[index]
             if (pagingItem == null) {
                 placeholderItemContent()
             } else {
-                itemContent(pagingItem)
+                itemContent(index, pagingItem)
             }
         }
 

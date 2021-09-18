@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.showtime.R
 import com.ssverma.showtime.navigation.AppDestination
@@ -60,12 +61,17 @@ val homeBottomNavItems = listOf(
 )
 
 @Composable
-fun HomePageAppBar(modifier: Modifier = Modifier) {
+fun HomePageAppBar(
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colors.primarySurface,
+    contentColor: Color = contentColorFor(backgroundColor),
+    elevation: Dp = AppBarDefaults.TopAppBarElevation
+) {
     TopAppBar(
-        elevation = 0.dp,
-        backgroundColor = Color.Transparent,
+        elevation = elevation,
+        backgroundColor = backgroundColor,
         modifier = modifier.height(56.dp),
-        contentColor = Color.White //Always blackish tint on background
+        contentColor = contentColor
     ) {
         Image(
             modifier = Modifier

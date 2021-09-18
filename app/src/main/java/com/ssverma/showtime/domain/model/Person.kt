@@ -16,13 +16,15 @@ import java.time.LocalDate
 data class Person(
     val id: Int,
     val name: String,
+    val biography: String,
     val imageUrl: String,
     val knownFor: String,
     val dob: String?,
     val gender: Gender,
     val placeOfBirth: String,
     val imageShots: List<ImageShot>,
-    val media: List<PersonMedia>
+    val mediaByType: Map<MediaType, List<PersonMedia>>,
+    val popularMedia: List<PersonMedia>?
 )
 
 data class PersonMedia(
@@ -44,20 +46,13 @@ data class PersonMedia(
 )
 
 sealed class MediaType(
-    @StringRes open val displayNameRes: Int,
-    open val remoteType: String
+    @StringRes open val displayNameRes: Int
 ) {
-    data class Movie(
-        @StringRes override val displayNameRes: Int,
-        override val remoteType: String
-    ) : MediaType(displayNameRes, remoteType)
+    object Movie : MediaType(R.string.movie)
 
-    data class Tv(
-        @StringRes override val displayNameRes: Int,
-        override val remoteType: String
-    ) : MediaType(displayNameRes, remoteType)
+    object Tv : MediaType(R.string.tv)
 
-    object Unknown : MediaType(R.string.unknown, "")
+    object Unknown : MediaType(R.string.unknown)
 }
 
 sealed class Gender(
@@ -97,14 +92,20 @@ suspend fun List<RemotePersonMedia>.asPersonMedias() = map { it.asPersonMedia() 
 
 suspend fun RemotePerson.asPerson() = Person(
     id = id,
-    name = name ?: "",
+    name = name.emptyIfNull(),
+    biography = biography.emptyIfNull(),
     imageUrl = profilePath.convertToFullTmdbImageUrl(),
     dob = DateUtils.parseIsoDate(dob)?.formatLocally(),
     knownFor = knownFor ?: "",
     gender = GenderMapper.map(gender),
     placeOfBirth = placeOfBirth ?: "",
     imageShots = personImage?.profileImages?.asImagesShots() ?: emptyList(),
-    media = ((credit?.casts?.asPersonMedias() ?: emptyList())
+    mediaByType = ((credit?.casts?.asPersonMedias() ?: emptyList())
             + (credit?.crews?.asPersonMedias() ?: emptyList()))
         .sortedByDescending { it.releaseDate }
+        .distinctBy { it.title }
+        .groupBy { it.mediaType },
+    popularMedia = popularMedia?.asPersonMedias()
 )
+
+suspend fun List<RemotePerson>.asPersons() = map { it.asPerson() }

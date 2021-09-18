@@ -20,11 +20,15 @@ fun NetworkImage(
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
     placeholder: @Composable () -> Unit = { DefaultImagePlaceHolder(modifier) },
-    fadeIn: Boolean = true
+    enableCrossFade: Boolean = true,
+    crossFadeDurationMillis: Int = 700
 ) {
     val painter = rememberImagePainter(
         data = url,
-        builder = { crossfade(fadeIn) }
+        builder = {
+            crossfade(enableCrossFade)
+            crossfade(crossFadeDurationMillis)
+        },
     )
 
     when (painter.state) {
