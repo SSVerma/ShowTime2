@@ -1,8 +1,11 @@
 package com.ssverma.showtime.ui.common
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Surface
@@ -75,5 +78,33 @@ fun ScreenErrorIndicator(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EmptyScreenIndicator(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        content()
+    }
+}
+
+@Composable
+fun EmptyScreenTextIndicator(
+    @StringRes placeholderTextRes: Int = R.string.no_data
+) {
+    EmptyScreenIndicator {
+        Text(
+            text = stringResource(id = placeholderTextRes),
+            modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.54f),
+                    shape = MaterialTheme.shapes.medium.copy(CornerSize(8.dp))
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        )
     }
 }

@@ -1,10 +1,12 @@
 package com.ssverma.showtime.ui.people
 
 import TmdbBackdropAspectRatio
+import TmdbPersonAspectRatio
 import TmdbPosterAspectRatio
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,10 +32,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.Highlight
-import com.ssverma.showtime.domain.model.MediaType
-import com.ssverma.showtime.domain.model.Person
-import com.ssverma.showtime.domain.model.PersonMedia
+import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.common.*
@@ -54,6 +53,7 @@ fun PersonDetailsScreen(
     onBackPress: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
+    openPersonAllImages: (personId: Int) -> Unit,
 ) {
 
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
@@ -123,6 +123,7 @@ fun PersonDetailsScreen(
                         bottomSheetScaffoldState.bottomSheetState.expand()
                     }
                 },
+                openPersonAllImages = openPersonAllImages,
                 modifier = Modifier.padding(padding)
             )
         }
@@ -137,6 +138,7 @@ fun PersonContent(
     openMovieDetails: (movieId: Int) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openPersonAllMedia: () -> Unit,
+    openPersonAllImages: (personId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -195,17 +197,45 @@ fun PersonContent(
         }
 
         item {
-            HorizontalList(items = person.imageShots) {
-                ImageShotItem(
-                    imageShot = it,
-                    onClick = {
-                        openImagePage(person.imageShots.indexOf(it))//TODO:improve
-                    },
-                    modifier = Modifier
-                        .width(100.dp)
-                        .aspectRatio(person.imageShots.first().aspectRatio)
-                        .padding(top = SectionSpacing)
-                )
+            HorizontalListIndexed(
+                items = remember { person.imageShots + listOf(emptyImageShot()) }
+            ) { index, imageShot ->
+                if (index <= person.imageShots.lastIndex) {
+                    ImageShotItem(
+                        imageShot = imageShot,
+                        contentScale = ContentScale.Crop,
+                        onClick = {
+                            openImagePage(index)
+                        },
+                        modifier = Modifier
+                            .width(100.dp)
+                            .aspectRatio(TmdbPersonAspectRatio)
+                            .padding(top = SectionSpacing)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .width(100.dp)
+                            .aspectRatio(TmdbPersonAspectRatio)
+                            .padding(top = SectionSpacing)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colors.onSurface,
+                                shape = MaterialTheme.shapes.medium.copy(CornerSize(16.dp))
+                            )
+                            .clickable {
+                                openPersonAllImages(person.id)
+                            }
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.view_tagged_images),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(8.dp)
+                        )
+                    }
+                }
             }
         }
 
@@ -440,18 +470,17 @@ private fun BackdropHeader(
     modifier: Modifier = Modifier
 ) {
     ConstraintLayout(modifier) {
-        val (refBackdrop, refProfile) = createRefs()
+        val (refBackdrop, refProfile, refRoundedSurface) = createRefs()
 
         /*Backdrop*/
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(TmdbBackdropAspectRatio)
-                .constrainAs(refBackdrop) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(TmdbBackdropAspectRatio)
+            .constrainAs(refBackdrop) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            }
         ) {
 
             /*Backdrop image*/
@@ -466,16 +495,36 @@ private fun BackdropHeader(
             BackdropNavigationAction(onIconClick = onBackPress)
         }
 
+        /*Rounded surface*/
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(SurfaceCornerRoundSize)
+            .background(
+                color = MaterialTheme.colors.background,
+                shape = MaterialTheme.shapes.medium.copy(
+                    topStart = CornerSize(SurfaceCornerRoundSize),
+                    topEnd = CornerSize(SurfaceCornerRoundSize),
+                    bottomStart = CornerSize(0.dp),
+                    bottomEnd = CornerSize(0.dp)
+                ),
+            )
+            .constrainAs(refRoundedSurface) {
+                bottom.linkTo(refBackdrop.bottom)
+                start.linkTo(refBackdrop.start)
+                end.linkTo(refBackdrop.end)
+            }
+        )
+
         /*Profile*/
         Avatar(imageUrl = profileImageUrl,
             onClick = {},
             modifier = Modifier
                 .size(96.dp)
                 .constrainAs(refProfile) {
-                    top.linkTo(refBackdrop.bottom)
-                    bottom.linkTo(refBackdrop.bottom)
-                    start.linkTo(refBackdrop.start)
-                    end.linkTo(refBackdrop.end)
+                    top.linkTo(refRoundedSurface.top)
+                    bottom.linkTo(refRoundedSurface.bottom)
+                    start.linkTo(refRoundedSurface.start)
+                    end.linkTo(refRoundedSurface.end)
                 }
         )
     }
@@ -484,3 +533,4 @@ private fun BackdropHeader(
 private val SectionSpacing = 16.dp
 private const val TopMediaCount = 10
 private const val BiographyMaxLines = 4
+private val SurfaceCornerRoundSize = 12.dp

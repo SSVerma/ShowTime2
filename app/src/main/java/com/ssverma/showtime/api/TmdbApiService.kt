@@ -64,4 +64,10 @@ interface TmdbApiService {
     suspend fun getPopularPersons(
         @Query("page") page: Int = 1
     ): Response<PagedPayload<RemotePerson>>
+
+    @GET("3/person/{personId}/tagged_images")
+    suspend fun getPersonTaggedImages(
+        @Path("personId") personId: Int,
+        @Query("page") page: Int = 1
+    ): Response<PagedPayload<RemoteImageShot>>
 }

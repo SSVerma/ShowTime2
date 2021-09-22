@@ -21,7 +21,7 @@ fun NetworkImage(
     contentScale: ContentScale = ContentScale.Fit,
     placeholder: @Composable () -> Unit = { DefaultImagePlaceHolder(modifier) },
     enableCrossFade: Boolean = true,
-    crossFadeDurationMillis: Int = 700
+    crossFadeDurationMillis: Int = 750
 ) {
     val painter = rememberImagePainter(
         data = url,

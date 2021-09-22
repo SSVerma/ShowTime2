@@ -70,4 +70,7 @@
     <string name="gender_n">Gender: %1s</string>
     <string name="known_for_n">Known for: %1s</string>
     <string name="popular_media">Popular Media</string>
+    <string name="view_tagged_images">View Tagged Images</string>
+    <string name="tagged_images">Tagged Images</string>
+    <string name="no_data">No data!</string>
 </resources>

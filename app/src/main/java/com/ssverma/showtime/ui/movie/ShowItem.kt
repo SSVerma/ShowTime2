@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +26,7 @@ fun MovieItem(
     indicator: (@Composable () -> Unit)? = null,
     onOverflowIconClick: (() -> Unit)? = null,
     titleMaxLines: Int = 1,
+    titleTextStyle: TextStyle = MaterialTheme.typography.subtitle1,
     onClick: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
@@ -42,7 +44,7 @@ fun MovieItem(
             text = title,
             maxLines = titleMaxLines,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.subtitle1,
+            style = titleTextStyle,
             modifier = Modifier.widthIn(max = DefaultMoviePosterWidth)
         )
     }
@@ -129,4 +131,5 @@ fun ScoreIndicator(score: Float) {
 
 private val DefaultMoviePosterWidth = 140.dp
 const val TmdbPosterAspectRatio = 1 / 1.5f
+const val TmdbPersonAspectRatio = 1 / 1.5f
 const val TmdbBackdropAspectRatio = 16 / 9f

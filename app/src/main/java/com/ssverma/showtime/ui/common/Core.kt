@@ -130,6 +130,7 @@ fun Avatar(
 ) {
     Box(
         modifier = modifier
+            .background(color = MaterialTheme.colors.surface, shape = CircleShape)
             .size(48.dp)
             .border(
                 width = 2.dp,

@@ -5,7 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -155,12 +155,28 @@ fun <T> HorizontalList(
     horizontalArrangement: Arrangement.Horizontal = SectionListHorizontalArrangement,
     itemContent: @Composable (item: T) -> Unit
 ) {
+    HorizontalListIndexed(
+        items = items,
+        contentPadding = contentPadding,
+        horizontalArrangement = horizontalArrangement,
+    ) { _, item ->
+        itemContent(item)
+    }
+}
+
+@Composable
+fun <T> HorizontalListIndexed(
+    items: List<T>,
+    contentPadding: PaddingValues = SectionListContentPadding,
+    horizontalArrangement: Arrangement.Horizontal = SectionListHorizontalArrangement,
+    itemContent: @Composable (index: Int, item: T) -> Unit
+) {
     LazyRow(
         contentPadding = contentPadding,
         horizontalArrangement = horizontalArrangement,
         content = {
-            items(items) { item ->
-                itemContent(item)
+            itemsIndexed(items) { index, item ->
+                itemContent(index, item)
             }
         }
     )

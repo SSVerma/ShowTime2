@@ -443,7 +443,7 @@ fun ImageShotItem(
     imageShot: ImageShot,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colors.surface,
+    backgroundColor: Color = MaterialTheme.colors.background,
     contentScale: ContentScale = ContentScale.Fit,
     shape: Shape = MaterialTheme.shapes.medium.copy(CornerSize(16.dp))
 ) {

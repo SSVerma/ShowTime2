@@ -6,8 +6,10 @@ import androidx.paging.PagingData
 import com.ssverma.showtime.api.TMDB_API_PAGE_SIZE
 import com.ssverma.showtime.api.TmdbApiService
 import com.ssverma.showtime.api.makeTmdbApiRequest
+import com.ssverma.showtime.data.remote.ImagePagingSource
 import com.ssverma.showtime.data.remote.PersonPagingSource
 import com.ssverma.showtime.domain.Result
+import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.asPerson
 import com.ssverma.showtime.extension.asDomainFlow
@@ -32,6 +34,17 @@ class PersonRepository @Inject constructor(
             pagingSourceFactory = {
                 PersonPagingSource { page ->
                     tmdbApiService.getPopularPersons(page = page)
+                }
+            }
+        ).flow
+    }
+
+    fun fetchPersonImagesGradually(personId: Int): Flow<PagingData<ImageShot>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                ImagePagingSource { page ->
+                    tmdbApiService.getPersonTaggedImages(personId = personId, page = page)
                 }
             }
         ).flow

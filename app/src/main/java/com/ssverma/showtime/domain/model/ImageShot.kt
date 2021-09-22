@@ -26,3 +26,11 @@ fun RemoteImageShot.asImageShot(): ImageShot {
 suspend fun List<RemoteImageShot>.asImagesShots() = withContext(Dispatchers.Default) {
     map { it.asImageShot() }
 }
+
+fun emptyImageShot() = ImageShot(
+    aspectRatio = 0f,
+    imageUrl = "",
+    height = 0,
+    width = 0,
+    iso6391 = null
+)

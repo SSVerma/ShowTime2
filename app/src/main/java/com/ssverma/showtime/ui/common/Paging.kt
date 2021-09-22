@@ -101,17 +101,42 @@ fun <T : Any> PagedGrid(
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
     itemContent: @Composable (item: T) -> Unit
 ) {
+    PagedGridIndexed(
+        pagingItems = pagingItems,
+        modifier = modifier,
+        cells = cells,
+        contentPadding = contentPadding,
+        pagingLoadingIndicator = pagingLoadingIndicator,
+        pagingErrorIndicator = pagingErrorIndicator,
+        placeholderItemContent = placeholderItemContent
+    ) { _, item ->
+        itemContent(item)
+    }
+}
+
+@ExperimentalFoundationApi
+@Composable
+fun <T : Any> PagedGridIndexed(
+    pagingItems: LazyPagingItems<T>,
+    modifier: Modifier = Modifier,
+    cells: GridCells = GridCells.Fixed(count = 2),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
+    pagingErrorIndicator: @Composable (pagingItems: LazyPagingItems<T>) -> Unit = { DefaultPagingErrorIndicator { it.retry() } },
+    placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
+    itemContent: @Composable (index: Int, item: T) -> Unit
+) {
     LazyVerticalGrid(
         cells = cells,
         contentPadding = contentPadding,
         modifier = modifier
     ) {
         items(pagingItems.itemCount) { index ->
-            val pagingItem = pagingItems.getAsState(index = index).value
+            val pagingItem = pagingItems[index]
             if (pagingItem == null) {
                 placeholderItemContent()
             } else {
-                itemContent(pagingItem)
+                itemContent(index, pagingItem)
             }
         }
 
@@ -133,11 +158,16 @@ fun <T : Any> PagedGrid(
 @Composable
 fun <T : Any> PagedContent(
     pagingItems: LazyPagingItems<T>,
+    emptyScreenIndicator: @Composable () -> Unit = { EmptyScreenTextIndicator() },
     content: @Composable (pagingItems: LazyPagingItems<T>) -> Unit
 ) {
     when (pagingItems.loadState.refresh) {
         is LoadState.NotLoading -> {
-            content(pagingItems)
+            if (pagingItems.itemCount == 0) {
+                emptyScreenIndicator()
+            } else {
+                content(pagingItems)
+            }
         }
         is LoadState.Loading -> {
             ScreenLoadingIndicator()
