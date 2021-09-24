@@ -1,6 +1,6 @@
 package com.ssverma.showtime.ui.movie
 
-import MovieItem
+import MediaItem
 import ScoreIndicator
 import ValueIndicator
 import androidx.annotation.StringRes
@@ -172,7 +172,7 @@ fun MoviesGrid(
         pagingItems = moviePagingItems,
         contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp)
     ) {
-        MovieItem(
+        MediaItem(
             title = it.title,
             posterImageUrl = it.posterImageUrl,
             modifier = Modifier

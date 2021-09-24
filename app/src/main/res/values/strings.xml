@@ -19,7 +19,7 @@
     <string name="free">Free</string>
     <string name="streaming_now">Streaming Now</string>
     <string name="now_in_cinemas">Now in Cinemas</string>
-    <string name="popular_info">Check what people have interest in</string>
+    <string name="popular_info">Highest voted by the users</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="back">Back</string>
     <string name="stream">Stream</string>
@@ -73,4 +73,6 @@
     <string name="view_tagged_images">View Tagged Images</string>
     <string name="tagged_images">Tagged Images</string>
     <string name="no_data">No data!</string>
+    <string name="airing_today">Airing Today</string>
+    <string name="now_airing">On the Air</string>
 </resources>

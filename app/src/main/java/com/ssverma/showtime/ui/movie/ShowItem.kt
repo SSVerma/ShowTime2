@@ -18,7 +18,7 @@ import com.ssverma.showtime.ui.common.AppIcons
 import com.ssverma.showtime.ui.common.NetworkImage
 
 @Composable
-fun MovieItem(
+fun MediaItem(
     title: String,
     posterImageUrl: String,
     modifier: Modifier = Modifier,
@@ -30,13 +30,13 @@ fun MovieItem(
     onClick: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
-        MoviePoster(
+        MediaPoster(
             posterImageUrl = posterImageUrl,
             indicator = indicator,
             onOverflowIconClick = onOverflowIconClick,
             onClick = onClick,
             modifier = posterModifier
-                .width(DefaultMoviePosterWidth)
+                .width(DefaultMediaPosterWidth)
                 .aspectRatio(TmdbPosterAspectRatio)
         )
         Spacer(modifier = Modifier.size(4.dp))
@@ -45,14 +45,14 @@ fun MovieItem(
             maxLines = titleMaxLines,
             overflow = TextOverflow.Ellipsis,
             style = titleTextStyle,
-            modifier = Modifier.widthIn(max = DefaultMoviePosterWidth)
+            modifier = Modifier.widthIn(max = DefaultMediaPosterWidth)
         )
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MoviePoster(
+fun MediaPoster(
     posterImageUrl: String,
     modifier: Modifier = Modifier,
     indicator: (@Composable () -> Unit)? = null,
@@ -129,7 +129,7 @@ fun ScoreIndicator(score: Float) {
     }
 }
 
-private val DefaultMoviePosterWidth = 140.dp
+private val DefaultMediaPosterWidth = 140.dp
 const val TmdbPosterAspectRatio = 1 / 1.5f
 const val TmdbPersonAspectRatio = 1 / 1.5f
 const val TmdbBackdropAspectRatio = 16 / 9f

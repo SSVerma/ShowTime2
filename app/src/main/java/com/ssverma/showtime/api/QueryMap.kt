@@ -13,6 +13,10 @@ object DiscoverMovieQueryMap {
         voteAvgGte: String? = null,
         runtimeLte: String? = null,
         runtimeGte: String? = null,
+        firstAirDateLte: String? = null,
+        firstAirDateGte: String? = null,
+        airDateLte: String? = null,
+        airDateGte: String? = null,
     ): Map<String, String> {
         return mutableMapOf<String, String>().apply {
             sortBy?.let {
@@ -47,6 +51,18 @@ object DiscoverMovieQueryMap {
             }
             runtimeGte?.let {
                 put(TmdbApiTiedConstants.AvailableDiscoverOptions.runtimeGte, it)
+            }
+            firstAirDateLte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateLte, it)
+            }
+            firstAirDateGte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateGte, it)
+            }
+            airDateLte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.airDateLte, it)
+            }
+            airDateGte?.let {
+                put(TmdbApiTiedConstants.AvailableDiscoverOptions.airDateGte, it)
             }
         }
     }

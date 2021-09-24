@@ -1,6 +1,6 @@
 package com.ssverma.showtime.ui.people
 
-import MovieItem
+import MediaItem
 import TmdbPosterAspectRatio
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -182,7 +182,7 @@ private fun PersonItem(
             ) {
                 person.popularMedia?.let {
                     HorizontalList(items = it) { media ->
-                        MovieItem(
+                        MediaItem(
                             title = media.title,
                             posterImageUrl = media.posterImageUrl,
                             titleTextStyle = MaterialTheme.typography.caption,

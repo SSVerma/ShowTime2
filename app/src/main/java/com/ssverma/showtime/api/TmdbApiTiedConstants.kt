@@ -55,6 +55,9 @@ object TmdbApiTiedConstants {
         const val VoteAvgDesc = "vote_average.desc"
         const val VoteCountAsc = "vote_count.asc"
         const val VoteCountDesc = "vote_count.desc"
+
+        const val FirstAirDateAsc = "first_air_date.asc"
+        const val FirstAirDateDesc = "first_air_date.desc"
     }
 
     object AvailableCertificationTypes {
@@ -75,11 +78,19 @@ object TmdbApiTiedConstants {
         const val voteAvgLte = "vote_average.lte"
         const val runtimeGte = "with_runtime.gte"
         const val runtimeLte = "with_runtime.lte"
+        const val withWatchProviders = "with_watch_providers"
+        const val watchRegion = "watch_region"
         const val withMonetizationType = "with_watch_monetization_types"
         const val withPeople = "with_people"
         const val withGenres = "with_genres"
         const val withKeywords = "with_keywords"
         const val sortBy = "sort_by"
+
+        const val airDateLte = "air_date.lte"
+        const val airDateGte = "air_date.gte"
+        const val firstAirDateLte = "first_air_date.lte"
+        const val firstAirDateGte = "first_air_date.gte"
+        const val timezone = "timezone"
     }
 
     object AvailableVideoSites {

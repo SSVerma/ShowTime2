@@ -9,6 +9,7 @@ import com.ssverma.showtime.api.DiscoverMovieQueryMap
 import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.MovieRepository
 import com.ssverma.showtime.data.repository.PersonRepository
+import com.ssverma.showtime.data.repository.TvRepository
 import com.ssverma.showtime.data.repository.UnsplashRepository
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.ui.movie.movieReleaseType
@@ -21,18 +22,20 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     movieRepository: MovieRepository,
+    tvRepository: TvRepository,
     unsplashRepository: UnsplashRepository,
     personRepository: PersonRepository
 ) : ViewModel() {
 
     val movieBackdrop = unsplashRepository.randomMovieBackdropUrl
+    val tvShowBackdrop = unsplashRepository.randomTvShowBackdropUrl
 
 //    val mockMovies = movieRepository.fetchMockMovies().asLiveData()
 
     val topRatedMovies = movieRepository.fetchTopRatedMovies().asLiveData()
     val dailyTrendingMovies = movieRepository.fetchDailyTrendingMovies().asLiveData()
 
-    val genres = movieRepository.fetchMovieGenre().asLiveData()
+    val movieGenres = movieRepository.fetchMovieGenre().asLiveData()
 
     val popularMovies = movieRepository.discoverMovies(
         queryMap = DiscoverMovieQueryMap.of(
@@ -58,4 +61,36 @@ class HomeViewModel @Inject constructor(
 
     val popularPersons: Flow<PagingData<Person>> = personRepository.fetchPopularPersonsGradually()
         .cachedIn(viewModelScope)
+
+    val tvGenres = tvRepository.fetchTvGenre().asLiveData()
+
+    val topRatedTvShows = tvRepository.fetchTopRatedTvShows().asLiveData()
+
+    val dailyTrendingTvShows = tvRepository.fetchDailyTrendingTvShows().asLiveData()
+
+    val todayAiringTvShows = tvRepository.discoverTvShows(
+        queryMap = DiscoverMovieQueryMap.of(
+            airDateLte = DateUtils.currentDate().formatAsIso(),
+            airDateGte = DateUtils.currentDate().formatAsIso(),
+        )
+    ).asLiveData()
+
+    val popularTvShows = tvRepository.discoverTvShows(
+        queryMap = DiscoverMovieQueryMap.of(
+            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PopularityDesc
+        )
+    ).asLiveData()
+
+    val nowAiringTvShows = tvRepository.discoverTvShows(
+        queryMap = DiscoverMovieQueryMap.of(
+            firstAirDateLte = DateUtils.currentDate().formatAsIso()
+        )
+    ).asLiveData()
+
+    val upcomingTvShows = tvRepository.discoverTvShows(
+        queryMap = DiscoverMovieQueryMap.of(
+            firstAirDateGte = DateUtils.currentDate().plusDays(1).formatAsIso(),
+            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.FirstAirDateAsc
+        )
+    ).asLiveData()
 }

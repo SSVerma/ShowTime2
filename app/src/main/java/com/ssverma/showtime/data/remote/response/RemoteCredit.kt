@@ -7,7 +7,10 @@ class RemoteCredit(
     val casts: List<RemoteCast>?,
 
     @SerializedName("crew")
-    val crews: List<RemoteCrew>?
+    val crews: List<RemoteCrew>?,
+
+    @SerializedName("guest_stars")
+    val guestStars: List<RemoteCast>?
 )
 
 class RemoteCast(
@@ -16,6 +19,9 @@ class RemoteCast(
 
     @SerializedName("name")
     val name: String?,
+
+    @SerializedName("gender")
+    val gender: Int,
 
     @SerializedName("character")
     val character: String?,

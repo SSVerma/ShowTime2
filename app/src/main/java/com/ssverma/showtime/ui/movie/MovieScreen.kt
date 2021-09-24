@@ -1,16 +1,14 @@
 package com.ssverma.showtime.ui.movie
 
-import MovieItem
+import MediaItem
 import ScoreIndicator
 import ValueIndicator
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,107 +47,115 @@ private fun MovieContent(
     openMovieList: (launchable: MovieListLaunchable) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(state = rememberScrollState())
-            .animateContentSize()
-    ) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
 
-        HeaderSection(
-            viewModel = viewModel,
-            onNavigateToMovieList = openMovieList,
-            openMovieDetails = openMovieDetails
-        )
+        item {
+            HeaderSection(
+                viewModel = viewModel,
+                onNavigateToMovieList = openMovieList,
+                openMovieDetails = openMovieDetails
+            )
+        }
 
         //Popular
-        MoviesSection(
-            liveMovies = viewModel.popularMovies,
-            sectionTitleRes = R.string.popuplar,
-            subtitleRes = R.string.popular_info,
-            onViewAllClicked = {
-                openMovieList(
-                    MovieListLaunchable(
-                        listingType = MovieListingType.Popular,
-                        titleRes = R.string.popuplar
+        item {
+            MoviesSection(
+                liveMovies = viewModel.popularMovies,
+                sectionTitleRes = R.string.popuplar,
+                subtitleRes = R.string.popular_info,
+                onViewAllClicked = {
+                    openMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.Popular,
+                            titleRes = R.string.popuplar
+                        )
                     )
+                }
+            ) {
+                MediaItem(
+                    title = it.title,
+                    posterImageUrl = it.posterImageUrl,
+                    indicator = { ValueIndicator(value = it.displayPopularity) },
+                    onClick = { openMovieDetails(it.id) }
                 )
             }
-        ) {
-            MovieItem(
-                title = it.title,
-                posterImageUrl = it.posterImageUrl,
-                indicator = { ValueIndicator(value = it.displayPopularity) },
-                onClick = { openMovieDetails(it.id) }
-            )
         }
 
         //Top rated
-        MoviesSection(
-            liveMovies = viewModel.topRatedMovies,
-            sectionTitleRes = R.string.top_rated,
-            onViewAllClicked = {
-                openMovieList(
-                    MovieListLaunchable(
-                        listingType = MovieListingType.TopRated,
-                        titleRes = R.string.top_rated
+        item {
+            MoviesSection(
+                liveMovies = viewModel.topRatedMovies,
+                sectionTitleRes = R.string.top_rated,
+                onViewAllClicked = {
+                    openMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.TopRated,
+                            titleRes = R.string.top_rated
+                        )
                     )
+                }
+            ) {
+                MediaItem(
+                    title = it.title,
+                    posterImageUrl = it.posterImageUrl,
+                    indicator = { ScoreIndicator(score = it.voteAvgPercentage) },
+                    onClick = { openMovieDetails(it.id) }
                 )
             }
-        ) {
-            MovieItem(
-                title = it.title,
-                posterImageUrl = it.posterImageUrl,
-                indicator = { ScoreIndicator(score = it.voteAvgPercentage) },
-                onClick = { openMovieDetails(it.id) }
-            )
         }
 
         //Released
-        MoviesSection(
-            liveMovies = viewModel.nowInCinemasMovies,
-            sectionTitleRes = R.string.now_in_cinemas,
-            onViewAllClicked = {
-                openMovieList(
-                    MovieListLaunchable(
-                        listingType = MovieListingType.NowInCinemas,
-                        titleRes = R.string.now_in_cinemas
+        item {
+            MoviesSection(
+                liveMovies = viewModel.nowInCinemasMovies,
+                sectionTitleRes = R.string.now_in_cinemas,
+                onViewAllClicked = {
+                    openMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.NowInCinemas,
+                            titleRes = R.string.now_in_cinemas
+                        )
                     )
+                }
+            ) {
+                MediaItem(
+                    title = it.title,
+                    posterImageUrl = it.posterImageUrl,
+                    onClick = { openMovieDetails(it.id) }
                 )
             }
-        ) {
-            MovieItem(
-                title = it.title,
-                posterImageUrl = it.posterImageUrl,
-                onClick = { openMovieDetails(it.id) }
-            )
         }
 
         //Upcoming
-        MoviesSection(
-            liveMovies = viewModel.upcomingMovies,
-            sectionTitleRes = R.string.upcoming,
-            onViewAllClicked = {
-                openMovieList(
-                    MovieListLaunchable(
-                        listingType = MovieListingType.Upcoming,
-                        titleRes = R.string.upcoming
+        item {
+            MoviesSection(
+                liveMovies = viewModel.upcomingMovies,
+                sectionTitleRes = R.string.upcoming,
+                onViewAllClicked = {
+                    openMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.Upcoming,
+                            titleRes = R.string.upcoming
+                        )
                     )
+                }
+            ) {
+                MediaItem(
+                    title = it.title,
+                    posterImageUrl = it.posterImageUrl,
+                    indicator = {
+                        it.displayReleaseDate?.let { date ->
+                            ValueIndicator(value = date)
+                        }
+                    },
+                    onClick = { openMovieDetails(it.id) }
                 )
             }
-        ) {
-            MovieItem(
-                title = it.title,
-                posterImageUrl = it.posterImageUrl,
-                indicator = {
-                    it.displayReleaseDate?.let { date ->
-                        ValueIndicator(value = date)
-                    }
-                },
-                onClick = { openMovieDetails(it.id) }
-            )
         }
-        Spacer(modifier = Modifier.height(FooterSpacerHeight))
+
+        item {
+            Spacer(modifier = Modifier.height(FooterSpacerHeight))
+        }
     }
 }
 
@@ -241,7 +247,7 @@ fun HeaderSection(
             )
             Spacer(modifier = Modifier.height(DefaultMovieSectionSpacing))
             MovieGenres(
-                liveGenres = viewModel.genres,
+                liveGenres = viewModel.movieGenres,
                 onGenreClicked = {
                     onNavigateToMovieList(
                         MovieListLaunchable(
@@ -264,7 +270,7 @@ fun HeaderSection(
                     )
                 }
             ) {
-                MovieItem(
+                MediaItem(
                     title = it.title,
                     posterImageUrl = it.posterImageUrl,
                     onClick = { openMovieDetails(it.id) }

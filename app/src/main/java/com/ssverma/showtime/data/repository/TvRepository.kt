@@ -1,0 +1,115 @@
+package com.ssverma.showtime.data.repository
+
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.ssverma.showtime.api.TMDB_API_PAGE_SIZE
+import com.ssverma.showtime.api.TmdbApiService
+import com.ssverma.showtime.api.TmdbApiTiedConstants
+import com.ssverma.showtime.api.makeTmdbApiRequest
+import com.ssverma.showtime.data.remote.TvShowsPagingSource
+import com.ssverma.showtime.domain.Result
+import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.showtime.domain.model.TvShow
+import com.ssverma.showtime.domain.model.asGenres
+import com.ssverma.showtime.domain.model.asTvShows
+import com.ssverma.showtime.extension.asDomainFlow
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+
+class TvRepository @Inject constructor(
+    private val tmdbApiService: TmdbApiService
+) {
+
+    fun fetchPopularTvShowsGradually(): Flow<PagingData<TvShow>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                TvShowsPagingSource {
+                    tmdbApiService.getPopularTvShows(page = it)
+                }
+            }
+        ).flow
+    }
+
+    fun fetchTopRatedTvShowsGradually(): Flow<PagingData<TvShow>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                TvShowsPagingSource {
+                    tmdbApiService.getTopRatedTvShows(page = it)
+                }
+            }
+        ).flow
+    }
+
+    fun fetchTCurrentlyAiringTvShowsGradually(): Flow<PagingData<TvShow>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                TvShowsPagingSource {
+                    tmdbApiService.getOnTheAirTvShows(page = it)
+                }
+            }
+        ).flow
+    }
+
+    fun fetchTodayAiringTvShowsGradually(): Flow<PagingData<TvShow>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                TvShowsPagingSource {
+                    tmdbApiService.getTodayAiringTvShows(page = it)
+                }
+            }
+        ).flow
+    }
+
+    fun fetchTvGenre(): Flow<Result<List<Genre>>> {
+        return makeTmdbApiRequest {
+            tmdbApiService.getTvGenres()
+        }.asDomainFlow {
+            it.payload.genres?.asGenres() ?: emptyList()
+        }
+    }
+
+    fun discoverTvShowsGradually(queryMap: Map<String, String> = emptyMap()): Flow<PagingData<TvShow>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                TvShowsPagingSource {
+                    tmdbApiService.getDiscoveredTvShows(
+                        queryMap = queryMap,
+                        page = it
+                    )
+                }
+            }
+        ).flow
+    }
+
+    fun discoverTvShows(queryMap: Map<String, String> = emptyMap()): Flow<Result<List<TvShow>>> {
+        return makeTmdbApiRequest {
+            tmdbApiService.getDiscoveredTvShows(
+                queryMap = queryMap
+            )
+        }.asDomainFlow {
+            it.payload.results?.asTvShows() ?: emptyList()
+        }
+    }
+
+    fun fetchTopRatedTvShows(): Flow<Result<List<TvShow>>> {
+        return makeTmdbApiRequest {
+            tmdbApiService.getTopRatedTvShows()
+        }.asDomainFlow {
+            it.payload.results?.asTvShows() ?: emptyList()
+        }
+    }
+
+    fun fetchDailyTrendingTvShows(): Flow<Result<List<TvShow>>> {
+        return makeTmdbApiRequest {
+            tmdbApiService.getTrendingTvShows(timeWindow = TmdbApiTiedConstants.AvailableTimeWindows.DAY)
+        }.asDomainFlow {
+            it.payload.results?.asTvShows() ?: emptyList()
+        }
+    }
+}

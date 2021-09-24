@@ -1,6 +1,6 @@
 package com.ssverma.showtime.ui.movie
 
-import MovieItem
+import MediaItem
 import TmdbBackdropAspectRatio
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -746,7 +746,7 @@ fun SimilarMoviesSection(
         modifier = modifier
     ) {
         HorizontalList(items = movies) {
-            MovieItem(
+            MediaItem(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
                 modifier = Modifier.width(100.dp),

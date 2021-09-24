@@ -7,7 +7,10 @@ class ImagePayload(
     val posters: List<RemoteImageShot>?,
 
     @SerializedName("backdrops")
-    val backdrops: List<RemoteImageShot>?
+    val backdrops: List<RemoteImageShot>?,
+
+    @SerializedName("stills")
+    val stills: List<RemoteImageShot>?
 )
 
 class RemoteImageShot(
