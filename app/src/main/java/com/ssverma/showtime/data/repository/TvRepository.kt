@@ -7,12 +7,10 @@ import com.ssverma.showtime.api.TMDB_API_PAGE_SIZE
 import com.ssverma.showtime.api.TmdbApiService
 import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.api.makeTmdbApiRequest
+import com.ssverma.showtime.data.remote.ReviewsPagingSource
 import com.ssverma.showtime.data.remote.TvShowsPagingSource
 import com.ssverma.showtime.domain.Result
-import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.TvShow
-import com.ssverma.showtime.domain.model.asGenres
-import com.ssverma.showtime.domain.model.asTvShows
+import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.extension.asDomainFlow
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -111,5 +109,22 @@ class TvRepository @Inject constructor(
         }.asDomainFlow {
             it.payload.results?.asTvShows() ?: emptyList()
         }
+    }
+
+    fun fetchTvShowDetails(tvShowId: Int, queryMap: Map<String, String>): Flow<Result<TvShow>> {
+        return makeTmdbApiRequest {
+            tmdbApiService.getTvShowDetails(tvShowId = tvShowId, queryMap = queryMap)
+        }.asDomainFlow { it.payload.asTvShow() }
+    }
+
+    fun fetchTvShowReviewsGradually(tvShowId: Int): Flow<PagingData<Review>> {
+        return Pager(
+            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            pagingSourceFactory = {
+                ReviewsPagingSource { page ->
+                    tmdbApiService.getTvShowReviews(tvShowId = tvShowId, page = page)
+                }
+            }
+        ).flow
     }
 }

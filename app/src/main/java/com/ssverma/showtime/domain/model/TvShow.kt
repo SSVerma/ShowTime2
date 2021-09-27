@@ -1,5 +1,6 @@
 package com.ssverma.showtime.domain.model
 
+import com.ssverma.showtime.R
 import com.ssverma.showtime.api.TMDB_IMAGE_BASE_URL
 import com.ssverma.showtime.data.remote.response.RemoteTvShow
 import com.ssverma.showtime.extension.emptyIfNull
@@ -25,6 +26,8 @@ class TvShow(
     val popularity: Float,
     val displayPopularity: String,
     val originalLanguage: String,
+    val seasonCount: Int,
+    val episodeCount: Int,
     val casts: List<Cast>,
     val guestStars: List<Cast>,
     val crews: List<Crew>,
@@ -53,7 +56,9 @@ suspend fun RemoteTvShow.asTvShow(): TvShow {
         displayFirstAirDate = DateUtils.parseIsoDate(firstAirDate)?.formatLocally(),
         popularity = popularity,
         displayPopularity = FormatterUtils.toRangeSymbol(popularity),
-        originalLanguage = originalLanguage ?: "",
+        originalLanguage = originalLanguage.emptyIfNull(),
+        seasonCount = seasonCount,
+        episodeCount = episodeCount,
         casts = credit?.casts?.asCasts() ?: emptyList(),
         guestStars = credit?.guestStars?.asCasts() ?: emptyList(),
         crews = credit?.crews?.asCrews() ?: emptyList(),
@@ -87,4 +92,33 @@ fun TvShow.topImageShots(
     } else {
         from.subList(0, max)
     }
+}
+
+fun TvShow.highlightedItems(): List<Highlight> {
+    return listOf(
+        Highlight(
+            labelRes = R.string.rating,
+            value = voteAvg.toString()
+        ),
+        Highlight(
+            labelRes = R.string.first_air_date,
+            value = displayFirstAirDate.emptyIfNull(),
+        ),
+        Highlight(
+            labelRes = R.string.status,
+            value = status
+        ),
+        Highlight(
+            labelRes = R.string.language,
+            value = originalLanguage
+        ),
+        Highlight(
+            labelRes = R.string.season,
+            value = seasonCount.toString()
+        ),
+        Highlight(
+            labelRes = R.string.episode,
+            value = episodeCount.toString()
+        )
+    )
 }

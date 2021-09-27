@@ -148,9 +148,9 @@ sealed class AppDestination(
         }
     }
 
-    object ImageShots : StandaloneDestination("shots/image")
+    object MovieImageShots : StandaloneDestination("movie/shots/image")
 
-    object ImagePager : DependentDestination<Int>("imagePager") {
+    object MovieImagePager : DependentDestination<Int>("movie/imagePager") {
         const val PageIndex = "pageIndex"
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
@@ -216,6 +216,80 @@ sealed class AppDestination(
         override fun arguments(): List<NamedNavArgument> {
             return listOf(
                 navArgument(PersonId) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
+
+    object TvShowDetails : DependentDestination<Int>("tvShow") {
+        const val ArgTvShowId = "tvShowId"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(ArgTvShowId)
+                .build()
+        }
+
+        override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(ArgTvShowId, input)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(ArgTvShowId) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
+
+    object TvShowImageShots : StandaloneDestination("tvShow/shots/image")
+
+    object TvShowReviews : DependentDestination<Int>("tvShow/reviews") {
+        const val TvShowId = "tvShowId"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(TvShowId)
+                .build()
+        }
+
+        override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(TvShowId, input)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(TvShowId) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
+
+    object TvImagePager : DependentDestination<Int>("tv/imagePager") {
+        const val PageIndex = "pageIndex"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(PageIndex)
+                .build()
+        }
+
+        override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(PageIndex, input)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(PageIndex) {
                     type = NavType.IntType
                 },
             )

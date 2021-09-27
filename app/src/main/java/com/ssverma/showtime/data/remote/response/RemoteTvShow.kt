@@ -39,6 +39,12 @@ class RemoteTvShow(
     @SerializedName("original_language")
     val originalLanguage: String?,
 
+    @SerializedName("number_of_seasons")
+    val seasonCount: Int,
+
+    @SerializedName("number_of_episodes")
+    val episodeCount: Int,
+
     @SerializedName("credits")
     val credit: RemoteCredit?,
 

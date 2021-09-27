@@ -21,6 +21,9 @@ import com.ssverma.showtime.ui.movie.*
 import com.ssverma.showtime.ui.people.PersonDetailsScreen
 import com.ssverma.showtime.ui.people.PersonImageShotsScreen
 import com.ssverma.showtime.ui.people.PersonScreen
+import com.ssverma.showtime.ui.tv.TvShowDetailsScreen
+import com.ssverma.showtime.ui.tv.TvShowDetailsViewModel
+import com.ssverma.showtime.ui.tv.TvShowReviewsScreen
 import com.ssverma.showtime.ui.tv.TvShowScreen
 
 
@@ -91,7 +94,7 @@ fun ShowTimeNavHost(
                 TvShowScreen(
                     viewModel = it.graphScopedViewModel,
                     openTvShowDetails = { tvShowId ->
-                        //TODO
+                        navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
                     },
                     openTvShowList = { tvShowLaunchable ->
                         //TODO
@@ -113,7 +116,7 @@ fun ShowTimeNavHost(
                         navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
                     },
                     openTvShowDetailsScreen = { tvShowId ->
-                        //TODO
+                        navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
                     }
                 )
             }
@@ -147,10 +150,10 @@ fun ShowTimeNavHost(
                     navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
                 },
                 openImageShotsList = {
-                    navController.navigateTo(AppDestination.ImageShots.actualRoute)
+                    navController.navigateTo(AppDestination.MovieImageShots.actualRoute)
                 },
                 openImageShot = { index ->
-                    navController.navigateTo(AppDestination.ImagePager.actualRoute(index))
+                    navController.navigateTo(AppDestination.MovieImagePager.actualRoute(index))
                 },
                 openReviewsList = { movieId ->
                     navController.navigateTo(AppDestination.MovieReviews.actualRoute(movieId))
@@ -161,7 +164,7 @@ fun ShowTimeNavHost(
             )
         }
 
-        composable(AppDestination.ImageShots) {
+        composable(AppDestination.MovieImageShots) {
             val movieDetailsViewModel: MovieDetailsViewModel =
                 navController.destinationViewModel(destination = AppDestination.MovieDetails)
 
@@ -169,18 +172,18 @@ fun ShowTimeNavHost(
                 liveImageShots = movieDetailsViewModel.imageShots,
                 onBackPressed = { navController.popBackStack() },
                 openImagePager = {
-                    navController.navigateTo(AppDestination.ImagePager.actualRoute(it))
+                    navController.navigateTo(AppDestination.MovieImagePager.actualRoute(it))
                 }
             )
         }
 
-        composable(AppDestination.ImagePager) {
+        composable(AppDestination.MovieImagePager) {
             val movieDetailsViewModel = navController
                 .destinationViewModel<MovieDetailsViewModel>(destination = AppDestination.MovieDetails)
 
             ImagePagerScreen(
                 liveImageShots = movieDetailsViewModel.imageShots,
-                defaultPageIndex = it.arguments?.getInt(AppDestination.ImagePager.PageIndex)
+                defaultPageIndex = it.arguments?.getInt(AppDestination.MovieImagePager.PageIndex)
                     ?: 0,
                 onBackPressed = { navController.popBackStack() }
             )
@@ -202,7 +205,7 @@ fun ShowTimeNavHost(
                     navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
                 },
                 openTvShowDetails = { tvShowId ->
-                    //TODO
+                    navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
                 },
                 openPersonAllImages = { personId ->
                     navController.navigateTo(AppDestination.PersonImages.actualRoute(personId))
@@ -214,6 +217,60 @@ fun ShowTimeNavHost(
             PersonImageShotsScreen(
                 viewModel = hiltViewModel(it),
                 onBackPressed = { navController.popBackStack() },
+            )
+        }
+
+        composable(destination = AppDestination.TvShowDetails) {
+            TvShowDetailsScreen(
+                viewModel = hiltViewModel(it),
+                onBackPressed = { navController.popBackStack() },
+                openTvShowDetails = { tvShowId ->
+                    navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
+                },
+                openImageShotsList = {
+                    navController.navigateTo(AppDestination.TvShowImageShots.actualRoute)
+                },
+                openImageShot = { index ->
+                    navController.navigateTo(AppDestination.TvImagePager.actualRoute(index))
+                },
+                openReviewsList = { tvShowId ->
+                    navController.navigateTo(AppDestination.TvShowReviews.actualRoute(tvShowId))
+                },
+                openPersonDetails = { personId ->
+                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
+                }
+            )
+        }
+
+        composable(AppDestination.TvShowImageShots) {
+            val tvShowDetailsViewModel: TvShowDetailsViewModel =
+                navController.destinationViewModel(destination = AppDestination.TvShowDetails)
+
+            ImageShotsListScreen(
+                liveImageShots = tvShowDetailsViewModel.imageShots,
+                onBackPressed = { navController.popBackStack() },
+                openImagePager = {
+                    navController.navigateTo(AppDestination.TvImagePager.actualRoute(it))
+                }
+            )
+        }
+
+        composable(destination = AppDestination.TvShowReviews) {
+            TvShowReviewsScreen(
+                viewModel = hiltViewModel(it),
+                onBackPress = { navController.popBackStack() }
+            )
+        }
+
+        composable(AppDestination.TvImagePager) {
+            val tvShowDetailsViewModel = navController
+                .destinationViewModel<TvShowDetailsViewModel>(destination = AppDestination.TvShowDetails)
+
+            ImagePagerScreen(
+                liveImageShots = tvShowDetailsViewModel.imageShots,
+                defaultPageIndex = it.arguments?.getInt(AppDestination.TvImagePager.PageIndex)
+                    ?: 0,
+                onBackPressed = { navController.popBackStack() }
             )
         }
     }

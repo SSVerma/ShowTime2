@@ -41,8 +41,8 @@ fun RemoteReview.asReview(): Review {
         id = id ?: "",
         author = author?.asAuthor() ?: absentAuthor(),
         content = content ?: "",
-        displayCreatedAt = DateUtils.parseIsoOffsetDateTime(createdAt)?.formatLocally(),
-        displayUpdatedAt = DateUtils.parseIsoOffsetDateTime(updatedAt)?.formatLocally(),
+        displayCreatedAt = DateUtils.parseIsoOffsetDateTime(createdAt)?.toLocalDate()?.formatLocally(),
+        displayUpdatedAt = DateUtils.parseIsoOffsetDateTime(updatedAt)?.toLocalDate()?.formatLocally(),
         isEdited = createdAt != updatedAt
     )
 }

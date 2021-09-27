@@ -1,5 +1,6 @@
 package com.ssverma.showtime.domain.model
 
+import com.ssverma.showtime.R
 import com.ssverma.showtime.api.TMDB_IMAGE_BASE_URL
 import com.ssverma.showtime.data.remote.response.RemoteMovie
 import com.ssverma.showtime.utils.CoreUtils
@@ -94,4 +95,33 @@ fun Movie.topImageShots(
     } else {
         from.subList(0, max)
     }
+}
+
+fun Movie.highlightedItems(): List<Highlight> {
+    return listOf(
+        Highlight(
+            labelRes = R.string.rating,
+            value = voteAvg.toString()
+        ),
+        Highlight(
+            labelRes = R.string.release_date,
+            value = displayReleaseDate ?: "",
+        ),
+        Highlight(
+            labelRes = R.string.status,
+            value = status
+        ),
+        Highlight(
+            labelRes = R.string.language,
+            value = originalLanguage
+        ),
+        Highlight(
+            labelRes = R.string.runtime,
+            value = DateUtils.formatMinutes(runtime)
+        ),
+        Highlight(
+            labelRes = R.string.revenue,
+            value = "$$revenue"
+        )
+    )
 }

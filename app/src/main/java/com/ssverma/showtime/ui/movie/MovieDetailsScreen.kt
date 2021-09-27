@@ -7,7 +7,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -403,7 +402,8 @@ fun ImageShotsSection(
     imageShots: List<ImageShot>,
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    maxImageShots: Int = MaxImageShots,
 ) {
     Section(
         sectionHeader = {
@@ -411,7 +411,7 @@ fun ImageShotsSection(
                 title = stringResource(id = R.string.shots),
                 modifier = Modifier.padding(horizontal = 16.dp),
                 onTrailingActionClicked = openImageShotsList,
-                hideTrailingAction = imageShots.size <= MaxImageShots
+                hideTrailingAction = imageShots.size <= maxImageShots
             )
         },
         headerContentSpacing = SectionContentHeaderSpacing,
@@ -421,7 +421,7 @@ fun ImageShotsSection(
         VerticalGrid(
             items = imageShots,
             columnCount = 3,
-            max = MaxImageShots,
+            max = maxImageShots,
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -604,7 +604,6 @@ fun ReviewItem(
 
         Surface(
             shape = MaterialTheme.shapes.medium.copy(topStart = CornerSize(0.dp)),
-            color = MaterialTheme.colors.surface.copy(alpha = if (isSystemInDarkTheme()) 0.32f else 1f),
             onClick = {
                 expended = !expended
             },
@@ -621,8 +620,13 @@ fun ReviewItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
 
-                    val authorName = if (review.author.name.isNullOrEmpty())
-                        stringResource(id = R.string.unknown) else review.author.name
+                    val authorName = if (!review.author.name.isNullOrEmpty()) {
+                        review.author.name
+                    } else if (review.author.userName.isNotEmpty()) {
+                        review.author.userName
+                    } else {
+                        stringResource(id = R.string.unknown)
+                    }
 
                     /*Author*/
                     BoxWithConstraints {
@@ -758,11 +762,11 @@ fun SimilarMoviesSection(
     }
 }
 
-private val ActionSize = 40.dp
-private val SurfaceCornerRoundSize = 12.dp
-private val SectionVerticalSpacing = 32.dp
-private val SectionContentHeaderSpacing = 16.dp
+val ActionSize = 40.dp
+val SurfaceCornerRoundSize = 12.dp
+val SectionVerticalSpacing = 32.dp
+val SectionContentHeaderSpacing = 16.dp
 private const val MaxImageShots = 9
-private const val MaxReviews = 3
-private val VideoIteWidth = 200.dp
-private val VideoIteHeight = 112.5.dp
+const val MaxReviews = 3
+val VideoIteWidth = 200.dp
+val VideoIteHeight = 112.5.dp

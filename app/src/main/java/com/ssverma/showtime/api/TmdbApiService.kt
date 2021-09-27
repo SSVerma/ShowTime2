@@ -111,4 +111,10 @@ interface TmdbApiService {
         @Path("timeWindow") timeWindow: String,
         @Query("page") page: Int = 1
     ): Response<PagedPayload<RemoteTvShow>>
+
+    @GET("3/tv/{tvShowId}/reviews")
+    suspend fun getTvShowReviews(
+        @Path("tvShowId") tvShowId: Int,
+        @Query("page") page: Int
+    ): Response<PagedPayload<RemoteReview>>
 }

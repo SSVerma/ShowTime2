@@ -98,7 +98,7 @@ object TmdbApiTiedConstants {
         const val Vimeo = "Vimeo"
     }
 
-    object MovieDetailsAppendableResponseTypes {
+    object AppendableResponseTypes {
         const val Keywords = "keywords"
         const val Credits = "credits"
         const val Images = "images"
@@ -106,6 +106,7 @@ object TmdbApiTiedConstants {
         const val Lists = "lists"
         const val Reviews = "reviews"
         const val Similar = "similar"
+        const val Recommendations = "recommendations"
     }
 
     object AvailableMediaType {
