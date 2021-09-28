@@ -2,15 +2,15 @@ package com.ssverma.showtime.ui.tv
 
 import MediaItem
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.TextButton
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -18,6 +18,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
+import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.showtime.domain.model.TvSeason
 import com.ssverma.showtime.domain.model.TvShow
 import com.ssverma.showtime.domain.model.highlightedItems
 import com.ssverma.showtime.ui.common.*
@@ -32,6 +34,8 @@ fun TvShowDetailsScreen(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (movieId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
+    openTvShowList: (tvShowListLaunchable: TvShowListLaunchable) -> Unit,
+    openTvSeasonDetails: (seasonLaunchable: TvSeasonLaunchable) -> Unit
 ) {
     Surface(color = MaterialTheme.colors.background) {
         DriveCompose(observable = viewModel.liveTvShowDetails) {
@@ -46,7 +50,17 @@ fun TvShowDetailsScreen(
                 openYoutube = { videoId ->
                     viewModel.openYoutubeApp(videoId = videoId)
                 },
-                openPersonDetails = openPersonDetails
+                openPersonDetails = openPersonDetails,
+                openTvShowList = { genre ->
+                    openTvShowList(
+                        TvShowListLaunchable(
+                            listingType = TvShowListingType.Genre,
+                            title = genre.name,
+                            genre = genre
+                        )
+                    )
+                },
+                openTvSeasonDetails = openTvSeasonDetails
             )
         }
     }
@@ -63,6 +77,8 @@ private fun TvShowContent(
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
+    openTvShowList: (genre: Genre) -> Unit,
+    openTvSeasonDetails: (seasonLaunchable: TvSeasonLaunchable) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val imageShots by viewModel.imageShots.observeAsState(emptyList())
@@ -127,6 +143,35 @@ private fun TvShowContent(
                 overview = tvShow.overview,
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
+                    .padding(top = SectionVerticalSpacing)
+            )
+        }
+
+        /*Genre*/
+        item {
+            HorizontalList(
+                items = tvShow.generes,
+                contentPadding = PaddingValues(top = SectionVerticalSpacing, start = 16.dp, end = 16.dp)
+            ) {
+                GenreItem(genre = it) {
+                    openTvShowList(it)
+                }
+            }
+        }
+
+        /*Seasons*/
+        item {
+            SeasonsSection(
+                seasons = tvShow.seasons,
+                onSeasonClick = { season ->
+                    openTvSeasonDetails(
+                        TvSeasonLaunchable(
+                            tvShowId = viewModel.tvShowId,
+                            seasonNumber = season.seasonNumber
+                        )
+                    )
+                },
+                modifier = Modifier
                     .padding(top = SectionVerticalSpacing)
             )
         }
@@ -228,4 +273,55 @@ private fun SimilarTvShowsSection(
     }
 }
 
+@Composable
+private fun SeasonsSection(
+    seasons: List<TvSeason>,
+    onSeasonClick: (season: TvSeason) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var seasonCount by remember {
+        mutableStateOf(if (seasons.size < MaxSeason) seasons.size else MaxReviews)
+    }
+
+    val showSeasonViewAll by remember { derivedStateOf { seasonCount < seasons.size } }
+
+    Section(
+        sectionHeader = {
+            SectionHeader(
+                title = stringResource(id = R.string.seasons_n, seasons.size),
+                modifier = Modifier.padding(horizontal = 16.dp),
+                hideTrailingAction = true
+            )
+        },
+        headerContentSpacing = SectionContentHeaderSpacing,
+        hideIf = seasons.isEmpty(),
+        modifier = modifier
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .animateContentSize()
+        ) {
+            for (i in 0 until seasonCount) {
+                TvSeasonItem(
+                    tvSeason = seasons[i],
+                    onClick = {
+                        onSeasonClick(seasons[i])
+                    }
+                )
+            }
+            if (showSeasonViewAll) {
+                TextButton(
+                    onClick = { seasonCount = seasons.size },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = stringResource(id = R.string.view_more))
+                }
+            }
+        }
+    }
+}
+
 private const val MaxImageShots = 6
+private const val MaxSeason = 3

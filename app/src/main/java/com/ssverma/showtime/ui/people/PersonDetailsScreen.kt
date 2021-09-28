@@ -180,7 +180,6 @@ fun PersonContent(
         }
 
         item {
-
             Text(
                 text = person.biography,
                 textAlign = TextAlign.Start,
@@ -188,7 +187,8 @@ fun PersonContent(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.body1,
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .padding(top = SectionSpacing)
                     .animateContentSize()
                     .clickable {
                         isBioExpended = !isBioExpended
@@ -198,7 +198,12 @@ fun PersonContent(
 
         item {
             HorizontalListIndexed(
-                items = remember { person.imageShots + listOf(emptyImageShot()) }
+                items = remember { person.imageShots + listOf(emptyImageShot()) },
+                contentPadding = PaddingValues(
+                    top = SectionSpacing,
+                    start = 16.dp,
+                    end = 16.dp
+                )
             ) { index, imageShot ->
                 if (index <= person.imageShots.lastIndex) {
                     ImageShotItem(
@@ -210,14 +215,12 @@ fun PersonContent(
                         modifier = Modifier
                             .width(100.dp)
                             .aspectRatio(TmdbPersonAspectRatio)
-                            .padding(top = SectionSpacing)
                     )
                 } else {
                     Box(
                         modifier = Modifier
                             .width(100.dp)
                             .aspectRatio(TmdbPersonAspectRatio)
-                            .padding(top = SectionSpacing)
                             .border(
                                 width = 1.dp,
                                 color = MaterialTheme.colors.onSurface,

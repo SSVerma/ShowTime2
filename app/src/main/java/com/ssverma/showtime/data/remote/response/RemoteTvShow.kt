@@ -57,7 +57,7 @@ class RemoteTvShow(
     @SerializedName("videos")
     val videoPayload: VideoPayload?,
 
-    @SerializedName("generes")
+    @SerializedName("genres")
     val genres: List<RemoteGenre>?,
 
     @SerializedName("reviews")
@@ -67,5 +67,8 @@ class RemoteTvShow(
     val similarTvShows: PagedPayload<RemoteTvShow>?,
 
     @SerializedName("recommendations")
-    val recommendations: PagedPayload<RemoteTvShow>?
+    val recommendations: PagedPayload<RemoteTvShow>?,
+
+    @SerializedName("seasons")
+    val seasons: List<RemoteTvSeason>?
 )

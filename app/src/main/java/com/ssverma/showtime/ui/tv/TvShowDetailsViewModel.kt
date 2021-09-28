@@ -33,7 +33,7 @@ class TvShowDetailsViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) {
 
-    private val tvShowId = savedStateHandle.get<Int>(AppDestination.TvShowDetails.ArgTvShowId) ?: 0
+    val tvShowId = savedStateHandle.get<Int>(AppDestination.TvShowDetails.ArgTvShowId) ?: 0
 
     private val _liveImageShots = MediatorLiveData<List<ImageShot>>()
     val imageShots: LiveData<List<ImageShot>> get() = _liveImageShots

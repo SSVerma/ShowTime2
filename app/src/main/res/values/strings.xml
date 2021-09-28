@@ -76,8 +76,14 @@
     <string name="airing_today">Airing Today</string>
     <string name="now_airing">On the Air</string>
     <string name="first_air_date">First Air Date</string>
-    <string name="season">Season</string>
-    <string name="episode">Episode</string>
+    <string name="season_number">Season Number</string>
+    <string name="episode_number">Episode Number</string>
+    <string name="episodes">Episodes</string>
     <string name="recommendations">Recommendations</string>
     <string name="similar_shows">Similar Shows</string>
+    <string name="episodes_n">%1s episodes</string>
+    <string name="view_more">View more</string>
+    <string name="seasons">Seasons</string>
+    <string name="seasons_n">Seasons (%1s)</string>
+    <string name="rating_n">%1s rating</string>
 </resources>

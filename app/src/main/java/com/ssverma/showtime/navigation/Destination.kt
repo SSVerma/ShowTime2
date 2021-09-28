@@ -6,6 +6,7 @@ import androidx.navigation.compose.navArgument
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.movie.MovieListLaunchable
 import com.ssverma.showtime.ui.movie.MovieListingType
+import com.ssverma.showtime.ui.tv.TvSeasonLaunchable
 
 interface Destination {
     val identifier: String
@@ -290,6 +291,36 @@ sealed class AppDestination(
         override fun arguments(): List<NamedNavArgument> {
             return listOf(
                 navArgument(PageIndex) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
+
+    object TvSeasonDetails : DependentDestination<TvSeasonLaunchable>("tvShow/season") {
+        const val ArgTvShowId = "tvShowId"
+        const val ArgTvSeasonNumber = "seasonNumber"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(ArgTvShowId)
+                .mandatoryArg(ArgTvSeasonNumber)
+                .build()
+        }
+
+        override fun actualRoute(input: TvSeasonLaunchable, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+            return builder
+                .mandatoryArg(ArgTvShowId, input.tvShowId)
+                .mandatoryArg(ArgTvSeasonNumber, input.seasonNumber)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(ArgTvShowId) {
+                    type = NavType.IntType
+                },
+                navArgument(ArgTvSeasonNumber) {
                     type = NavType.IntType
                 },
             )

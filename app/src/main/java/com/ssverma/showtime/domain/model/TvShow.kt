@@ -33,12 +33,14 @@ class TvShow(
     val crews: List<Crew>,
     val keywords: List<Keyword>,
     val posters: List<ImageShot>,
+    val backdrops: List<ImageShot>,
     val stills: List<ImageShot>,
     val videos: List<Video>,
     val generes: List<Genre>,
     val reviews: List<Review>,
     val similarTvShows: List<TvShow>,
-    val recommendations: List<TvShow>
+    val recommendations: List<TvShow>,
+    val seasons: List<TvSeason>
 )
 
 suspend fun RemoteTvShow.asTvShow(): TvShow {
@@ -64,12 +66,14 @@ suspend fun RemoteTvShow.asTvShow(): TvShow {
         crews = credit?.crews?.asCrews() ?: emptyList(),
         keywords = keywordPayload?.keywords?.asKeywords() ?: emptyList(),
         posters = imagePayload?.posters?.asImagesShots() ?: emptyList(),
+        backdrops = imagePayload?.backdrops?.asImagesShots() ?: emptyList(),
         stills = imagePayload?.stills?.asImagesShots() ?: emptyList(),
         videos = videoPayload?.videos?.filterYoutubeVideos() ?: emptyList(),
         generes = genres?.asGenres() ?: emptyList(),
         reviews = reviews?.results?.asReviews()?.asReversed() ?: emptyList(),
         similarTvShows = similarTvShows?.results?.asTvShows() ?: emptyList(),
         recommendations = recommendations?.results?.asTvShows() ?: emptyList(),
+        seasons = seasons?.asTvSeasons() ?: emptyList()
     )
 }
 
@@ -80,7 +84,7 @@ suspend fun List<RemoteTvShow>.asTvShows(): List<TvShow> {
 }
 
 fun TvShow.imageShots(): List<ImageShot> {
-    return (posters + stills)
+    return (backdrops + posters + stills)
 }
 
 fun TvShow.topImageShots(
@@ -113,11 +117,11 @@ fun TvShow.highlightedItems(): List<Highlight> {
             value = originalLanguage
         ),
         Highlight(
-            labelRes = R.string.season,
+            labelRes = R.string.seasons,
             value = seasonCount.toString()
         ),
         Highlight(
-            labelRes = R.string.episode,
+            labelRes = R.string.episode_number,
             value = episodeCount.toString()
         )
     )

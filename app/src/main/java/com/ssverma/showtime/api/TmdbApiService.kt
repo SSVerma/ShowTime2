@@ -117,4 +117,11 @@ interface TmdbApiService {
         @Path("tvShowId") tvShowId: Int,
         @Query("page") page: Int
     ): Response<PagedPayload<RemoteReview>>
+
+    @GET("3/tv/{tvShowId}/season/{seasonNumber}")
+    suspend fun getTvSeason(
+        @Path("tvShowId") tvShowId: Int,
+        @Path("seasonNumber") seasonNumber: Int,
+        @QueryMap queryMap: Map<String, String>,
+    ): Response<RemoteTvSeason>
 }

@@ -7,6 +7,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -327,6 +328,8 @@ fun OverviewSection(
     overview: String,
     modifier: Modifier = Modifier
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Section(
         sectionHeader = {
             SectionHeader(
@@ -341,7 +344,12 @@ fun OverviewSection(
         Text(
             text = overview,
             style = MaterialTheme.typography.body1,
-            textAlign = TextAlign.Justify
+            textAlign = TextAlign.Justify,
+            maxLines = if (expanded) Int.MAX_VALUE else OverviewMaxLines,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.clickable {
+                expanded = !expanded
+            }
         )
     }
 }
@@ -770,3 +778,4 @@ private const val MaxImageShots = 9
 const val MaxReviews = 3
 val VideoIteWidth = 200.dp
 val VideoIteHeight = 112.5.dp
+private const val OverviewMaxLines = 5

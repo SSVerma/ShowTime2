@@ -2,14 +2,14 @@ package com.ssverma.showtime.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
-class TvEpisode(
+class RemoteTvSeason(
     @SerializedName("id")
     val id: Int,
 
     @SerializedName("name")
     val title: String?,
 
-    @SerializedName("still_path")
+    @SerializedName("poster_path")
     val posterPath: String?,
 
     @SerializedName("overview")
@@ -18,23 +18,17 @@ class TvEpisode(
     @SerializedName("air_date")
     val airDate: String?,
 
-    @SerializedName("episode_number")
-    val episodeNumber: Int,
-
     @SerializedName("season_number")
     val seasonNumber: Int,
 
-    @SerializedName("vote_average")
-    val voteAvg: Float,
+    @SerializedName("episode_count")
+    val episodeCount: Int,
 
-    @SerializedName("vote_count")
-    val voteCount: Int,
+    @SerializedName("episodes")
+    val episodes: List<RemoteTvEpisode>?,
 
     @SerializedName("credits")
     val credit: RemoteCredit?,
-
-    @SerializedName("guest_stars")
-    val guestStars: List<RemoteCast>?,
 
     @SerializedName("images")
     val imagePayload: ImagePayload?,

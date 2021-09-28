@@ -21,10 +21,7 @@ import com.ssverma.showtime.ui.movie.*
 import com.ssverma.showtime.ui.people.PersonDetailsScreen
 import com.ssverma.showtime.ui.people.PersonImageShotsScreen
 import com.ssverma.showtime.ui.people.PersonScreen
-import com.ssverma.showtime.ui.tv.TvShowDetailsScreen
-import com.ssverma.showtime.ui.tv.TvShowDetailsViewModel
-import com.ssverma.showtime.ui.tv.TvShowReviewsScreen
-import com.ssverma.showtime.ui.tv.TvShowScreen
+import com.ssverma.showtime.ui.tv.*
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -238,6 +235,12 @@ fun ShowTimeNavHost(
                 },
                 openPersonDetails = { personId ->
                     navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
+                },
+                openTvShowList = {
+                    //TODO
+                },
+                openTvSeasonDetails = { seasonLaunchable ->
+                    navController.navigateTo(AppDestination.TvSeasonDetails.actualRoute(seasonLaunchable))
                 }
             )
         }
@@ -271,6 +274,19 @@ fun ShowTimeNavHost(
                 defaultPageIndex = it.arguments?.getInt(AppDestination.TvImagePager.PageIndex)
                     ?: 0,
                 onBackPressed = { navController.popBackStack() }
+            )
+        }
+
+        composable(destination = AppDestination.TvSeasonDetails) {
+            TvSeasonDetailsScreen(
+                viewModel = hiltViewModel(it),
+                onBackPress = { navController.popBackStack() },
+                openEpisodeDetails = { episodeId ->
+                    //TODO
+                },
+                openPersonDetails = { personId ->
+                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
+                }
             )
         }
     }
