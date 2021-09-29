@@ -26,12 +26,10 @@ import com.ssverma.showtime.ui.movie.ImageShotItem
 
 @Composable
 fun ImagePagerScreen(
-    liveImageShots: LiveData<List<ImageShot>>,
+    imageShots: List<ImageShot>,
     onBackPressed: () -> Unit,
     defaultPageIndex: Int = 0
 ) {
-    val imageShots by liveImageShots.observeAsState(initial = emptyList())
-
     Column(
         modifier = Modifier
             .systemBarsPadding()
@@ -49,6 +47,21 @@ fun ImagePagerScreen(
             modifier = Modifier.fillMaxSize()
         )
     }
+}
+
+@Composable
+fun ImagePagerScreen(
+    liveImageShots: LiveData<List<ImageShot>>,
+    onBackPressed: () -> Unit,
+    defaultPageIndex: Int = 0
+) {
+    val imageShots by liveImageShots.observeAsState(initial = emptyList())
+
+    ImagePagerScreen(
+        imageShots = imageShots,
+        onBackPressed = onBackPressed,
+        defaultPageIndex = defaultPageIndex
+    )
 }
 
 

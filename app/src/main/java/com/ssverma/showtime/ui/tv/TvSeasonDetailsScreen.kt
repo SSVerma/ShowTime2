@@ -11,29 +11,28 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.TvEpisode
 import com.ssverma.showtime.domain.model.TvSeason
 import com.ssverma.showtime.domain.model.highlightedItems
 import com.ssverma.showtime.extension.emptyIfNull
-import com.ssverma.showtime.ui.common.BackdropNavigationAction
-import com.ssverma.showtime.ui.common.DriveCompose
-import com.ssverma.showtime.ui.common.NetworkImage
-import com.ssverma.showtime.ui.common.SectionHeader
+import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.movie.CreditSection
 import com.ssverma.showtime.ui.movie.Highlights
+import com.ssverma.showtime.ui.movie.ImageShotsSection
 import com.ssverma.showtime.ui.movie.OverviewSection
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TvSeasonDetailsScreen(
     viewModel: TvSeasonDetailsViewModel,
@@ -41,14 +40,30 @@ fun TvSeasonDetailsScreen(
     openEpisodeDetails: (episodeId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
 ) {
-    DriveCompose(observable = viewModel.liveSeason) {
-        TvSeasonContent(
-            tvSeason = it,
-            onBackPress = onBackPress,
-            openEpisodeDetails = openEpisodeDetails,
-            openPersonDetails = openPersonDetails,
-            modifier = Modifier.navigationBarsPadding()
-        )
+    val bottomSheetCurrentItem = remember { mutableStateOf(SheetItems.None) }
+    val clickedImageIndex = remember { mutableStateOf(0) }
+
+    DriveCompose(observable = viewModel.liveSeason) { tvSeason ->
+        ImageShotBottomSheet(
+            imageShots = tvSeason.posters,
+            sheetItem = bottomSheetCurrentItem,
+            tappedImageIndex = clickedImageIndex
+        ) {
+            TvSeasonContent(
+                tvSeason = tvSeason,
+                onBackPress = onBackPress,
+                openEpisodeDetails = openEpisodeDetails,
+                openPersonDetails = openPersonDetails,
+                openImageShotsList = {
+                    bottomSheetCurrentItem.value = SheetItems.ImageList
+                },
+                openImageShot = { pageIndex ->
+                    clickedImageIndex.value = pageIndex
+                    bottomSheetCurrentItem.value = SheetItems.ImagePager
+                },
+                modifier = Modifier.padding(it)
+            )
+        }
     }
 }
 
@@ -58,6 +73,8 @@ private fun TvSeasonContent(
     onBackPress: () -> Unit,
     openEpisodeDetails: (episodeId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
+    openImageShotsList: () -> Unit,
+    openImageShot: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
@@ -65,6 +82,17 @@ private fun TvSeasonContent(
             BackdropHeader(
                 backdropImageUrl = tvSeason.posterImageUrl,
                 onBackPress = onBackPress
+            )
+        }
+
+        item {
+            Text(
+                text = tvSeason.title,
+                style = MaterialTheme.typography.h5,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             )
         }
 
@@ -90,6 +118,16 @@ private fun TvSeasonContent(
             CreditSection(
                 casts = tvSeason.casts,
                 onPersonClick = openPersonDetails,
+                modifier = Modifier.padding(top = SectionSpacing)
+            )
+        }
+
+        item {
+            ImageShotsSection(
+                imageShots = tvSeason.posters,
+                maxImageShots = MaxImageShots,
+                openImageShotsList = openImageShotsList,
+                openImageShot = openImageShot,
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }
@@ -214,3 +252,4 @@ fun TvEpisodeItem(
 
 private val SectionSpacing = 20.dp
 private val SurfaceCornerRoundSize = 12.dp
+private const val MaxImageShots = 3
