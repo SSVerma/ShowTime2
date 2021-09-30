@@ -141,4 +141,20 @@ class TvRepository @Inject constructor(
             )
         }.asDomainFlow { it.payload.asTvSeason() }
     }
+
+    fun fetchTvEpisodeDetails(
+        tvShowId: Int,
+        seasonNumber: Int,
+        episodeNumber: Int,
+        queryMap: Map<String, String>,
+    ): Flow<Result<TvEpisode>> {
+        return makeTmdbApiRequest {
+            tmdbApiService.getTvEpisode(
+                tvShowId = tvShowId,
+                seasonNumber = seasonNumber,
+                episodeNumber = episodeNumber,
+                queryMap = queryMap
+            )
+        }.asDomainFlow { it.payload.asTvEpisode() }
+    }
 }

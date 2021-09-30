@@ -1,5 +1,6 @@
 package com.ssverma.showtime.domain.model
 
+import com.ssverma.showtime.R
 import com.ssverma.showtime.api.convertToFullTmdbImageUrl
 import com.ssverma.showtime.data.remote.response.RemoteTvEpisode
 import com.ssverma.showtime.extension.emptyIfNull
@@ -17,6 +18,7 @@ data class TvEpisode(
     val voteAvg: Float,
     val voteCount: Int,
     val casts: List<Cast>,
+    val guestStars: List<Cast>,
     val crews: List<Crew>,
     val posters: List<ImageShot>,
     val videos: List<Video>
@@ -34,6 +36,7 @@ suspend fun RemoteTvEpisode.asTvEpisode(): TvEpisode {
         voteAvg = voteAvg,
         voteCount = voteCount,
         casts = credit?.casts?.asCasts() ?: emptyList(),
+        guestStars = credit?.guestStars?.asCasts() ?: emptyList(),
         crews = credit?.crews?.asCrews() ?: emptyList(),
         posters = imagePayload?.posters?.asImagesShots() ?: emptyList(),
         videos = videoPayload?.videos?.asVideos() ?: emptyList()
@@ -41,3 +44,20 @@ suspend fun RemoteTvEpisode.asTvEpisode(): TvEpisode {
 }
 
 suspend fun List<RemoteTvEpisode>.asTvEpisodes() = map { it.asTvEpisode() }
+
+fun TvEpisode.highlightedItems(): List<Highlight> {
+    return listOf(
+        Highlight(
+            labelRes = R.string.season_number,
+            value = seasonNumber.toString()
+        ),
+        Highlight(
+            labelRes = R.string.rating,
+            value = voteAvg.toString()
+        ),
+        Highlight(
+            labelRes = R.string.air_date,
+            value = displayAirDate.emptyIfNull()
+        ),
+    )
+}

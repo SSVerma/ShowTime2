@@ -15,7 +15,7 @@ import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.ImageShotsListScreen
 import kotlinx.coroutines.launch
 
-enum class SheetItems {
+enum class SheetContentType {
     ImageList,
     ImagePager,
     None
@@ -26,23 +26,23 @@ enum class SheetItems {
 fun ImageShotBottomSheet(
     imageShots: List<ImageShot>,
     modifier: Modifier = Modifier,
-    sheetItem: MutableState<SheetItems>,
+    sheetItem: MutableState<SheetContentType>,
     tappedImageIndex: MutableState<Int>,
     content: @Composable (padding: PaddingValues) -> Unit
 ) {
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val coroutineScope = rememberCoroutineScope()
 
-    var bottomSheetCurrentItem by remember { sheetItem }
+    var sheetCurrentContentType by remember { sheetItem }
     var clickedImageIndex by remember { tappedImageIndex }
 
-    LaunchedEffect(key1 = bottomSheetCurrentItem) {
-        when (bottomSheetCurrentItem) {
-            SheetItems.ImageList,
-            SheetItems.ImagePager -> {
+    LaunchedEffect(key1 = sheetCurrentContentType) {
+        when (sheetCurrentContentType) {
+            SheetContentType.ImageList,
+            SheetContentType.ImagePager -> {
                 bottomSheetScaffoldState.bottomSheetState.expand()
             }
-            SheetItems.None -> {
+            SheetContentType.None -> {
                 //Do nothing
             }
         }
@@ -56,17 +56,17 @@ fun ImageShotBottomSheet(
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
                         clickedImageIndex = 0
-                        bottomSheetCurrentItem = SheetItems.None
+                        sheetCurrentContentType = SheetContentType.None
                     }
                 }
             }
-            when (bottomSheetCurrentItem) {
-                SheetItems.ImageList -> {
+            when (sheetCurrentContentType) {
+                SheetContentType.ImageList -> {
                     ImageShotsListScreen(
                         imageShots = imageShots,
                         openImagePager = { pageIndex ->
                             clickedImageIndex = pageIndex
-                            bottomSheetCurrentItem = SheetItems.ImagePager
+                            sheetCurrentContentType = SheetContentType.ImagePager
 
                             coroutineScope.launch {
                                 bottomSheetScaffoldState.bottomSheetState.expand()
@@ -76,12 +76,12 @@ fun ImageShotBottomSheet(
                             coroutineScope.launch {
                                 bottomSheetScaffoldState.bottomSheetState.collapse()
                                 clickedImageIndex = 0
-                                bottomSheetCurrentItem = SheetItems.None
+                                sheetCurrentContentType = SheetContentType.None
                             }
                         }
                     )
                 }
-                SheetItems.ImagePager -> {
+                SheetContentType.ImagePager -> {
                     ImagePagerScreen(
                         imageShots = imageShots,
                         defaultPageIndex = clickedImageIndex,
@@ -89,17 +89,17 @@ fun ImageShotBottomSheet(
                             coroutineScope.launch {
                                 bottomSheetScaffoldState.bottomSheetState.collapse()
                                 clickedImageIndex = 0
-                                bottomSheetCurrentItem = SheetItems.None
+                                sheetCurrentContentType = SheetContentType.None
                             }
                         }
                     )
                 }
-                SheetItems.None -> {
+                SheetContentType.None -> {
                     //Do nothing
                 }
             }
         },
-        sheetPeekHeight = if (bottomSheetCurrentItem == SheetItems.None) 1.dp else 0.dp,
+        sheetPeekHeight = if (sheetCurrentContentType == SheetContentType.None) 1.dp else 0.dp,
         sheetBackgroundColor = MaterialTheme.colors.background,
         modifier = modifier.fillMaxSize(),
         content = content

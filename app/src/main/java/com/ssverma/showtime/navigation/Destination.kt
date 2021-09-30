@@ -6,6 +6,7 @@ import androidx.navigation.compose.navArgument
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.movie.MovieListLaunchable
 import com.ssverma.showtime.ui.movie.MovieListingType
+import com.ssverma.showtime.ui.tv.TvEpisodeLaunchable
 import com.ssverma.showtime.ui.tv.TvSeasonLaunchable
 
 interface Destination {
@@ -308,7 +309,10 @@ sealed class AppDestination(
                 .build()
         }
 
-        override fun actualRoute(input: TvSeasonLaunchable, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
+        override fun actualRoute(
+            input: TvSeasonLaunchable,
+            builder: ActualRoute.ActualRouteBuilder
+        ): ActualRoute {
             return builder
                 .mandatoryArg(ArgTvShowId, input.tvShowId)
                 .mandatoryArg(ArgTvSeasonNumber, input.seasonNumber)
@@ -321,6 +325,45 @@ sealed class AppDestination(
                     type = NavType.IntType
                 },
                 navArgument(ArgTvSeasonNumber) {
+                    type = NavType.IntType
+                },
+            )
+        }
+    }
+
+    object TvEpisodeDetails : DependentDestination<TvEpisodeLaunchable>("tvShow/season/episode") {
+        const val ArgTvShowId = "tvShowId"
+        const val ArgSeasonNumber = "seasonNumber"
+        const val ArgEpisodeNumber = "episodeNumber"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder
+                .mandatoryArg(ArgTvShowId)
+                .mandatoryArg(ArgSeasonNumber)
+                .mandatoryArg(ArgEpisodeNumber)
+                .build()
+        }
+
+        override fun actualRoute(
+            input: TvEpisodeLaunchable,
+            builder: ActualRoute.ActualRouteBuilder
+        ): ActualRoute {
+            return builder
+                .mandatoryArg(ArgTvShowId, input.tvShowId)
+                .mandatoryArg(ArgSeasonNumber, input.seasonNumber)
+                .mandatoryArg(ArgEpisodeNumber, input.episodeNumber)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(ArgTvShowId) {
+                    type = NavType.IntType
+                },
+                navArgument(ArgSeasonNumber) {
+                    type = NavType.IntType
+                },
+                navArgument(ArgEpisodeNumber) {
                     type = NavType.IntType
                 },
             )

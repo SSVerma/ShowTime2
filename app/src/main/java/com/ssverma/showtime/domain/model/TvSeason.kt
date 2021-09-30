@@ -52,7 +52,7 @@ fun TvSeason.highlightedItems(): List<Highlight> {
             value = episodes.size.toString()
         ),
         Highlight(
-            labelRes = R.string.first_air_date,
+            labelRes = R.string.air_date,
             value = displayAirDate.emptyIfNull()
         ),
     )

@@ -124,4 +124,12 @@ interface TmdbApiService {
         @Path("seasonNumber") seasonNumber: Int,
         @QueryMap queryMap: Map<String, String>,
     ): Response<RemoteTvSeason>
+
+    @GET("3/tv/{tvShowId}/season/{seasonNumber}/episode/{episodeNumber}")
+    suspend fun getTvEpisode(
+        @Path("tvShowId") tvShowId: Int,
+        @Path("seasonNumber") seasonNumber: Int,
+        @Path("episodeNumber") episodeNumber: Int,
+        @QueryMap queryMap: Map<String, String>,
+    ): Response<RemoteTvEpisode>
 }

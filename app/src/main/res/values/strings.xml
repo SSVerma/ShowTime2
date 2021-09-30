@@ -86,4 +86,6 @@
     <string name="seasons">Seasons</string>
     <string name="seasons_n">Seasons (%1s)</string>
     <string name="rating_n">%1s rating</string>
+    <string name="air_date">Air Date</string>
+    <string name="guest_appearance">Guest Appearance</string>
 </resources>

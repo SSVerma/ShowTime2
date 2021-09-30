@@ -12,19 +12,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class TvSeasonDetailsViewModel @Inject constructor(
+class TvEpisodeDetailsViewModel @Inject constructor(
     tvRepository: TvRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val tvShowId = savedStateHandle
-        .get<Int>(AppDestination.TvSeasonDetails.ArgTvShowId) ?: 0
+    private val tvShowId = savedStateHandle
+        .get<Int>(AppDestination.TvEpisodeDetails.ArgTvShowId) ?: 0
     private val seasonNumber = savedStateHandle
-        .get<Int>(AppDestination.TvSeasonDetails.ArgTvSeasonNumber) ?: 0
+        .get<Int>(AppDestination.TvEpisodeDetails.ArgSeasonNumber) ?: 0
+    private val episodeNumber = savedStateHandle
+        .get<Int>(AppDestination.TvEpisodeDetails.ArgEpisodeNumber) ?: 0
 
-    val liveSeason = tvRepository.fetchTvSeasonDetails(
+    val liveEpisode = tvRepository.fetchTvEpisodeDetails(
         tvShowId = tvShowId,
         seasonNumber = seasonNumber,
+        episodeNumber = episodeNumber,
         queryMap = AppendableQueryMap.of(
             QueryMultiValue.andBuilder()
                 .and(TmdbApiTiedConstants.AppendableResponseTypes.Credits)

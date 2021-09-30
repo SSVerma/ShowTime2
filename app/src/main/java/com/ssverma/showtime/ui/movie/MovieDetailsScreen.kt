@@ -681,12 +681,13 @@ fun ReviewItem(
 fun CreditSection(
     casts: List<Cast>,
     onPersonClick: (personId: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    @StringRes titleRes: Int = R.string.casts,
 ) {
     Section(
         sectionHeader = {
             SectionHeader(
-                title = stringResource(id = R.string.casts),
+                title = stringResource(id = titleRes),
                 modifier = Modifier.padding(horizontal = 16.dp),
                 hideTrailingAction = true
             )

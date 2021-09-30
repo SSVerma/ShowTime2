@@ -1,14 +1,10 @@
 package com.ssverma.showtime.ui.tv
 
 import TmdbBackdropAspectRatio
-import TmdbPosterAspectRatio
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -16,54 +12,43 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.TvEpisode
-import com.ssverma.showtime.domain.model.TvSeason
 import com.ssverma.showtime.domain.model.highlightedItems
-import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.movie.CreditSection
 import com.ssverma.showtime.ui.movie.Highlights
 import com.ssverma.showtime.ui.movie.ImageShotsSection
 import com.ssverma.showtime.ui.movie.OverviewSection
 
-@OptIn(ExperimentalMaterialApi::class)
+class TvEpisodeLaunchable(
+    val tvShowId: Int,
+    val seasonNumber: Int,
+    val episodeNumber: Int,
+)
+
 @Composable
-fun TvSeasonDetailsScreen(
-    viewModel: TvSeasonDetailsViewModel,
+fun TvEpisodeDetailsScreen(
+    viewModel: TvEpisodeDetailsViewModel,
     onBackPress: () -> Unit,
-    openEpisodeDetails: (episodeLaunchable: TvEpisodeLaunchable) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
 ) {
     val bottomSheetCurrentItem = remember { mutableStateOf(SheetContentType.None) }
     val clickedImageIndex = remember { mutableStateOf(0) }
 
-    DriveCompose(observable = viewModel.liveSeason) { tvSeason ->
+    DriveCompose(observable = viewModel.liveEpisode) { episode ->
         ImageShotBottomSheet(
-            imageShots = tvSeason.posters,
+            imageShots = episode.posters,
             sheetItem = bottomSheetCurrentItem,
             tappedImageIndex = clickedImageIndex
         ) {
-            TvSeasonContent(
-                tvSeason = tvSeason,
+            TvEpisodeContent(
+                episode = episode,
                 onBackPress = onBackPress,
-                onEpisodeClick = { episode ->
-                    openEpisodeDetails(
-                        TvEpisodeLaunchable(
-                            tvShowId = viewModel.tvShowId,
-                            seasonNumber = episode.seasonNumber,
-                            episodeNumber = episode.episodeNumber
-                        )
-                    )
-                },
                 openPersonDetails = openPersonDetails,
                 openImageShotsList = {
                     bottomSheetCurrentItem.value = SheetContentType.ImageList
@@ -81,10 +66,9 @@ fun TvSeasonDetailsScreen(
 }
 
 @Composable
-private fun TvSeasonContent(
-    tvSeason: TvSeason,
+private fun TvEpisodeContent(
+    episode: TvEpisode,
     onBackPress: () -> Unit,
-    onEpisodeClick: (episode: TvEpisode) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
@@ -93,14 +77,14 @@ private fun TvSeasonContent(
     LazyColumn(modifier = modifier) {
         item {
             BackdropHeader(
-                backdropImageUrl = tvSeason.posterImageUrl,
+                backdropImageUrl = episode.posterImageUrl,
                 onBackPress = onBackPress
             )
         }
 
         item {
             Text(
-                text = tvSeason.title,
+                text = episode.title,
                 style = MaterialTheme.typography.h5,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -111,7 +95,7 @@ private fun TvSeasonContent(
 
         item {
             Highlights(
-                highlights = tvSeason.highlightedItems(),
+                highlights = episode.highlightedItems(),
                 modifier = Modifier
                     .padding(top = SectionSpacing)
                     .padding(horizontal = 16.dp)
@@ -120,7 +104,7 @@ private fun TvSeasonContent(
 
         item {
             OverviewSection(
-                overview = tvSeason.overview,
+                overview = episode.overview,
                 modifier = Modifier
                     .padding(top = SectionSpacing)
                     .padding(horizontal = 16.dp)
@@ -129,7 +113,16 @@ private fun TvSeasonContent(
 
         item {
             CreditSection(
-                casts = tvSeason.casts,
+                casts = episode.casts,
+                onPersonClick = openPersonDetails,
+                modifier = Modifier.padding(top = SectionSpacing)
+            )
+        }
+
+        item {
+            CreditSection(
+                casts = episode.guestStars,
+                titleRes = R.string.guest_appearance,
                 onPersonClick = openPersonDetails,
                 modifier = Modifier.padding(top = SectionSpacing)
             )
@@ -137,31 +130,11 @@ private fun TvSeasonContent(
 
         item {
             ImageShotsSection(
-                imageShots = tvSeason.posters,
+                imageShots = episode.posters,
                 maxImageShots = MaxImageShots,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 modifier = Modifier.padding(top = SectionSpacing)
-            )
-        }
-
-        item {
-            SectionHeader(
-                title = stringResource(id = R.string.episodes),
-                hideTrailingAction = true,
-                modifier = Modifier
-                    .padding(top = SectionSpacing, bottom = 8.dp)
-                    .padding(horizontal = 16.dp)
-            )
-        }
-
-        items(items = tvSeason.episodes) {
-            TvEpisodeItem(
-                tvEpisode = it,
-                onClick = { onEpisodeClick(it) },
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .padding(horizontal = 16.dp)
             )
         }
 
@@ -212,56 +185,6 @@ private fun BackdropHeader(
                 )
                 .align(Alignment.BottomCenter)
         )
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun TvEpisodeItem(
-    tvEpisode: TvEpisode,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        onClick = onClick
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NetworkImage(
-                url = tvEpisode.posterImageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .width(72.dp)
-                    .aspectRatio(TmdbPosterAspectRatio)
-                    .clip(MaterialTheme.shapes.medium.copy(CornerSize(8.dp)))
-            )
-
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = tvEpisode.title, style = MaterialTheme.typography.subtitle1)
-                Text(
-                    text = tvEpisode.displayAirDate.emptyIfNull(),
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-                Text(
-                    text = stringResource(id = R.string.rating_n, tvEpisode.voteAvg),
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-                Text(
-                    text = tvEpisode.overview,
-                    style = MaterialTheme.typography.caption,
-                    maxLines = 2,
-                    fontStyle = FontStyle.Italic,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-        }
     }
 }
 

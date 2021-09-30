@@ -240,7 +240,11 @@ fun ShowTimeNavHost(
                     //TODO
                 },
                 openTvSeasonDetails = { seasonLaunchable ->
-                    navController.navigateTo(AppDestination.TvSeasonDetails.actualRoute(seasonLaunchable))
+                    navController.navigateTo(
+                        AppDestination.TvSeasonDetails.actualRoute(
+                            seasonLaunchable
+                        )
+                    )
                 }
             )
         }
@@ -281,9 +285,21 @@ fun ShowTimeNavHost(
             TvSeasonDetailsScreen(
                 viewModel = hiltViewModel(it),
                 onBackPress = { navController.popBackStack() },
-                openEpisodeDetails = { episodeId ->
-                    //TODO
+                openEpisodeDetails = { episodeLaunchable ->
+                    navController.navigateTo(
+                        AppDestination.TvEpisodeDetails.actualRoute(episodeLaunchable)
+                    )
                 },
+                openPersonDetails = { personId ->
+                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
+                }
+            )
+        }
+
+        composable(destination = AppDestination.TvEpisodeDetails) {
+            TvEpisodeDetailsScreen(
+                viewModel = hiltViewModel(it),
+                onBackPress = { navController.popBackStack() },
                 openPersonDetails = { personId ->
                     navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
                 }
