@@ -1,7 +1,61 @@
 package com.ssverma.showtime.api
 
-object DiscoverMovieQueryMap {
-    fun of(
+object DiscoverQueryMap {
+    fun ofMovie(
+        sortBy: String? = null,
+        primaryReleaseDateLte: String? = null,
+        primaryReleaseDateGte: String? = null,
+        monetizationType: String? = null,
+        releaseType: QueryMultiValue? = null,
+        genres: QueryMultiValue? = null,
+        keywords: QueryMultiValue? = null,
+        voteAvgLte: String? = null,
+        voteAvgGte: String? = null,
+        runtimeLte: String? = null,
+        runtimeGte: String? = null,
+    ) = of(
+        sortBy = sortBy,
+        primaryReleaseDateLte = primaryReleaseDateLte,
+        primaryReleaseDateGte = primaryReleaseDateGte,
+        monetizationType = monetizationType,
+        releaseType = releaseType,
+        genres = genres,
+        keywords = keywords,
+        voteAvgLte = voteAvgLte,
+        voteAvgGte = voteAvgGte,
+        runtimeLte = runtimeLte,
+        runtimeGte = runtimeGte
+    )
+
+    fun ofTv(
+        sortBy: String? = null,
+        monetizationType: String? = null,
+        genres: QueryMultiValue? = null,
+        keywords: QueryMultiValue? = null,
+        voteAvgLte: String? = null,
+        voteAvgGte: String? = null,
+        runtimeLte: String? = null,
+        runtimeGte: String? = null,
+        firstAirDateLte: String? = null,
+        firstAirDateGte: String? = null,
+        airDateLte: String? = null,
+        airDateGte: String? = null,
+    ) = of(
+        sortBy = sortBy,
+        monetizationType = monetizationType,
+        genres = genres,
+        keywords = keywords,
+        voteAvgLte = voteAvgLte,
+        voteAvgGte = voteAvgGte,
+        runtimeLte = runtimeLte,
+        runtimeGte = runtimeGte,
+        firstAirDateLte = firstAirDateLte,
+        firstAirDateGte = firstAirDateGte,
+        airDateLte = airDateLte,
+        airDateGte = airDateGte
+    )
+
+    private fun of(
         sortBy: String? = null,
         primaryReleaseDateLte: String? = null,
         primaryReleaseDateGte: String? = null,

@@ -76,10 +76,10 @@ fun ImagePager(
         return
     }
 
-    val pagerState = rememberPagerState(pageCount = imageShots.size)
+    val pagerState = rememberPagerState()
 
     Box(modifier) {
-        HorizontalPager(state = pagerState) { page ->
+        HorizontalPager(state = pagerState, count = imageShots.size) { page ->
             ImageShotItem(
                 imageShot = imageShots[page],
                 onClick = {},

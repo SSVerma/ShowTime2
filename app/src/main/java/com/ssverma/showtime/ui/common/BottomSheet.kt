@@ -1,15 +1,20 @@
 package com.ssverma.showtime.ui.common
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.insets.navigationBarsHeight
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.ImageShotsListScreen
@@ -78,7 +83,8 @@ fun ImageShotBottomSheet(
                                 clickedImageIndex = 0
                                 sheetCurrentContentType = SheetContentType.None
                             }
-                        }
+                        },
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
                 SheetContentType.ImagePager -> {
@@ -95,11 +101,16 @@ fun ImageShotBottomSheet(
                     )
                 }
                 SheetContentType.None -> {
-                    //Do nothing
+                    //Workaround to prevent no associated anchor exception
+                    Box(
+                        modifier = Modifier
+                            .height(1.dp)
+                            .background(color = Color.Transparent)
+                    )
                 }
             }
         },
-        sheetPeekHeight = if (sheetCurrentContentType == SheetContentType.None) 1.dp else 0.dp,
+        sheetPeekHeight = 0.dp,
         sheetBackgroundColor = MaterialTheme.colors.background,
         modifier = modifier.fillMaxSize(),
         content = content

@@ -117,7 +117,7 @@ private fun TvShowContent(
                     openTvShowList(
                         TvShowListLaunchable(
                             listingType = TvShowListingType.AiringToday,
-                            titleRes = R.string.popuplar
+                            titleRes = R.string.airing_today
                         )
                     )
                 }
@@ -187,7 +187,7 @@ private fun TvShowContent(
                     openTvShowList(
                         TvShowListLaunchable(
                             listingType = TvShowListingType.NowAiring,
-                            titleRes = R.string.now_in_cinemas
+                            titleRes = R.string.now_airing
                         )
                     )
                 }

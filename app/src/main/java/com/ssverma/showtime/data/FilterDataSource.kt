@@ -8,7 +8,6 @@ import com.ssverma.showtime.domain.model.LabelFilter
 import com.ssverma.showtime.domain.model.NumberRangeFilter
 import com.ssverma.showtime.domain.model.StaticLabelFilter
 import com.ssverma.showtime.ui.Range
-import com.ssverma.showtime.ui.RangeFilterGroupState
 import java.time.LocalDate
 
 //Template for similar type filters -> Filter Group
@@ -110,12 +109,6 @@ fun coreFilterGroups(): List<FilterGroup> {
             static = true,
             filters = CoreFilters.availabilityFilters
         ),
-        FilterGroup.ListGroup.MultiSelectableGroup(
-            groupId = FilterGroupId.ListGroupId.ReleaseType,
-            titleRes = R.string.release_type,
-            static = true,
-            filters = CoreFilters.releaseTypeFilters
-        ),
         FilterGroup.RangeGroup.NumberRangeGroup(
             groupId = FilterGroupId.RangeGroupId.Rating,
             titleRes = R.string.rating,
@@ -145,10 +138,25 @@ fun movieFilterGroups(): List<FilterGroup> {
             titleRes = R.string.certification,
             static = true,
             filters = MovieFilters.certificationsFilter
+        ),
+        FilterGroup.ListGroup.MultiSelectableGroup(
+            groupId = FilterGroupId.ListGroupId.ReleaseType,
+            titleRes = R.string.release_type,
+            static = true,
+            filters = MovieFilters.releaseTypeFilters
         )
     )
 
     return coreFilterGroups + movieOnlyFilters
+}
+
+fun tvFilterGroups(): List<FilterGroup> {
+    val coreFilterGroups = coreFilterGroups()
+    val tvOnlyFilters = listOf<FilterGroup>(
+        //TODO
+    )
+
+    return coreFilterGroups + tvOnlyFilters
 }
 
 
@@ -173,38 +181,6 @@ object CoreFilters {
         StaticLabelFilter(
             filterValue = TmdbApiTiedConstants.AvailableMonetizationTypes.Buy,
             displayValueRes = R.string.buy
-        )
-    )
-
-    val releaseTypeFilters = listOf(
-        StaticLabelFilter(
-            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Premiere.toString(),
-            displayValueRes = R.string.premiere
-        ),
-
-        StaticLabelFilter(
-            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.TheatricalLimited.toString(),
-            displayValueRes = R.string.theatrical_limited
-        ),
-
-        StaticLabelFilter(
-            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Theatrical.toString(),
-            displayValueRes = R.string.theatrical
-        ),
-
-        StaticLabelFilter(
-            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Digital.toString(),
-            displayValueRes = R.string.digital
-        ),
-
-        StaticLabelFilter(
-            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Physical.toString(),
-            displayValueRes = R.string.physical
-        ),
-
-        StaticLabelFilter(
-            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Tv.toString(),
-            displayValueRes = R.string.tv
         )
     )
 
@@ -238,6 +214,38 @@ object MovieFilters {
         StaticLabelFilter(
             filterValue = TmdbApiTiedConstants.AvailableCertificationTypes.A,
             displayValueRes = R.string.cert_a
+        )
+    )
+
+    val releaseTypeFilters = listOf(
+        StaticLabelFilter(
+            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Premiere.toString(),
+            displayValueRes = R.string.premiere
+        ),
+
+        StaticLabelFilter(
+            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.TheatricalLimited.toString(),
+            displayValueRes = R.string.theatrical_limited
+        ),
+
+        StaticLabelFilter(
+            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Theatrical.toString(),
+            displayValueRes = R.string.theatrical
+        ),
+
+        StaticLabelFilter(
+            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Digital.toString(),
+            displayValueRes = R.string.digital
+        ),
+
+        StaticLabelFilter(
+            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Physical.toString(),
+            displayValueRes = R.string.physical
+        ),
+
+        StaticLabelFilter(
+            filterValue = TmdbApiTiedConstants.AvailableReleaseTypes.Tv.toString(),
+            displayValueRes = R.string.tv
         )
     )
 }

@@ -42,7 +42,7 @@ fun TvEpisodeDetailsScreen(
 
     DriveCompose(observable = viewModel.liveEpisode) { episode ->
         ImageShotBottomSheet(
-            imageShots = episode.posters,
+            imageShots = episode.stills,
             sheetItem = bottomSheetCurrentItem,
             tappedImageIndex = clickedImageIndex
         ) {
@@ -112,6 +112,16 @@ private fun TvEpisodeContent(
         }
 
         item {
+            ImageShotsSection(
+                imageShots = episode.stills,
+                maxImageShots = MaxImageShots,
+                openImageShotsList = openImageShotsList,
+                openImageShot = openImageShot,
+                modifier = Modifier.padding(top = SectionSpacing)
+            )
+        }
+
+        item {
             CreditSection(
                 casts = episode.casts,
                 onPersonClick = openPersonDetails,
@@ -124,16 +134,6 @@ private fun TvEpisodeContent(
                 casts = episode.guestStars,
                 titleRes = R.string.guest_appearance,
                 onPersonClick = openPersonDetails,
-                modifier = Modifier.padding(top = SectionSpacing)
-            )
-        }
-
-        item {
-            ImageShotsSection(
-                imageShots = episode.posters,
-                maxImageShots = MaxImageShots,
-                openImageShotsList = openImageShotsList,
-                openImageShot = openImageShot,
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }
@@ -188,6 +188,6 @@ private fun BackdropHeader(
     }
 }
 
-private val SectionSpacing = 20.dp
+private val SectionSpacing = 24.dp
 private val SurfaceCornerRoundSize = 12.dp
-private const val MaxImageShots = 3
+private const val MaxImageShots = 6

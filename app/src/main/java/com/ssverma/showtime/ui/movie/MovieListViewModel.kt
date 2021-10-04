@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssverma.showtime.R
-import com.ssverma.showtime.api.DiscoverMovieQueryMap
+import com.ssverma.showtime.api.DiscoverQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
 import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.MovieRepository
@@ -15,6 +15,7 @@ import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatAsIso
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -49,6 +50,7 @@ class MovieListViewModel @Inject constructor(
         else -> true
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val pagedMovies: Flow<PagingData<Movie>> = appliedFilters.flatMapLatest {
         when (listingType) {
             MovieListingType.TrendingToday -> {
@@ -72,19 +74,19 @@ class MovieListViewModel @Inject constructor(
     private fun fetchMovies(type: MovieListingType) {
         val filterMap = when (type) {
             MovieListingType.Popular -> {
-                DiscoverMovieQueryMap.of(
+                DiscoverQueryMap.ofMovie(
                     sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PopularityDesc,
                     releaseType = movieReleaseType
                 )
             }
             MovieListingType.NowInCinemas -> {
-                DiscoverMovieQueryMap.of(
+                DiscoverQueryMap.ofMovie(
                     primaryReleaseDateLte = DateUtils.currentDate().formatAsIso(),
                     releaseType = movieReleaseType
                 )
             }
             MovieListingType.Upcoming -> {
-                DiscoverMovieQueryMap.of(
+                DiscoverQueryMap.ofMovie(
                     primaryReleaseDateGte = DateUtils.currentDate().plusDays(1).formatAsIso(),
                     releaseType = movieReleaseType,
                     sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PrimaryReleaseDateAsc
@@ -95,12 +97,12 @@ class MovieListViewModel @Inject constructor(
                 val genreId = genreId
                     ?: throw IllegalArgumentException("Provide genre id when listing type is $type")
 
-                DiscoverMovieQueryMap.of(
+                DiscoverQueryMap.ofMovie(
                     genres = QueryMultiValue.orBuilder().or(genreId).build()
                 )
             }
 
-            else -> DiscoverMovieQueryMap.of()
+            else -> DiscoverQueryMap.ofMovie()
         }
 
         appliedFilters.value = filterMap

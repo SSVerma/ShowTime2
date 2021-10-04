@@ -20,7 +20,7 @@ data class TvEpisode(
     val casts: List<Cast>,
     val guestStars: List<Cast>,
     val crews: List<Crew>,
-    val posters: List<ImageShot>,
+    val stills: List<ImageShot>,
     val videos: List<Video>
 )
 
@@ -38,7 +38,7 @@ suspend fun RemoteTvEpisode.asTvEpisode(): TvEpisode {
         casts = credit?.casts?.asCasts() ?: emptyList(),
         guestStars = credit?.guestStars?.asCasts() ?: emptyList(),
         crews = credit?.crews?.asCrews() ?: emptyList(),
-        posters = imagePayload?.posters?.asImagesShots() ?: emptyList(),
+        stills = imagePayload?.stills?.asImagesShots() ?: emptyList(),
         videos = videoPayload?.videos?.asVideos() ?: emptyList()
     )
 }

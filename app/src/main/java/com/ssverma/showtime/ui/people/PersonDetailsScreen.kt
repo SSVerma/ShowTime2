@@ -264,7 +264,7 @@ private fun PersonMediaTabs(
     modifier: Modifier = Modifier,
     showAllMedia: Boolean = false,
 ) {
-    val pagerState = rememberPagerState(pageCount = personMediaByType.size)
+    val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
 
     TabRow(
@@ -307,6 +307,7 @@ private fun PersonMediaTabs(
 
     HorizontalPager(
         state = pagerState,
+        count = personMediaByType.size,
         verticalAlignment = Alignment.Top,
         modifier = Modifier
             .background(MaterialTheme.colors.background)

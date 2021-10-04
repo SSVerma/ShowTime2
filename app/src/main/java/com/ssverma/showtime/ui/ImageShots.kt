@@ -28,9 +28,10 @@ import com.ssverma.showtime.ui.movie.ImageShotItem
 fun ImageShotsListScreen(
     onBackPressed: () -> Unit,
     openImagePager: (pageIndex: Int) -> Unit,
-    imageShots: List<ImageShot>
+    imageShots: List<ImageShot>,
+    modifier: Modifier = Modifier
 ) {
-    Column(modifier = Modifier.statusBarsPadding()) {
+    Column(modifier = modifier.statusBarsPadding()) {
         AppTopAppBar(
             title = stringResource(id = R.string.shots),
             onBackPressed = onBackPressed

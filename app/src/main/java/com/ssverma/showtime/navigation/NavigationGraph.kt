@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.*
-import androidx.navigation.compose.NamedNavArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
@@ -94,7 +93,9 @@ fun ShowTimeNavHost(
                         navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
                     },
                     openTvShowList = { tvShowLaunchable ->
-                        //TODO
+                        navController.navigateTo(
+                            AppDestination.TvShowList.actualRoute(tvShowLaunchable)
+                        )
                     }
                 )
             }
@@ -236,8 +237,10 @@ fun ShowTimeNavHost(
                 openPersonDetails = { personId ->
                     navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
                 },
-                openTvShowList = {
-                    //TODO
+                openTvShowList = { tvShowLaunchable ->
+                    navController.navigateTo(
+                        AppDestination.TvShowList.actualRoute(tvShowLaunchable)
+                    )
                 },
                 openTvSeasonDetails = { seasonLaunchable ->
                     navController.navigateTo(
@@ -302,6 +305,16 @@ fun ShowTimeNavHost(
                 onBackPress = { navController.popBackStack() },
                 openPersonDetails = { personId ->
                     navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
+                }
+            )
+        }
+
+        composable(AppDestination.TvShowList) {
+            TvShowListScreen(
+                viewModel = hiltViewModel(it),
+                onBackPressed = { navController.popBackStack() },
+                openTvShowDetails = { tvShowId ->
+                    navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
                 }
             )
         }

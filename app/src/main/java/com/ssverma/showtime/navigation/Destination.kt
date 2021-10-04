@@ -1,13 +1,15 @@
 package com.ssverma.showtime.navigation
 
+import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
-import androidx.navigation.compose.NamedNavArgument
-import androidx.navigation.compose.navArgument
+import androidx.navigation.navArgument
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.movie.MovieListLaunchable
 import com.ssverma.showtime.ui.movie.MovieListingType
 import com.ssverma.showtime.ui.tv.TvEpisodeLaunchable
 import com.ssverma.showtime.ui.tv.TvSeasonLaunchable
+import com.ssverma.showtime.ui.tv.TvShowListLaunchable
+import com.ssverma.showtime.ui.tv.TvShowListingType
 
 interface Destination {
     val identifier: String
@@ -366,6 +368,52 @@ sealed class AppDestination(
                 navArgument(ArgEpisodeNumber) {
                     type = NavType.IntType
                 },
+            )
+        }
+    }
+
+    object TvShowList : DependentDestination<TvShowListLaunchable>("tvShows") {
+        const val ArgListingType = "type"
+        const val ArgTitleRes = "titleRes"
+        const val ArgTitle = "title"
+        const val ArgGenreId = "genreId"
+
+        override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
+            return builder.mandatoryArg(ArgListingType)
+                .optionalArg(ArgTitleRes)
+                .optionalArg(ArgTitle)
+                .optionalArg(ArgGenreId)
+                .build()
+        }
+
+        override fun actualRoute(
+            input: TvShowListLaunchable,
+            builder: ActualRoute.ActualRouteBuilder,
+        ): ActualRoute {
+            return builder.mandatoryArg(ArgListingType, input.listingType.name)
+                .optionalArg(ArgTitleRes, input.titleRes.toString())
+                .optionalArg(ArgTitle, input.title)
+                .optionalArg(ArgGenreId, input.genre?.id ?: 0)
+                .build()
+        }
+
+        override fun arguments(): List<NamedNavArgument> {
+            return listOf(
+                navArgument(ArgListingType) {
+                    type = NavType.EnumType(TvShowListingType::class.java)
+                },
+                navArgument(ArgTitleRes) {
+                    defaultValue = R.string.movies
+                },
+                navArgument(ArgTitle) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument(ArgGenreId) {
+                    type = NavType.IntType
+                    defaultValue = 0
+                }
             )
         }
     }
