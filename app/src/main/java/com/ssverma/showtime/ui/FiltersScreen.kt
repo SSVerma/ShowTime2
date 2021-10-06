@@ -1,8 +1,11 @@
 package com.ssverma.showtime.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.MaterialTheme
@@ -19,22 +22,28 @@ import com.ssverma.showtime.data.FilterGroupId
 import com.ssverma.showtime.domain.model.LabelFilter
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.utils.formatAsIso
+import kotlinx.coroutines.delay
 import java.time.LocalDate
+import java.util.*
 
 @Composable
 fun FiltersScreen(
     modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
     filterGroups: List<FilterGroup>,
     onFilterApplied: (Map<String, String>) -> Unit
 ) {
     val filterState = rememberFilterState(filterGroups = filterGroups)
 
     Box(modifier) {
-        FilterContent(filterGroups, filterState)
+        FilterContent(filterGroups, filterState, listState)
         ExtendedFloatingActionButton(
             text = {
-                Text(text = stringResource(id = R.string.apply), color = MaterialTheme.colors.onSecondary)
-                   },
+                Text(
+                    text = stringResource(id = R.string.apply),
+                    color = MaterialTheme.colors.onSecondary
+                )
+            },
             onClick = {
                 onFilterApplied(filterState.asDiscoverMap())
             },
@@ -47,12 +56,35 @@ fun FiltersScreen(
 }
 
 @Composable
-fun FilterContent(filterGroups: List<FilterGroup>, filterState: FilterState) {
-    LazyColumn {
+fun FilterContent(
+    filterGroups: List<FilterGroup>,
+    filterState: FilterState,
+    lisState: LazyListState
+) {
+    val selectedCountry = remember { Locale.getDefault().country }
+
+    LaunchedEffect(key1 = true) {
+        delay(1000)
+        lisState.scrollToItem(0)
+    }
+
+    LazyColumn(state = lisState) {
         itemsIndexed(filterGroups) { index, group ->
             FilterGroupItem(
                 title = stringResource(id = group.titleRes),
-                showDivider = index != filterGroups.lastIndex
+                showDivider = index != filterGroups.lastIndex,
+                groupFilterContent = {
+                    if (group.groupId is FilterGroupId.ListGroupId.Availability) {
+                        Text(
+                            text = selectedCountry,
+                            style = MaterialTheme.typography.caption,
+                            modifier = Modifier
+                                .border(1.dp, color = MaterialTheme.colors.onBackground)
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                        group.groupFilterValue = selectedCountry
+                    }
+                }
             ) {
                 when (group) {
                     is FilterGroup.ListGroup.MultiSelectableGroup -> {
@@ -98,15 +130,25 @@ private fun FilterGroupItem(
     title: String,
     modifier: Modifier = Modifier,
     showDivider: Boolean = true,
+    groupFilterContent: @Composable () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     Column(modifier = modifier) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.h6,
-            color = MaterialTheme.colors.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+            )
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                groupFilterContent()
+            }
+        }
         content()
         Spacer(modifier = Modifier.height(16.dp))
         if (showDivider) {
@@ -216,6 +258,10 @@ class FilterState(
         val discoverMap = mutableMapOf<String, String>()
 
         filterGroups.forEach {
+            it.groupId.groupQueryKey?.let { queryKey ->
+                discoverMap[queryKey] = it.groupFilterValue ?: ""
+            }
+
             when (it) {
                 is FilterGroup.ListGroup.MultiSelectableGroup -> {
                     val builder = QueryMultiValue.orBuilder()

@@ -11,12 +11,18 @@ import com.ssverma.showtime.ui.Range
 import java.time.LocalDate
 
 //Template for similar type filters -> Filter Group
-sealed class FilterGroupId {
+sealed class FilterGroupId(
+    open val groupQueryKey: String? = null
+) {
     sealed class ListGroupId(
-        val queryKey: String
-    ) : FilterGroupId() {
+        val queryKey: String,
+        override val groupQueryKey: String? = null
+    ) : FilterGroupId(groupQueryKey = groupQueryKey) {
         object Availability :
-            ListGroupId(TmdbApiTiedConstants.AvailableDiscoverOptions.withMonetizationType)
+            ListGroupId(
+                queryKey = TmdbApiTiedConstants.AvailableDiscoverOptions.withMonetizationType,
+                groupQueryKey = TmdbApiTiedConstants.AvailableDiscoverOptions.watchRegion
+            )
 
         object ReleaseType : ListGroupId(TmdbApiTiedConstants.AvailableDiscoverOptions.releaseType)
         object ReleaseCountry : ListGroupId(TmdbApiTiedConstants.AvailableDiscoverOptions.country)
@@ -51,7 +57,8 @@ sealed class FilterGroupId {
 sealed class FilterGroup(
     @StringRes open val titleRes: Int,
     open val static: Boolean,
-    open val groupId: FilterGroupId
+    open val groupId: FilterGroupId,
+    var groupFilterValue: String? = null
 ) {
 
     sealed class ListGroup(

@@ -3,6 +3,7 @@ package com.ssverma.showtime.ui.movie
 import MediaItem
 import ScoreIndicator
 import ValueIndicator
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
@@ -61,6 +62,7 @@ fun MovieListScreen(
         scaffoldState = backdropScaffoldState,
         backLayerBackgroundColor = MaterialTheme.colors.background,
         frontLayerBackgroundColor = MaterialTheme.colors.background,
+        gesturesEnabled = viewModel.filterApplicable,
         appBar = {
             MovieListAppBar(
                 backdropScaffoldState,
@@ -70,6 +72,13 @@ fun MovieListScreen(
             )
         },
         backLayerContent = {
+            if (backdropScaffoldState.isRevealed) {
+                BackHandler {
+                    coroutineScope.launch {
+                        backdropScaffoldState.conceal()
+                    }
+                }
+            }
             if (viewModel.filterApplicable) {
                 val filterGroups by viewModel.filters.collectAsState(initial = emptyList())
                 FiltersScreen(
