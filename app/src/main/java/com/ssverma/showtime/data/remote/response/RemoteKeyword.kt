@@ -11,6 +11,6 @@ class RemoteKeyword(
 )
 
 class KeywordPayload(
-    @SerializedName("keywords")
+    @SerializedName("keywords", alternate = ["results"])
     val keywords: List<RemoteKeyword>?
 )

@@ -34,6 +34,7 @@ class MovieListViewModel @Inject constructor(
     private val appliedFilters = MutableStateFlow(mapOf<String, String>())
 
     private val genreId = savedStateHandle.get<Int>(AppDestination.MovieList.ArgGenreId)
+    private val keywordId = savedStateHandle.get<Int>(AppDestination.MovieList.ArgKeywordId)
 
     val listingType =
         savedStateHandle.get<MovieListingType>(AppDestination.MovieList.ArgListingType)
@@ -99,6 +100,15 @@ class MovieListViewModel @Inject constructor(
 
                 DiscoverQueryMap.ofMovie(
                     genres = QueryMultiValue.orBuilder().or(genreId).build()
+                )
+            }
+
+            MovieListingType.Keyword -> {
+                val keywordId = keywordId
+                    ?: throw IllegalArgumentException("Provide keyword id when listing type is $type")
+
+                DiscoverQueryMap.ofMovie(
+                    keywords = QueryMultiValue.orBuilder().or(keywordId).build()
                 )
             }
 

@@ -21,11 +21,11 @@ import com.google.accompanist.insets.statusBarsHeight
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.showtime.domain.model.Keyword
 import com.ssverma.showtime.domain.model.TvShow
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.home.HomeViewModel
-import com.ssverma.showtime.ui.movie.GenreItem
 
 enum class TvShowListingType {
     TrendingToday,
@@ -34,14 +34,16 @@ enum class TvShowListingType {
     TopRated,
     NowAiring,
     Upcoming,
-    Genre
+    Genre,
+    Keyword
 }
 
 data class TvShowListLaunchable(
     val listingType: TvShowListingType,
     @StringRes val titleRes: Int = 0,
     val title: String? = null,
-    val genre: Genre? = null
+    val genre: Genre? = null,
+    val keyword: Keyword? = null
 )
 
 @Composable
@@ -275,7 +277,10 @@ fun TvShowsSection(
 }
 
 @Composable
-fun TvShowGenres(liveGenres: LiveData<Result<List<Genre>>>, onGenreClicked: (genre: Genre) -> Unit) {
+fun TvShowGenres(
+    liveGenres: LiveData<Result<List<Genre>>>,
+    onGenreClicked: (genre: Genre) -> Unit
+) {
     DriveCompose(
         observable = liveGenres,
         loading = { SectionLoadingIndicator() }

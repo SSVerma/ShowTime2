@@ -66,7 +66,7 @@ class RemoteMovie(
     @SerializedName("videos")
     val videoPayload: VideoPayload?,
 
-    @SerializedName("generes")
+    @SerializedName("genres")
     val genres: List<RemoteGenre>?,
 
     @SerializedName("belongs_to_collection")
@@ -76,5 +76,8 @@ class RemoteMovie(
     val reviews: PagedPayload<RemoteReview>?,
 
     @SerializedName("similar")
-    val similarMovies: PagedPayload<RemoteMovie>?
+    val similarMovies: PagedPayload<RemoteMovie>?,
+
+    @SerializedName("recommendations")
+    val recommendations: PagedPayload<RemoteMovie>?
 )

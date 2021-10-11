@@ -18,7 +18,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.TvSeason
 import com.ssverma.showtime.domain.model.TvShow
 import com.ssverma.showtime.domain.model.highlightedItems
@@ -51,15 +50,7 @@ fun TvShowDetailsScreen(
                     viewModel.openYoutubeApp(videoId = videoId)
                 },
                 openPersonDetails = openPersonDetails,
-                openTvShowList = { genre ->
-                    openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.Genre,
-                            title = genre.name,
-                            genre = genre
-                        )
-                    )
-                },
+                openTvShowList = openTvShowList,
                 openTvSeasonDetails = openTvSeasonDetails
             )
         }
@@ -77,7 +68,7 @@ private fun TvShowContent(
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    openTvShowList: (genre: Genre) -> Unit,
+    openTvShowList: (launchable: TvShowListLaunchable) -> Unit,
     openTvSeasonDetails: (seasonLaunchable: TvSeasonLaunchable) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -151,10 +142,19 @@ private fun TvShowContent(
         item {
             HorizontalList(
                 items = tvShow.generes,
-                contentPadding = PaddingValues(top = SectionVerticalSpacing, start = 16.dp, end = 16.dp)
+                contentPadding = PaddingValues(
+                    top = SectionVerticalSpacing,
+                    start = 16.dp,
+                    end = 16.dp
+                )
             ) {
                 GenreItem(genre = it) {
-                    openTvShowList(it)
+                    openTvShowList(
+                        TvShowListLaunchable(
+                            listingType = TvShowListingType.Genre,
+                            genre = it
+                        )
+                    )
                 }
             }
         }
@@ -231,6 +231,23 @@ private fun TvShowContent(
                 sectionTitleRes = R.string.recommendations,
                 openMovieDetails = openTvShowDetails,
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
+            )
+        }
+
+        /*Keyword*/
+        item {
+            TagsSection(
+                keywords = tvShow.keywords,
+                onClick = { keyword ->
+                    openTvShowList(
+                        TvShowListLaunchable(
+                            listingType = TvShowListingType.Keyword,
+                            title = keyword.name,
+                            keyword = keyword
+                        )
+                    )
+                },
+                modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
 

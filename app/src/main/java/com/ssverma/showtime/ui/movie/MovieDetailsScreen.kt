@@ -34,6 +34,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.*
+import com.ssverma.showtime.extension.placeholderIfNullOrEmpty
 import com.ssverma.showtime.ui.common.*
 
 @Composable
@@ -45,6 +46,7 @@ fun MovieDetailsScreen(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (movieId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
+    openMovieList: (movieListLaunchable: MovieListLaunchable) -> Unit,
 ) {
     Surface(
         color = MaterialTheme.colors.background
@@ -61,7 +63,8 @@ fun MovieDetailsScreen(
                 openYoutube = { videoId ->
                     viewModel.openYoutubeApp(videoId = videoId)
                 },
-                openPersonDetails = openPersonDetails
+                openPersonDetails = openPersonDetails,
+                openMovieList = openMovieList
             )
         }
     }
@@ -78,6 +81,7 @@ fun MovieContent(
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
+    openMovieList: (launchable: MovieListLaunchable) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val imageShots by viewModel.imageShots.observeAsState(emptyList())
@@ -136,7 +140,7 @@ fun MovieContent(
             )
         }
 
-        /*Overview section title*/
+        /*Overview section*/
         item {
             OverviewSection(
                 overview = movie.overview,
@@ -144,6 +148,28 @@ fun MovieContent(
                     .padding(horizontal = 16.dp)
                     .padding(top = SectionVerticalSpacing)
             )
+        }
+
+        /*Genre*/
+        item {
+            HorizontalList(
+                items = movie.generes,
+                contentPadding = PaddingValues(
+                    top = SectionVerticalSpacing,
+                    start = 16.dp,
+                    end = 16.dp
+                )
+            ) {
+                GenreItem(genre = it) {
+                    openMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.Genre,
+                            title = it.name,
+                            genre = it
+                        )
+                    )
+                }
+            }
         }
 
         /*Cast*/
@@ -185,10 +211,38 @@ fun MovieContent(
 
         /*Similar movies*/
         item {
-            SimilarMoviesSection(
+            RelevantMoviesSection(
                 movies = movie.similarMovies,
+                sectionTitleRes = R.string.similar_movies,
                 openMovieDetails = openMovieDetails,
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
+            )
+        }
+
+        /*Recommendations*/
+        item {
+            RelevantMoviesSection(
+                movies = movie.recommendations,
+                sectionTitleRes = R.string.recommendations,
+                openMovieDetails = openMovieDetails,
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
+            )
+        }
+
+        /*Keyword*/
+        item {
+            TagsSection(
+                keywords = movie.keywords,
+                onClick = { keyword ->
+                    openMovieList(
+                        MovieListLaunchable(
+                            listingType = MovieListingType.Keyword,
+                            title = keyword.name,
+                            keyword = keyword
+                        )
+                    )
+                },
+                modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
 
@@ -360,6 +414,7 @@ fun Highlights(
     highlights: List<Highlight>,
     modifier: Modifier = Modifier,
     columnCount: Int = 3,
+    @StringRes absentPlaceholderRes: Int = R.string.na,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(24.dp),
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceAround
 ) {
@@ -373,7 +428,7 @@ fun Highlights(
     ) { _, item ->
         HighlightItem(
             labelRes = item.labelRes,
-            value = item.value,
+            value = item.value.placeholderIfNullOrEmpty(placeholderRes = absentPlaceholderRes),
             modifier = Modifier
         )
     }
@@ -741,15 +796,16 @@ fun CastItem(
 }
 
 @Composable
-fun SimilarMoviesSection(
+fun RelevantMoviesSection(
     movies: List<Movie>,
+    @StringRes sectionTitleRes: Int,
     openMovieDetails: (movieId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Section(
         sectionHeader = {
             SectionHeader(
-                title = stringResource(id = R.string.similar_movies),
+                title = stringResource(id = sectionTitleRes),
                 modifier = Modifier.padding(horizontal = 16.dp),
                 hideTrailingAction = true
             )
@@ -767,6 +823,33 @@ fun SimilarMoviesSection(
                     openMovieDetails(it.id)
                 }
             )
+        }
+    }
+}
+
+@Composable
+fun TagsSection(
+    keywords: List<Keyword>,
+    onClick: (keyword: Keyword) -> Unit,
+    modifier: Modifier = Modifier,
+    @StringRes titleRes: Int = R.string.tags,
+) {
+    Section(
+        sectionHeader = {
+            SectionHeader(
+                title = stringResource(id = titleRes),
+                modifier = Modifier.padding(horizontal = 16.dp),
+                hideTrailingAction = true
+            )
+        },
+        headerContentSpacing = SectionContentHeaderSpacing,
+        hideIf = keywords.isNullOrEmpty(),
+        modifier = modifier
+    ) {
+        HorizontalList(items = keywords) {
+            TagItem(keyword = it) {
+                onClick(it)
+            }
         }
     }
 }

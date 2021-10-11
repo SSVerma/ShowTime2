@@ -1,8 +1,6 @@
 package com.ssverma.showtime.ui.common
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -11,6 +9,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.Result
@@ -52,9 +51,11 @@ private fun <T> DefaultErrorView(
 
     return Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
         modifier = modifier.fillMaxSize()
     ) {
         Text(text = error.displayMessage)
+        Spacer(modifier = Modifier.height(8.dp))
         OutlinedButton(
             onClick = {
                 error.retry?.invoke()

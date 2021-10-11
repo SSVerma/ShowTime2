@@ -1,4 +1,4 @@
-package com.ssverma.showtime.ui.movie
+package com.ssverma.showtime.ui.common
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

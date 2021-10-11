@@ -24,6 +24,7 @@ private val movieDetailsAppendable = QueryMultiValue.andBuilder()
     .and(TmdbApiTiedConstants.AppendableResponseTypes.Reviews)
     .and(TmdbApiTiedConstants.AppendableResponseTypes.Similar)
     .and(TmdbApiTiedConstants.AppendableResponseTypes.Keywords)
+    .and(TmdbApiTiedConstants.AppendableResponseTypes.Recommendations)
 
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(

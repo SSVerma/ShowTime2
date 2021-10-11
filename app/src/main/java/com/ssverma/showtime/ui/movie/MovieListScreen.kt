@@ -21,6 +21,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.showtime.domain.model.Keyword
 import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.ui.FiltersScreen
 import com.ssverma.showtime.ui.common.AppTopAppBar
@@ -35,14 +36,16 @@ enum class MovieListingType {
     TopRated,
     NowInCinemas,
     Upcoming,
-    Genre
+    Genre,
+    Keyword
 }
 
 data class MovieListLaunchable(
     val listingType: MovieListingType,
     @StringRes val titleRes: Int = 0,
     val title: String? = null,
-    val genre: Genre? = null
+    val genre: Genre? = null,
+    val keyword: Keyword? = null
 )
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)

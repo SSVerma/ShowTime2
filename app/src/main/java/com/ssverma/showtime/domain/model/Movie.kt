@@ -3,6 +3,8 @@ package com.ssverma.showtime.domain.model
 import com.ssverma.showtime.R
 import com.ssverma.showtime.api.TMDB_IMAGE_BASE_URL
 import com.ssverma.showtime.data.remote.response.RemoteMovie
+import com.ssverma.showtime.extension.emptyIfAbsent
+import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.utils.CoreUtils
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.FormatterUtils
@@ -39,7 +41,8 @@ class Movie(
     val videos: List<Video>,
     val generes: List<Genre>,
     val reviews: List<Review>,
-    val similarMovies: List<Movie>
+    val similarMovies: List<Movie>,
+    val recommendations: List<Movie>,
 )
 
 suspend fun RemoteMovie.asMovie(): Movie {
@@ -72,7 +75,8 @@ suspend fun RemoteMovie.asMovie(): Movie {
         generes = genres?.asGenres() ?: emptyList(),
         movieCollection = collection?.asMovieCollection(),
         reviews = reviews?.results?.asReviews()?.asReversed() ?: emptyList(),
-        similarMovies = similarMovies?.results?.asMovies() ?: emptyList()
+        similarMovies = similarMovies?.results?.asMovies() ?: emptyList(),
+        recommendations = recommendations?.results?.asMovies() ?: emptyList(),
     )
 }
 
@@ -101,11 +105,11 @@ fun Movie.highlightedItems(): List<Highlight> {
     return listOf(
         Highlight(
             labelRes = R.string.rating,
-            value = voteAvg.toString()
+            value = voteAvg.emptyIfAbsent()
         ),
         Highlight(
             labelRes = R.string.release_date,
-            value = displayReleaseDate ?: "",
+            value = displayReleaseDate.emptyIfNull(),
         ),
         Highlight(
             labelRes = R.string.status,
@@ -117,11 +121,11 @@ fun Movie.highlightedItems(): List<Highlight> {
         ),
         Highlight(
             labelRes = R.string.runtime,
-            value = DateUtils.formatMinutes(runtime)
+            value = if (runtime == 0) runtime.emptyIfAbsent() else DateUtils.formatMinutes(runtime)
         ),
         Highlight(
             labelRes = R.string.revenue,
-            value = "$$revenue"
+            value = if (revenue == 0L) revenue.emptyIfAbsent() else "$$revenue"
         )
     )
 }

@@ -30,6 +30,7 @@ class TvShowListListViewModel @Inject constructor(
     private val appliedFilters = MutableStateFlow(mapOf<String, String>())
 
     private val genreId = savedStateHandle.get<Int>(AppDestination.TvShowList.ArgGenreId)
+    private val keywordId = savedStateHandle.get<Int>(AppDestination.TvShowList.ArgKeywordId)
 
     val listingType =
         savedStateHandle.get<TvShowListingType>(AppDestination.TvShowList.ArgListingType)
@@ -98,6 +99,15 @@ class TvShowListListViewModel @Inject constructor(
 
                 DiscoverQueryMap.ofTv(
                     genres = QueryMultiValue.orBuilder().or(genreId).build()
+                )
+            }
+
+            TvShowListingType.Keyword -> {
+                val keywordId = keywordId
+                    ?: throw IllegalArgumentException("Provide keyword id when listing type is $type")
+
+                DiscoverQueryMap.ofTv(
+                    keywords = QueryMultiValue.orBuilder().or(keywordId).build()
                 )
             }
 

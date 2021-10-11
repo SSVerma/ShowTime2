@@ -61,12 +61,14 @@ sealed class AppDestination(
         const val ArgTitleRes = "titleRes"
         const val ArgTitle = "title"
         const val ArgGenreId = "genreId"
+        const val ArgKeywordId = "keywordId"
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder.mandatoryArg(ArgListingType)
                 .optionalArg(ArgTitleRes)
                 .optionalArg(ArgTitle)
                 .optionalArg(ArgGenreId)
+                .optionalArg(ArgKeywordId)
                 .build()
         }
 
@@ -78,6 +80,7 @@ sealed class AppDestination(
                 .optionalArg(ArgTitleRes, input.titleRes.toString())
                 .optionalArg(ArgTitle, input.title)
                 .optionalArg(ArgGenreId, input.genre?.id ?: 0)
+                .optionalArg(ArgKeywordId, input.keyword?.id ?: 0)
                 .build()
         }
 
@@ -95,6 +98,10 @@ sealed class AppDestination(
                     defaultValue = null
                 },
                 navArgument(ArgGenreId) {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument(ArgKeywordId) {
                     type = NavType.IntType
                     defaultValue = 0
                 }
@@ -377,12 +384,14 @@ sealed class AppDestination(
         const val ArgTitleRes = "titleRes"
         const val ArgTitle = "title"
         const val ArgGenreId = "genreId"
+        const val ArgKeywordId = "keywordId"
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder.mandatoryArg(ArgListingType)
                 .optionalArg(ArgTitleRes)
                 .optionalArg(ArgTitle)
                 .optionalArg(ArgGenreId)
+                .optionalArg(ArgKeywordId)
                 .build()
         }
 
@@ -394,6 +403,7 @@ sealed class AppDestination(
                 .optionalArg(ArgTitleRes, input.titleRes.toString())
                 .optionalArg(ArgTitle, input.title)
                 .optionalArg(ArgGenreId, input.genre?.id ?: 0)
+                .optionalArg(ArgKeywordId, input.keyword?.id ?: 0)
                 .build()
         }
 
@@ -403,6 +413,7 @@ sealed class AppDestination(
                     type = NavType.EnumType(TvShowListingType::class.java)
                 },
                 navArgument(ArgTitleRes) {
+                    type = NavType.ReferenceType
                     defaultValue = R.string.movies
                 },
                 navArgument(ArgTitle) {
@@ -411,6 +422,10 @@ sealed class AppDestination(
                     defaultValue = null
                 },
                 navArgument(ArgGenreId) {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument(ArgKeywordId) {
                     type = NavType.IntType
                     defaultValue = 0
                 }

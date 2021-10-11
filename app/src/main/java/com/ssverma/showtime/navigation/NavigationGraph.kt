@@ -158,6 +158,11 @@ fun ShowTimeNavHost(
                 },
                 openPersonDetails = { personId ->
                     navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
+                },
+                openMovieList = { launchable ->
+                    navController.navigateTo(
+                        AppDestination.MovieList.actualRoute(launchable)
+                    )
                 }
             )
         }
