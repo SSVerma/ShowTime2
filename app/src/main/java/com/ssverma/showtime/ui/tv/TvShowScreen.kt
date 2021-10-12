@@ -23,6 +23,7 @@ import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Keyword
 import com.ssverma.showtime.domain.model.TvShow
+import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.home.HomeViewModel

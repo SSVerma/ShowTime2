@@ -35,6 +35,8 @@ import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.extension.placeholderIfNullOrEmpty
+import com.ssverma.showtime.ui.GenreItem
+import com.ssverma.showtime.ui.TagItem
 import com.ssverma.showtime.ui.common.*
 
 @Composable

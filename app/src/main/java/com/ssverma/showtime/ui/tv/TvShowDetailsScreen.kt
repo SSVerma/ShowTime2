@@ -21,6 +21,7 @@ import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.TvSeason
 import com.ssverma.showtime.domain.model.TvShow
 import com.ssverma.showtime.domain.model.highlightedItems
+import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.movie.*
 

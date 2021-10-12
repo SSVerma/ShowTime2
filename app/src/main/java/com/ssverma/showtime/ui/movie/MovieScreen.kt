@@ -24,6 +24,8 @@ import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Movie
+import com.ssverma.showtime.ui.AttributionFooter
+import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.home.HomeViewModel
@@ -154,7 +156,9 @@ private fun MovieContent(
         }
 
         item {
-            Spacer(modifier = Modifier.height(FooterSpacerHeight))
+            AttributionFooter(
+                modifier = Modifier.padding(top = FooterSpacerHeight)
+            )
         }
     }
 }

@@ -79,7 +79,7 @@ fun HomePageAppBar(
                 .padding(8.dp)
                 .size(32.dp)
                 .align(Alignment.CenterVertically),
-            painter = painterResource(id = R.drawable.app_logo),
+            painter = painterResource(id = R.drawable.ic_launcher),
             contentDescription = null
         )
         Text(
