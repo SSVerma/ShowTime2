@@ -51,7 +51,7 @@ private fun showBottomBar(
     backStackEntry: NavBackStackEntry?,
     bottomNavScreens: List<HomeBottomNavItem>
 ): Boolean {
-    val routes = bottomNavScreens.map { it.linkedDestination.placeholderRoute.asRoutableString() }
+    val routes = bottomNavScreens.map { it.linkedDestination.placeholderRoute.asNavRoute() }
     return routes.contains(backStackEntry?.destination?.route)
 }
 
@@ -67,7 +67,7 @@ fun ShowTimeBottomBar(
     }
 
     val currentPlaceholderRoute = navBackStackEntry?.destination?.route
-        ?: HomeBottomNavItem.Movie.linkedDestination.placeholderRoute.asRoutableString()
+        ?: HomeBottomNavItem.Movie.linkedDestination.placeholderRoute.asNavRoute()
 
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.background,
@@ -76,7 +76,7 @@ fun ShowTimeBottomBar(
     ) {
         bottomNavItems.forEach { navItem ->
             val navItemDestinationRoute =
-                navItem.linkedDestination.placeholderRoute.asRoutableString()
+                navItem.linkedDestination.placeholderRoute.asNavRoute()
 
             BottomNavigationItem(
                 icon = {

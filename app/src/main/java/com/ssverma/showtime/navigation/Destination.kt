@@ -2,7 +2,6 @@ package com.ssverma.showtime.navigation
 
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.movie.MovieListLaunchable
 import com.ssverma.showtime.ui.movie.MovieListingType
@@ -12,20 +11,27 @@ import com.ssverma.showtime.ui.tv.TvShowListLaunchable
 import com.ssverma.showtime.ui.tv.TvShowListingType
 
 interface Destination {
-    val identifier: String
+    val placeholderRoute: PlaceholderRoute
+    val arguments: List<NamedNavArgument>
 }
 
-abstract class StandaloneDestination(override val identifier: String) : Destination {
-    val placeholderRoute: PlaceholderRoute
+abstract class StandaloneDestination(private val identifier: String) : Destination {
+    override val placeholderRoute: PlaceholderRoute
         get() = Route.placeholderOf(identifier).build()
+
+    override val arguments: List<NamedNavArgument>
+        get() = placeholderRoute.navArguments
 
     val actualRoute: ActualRoute
         get() = Route.actualOf(identifier).build()
 }
 
-abstract class DependentDestination<T>(override val identifier: String) : Destination {
-    val placeholderRoute: PlaceholderRoute
+abstract class DependentDestination<T>(private val identifier: String) : Destination {
+    override val placeholderRoute: PlaceholderRoute
         get() = placeholderRoute(Route.placeholderOf(identifier))
+
+    override val arguments: List<NamedNavArgument>
+        get() = placeholderRoute.navArguments
 
     abstract fun placeholderRoute(
         builder: PlaceholderRoute.PlaceHolderRouteBuilder
@@ -35,15 +41,11 @@ abstract class DependentDestination<T>(override val identifier: String) : Destin
         input: T,
         builder: ActualRoute.ActualRouteBuilder = Route.actualOf(identifier)
     ): ActualRoute
-
-    abstract fun arguments(): List<NamedNavArgument>
 }
 
-abstract class GraphDestination(override val identifier: String) : StandaloneDestination(identifier)
+abstract class GraphDestination(identifier: String) : StandaloneDestination(identifier)
 
-sealed class AppDestination(
-    override val identifier: String
-) : Destination {
+sealed class AppDestination : Destination {
     object Home : GraphDestination("home")
 
     sealed class HomeBottomNavDestination(identifier: String) : StandaloneDestination(identifier) {
@@ -64,11 +66,24 @@ sealed class AppDestination(
         const val ArgKeywordId = "keywordId"
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
-            return builder.mandatoryArg(ArgListingType)
-                .optionalArg(ArgTitleRes)
-                .optionalArg(ArgTitle)
-                .optionalArg(ArgGenreId)
-                .optionalArg(ArgKeywordId)
+            return builder
+                .mandatoryArg(
+                    name = ArgListingType,
+                    navType = NavType.EnumType(MovieListingType::class.java)
+                )
+                .optionalArg(
+                    ArgTitleRes,
+                    navType = NavType.ReferenceType,
+                    defaultVal = R.string.movies
+                )
+                .optionalArg(
+                    ArgTitle,
+                    navType = NavType.StringType,
+                    isNullable = true,
+                    defaultVal = null
+                )
+                .optionalArg(ArgGenreId, navType = NavType.IntType, defaultVal = 0)
+                .optionalArg(ArgKeywordId, navType = NavType.IntType, defaultVal = 0)
                 .build()
         }
 
@@ -77,35 +92,11 @@ sealed class AppDestination(
             builder: ActualRoute.ActualRouteBuilder,
         ): ActualRoute {
             return builder.mandatoryArg(ArgListingType, input.listingType.name)
-                .optionalArg(ArgTitleRes, input.titleRes.toString())
+                .optionalArg(ArgTitleRes, input.titleRes)
                 .optionalArg(ArgTitle, input.title)
                 .optionalArg(ArgGenreId, input.genre?.id ?: 0)
                 .optionalArg(ArgKeywordId, input.keyword?.id ?: 0)
                 .build()
-        }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(ArgListingType) {
-                    type = NavType.EnumType(MovieListingType::class.java)
-                },
-                navArgument(ArgTitleRes) {
-                    defaultValue = R.string.movies
-                },
-                navArgument(ArgTitle) {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                },
-                navArgument(ArgGenreId) {
-                    type = NavType.IntType
-                    defaultValue = 0
-                },
-                navArgument(ArgKeywordId) {
-                    type = NavType.IntType
-                    defaultValue = 0
-                }
-            )
         }
     }
 
@@ -114,7 +105,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(ArgMovieId)
+                .mandatoryArg(ArgMovieId, navType = NavType.IntType)
                 .build()
         }
 
@@ -122,14 +113,6 @@ sealed class AppDestination(
             return builder
                 .mandatoryArg(ArgMovieId, input)
                 .build()
-        }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(ArgMovieId) {
-                    type = NavType.IntType
-                },
-            )
         }
     }
 
@@ -140,7 +123,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(MovieId)
+                .mandatoryArg(MovieId, navType = NavType.IntType)
                 .build()
         }
 
@@ -148,14 +131,6 @@ sealed class AppDestination(
             return builder
                 .mandatoryArg(MovieId, input)
                 .build()
-        }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(MovieId) {
-                    type = NavType.IntType
-                },
-            )
         }
     }
 
@@ -166,7 +141,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(PageIndex)
+                .mandatoryArg(PageIndex, navType = NavType.IntType)
                 .build()
         }
 
@@ -175,14 +150,6 @@ sealed class AppDestination(
                 .mandatoryArg(PageIndex, input)
                 .build()
         }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(PageIndex) {
-                    type = NavType.IntType
-                },
-            )
-        }
     }
 
     object PersonDetails : DependentDestination<Int>("person") {
@@ -190,7 +157,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(PersonId)
+                .mandatoryArg(PersonId, navType = NavType.IntType)
                 .build()
         }
 
@@ -198,14 +165,6 @@ sealed class AppDestination(
             return builder
                 .mandatoryArg(PersonId, input)
                 .build()
-        }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(PersonId) {
-                    type = NavType.IntType
-                },
-            )
         }
     }
 
@@ -214,7 +173,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(PersonId)
+                .mandatoryArg(PersonId, navType = NavType.IntType)
                 .build()
         }
 
@@ -223,14 +182,6 @@ sealed class AppDestination(
                 .mandatoryArg(PersonId, input)
                 .build()
         }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(PersonId) {
-                    type = NavType.IntType
-                },
-            )
-        }
     }
 
     object TvShowDetails : DependentDestination<Int>("tvShow") {
@@ -238,7 +189,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(ArgTvShowId)
+                .mandatoryArg(ArgTvShowId, navType = NavType.IntType)
                 .build()
         }
 
@@ -246,14 +197,6 @@ sealed class AppDestination(
             return builder
                 .mandatoryArg(ArgTvShowId, input)
                 .build()
-        }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(ArgTvShowId) {
-                    type = NavType.IntType
-                },
-            )
         }
     }
 
@@ -264,7 +207,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(TvShowId)
+                .mandatoryArg(TvShowId, navType = NavType.IntType)
                 .build()
         }
 
@@ -273,14 +216,6 @@ sealed class AppDestination(
                 .mandatoryArg(TvShowId, input)
                 .build()
         }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(TvShowId) {
-                    type = NavType.IntType
-                },
-            )
-        }
     }
 
     object TvImagePager : DependentDestination<Int>("tv/imagePager") {
@@ -288,7 +223,7 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(PageIndex)
+                .mandatoryArg(PageIndex, navType = NavType.IntType)
                 .build()
         }
 
@@ -296,14 +231,6 @@ sealed class AppDestination(
             return builder
                 .mandatoryArg(PageIndex, input)
                 .build()
-        }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(PageIndex) {
-                    type = NavType.IntType
-                },
-            )
         }
     }
 
@@ -313,8 +240,8 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(ArgTvShowId)
-                .mandatoryArg(ArgTvSeasonNumber)
+                .mandatoryArg(ArgTvShowId, navType = NavType.IntType)
+                .mandatoryArg(ArgTvSeasonNumber, navType = NavType.IntType)
                 .build()
         }
 
@@ -327,17 +254,6 @@ sealed class AppDestination(
                 .mandatoryArg(ArgTvSeasonNumber, input.seasonNumber)
                 .build()
         }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(ArgTvShowId) {
-                    type = NavType.IntType
-                },
-                navArgument(ArgTvSeasonNumber) {
-                    type = NavType.IntType
-                },
-            )
-        }
     }
 
     object TvEpisodeDetails : DependentDestination<TvEpisodeLaunchable>("tvShow/season/episode") {
@@ -347,9 +263,9 @@ sealed class AppDestination(
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
             return builder
-                .mandatoryArg(ArgTvShowId)
-                .mandatoryArg(ArgSeasonNumber)
-                .mandatoryArg(ArgEpisodeNumber)
+                .mandatoryArg(ArgTvShowId, navType = NavType.IntType)
+                .mandatoryArg(ArgSeasonNumber, navType = NavType.IntType)
+                .mandatoryArg(ArgEpisodeNumber, navType = NavType.IntType)
                 .build()
         }
 
@@ -363,20 +279,6 @@ sealed class AppDestination(
                 .mandatoryArg(ArgEpisodeNumber, input.episodeNumber)
                 .build()
         }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(ArgTvShowId) {
-                    type = NavType.IntType
-                },
-                navArgument(ArgSeasonNumber) {
-                    type = NavType.IntType
-                },
-                navArgument(ArgEpisodeNumber) {
-                    type = NavType.IntType
-                },
-            )
-        }
     }
 
     object TvShowList : DependentDestination<TvShowListLaunchable>("tvShows") {
@@ -387,11 +289,24 @@ sealed class AppDestination(
         const val ArgKeywordId = "keywordId"
 
         override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
-            return builder.mandatoryArg(ArgListingType)
-                .optionalArg(ArgTitleRes)
-                .optionalArg(ArgTitle)
-                .optionalArg(ArgGenreId)
-                .optionalArg(ArgKeywordId)
+            return builder
+                .mandatoryArg(
+                    name = ArgListingType,
+                    navType = NavType.EnumType(TvShowListingType::class.java)
+                )
+                .optionalArg(
+                    name = ArgTitleRes,
+                    navType = NavType.ReferenceType,
+                    defaultVal = R.string.tv_show
+                )
+                .optionalArg(
+                    name = ArgTitle,
+                    navType = NavType.StringType,
+                    isNullable = true,
+                    defaultVal = null
+                )
+                .optionalArg(name = ArgGenreId, navType = NavType.IntType, defaultVal = 0)
+                .optionalArg(name = ArgKeywordId, navType = NavType.IntType, defaultVal = 0)
                 .build()
         }
 
@@ -400,36 +315,11 @@ sealed class AppDestination(
             builder: ActualRoute.ActualRouteBuilder,
         ): ActualRoute {
             return builder.mandatoryArg(ArgListingType, input.listingType.name)
-                .optionalArg(ArgTitleRes, input.titleRes.toString())
+                .optionalArg(ArgTitleRes, input.titleRes)
                 .optionalArg(ArgTitle, input.title)
                 .optionalArg(ArgGenreId, input.genre?.id ?: 0)
                 .optionalArg(ArgKeywordId, input.keyword?.id ?: 0)
                 .build()
-        }
-
-        override fun arguments(): List<NamedNavArgument> {
-            return listOf(
-                navArgument(ArgListingType) {
-                    type = NavType.EnumType(TvShowListingType::class.java)
-                },
-                navArgument(ArgTitleRes) {
-                    type = NavType.ReferenceType
-                    defaultValue = R.string.movies
-                },
-                navArgument(ArgTitle) {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                },
-                navArgument(ArgGenreId) {
-                    type = NavType.IntType
-                    defaultValue = 0
-                },
-                navArgument(ArgKeywordId) {
-                    type = NavType.IntType
-                    defaultValue = 0
-                }
-            )
         }
     }
 }

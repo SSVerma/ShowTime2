@@ -153,7 +153,8 @@ private fun TvShowContent(
                     openTvShowList(
                         TvShowListLaunchable(
                             listingType = TvShowListingType.Genre,
-                            genre = it
+                            genre = it,
+                            title = it.name
                         )
                     )
                 }

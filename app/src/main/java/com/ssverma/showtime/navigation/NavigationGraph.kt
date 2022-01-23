@@ -34,7 +34,7 @@ fun ShowTimeNavHost(
 
     AnimatedNavHost(
         navController = navController,
-        startDestination = startDestination.placeholderRouteString(),
+        startDestination = startDestination.placeholderRoute.asNavRoute(),
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentScope.SlideDirection.Up,
@@ -329,7 +329,7 @@ fun ShowTimeNavHost(
 @Composable
 private inline fun <reified VM : ViewModel> NavController.destinationViewModel(destination: Destination): VM {
     return hiltViewModel(
-        remember { getBackStackEntry(destination.placeholderRouteString()) }
+        remember { getBackStackEntry(destination.placeholderRoute.asNavRoute()) }
     )
 }
 
@@ -339,8 +339,8 @@ private fun NavGraphBuilder.composable(
     content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
 ) {
     composable(
-        route = destination.placeholderRouteString(),
-        arguments = destination.arguments(),
+        route = destination.placeholderRoute.asNavRoute(),
+        arguments = destination.arguments,
         content = content
     )
 }
@@ -353,8 +353,8 @@ private inline fun <reified VM : ViewModel> NavGraphBuilder.composable(
     crossinline content: @Composable (navGraphElement: NavGraphElement<VM>) -> Unit
 ) {
     composable(
-        route = destination.placeholderRouteString(),
-        arguments = destination.arguments(),
+        route = destination.placeholderRoute.asNavRoute(),
+        arguments = destination.arguments,
     ) {
         val viewModel = navController.destinationViewModel<VM>(destination = graphDestination)
         content(
@@ -377,8 +377,8 @@ private fun NavGraphBuilder.navigation(
     builder: NavGraphBuilder.() -> Unit
 ) {
     navigation(
-        route = graphDestination.placeholderRouteString(),
-        startDestination = startDestination.placeholderRouteString(),
+        route = graphDestination.placeholderRoute.asNavRoute(),
+        startDestination = startDestination.placeholderRoute.asNavRoute(),
         enterTransition = enterTransition,
         exitTransition = exitTransition,
         popEnterTransition = popEnterTransition,
@@ -388,33 +388,14 @@ private fun NavGraphBuilder.navigation(
 }
 
 fun NavController.navigateTo(route: ActualRoute) {
-    navigate(route = route.asRoutableString())
+    navigate(route = route.asNavRoute())
 }
 
 fun NavController.navigateTo(route: ActualRoute, builder: NavOptionsBuilder.() -> Unit) {
     navigate(
-        route = route.asRoutableString(),
+        route = route.asNavRoute(),
         builder = builder
     )
-}
-
-private fun Destination.placeholderRouteString(): String {
-    return when (this) {
-        is StandaloneDestination -> {
-            placeholderRoute.asRoutableString()
-        }
-        is DependentDestination<*> -> {
-            placeholderRoute.asRoutableString()
-        }
-        is GraphDestination -> {
-            placeholderRoute.asRoutableString()
-        }
-        else -> throw IllegalStateException("Invalid destination")
-    }
-}
-
-private fun Destination.arguments(): List<NamedNavArgument> {
-    return if (this is DependentDestination<*>) arguments() else emptyList()
 }
 
 class NavGraphElement<T : ViewModel>(

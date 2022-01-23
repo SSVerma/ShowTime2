@@ -1,5 +1,9 @@
 package com.ssverma.showtime.navigation
 
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+
 abstract class Route(
     private val builtRoute: String
 ) {
@@ -14,33 +18,48 @@ abstract class Route(
         }
     }
 
-    fun asRoutableString(): String {
+    fun asNavRoute(): String {
         return builtRoute
     }
 }
 
 class PlaceholderRoute private constructor(
-    route: String
+    route: String,
+    val navArguments: List<NamedNavArgument>
 ) : Route(route) {
 
     class PlaceHolderRouteBuilder internal constructor(
         private val route: String
-    ) {
-        private val mandatoryArgs = mutableSetOf<String>()
-        private val optionalArgs = mutableSetOf<String>()
+    ) : RouteBuilder<PlaceholderRoute>() {
 
-        fun mandatoryArg(arg: String): PlaceHolderRouteBuilder {
-            this.mandatoryArgs.add(arg)
-            return this
+        private val navArguments = mutableListOf<NamedNavArgument>()
+
+        fun mandatoryArg(
+            name: String,
+            navType: NavType<*>
+        ): PlaceHolderRouteBuilder {
+            this.navArguments += navArgument(name) {
+                type = navType
+            }
+            return super.mandatoryArg(name, name) as PlaceHolderRouteBuilder
         }
 
-        fun optionalArg(arg: String): PlaceHolderRouteBuilder {
-            this.optionalArgs.add(arg)
-            return this
+        fun optionalArg(
+            name: String,
+            navType: NavType<*>,
+            isNullable: Boolean = false,
+            defaultVal: Any? = null
+        ): PlaceHolderRouteBuilder {
+            this.navArguments += navArgument(name) {
+                type = navType
+                nullable = isNullable
+                defaultValue = defaultVal
+            }
+            return super.optionalArg(name, name) as PlaceHolderRouteBuilder
         }
 
-        private fun generateRoute(): String {
-            var completeRoute = mandatoryArgs.joinToString(
+        override fun generateNavRoute(): String {
+            var completeRoute = mandatoryArgs.keys.joinToString(
                 separator = "/",
                 transform = { "{$it}" },
                 prefix = if (mandatoryArgs.isEmpty()) {
@@ -50,7 +69,7 @@ class PlaceholderRoute private constructor(
                 },
             )
 
-            optionalArgs.forEachIndexed { index, arg ->
+            optionalArgs.keys.forEachIndexed { index, arg ->
                 completeRoute = if (index == 0) {
                     "$completeRoute?$arg={$arg}"
                 } else {
@@ -61,8 +80,8 @@ class PlaceholderRoute private constructor(
             return completeRoute
         }
 
-        fun build(): PlaceholderRoute {
-            return PlaceholderRoute(route = generateRoute())
+        override fun build(): PlaceholderRoute {
+            return PlaceholderRoute(route = generateNavRoute(), navArguments = navArguments)
         }
     }
 }
@@ -71,31 +90,11 @@ class ActualRoute private constructor(
     route: String
 ) : Route(route) {
 
-    class ActualRouteBuilder(
+    class ActualRouteBuilder internal constructor(
         private val route: String
-    ) {
-        private val mandatoryArgs = mutableMapOf<String, String>()
-        private val optionalArgs = mutableMapOf<String, String?>()
+    ) : RouteBuilder<ActualRoute>() {
 
-        fun mandatoryArg(key: String, value: String): ActualRouteBuilder {
-            this.mandatoryArgs[key] = value
-            return this
-        }
-
-        fun <T : Number> mandatoryArg(key: String, value: T): ActualRouteBuilder {
-            return this.mandatoryArg(key, value.toString())
-        }
-
-        fun optionalArg(key: String, value: String?): ActualRouteBuilder {
-            this.optionalArgs[key] = value
-            return this
-        }
-
-        fun <T : Number> optionalArg(key: String, value: T): ActualRouteBuilder {
-            return this.optionalArg(key, value.toString())
-        }
-
-        private fun generateRoute(): String {
+        override fun generateNavRoute(): String {
             var completeRoute = mandatoryArgs.keys.joinToString(
                 separator = "/",
                 transform = { mandatoryArgs[it]!! },
@@ -119,9 +118,37 @@ class ActualRoute private constructor(
             return completeRoute
         }
 
-        fun build(): ActualRoute {
-            return ActualRoute(route = generateRoute())
+        override fun build(): ActualRoute {
+            return ActualRoute(route = generateNavRoute())
         }
 
     }
+}
+
+abstract class RouteBuilder<R : Route> {
+
+    protected val mandatoryArgs = mutableMapOf<String, String>()
+    protected val optionalArgs = mutableMapOf<String, String?>()
+
+    fun mandatoryArg(name: String, value: String): RouteBuilder<R> {
+        this.mandatoryArgs[name] = value
+        return this
+    }
+
+    fun <T : Number> mandatoryArg(name: String, value: T): RouteBuilder<R> {
+        return this.mandatoryArg(name, value.toString())
+    }
+
+    fun optionalArg(name: String, value: String?): RouteBuilder<R> {
+        this.optionalArgs[name] = value
+        return this
+    }
+
+    fun <T : Number> optionalArg(name: String, value: T): RouteBuilder<R> {
+        return this.optionalArg(name, value.toString())
+    }
+
+    abstract fun generateNavRoute(): String
+
+    abstract fun build(): R
 }
