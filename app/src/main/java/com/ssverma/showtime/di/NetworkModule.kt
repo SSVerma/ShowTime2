@@ -1,5 +1,9 @@
 package com.ssverma.showtime.di
 
+import com.ssverma.core.networking.RestClient
+import com.ssverma.core.networking.config.AdditionalServiceConfig
+import com.ssverma.core.networking.interceptor.ApplicationInterceptor
+import com.ssverma.core.networking.service.ServiceEnvironment
 import com.ssverma.showtime.BuildConfig
 import com.ssverma.showtime.api.TmdbApiService
 import com.ssverma.showtime.api.interceptor.AuthInterceptor
@@ -7,59 +11,43 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
 class NetworkModule {
 
-    @Provides
-    fun provideBaseUrl(): String {
-        return BuildConfig.BASE_URL
-    }
-
     @Singleton
     @Provides
-    fun provideRetrofit(baseUrl: String, okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okHttpClient)
-            .build()
-    }
+    fun provideEnvironment(): ServiceEnvironment<TmdbApiService> {
+        return object : ServiceEnvironment<TmdbApiService> {
+            override val baseUrl: String
+                get() = BuildConfig.BASE_URL
 
-    @Singleton
-    @Provides
-    fun provideHttpClient(
-        loggingInterceptor: HttpLoggingInterceptor,
-        authInterceptor: AuthInterceptor
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .addInterceptor(authInterceptor)
-            .build()
-    }
-
-    @Singleton
-    @Provides
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
+            override val serviceClass: Class<TmdbApiService>
+                get() = TmdbApiService::class.java
         }
     }
 
     @Singleton
     @Provides
-    fun provideTmdbApiService(retrofit: Retrofit): TmdbApiService {
-        return retrofit.create(TmdbApiService::class.java)
+    fun provideServiceConfig(authInterceptor: AuthInterceptor): AdditionalServiceConfig {
+        return object : AdditionalServiceConfig() {
+            override val applicationInterceptors: List<ApplicationInterceptor>
+                get() = listOf(authInterceptor)
+        }
     }
 
+    @Singleton
+    @Provides
+    fun provideTmdbApiService(
+        restClient: RestClient,
+        serviceEnvironment: ServiceEnvironment<TmdbApiService>,
+        additionalConfig: AdditionalServiceConfig
+    ): TmdbApiService {
+        return restClient.createService(
+            environment = serviceEnvironment,
+            serviceConfig = additionalConfig
+        )
+    }
 }
