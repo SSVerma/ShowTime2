@@ -50,12 +50,12 @@ import java.lang.reflect.Type
  *      service.getUser()
  *
  */
-class EnvelopeConvertorFactory<T : Envelope<T>> private constructor(
-    private val clazz: Class<T>
+class EnvelopeConvertorFactory<R, E : Envelope<R>> private constructor(
+    private val clazz: Class<E>
 ) : Converter.Factory() {
 
     companion object {
-        fun <T : Envelope<T>> create(clazz: Class<T>): EnvelopeConvertorFactory<T> {
+        fun <R, E : Envelope<R>> create(clazz: Class<E>): EnvelopeConvertorFactory<R, E> {
             return EnvelopeConvertorFactory(clazz)
         }
     }
@@ -67,15 +67,15 @@ class EnvelopeConvertorFactory<T : Envelope<T>> private constructor(
     ): Converter<ResponseBody, *> {
         val envelopeType = TypeToken.getParameterized(clazz, type).type
         val delegate =
-            retrofit.nextResponseBodyConverter<T>(this, envelopeType, annotations)
+            retrofit.nextResponseBodyConverter<E>(this, envelopeType, annotations)
 
         return Converter<ResponseBody, Any> {
-            val envelope: T? = delegate.convert(it)
+            val envelope: E? = delegate.convert(it)
             envelope?.response
         }
     }
 }
 
-interface Envelope<T> {
-    val response: T
+interface Envelope<R> {
+    val response: R
 }

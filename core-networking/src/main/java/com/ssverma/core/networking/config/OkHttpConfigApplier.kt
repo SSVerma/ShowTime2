@@ -2,7 +2,7 @@ package com.ssverma.core.networking.config
 
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
 import com.ssverma.core.networking.interceptor.NetworkInterceptor
-import okhttp3.Interceptor
+import com.ssverma.core.networking.utils.mergeOrderedWith
 import okhttp3.OkHttpClient
 
 internal fun OkHttpClient.Builder.applyConfig(
@@ -16,53 +16,27 @@ internal fun OkHttpClient.Builder.applyConfig(
 private fun OkHttpClient.Builder.applyAppInterceptors(
     configAppInterceptors: List<ApplicationInterceptor>
 ) {
-    interceptors().also { existingInterceptors ->
-        if (existingInterceptors.isEmpty()) {
-            configAppInterceptors.toSet().takeIf { it.isNotEmpty() }?.let {
-                existingInterceptors.addAll(it)
-            }
-        } else {
-            // To prevent java.util.ConcurrentModificationException
-            val addableInterceptors = mutableListOf<Interceptor>()
+    val updated = interceptors().mergeOrderedWith(configAppInterceptors) { oldValue, newValue ->
+        val generic = !newValue::class.java.typeParameters.isNullOrEmpty()
+        !generic && oldValue::class.java == newValue::class.java
+    }
 
-            existingInterceptors.forEachIndexed { index, existingInterceptor ->
-                configAppInterceptors.forEach { configInterceptor ->
-                    if (configInterceptor::class.java == existingInterceptor::class.java) {
-                        existingInterceptors[index] = configInterceptor
-                    } else {
-                        addableInterceptors.add(configInterceptor)
-                    }
-                }
-            }
-
-            existingInterceptors.addAll(addableInterceptors)
-        }
+    interceptors().apply {
+        clear()
+        addAll(updated)
     }
 }
 
 private fun OkHttpClient.Builder.applyNetworkInterceptors(
-    configNetworkInterceptors: List<NetworkInterceptor>
+    configInterceptors: List<NetworkInterceptor>
 ) {
-    networkInterceptors().also { existingInterceptors ->
-        if (existingInterceptors.isEmpty()) {
-            configNetworkInterceptors.toSet().takeIf { it.isNotEmpty() }?.let {
-                existingInterceptors.addAll(it)
-            }
-        } else {
-            // To prevent java.util.ConcurrentModificationException
-            val addableInterceptors = mutableListOf<Interceptor>()
+    val updated = networkInterceptors().mergeOrderedWith(configInterceptors) { oldValue, newValue ->
+        val generic = !newValue::class.java.typeParameters.isNullOrEmpty()
+        !generic && oldValue::class.java == newValue::class.java
+    }
 
-            existingInterceptors.forEachIndexed { index, existingInterceptor ->
-                configNetworkInterceptors.forEach { configInterceptor ->
-                    if (configInterceptor::class.java == existingInterceptor::class.java) {
-                        existingInterceptors[index] = configInterceptor
-                    } else {
-                        addableInterceptors.add(configInterceptor)
-                    }
-                }
-            }
-
-            existingInterceptors.addAll(addableInterceptors)
-        }
+    networkInterceptors().apply {
+        clear()
+        addAll(updated)
     }
 }

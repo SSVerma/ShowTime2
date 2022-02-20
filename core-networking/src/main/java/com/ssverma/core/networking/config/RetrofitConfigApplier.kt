@@ -1,6 +1,7 @@
 package com.ssverma.core.networking.config
 
 import com.ssverma.core.networking.convertor.AnnotatedConvertorFactory
+import com.ssverma.core.networking.utils.mergeOrderedWith
 import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -26,7 +27,7 @@ private fun Retrofit.Builder.applyAnnotatedFactories(
                     existingFactories.add(builder.build())
                 }
         } else {
-            existingFactories.forEach { existingFactory ->
+            existingFactories.forEachIndexed { index, existingFactory ->
                 if (existingFactory is AnnotatedConvertorFactory) {
                     configFactories.takeIf { it.isNotEmpty() }
                         ?.let { annotatedFactories ->
@@ -34,7 +35,7 @@ private fun Retrofit.Builder.applyAnnotatedFactories(
                             annotatedFactories.forEach {
                                 builder.add(it.key, it.value)
                             }
-                            existingFactories.add(builder.build())
+                            existingFactories.set(index, builder.build())
                         }
                 }
             }
@@ -45,26 +46,27 @@ private fun Retrofit.Builder.applyAnnotatedFactories(
 private fun Retrofit.Builder.applyConvertorFactories(
     configFactories: List<Converter.Factory>
 ) {
-    configFactories.takeIf { it.isNotEmpty() }?.let { converterFactories().addAll(it) }
+    val updated = converterFactories().mergeOrderedWith(configFactories) { oldValue, newValue ->
+        val generic = !newValue::class.java.typeParameters.isNullOrEmpty()
+        !generic && oldValue::class.java == newValue::class.java
+    }
+
+    converterFactories().apply {
+        clear()
+        addAll(updated)
+    }
 }
 
 private fun Retrofit.Builder.applyCallAdapterFactories(
     configFactories: List<CallAdapter.Factory>
 ) {
-    callAdapterFactories().also { existingFactories ->
-        if (existingFactories.isEmpty()) {
-            configFactories.takeIf { it.isNotEmpty() }?.let {
-                existingFactories.addAll(it)
-            }
-        } else {
-            existingFactories.forEach { existingFactory ->
-                configFactories.reversed().forEach { configFactory ->
-                    if (existingFactory.javaClass == configFactory.javaClass) {
-                        existingFactories.remove(existingFactory)
-                    }
-                    existingFactories.add(0, configFactory)
-                }
-            }
-        }
+    val updated = callAdapterFactories().mergeOrderedWith(configFactories) { oldValue, newValue ->
+        val generic = !newValue::class.java.typeParameters.isNullOrEmpty()
+        !generic && oldValue::class.java == newValue::class.java
+    }
+
+    callAdapterFactories().apply {
+        clear()
+        addAll(updated)
     }
 }

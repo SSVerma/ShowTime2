@@ -11,7 +11,7 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 
-class OkHttpConfigApplierKtTest {
+class OkHttpConfigApplierTest {
 
     private lateinit var okHttpBuilder: OkHttpClient.Builder
 
@@ -68,13 +68,13 @@ class OkHttpConfigApplierKtTest {
 
         okHttpBuilder.applyConfig(config)
 
-        assertThat(okHttpBuilder.interceptors().size).isEqualTo(2)
+        assertThat(okHttpBuilder.interceptors().size).isEqualTo(1)
         assertThat(okHttpBuilder.interceptors())
-            .containsExactly(fakeAppInterceptorOne, fakeAppInterceptorTwo)
+            .containsExactly(fakeAppInterceptorTwo)
 
-        assertThat(okHttpBuilder.networkInterceptors().size).isEqualTo(2)
+        assertThat(okHttpBuilder.networkInterceptors().size).isEqualTo(1)
         assertThat(okHttpBuilder.networkInterceptors())
-            .containsExactly(fakeNetworkInterceptorOne, fakeNetworkInterceptorTwo)
+            .containsExactly(fakeNetworkInterceptorTwo)
     }
 
     @Test

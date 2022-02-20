@@ -6,7 +6,7 @@ import retrofit2.Retrofit
 import java.lang.reflect.Type
 
 internal class AnnotatedConvertorFactory private constructor(
-    private val factories: Map<Class<out Annotation>, Converter.Factory>
+    internal val factories: Map<Class<out Annotation>, Converter.Factory>
 ) : Converter.Factory() {
 
     companion object {

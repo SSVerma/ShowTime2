@@ -11,17 +11,20 @@ abstract class AdditionalServiceConfig : ServiceConfig {
         get() = emptyMap()
 
     // Don't allow clients to provide convertor factories as order can't be determined
-    // instead use annotatedConvertorFactories
+    // instead use annotatedConvertorFactories.
     final override val convertorFactories: List<Converter.Factory>
         get() = emptyList()
 
-    override val callAdapterFactories: List<CallAdapter.Factory>
+    // Don't allow clients to provide call adapter factories as order can't be determined
+    // instead use annotatedConvertorFactories. Add annotated call adaptor factory based on the
+    // use case.
+    final override val callAdapterFactories: List<CallAdapter.Factory>
         get() = emptyList()
 
     override val applicationInterceptors: List<ApplicationInterceptor>
         get() = emptyList()
 
-    // Don't allow client to provide network interceptors
+    // Don't allow client to provide network interceptors.
     final override val networkInterceptors: List<NetworkInterceptor>
         get() = emptyList()
 
