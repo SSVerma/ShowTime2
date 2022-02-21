@@ -1,11 +1,12 @@
 package com.ssverma.core.networking
 
 import com.google.common.truth.Truth.assertThat
-import com.google.gson.annotations.SerializedName
 import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.networking.adapter.ApiResponseCallAdaptorFactory
 import com.ssverma.core.networking.config.AdditionalServiceConfig
+import com.ssverma.core.networking.convertor.FakeUser
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
+import com.ssverma.core.networking.service.FakeUserApiService
 import com.ssverma.core.networking.service.ServiceEnvironment
 import io.mockk.every
 import io.mockk.mockk
@@ -22,7 +23,6 @@ import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
 import java.io.File
 
 @ExperimentalCoroutinesApi
@@ -34,12 +34,12 @@ class RestClientImplTest {
 
     private lateinit var okHttpClient: OkHttpClient
 
-    private val fakeServiceEnvironment = object : ServiceEnvironment<FakeApiService> {
+    private val fakeServiceEnvironment = object : ServiceEnvironment<FakeUserApiService> {
         override val baseUrl: String
             get() = "https://localhost:8080/"
 
-        override val serviceClass: Class<FakeApiService>
-            get() = FakeApiService::class.java
+        override val serviceClass: Class<FakeUserApiService>
+            get() = FakeUserApiService::class.java
     }
 
     @Before
@@ -61,14 +61,14 @@ class RestClientImplTest {
 
     @Test
     fun `verify rest client creates correct service`() = runTest {
-        mockWebServer.enqueueResponse("fake-api-response-200.json")
+        mockWebServer.enqueueResponse("fake-user-api-response-200.json")
 
-        val environment = object : ServiceEnvironment<FakeApiService> {
+        val environment = object : ServiceEnvironment<FakeUserApiService> {
             override val baseUrl: String
                 get() = mockWebServer.url("/").toString()
 
-            override val serviceClass: Class<FakeApiService>
-                get() = FakeApiService::class.java
+            override val serviceClass: Class<FakeUserApiService>
+                get() = FakeUserApiService::class.java
         }
 
         val restClient = RestClientImpl(
@@ -80,7 +80,7 @@ class RestClientImplTest {
             environment = environment
         )
 
-        assertThat(service).isInstanceOf(FakeApiService::class.java)
+        assertThat(service).isInstanceOf(FakeUserApiService::class.java)
 
         val apiResponse = service.getFakeUser()
         val responsePayload = apiResponse as ApiResponse.Success<FakeUser>
@@ -161,17 +161,4 @@ private class FakeAppInterceptor : ApplicationInterceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         return chain.proceed(chain.request())
     }
-}
-
-private data class FakeUser(
-    @SerializedName("id")
-    val id: Int,
-
-    @SerializedName("name")
-    val name: String
-)
-
-private interface FakeApiService {
-    @GET("/fakeUser")
-    suspend fun getFakeUser(): ApiResponse<FakeUser, Any>
 }

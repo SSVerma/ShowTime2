@@ -1,7 +1,13 @@
 package com.ssverma.core.networking.convertor
 
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.RUNTIME)
 internal annotation class FooFactory
 
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.RUNTIME)
 internal annotation class BarFactory
+
+@Retention(AnnotationRetention.RUNTIME)
+internal annotation class FakeUserEnvelopConvertor
+
+@Retention(AnnotationRetention.RUNTIME)
+internal annotation class FakeFooEnvelopConvertor

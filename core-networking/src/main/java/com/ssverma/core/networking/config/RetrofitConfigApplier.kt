@@ -8,35 +8,38 @@ import retrofit2.Retrofit
 
 internal fun Retrofit.Builder.applyConfig(config: RetrofitConfig) = apply {
     // Order matters
-    this.applyAnnotatedFactories(config.annotatedConvertorFactories)
-    this.applyConvertorFactories(config.convertorFactories)
-    this.applyCallAdapterFactories(config.callAdapterFactories)
+    config.annotatedConvertorFactories.takeIf { it.isNotEmpty() }?.let {
+        this.applyAnnotatedFactories(it)
+    }
+    config.convertorFactories.takeIf { it.isNotEmpty() }?.let {
+        this.applyConvertorFactories(it)
+    }
+    config.callAdapterFactories.takeIf { it.isNotEmpty() }?.let {
+        this.applyCallAdapterFactories(it)
+    }
 }
 
 private fun Retrofit.Builder.applyAnnotatedFactories(
     configFactories: Map<Class<out Annotation>, Converter.Factory>
 ) {
     converterFactories().also { existingFactories ->
-        if (existingFactories.isEmpty()) {
-            configFactories.takeIf { it.isNotEmpty() }
-                ?.let { annotatedFactories ->
-                    val builder = AnnotatedConvertorFactory.builder()
-                    annotatedFactories.forEach {
-                        builder.add(it.key, it.value)
-                    }
-                    existingFactories.add(builder.build())
-                }
+        val existingAnnotatedFactories =
+            existingFactories.filterIsInstance<AnnotatedConvertorFactory>()
+
+        if (existingAnnotatedFactories.isNullOrEmpty()) {
+            val builder = AnnotatedConvertorFactory.builder()
+            configFactories.forEach {
+                builder.add(it.key, it.value)
+            }
+            existingFactories.add(0, builder.build())
         } else {
             existingFactories.forEachIndexed { index, existingFactory ->
                 if (existingFactory is AnnotatedConvertorFactory) {
-                    configFactories.takeIf { it.isNotEmpty() }
-                        ?.let { annotatedFactories ->
-                            val builder = existingFactory.newBuilder()
-                            annotatedFactories.forEach {
-                                builder.add(it.key, it.value)
-                            }
-                            existingFactories.set(index, builder.build())
-                        }
+                    val builder = existingFactory.newBuilder()
+                    configFactories.forEach {
+                        builder.add(it.key, it.value)
+                    }
+                    existingFactories[index] = builder.build()
                 }
             }
         }

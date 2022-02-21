@@ -44,7 +44,7 @@ class ApiResponseCallAdaptorFactoryTest {
     @Test
     fun `verify api response success returns correct type`() = runTest {
         mockWebServer.enqueueResponse(
-            fileName = "fake-api-response-200.json",
+            fileName = "fake-user-api-response-200.json",
             mockResponseBuilder = {
                 addHeader("FakeKey : FakeValue")
             }
@@ -67,7 +67,7 @@ class ApiResponseCallAdaptorFactoryTest {
     @Test
     fun `verify api response client error returns correct type`() = runTest {
         mockWebServer.enqueueResponse(
-            fileName = "fake-api-response-400.json",
+            fileName = "fake-user-api-response-400.json",
             httpCode = HttpURLConnection.HTTP_BAD_REQUEST
         )
 
@@ -126,7 +126,7 @@ class ApiResponseCallAdaptorFactoryTest {
     @Test
     fun `verify api response invalid http code returns correct type`() = runTest {
         mockWebServer.enqueueResponse(
-            fileName = "fake-api-response-200.json",
+            fileName = "fake-user-api-response-200.json",
             httpCode = 602
         )
 
@@ -166,7 +166,7 @@ class ApiResponseCallAdaptorFactoryTest {
     @Test
     fun `verify api response invalid return type throws exception`() {
         mockWebServer.enqueueResponse(
-            fileName = "fake-api-response-200.json"
+            fileName = "fake-user-api-response-200.json"
         )
 
         val response = fakeService.getNonSuspendUser().execute().body()

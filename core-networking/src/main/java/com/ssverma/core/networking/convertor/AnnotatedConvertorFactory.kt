@@ -21,9 +21,19 @@ internal class AnnotatedConvertorFactory private constructor(
         retrofit: Retrofit
     ): Converter<ResponseBody, *>? {
         annotations.forEach { annotation ->
-            val factory = factories[annotation::class.java]
+            val factory = factories[annotation.annotationClass.java]
             if (factory != null) {
-                return factory.responseBodyConverter(type, annotations, retrofit)
+                return when (factory) {
+                    is EnvelopeConvertorFactory<*, *> -> {
+                        // remove processed annotation to prevent infinite loop
+                        val remainingAnnotations =
+                            annotations.filterNot { it == annotation }.toTypedArray()
+                        factory.responseBodyConverter(type, remainingAnnotations, retrofit)
+                    }
+                    else -> {
+                        factory.responseBodyConverter(type, annotations, retrofit)
+                    }
+                }
             }
         }
         return null

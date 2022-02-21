@@ -3,14 +3,25 @@ package com.ssverma.core.networking.convertor
 import com.google.gson.annotations.SerializedName
 
 internal data class Foo(
-    @SerializedName("id")
+    @SerializedName("foo_id")
     val id: Int,
 
-    @SerializedName("name")
+    @SerializedName("foo_name")
     val name: String
 )
 
+internal data class FooMeta(
+    @SerializedName("message")
+    val message: String,
+
+    @SerializedName("timestamp")
+    val timeStamp: Long
+)
+
 internal data class FooEnvelop(
+    @SerializedName("metadata")
+    val meta: FooMeta,
+
     @SerializedName("foo")
     override val response: Foo
 ) : Envelope<Foo>
@@ -27,3 +38,29 @@ internal data class BarEnvelop(
     @SerializedName("bar")
     override val response: Bar
 ) : Envelope<Bar>
+
+
+internal data class FakeUser(
+    @SerializedName("id")
+    val id: Int,
+
+    @SerializedName("name")
+    val name: String
+)
+
+internal data class FakeUserMetadata(
+    @SerializedName("message")
+    val message: String,
+
+    @SerializedName("timestamp")
+    val timeStamp: Long
+)
+
+internal data class FakeUserEnvelop(
+    @SerializedName("metadata")
+    val meta: FakeUserMetadata,
+
+    @SerializedName("user")
+    override val response: FakeUser
+
+) : Envelope<FakeUser>
