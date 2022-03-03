@@ -4,6 +4,8 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.networking.adapter.ApiResponseCallAdaptorFactory
 import com.ssverma.core.networking.config.AdditionalServiceConfig
+import com.ssverma.core.networking.convertor.FakeMoshiConvertor
+import com.ssverma.core.networking.convertor.FakeMoshiUser
 import com.ssverma.core.networking.convertor.FakeUser
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
 import com.ssverma.core.networking.service.FakeUserApiService
@@ -21,14 +23,16 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 
 @ExperimentalCoroutinesApi
 class RestClientImplTest {
 
-    private lateinit var mockWebServer: MockWebServer
+    private var mockWebServer: MockWebServer = MockWebServer()
 
     private lateinit var retrofitBuilder: Retrofit.Builder
 
@@ -36,7 +40,7 @@ class RestClientImplTest {
 
     private val fakeServiceEnvironment = object : ServiceEnvironment<FakeUserApiService> {
         override val baseUrl: String
-            get() = "https://localhost:8080/"
+            get() = mockWebServer.url("/").toString()
 
         override val serviceClass: Class<FakeUserApiService>
             get() = FakeUserApiService::class.java
@@ -44,11 +48,9 @@ class RestClientImplTest {
 
     @Before
     fun setUp() {
-        mockWebServer = MockWebServer()
         okHttpClient = OkHttpClient.Builder().build()
 
         retrofitBuilder = Retrofit.Builder()
-            .baseUrl(mockWebServer.url("/"))
             .addCallAdapterFactory(ApiResponseCallAdaptorFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
@@ -63,21 +65,13 @@ class RestClientImplTest {
     fun `verify rest client creates correct service`() = runTest {
         mockWebServer.enqueueResponse("fake-user-api-response-200.json")
 
-        val environment = object : ServiceEnvironment<FakeUserApiService> {
-            override val baseUrl: String
-                get() = mockWebServer.url("/").toString()
-
-            override val serviceClass: Class<FakeUserApiService>
-                get() = FakeUserApiService::class.java
-        }
-
         val restClient = RestClientImpl(
             retrofitBuilder = retrofitBuilder,
             okHttpClient = okHttpClient
         )
 
         val service = restClient.createService(
-            environment = environment
+            environment = fakeServiceEnvironment
         )
 
         assertThat(service).isInstanceOf(FakeUserApiService::class.java)
@@ -86,7 +80,7 @@ class RestClientImplTest {
         val responsePayload = apiResponse as ApiResponse.Success<FakeUser>
         val requestUrl = responsePayload.payload.row.request.url.toString()
 
-        assertThat(requestUrl).isEqualTo(environment.baseUrl + "fakeUser")
+        assertThat(requestUrl).isEqualTo(fakeServiceEnvironment.baseUrl + "fakeUser")
     }
 
     @Test
@@ -154,6 +148,36 @@ class RestClientImplTest {
 
         assertThat(service).isNotNull()
         verify(exactly = 1) { mockedHttpClient.newBuilder().cache(testCache) }
+    }
+
+    @Test
+    fun `verify additional json convertor factory applies correctly`() = runTest {
+        mockWebServer.enqueueResponse("fake-user-api-response-200.json")
+
+        val serviceConfig = object : AdditionalServiceConfig() {
+            override val annotatedConvertorFactories: Map<Class<out Annotation>, Converter.Factory>
+                get() = mapOf(
+                    FakeMoshiConvertor::class.java to MoshiConverterFactory.create()
+                )
+        }
+
+        val restClient = RestClientImpl(retrofitBuilder, okHttpClient)
+
+        val service = restClient.createService(
+            environment = fakeServiceEnvironment,
+            serviceConfig = serviceConfig
+        )
+
+        assertThat(service).isNotNull()
+        assertThat(service).isInstanceOf(FakeUserApiService::class.java)
+
+        val apiResponse = service.getFakeMoshiUser()
+        val responsePayload = apiResponse as ApiResponse.Success<FakeMoshiUser>
+
+        val fakeMoshiUser = responsePayload.body
+
+        assertThat(fakeMoshiUser.id).isEqualTo(1232)
+        assertThat(fakeMoshiUser.fullName).isEqualTo("SS Verma")
     }
 }
 

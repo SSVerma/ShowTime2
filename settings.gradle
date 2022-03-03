@@ -10,3 +10,5 @@ dependencyResolutionManagement {
 rootProject.name = "ShowTime"
 include ':app'
 include ':core-networking'
+include ':api-service:tmdb'
+include ':core-paging'

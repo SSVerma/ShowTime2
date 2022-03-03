@@ -11,3 +11,6 @@ internal annotation class FakeUserEnvelopConvertor
 
 @Retention(AnnotationRetention.RUNTIME)
 internal annotation class FakeFooEnvelopConvertor
+
+@Retention(AnnotationRetention.RUNTIME)
+internal annotation class FakeMoshiConvertor

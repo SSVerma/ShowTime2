@@ -14,6 +14,8 @@ internal class RestClientImpl @Inject constructor(
     private val retrofitBuilder: Retrofit.Builder,
     @CoreNetworking private val okHttpClient: OkHttpClient
 ) : RestClient {
+
+    @Synchronized
     override fun <T> createService(
         environment: ServiceEnvironment<T>,
         serviceConfig: AdditionalServiceConfig?

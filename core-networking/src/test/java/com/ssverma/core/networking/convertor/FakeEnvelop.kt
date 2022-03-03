@@ -1,6 +1,7 @@
 package com.ssverma.core.networking.convertor
 
 import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
 
 internal data class Foo(
     @SerializedName("foo_id")
@@ -64,3 +65,12 @@ internal data class FakeUserEnvelop(
     override val response: FakeUser
 
 ) : Envelope<FakeUser>
+
+
+internal data class FakeMoshiUser(
+    @field:Json(name = "id")
+    val id: Int,
+
+    @field:Json(name = "name")
+    val fullName: String
+)

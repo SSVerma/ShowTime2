@@ -2,12 +2,9 @@ package com.ssverma.api.service.tmdb.response
 
 import com.google.gson.annotations.SerializedName
 
-class RemoteMovie(
+class RemoteTvShow(
     @SerializedName("id")
     val id: Int,
-
-    @SerializedName("imdb_id")
-    val imdbId: String?,
 
     @SerializedName("backdrop_path")
     val backdropPath: String?,
@@ -15,10 +12,7 @@ class RemoteMovie(
     @SerializedName("poster_path")
     val posterPath: String?,
 
-    @SerializedName("budget")
-    val budget: Long,
-
-    @SerializedName("title")
+    @SerializedName("name")
     val title: String?,
 
     @SerializedName("tagline")
@@ -30,29 +24,26 @@ class RemoteMovie(
     @SerializedName("status")
     val status: String?,
 
-    @SerializedName("video")
-    val videoAvailable: Boolean,
-
     @SerializedName("vote_average")
     val voteAvg: Float,
 
     @SerializedName("vote_count")
     val voteCount: Int,
 
-    @SerializedName("release_date")
-    val releaseDate: String?,
-
-    @SerializedName("revenue")
-    val revenue: Long,
-
-    @SerializedName("runtime")
-    val runtime: Int,
+    @SerializedName("first_air_date")
+    val firstAirDate: String?,
 
     @SerializedName("popularity")
     val popularity: Float,
 
     @SerializedName("original_language")
     val originalLanguage: String?,
+
+    @SerializedName("number_of_seasons")
+    val seasonCount: Int,
+
+    @SerializedName("number_of_episodes")
+    val episodeCount: Int,
 
     @SerializedName("credits")
     val credit: RemoteCredit?,
@@ -69,15 +60,15 @@ class RemoteMovie(
     @SerializedName("genres")
     val genres: List<RemoteGenre>?,
 
-    @SerializedName("belongs_to_collection")
-    val collection: RemoteMovieCollection?,
-
     @SerializedName("reviews")
     val reviews: PagedPayload<RemoteReview>?,
 
     @SerializedName("similar")
-    val similarMovies: PagedPayload<RemoteMovie>?,
+    val similarTvShows: PagedPayload<RemoteTvShow>?,
 
     @SerializedName("recommendations")
-    val recommendations: PagedPayload<RemoteMovie>?
+    val recommendations: PagedPayload<RemoteTvShow>?,
+
+    @SerializedName("seasons")
+    val seasons: List<RemoteTvSeason>?
 )

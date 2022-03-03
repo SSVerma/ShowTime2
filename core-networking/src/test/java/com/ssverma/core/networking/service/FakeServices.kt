@@ -1,10 +1,7 @@
 package com.ssverma.core.networking.service
 
 import com.ssverma.core.networking.adapter.ApiResponse
-import com.ssverma.core.networking.convertor.FakeFooEnvelopConvertor
-import com.ssverma.core.networking.convertor.FakeUser
-import com.ssverma.core.networking.convertor.FakeUserEnvelopConvertor
-import com.ssverma.core.networking.convertor.Foo
+import com.ssverma.core.networking.convertor.*
 import retrofit2.http.GET
 
 internal interface FakeUserApiService {
@@ -18,4 +15,8 @@ internal interface FakeUserApiService {
     @GET("/fakeEnvelopedFoo")
     @FakeFooEnvelopConvertor
     suspend fun getEnvelopedFoo(): ApiResponse<Foo, Any>
+
+    @GET("/fakeMoshiUser")
+    @FakeMoshiConvertor
+    suspend fun getFakeMoshiUser(): ApiResponse<FakeMoshiUser, Any>
 }
