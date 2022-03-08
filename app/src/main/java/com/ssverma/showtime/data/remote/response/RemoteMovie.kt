@@ -1,7 +1,8 @@
-package com.ssverma.api.service.tmdb.response
+package com.ssverma.showtime.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
+@Deprecated("use-> com.ssverma.api.service.tmdb.response.RemoteMovie")
 class RemoteMovie(
     @SerializedName("id")
     val id: Int,

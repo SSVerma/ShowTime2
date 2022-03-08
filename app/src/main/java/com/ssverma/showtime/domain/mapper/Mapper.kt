@@ -4,10 +4,12 @@ import com.ssverma.showtime.domain.Result
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
+@Deprecated("moved in data layer")
 abstract class Mapper<in I, out O> {
     abstract suspend fun map(input: I): O
 }
 
+@Deprecated("moved in data layer")
 abstract class ListMapper<in I, out O>(
     private val coroutineDispatcher: CoroutineDispatcher
 ) : Mapper<List<I>, List<O>>() {
@@ -20,7 +22,7 @@ abstract class ListMapper<in I, out O>(
     abstract suspend fun mapItem(input: I): O
 }
 
-
+@Deprecated("moved in data layer")
 abstract class ResultMapper<I, O>(
     private val coroutineDispatcher: CoroutineDispatcher
 ) : Mapper<Result<I>, Result<O>>() {

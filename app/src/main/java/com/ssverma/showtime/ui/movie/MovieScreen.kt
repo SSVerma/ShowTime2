@@ -204,6 +204,49 @@ fun MoviesSection(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun MoviesSection(
+    moviesState: MovieListUiState,
+    @StringRes sectionTitleRes: Int,
+    modifier: Modifier = Modifier,
+    @StringRes subtitleRes: Int = 0,
+    leadingIconUrl: String? = null,
+    onViewAllClicked: () -> Unit = {},
+    onRetry: () -> Unit,
+    content: @Composable (movie: Movie) -> Unit
+) {
+
+    var shouldVisible by remember { mutableStateOf(true) }
+
+    AnimatedVisibility(
+        visible = shouldVisible,
+        modifier = modifier.padding(top = 32.dp)
+    ) {
+        Section(
+            sectionHeader = {
+                SectionHeader(
+                    modifier = Modifier.padding(start = 16.dp),
+                    title = stringResource(sectionTitleRes),
+                    subtitle = if (subtitleRes == 0) null else stringResource(id = subtitleRes),
+                    leadingIconUrl = leadingIconUrl,
+                    onTrailingActionClicked = onViewAllClicked
+                )
+            },
+        ) {
+            DriveCompose(
+                uiState = moviesState,
+                loading = { SectionLoadingIndicator() },
+                onRetry = onRetry
+            ) { movies ->
+
+                shouldVisible = movies.isNotEmpty()
+                HorizontalList(items = movies) { content(it) }
+            }
+        }
+    }
+}
+
 @Composable
 fun HeaderSection(
     viewModel: HomeViewModel,
@@ -263,7 +306,7 @@ fun HeaderSection(
                 }
             )
             MoviesSection(
-                liveMovies = viewModel.dailyTrendingMovies,
+                moviesState = viewModel.trendingMoviesUiState,
                 sectionTitleRes = R.string.trending_today,
                 onViewAllClicked = {
                     onNavigateToMovieList(
@@ -272,7 +315,8 @@ fun HeaderSection(
                             titleRes = R.string.trending_today
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchTrendingMovies() }
             ) {
                 MediaItem(
                     title = it.title,

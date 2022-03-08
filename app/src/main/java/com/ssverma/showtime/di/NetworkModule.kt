@@ -1,12 +1,11 @@
 package com.ssverma.showtime.di
 
+import com.ssverma.api.service.tmdb.di.TmdbServiceApiKey
+import com.ssverma.api.service.tmdb.di.TmdbServiceBaseUrl
 import com.ssverma.core.networking.RestClient
 import com.ssverma.core.networking.config.AdditionalServiceConfig
-import com.ssverma.core.networking.interceptor.ApplicationInterceptor
 import com.ssverma.core.networking.service.ServiceEnvironment
 import com.ssverma.showtime.BuildConfig
-import com.ssverma.showtime.api.TmdbApiService
-import com.ssverma.showtime.api.interceptor.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,34 +16,41 @@ import javax.inject.Singleton
 @Module
 class NetworkModule {
 
+    @TmdbServiceApiKey
     @Singleton
     @Provides
-    fun provideEnvironment(): ServiceEnvironment<TmdbApiService> {
-        return object : ServiceEnvironment<TmdbApiService> {
+    fun provideTmdbApiKey(): String {
+        return BuildConfig.TMDB_API_KEY
+    }
+
+    @TmdbServiceBaseUrl
+    @Singleton
+    @Provides
+    fun provideTmdbServiceBaseUrl(): String {
+        return BuildConfig.BASE_URL
+    }
+
+    @Deprecated("use api.service")
+    @Singleton
+    @Provides
+    fun provideEnvironment(): ServiceEnvironment<com.ssverma.showtime.api.TmdbApiService> {
+        return object : ServiceEnvironment<com.ssverma.showtime.api.TmdbApiService> {
             override val baseUrl: String
                 get() = BuildConfig.BASE_URL
 
-            override val serviceClass: Class<TmdbApiService>
-                get() = TmdbApiService::class.java
+            override val serviceClass: Class<com.ssverma.showtime.api.TmdbApiService>
+                get() = com.ssverma.showtime.api.TmdbApiService::class.java
         }
     }
 
-    @Singleton
-    @Provides
-    fun provideServiceConfig(authInterceptor: AuthInterceptor): AdditionalServiceConfig {
-        return object : AdditionalServiceConfig() {
-            override val applicationInterceptors: List<ApplicationInterceptor>
-                get() = listOf(authInterceptor)
-        }
-    }
-
+    @Deprecated("use api.service", replaceWith = ReplaceWith("provideTmdbApiService()"))
     @Singleton
     @Provides
     fun provideTmdbApiService(
         restClient: RestClient,
-        serviceEnvironment: ServiceEnvironment<TmdbApiService>,
+        serviceEnvironment: ServiceEnvironment<com.ssverma.showtime.api.TmdbApiService>,
         additionalConfig: AdditionalServiceConfig
-    ): TmdbApiService {
+    ): com.ssverma.showtime.api.TmdbApiService {
         return restClient.createService(
             environment = serviceEnvironment,
             serviceConfig = additionalConfig

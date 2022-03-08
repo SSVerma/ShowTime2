@@ -2,13 +2,18 @@ package com.ssverma.showtime.api
 
 import com.ssverma.showtime.utils.CoreUtils
 
+@Deprecated("use-> api.service.tmdb")
 const val TMDB_API_PAGE_SIZE = 20
+
+@Deprecated("use-> api.service.tmdb")
 const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500" //TODO: Fetch from configs
 
+@Deprecated("use-> api.service.tmdb")
 fun String?.convertToFullTmdbImageUrl(): String {
     return CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, this)
 }
 
+@Deprecated("use-> api.service.tmdb")
 object TmdbApiTiedConstants {
 
     object AvailableMediaTypes {

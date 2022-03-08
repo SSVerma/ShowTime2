@@ -2,6 +2,7 @@ package com.ssverma.showtime.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
+@Deprecated("use -> api.service.tmdb")
 class PagedPayload<T>(
     @SerializedName("id")
     val id: Int,

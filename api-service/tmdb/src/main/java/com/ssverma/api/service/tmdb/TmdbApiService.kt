@@ -22,23 +22,23 @@ interface TmdbApiService {
     @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.MOVIE}/{timeWindow}")
     suspend fun getTrendingMovies(
         @Path("timeWindow") timeWindow: String,
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
     @GET("3/movie/popular")
     suspend fun getPopularMovies(
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
     @GET("3/movie/top_rated")
     suspend fun getTopRatedMovies(
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
     @GET("4/discover/movie")
     suspend fun getDiscoveredMovies(
         @QueryMap queryMap: Map<String, String>,
-        @Query("page", encoded = false) page: Int = 1
+        @Query("page", encoded = false) page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
     @GET("3/genre/movie/list")
@@ -58,13 +58,13 @@ interface TmdbApiService {
 
     @GET("3/person/popular")
     suspend fun getPopularPersons(
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemotePerson>>
 
     @GET("3/person/{personId}/tagged_images")
     suspend fun getPersonTaggedImages(
         @Path("personId") personId: Int,
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteImageShot>>
 
     @GET("3/genre/tv/list")
@@ -72,22 +72,22 @@ interface TmdbApiService {
 
     @GET("3/tv/popular")
     suspend fun getPopularTvShows(
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
     @GET("3/tv/top_rated")
     suspend fun getTopRatedTvShows(
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
     @GET("3/tv/on_the_air")
     suspend fun getOnTheAirTvShows(
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
     @GET("3/tv/airing_today")
     suspend fun getTodayAiringTvShows(
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
     @GET("3/tv/{tvShowId}")
@@ -99,13 +99,13 @@ interface TmdbApiService {
     @GET("4/discover/tv")
     suspend fun getDiscoveredTvShows(
         @QueryMap queryMap: Map<String, String>,
-        @Query("page", encoded = false) page: Int = 1
+        @Query("page", encoded = false) page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
     @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.TV}/{timeWindow}")
     suspend fun getTrendingTvShows(
         @Path("timeWindow") timeWindow: String,
-        @Query("page") page: Int = 1
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
     @GET("3/tv/{tvShowId}/reviews")

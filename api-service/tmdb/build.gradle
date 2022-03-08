@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.kapt'
 }
 
 java {
@@ -11,4 +12,8 @@ java {
 dependencies {
     implementation project(":core-networking")
     implementation project(":core-paging")
+
+    /* Dependency Injection */
+    implementation "com.google.dagger:hilt-core:2.40.5"
+    kapt "com.google.dagger:hilt-compiler:2.40.5"
 }

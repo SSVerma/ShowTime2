@@ -7,6 +7,7 @@ enum class DataOrigin {
     Local
 }
 
+@Deprecated("use DomainResult")
 sealed class Result<T> {
     data class Success<T>(
         val data: T,
@@ -29,3 +30,14 @@ data class ApiData<T>(
     val payload: T,
     val response: Response<T>
 )
+
+//TODO: Rename as 'Result' once migration completes.
+sealed class DomainResult<out S, out E> {
+    data class Success<S>(
+        val data: S
+    ) : DomainResult<S, Nothing>()
+
+    data class Error<E>(
+        val error: E
+    ) : DomainResult<Nothing, E>()
+}

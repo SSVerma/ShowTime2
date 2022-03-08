@@ -67,6 +67,7 @@ android {
 dependencies {
 
     implementation project(":core-networking")
+    implementation project(":core-paging")//Fix it, should be inside api-service-tmdb only
     implementation project(":api-service:tmdb")
 
     implementation 'androidx.core:core-ktx:1.7.0'

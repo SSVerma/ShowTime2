@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.Result
+import com.ssverma.showtime.domain.core.Failure
+import com.ssverma.showtime.ui.FetchDataUiState
 
 @Composable
 fun <T> DriveCompose(
@@ -61,6 +63,65 @@ private fun <T> DefaultErrorView(
                 error.retry?.invoke()
             }
         ) {
+            Text(text = stringResource(R.string.retry))
+        }
+    }
+}
+
+@Composable
+fun <S, F> DriveCompose(
+    uiState: FetchDataUiState<S, F>,
+    loading: @Composable () -> Unit = { DefaultLoadingIndicator() },
+    coreErrorContent: @Composable (error: Failure.CoreFailure) -> Unit = {
+        DefaultCoreErrorView(error = it, onRetry = onRetry)
+    },
+    onRetry: () -> Unit = {},
+    featureErrorContent: @Composable (error: Failure.FeatureFailure<F>) -> Unit = {},
+    idleContent: @Composable () -> Unit = {},
+    content: @Composable (data: S) -> Unit,
+) {
+    when (uiState) {
+        is FetchDataUiState.Idle -> {
+            idleContent()
+        }
+        is FetchDataUiState.Error -> {
+            when (val errorResult = uiState.failure) {
+                Failure.CoreFailure.NetworkFailure,
+                Failure.CoreFailure.ServiceFailure,
+                Failure.CoreFailure.UnexpectedFailure -> {
+                    coreErrorContent(errorResult as Failure.CoreFailure)
+                }
+                is Failure.FeatureFailure -> {
+                    featureErrorContent(errorResult)
+                }
+            }
+        }
+        FetchDataUiState.Loading -> {
+            loading()
+        }
+        is FetchDataUiState.Success -> {
+            content(uiState.data)
+        }
+    }
+}
+
+@Composable
+private fun DefaultCoreErrorView(
+    error: Failure.CoreFailure,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    //TODO: use [error] to create separate screens based on the error context
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.fillMaxSize()
+    ) {
+        Text(text = stringResource(id = R.string.something_went_wrong))
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(onClick = onRetry) {
             Text(text = stringResource(R.string.retry))
         }
     }

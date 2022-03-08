@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
+@Deprecated("use-> com.ssverma.showtime.domain.repository.MovieRepository")
 class MovieRepository @Inject constructor(
     private val tmdbApiService: TmdbApiService
 ) {

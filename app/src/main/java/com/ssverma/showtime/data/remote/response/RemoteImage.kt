@@ -2,6 +2,7 @@ package com.ssverma.showtime.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
+@Deprecated("use -> api.service.tmdb")
 class ImagePayload(
     @SerializedName("posters")
     val posters: List<RemoteImageShot>?,
@@ -13,6 +14,7 @@ class ImagePayload(
     val stills: List<RemoteImageShot>?
 )
 
+@Deprecated("use -> api.service.tmdb")
 class RemoteImageShot(
     @SerializedName("aspect_ratio")
     val aspectRatio: Float,

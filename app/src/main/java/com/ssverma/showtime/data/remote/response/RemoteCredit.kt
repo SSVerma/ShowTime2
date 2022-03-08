@@ -2,6 +2,7 @@ package com.ssverma.showtime.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
+@Deprecated("use-> api.service.tmdb")
 class RemoteCredit(
     @SerializedName("cast")
     val casts: List<RemoteCast>?,
@@ -13,6 +14,7 @@ class RemoteCredit(
     val guestStars: List<RemoteCast>?
 )
 
+@Deprecated("use-> api.service.tmdb")
 class RemoteCast(
     @SerializedName("id")
     val id: Int,
@@ -33,6 +35,7 @@ class RemoteCast(
     val creditId: String?
 )
 
+@Deprecated("use-> api.service.tmdb")
 class RemoteCrew(
     @SerializedName("id")
     val id: Int,

@@ -2,6 +2,7 @@ package com.ssverma.showtime.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 
+@Deprecated("use -> api.service.tmdb")
 class RemoteReview(
     @SerializedName("id")
     val id: String?,
@@ -19,6 +20,7 @@ class RemoteReview(
     val updatedAt: String?
 )
 
+@Deprecated("use -> api.service.tmdb")
 class RemoteReviewAuthor(
     @SerializedName("name")
     val name: String?,

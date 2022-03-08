@@ -1,5 +1,8 @@
 package com.ssverma.showtime.ui.home
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -11,12 +14,19 @@ import com.ssverma.showtime.data.repository.MovieRepository
 import com.ssverma.showtime.data.repository.PersonRepository
 import com.ssverma.showtime.data.repository.TvRepository
 import com.ssverma.showtime.data.repository.UnsplashRepository
+import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.model.Person
+import com.ssverma.showtime.domain.movie.GetTrendingMoviesUseCase
+import com.ssverma.showtime.ui.FetchDataUiState
+import com.ssverma.showtime.ui.asFetchDataUiState
+import com.ssverma.showtime.ui.movie.MovieListUiState
 import com.ssverma.showtime.ui.movie.movieReleaseType
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatAsIso
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,7 +34,8 @@ class HomeViewModel @Inject constructor(
     movieRepository: MovieRepository,
     tvRepository: TvRepository,
     unsplashRepository: UnsplashRepository,
-    personRepository: PersonRepository
+    personRepository: PersonRepository,
+    private val trendingMoviesUseCase: GetTrendingMoviesUseCase
 ) : ViewModel() {
 
     val movieBackdrop = unsplashRepository.randomMovieBackdropUrl
@@ -93,4 +104,19 @@ class HomeViewModel @Inject constructor(
             sortBy = TmdbApiTiedConstants.AvailableSortingOptions.FirstAirDateAsc
         )
     ).asLiveData()
+
+    var trendingMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)
+        private set
+
+    init {
+        fetchTrendingMovies()
+    }
+
+    fun fetchTrendingMovies(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            trendingMoviesUiState = FetchDataUiState.Loading
+            trendingMoviesUiState = trendingMoviesUseCase(TimeWindow.Daily).asFetchDataUiState()
+        }
+    }
+
 }
