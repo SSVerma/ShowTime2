@@ -10,7 +10,7 @@ import com.ssverma.showtime.api.DiscoverQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
 import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.MovieRepository
-import com.ssverma.showtime.domain.model.Movie
+import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatAsIso

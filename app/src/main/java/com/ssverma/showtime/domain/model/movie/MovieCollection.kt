@@ -1,4 +1,4 @@
-package com.ssverma.showtime.domain.model
+package com.ssverma.showtime.domain.model.movie
 
 import com.ssverma.showtime.api.convertToFullTmdbImageUrl
 import com.ssverma.showtime.data.remote.response.RemoteMovieCollection

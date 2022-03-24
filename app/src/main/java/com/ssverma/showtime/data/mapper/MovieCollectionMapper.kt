@@ -2,7 +2,7 @@ package com.ssverma.showtime.data.mapper
 
 import com.ssverma.api.service.tmdb.response.RemoteMovieCollection
 import com.ssverma.showtime.api.convertToFullTmdbImageUrl
-import com.ssverma.showtime.domain.model.MovieCollection
+import com.ssverma.showtime.domain.model.movie.MovieCollection
 
 fun RemoteMovieCollection.asMovieCollection(): MovieCollection {
     return MovieCollection(

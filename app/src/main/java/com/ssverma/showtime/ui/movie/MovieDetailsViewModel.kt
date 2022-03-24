@@ -8,8 +8,8 @@ import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.MovieRepository
 import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.domain.model.Movie
-import com.ssverma.showtime.domain.model.imageShots
+import com.ssverma.showtime.domain.model.movie.Movie
+import com.ssverma.showtime.domain.model.movie.imageShots
 import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -12,7 +12,12 @@ import com.ssverma.showtime.data.movieFilterGroups
 import com.ssverma.showtime.data.remote.MoviePagingSource
 import com.ssverma.showtime.data.remote.ReviewsPagingSource
 import com.ssverma.showtime.domain.Result
-import com.ssverma.showtime.domain.model.*
+import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.showtime.domain.model.Review
+import com.ssverma.showtime.domain.model.asGenres
+import com.ssverma.showtime.domain.model.movie.Movie
+import com.ssverma.showtime.domain.model.movie.asMovie
+import com.ssverma.showtime.domain.model.movie.asMovies
 import com.ssverma.showtime.extension.asDomainFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

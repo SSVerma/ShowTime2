@@ -2,7 +2,7 @@ package com.ssverma.showtime.data.mapper
 
 import com.ssverma.api.service.tmdb.TMDB_IMAGE_BASE_URL
 import com.ssverma.api.service.tmdb.response.RemoteMovie
-import com.ssverma.showtime.domain.model.Movie
+import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.utils.CoreUtils
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.FormatterUtils

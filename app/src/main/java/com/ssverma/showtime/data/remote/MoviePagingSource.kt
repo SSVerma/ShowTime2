@@ -2,8 +2,8 @@ package com.ssverma.showtime.data.remote
 
 import com.ssverma.showtime.data.remote.response.PagedPayload
 import com.ssverma.showtime.data.remote.response.RemoteMovie
-import com.ssverma.showtime.domain.model.Movie
-import com.ssverma.showtime.domain.model.asMovies
+import com.ssverma.showtime.domain.model.movie.Movie
+import com.ssverma.showtime.domain.model.movie.asMovies
 import retrofit2.Response
 
 @Deprecated("use-> api.service.tmdb")

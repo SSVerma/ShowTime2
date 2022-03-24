@@ -22,7 +22,7 @@ import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Keyword
-import com.ssverma.showtime.domain.model.Movie
+import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.ui.FiltersScreen
 import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.PagedContent

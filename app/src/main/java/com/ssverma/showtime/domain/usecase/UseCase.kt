@@ -1,4 +1,4 @@
-package com.ssverma.showtime.domain.core
+package com.ssverma.showtime.domain.usecase
 
 import com.ssverma.showtime.domain.DomainResult
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,3 +25,15 @@ abstract class FlowUseCase<in P, S, E>(private val coroutineDispatcher: Coroutin
 
     protected abstract fun execute(params: P): Flow<DomainResult<S, E>>
 }
+
+abstract class NoParamUseCase<S, E>(private val coroutineDispatcher: CoroutineDispatcher) {
+    suspend operator fun invoke(): DomainResult<S, E> {
+        return withContext(coroutineDispatcher) {
+            execute()
+        }
+    }
+
+    protected abstract suspend fun execute(): DomainResult<S, E>
+}
+
+object AbsentUseCaseParam

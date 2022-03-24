@@ -18,12 +18,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
 import com.google.accompanist.insets.statusBarsHeight
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.Movie
+import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.ui.AttributionFooter
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
@@ -62,7 +60,7 @@ private fun MovieContent(
         //Popular
         item {
             MoviesSection(
-                liveMovies = viewModel.popularMovies,
+                moviesState = viewModel.popularMoviesUiState,
                 sectionTitleRes = R.string.popuplar,
                 subtitleRes = R.string.popular_info,
                 onViewAllClicked = {
@@ -72,7 +70,8 @@ private fun MovieContent(
                             titleRes = R.string.popuplar
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchPopularMovies() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -86,7 +85,7 @@ private fun MovieContent(
         //Top rated
         item {
             MoviesSection(
-                liveMovies = viewModel.topRatedMovies,
+                moviesState = viewModel.topRatedMoviesUiState,
                 sectionTitleRes = R.string.top_rated,
                 onViewAllClicked = {
                     openMovieList(
@@ -95,7 +94,8 @@ private fun MovieContent(
                             titleRes = R.string.top_rated
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchTopRatedMovies() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -109,7 +109,7 @@ private fun MovieContent(
         //Released
         item {
             MoviesSection(
-                liveMovies = viewModel.nowInCinemasMovies,
+                moviesState = viewModel.inCinemasMoviesUiState,
                 sectionTitleRes = R.string.now_in_cinemas,
                 onViewAllClicked = {
                     openMovieList(
@@ -118,7 +118,8 @@ private fun MovieContent(
                             titleRes = R.string.now_in_cinemas
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchInCinemaMovies() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -131,7 +132,7 @@ private fun MovieContent(
         //Upcoming
         item {
             MoviesSection(
-                liveMovies = viewModel.upcomingMovies,
+                moviesState = viewModel.upcomingMoviesUiState,
                 sectionTitleRes = R.string.upcoming,
                 onViewAllClicked = {
                     openMovieList(
@@ -140,7 +141,8 @@ private fun MovieContent(
                             titleRes = R.string.upcoming
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchUpcomingMovies() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -159,47 +161,6 @@ private fun MovieContent(
             AttributionFooter(
                 modifier = Modifier.padding(top = FooterSpacerHeight)
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun MoviesSection(
-    liveMovies: LiveData<Result<List<Movie>>>,
-    @StringRes sectionTitleRes: Int,
-    modifier: Modifier = Modifier,
-    @StringRes subtitleRes: Int = 0,
-    leadingIconUrl: String? = null,
-    onViewAllClicked: () -> Unit = {},
-    content: @Composable (movie: Movie) -> Unit
-) {
-
-    var shouldVisible by remember { mutableStateOf(true) }
-
-    AnimatedVisibility(
-        visible = shouldVisible,
-        modifier = modifier.padding(top = 32.dp)
-    ) {
-        Section(
-            sectionHeader = {
-                SectionHeader(
-                    modifier = Modifier.padding(start = 16.dp),
-                    title = stringResource(sectionTitleRes),
-                    subtitle = if (subtitleRes == 0) null else stringResource(id = subtitleRes),
-                    leadingIconUrl = leadingIconUrl,
-                    onTrailingActionClicked = onViewAllClicked
-                )
-            },
-        ) {
-            DriveCompose(
-                observable = liveMovies,
-                loading = { SectionLoadingIndicator() }
-            ) { movies ->
-
-                shouldVisible = movies.isNotEmpty()
-                HorizontalList(items = movies) { content(it) }
-            }
         }
     }
 }
@@ -294,7 +255,7 @@ fun HeaderSection(
             )
             Spacer(modifier = Modifier.height(DefaultMovieSectionSpacing))
             MovieGenres(
-                liveGenres = viewModel.movieGenres,
+                generesUiState = viewModel.movieGenresUiState,
                 onGenreClicked = {
                     onNavigateToMovieList(
                         MovieListLaunchable(
@@ -303,7 +264,8 @@ fun HeaderSection(
                             genre = it
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchMovieGeneres() }
             )
             MoviesSection(
                 moviesState = viewModel.trendingMoviesUiState,
@@ -329,10 +291,15 @@ fun HeaderSection(
 }
 
 @Composable
-fun MovieGenres(liveGenres: LiveData<Result<List<Genre>>>, onGenreClicked: (genre: Genre) -> Unit) {
+fun MovieGenres(
+    generesUiState: GenresUiState,
+    onRetry: () -> Unit,
+    onGenreClicked: (genre: Genre) -> Unit
+) {
     DriveCompose(
-        observable = liveGenres,
-        loading = { SectionLoadingIndicator() }
+        uiState = generesUiState,
+        loading = { SectionLoadingIndicator() },
+        onRetry = onRetry
     ) { genres ->
         HorizontalList(genres) {
             GenreItem(

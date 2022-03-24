@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.Result
-import com.ssverma.showtime.domain.core.Failure
+import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.ui.FetchDataUiState
 
 @Composable

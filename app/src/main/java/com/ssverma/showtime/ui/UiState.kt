@@ -1,7 +1,7 @@
 package com.ssverma.showtime.ui
 
 import com.ssverma.showtime.domain.DomainResult
-import com.ssverma.showtime.domain.core.Failure
+import com.ssverma.showtime.domain.failure.Failure
 
 sealed interface FetchDataUiState<out S, out F> {
     object Idle : FetchDataUiState<Nothing, Nothing>

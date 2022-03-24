@@ -10,17 +10,16 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssverma.showtime.api.DiscoverQueryMap
 import com.ssverma.showtime.api.TmdbApiTiedConstants
-import com.ssverma.showtime.data.repository.MovieRepository
 import com.ssverma.showtime.data.repository.PersonRepository
 import com.ssverma.showtime.data.repository.TvRepository
 import com.ssverma.showtime.data.repository.UnsplashRepository
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.model.Person
-import com.ssverma.showtime.domain.movie.GetTrendingMoviesUseCase
+import com.ssverma.showtime.domain.usecase.movie.*
 import com.ssverma.showtime.ui.FetchDataUiState
 import com.ssverma.showtime.ui.asFetchDataUiState
+import com.ssverma.showtime.ui.movie.GenresUiState
 import com.ssverma.showtime.ui.movie.MovieListUiState
-import com.ssverma.showtime.ui.movie.movieReleaseType
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatAsIso
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,44 +30,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    movieRepository: MovieRepository,
     tvRepository: TvRepository,
     unsplashRepository: UnsplashRepository,
     personRepository: PersonRepository,
-    private val trendingMoviesUseCase: GetTrendingMoviesUseCase
+    private val trendingMoviesUseCase: GetTrendingMoviesUseCase,
+    private val topRatedMoviesUseCase: GetTopRatedMoviesUseCase,
+    private val upcomingMoviesUseCase: UpcomingMoviesUseCase,
+    private val inCinemaMoviesUseCase: InCinemaMoviesUseCase,
+    private val popularMoviesUseCase: PopularMoviesUseCase,
+    private val movieGeneUseCase: MovieGenresUseCase
 ) : ViewModel() {
 
     val movieBackdrop = unsplashRepository.randomMovieBackdropUrl
-    val tvShowBackdrop = unsplashRepository.randomTvShowBackdropUrl
-
-//    val mockMovies = movieRepository.fetchMockMovies().asLiveData()
-
-    val topRatedMovies = movieRepository.fetchTopRatedMovies().asLiveData()
-    val dailyTrendingMovies = movieRepository.fetchDailyTrendingMovies().asLiveData()
-
-    val movieGenres = movieRepository.fetchMovieGenre().asLiveData()
-
-    val popularMovies = movieRepository.discoverMovies(
-        queryMap = DiscoverQueryMap.ofMovie(
-            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PopularityDesc,
-            releaseType = movieReleaseType,
-        )
-    ).asLiveData()
-
-    val nowInCinemasMovies = movieRepository.discoverMovies(
-        queryMap = DiscoverQueryMap.ofMovie(
-            primaryReleaseDateLte = DateUtils.currentDate().formatAsIso(),
-            releaseType = movieReleaseType,
-        )
-    ).asLiveData()
-
-    val upcomingMovies = movieRepository.discoverMovies(
-        queryMap = DiscoverQueryMap.ofMovie(
-            primaryReleaseDateGte = DateUtils.currentDate().plusDays(1).formatAsIso(),
-            releaseType = movieReleaseType,
-            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PrimaryReleaseDateAsc
-        )
-    ).asLiveData()
 
     val popularPersons: Flow<PagingData<Person>> = personRepository.fetchPopularPersonsGradually()
         .cachedIn(viewModelScope)
@@ -108,8 +81,35 @@ class HomeViewModel @Inject constructor(
     var trendingMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)
         private set
 
+    var topRatedMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var popularMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var inCinemasMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var upcomingMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var movieGenresUiState by mutableStateOf<GenresUiState>(FetchDataUiState.Idle)
+        private set
+
     init {
+        fetchMovieGeneres()
         fetchTrendingMovies()
+        fetchTopRatedMovies()
+        fetchPopularMovies()
+        fetchInCinemaMovies()
+        fetchUpcomingMovies()
+    }
+
+    fun fetchMovieGeneres(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            movieGenresUiState = FetchDataUiState.Loading
+            movieGenresUiState = movieGeneUseCase().asFetchDataUiState()
+        }
     }
 
     fun fetchTrendingMovies(coroutineScope: CoroutineScope = viewModelScope) {
@@ -119,4 +119,31 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun fetchTopRatedMovies(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            topRatedMoviesUiState = FetchDataUiState.Loading
+            topRatedMoviesUiState = topRatedMoviesUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchPopularMovies(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            popularMoviesUiState = FetchDataUiState.Loading
+            popularMoviesUiState = popularMoviesUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchInCinemaMovies(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            inCinemasMoviesUiState = FetchDataUiState.Loading
+            inCinemasMoviesUiState = inCinemaMoviesUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchUpcomingMovies(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            upcomingMoviesUiState = FetchDataUiState.Loading
+            upcomingMoviesUiState = upcomingMoviesUseCase().asFetchDataUiState()
+        }
+    }
 }

@@ -2,12 +2,13 @@ package com.ssverma.showtime.domain.repository
 
 import androidx.paging.PagingData
 import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.TimeWindow
-import com.ssverma.showtime.domain.core.Failure
+import com.ssverma.showtime.domain.failure.Failure
+import com.ssverma.showtime.domain.failure.movie.MovieFailure
 import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.Movie
 import com.ssverma.showtime.domain.model.Review
-import com.ssverma.showtime.domain.movie.MovieFailure
+import com.ssverma.showtime.domain.model.movie.Movie
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
@@ -48,13 +49,13 @@ interface MovieRepository {
      * Allows to find movies based on various query params.
      */
     suspend fun discoverMovies(
-        queryMap: Map<String, String> = emptyMap()
+        discoverConfig: MovieDiscoverConfig
     ): DomainResult<List<Movie>, Failure<MovieFailure>>
 
     /**
      * Fetch all movie genres.
      */
-    suspend fun fetchMovieGenre(): DomainResult<List<Genre>, Failure<MovieFailure>>
+    suspend fun fetchMovieGenre(): DomainResult<List<Genre>, Failure.CoreFailure>
 
     /**
      * Fetch all the movie reviews by given @param[movieId]
