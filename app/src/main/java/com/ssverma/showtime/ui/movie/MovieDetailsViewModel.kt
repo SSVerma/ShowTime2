@@ -1,36 +1,28 @@
 package com.ssverma.showtime.ui.movie
 
 import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.*
-import com.ssverma.showtime.api.AppendableQueryMap
-import com.ssverma.showtime.api.QueryMultiValue
-import com.ssverma.showtime.api.TmdbApiTiedConstants
-import com.ssverma.showtime.data.repository.MovieRepository
-import com.ssverma.showtime.domain.Result
+import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.movie.Movie
-import com.ssverma.showtime.domain.model.movie.imageShots
+import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
+import com.ssverma.showtime.domain.usecase.movie.MovieDetailsUseCase
 import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.FetchDataUiState
 import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private val movieDetailsAppendable = QueryMultiValue.andBuilder()
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Credits)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Images)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Videos)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Reviews)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Similar)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Keywords)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Recommendations)
-
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
-    movieRepository: MovieRepository,
+    application: Application,
     savedStateHandle: SavedStateHandle,
-    application: Application
+    val movieDetailsUseCase: MovieDetailsUseCase
 ) : AndroidViewModel(application) {
 
     private val movieId = savedStateHandle.get<Int>(AppDestination.MovieDetails.ArgMovieId) ?: 0
@@ -38,17 +30,26 @@ class MovieDetailsViewModel @Inject constructor(
     private val _liveImageShots = MediatorLiveData<List<ImageShot>>()
     val imageShots: LiveData<List<ImageShot>> get() = _liveImageShots
 
-    val liveMovieDetails: LiveData<Result<Movie>> = liveData {
-        movieRepository.fetchMovieDetails(
-            movieId = movieId,
-            queryMap = AppendableQueryMap.of(appendToResponse = movieDetailsAppendable)
-        ).collect {
-            emit(it)
+    var movieDetailsUiState by mutableStateOf<MovieDetailsUiState>(FetchDataUiState.Idle)
+        private set
 
-            if (it is Result.Success) {
-                viewModelScope.launch {
-                    val imageShots = it.data.imageShots()
-                    _liveImageShots.postValue(imageShots)
+    init {
+        fetchMovieDetails()
+    }
+
+    fun fetchMovieDetails(coroutineScope: CoroutineScope = viewModelScope) {
+        movieDetailsUiState = FetchDataUiState.Loading
+
+        val config = MovieDetailsConfig(movieId = movieId)
+
+        coroutineScope.launch {
+            val result = movieDetailsUseCase(config)
+            movieDetailsUiState = when (result) {
+                is DomainResult.Error -> {
+                    FetchDataUiState.Error(result.error)
+                }
+                is DomainResult.Success -> {
+                    FetchDataUiState.Success(result.data)
                 }
             }
         }

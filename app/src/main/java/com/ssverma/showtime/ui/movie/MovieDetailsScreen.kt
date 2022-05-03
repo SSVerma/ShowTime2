@@ -55,15 +55,20 @@ fun MovieDetailsScreen(
     Surface(
         color = MaterialTheme.colors.background
     ) {
-        DriveCompose(observable = viewModel.liveMovieDetails) {
+        DriveCompose(
+            uiState = viewModel.movieDetailsUiState,
+            onRetry = {
+                viewModel.fetchMovieDetails()
+            }
+        ) { movie ->
             MovieContent(
-                movie = it,
+                movie = movie,
                 viewModel = viewModel,
                 onBackPressed = onBackPressed,
                 openMovieDetails = openMovieDetails,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
-                openReviewsList = { openReviewsList(it.id) },
+                openReviewsList = { openReviewsList(movie.id) },
                 openYoutube = { videoId ->
                     viewModel.openYoutubeApp(videoId = videoId)
                 },

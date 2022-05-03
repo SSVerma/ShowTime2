@@ -11,11 +11,7 @@ import com.ssverma.api.service.tmdb.response.RemoteGenre
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.api.service.tmdb.utils.TmdbFirstPageNumber
-import com.ssverma.showtime.data.asDomainResult
-import com.ssverma.showtime.data.asQueryMap
-import com.ssverma.showtime.data.mapper.ListMapper
-import com.ssverma.showtime.data.mapper.Mapper
-import com.ssverma.showtime.data.mapper.asTmdbQueryValue
+import com.ssverma.showtime.data.mapper.*
 import com.ssverma.showtime.data.remote.MovieRemoteDataSource
 import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.MovieDiscoverConfig
@@ -25,6 +21,7 @@ import com.ssverma.showtime.domain.failure.movie.MovieFailure
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Review
 import com.ssverma.showtime.domain.model.movie.Movie
+import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
 import com.ssverma.showtime.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
 import java.net.HttpURLConnection
@@ -152,12 +149,11 @@ class DefaultMovieRepository @Inject constructor(
     }
 
     override suspend fun fetchMovieDetails(
-        movieId: Int,
-        queryMap: Map<String, String>
+        movieDetailsConfig: MovieDetailsConfig
     ): DomainResult<Movie, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.fetchMovieDetails(
-            movieId = movieId,
-            queryMap = queryMap
+            movieId = movieDetailsConfig.movieId,
+            queryMap = movieDetailsConfig.asQueryMap()
         )
 
         return apiResponse.asDomainResult(

@@ -9,6 +9,7 @@ import com.ssverma.showtime.domain.failure.movie.MovieFailure
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Review
 import com.ssverma.showtime.domain.model.movie.Movie
+import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
@@ -68,7 +69,6 @@ interface MovieRepository {
      * Fetch details of a particular movie.
      */
     suspend fun fetchMovieDetails(
-        movieId: Int,
-        queryMap: Map<String, String>
+        movieDetailsConfig: MovieDetailsConfig
     ): DomainResult<Movie, Failure<MovieFailure>>
 }

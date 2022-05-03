@@ -69,14 +69,14 @@ private fun <T> DefaultErrorView(
 }
 
 @Composable
-fun <S, F> DriveCompose(
-    uiState: FetchDataUiState<S, F>,
+fun <S, FeatureFailure> DriveCompose(
+    uiState: FetchDataUiState<S, FeatureFailure>,
     loading: @Composable () -> Unit = { DefaultLoadingIndicator() },
     coreErrorContent: @Composable (error: Failure.CoreFailure) -> Unit = {
         DefaultCoreErrorView(error = it, onRetry = onRetry)
     },
     onRetry: () -> Unit = {},
-    featureErrorContent: @Composable (error: Failure.FeatureFailure<F>) -> Unit = {},
+    featureErrorContent: @Composable (error: Failure.FeatureFailure<FeatureFailure>) -> Unit = {},
     idleContent: @Composable () -> Unit = {},
     content: @Composable (data: S) -> Unit,
 ) {
