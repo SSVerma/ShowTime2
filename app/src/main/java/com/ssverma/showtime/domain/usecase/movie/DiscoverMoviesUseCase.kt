@@ -14,7 +14,9 @@ import javax.inject.Inject
 open class DiscoverMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
-) : UseCase<MovieDiscoverConfig, List<Movie>, Failure<MovieFailure>>(coroutineDispatcher) {
+) : UseCase<MovieDiscoverConfig, DomainResult<List<Movie>, Failure<MovieFailure>>>(
+    coroutineDispatcher
+) {
 
     override suspend fun execute(params: MovieDiscoverConfig): DomainResult<List<Movie>, Failure<MovieFailure>> {
         return movieRepository.discoverMovies(params)

@@ -38,13 +38,16 @@ class DefaultMovieRepository @Inject constructor(
     private val movieMapper: @JvmSuppressWildcards Mapper<RemoteMovie, Movie>
 ) : MovieRepository {
 
-    override fun discoverMoviesGradually(queryMap: Map<String, String>): Flow<PagingData<Movie>> {
+    override fun discoverMoviesGradually(discoverConfig: MovieDiscoverConfig): Flow<PagingData<Movie>> {
         return Pager(
             config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
             pagingSourceFactory = {
                 MoviePagingSource(
                     movieApiCall = { pageNumber ->
-                        movieRemoteDataSource.discoverMovies(queryMap = queryMap, page = pageNumber)
+                        movieRemoteDataSource.discoverMovies(
+                            queryMap = discoverConfig.asQueryMap(),
+                            page = pageNumber
+                        )
                     },
                     mapRemoteToDomain = { moviesMapper.map(it) }
                 )

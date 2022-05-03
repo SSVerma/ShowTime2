@@ -10,10 +10,10 @@ import com.ssverma.showtime.domain.usecase.NoParamUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
-class GetTopRatedMoviesUseCase @Inject constructor(
+class TopRatedMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
-) : NoParamUseCase<List<Movie>, Failure<MovieFailure>>(coroutineDispatcher) {
+) : NoParamUseCase<DomainResult<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(): DomainResult<List<Movie>, Failure<MovieFailure>> {
         return movieRepository.fetchTopRatedMovies()

@@ -31,7 +31,7 @@ import com.ssverma.showtime.ui.home.HomeViewModel
 @Composable
 fun MovieScreen(
     viewModel: HomeViewModel,
-    openMovieList: (launchable: MovieListLaunchable) -> Unit,
+    openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
     MovieContent(
@@ -44,7 +44,7 @@ fun MovieScreen(
 @Composable
 private fun MovieContent(
     viewModel: HomeViewModel,
-    openMovieList: (launchable: MovieListLaunchable) -> Unit,
+    openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -65,8 +65,8 @@ private fun MovieContent(
                 subtitleRes = R.string.popular_info,
                 onViewAllClicked = {
                     openMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.Popular,
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.Popular,
                             titleRes = R.string.popuplar
                         )
                     )
@@ -89,8 +89,8 @@ private fun MovieContent(
                 sectionTitleRes = R.string.top_rated,
                 onViewAllClicked = {
                     openMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.TopRated,
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.TopRated,
                             titleRes = R.string.top_rated
                         )
                     )
@@ -113,8 +113,8 @@ private fun MovieContent(
                 sectionTitleRes = R.string.now_in_cinemas,
                 onViewAllClicked = {
                     openMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.NowInCinemas,
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.NowInCinemas,
                             titleRes = R.string.now_in_cinemas
                         )
                     )
@@ -136,8 +136,8 @@ private fun MovieContent(
                 sectionTitleRes = R.string.upcoming,
                 onViewAllClicked = {
                     openMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.Upcoming,
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.Upcoming,
                             titleRes = R.string.upcoming
                         )
                     )
@@ -211,7 +211,7 @@ fun MoviesSection(
 @Composable
 fun HeaderSection(
     viewModel: HomeViewModel,
-    onNavigateToMovieList: (launchable: MovieListLaunchable) -> Unit,
+    onNavigateToMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
     val blurColor = MaterialTheme.colors.background
@@ -256,12 +256,12 @@ fun HeaderSection(
             Spacer(modifier = Modifier.height(DefaultMovieSectionSpacing))
             MovieGenres(
                 generesUiState = viewModel.movieGenresUiState,
-                onGenreClicked = {
+                onGenreClicked = { genre ->
                     onNavigateToMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.Genre,
-                            title = it.name,
-                            genre = it
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.Genre,
+                            title = genre.name,
+                            genreId = genre.id
                         )
                     )
                 },
@@ -272,8 +272,8 @@ fun HeaderSection(
                 sectionTitleRes = R.string.trending_today,
                 onViewAllClicked = {
                     onNavigateToMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.TrendingToday,
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.TrendingToday,
                             titleRes = R.string.trending_today
                         )
                     )

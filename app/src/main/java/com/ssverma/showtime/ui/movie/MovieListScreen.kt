@@ -4,13 +4,10 @@ import MediaItem
 import ScoreIndicator
 import ValueIndicator
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -20,33 +17,13 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.Keyword
 import com.ssverma.showtime.domain.model.movie.Movie
-import com.ssverma.showtime.ui.FiltersScreen
 import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.PagedContent
 import com.ssverma.showtime.ui.common.PagedGrid
+import com.ssverma.showtime.ui.filter.MovieFiltersScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-enum class MovieListingType {
-    TrendingToday,
-    Popular,
-    TopRated,
-    NowInCinemas,
-    Upcoming,
-    Genre,
-    Keyword
-}
-
-data class MovieListLaunchable(
-    val listingType: MovieListingType,
-    @StringRes val titleRes: Int = 0,
-    val title: String? = null,
-    val genre: Genre? = null,
-    val keyword: Keyword? = null
-)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -83,9 +60,8 @@ fun MovieListScreen(
                 }
             }
             if (viewModel.filterApplicable) {
-                val filterGroups by viewModel.filters.collectAsState(initial = emptyList())
-                FiltersScreen(
-                    filterGroups = filterGroups,
+                MovieFiltersScreen(
+                    filterGroups = viewModel.filters.filters,
                     onFilterApplied = {
                         coroutineScope.launch {
                             backdropScaffoldState.conceal()
@@ -177,7 +153,8 @@ private fun MovieListAppBar(
 @Composable
 fun MoviesGrid(
     moviePagingItems: LazyPagingItems<Movie>,
-    type: MovieListingType,
+    @MovieListingType
+    type: Int,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
     PagedGrid(
@@ -199,15 +176,15 @@ fun MoviesGrid(
 }
 
 @Composable
-private fun Indicator(type: MovieListingType, movie: Movie) {
+private fun Indicator(@MovieListingType type: Int, movie: Movie) {
     when (type) {
-        MovieListingType.Popular -> {
+        MovieListingAvailableTypes.Popular -> {
             ValueIndicator(value = movie.displayPopularity)
         }
-        MovieListingType.TopRated -> {
+        MovieListingAvailableTypes.TopRated -> {
             ScoreIndicator(score = movie.voteAvgPercentage)
         }
-        MovieListingType.Upcoming -> {
+        MovieListingAvailableTypes.Upcoming -> {
             movie.displayReleaseDate?.let { date ->
                 ValueIndicator(value = date)
             }

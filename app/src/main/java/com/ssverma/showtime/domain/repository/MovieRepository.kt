@@ -16,7 +16,7 @@ interface MovieRepository {
      * Allows to find movies based on various query params in paginated form.
      */
     fun discoverMoviesGradually(
-        queryMap: Map<String, String> = emptyMap()
+        discoverConfig: MovieDiscoverConfig
     ): Flow<PagingData<Movie>>
 
     /**

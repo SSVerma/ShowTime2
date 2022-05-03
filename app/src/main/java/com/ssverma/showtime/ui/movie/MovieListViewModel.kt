@@ -1,125 +1,113 @@
 package com.ssverma.showtime.ui.movie
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssverma.showtime.R
-import com.ssverma.showtime.api.DiscoverQueryMap
-import com.ssverma.showtime.api.QueryMultiValue
-import com.ssverma.showtime.api.TmdbApiTiedConstants
-import com.ssverma.showtime.data.repository.MovieRepository
+import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.model.movie.Movie
+import com.ssverma.showtime.domain.model.movie.MovieListingConfig
+import com.ssverma.showtime.domain.usecase.movie.PaginatedMoviesUseCase
 import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.utils.DateUtils
-import com.ssverma.showtime.utils.formatAsIso
+import com.ssverma.showtime.ui.filter.FilterUiState
+import com.ssverma.showtime.ui.filter.MovieFilterUseCase
+import com.ssverma.showtime.ui.filter.asUiFilters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-val movieReleaseType = QueryMultiValue.orBuilder()
-    .or(TmdbApiTiedConstants.AvailableReleaseTypes.Theatrical)
-    .build()
 
 @HiltViewModel
 class MovieListViewModel @Inject constructor(
-    private val movieRepository: MovieRepository,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val paginatedMoviesUseCase: PaginatedMoviesUseCase,
+    private val movieFilterUseCase: MovieFilterUseCase
 ) : ViewModel() {
 
-    private val appliedFilters = MutableStateFlow(mapOf<String, String>())
+    private val appliedFilters = MutableStateFlow(MovieDiscoverConfig.builder().build())
 
-    private val genreId = savedStateHandle.get<Int>(AppDestination.MovieList.ArgGenreId)
-    private val keywordId = savedStateHandle.get<Int>(AppDestination.MovieList.ArgKeywordId)
+    // Put listing args as parcelable on Custom Nav Type
+    private val movieListingArgs = savedStateHandle.buildMovieListingArgs()
 
-    val listingType =
-        savedStateHandle.get<MovieListingType>(AppDestination.MovieList.ArgListingType)
-            ?: throw IllegalStateException("Movie listing type not provided")
+    private val movieListingConfig = movieListingArgs.asMovieListingConfigs()
 
-    val titleRes = savedStateHandle.get<Int>(AppDestination.MovieList.ArgTitleRes)
-        ?: R.string.movies
-
-    val title = savedStateHandle.get<String>(AppDestination.MovieList.ArgTitle)
-
-    val filterApplicable = when (listingType) {
-        MovieListingType.TrendingToday,
-        MovieListingType.TopRated -> false
-        else -> true
+    val titleRes = if (movieListingArgs.titleRes == 0) {
+        R.string.movies
+    } else {
+        movieListingArgs.titleRes
     }
+
+    val title = movieListingArgs.title
+
+    val listingType = movieListingArgs.listingType
+
+    val filterApplicable = movieListingConfig is MovieListingConfig.Filterable
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagedMovies: Flow<PagingData<Movie>> = appliedFilters.flatMapLatest {
-        when (listingType) {
-            MovieListingType.TrendingToday -> {
-                movieRepository.fetchTrendingMoviesGradually()
-            }
-            MovieListingType.TopRated -> {
-                movieRepository.fetchTopRatedMoviesGradually()
-            }
-            else -> {
-                movieRepository.discoverMoviesGradually(appliedFilters.value)
-            }
+    val pagedMovies: Flow<PagingData<Movie>> = appliedFilters.flatMapLatest { filterConfig ->
+        if (movieListingConfig is MovieListingConfig.Filterable) {
+            movieListingConfig.filterConfig = filterConfig
         }
+
+        paginatedMoviesUseCase(movieListingConfig)
+
     }.cachedIn(viewModelScope)
 
-    val filters = movieRepository.loadMovieFilters()
+    var filters by mutableStateOf(FilterUiState(filters = emptyList()))
+        private set
 
     init {
-        fetchMovies(listingType)
-    }
-
-    private fun fetchMovies(type: MovieListingType) {
-        val filterMap = when (type) {
-            MovieListingType.Popular -> {
-                DiscoverQueryMap.ofMovie(
-                    sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PopularityDesc,
-                    releaseType = movieReleaseType
-                )
-            }
-            MovieListingType.NowInCinemas -> {
-                DiscoverQueryMap.ofMovie(
-                    primaryReleaseDateLte = DateUtils.currentDate().formatAsIso(),
-                    releaseType = movieReleaseType
-                )
-            }
-            MovieListingType.Upcoming -> {
-                DiscoverQueryMap.ofMovie(
-                    primaryReleaseDateGte = DateUtils.currentDate().plusDays(1).formatAsIso(),
-                    releaseType = movieReleaseType,
-                    sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PrimaryReleaseDateAsc
-                )
-            }
-
-            MovieListingType.Genre -> {
-                val genreId = genreId
-                    ?: throw IllegalArgumentException("Provide genre id when listing type is $type")
-
-                DiscoverQueryMap.ofMovie(
-                    genres = QueryMultiValue.orBuilder().or(genreId).build()
-                )
-            }
-
-            MovieListingType.Keyword -> {
-                val keywordId = keywordId
-                    ?: throw IllegalArgumentException("Provide keyword id when listing type is $type")
-
-                DiscoverQueryMap.ofMovie(
-                    keywords = QueryMultiValue.orBuilder().or(keywordId).build()
-                )
-            }
-
-            else -> DiscoverQueryMap.ofMovie()
+        if (filterApplicable) {
+            loadFilters()
         }
-
-        appliedFilters.value = filterMap
     }
 
-    fun onFiltersApplied(appliedFilters: Map<String, String>) {
-        this.appliedFilters.value = appliedFilters
+    private fun loadFilters() {
+        val discoverOptionResult = movieFilterUseCase()
+        viewModelScope.launch {
+            discoverOptionResult.collect { result ->
+                filters = when (result) {
+                    is DomainResult.Error -> {
+                        FilterUiState(filters = emptyList())
+                    }
+                    is DomainResult.Success -> {
+                        FilterUiState(
+                            filters = result.data.asUiFilters()
+                        )
+                    }
+                }
+            }
+        }
     }
 
+    fun onFiltersApplied(discoverConfig: MovieDiscoverConfig) {
+        this.appliedFilters.update { discoverConfig }
+    }
+}
+
+private fun SavedStateHandle.buildMovieListingArgs(): MovieListingArgs {
+    val genreId = get<Int>(AppDestination.MovieList.ArgGenreId) ?: 0
+    val keywordId = get<Int>(AppDestination.MovieList.ArgKeywordId) ?: 0
+
+    val listingType = get<Int>(AppDestination.MovieList.ArgListingType) ?: 0
+    val titleRes = get<Int>(AppDestination.MovieList.ArgTitleRes) ?: 0
+    val title = get<String>(AppDestination.MovieList.ArgTitle)
+
+    return MovieListingArgs(
+        listingType = listingType,
+        titleRes = titleRes,
+        title = title,
+        genreId = genreId,
+        keywordId = keywordId
+    )
 }

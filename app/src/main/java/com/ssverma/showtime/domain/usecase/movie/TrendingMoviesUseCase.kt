@@ -11,10 +11,10 @@ import com.ssverma.showtime.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
-class GetTrendingMoviesUseCase @Inject constructor(
+class TrendingMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
-) : UseCase<TimeWindow, List<Movie>, Failure<MovieFailure>>(coroutineDispatcher) {
+) : UseCase<TimeWindow, DomainResult<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(params: TimeWindow): DomainResult<List<Movie>, Failure<MovieFailure>> {
         return movieRepository.fetchTrendingMovies(timeWindow = params)

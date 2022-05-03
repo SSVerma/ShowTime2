@@ -50,7 +50,7 @@ fun MovieDetailsScreen(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (movieId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    openMovieList: (movieListLaunchable: MovieListLaunchable) -> Unit,
+    openMovieList: (listingArgs: MovieListingArgs) -> Unit,
 ) {
     Surface(
         color = MaterialTheme.colors.background
@@ -85,7 +85,7 @@ fun MovieContent(
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    openMovieList: (launchable: MovieListLaunchable) -> Unit,
+    openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val imageShots by viewModel.imageShots.observeAsState(emptyList())
@@ -163,13 +163,13 @@ fun MovieContent(
                     start = 16.dp,
                     end = 16.dp
                 )
-            ) {
-                GenreItem(genre = it) {
+            ) { genre ->
+                GenreItem(genre = genre) {
                     openMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.Genre,
-                            title = it.name,
-                            genre = it
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.Genre,
+                            title = genre.name,
+                            genreId = genre.id
                         )
                     )
                 }
@@ -239,10 +239,10 @@ fun MovieContent(
                 keywords = movie.keywords,
                 onClick = { keyword ->
                     openMovieList(
-                        MovieListLaunchable(
-                            listingType = MovieListingType.Keyword,
+                        MovieListingArgs(
+                            listingType = MovieListingAvailableTypes.Keyword,
                             title = keyword.name,
-                            keyword = keyword
+                            keywordId = keyword.id
                         )
                     )
                 },

@@ -1,39 +1,43 @@
 package com.ssverma.showtime.domain.usecase
 
-import com.ssverma.showtime.domain.DomainResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
-abstract class UseCase<in P, S, E>(private val coroutineDispatcher: CoroutineDispatcher) {
-    suspend operator fun invoke(params: P): DomainResult<S, E> {
+abstract class UseCase<in P, T>(private val coroutineDispatcher: CoroutineDispatcher) {
+    suspend operator fun invoke(params: P): T {
         return withContext(coroutineDispatcher) {
             execute(params = params)
         }
     }
 
-    protected abstract suspend fun execute(params: P): DomainResult<S, E>
+    protected abstract suspend fun execute(params: P): T
 }
 
-abstract class FlowUseCase<in P, S, E>(private val coroutineDispatcher: CoroutineDispatcher) {
-
-    operator fun invoke(params: P): Flow<DomainResult<S, E>> {
-        return execute(params = params)
-            .flowOn(coroutineDispatcher)
-    }
-
-    protected abstract fun execute(params: P): Flow<DomainResult<S, E>>
-}
-
-abstract class NoParamUseCase<S, E>(private val coroutineDispatcher: CoroutineDispatcher) {
-    suspend operator fun invoke(): DomainResult<S, E> {
+abstract class NoParamUseCase<T>(private val coroutineDispatcher: CoroutineDispatcher) {
+    suspend operator fun invoke(): T {
         return withContext(coroutineDispatcher) {
             execute()
         }
     }
 
-    protected abstract suspend fun execute(): DomainResult<S, E>
+    protected abstract suspend fun execute(): T
 }
 
-object AbsentUseCaseParam
+abstract class FlowUseCase<in P, T>(private val coroutineDispatcher: CoroutineDispatcher) {
+    operator fun invoke(params: P): Flow<T> {
+        return execute(params = params)
+            .flowOn(coroutineDispatcher)
+    }
+
+    protected abstract fun execute(params: P): Flow<T>
+}
+
+abstract class NoParamFlowUseCase<T>(private val coroutineDispatcher: CoroutineDispatcher) {
+    operator fun invoke(): Flow<T> {
+        return execute().flowOn(coroutineDispatcher)
+    }
+
+    protected abstract fun execute(): Flow<T>
+}

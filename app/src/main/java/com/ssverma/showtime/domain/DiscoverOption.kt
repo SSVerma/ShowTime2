@@ -58,13 +58,16 @@ sealed interface DiscoverOption {
     }
 
     data class Language(
-        val iso2: String,
         val iso3: String,
         override val mode: OptionMode = OptionMode.SingleValue
     ) : OptionScope.Movie, OptionScope.Tv
 
     data class Country(
-        val iso2: String,
+        val iso3: String,
+        override val mode: OptionMode = OptionMode.SingleValue
+    ) : OptionScope.Movie, OptionScope.Tv
+
+    data class Region(
         val iso3: String,
         override val mode: OptionMode = OptionMode.SingleValue
     ) : OptionScope.Movie, OptionScope.Tv
@@ -124,6 +127,11 @@ sealed interface DiscoverOption {
 
     data class Genre(
         val genreId: Int,
+        override val mode: OptionMode = OptionMode.MultiValue(valueMode = MultiValueMode.Or)
+    ) : OptionScope.Movie, OptionScope.Tv
+
+    data class Keyword(
+        val keywordId: Int,
         override val mode: OptionMode = OptionMode.MultiValue(valueMode = MultiValueMode.Or)
     ) : OptionScope.Movie, OptionScope.Tv
 }

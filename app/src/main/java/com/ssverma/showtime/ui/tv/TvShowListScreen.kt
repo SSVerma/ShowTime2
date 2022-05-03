@@ -19,7 +19,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.TvShow
-import com.ssverma.showtime.ui.FiltersScreen
+import com.ssverma.showtime.ui.filter.MovieFiltersScreen
 import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.PagedContent
 import com.ssverma.showtime.ui.common.PagedGrid
@@ -54,13 +54,13 @@ fun TvShowListScreen(
         backLayerContent = {
             if (viewModel.filterApplicable) {
                 val filterGroups by viewModel.filters.collectAsState(initial = emptyList())
-                FiltersScreen(
-                    filterGroups = filterGroups,
+                MovieFiltersScreen(
+                    filterGroups = emptyList(),//filterGroups,
                     onFilterApplied = {
                         coroutineScope.launch {
                             backdropScaffoldState.conceal()
                         }
-                        viewModel.onFiltersApplied(it)
+//                        viewModel.onFiltersApplied(it)
                     }
                 )
             } else {

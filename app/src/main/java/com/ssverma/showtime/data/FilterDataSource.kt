@@ -7,7 +7,6 @@ import com.ssverma.showtime.domain.model.DateRangeFilter
 import com.ssverma.showtime.domain.model.LabelFilter
 import com.ssverma.showtime.domain.model.NumberRangeFilter
 import com.ssverma.showtime.domain.model.StaticLabelFilter
-import com.ssverma.showtime.ui.Range
 import java.time.LocalDate
 
 //Template for similar type filters -> Filter Group
@@ -94,16 +93,14 @@ sealed class FilterGroup(
             override val groupId: FilterGroupId.RangeGroupId,
             @StringRes override val titleRes: Int,
             override val static: Boolean,
-            val rangeFilter: NumberRangeFilter,
-            val default: Range<Number>? = null
+            val rangeFilter: NumberRangeFilter
         ) : RangeGroup(groupId = groupId, static = static, titleRes = titleRes)
 
         data class DateRangeGroup(
             override val groupId: FilterGroupId.RangeGroupId,
             @StringRes override val titleRes: Int,
             override val static: Boolean,
-            val rangeFilter: DateRangeFilter,
-            val default: Range<LocalDate>? = null
+            val rangeFilter: DateRangeFilter
         ) : RangeGroup(groupId = groupId, static = static, titleRes = titleRes)
     }
 }

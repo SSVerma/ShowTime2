@@ -73,8 +73,8 @@ fun ShowTimeNavHost(
             ) {
                 MovieScreen(
                     viewModel = it.graphScopedViewModel,
-                    openMovieList = { launchable ->
-                        navController.navigateTo(AppDestination.MovieList.actualRoute(launchable))
+                    openMovieList = { listingArgs ->
+                        navController.navigateTo(AppDestination.MovieList.actualRoute(listingArgs))
                     },
                     openMovieDetails = { movieId ->
                         navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
@@ -159,9 +159,9 @@ fun ShowTimeNavHost(
                 openPersonDetails = { personId ->
                     navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
                 },
-                openMovieList = { launchable ->
+                openMovieList = { listingArgs ->
                     navController.navigateTo(
-                        AppDestination.MovieList.actualRoute(launchable)
+                        AppDestination.MovieList.actualRoute(listingArgs)
                     )
                 }
             )

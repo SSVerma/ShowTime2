@@ -16,7 +16,7 @@ import javax.inject.Inject
 class PopularMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
-) : NoParamUseCase<List<Movie>, Failure<MovieFailure>>(coroutineDispatcher) {
+) : NoParamUseCase<DomainResult<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(): DomainResult<List<Movie>, Failure<MovieFailure>> {
         val movieConfig = MovieDiscoverConfig

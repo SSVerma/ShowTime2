@@ -33,7 +33,7 @@ abstract class DiscoverConfig(
 }
 
 class MovieDiscoverConfig(
-    movieOptions: Set<DiscoverOption.OptionScope.Movie>,
+    val movieOptions: Set<DiscoverOption.OptionScope.Movie>,
     sortBy: SortBy
 ) : DiscoverConfig(movieOptions, sortBy) {
     companion object {

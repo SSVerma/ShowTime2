@@ -3,8 +3,7 @@ package com.ssverma.showtime.navigation
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import com.ssverma.showtime.R
-import com.ssverma.showtime.ui.movie.MovieListLaunchable
-import com.ssverma.showtime.ui.movie.MovieListingType
+import com.ssverma.showtime.ui.movie.MovieListingArgs
 import com.ssverma.showtime.ui.tv.TvEpisodeLaunchable
 import com.ssverma.showtime.ui.tv.TvSeasonLaunchable
 import com.ssverma.showtime.ui.tv.TvShowListLaunchable
@@ -58,7 +57,7 @@ sealed class AppDestination : Destination {
         object Library : HomeBottomNavDestination("home/library")
     }
 
-    object MovieList : DependentDestination<MovieListLaunchable>("movie-list") {
+    object MovieList : DependentDestination<MovieListingArgs>("movies") {
         const val ArgListingType = "type"
         const val ArgTitleRes = "titleRes"
         const val ArgTitle = "title"
@@ -69,7 +68,7 @@ sealed class AppDestination : Destination {
             return builder
                 .mandatoryArg(
                     name = ArgListingType,
-                    navType = NavType.EnumType(MovieListingType::class.java)
+                    navType = NavType.IntType
                 )
                 .optionalArg(
                     ArgTitleRes,
@@ -88,14 +87,14 @@ sealed class AppDestination : Destination {
         }
 
         override fun actualRoute(
-            input: MovieListLaunchable,
+            input: MovieListingArgs,
             builder: ActualRoute.ActualRouteBuilder,
         ): ActualRoute {
-            return builder.mandatoryArg(ArgListingType, input.listingType.name)
+            return builder.mandatoryArg(ArgListingType, input.listingType)
                 .optionalArg(ArgTitleRes, input.titleRes)
                 .optionalArg(ArgTitle, input.title)
-                .optionalArg(ArgGenreId, input.genre?.id ?: 0)
-                .optionalArg(ArgKeywordId, input.keyword?.id ?: 0)
+                .optionalArg(ArgGenreId, input.genreId)
+                .optionalArg(ArgKeywordId, input.keywordId)
                 .build()
         }
     }

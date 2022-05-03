@@ -12,7 +12,7 @@ import javax.inject.Inject
 class MovieGenresUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
-) : NoParamUseCase<List<Genre>, Failure.CoreFailure>(coroutineDispatcher) {
+) : NoParamUseCase<DomainResult<List<Genre>, Failure.CoreFailure>>(coroutineDispatcher) {
 
     override suspend fun execute(): DomainResult<List<Genre>, Failure.CoreFailure> {
         return movieRepository.fetchMovieGenre()

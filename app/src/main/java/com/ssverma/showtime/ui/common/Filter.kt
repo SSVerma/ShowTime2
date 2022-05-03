@@ -7,9 +7,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.ssverma.showtime.domain.model.LabelFilter
+import com.ssverma.showtime.ui.asString
+import com.ssverma.showtime.ui.filter.FilterItem
 
 @Composable
 fun NonSelectedFilterChip(
@@ -50,37 +50,37 @@ fun SelectedFilterChip(
 }
 
 @Composable
-fun <T : LabelFilter> SingleSelectableFilterRow(
-    items: List<T>,
-    selectableState: SingleSelectableState<T>
+fun SingleSelectableFilterRow(
+    items: List<FilterItem>,
+    selectableState: SingleSelectableState<FilterItem>
 ) {
     SingleSelectableLazyRow(
         items = items,
         selectableState = selectableState,
         itemModifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
         selectedItemContent = {
-            SelectedFilterChip(text = it.requireDisplayValue(LocalContext.current))
+            SelectedFilterChip(text = it.text.asString())
         },
         nonSelectedItemContent = {
-            NonSelectedFilterChip(text = it.requireDisplayValue(LocalContext.current))
+            NonSelectedFilterChip(text = it.text.asString())
         }
     )
 }
 
 @Composable
-fun <T : LabelFilter> MultiSelectableFilterRow(
-    items: List<T>,
-    selectableState: MultiSelectableState<T>
+fun MultiSelectableFilterRow(
+    items: List<FilterItem>,
+    selectableState: MultiSelectableState<FilterItem>
 ) {
     MultiSelectableLazyRow(
         items = items,
         selectableState = selectableState,
         itemModifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
         selectedItemContent = {
-            SelectedFilterChip(text = it.requireDisplayValue(LocalContext.current))
+            SelectedFilterChip(text = it.text.asString())
         },
         nonSelectedItemContent = {
-            NonSelectedFilterChip(text = it.requireDisplayValue(LocalContext.current))
+            NonSelectedFilterChip(text = it.text.asString())
         }
     )
 }

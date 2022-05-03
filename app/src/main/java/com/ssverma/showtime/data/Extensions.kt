@@ -357,5 +357,17 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
                 second = to.toString()
             )
         }
+        is DiscoverOption.Keyword -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withKeywords,
+                second = keywordId.toString()
+            )
+        }
+        is DiscoverOption.Region -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.watchRegion,
+                second = iso3
+            )
+        }
     }
 }
