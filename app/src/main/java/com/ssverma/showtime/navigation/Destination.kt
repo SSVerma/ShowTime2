@@ -6,8 +6,7 @@ import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.movie.MovieListingArgs
 import com.ssverma.showtime.ui.tv.TvEpisodeLaunchable
 import com.ssverma.showtime.ui.tv.TvSeasonLaunchable
-import com.ssverma.showtime.ui.tv.TvShowListLaunchable
-import com.ssverma.showtime.ui.tv.TvShowListingType
+import com.ssverma.showtime.ui.tv.TvShowListingArgs
 
 interface Destination {
     val placeholderRoute: PlaceholderRoute
@@ -280,7 +279,7 @@ sealed class AppDestination : Destination {
         }
     }
 
-    object TvShowList : DependentDestination<TvShowListLaunchable>("tvShows") {
+    object TvShowList : DependentDestination<TvShowListingArgs>("tvShows") {
         const val ArgListingType = "type"
         const val ArgTitleRes = "titleRes"
         const val ArgTitle = "title"
@@ -291,7 +290,7 @@ sealed class AppDestination : Destination {
             return builder
                 .mandatoryArg(
                     name = ArgListingType,
-                    navType = NavType.EnumType(TvShowListingType::class.java)
+                    navType = NavType.IntType
                 )
                 .optionalArg(
                     name = ArgTitleRes,
@@ -310,14 +309,14 @@ sealed class AppDestination : Destination {
         }
 
         override fun actualRoute(
-            input: TvShowListLaunchable,
+            input: TvShowListingArgs,
             builder: ActualRoute.ActualRouteBuilder,
         ): ActualRoute {
-            return builder.mandatoryArg(ArgListingType, input.listingType.name)
+            return builder.mandatoryArg(ArgListingType, input.listingType)
                 .optionalArg(ArgTitleRes, input.titleRes)
                 .optionalArg(ArgTitle, input.title)
-                .optionalArg(ArgGenreId, input.genre?.id ?: 0)
-                .optionalArg(ArgKeywordId, input.keyword?.id ?: 0)
+                .optionalArg(ArgGenreId, input.genreId)
+                .optionalArg(ArgKeywordId, input.keywordId)
                 .build()
         }
     }

@@ -30,7 +30,7 @@ sealed interface DiscoverOption {
 
     sealed class Monetization(
         override val mode: OptionMode = OptionMode.SingleValue
-    ) : OptionScope.Movie {
+    ) : OptionScope.Movie, OptionScope.Tv {
         object Free : Monetization()
         object Ads : Monetization()
         object Rent : Monetization()
@@ -145,6 +145,7 @@ sealed interface SortBy {
     data class Title(override val order: Order = Order.Descending) : SortBy
     data class Rating(override val order: Order = Order.Descending) : SortBy
     data class Vote(override val order: Order = Order.Descending) : SortBy
+    data class AirDate(override val order: Order = Order.Descending) : SortBy
     object None : SortBy {
         override val order: Order
             get() = Order.Descending

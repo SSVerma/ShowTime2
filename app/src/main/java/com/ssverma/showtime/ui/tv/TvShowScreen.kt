@@ -16,41 +16,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
 import com.google.accompanist.insets.statusBarsHeight
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.Keyword
 import com.ssverma.showtime.domain.model.TvShow
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.home.HomeViewModel
-
-enum class TvShowListingType {
-    TrendingToday,
-    AiringToday,
-    Popular,
-    TopRated,
-    NowAiring,
-    Upcoming,
-    Genre,
-    Keyword
-}
-
-data class TvShowListLaunchable(
-    val listingType: TvShowListingType,
-    @StringRes val titleRes: Int = 0,
-    val title: String? = null,
-    val genre: Genre? = null,
-    val keyword: Keyword? = null
-)
+import com.ssverma.showtime.ui.movie.GenresUiState
 
 @Composable
 fun TvShowScreen(
     viewModel: HomeViewModel,
-    openTvShowList: (tvShowLaunchable: TvShowListLaunchable) -> Unit,
+    openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit
 ) {
     TvShowContent(
@@ -63,7 +42,7 @@ fun TvShowScreen(
 @Composable
 private fun TvShowContent(
     viewModel: HomeViewModel,
-    openTvShowList: (tvShowLaunchable: TvShowListLaunchable) -> Unit,
+    openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -76,15 +55,18 @@ private fun TvShowContent(
         //Genre
         item {
             TvShowGenres(
-                liveGenres = viewModel.tvGenres,
-                onGenreClicked = {
+                genreUiState = viewModel.tvGenresUiState,
+                onGenreClicked = { genre ->
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.Genre,
-                            title = it.name,
-                            genre = it
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.Genre,
+                            title = genre.name,
+                            genreId = genre.id
                         )
                     )
+                },
+                onRetry = {
+                    viewModel.fetchTvGeneres()
                 }
             )
         }
@@ -92,16 +74,17 @@ private fun TvShowContent(
         //Trending Today
         item {
             TvShowsSection(
-                liveTvShows = viewModel.dailyTrendingTvShows,
+                tvShowsUiState = viewModel.trendingTvShowsUiState,
                 sectionTitleRes = R.string.trending_today,
                 onViewAllClicked = {
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.TrendingToday,
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.TrendingToday,
                             titleRes = R.string.trending_today
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchTrendingTvShows() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -114,16 +97,17 @@ private fun TvShowContent(
         //Airing Today
         item {
             TvShowsSection(
-                liveTvShows = viewModel.todayAiringTvShows,
+                tvShowsUiState = viewModel.todayAiringTvShowsUiState,
                 sectionTitleRes = R.string.airing_today,
                 onViewAllClicked = {
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.AiringToday,
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.TodayAiring,
                             titleRes = R.string.airing_today
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchTodayAiringTvShows() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -137,17 +121,18 @@ private fun TvShowContent(
         //Popular
         item {
             TvShowsSection(
-                liveTvShows = viewModel.popularTvShows,
+                tvShowsUiState = viewModel.popularTvShowsUiState,
                 sectionTitleRes = R.string.popuplar,
                 subtitleRes = R.string.popular_info,
                 onViewAllClicked = {
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.Popular,
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.Popular,
                             titleRes = R.string.popuplar
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchPopularTvShows() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -161,16 +146,17 @@ private fun TvShowContent(
         //Top rated
         item {
             TvShowsSection(
-                liveTvShows = viewModel.topRatedTvShows,
+                tvShowsUiState = viewModel.topRatedTvShowsUiState,
                 sectionTitleRes = R.string.top_rated,
                 onViewAllClicked = {
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.TopRated,
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.TopRated,
                             titleRes = R.string.top_rated
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchTopRatedTvShows() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -184,16 +170,17 @@ private fun TvShowContent(
         //Now airing shows
         item {
             TvShowsSection(
-                liveTvShows = viewModel.nowAiringTvShows,
+                tvShowsUiState = viewModel.todayAiringTvShowsUiState,
                 sectionTitleRes = R.string.now_airing,
                 onViewAllClicked = {
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.NowAiring,
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.NowAiring,
                             titleRes = R.string.now_airing
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchTodayAiringTvShows() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -206,16 +193,17 @@ private fun TvShowContent(
         //Upcoming
         item {
             TvShowsSection(
-                liveTvShows = viewModel.upcomingTvShows,
+                tvShowsUiState = viewModel.upcomingTvShowsUiState,
                 sectionTitleRes = R.string.upcoming,
                 onViewAllClicked = {
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.Upcoming,
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.Upcoming,
                             titleRes = R.string.upcoming
                         )
                     )
-                }
+                },
+                onRetry = { viewModel.fetchUpcomingTvShows() }
             ) {
                 MediaItem(
                     title = it.title,
@@ -239,12 +227,13 @@ private fun TvShowContent(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun TvShowsSection(
-    liveTvShows: LiveData<Result<List<TvShow>>>,
+    tvShowsUiState: TvShowListUiState,
     @StringRes sectionTitleRes: Int,
     modifier: Modifier = Modifier,
     @StringRes subtitleRes: Int = 0,
     leadingIconUrl: String? = null,
     onViewAllClicked: () -> Unit = {},
+    onRetry: () -> Unit,
     content: @Composable (tvShow: TvShow) -> Unit
 ) {
 
@@ -266,8 +255,9 @@ fun TvShowsSection(
             },
         ) {
             DriveCompose(
-                observable = liveTvShows,
-                loading = { SectionLoadingIndicator() }
+                uiState = tvShowsUiState,
+                loading = { SectionLoadingIndicator() },
+                onRetry = onRetry
             ) { tvShows ->
 
                 shouldVisible = tvShows.isNotEmpty()
@@ -279,11 +269,12 @@ fun TvShowsSection(
 
 @Composable
 fun TvShowGenres(
-    liveGenres: LiveData<Result<List<Genre>>>,
+    genreUiState: GenresUiState,
+    onRetry: () -> Unit,
     onGenreClicked: (genre: Genre) -> Unit
 ) {
     DriveCompose(
-        observable = liveGenres,
+        uiState = genreUiState,
         loading = { SectionLoadingIndicator() }
     ) { genres ->
         HorizontalList(genres) {

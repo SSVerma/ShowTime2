@@ -4,7 +4,7 @@ import com.ssverma.showtime.domain.DiscoverOption
 import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.Order
 import com.ssverma.showtime.domain.SortBy
-import com.ssverma.showtime.domain.model.movie.MovieDetailsAppendable
+import com.ssverma.showtime.domain.model.MediaDetailsAppendable
 import com.ssverma.showtime.utils.DateUtils
 
 object MovieDefaults {
@@ -28,16 +28,16 @@ object MovieDefaults {
             .build()
     }
 
-    fun allMovieDetailsAppendable(): List<MovieDetailsAppendable> {
+    fun allMovieDetailsAppendable(): List<MediaDetailsAppendable> {
         return listOf(
-            MovieDetailsAppendable.Keywords,
-            MovieDetailsAppendable.Credits,
-            MovieDetailsAppendable.Images,
-            MovieDetailsAppendable.Videos,
-            MovieDetailsAppendable.Lists,
-            MovieDetailsAppendable.Reviews,
-            MovieDetailsAppendable.Similar,
-            MovieDetailsAppendable.Recommendations,
+            MediaDetailsAppendable.Keywords,
+            MediaDetailsAppendable.Credits,
+            MediaDetailsAppendable.Images,
+            MediaDetailsAppendable.Videos,
+            MediaDetailsAppendable.Lists,
+            MediaDetailsAppendable.Reviews,
+            MediaDetailsAppendable.Similar,
+            MediaDetailsAppendable.Recommendations,
         )
     }
 }

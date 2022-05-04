@@ -4,6 +4,7 @@ import com.ssverma.showtime.R
 import com.ssverma.showtime.api.convertToFullTmdbImageUrl
 import com.ssverma.showtime.data.remote.response.RemoteTvEpisode
 import com.ssverma.showtime.extension.emptyIfNull
+import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatLocally
 

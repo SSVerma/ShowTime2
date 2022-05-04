@@ -110,6 +110,16 @@ private fun SortBy.asQueryMapEntry(): Pair<String, String> {
                     }
                 }
             }
+            is SortBy.AirDate -> {
+                when (order) {
+                    Order.Ascending -> {
+                        TmdbApiTiedConstants.AvailableSortingOptions.FirstAirDateAsc
+                    }
+                    Order.Descending -> {
+                        TmdbApiTiedConstants.AvailableSortingOptions.FirstAirDateDesc
+                    }
+                }
+            }
         }
     )
 }

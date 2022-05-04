@@ -34,7 +34,7 @@ fun TvShowDetailsScreen(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (movieId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    openTvShowList: (tvShowListLaunchable: TvShowListLaunchable) -> Unit,
+    openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvSeasonDetails: (seasonLaunchable: TvSeasonLaunchable) -> Unit
 ) {
     Surface(color = MaterialTheme.colors.background) {
@@ -69,7 +69,7 @@ private fun TvShowContent(
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    openTvShowList: (launchable: TvShowListLaunchable) -> Unit,
+    openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvSeasonDetails: (seasonLaunchable: TvSeasonLaunchable) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -148,13 +148,13 @@ private fun TvShowContent(
                     start = 16.dp,
                     end = 16.dp
                 )
-            ) {
-                GenreItem(genre = it) {
+            ) { genre ->
+                GenreItem(genre = genre) {
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.Genre,
-                            genre = it,
-                            title = it.name
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.Genre,
+                            title = genre.name,
+                            genreId = genre.id
                         )
                     )
                 }
@@ -242,10 +242,10 @@ private fun TvShowContent(
                 keywords = tvShow.keywords,
                 onClick = { keyword ->
                     openTvShowList(
-                        TvShowListLaunchable(
-                            listingType = TvShowListingType.Keyword,
+                        TvShowListingArgs(
+                            listingType = TvShowListingAvailableTypes.Keyword,
                             title = keyword.name,
-                            keyword = keyword
+                            keywordId = keyword.id
                         )
                     )
                 },

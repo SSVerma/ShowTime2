@@ -153,7 +153,7 @@ class DefaultMovieRepository @Inject constructor(
     ): DomainResult<Movie, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.fetchMovieDetails(
             movieId = movieDetailsConfig.movieId,
-            queryMap = movieDetailsConfig.asQueryMap()
+            queryMap = movieDetailsConfig.appendable.asQueryMap()
         )
 
         return apiResponse.asDomainResult(

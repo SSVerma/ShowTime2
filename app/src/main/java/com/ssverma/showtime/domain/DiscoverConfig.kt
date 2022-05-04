@@ -44,7 +44,7 @@ class MovieDiscoverConfig(
 }
 
 class TvDiscoverConfig(
-    tvOptions: Set<DiscoverOption.OptionScope.Tv>,
+    val tvOptions: Set<DiscoverOption.OptionScope.Tv>,
     sortBy: SortBy
 ) : DiscoverConfig(tvOptions, sortBy) {
     companion object {

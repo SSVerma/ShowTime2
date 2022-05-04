@@ -34,6 +34,7 @@ import com.google.accompanist.pager.rememberPagerState
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.extension.emptyIfNull
+import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.movie.Highlights

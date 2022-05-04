@@ -35,11 +35,12 @@ import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.domain.model.movie.Movie
-import com.ssverma.showtime.domain.model.movie.highlightedItems
 import com.ssverma.showtime.extension.placeholderIfNullOrEmpty
 import com.ssverma.showtime.ui.GenreItem
+import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.TagItem
 import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.highlightedItems
 
 @Composable
 fun MovieDetailsScreen(

@@ -7,15 +7,12 @@ import com.ssverma.showtime.api.TMDB_API_PAGE_SIZE
 import com.ssverma.showtime.api.TmdbApiService
 import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.api.makeTmdbApiRequest
-import com.ssverma.showtime.data.FilterGroup
 import com.ssverma.showtime.data.remote.ReviewsPagingSource
 import com.ssverma.showtime.data.remote.TvShowsPagingSource
-import com.ssverma.showtime.data.tvFilterGroups
 import com.ssverma.showtime.domain.Result
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.extension.asDomainFlow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class TvRepository @Inject constructor(
@@ -173,12 +170,5 @@ class TvRepository @Inject constructor(
                 queryMap = queryMap
             )
         }.asDomainFlow { it.payload.asTvEpisode() }
-    }
-
-    fun loadTvFilters(): Flow<List<FilterGroup>> {
-        //Todo: Fetch dynamic filters like genre, language etc and combine
-        return flow {
-            emit(tvFilterGroups())
-        }
     }
 }

@@ -1,9 +1,9 @@
 package com.ssverma.showtime.domain.failure
 
-sealed interface Failure<out F> {
-    data class FeatureFailure<out F>(
-        val featureFailureType: F
-    ) : Failure<F>
+sealed interface Failure<out FeatureFailure> {
+    data class FeatureFailure<out FeatureFailure>(
+        val featureFailureType: FeatureFailure
+    ) : Failure<FeatureFailure>
 
     sealed interface CoreFailure : Failure<Nothing> {
         object NetworkFailure : CoreFailure

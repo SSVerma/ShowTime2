@@ -5,6 +5,7 @@ import com.ssverma.showtime.api.TMDB_IMAGE_BASE_URL
 import com.ssverma.showtime.data.remote.response.RemoteTvShow
 import com.ssverma.showtime.extension.emptyIfAbsent
 import com.ssverma.showtime.extension.emptyIfNull
+import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.utils.CoreUtils
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.FormatterUtils

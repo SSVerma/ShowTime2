@@ -1,124 +1,113 @@
 package com.ssverma.showtime.ui.tv
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssverma.showtime.R
-import com.ssverma.showtime.api.DiscoverQueryMap
-import com.ssverma.showtime.api.QueryMultiValue
-import com.ssverma.showtime.api.TmdbApiTiedConstants
-import com.ssverma.showtime.data.repository.TvRepository
+import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.showtime.domain.TvDiscoverConfig
 import com.ssverma.showtime.domain.model.TvShow
+import com.ssverma.showtime.domain.model.tv.TvShowListingConfig
+import com.ssverma.showtime.domain.usecase.tv.PaginatedTvShowUseCase
 import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.utils.DateUtils
-import com.ssverma.showtime.utils.formatAsIso
+import com.ssverma.showtime.ui.filter.FilterUiState
+import com.ssverma.showtime.ui.filter.TvShowFilterUseCase
+import com.ssverma.showtime.ui.filter.asUiFilters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class TvShowListListViewModel @Inject constructor(
-    private val tvRepository: TvRepository,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val paginatedTvShowUseCase: PaginatedTvShowUseCase,
+    private val tvShowFilterUseCase: TvShowFilterUseCase
 ) : ViewModel() {
 
-    private val appliedFilters = MutableStateFlow(mapOf<String, String>())
+    private val appliedFilters = MutableStateFlow(TvDiscoverConfig.builder().build())
 
-    private val genreId = savedStateHandle.get<Int>(AppDestination.TvShowList.ArgGenreId)
-    private val keywordId = savedStateHandle.get<Int>(AppDestination.TvShowList.ArgKeywordId)
+    // Put listing args as parcelable on Custom Nav Type
+    private val tvShowListingArgs = savedStateHandle.buildTvShowListingArgs()
 
-    val listingType =
-        savedStateHandle.get<TvShowListingType>(AppDestination.TvShowList.ArgListingType)
-            ?: throw IllegalStateException("Movie listing type not provided")
+    private val tvShowListingConfig = tvShowListingArgs.asTvShowListingConfigs()
 
-    val titleRes = savedStateHandle.get<Int>(AppDestination.TvShowList.ArgTitleRes)
-        ?: R.string.tv_show
-
-    val title = savedStateHandle.get<String>(AppDestination.TvShowList.ArgTitle)
-
-    val filterApplicable = when (listingType) {
-        TvShowListingType.TrendingToday,
-        TvShowListingType.TopRated -> false
-        else -> true
+    val titleRes = if (tvShowListingArgs.titleRes == 0) {
+        R.string.tv_show
+    } else {
+        tvShowListingArgs.titleRes
     }
+
+    val title = tvShowListingArgs.title
+
+    val listingType = tvShowListingArgs.listingType
+
+    val filterApplicable = tvShowListingConfig is TvShowListingConfig.Filterable
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagedTvShows: Flow<PagingData<TvShow>> = appliedFilters.flatMapLatest {
-        when (listingType) {
-            TvShowListingType.TrendingToday -> {
-                tvRepository.fetchDailyTrendingTvShowsGradually()
-            }
-            TvShowListingType.TopRated -> {
-                tvRepository.fetchTopRatedTvShowsGradually()
-            }
-            else -> {
-                tvRepository.discoverTvShowsGradually(appliedFilters.value)
-            }
+    val pagedTvShows: Flow<PagingData<TvShow>> = appliedFilters.flatMapLatest { filterConfig ->
+        if (tvShowListingConfig is TvShowListingConfig.Filterable) {
+            tvShowListingConfig.filterConfig = filterConfig
         }
+
+        paginatedTvShowUseCase(tvShowListingConfig)
+
     }.cachedIn(viewModelScope)
 
-    val filters = tvRepository.loadTvFilters()
+    var filterUiState by mutableStateOf(FilterUiState(filters = emptyList()))
+        private set
 
     init {
-        fetchTvShows(listingType)
-    }
-
-    private fun fetchTvShows(type: TvShowListingType) {
-        val filterMap = when (type) {
-            TvShowListingType.Popular -> {
-                DiscoverQueryMap.ofTv(
-                    sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PopularityDesc,
-                )
-            }
-            TvShowListingType.NowAiring -> {
-                DiscoverQueryMap.ofTv(
-                    firstAirDateLte = DateUtils.currentDate().formatAsIso()
-                )
-            }
-            TvShowListingType.Upcoming -> {
-                DiscoverQueryMap.ofTv(
-                    firstAirDateGte = DateUtils.currentDate().plusDays(1).formatAsIso(),
-                    sortBy = TmdbApiTiedConstants.AvailableSortingOptions.FirstAirDateAsc,
-                )
-            }
-            TvShowListingType.AiringToday -> {
-                DiscoverQueryMap.ofTv(
-                    airDateLte = DateUtils.currentDate().formatAsIso(),
-                    airDateGte = DateUtils.currentDate().formatAsIso(),
-                )
-            }
-
-            TvShowListingType.Genre -> {
-                val genreId = genreId
-                    ?: throw IllegalArgumentException("Provide genre id when listing type is $type")
-
-                DiscoverQueryMap.ofTv(
-                    genres = QueryMultiValue.orBuilder().or(genreId).build()
-                )
-            }
-
-            TvShowListingType.Keyword -> {
-                val keywordId = keywordId
-                    ?: throw IllegalArgumentException("Provide keyword id when listing type is $type")
-
-                DiscoverQueryMap.ofTv(
-                    keywords = QueryMultiValue.orBuilder().or(keywordId).build()
-                )
-            }
-
-            else -> DiscoverQueryMap.ofTv()
+        if (filterApplicable) {
+            loadFilters()
         }
-
-        appliedFilters.value = filterMap
     }
 
-    fun onFiltersApplied(appliedFilters: Map<String, String>) {
-        this.appliedFilters.value = appliedFilters
+    private fun loadFilters() {
+        val discoverOptionResult = tvShowFilterUseCase()
+        viewModelScope.launch {
+            discoverOptionResult.collect { result ->
+                filterUiState = when (result) {
+                    is DomainResult.Error -> {
+                        FilterUiState(filters = emptyList())
+                    }
+                    is DomainResult.Success -> {
+                        FilterUiState(
+                            filters = result.data.asUiFilters()
+                        )
+                    }
+                }
+            }
+        }
     }
 
+    fun onFiltersApplied(discoverConfig: TvDiscoverConfig) {
+        this.appliedFilters.update { discoverConfig }
+    }
+}
+
+private fun SavedStateHandle.buildTvShowListingArgs(): TvShowListingArgs {
+    val genreId = get<Int>(AppDestination.TvShowList.ArgGenreId) ?: 0
+    val keywordId = get<Int>(AppDestination.TvShowList.ArgKeywordId) ?: 0
+
+    val listingType = get<Int>(AppDestination.TvShowList.ArgListingType) ?: 0
+    val titleRes = get<Int>(AppDestination.TvShowList.ArgTitleRes) ?: 0
+    val title = get<String>(AppDestination.TvShowList.ArgTitle)
+
+    return TvShowListingArgs(
+        listingType = listingType,
+        titleRes = titleRes,
+        title = title,
+        genreId = genreId,
+        keywordId = keywordId
+    )
 }

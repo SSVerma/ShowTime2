@@ -3,36 +3,35 @@ package com.ssverma.showtime.data.mapper
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
 import com.ssverma.showtime.api.AppendableQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
-import com.ssverma.showtime.domain.model.movie.MovieDetailsAppendable
-import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
+import com.ssverma.showtime.domain.model.MediaDetailsAppendable
 
-fun MovieDetailsConfig.asQueryMap(): Map<String, String> {
+fun List<MediaDetailsAppendable>.asQueryMap(): Map<String, String> {
     val queryBuilder = QueryMultiValue.andBuilder()
 
-    this.appendable.forEach { appendable ->
+    this.forEach { appendable ->
         when (appendable) {
-            MovieDetailsAppendable.Credits -> {
+            MediaDetailsAppendable.Credits -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Credits)
             }
-            MovieDetailsAppendable.Images -> {
+            MediaDetailsAppendable.Images -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Images)
             }
-            MovieDetailsAppendable.Keywords -> {
+            MediaDetailsAppendable.Keywords -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Keywords)
             }
-            MovieDetailsAppendable.Lists -> {
+            MediaDetailsAppendable.Lists -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Lists)
             }
-            MovieDetailsAppendable.Recommendations -> {
+            MediaDetailsAppendable.Recommendations -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Recommendations)
             }
-            MovieDetailsAppendable.Reviews -> {
+            MediaDetailsAppendable.Reviews -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Reviews)
             }
-            MovieDetailsAppendable.Similar -> {
+            MediaDetailsAppendable.Similar -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Similar)
             }
-            MovieDetailsAppendable.Videos -> {
+            MediaDetailsAppendable.Videos -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Videos)
             }
         }

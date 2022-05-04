@@ -7,8 +7,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -19,10 +17,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.TvShow
-import com.ssverma.showtime.ui.filter.MovieFiltersScreen
 import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.PagedContent
 import com.ssverma.showtime.ui.common.PagedGrid
+import com.ssverma.showtime.ui.filter.TvFiltersScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -53,14 +51,13 @@ fun TvShowListScreen(
         },
         backLayerContent = {
             if (viewModel.filterApplicable) {
-                val filterGroups by viewModel.filters.collectAsState(initial = emptyList())
-                MovieFiltersScreen(
-                    filterGroups = emptyList(),//filterGroups,
+                TvFiltersScreen(
+                    filterGroups = viewModel.filterUiState.filters,
                     onFilterApplied = {
                         coroutineScope.launch {
                             backdropScaffoldState.conceal()
                         }
-//                        viewModel.onFiltersApplied(it)
+                        viewModel.onFiltersApplied(it)
                     }
                 )
             } else {
@@ -147,7 +144,7 @@ private fun TvShowListAppBar(
 @Composable
 private fun TvShowsGrid(
     tvShowPagingItems: LazyPagingItems<TvShow>,
-    type: TvShowListingType,
+    @TvShowListingType type: Int,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
     PagedGrid(
@@ -169,15 +166,15 @@ private fun TvShowsGrid(
 }
 
 @Composable
-private fun Indicator(type: TvShowListingType, tvShow: TvShow) {
+private fun Indicator(type: Int, tvShow: TvShow) {
     when (type) {
-        TvShowListingType.Popular -> {
+        TvShowListingAvailableTypes.Popular -> {
             ValueIndicator(value = tvShow.displayPopularity)
         }
-        TvShowListingType.TopRated -> {
+        TvShowListingAvailableTypes.TopRated -> {
             ScoreIndicator(score = tvShow.voteAvgPercentage)
         }
-        TvShowListingType.Upcoming -> {
+        TvShowListingAvailableTypes.Upcoming -> {
             tvShow.displayFirstAirDate?.let { date ->
                 ValueIndicator(value = date)
             }

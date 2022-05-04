@@ -4,24 +4,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.showtime.api.DiscoverQueryMap
-import com.ssverma.showtime.api.TmdbApiTiedConstants
 import com.ssverma.showtime.data.repository.PersonRepository
-import com.ssverma.showtime.data.repository.TvRepository
 import com.ssverma.showtime.data.repository.UnsplashRepository
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.usecase.movie.*
+import com.ssverma.showtime.domain.usecase.tv.*
 import com.ssverma.showtime.ui.FetchDataUiState
 import com.ssverma.showtime.ui.asFetchDataUiState
 import com.ssverma.showtime.ui.movie.GenresUiState
 import com.ssverma.showtime.ui.movie.MovieListUiState
-import com.ssverma.showtime.utils.DateUtils
-import com.ssverma.showtime.utils.formatAsIso
+import com.ssverma.showtime.ui.tv.TvShowListUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +26,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    tvRepository: TvRepository,
     unsplashRepository: UnsplashRepository,
     personRepository: PersonRepository,
     private val trendingMoviesUseCase: TrendingMoviesUseCase,
@@ -38,45 +33,20 @@ class HomeViewModel @Inject constructor(
     private val upcomingMoviesUseCase: UpcomingMoviesUseCase,
     private val inCinemaMoviesUseCase: InCinemaMoviesUseCase,
     private val popularMoviesUseCase: PopularMoviesUseCase,
-    private val movieGeneUseCase: MovieGenresUseCase
+    private val movieGeneUseCase: MovieGenresUseCase,
+    private val trendingTvShowsUseCase: TrendingTvShowsUseCase,
+    private val topRatedTvShowsUseCase: TopRatedTvShowsUseCase,
+    private val upcomingTvShowsUseCase: UpcomingTvShowsUseCase,
+    private val todayAiringTvShowsUseCase: TodayAiringTvShowsUseCase,
+    private val nowAiringTvShowsUseCase: NowAiringTvShowsUseCase,
+    private val popularTvShowsUseCase: PopularTvShowsUseCase,
+    private val tvGenresUseCase: TvGenresUseCase
 ) : ViewModel() {
 
     val movieBackdrop = unsplashRepository.randomMovieBackdropUrl
 
     val popularPersons: Flow<PagingData<Person>> = personRepository.fetchPopularPersonsGradually()
         .cachedIn(viewModelScope)
-
-    val tvGenres = tvRepository.fetchTvGenre().asLiveData()
-
-    val topRatedTvShows = tvRepository.fetchTopRatedTvShows().asLiveData()
-
-    val dailyTrendingTvShows = tvRepository.fetchDailyTrendingTvShows().asLiveData()
-
-    val todayAiringTvShows = tvRepository.discoverTvShows(
-        queryMap = DiscoverQueryMap.ofTv(
-            airDateLte = DateUtils.currentDate().formatAsIso(),
-            airDateGte = DateUtils.currentDate().formatAsIso(),
-        )
-    ).asLiveData()
-
-    val popularTvShows = tvRepository.discoverTvShows(
-        queryMap = DiscoverQueryMap.ofMovie(
-            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.PopularityDesc
-        )
-    ).asLiveData()
-
-    val nowAiringTvShows = tvRepository.discoverTvShows(
-        queryMap = DiscoverQueryMap.ofTv(
-            firstAirDateLte = DateUtils.currentDate().formatAsIso()
-        )
-    ).asLiveData()
-
-    val upcomingTvShows = tvRepository.discoverTvShows(
-        queryMap = DiscoverQueryMap.ofTv(
-            firstAirDateGte = DateUtils.currentDate().plusDays(1).formatAsIso(),
-            sortBy = TmdbApiTiedConstants.AvailableSortingOptions.FirstAirDateAsc
-        )
-    ).asLiveData()
 
     var trendingMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)
         private set
@@ -96,6 +66,27 @@ class HomeViewModel @Inject constructor(
     var movieGenresUiState by mutableStateOf<GenresUiState>(FetchDataUiState.Idle)
         private set
 
+    var trendingTvShowsUiState by mutableStateOf<TvShowListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var topRatedTvShowsUiState by mutableStateOf<TvShowListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var popularTvShowsUiState by mutableStateOf<TvShowListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var todayAiringTvShowsUiState by mutableStateOf<TvShowListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var nowAiringTvShowsUiState by mutableStateOf<TvShowListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var upcomingTvShowsUiState by mutableStateOf<TvShowListUiState>(FetchDataUiState.Idle)
+        private set
+
+    var tvGenresUiState by mutableStateOf<GenresUiState>(FetchDataUiState.Idle)
+        private set
+
     init {
         fetchMovieGeneres()
         fetchTrendingMovies()
@@ -103,6 +94,14 @@ class HomeViewModel @Inject constructor(
         fetchPopularMovies()
         fetchInCinemaMovies()
         fetchUpcomingMovies()
+
+        fetchTvGeneres()
+        fetchTrendingTvShows()
+        fetchTopRatedTvShows()
+        fetchPopularTvShows()
+        fetchTodayAiringTvShows()
+        fetchNowAiringTvShows()
+        fetchUpcomingTvShows()
     }
 
     fun fetchMovieGeneres(coroutineScope: CoroutineScope = viewModelScope) {
@@ -146,4 +145,54 @@ class HomeViewModel @Inject constructor(
             upcomingMoviesUiState = upcomingMoviesUseCase().asFetchDataUiState()
         }
     }
+
+    fun fetchTvGeneres(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            tvGenresUiState = FetchDataUiState.Loading
+            tvGenresUiState = tvGenresUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchTrendingTvShows(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            trendingTvShowsUiState = FetchDataUiState.Loading
+            trendingTvShowsUiState = trendingTvShowsUseCase(TimeWindow.Daily).asFetchDataUiState()
+        }
+    }
+
+    fun fetchTopRatedTvShows(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            topRatedTvShowsUiState = FetchDataUiState.Loading
+            topRatedTvShowsUiState = topRatedTvShowsUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchPopularTvShows(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            popularTvShowsUiState = FetchDataUiState.Loading
+            popularTvShowsUiState = popularTvShowsUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchTodayAiringTvShows(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            todayAiringTvShowsUiState = FetchDataUiState.Loading
+            todayAiringTvShowsUiState = todayAiringTvShowsUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchNowAiringTvShows(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            nowAiringTvShowsUiState = FetchDataUiState.Loading
+            nowAiringTvShowsUiState = nowAiringTvShowsUseCase().asFetchDataUiState()
+        }
+    }
+
+    fun fetchUpcomingTvShows(coroutineScope: CoroutineScope = viewModelScope) {
+        coroutineScope.launch {
+            upcomingTvShowsUiState = FetchDataUiState.Loading
+            upcomingTvShowsUiState = upcomingTvShowsUseCase().asFetchDataUiState()
+        }
+    }
+
 }

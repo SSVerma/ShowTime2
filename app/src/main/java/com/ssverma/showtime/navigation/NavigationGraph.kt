@@ -92,9 +92,9 @@ fun ShowTimeNavHost(
                     openTvShowDetails = { tvShowId ->
                         navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
                     },
-                    openTvShowList = { tvShowLaunchable ->
+                    openTvShowList = { listingArgs ->
                         navController.navigateTo(
-                            AppDestination.TvShowList.actualRoute(tvShowLaunchable)
+                            AppDestination.TvShowList.actualRoute(listingArgs)
                         )
                     }
                 )
@@ -242,9 +242,9 @@ fun ShowTimeNavHost(
                 openPersonDetails = { personId ->
                     navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
                 },
-                openTvShowList = { tvShowLaunchable ->
+                openTvShowList = { listingArgs ->
                     navController.navigateTo(
-                        AppDestination.TvShowList.actualRoute(tvShowLaunchable)
+                        AppDestination.TvShowList.actualRoute(listingArgs)
                     )
                 },
                 openTvSeasonDetails = { seasonLaunchable ->
