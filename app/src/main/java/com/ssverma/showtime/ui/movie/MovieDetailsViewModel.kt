@@ -1,6 +1,7 @@
 package com.ssverma.showtime.ui.movie
 
 import android.app.Application
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +10,7 @@ import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
+import com.ssverma.showtime.domain.model.movie.imageShots
 import com.ssverma.showtime.domain.usecase.movie.MovieDetailsUseCase
 import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.ui.FetchDataUiState
@@ -27,8 +29,8 @@ class MovieDetailsViewModel @Inject constructor(
 
     private val movieId = savedStateHandle.get<Int>(AppDestination.MovieDetails.ArgMovieId) ?: 0
 
-    private val _liveImageShots = MediatorLiveData<List<ImageShot>>()
-    val imageShots: LiveData<List<ImageShot>> get() = _liveImageShots
+    private val _imageShots = mutableStateOf<List<ImageShot>>(emptyList())
+    val imageShots: State<List<ImageShot>> get() = _imageShots
 
     var movieDetailsUiState by mutableStateOf<MovieDetailsUiState>(FetchDataUiState.Idle)
         private set
@@ -49,6 +51,7 @@ class MovieDetailsViewModel @Inject constructor(
                     FetchDataUiState.Error(result.error)
                 }
                 is DomainResult.Success -> {
+                    _imageShots.value = result.data.imageShots()
                     FetchDataUiState.Success(result.data)
                 }
             }

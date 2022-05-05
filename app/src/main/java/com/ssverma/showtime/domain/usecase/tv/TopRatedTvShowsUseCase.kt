@@ -4,7 +4,7 @@ import com.ssverma.showtime.di.DefaultDispatcher
 import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
-import com.ssverma.showtime.domain.model.TvShow
+import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.repository.TvShowRepository
 import com.ssverma.showtime.domain.usecase.NoParamUseCase
 import kotlinx.coroutines.CoroutineDispatcher

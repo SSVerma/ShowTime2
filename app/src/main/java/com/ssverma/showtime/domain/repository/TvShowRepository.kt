@@ -8,10 +8,9 @@ import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.tv.TvEpisodeFailure
 import com.ssverma.showtime.domain.failure.tv.TvSeasonFailure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
-import com.ssverma.showtime.domain.model.*
-import com.ssverma.showtime.domain.model.tv.TvEpisodeConfig
-import com.ssverma.showtime.domain.model.tv.TvSeasonConfig
-import com.ssverma.showtime.domain.model.tv.TvShowDetailsConfig
+import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.showtime.domain.model.Review
+import com.ssverma.showtime.domain.model.tv.*
 import kotlinx.coroutines.flow.Flow
 
 interface TvShowRepository {

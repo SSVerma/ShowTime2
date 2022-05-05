@@ -1,54 +1,60 @@
 package com.ssverma.showtime.ui.tv
 
 import android.app.Application
-import androidx.lifecycle.*
-import com.ssverma.showtime.api.AppendableQueryMap
-import com.ssverma.showtime.api.QueryMultiValue
-import com.ssverma.showtime.api.TmdbApiTiedConstants
-import com.ssverma.showtime.data.repository.TvRepository
-import com.ssverma.showtime.domain.Result
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.domain.model.TvShow
-import com.ssverma.showtime.domain.model.imageShots
+import com.ssverma.showtime.domain.model.tv.TvShow
+import com.ssverma.showtime.domain.model.tv.TvShowDetailsConfig
+import com.ssverma.showtime.domain.model.tv.imageShots
+import com.ssverma.showtime.domain.usecase.tv.TvShowDetailsUseCase
 import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.FetchDataUiState
 import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private val tvShowDetailsAppendable = QueryMultiValue.andBuilder()
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Credits)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Images)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Videos)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Reviews)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Similar)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Keywords)
-    .and(TmdbApiTiedConstants.AppendableResponseTypes.Recommendations)
-
 @HiltViewModel
 class TvShowDetailsViewModel @Inject constructor(
-    tvRepository: TvRepository,
     savedStateHandle: SavedStateHandle,
-    application: Application
+    application: Application,
+    private val tvShowDetailsUseCase: TvShowDetailsUseCase
 ) : AndroidViewModel(application) {
 
     val tvShowId = savedStateHandle.get<Int>(AppDestination.TvShowDetails.ArgTvShowId) ?: 0
 
-    private val _liveImageShots = MediatorLiveData<List<ImageShot>>()
-    val imageShots: LiveData<List<ImageShot>> get() = _liveImageShots
+    private val _imageShots = mutableStateOf<List<ImageShot>>(emptyList())
+    val imageShots: State<List<ImageShot>> get() = _imageShots
 
-    val liveTvShowDetails: LiveData<Result<TvShow>> = liveData {
-        tvRepository.fetchTvShowDetails(
-            tvShowId = tvShowId,
-            queryMap = AppendableQueryMap.of(appendToResponse = tvShowDetailsAppendable)
-        ).collect {
-            emit(it)
+    var tvShowDetailsUiState by mutableStateOf<TvShowDetailsUiState>(FetchDataUiState.Idle)
+        private set
 
-            if (it is Result.Success) {
-                viewModelScope.launch {
-                    val imageShots = it.data.imageShots()
-                    _liveImageShots.postValue(imageShots)
+    init {
+        fetchTvShowDetails()
+    }
+
+    fun fetchTvShowDetails(coroutineScope: CoroutineScope = viewModelScope) {
+        tvShowDetailsUiState = FetchDataUiState.Loading
+
+        val config = TvShowDetailsConfig(tvShowId = tvShowId)
+
+        coroutineScope.launch {
+            val result = tvShowDetailsUseCase(config)
+            tvShowDetailsUiState = when (result) {
+                is DomainResult.Error -> {
+                    FetchDataUiState.Error(result.error)
+                }
+                is DomainResult.Success -> {
+                    _imageShots.value = result.data.imageShots()
+                    FetchDataUiState.Success(result.data)
                 }
             }
         }

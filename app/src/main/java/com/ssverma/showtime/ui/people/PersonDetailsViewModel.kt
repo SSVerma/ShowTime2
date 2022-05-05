@@ -1,5 +1,7 @@
 package com.ssverma.showtime.ui.people
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.ssverma.showtime.api.AppendableQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
@@ -10,7 +12,6 @@ import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.navigation.AppDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,8 +27,8 @@ class PersonDetailsViewModel @Inject constructor(
 
     private val personId = savedStateHandle.get<Int>(AppDestination.PersonDetails.PersonId) ?: 0
 
-    private val _liveImageShots = MediatorLiveData<List<ImageShot>>()
-    val imageShots: LiveData<List<ImageShot>> get() = _liveImageShots
+    private val _imageShots = mutableStateOf<List<ImageShot>>(emptyList())
+    val imageShots: State<List<ImageShot>> get() = _imageShots
 
     val livePersonDetails: LiveData<Result<Person>> = liveData {
         personRepository.fetchPersonDetails(
@@ -39,7 +40,7 @@ class PersonDetailsViewModel @Inject constructor(
             if (it is Result.Success) {
                 viewModelScope.launch {
                     val imageShots = it.data.imageShots
-                    _liveImageShots.postValue(imageShots)
+                    _imageShots.value = imageShots
                 }
             }
         }

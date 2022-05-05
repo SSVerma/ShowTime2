@@ -11,7 +11,7 @@ import androidx.paging.cachedIn
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.TvDiscoverConfig
-import com.ssverma.showtime.domain.model.TvShow
+import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.model.tv.TvShowListingConfig
 import com.ssverma.showtime.domain.usecase.tv.PaginatedTvShowUseCase
 import com.ssverma.showtime.navigation.AppDestination

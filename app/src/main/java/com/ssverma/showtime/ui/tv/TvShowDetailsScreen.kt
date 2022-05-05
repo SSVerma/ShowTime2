@@ -10,7 +10,6 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -18,11 +17,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.TvSeason
-import com.ssverma.showtime.domain.model.TvShow
-import com.ssverma.showtime.domain.model.highlightedItems
+import com.ssverma.showtime.domain.model.tv.TvSeason
+import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.highlightedItems
 import com.ssverma.showtime.ui.movie.*
 
 @Composable
@@ -38,7 +37,12 @@ fun TvShowDetailsScreen(
     openTvSeasonDetails: (seasonLaunchable: TvSeasonLaunchable) -> Unit
 ) {
     Surface(color = MaterialTheme.colors.background) {
-        DriveCompose(observable = viewModel.liveTvShowDetails) {
+        DriveCompose(
+            uiState = viewModel.tvShowDetailsUiState,
+            onRetry = {
+                viewModel.fetchTvShowDetails()
+            }
+        ) {
             TvShowContent(
                 tvShow = it,
                 viewModel = viewModel,
@@ -73,8 +77,6 @@ private fun TvShowContent(
     openTvSeasonDetails: (seasonLaunchable: TvSeasonLaunchable) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val imageShots by viewModel.imageShots.observeAsState(emptyList())
-
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -190,7 +192,7 @@ private fun TvShowContent(
         /*Image shots*/
         item {
             ImageShotsSection(
-                imageShots = imageShots,
+                imageShots = viewModel.imageShots.value,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 maxImageShots = MaxImageShots,

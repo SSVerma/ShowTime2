@@ -11,9 +11,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,11 +23,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.TvEpisode
-import com.ssverma.showtime.domain.model.TvSeason
-import com.ssverma.showtime.domain.model.highlightedItems
+import com.ssverma.showtime.domain.model.tv.TvEpisode
+import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.highlightedItems
 import com.ssverma.showtime.ui.movie.CreditSection
 import com.ssverma.showtime.ui.movie.Highlights
 import com.ssverma.showtime.ui.movie.ImageShotsSection
@@ -40,13 +38,18 @@ import com.ssverma.showtime.ui.movie.OverviewSection
 fun TvSeasonDetailsScreen(
     viewModel: TvSeasonDetailsViewModel,
     onBackPress: () -> Unit,
-    openEpisodeDetails: (episodeLaunchable: TvEpisodeLaunchable) -> Unit,
+    openEpisodeDetails: (episodeArgs: TvEpisodeArgs) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
 ) {
     val bottomSheetCurrentItem = remember { mutableStateOf(SheetContentType.None) }
     val clickedImageIndex = remember { mutableStateOf(0) }
 
-    DriveCompose(observable = viewModel.liveSeason) { tvSeason ->
+    val tvSeasonUiState by viewModel.observableTvSeason.collectAsState()
+
+    DriveCompose(
+        uiState = tvSeasonUiState,
+        onRetry = { viewModel.fetchTvSeason() }
+    ) { tvSeason ->
         ImageShotBottomSheet(
             imageShots = tvSeason.posters,
             sheetItem = bottomSheetCurrentItem,
@@ -57,7 +60,7 @@ fun TvSeasonDetailsScreen(
                 onBackPress = onBackPress,
                 onEpisodeClick = { episode ->
                     openEpisodeDetails(
-                        TvEpisodeLaunchable(
+                        TvEpisodeArgs(
                             tvShowId = viewModel.tvShowId,
                             seasonNumber = episode.seasonNumber,
                             episodeNumber = episode.episodeNumber

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -94,7 +93,6 @@ fun MovieContent(
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val imageShots by viewModel.imageShots.observeAsState(emptyList())
 
     LazyColumn(
         modifier = modifier
@@ -194,7 +192,7 @@ fun MovieContent(
         /*Image shots*/
         item {
             ImageShotsSection(
-                imageShots = imageShots,
+                imageShots = viewModel.imageShots.value,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)

@@ -10,13 +10,12 @@ import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
@@ -49,9 +48,9 @@ fun ImageShotsListScreen(
 fun ImageShotsListScreen(
     onBackPressed: () -> Unit,
     openImagePager: (pageIndex: Int) -> Unit,
-    liveImageShots: LiveData<List<ImageShot>>
+    observableImageShots: State<List<ImageShot>>
 ) {
-    val imageShots by liveImageShots.observeAsState(initial = emptyList())
+    val imageShots by observableImageShots
 
     ImageShotsListScreen(
         onBackPressed = onBackPressed,

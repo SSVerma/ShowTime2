@@ -172,7 +172,7 @@ fun ShowTimeNavHost(
                 navController.destinationViewModel(destination = AppDestination.MovieDetails)
 
             ImageShotsListScreen(
-                liveImageShots = movieDetailsViewModel.imageShots,
+                observableImageShots = movieDetailsViewModel.imageShots,
                 onBackPressed = { navController.popBackStack() },
                 openImagePager = {
                     navController.navigateTo(AppDestination.MovieImagePager.actualRoute(it))
@@ -185,7 +185,7 @@ fun ShowTimeNavHost(
                 .destinationViewModel<MovieDetailsViewModel>(destination = AppDestination.MovieDetails)
 
             ImagePagerScreen(
-                liveImageShots = movieDetailsViewModel.imageShots,
+                observableImageShots = movieDetailsViewModel.imageShots,
                 defaultPageIndex = it.arguments?.getInt(AppDestination.MovieImagePager.PageIndex)
                     ?: 0,
                 onBackPressed = { navController.popBackStack() }
@@ -262,7 +262,7 @@ fun ShowTimeNavHost(
                 navController.destinationViewModel(destination = AppDestination.TvShowDetails)
 
             ImageShotsListScreen(
-                liveImageShots = tvShowDetailsViewModel.imageShots,
+                observableImageShots = tvShowDetailsViewModel.imageShots,
                 onBackPressed = { navController.popBackStack() },
                 openImagePager = {
                     navController.navigateTo(AppDestination.TvImagePager.actualRoute(it))
@@ -282,7 +282,7 @@ fun ShowTimeNavHost(
                 .destinationViewModel<TvShowDetailsViewModel>(destination = AppDestination.TvShowDetails)
 
             ImagePagerScreen(
-                liveImageShots = tvShowDetailsViewModel.imageShots,
+                observableImageShots = tvShowDetailsViewModel.imageShots,
                 defaultPageIndex = it.arguments?.getInt(AppDestination.TvImagePager.PageIndex)
                     ?: 0,
                 onBackPressed = { navController.popBackStack() }

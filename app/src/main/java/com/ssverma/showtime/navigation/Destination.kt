@@ -4,7 +4,7 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.movie.MovieListingArgs
-import com.ssverma.showtime.ui.tv.TvEpisodeLaunchable
+import com.ssverma.showtime.ui.tv.TvEpisodeArgs
 import com.ssverma.showtime.ui.tv.TvSeasonLaunchable
 import com.ssverma.showtime.ui.tv.TvShowListingArgs
 
@@ -254,7 +254,7 @@ sealed class AppDestination : Destination {
         }
     }
 
-    object TvEpisodeDetails : DependentDestination<TvEpisodeLaunchable>("tvShow/season/episode") {
+    object TvEpisodeDetails : DependentDestination<TvEpisodeArgs>("tvShow/season/episode") {
         const val ArgTvShowId = "tvShowId"
         const val ArgSeasonNumber = "seasonNumber"
         const val ArgEpisodeNumber = "episodeNumber"
@@ -268,7 +268,7 @@ sealed class AppDestination : Destination {
         }
 
         override fun actualRoute(
-            input: TvEpisodeLaunchable,
+            input: TvEpisodeArgs,
             builder: ActualRoute.ActualRouteBuilder
         ): ActualRoute {
             return builder

@@ -8,12 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
 import com.google.accompanist.insets.systemBarsPadding
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -51,11 +50,11 @@ fun ImagePagerScreen(
 
 @Composable
 fun ImagePagerScreen(
-    liveImageShots: LiveData<List<ImageShot>>,
+    observableImageShots: State<List<ImageShot>>,
     onBackPressed: () -> Unit,
     defaultPageIndex: Int = 0
 ) {
-    val imageShots by liveImageShots.observeAsState(initial = emptyList())
+    val imageShots by observableImageShots
 
     ImagePagerScreen(
         imageShots = imageShots,

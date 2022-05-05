@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.statusBarsHeight
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.TvShow
+import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar

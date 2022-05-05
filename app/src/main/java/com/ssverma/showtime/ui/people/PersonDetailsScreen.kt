@@ -80,7 +80,7 @@ fun PersonDetailsScreen(
                 when (sheetContentType) {
                     BottomSheetContent.Images -> {
                         ImagePagerScreen(
-                            liveImageShots = viewModel.imageShots,
+                            observableImageShots = viewModel.imageShots,
                             defaultPageIndex = profileImagePageIndex,
                             onBackPressed = {
                                 coroutineScope.launch {

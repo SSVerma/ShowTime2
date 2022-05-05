@@ -7,9 +7,9 @@ import com.ssverma.showtime.data.mapper.*
 import com.ssverma.showtime.data.remote.DefaultTvShowRemoteDataSource
 import com.ssverma.showtime.data.remote.TvShowRemoteDataSource
 import com.ssverma.showtime.data.repository.DefaultTvShowRepository
-import com.ssverma.showtime.domain.model.TvEpisode
-import com.ssverma.showtime.domain.model.TvSeason
-import com.ssverma.showtime.domain.model.TvShow
+import com.ssverma.showtime.domain.model.tv.TvEpisode
+import com.ssverma.showtime.domain.model.tv.TvSeason
+import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.repository.TvShowRepository
 import dagger.Binds
 import dagger.Module

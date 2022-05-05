@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.navigationBarsHeight
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.ImageShotsListScreen

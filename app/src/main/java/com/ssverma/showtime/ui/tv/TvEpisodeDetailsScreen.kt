@@ -7,9 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -17,19 +15,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.TvEpisode
-import com.ssverma.showtime.domain.model.highlightedItems
+import com.ssverma.showtime.domain.model.tv.TvEpisode
 import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.highlightedItems
 import com.ssverma.showtime.ui.movie.CreditSection
 import com.ssverma.showtime.ui.movie.Highlights
 import com.ssverma.showtime.ui.movie.ImageShotsSection
 import com.ssverma.showtime.ui.movie.OverviewSection
-
-class TvEpisodeLaunchable(
-    val tvShowId: Int,
-    val seasonNumber: Int,
-    val episodeNumber: Int,
-)
 
 @Composable
 fun TvEpisodeDetailsScreen(
@@ -40,7 +32,12 @@ fun TvEpisodeDetailsScreen(
     val bottomSheetCurrentItem = remember { mutableStateOf(SheetContentType.None) }
     val clickedImageIndex = remember { mutableStateOf(0) }
 
-    DriveCompose(observable = viewModel.liveEpisode) { episode ->
+    val tvEpisodeUiState by viewModel.observableTvEpisode.collectAsState()
+
+    DriveCompose(
+        uiState = tvEpisodeUiState,
+        onRetry = { viewModel.fetchTvEpisode() }
+    ) { episode ->
         ImageShotBottomSheet(
             imageShots = episode.stills,
             sheetItem = bottomSheetCurrentItem,
