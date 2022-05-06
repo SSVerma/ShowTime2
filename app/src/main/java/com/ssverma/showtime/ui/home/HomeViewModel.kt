@@ -7,11 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.showtime.data.repository.PersonRepository
 import com.ssverma.showtime.data.repository.UnsplashRepository
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.usecase.movie.*
+import com.ssverma.showtime.domain.usecase.person.PopularPersonsPaginatedUseCase
 import com.ssverma.showtime.domain.usecase.tv.*
 import com.ssverma.showtime.ui.FetchDataUiState
 import com.ssverma.showtime.ui.asFetchDataUiState
@@ -27,7 +27,6 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     unsplashRepository: UnsplashRepository,
-    personRepository: PersonRepository,
     private val trendingMoviesUseCase: TrendingMoviesUseCase,
     private val topRatedMoviesUseCase: TopRatedMoviesUseCase,
     private val upcomingMoviesUseCase: UpcomingMoviesUseCase,
@@ -40,12 +39,13 @@ class HomeViewModel @Inject constructor(
     private val todayAiringTvShowsUseCase: TodayAiringTvShowsUseCase,
     private val nowAiringTvShowsUseCase: NowAiringTvShowsUseCase,
     private val popularTvShowsUseCase: PopularTvShowsUseCase,
-    private val tvGenresUseCase: TvGenresUseCase
+    private val tvGenresUseCase: TvGenresUseCase,
+    popularPersonsUseCase: PopularPersonsPaginatedUseCase
 ) : ViewModel() {
 
     val movieBackdrop = unsplashRepository.randomMovieBackdropUrl
 
-    val popularPersons: Flow<PagingData<Person>> = personRepository.fetchPopularPersonsGradually()
+    val popularPersons: Flow<PagingData<Person>> = popularPersonsUseCase()
         .cachedIn(viewModelScope)
 
     var trendingMoviesUiState by mutableStateOf<MovieListUiState>(FetchDataUiState.Idle)

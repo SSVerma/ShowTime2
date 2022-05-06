@@ -1,10 +1,10 @@
-package com.ssverma.showtime.domain.mapper
+package com.ssverma.showtime.data.mapper
 
-import com.ssverma.showtime.R
-import com.ssverma.showtime.api.TmdbApiTiedConstants
+import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
 import com.ssverma.showtime.domain.model.MediaType
+import javax.inject.Inject
 
-object TmdbMediaTypeMapper : Mapper<String, MediaType>() {
+class TmdbMediaTypeMapper @Inject constructor() : Mapper<String, MediaType>() {
     override suspend fun map(input: String): MediaType {
         return when (input) {
             TmdbApiTiedConstants.AvailableMediaType.Movie -> {

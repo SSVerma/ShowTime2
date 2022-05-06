@@ -10,3 +10,8 @@ sealed interface MediaDetailsAppendable {
     object Similar : MediaDetailsAppendable
     object Recommendations : MediaDetailsAppendable
 }
+
+sealed interface PersonDetailAppendable {
+    object CombinedCredits : PersonDetailAppendable
+    object Images : PersonDetailAppendable
+}

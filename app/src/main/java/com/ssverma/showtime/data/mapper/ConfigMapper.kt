@@ -4,6 +4,7 @@ import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
 import com.ssverma.showtime.api.AppendableQueryMap
 import com.ssverma.showtime.api.QueryMultiValue
 import com.ssverma.showtime.domain.model.MediaDetailsAppendable
+import com.ssverma.showtime.domain.model.PersonDetailAppendable
 
 fun List<MediaDetailsAppendable>.asQueryMap(): Map<String, String> {
     val queryBuilder = QueryMultiValue.andBuilder()
@@ -33,6 +34,24 @@ fun List<MediaDetailsAppendable>.asQueryMap(): Map<String, String> {
             }
             MediaDetailsAppendable.Videos -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.Videos)
+            }
+        }
+    }
+
+    return AppendableQueryMap.of(queryBuilder)
+}
+
+@JvmName("asQueryMapPersonDetailAppendable")
+fun List<PersonDetailAppendable>.asQueryMap(): Map<String, String> {
+    val queryBuilder = QueryMultiValue.andBuilder()
+
+    this.forEach { appendable ->
+        when (appendable) {
+            PersonDetailAppendable.CombinedCredits -> {
+                queryBuilder.and(TmdbApiTiedConstants.PersonDetailsAppendableResponseTypes.Credits)
+            }
+            PersonDetailAppendable.Images -> {
+                queryBuilder.and(TmdbApiTiedConstants.PersonDetailsAppendableResponseTypes.Images)
             }
         }
     }

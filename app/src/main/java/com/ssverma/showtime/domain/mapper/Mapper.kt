@@ -10,19 +10,6 @@ abstract class Mapper<in I, out O> {
 }
 
 @Deprecated("moved in data layer")
-abstract class ListMapper<in I, out O>(
-    private val coroutineDispatcher: CoroutineDispatcher
-) : Mapper<List<I>, List<O>>() {
-    override suspend fun map(input: List<I>): List<O> {
-        return withContext(coroutineDispatcher) {
-            input.map { mapItem(it) }
-        }
-    }
-
-    abstract suspend fun mapItem(input: I): O
-}
-
-@Deprecated("moved in data layer")
 abstract class ResultMapper<I, O>(
     private val coroutineDispatcher: CoroutineDispatcher
 ) : Mapper<Result<I>, Result<O>>() {

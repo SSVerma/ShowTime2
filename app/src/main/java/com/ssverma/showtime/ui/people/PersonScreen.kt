@@ -25,9 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
+import com.ssverma.showtime.domain.model.Gender
 import com.ssverma.showtime.domain.model.MediaType
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.PersonMedia
+import com.ssverma.showtime.ui.UiText
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.home.HomeViewModel
@@ -143,7 +145,7 @@ private fun PersonItem(
                     Text(
                         text = stringResource(
                             id = R.string.gender_n,
-                            stringResource(id = person.gender.displayGenderRes)
+                            stringResource(id = person.gender.asUiText().resId)
                         ),
                         style = MaterialTheme.typography.caption
                     )
@@ -196,6 +198,14 @@ private fun PersonItem(
                 }
             }
         }
+    }
+}
+
+private fun Gender.asUiText(): UiText.StaticText {
+    return when (this) {
+        Gender.Female -> UiText.StaticText(resId = R.string.female)
+        Gender.Male -> UiText.StaticText(resId = R.string.male)
+        Gender.Unknown -> UiText.StaticText(resId = R.string.unknown)
     }
 }
 

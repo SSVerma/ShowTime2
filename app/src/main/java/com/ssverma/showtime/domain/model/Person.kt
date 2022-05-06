@@ -1,16 +1,5 @@
 package com.ssverma.showtime.domain.model
 
-import androidx.annotation.StringRes
-import com.ssverma.showtime.R
-import com.ssverma.showtime.api.convertToFullTmdbImageUrl
-import com.ssverma.showtime.data.remote.response.RemotePerson
-import com.ssverma.showtime.data.remote.response.RemotePersonMedia
-import com.ssverma.showtime.domain.mapper.GenderMapper
-import com.ssverma.showtime.domain.mapper.TmdbMediaTypeMapper
-import com.ssverma.showtime.extension.emptyIfNull
-import com.ssverma.showtime.utils.DateUtils
-import com.ssverma.showtime.utils.FormatterUtils
-import com.ssverma.showtime.utils.formatLocally
 import java.time.LocalDate
 
 data class Person(
@@ -45,67 +34,14 @@ data class PersonMedia(
     val mediaType: MediaType
 )
 
-sealed class MediaType(
-    @StringRes open val displayNameRes: Int
-) {
-    object Movie : MediaType(R.string.movie)
-
-    object Tv : MediaType(R.string.tv)
-
-    object Unknown : MediaType(R.string.unknown)
+sealed interface MediaType {
+    object Movie : MediaType
+    object Tv : MediaType
+    object Unknown : MediaType
 }
 
-sealed class Gender(
-    @StringRes open val displayGenderRes: Int
-) {
-    data class Male(
-        @StringRes override val displayGenderRes: Int
-    ) : Gender(displayGenderRes)
-
-    data class Female(
-        @StringRes override val displayGenderRes: Int
-    ) : Gender(displayGenderRes)
-
-    object Unknown : Gender(R.string.unknown)
+sealed interface Gender {
+    object Male : Gender
+    object Female : Gender
+    object Unknown : Gender
 }
-
-
-suspend fun RemotePersonMedia.asPersonMedia() = PersonMedia(
-    id = id,
-    title = title.emptyIfNull(),
-    posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
-    backdropImageUrl = backdropPath.convertToFullTmdbImageUrl(),
-    character = character.emptyIfNull(),
-    overview = overview.emptyIfNull(),
-    displayReleaseDate = DateUtils.parseIsoDate(releaseDate)?.formatLocally(),
-    releaseDate = DateUtils.parseIsoDate(releaseDate),
-    popularity = popularity,
-    displayPopularity = FormatterUtils.toRangeSymbol(popularity),
-    genres = genres?.asGenres() ?: emptyList(),
-    creditId = creditId,
-    department = department,
-    job = job,
-    mediaType = TmdbMediaTypeMapper.map(mediaType ?: "")
-)
-
-suspend fun List<RemotePersonMedia>.asPersonMedias() = map { it.asPersonMedia() }
-
-suspend fun RemotePerson.asPerson() = Person(
-    id = id,
-    name = name.emptyIfNull(),
-    biography = biography.emptyIfNull(),
-    imageUrl = profilePath.convertToFullTmdbImageUrl(),
-    dob = DateUtils.parseIsoDate(dob)?.formatLocally(),
-    knownFor = knownFor ?: "",
-    gender = GenderMapper.map(gender),
-    placeOfBirth = placeOfBirth ?: "",
-    imageShots = personImage?.profileImages?.asImagesShots() ?: emptyList(),
-    mediaByType = ((credit?.casts?.asPersonMedias() ?: emptyList())
-            + (credit?.crews?.asPersonMedias() ?: emptyList()))
-        .sortedByDescending { it.releaseDate }
-        .distinctBy { it.title }
-        .groupBy { it.mediaType },
-    popularMedia = popularMedia?.asPersonMedias()
-)
-
-suspend fun List<RemotePerson>.asPersons() = map { it.asPerson() }

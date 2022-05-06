@@ -1,28 +1,27 @@
 package com.ssverma.showtime.ui.people
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.*
-import com.ssverma.showtime.api.AppendableQueryMap
-import com.ssverma.showtime.api.QueryMultiValue
-import com.ssverma.showtime.api.TmdbApiTiedConstants
-import com.ssverma.showtime.data.repository.PersonRepository
-import com.ssverma.showtime.domain.Result
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.domain.model.Person
+import com.ssverma.showtime.domain.model.person.PersonDetailsConfig
+import com.ssverma.showtime.domain.usecase.person.PersonDetailsUseCase
 import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.FetchDataUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-val personDetailsAppendable = QueryMultiValue.andBuilder()
-    .and(TmdbApiTiedConstants.PersonDetailsAppendableResponseTypes.Credits)
-    .and(TmdbApiTiedConstants.PersonDetailsAppendableResponseTypes.Images)
-
 @HiltViewModel
 class PersonDetailsViewModel @Inject constructor(
-    private val personRepository: PersonRepository,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val personDetailsUseCase: PersonDetailsUseCase
 ) : ViewModel() {
 
     private val personId = savedStateHandle.get<Int>(AppDestination.PersonDetails.PersonId) ?: 0
@@ -30,17 +29,27 @@ class PersonDetailsViewModel @Inject constructor(
     private val _imageShots = mutableStateOf<List<ImageShot>>(emptyList())
     val imageShots: State<List<ImageShot>> get() = _imageShots
 
-    val livePersonDetails: LiveData<Result<Person>> = liveData {
-        personRepository.fetchPersonDetails(
-            personId = personId,
-            queryMap = AppendableQueryMap.of(appendToResponse = personDetailsAppendable)
-        ).collect {
-            emit(it)
+    var personDetailUiState by mutableStateOf<PersonDetailUiState>(FetchDataUiState.Idle)
+        private set
 
-            if (it is Result.Success) {
-                viewModelScope.launch {
-                    val imageShots = it.data.imageShots
-                    _imageShots.value = imageShots
+    init {
+        fetchPersonDetails()
+    }
+
+    fun fetchPersonDetails(coroutineScope: CoroutineScope = viewModelScope) {
+        personDetailUiState = FetchDataUiState.Loading
+
+        coroutineScope.launch {
+            val personDetailsConfig = PersonDetailsConfig(personId = personId)
+            val result = personDetailsUseCase(personDetailsConfig)
+
+            personDetailUiState = when (result) {
+                is DomainResult.Error -> {
+                    FetchDataUiState.Error(result.error)
+                }
+                is DomainResult.Success -> {
+                    _imageShots.value = result.data.imageShots
+                    FetchDataUiState.Success(result.data)
                 }
             }
         }

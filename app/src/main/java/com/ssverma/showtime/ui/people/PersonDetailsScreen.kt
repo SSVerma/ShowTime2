@@ -32,10 +32,14 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.*
+import com.ssverma.showtime.domain.model.MediaType
+import com.ssverma.showtime.domain.model.Person
+import com.ssverma.showtime.domain.model.PersonMedia
+import com.ssverma.showtime.domain.model.emptyImageShot
 import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.ImagePagerScreen
+import com.ssverma.showtime.ui.UiText
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.movie.Highlights
 import com.ssverma.showtime.ui.movie.ImageShotItem
@@ -64,7 +68,10 @@ fun PersonDetailsScreen(
 
     var profileImagePageIndex by remember { mutableStateOf(0) }
 
-    DriveCompose(observable = viewModel.livePersonDetails) { person ->
+    DriveCompose(
+        uiState = viewModel.personDetailUiState,
+        onRetry = { viewModel.fetchPersonDetails() }
+    ) { person ->
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetGesturesEnabled = false,
@@ -265,6 +272,10 @@ private fun PersonMediaTabs(
     modifier: Modifier = Modifier,
     showAllMedia: Boolean = false,
 ) {
+    if (personMediaByType.isNullOrEmpty()) {
+        return
+    }
+
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -281,7 +292,7 @@ private fun PersonMediaTabs(
         personMediaByType.onEachIndexed { index, entry ->
             Tab(
                 text = {
-                    Text(text = stringResource(id = entry.key.displayNameRes) + " (${entry.value.size})")
+                    Text(text = stringResource(id = entry.key.asUiText().resId) + " (${entry.value.size})")
                 },
                 selected = pagerState.currentPage == index,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
@@ -532,6 +543,14 @@ private fun BackdropHeader(
                     end.linkTo(refRoundedSurface.end)
                 }
         )
+    }
+}
+
+fun MediaType.asUiText(): UiText.StaticText {
+    return when (this) {
+        MediaType.Movie -> UiText.StaticText(resId = R.string.movie)
+        MediaType.Tv -> UiText.StaticText(resId = R.string.tv)
+        MediaType.Unknown -> UiText.StaticText(resId = R.string.unknown)
     }
 }
 
