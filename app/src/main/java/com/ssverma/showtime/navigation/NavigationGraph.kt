@@ -14,7 +14,6 @@ import com.google.accompanist.navigation.animation.navigation
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.ImageShotsListScreen
-import com.ssverma.showtime.ui.home.HomeViewModel
 import com.ssverma.showtime.ui.library.LibraryScreen
 import com.ssverma.showtime.ui.movie.*
 import com.ssverma.showtime.ui.people.PersonDetailsScreen
@@ -66,13 +65,11 @@ fun ShowTimeNavHost(
             graphDestination = AppDestination.Home,
             startDestination = AppDestination.HomeBottomNavDestination.Movie,
         ) {
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.Movie,
-                navController = navController
+            composable(
+                destination = AppDestination.HomeBottomNavDestination.Movie
             ) {
                 MovieScreen(
-                    viewModel = it.graphScopedViewModel,
+                    viewModel = hiltViewModel(),
                     openMovieList = { listingArgs ->
                         navController.navigateTo(AppDestination.MovieList.actualRoute(listingArgs))
                     },
@@ -82,13 +79,11 @@ fun ShowTimeNavHost(
                 )
             }
 
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.Tv,
-                navController = navController
+            composable(
+                destination = AppDestination.HomeBottomNavDestination.Tv
             ) {
                 TvShowScreen(
-                    viewModel = it.graphScopedViewModel,
+                    viewModel = hiltViewModel(),
                     openTvShowDetails = { tvShowId ->
                         navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
                     },
@@ -100,13 +95,11 @@ fun ShowTimeNavHost(
                 )
             }
 
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.People,
-                navController = navController
+            composable(
+                destination = AppDestination.HomeBottomNavDestination.People
             ) {
                 PersonScreen(
-                    viewModel = it.graphScopedViewModel,
+                    viewModel = hiltViewModel(),
                     openPersonDetailsScreen = { personId ->
                         navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
                     },
@@ -119,10 +112,8 @@ fun ShowTimeNavHost(
                 )
             }
 
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.Library,
-                navController = navController
+            composable(
+                destination = AppDestination.HomeBottomNavDestination.Library
             ) {
                 LibraryScreen()
             }
@@ -398,7 +389,7 @@ fun NavController.navigateTo(route: ActualRoute, builder: NavOptionsBuilder.() -
     )
 }
 
-class NavGraphElement<T : ViewModel>(
+data class NavGraphElement<T : ViewModel>(
     val graphScopedViewModel: T,
     val navBackStackEntry: NavBackStackEntry
 )

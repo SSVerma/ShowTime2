@@ -32,11 +32,10 @@ import com.ssverma.showtime.domain.model.PersonMedia
 import com.ssverma.showtime.ui.UiText
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
-import com.ssverma.showtime.ui.home.HomeViewModel
 
 @Composable
 fun PersonScreen(
-    viewModel: HomeViewModel,
+    viewModel: HomePersonViewModel,
     openPersonDetailsScreen: (personId: Int) -> Unit,
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,

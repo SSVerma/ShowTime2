@@ -26,11 +26,10 @@ import com.ssverma.showtime.ui.AttributionFooter
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
-import com.ssverma.showtime.ui.home.HomeViewModel
 
 @Composable
 fun MovieScreen(
-    viewModel: HomeViewModel,
+    viewModel: HomeMovieViewModel,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
@@ -43,7 +42,7 @@ fun MovieScreen(
 
 @Composable
 private fun MovieContent(
-    viewModel: HomeViewModel,
+    viewModel: HomeMovieViewModel,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
@@ -210,7 +209,7 @@ fun MoviesSection(
 
 @Composable
 fun HeaderSection(
-    viewModel: HomeViewModel,
+    viewModel: HomeMovieViewModel,
     onNavigateToMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {

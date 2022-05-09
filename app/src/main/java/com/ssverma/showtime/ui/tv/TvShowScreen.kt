@@ -23,12 +23,11 @@ import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.home.HomePageAppBar
-import com.ssverma.showtime.ui.home.HomeViewModel
 import com.ssverma.showtime.ui.movie.GenresUiState
 
 @Composable
 fun TvShowScreen(
-    viewModel: HomeViewModel,
+    viewModel: HomeTvShowViewModel,
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit
 ) {
@@ -41,7 +40,7 @@ fun TvShowScreen(
 
 @Composable
 private fun TvShowContent(
-    viewModel: HomeViewModel,
+    viewModel: HomeTvShowViewModel,
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit
 ) {
