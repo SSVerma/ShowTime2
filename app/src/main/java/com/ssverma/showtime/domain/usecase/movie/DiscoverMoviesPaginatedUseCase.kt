@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-open class DiscoverPaginatedMoviesUseCase @Inject constructor(
+open class DiscoverMoviesPaginatedUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
 ) : FlowUseCase<MovieDiscoverConfig, PagingData<Movie>>(coroutineDispatcher) {

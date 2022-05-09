@@ -1,8 +1,8 @@
 package com.ssverma.showtime.data.mapper
 
+import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteCast
 import com.ssverma.api.service.tmdb.response.RemoteCrew
-import com.ssverma.showtime.api.convertToFullTmdbImageUrl
 import com.ssverma.showtime.domain.model.Cast
 import com.ssverma.showtime.domain.model.Crew
 import kotlinx.coroutines.Dispatchers

@@ -3,7 +3,6 @@ package com.ssverma.showtime.data.mapper
 import com.ssverma.api.service.tmdb.TMDB_IMAGE_BASE_URL
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.utils.CoreUtils
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.FormatterUtils
@@ -27,19 +26,19 @@ class TvShowsMapper @Inject constructor() : ListMapper<RemoteTvShow, TvShow>() {
 suspend fun RemoteTvShow.asTvShow(): TvShow {
     return TvShow(
         id = id,
-        title = title.emptyIfNull(),
+        title = title.orEmpty(),
         tagline = if (tagline.isNullOrEmpty()) null else tagline,
         overview = overview.orEmpty(),
         posterImageUrl = CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, posterPath),
         backdropImageUrl = CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, backdropPath),
-        status = status.emptyIfNull(),
+        status = status.orEmpty(),
         voteAvg = voteAvg,
         voteAvgPercentage = voteAvg * 10f,
         voteCount = voteCount,
         displayFirstAirDate = DateUtils.parseIsoDate(firstAirDate)?.formatLocally(),
         popularity = popularity,
         displayPopularity = FormatterUtils.toRangeSymbol(popularity),
-        originalLanguage = originalLanguage.emptyIfNull(),
+        originalLanguage = originalLanguage.orEmpty(),
         seasonCount = seasonCount,
         episodeCount = episodeCount,
         casts = credit?.casts?.asCasts() ?: emptyList(),

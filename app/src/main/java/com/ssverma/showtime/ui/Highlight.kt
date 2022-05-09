@@ -7,7 +7,6 @@ import com.ssverma.showtime.domain.model.tv.TvEpisode
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.extension.emptyIfAbsent
-import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.utils.DateUtils
 
 data class Highlight(
@@ -23,7 +22,7 @@ fun Movie.highlightedItems(): List<Highlight> {
         ),
         Highlight(
             labelRes = R.string.release_date,
-            value = displayReleaseDate.emptyIfNull(),
+            value = displayReleaseDate.orEmpty(),
         ),
         Highlight(
             labelRes = R.string.status,
@@ -52,7 +51,7 @@ fun TvShow.highlightedItems(): List<Highlight> {
         ),
         Highlight(
             labelRes = R.string.first_air_date,
-            value = displayFirstAirDate.emptyIfNull(),
+            value = displayFirstAirDate.orEmpty(),
         ),
         Highlight(
             labelRes = R.string.status,
@@ -85,7 +84,7 @@ fun TvSeason.highlightedItems(): List<Highlight> {
         ),
         Highlight(
             labelRes = R.string.air_date,
-            value = displayAirDate.emptyIfNull()
+            value = displayAirDate.orEmpty()
         ),
     )
 }
@@ -102,7 +101,7 @@ fun TvEpisode.highlightedItems(): List<Highlight> {
         ),
         Highlight(
             labelRes = R.string.air_date,
-            value = displayAirDate.emptyIfNull()
+            value = displayAirDate.orEmpty()
         ),
     )
 }

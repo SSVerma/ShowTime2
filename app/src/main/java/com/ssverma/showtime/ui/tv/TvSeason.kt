@@ -15,7 +15,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvSeason
-import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.ui.common.NetworkImage
 
 class TvSeasonLaunchable(
@@ -50,7 +49,7 @@ fun TvSeasonItem(
             ) {
                 Text(text = tvSeason.title, style = MaterialTheme.typography.subtitle1)
                 Text(
-                    text = tvSeason.displayAirDate.emptyIfNull(),
+                    text = tvSeason.displayAirDate.orEmpty(),
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier.padding(top = 4.dp)
                 )

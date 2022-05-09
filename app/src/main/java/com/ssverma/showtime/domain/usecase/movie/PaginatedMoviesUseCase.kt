@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 class PaginatedMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
-    private val discoverPaginatedMoviesUseCase: DiscoverPaginatedMoviesUseCase,
+    private val discoverMoviesPaginatedUseCase: DiscoverMoviesPaginatedUseCase,
     private val topRatedPaginatedMoviesUseCase: TopRatedPaginatedMoviesUseCase,
     private val trendingPaginatedMoviesUseCase: TrendingPaginatedMoviesUseCase
 ) : FlowUseCase<MovieListingConfig, PagingData<Movie>>(coroutineDispatcher) {
@@ -35,7 +35,7 @@ class PaginatedMoviesUseCase @Inject constructor(
                     .with(*allOptions.toTypedArray())
                     .build()
 
-                discoverPaginatedMoviesUseCase(discoverConfig)
+                discoverMoviesPaginatedUseCase(discoverConfig)
             }
         }
     }

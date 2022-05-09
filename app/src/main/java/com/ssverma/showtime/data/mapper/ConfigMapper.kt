@@ -1,8 +1,8 @@
 package com.ssverma.showtime.data.mapper
 
+import com.ssverma.api.service.tmdb.AppendableQueryMap
+import com.ssverma.api.service.tmdb.QueryMultiValue
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
-import com.ssverma.showtime.api.AppendableQueryMap
-import com.ssverma.showtime.api.QueryMultiValue
 import com.ssverma.showtime.domain.model.MediaDetailsAppendable
 import com.ssverma.showtime.domain.model.PersonDetailAppendable
 

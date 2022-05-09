@@ -25,7 +25,6 @@ import com.google.accompanist.insets.navigationBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvEpisode
 import com.ssverma.showtime.domain.model.tv.TvSeason
-import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.ui.common.*
 import com.ssverma.showtime.ui.highlightedItems
 import com.ssverma.showtime.ui.movie.CreditSection
@@ -246,7 +245,7 @@ fun TvEpisodeItem(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(text = tvEpisode.title, style = MaterialTheme.typography.subtitle1)
                 Text(
-                    text = tvEpisode.displayAirDate.emptyIfNull(),
+                    text = tvEpisode.displayAirDate.orEmpty(),
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier.padding(top = 4.dp)
                 )

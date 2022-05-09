@@ -36,7 +36,6 @@ import com.ssverma.showtime.domain.model.MediaType
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.PersonMedia
 import com.ssverma.showtime.domain.model.emptyImageShot
-import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.ImagePagerScreen
 import com.ssverma.showtime.ui.UiText
@@ -310,7 +309,7 @@ private fun PersonMediaTabs(
                 shape = MaterialTheme.shapes.medium.copy(CornerSize(8.dp))
             ) {
                 Text(
-                    text = clickedMediaInfo.emptyIfNull(),
+                    text = clickedMediaInfo.orEmpty(),
                     modifier = Modifier.padding(16.dp)
                 )
             }

@@ -2,8 +2,6 @@ package com.ssverma.showtime.domain.usecase.movie
 
 import com.ssverma.showtime.di.DefaultDispatcher
 import com.ssverma.showtime.domain.DomainResult
-import com.ssverma.showtime.domain.MovieDiscoverConfig
-import com.ssverma.showtime.domain.SortBy
 import com.ssverma.showtime.domain.defaults.movie.MovieDefaults
 import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.movie.MovieFailure
@@ -19,11 +17,7 @@ class PopularMoviesUseCase @Inject constructor(
 ) : NoParamUseCase<DomainResult<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(): DomainResult<List<Movie>, Failure<MovieFailure>> {
-        val movieConfig = MovieDiscoverConfig
-            .builder(sortBy = SortBy.Popularity())
-            .with(MovieDefaults.DefaultMovieReleaseType)
-            .build()
-
+        val movieConfig = MovieDefaults.DiscoverDefaults.popular()
         return movieRepository.discoverMovies(movieConfig)
     }
 }

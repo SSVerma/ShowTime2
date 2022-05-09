@@ -3,7 +3,6 @@ package com.ssverma.showtime.data.mapper
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvSeason
 import com.ssverma.showtime.domain.model.tv.TvSeason
-import com.ssverma.showtime.extension.emptyIfNull
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatLocally
 import javax.inject.Inject
@@ -23,9 +22,9 @@ class TvSeasonsMapper @Inject constructor() : ListMapper<RemoteTvSeason, TvSeaso
 suspend fun RemoteTvSeason.asTvSeason(): TvSeason {
     return TvSeason(
         id = id,
-        title = title.emptyIfNull(),
+        title = title.orEmpty(),
         posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
-        overview = overview.emptyIfNull(),
+        overview = overview.orEmpty(),
         displayAirDate = DateUtils.parseIsoDate(airDate)?.formatLocally(),
         seasonNumber = seasonNumber,
         episodeCount = episodeCount,
