@@ -1,3 +1,7 @@
+import com.ssverma.Deps
+import com.ssverma.Modules
+import com.ssverma.Versions
+
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
@@ -61,53 +65,54 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion Versions.compose
     }
 }
 
 dependencies {
 
-    implementation project(":core-networking")
-    implementation project(":core-paging")//Fix it, should be inside api-service-tmdb only
-    implementation project(":api-service:tmdb")
+    implementation project(Modules.Core.networking)
+    implementation project(Modules.Core.paging)//Fix it, should be inside api-service-tmdb only
+    implementation project(Modules.ApiService.tmdb)
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
-    implementation "androidx.activity:activity-compose:1.4.0"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0"
+    implementation Deps.core
+    implementation Deps.appcompat
+    implementation Deps.material
+
+    implementation Deps.Compose.ui
+    implementation Deps.Compose.material
+    implementation Deps.Compose.tooling
+
+    implementation Deps.Lifecycle.runtime
+    implementation Deps.ComposeSupport.activity
+    implementation Deps.ComposeSupport.constraintLayout
 
     /*AAC*/
-    implementation "androidx.navigation:navigation-compose:2.5.0-beta01"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
-    implementation "androidx.compose.runtime:runtime-livedata:1.0.5"
-    implementation "androidx.paging:paging-compose:1.0.0-alpha14"
+    implementation Deps.ComposeSupport.navigation
+    implementation Deps.Lifecycle.viewModel
+    implementation Deps.ComposeSupport.paging
 
     /*Compose Utils*/
-    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
+    implementation Deps.Accompanist.insets
+    implementation Deps.Accompanist.pager
+    implementation Deps.Accompanist.pagerIndicators
+    implementation Deps.Accompanist.navAnimation
 
     /*Image Handling*/
-    implementation "io.coil-kt:coil-compose:1.3.2"
+    implementation Deps.ComposeSupport.coil
 
     /*DI*/
-    implementation "com.google.dagger:hilt-android:2.40.5"
-    kapt "com.google.dagger:hilt-compiler:2.40.5"
-    implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
-    kapt "androidx.hilt:hilt-compiler:1.0.0"
-    implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
+    implementation Deps.Di.daggerHilt
+    kapt Deps.Di.Kapt.daggerHiltCompiler
 
-    //De-sugaring
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+    implementation Deps.Di.hiltViewModel
+    implementation Deps.Di.hiltCompose
+    kapt Deps.Di.Kapt.hiltCompiler
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    /*De-sugaring*/
+    coreLibraryDesugaring Deps.Desugaring.jdk
+
+    /*Test*/
+    testImplementation Deps.Test.Local.junit
+    androidTestImplementation Deps.Test.Instrument.junit
 }
