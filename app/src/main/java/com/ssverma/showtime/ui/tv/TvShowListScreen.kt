@@ -14,7 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.insets.statusBarsPadding
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.ui.common.AppTopAppBar

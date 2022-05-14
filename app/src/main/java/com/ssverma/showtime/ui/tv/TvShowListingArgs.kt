@@ -32,6 +32,7 @@ object TvShowListingAvailableTypes {
     TvShowListingAvailableTypes.Popular,
     TvShowListingAvailableTypes.TopRated,
     TvShowListingAvailableTypes.NowAiring,
+    TvShowListingAvailableTypes.TodayAiring,
     TvShowListingAvailableTypes.Upcoming,
     TvShowListingAvailableTypes.Genre,
     TvShowListingAvailableTypes.Keyword,

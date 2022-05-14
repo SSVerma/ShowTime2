@@ -4,8 +4,8 @@ object Versions {
     const val core = "1.7.0"
     const val appcompat = "1.4.1"
     const val material = "1.6.0"
-    const val compose = "1.1.1"
-    const val accompanist = "0.23.1"
+    const val compose = "1.2.0-beta01"
+    const val accompanist = "0.24.8-beta"
 
     object Lifecycle {
         const val runtime = "2.4.1"
@@ -21,9 +21,8 @@ object Versions {
     }
 
     object Di {
-        const val daggerHilt = "2.40.5"
+        const val daggerHilt = "2.42"
         const val hiltCompiler = "1.0.0"
-        const val hiltViewModel = "1.0.0-alpha03"
         const val hiltCompose = "1.0.0"
     }
 
@@ -71,7 +70,6 @@ object Deps {
     }
 
     object Accompanist {
-        const val insets = "com.google.accompanist:accompanist-insets:${Versions.accompanist}"
         const val pager = "com.google.accompanist:accompanist-pager:${Versions.accompanist}"
         const val pagerIndicators =
             "com.google.accompanist:accompanist-pager-indicators:${Versions.accompanist}"
@@ -81,8 +79,6 @@ object Deps {
 
     object Di {
         const val daggerHilt = "com.google.dagger:hilt-android:${Versions.Di.daggerHilt}"
-        const val hiltViewModel =
-            "androidx.hilt:hilt-lifecycle-viewmodel:${Versions.Di.hiltViewModel}"
         const val hiltCompose = "androidx.hilt:hilt-navigation-compose:${Versions.Di.hiltCompose}"
 
         object Kapt {

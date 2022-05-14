@@ -93,7 +93,6 @@ dependencies {
     implementation Deps.ComposeSupport.paging
 
     /*Compose Utils*/
-    implementation Deps.Accompanist.insets
     implementation Deps.Accompanist.pager
     implementation Deps.Accompanist.pagerIndicators
     implementation Deps.Accompanist.navAnimation
@@ -105,7 +104,6 @@ dependencies {
     implementation Deps.Di.daggerHilt
     kapt Deps.Di.Kapt.daggerHiltCompiler
 
-    implementation Deps.Di.hiltViewModel
     implementation Deps.Di.hiltCompose
     kapt Deps.Di.Kapt.hiltCompiler
 

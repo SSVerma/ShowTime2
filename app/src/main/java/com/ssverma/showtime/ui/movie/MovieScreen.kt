@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.statusBarsHeight
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.movie.Movie
@@ -246,7 +245,7 @@ fun HeaderSection(
                     )
                 )
         ) {
-            Spacer(modifier = Modifier.statusBarsHeight())
+            Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             HomePageAppBar(
                 elevation = 0.dp,
                 backgroundColor = Color.Transparent,

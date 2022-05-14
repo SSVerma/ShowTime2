@@ -3,7 +3,11 @@ package com.ssverma.showtime.ui.common
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
@@ -127,7 +131,7 @@ fun <T : Any> PagedGridIndexed(
     itemContent: @Composable (index: Int, item: T) -> Unit
 ) {
     LazyVerticalGrid(
-        cells = cells,
+        columns = cells,
         contentPadding = contentPadding,
         modifier = modifier
     ) {

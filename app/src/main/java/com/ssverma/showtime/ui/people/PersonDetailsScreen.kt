@@ -25,8 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
@@ -322,7 +320,7 @@ private fun PersonMediaTabs(
         verticalAlignment = Alignment.Top,
         modifier = Modifier
             .background(MaterialTheme.colors.background)
-            .navigationBarsPadding(bottom = showAllMedia)
+            .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
     ) { page ->
         personMediaByType.onEachIndexed { pageIndex, entry ->
             if (pageIndex == page) {

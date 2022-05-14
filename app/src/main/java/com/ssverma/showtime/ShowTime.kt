@@ -1,7 +1,7 @@
 package com.ssverma.showtime
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,9 +15,6 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.google.accompanist.insets.ProvideWindowInsets
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssverma.showtime.navigation.ShowTimeNavHost
 import com.ssverma.showtime.navigation.navigateTo
@@ -28,21 +25,19 @@ import com.ssverma.showtime.ui.theme.ShowTimeTheme
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ShowTime() {
-    ProvideWindowInsets {
-        ShowTimeTheme {
-            val bottomNavItems = remember { homeBottomNavItems }
-            val navController = rememberAnimatedNavController()
+    ShowTimeTheme {
+        val bottomNavItems = remember { homeBottomNavItems }
+        val navController = rememberAnimatedNavController()
 
-            Scaffold(
-                bottomBar = {
-                    ShowTimeBottomBar(navController = navController, bottomNavItems)
-                }
-            ) { innerPaddingModifier ->
-                ShowTimeNavHost(
-                    navController = navController,
-                    modifier = Modifier.padding(innerPaddingModifier)
-                )
+        Scaffold(
+            bottomBar = {
+                ShowTimeBottomBar(navController = navController, bottomNavItems)
             }
+        ) { innerPaddingModifier ->
+            ShowTimeNavHost(
+                navController = navController,
+                modifier = Modifier.padding(innerPaddingModifier)
+            )
         }
     }
 }
@@ -71,7 +66,7 @@ fun ShowTimeBottomBar(
 
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.background,
-        modifier = Modifier.navigationBarsHeight(additional = 56.dp),
+        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
         elevation = 16.dp
     ) {
         bottomNavItems.forEach { navItem ->
