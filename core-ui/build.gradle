@@ -45,6 +45,9 @@ dependencies {
     implementation Deps.Compose.material
     implementation Deps.Compose.tooling
 
+    /*Image Handling*/
+    implementation Deps.ComposeSupport.coil
+
     testImplementation Deps.Test.Local.junit
     androidTestImplementation Deps.Test.Instrument.junit
 }

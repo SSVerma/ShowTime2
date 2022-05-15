@@ -21,17 +21,21 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.shared.ui.component.BackdropNavigationAction
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvEpisode
 import com.ssverma.showtime.domain.model.tv.TvSeason
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.DriveCompose
+import com.ssverma.showtime.ui.common.ImageShotBottomSheet
+import com.ssverma.showtime.ui.common.SheetContentType
 import com.ssverma.showtime.ui.highlightedItems
 import com.ssverma.showtime.ui.movie.CreditSection
 import com.ssverma.showtime.ui.movie.Highlights
 import com.ssverma.showtime.ui.movie.ImageShotsSection
 import com.ssverma.showtime.ui.movie.OverviewSection
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TvSeasonDetailsScreen(
     viewModel: TvSeasonDetailsViewModel,

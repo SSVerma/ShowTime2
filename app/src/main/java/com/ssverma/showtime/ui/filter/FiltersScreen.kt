@@ -15,15 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.asString
+import com.ssverma.core.ui.component.SliderScale
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.DiscoverOption
 import com.ssverma.showtime.domain.FilterId
 import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.TvDiscoverConfig
-import com.ssverma.showtime.ui.asString
-import com.ssverma.showtime.ui.common.MultiSelectableFilterRow
-import com.ssverma.showtime.ui.common.SingleSelectableFilterRow
-import com.ssverma.showtime.ui.common.SliderScale
 import kotlinx.coroutines.delay
 import java.util.*
 

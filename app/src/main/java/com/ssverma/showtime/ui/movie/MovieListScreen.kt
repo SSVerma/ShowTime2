@@ -7,6 +7,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -15,9 +17,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.movie.Movie
-import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.PagedContent
 import com.ssverma.showtime.ui.common.PagedGrid
 import com.ssverma.showtime.ui.filter.MovieFiltersScreen
@@ -100,10 +103,10 @@ private fun MovieListAppBar(
     onBackPressed: () -> Unit,
     coroutineScope: CoroutineScope
 ) {
-    val navIconRes = if (backdropScaffoldState.isConcealed) {
-        R.drawable.ic_arrow_back
+    val navIcon = if (backdropScaffoldState.isConcealed) {
+        AppIcons.ArrowBack
     } else {
-        R.drawable.ic_close
+        AppIcons.Close
     }
 
     val title = if (backdropScaffoldState.isConcealed) {
@@ -112,7 +115,7 @@ private fun MovieListAppBar(
         stringResource(id = R.string.filter)
     }
 
-    AppTopAppBar(
+    ShowTimeTopAppBar(
         title = title,
         backgroundColor = MaterialTheme.colors.background,
         elevation = 0.dp,
@@ -123,7 +126,7 @@ private fun MovieListAppBar(
                 coroutineScope.launch { backdropScaffoldState.conceal() }
             }
         },
-        navIconRes = navIconRes,
+        navIcon = navIcon,
         actions = {
             if (viewModel.filterApplicable && backdropScaffoldState.isConcealed) {
                 IconButton(

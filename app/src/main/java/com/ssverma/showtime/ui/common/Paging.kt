@@ -18,6 +18,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import com.ssverma.core.ui.ScreenEmptyIndicator
+import com.ssverma.core.ui.ScreenErrorIndicator
+import com.ssverma.core.ui.ScreenLoadingIndicator
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.showtime.R
 
 @Composable
@@ -162,7 +166,7 @@ fun <T : Any> PagedGridIndexed(
 @Composable
 fun <T : Any> PagedContent(
     pagingItems: LazyPagingItems<T>,
-    emptyScreenIndicator: @Composable () -> Unit = { EmptyScreenTextIndicator() },
+    emptyScreenIndicator: @Composable () -> Unit = { ScreenEmptyIndicator() },
     content: @Composable (pagingItems: LazyPagingItems<T>) -> Unit
 ) {
     when (pagingItems.loadState.refresh) {
@@ -179,7 +183,7 @@ fun <T : Any> PagedContent(
         is LoadState.Error -> {
             ScreenErrorIndicator(
                 errorMessage = stringResource(id = R.string.something_went_wrong),
-                onRetryClicked = {
+                onRetryClick = {
                     pagingItems.refresh()
                 }
             )
@@ -194,7 +198,7 @@ private fun DefaultPagingLoadingIndicator() {
             .fillMaxWidth()
             .height(32.dp)
     ) {
-        AppLoadingIndicator(modifier = Modifier.align(Alignment.Center))
+        ShowTimeLoadingIndicator(modifier = Modifier.align(Alignment.Center))
     }
 }
 

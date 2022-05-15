@@ -15,11 +15,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.foundation.Emphasize
+import com.ssverma.core.ui.layout.HorizontalLazyList
+import com.ssverma.core.ui.layout.Section
+import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.ui.GenreItem
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.DriveCompose
 import com.ssverma.showtime.ui.highlightedItems
 import com.ssverma.showtime.ui.movie.*
 
@@ -142,7 +146,7 @@ private fun TvShowContent(
 
         /*Genre*/
         item {
-            HorizontalList(
+            HorizontalLazyList(
                 items = tvShow.generes,
                 contentPadding = PaddingValues(
                     top = SectionVerticalSpacing,
@@ -277,10 +281,10 @@ private fun SimilarTvShowsSection(
             )
         },
         headerContentSpacing = SectionContentHeaderSpacing,
-        hideIf = tvShows.isNullOrEmpty(),
+        hideIf = tvShows.isEmpty(),
         modifier = modifier
     ) {
-        HorizontalList(items = tvShows) {
+        HorizontalLazyList(items = tvShows) {
             MediaItem(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,

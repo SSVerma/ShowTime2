@@ -5,7 +5,6 @@ import ScoreIndicator
 import ValueIndicator
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,12 +17,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.component.scrim
+import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.core.ui.layout.HorizontalLazyList
+import com.ssverma.core.ui.layout.Section
+import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.core.ui.layout.SectionLoadingIndicator
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.ui.AttributionFooter
 import com.ssverma.showtime.ui.GenreItem
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.DriveCompose
 import com.ssverma.showtime.ui.home.HomePageAppBar
 
 @Composable
@@ -163,7 +168,6 @@ private fun MovieContent(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MoviesSection(
     moviesState: MovieListUiState,
@@ -200,7 +204,7 @@ fun MoviesSection(
             ) { movies ->
 
                 shouldVisible = movies.isNotEmpty()
-                HorizontalList(items = movies) { content(it) }
+                HorizontalLazyList(items = movies) { content(it) }
             }
         }
     }
@@ -299,7 +303,7 @@ fun MovieGenres(
         loading = { SectionLoadingIndicator() },
         onRetry = onRetry
     ) { genres ->
-        HorizontalList(genres) {
+        HorizontalLazyList(genres) {
             GenreItem(
                 genre = it,
                 onGenreClicked = { onGenreClicked(it) }

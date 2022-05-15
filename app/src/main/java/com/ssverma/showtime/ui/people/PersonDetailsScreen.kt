@@ -29,6 +29,11 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
+import com.ssverma.core.ui.UiText
+import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.core.ui.layout.HorizontalLazyListIndexed
+import com.ssverma.shared.ui.component.Avatar
+import com.ssverma.shared.ui.component.BackdropNavigationAction
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.MediaType
 import com.ssverma.showtime.domain.model.Person
@@ -36,8 +41,7 @@ import com.ssverma.showtime.domain.model.PersonMedia
 import com.ssverma.showtime.domain.model.emptyImageShot
 import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.ImagePagerScreen
-import com.ssverma.showtime.ui.UiText
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.DriveCompose
 import com.ssverma.showtime.ui.movie.Highlights
 import com.ssverma.showtime.ui.movie.ImageShotItem
 import kotlinx.coroutines.launch
@@ -202,7 +206,7 @@ fun PersonContent(
         }
 
         item {
-            HorizontalListIndexed(
+            HorizontalLazyListIndexed(
                 items = remember { person.imageShots + listOf(emptyImageShot()) },
                 contentPadding = PaddingValues(
                     top = SectionSpacing,
@@ -269,7 +273,7 @@ private fun PersonMediaTabs(
     modifier: Modifier = Modifier,
     showAllMedia: Boolean = false,
 ) {
-    if (personMediaByType.isNullOrEmpty()) {
+    if (personMediaByType.isEmpty()) {
         return
     }
 

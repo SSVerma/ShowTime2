@@ -74,6 +74,8 @@ dependencies {
     implementation project(Modules.Core.networking)
     implementation project(Modules.Core.paging)//Fix it, should be inside api-service-tmdb only
     implementation project(Modules.ApiService.tmdb)
+    implementation project(Modules.Core.ui)
+    implementation project(Modules.Shared.ui)
 
     implementation Deps.core
     implementation Deps.appcompat

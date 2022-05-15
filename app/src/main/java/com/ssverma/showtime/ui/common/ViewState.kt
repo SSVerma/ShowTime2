@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.ui.FetchDataUiState
@@ -15,7 +16,7 @@ import com.ssverma.showtime.ui.FetchDataUiState
 @Composable
 fun DefaultLoadingIndicator(modifier: Modifier = Modifier) {
     return Box(modifier = modifier.fillMaxSize()) {
-        AppLoadingIndicator(modifier = Modifier.align(Alignment.Center))
+        ShowTimeLoadingIndicator(modifier = Modifier.align(Alignment.Center))
     }
 }
 

@@ -5,7 +5,6 @@ import ScoreIndicator
 import ValueIndicator
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
@@ -13,11 +12,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.layout.HorizontalLazyList
+import com.ssverma.core.ui.layout.Section
+import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.core.ui.layout.SectionLoadingIndicator
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.ui.GenreItem
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.DriveCompose
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.movie.GenresUiState
 
@@ -219,7 +222,6 @@ private fun TvShowContent(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun TvShowsSection(
     tvShowsUiState: TvShowListUiState,
@@ -256,7 +258,7 @@ fun TvShowsSection(
             ) { tvShows ->
 
                 shouldVisible = tvShows.isNotEmpty()
-                HorizontalList(items = tvShows) { content(it) }
+                HorizontalLazyList(items = tvShows) { content(it) }
             }
         }
     }
@@ -273,7 +275,7 @@ fun TvShowGenres(
         loading = { SectionLoadingIndicator() },
         onRetry = onRetry
     ) { genres ->
-        HorizontalList(genres) {
+        HorizontalLazyList(genres) {
             GenreItem(
                 genre = it,
                 onGenreClicked = { onGenreClicked(it) }

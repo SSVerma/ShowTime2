@@ -3,6 +3,7 @@ package com.ssverma.showtime.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -14,9 +15,9 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
-import com.ssverma.showtime.R
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.movie.ImageShotItem
 
 @Composable
@@ -30,10 +31,10 @@ fun ImagePagerScreen(
             .systemBarsPadding()
             .background(color = MaterialTheme.colors.background)
     ) {
-        AppTopAppBar(
+        ShowTimeTopAppBar(
             title = "",
             onBackPressed = onBackPressed,
-            navIconRes = R.drawable.ic_close,
+            navIcon = AppIcons.Close,
             elevation = 0.dp,
         )
         ImagePager(

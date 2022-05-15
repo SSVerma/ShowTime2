@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.movie.ImageShotItem
 
 @Composable
@@ -26,7 +26,7 @@ fun ImageShotsListScreen(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.statusBarsPadding()) {
-        AppTopAppBar(
+        ShowTimeTopAppBar(
             title = stringResource(id = R.string.shots),
             onBackPressed = onBackPressed
         )

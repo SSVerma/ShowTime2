@@ -1,13 +1,13 @@
 package com.ssverma.showtime.ui.filter
 
+import com.ssverma.core.ui.MultiSelectableState
+import com.ssverma.core.ui.SingleSelectableState
+import com.ssverma.core.ui.UiText
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.DiscoverOption
 import com.ssverma.showtime.domain.DynamicFilterItem
 import com.ssverma.showtime.domain.Filter
 import com.ssverma.showtime.domain.FilterId
-import com.ssverma.showtime.ui.UiText
-import com.ssverma.showtime.ui.common.MultiSelectableState
-import com.ssverma.showtime.ui.common.SingleSelectableState
 import java.time.LocalDate
 
 data class FilterUiState(

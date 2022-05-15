@@ -1,4 +1,4 @@
-package com.ssverma.showtime.ui.common
+package com.ssverma.core.ui
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box

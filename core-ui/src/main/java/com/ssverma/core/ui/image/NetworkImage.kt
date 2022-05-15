@@ -1,4 +1,4 @@
-package com.ssverma.showtime.ui.common
+package com.ssverma.core.ui.image
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,7 +21,7 @@ fun NetworkImage(
     contentScale: ContentScale = ContentScale.Fit,
     placeholder: @Composable () -> Unit = { DefaultImagePlaceHolder(modifier) },
     enableCrossFade: Boolean = true,
-    crossFadeDurationMillis: Int = 750
+    crossFadeDurationMillis: Int = NetworkImageDefaults.CrossFadeDurationMs
 ) {
     val painter = rememberImagePainter(
         data = url,
@@ -60,6 +60,15 @@ fun DefaultImagePlaceHolder(modifier: Modifier = Modifier) {
     Spacer(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.32f))
+            .background(
+                MaterialTheme.colors.onSurface.copy(
+                    alpha = NetworkImageDefaults.PlaceHolderAlpha
+                )
+            )
     )
+}
+
+object NetworkImageDefaults {
+    const val CrossFadeDurationMs = 750
+    const val PlaceHolderAlpha = 0.32f
 }

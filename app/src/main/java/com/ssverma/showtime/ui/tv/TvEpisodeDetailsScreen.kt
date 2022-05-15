@@ -13,9 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.shared.ui.component.BackdropNavigationAction
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvEpisode
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.DriveCompose
+import com.ssverma.showtime.ui.common.ImageShotBottomSheet
+import com.ssverma.showtime.ui.common.SheetContentType
 import com.ssverma.showtime.ui.highlightedItems
 import com.ssverma.showtime.ui.movie.CreditSection
 import com.ssverma.showtime.ui.movie.Highlights

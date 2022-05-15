@@ -5,7 +5,6 @@ import TmdbBackdropAspectRatio
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,6 +29,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.ssverma.core.ui.component.scrim
+import com.ssverma.core.ui.foundation.Emphasize
+import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.core.ui.layout.*
+import com.ssverma.shared.ui.component.Avatar
+import com.ssverma.shared.ui.component.BackdropNavigationAction
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.domain.model.movie.Movie
@@ -37,7 +43,7 @@ import com.ssverma.showtime.extension.placeholderIfNullOrEmpty
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.TagItem
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.DriveCompose
 import com.ssverma.showtime.ui.highlightedItems
 
 @Composable
@@ -159,7 +165,7 @@ fun MovieContent(
 
         /*Genre*/
         item {
-            HorizontalList(
+            HorizontalLazyList(
                 items = movie.generes,
                 contentPadding = PaddingValues(
                     top = SectionVerticalSpacing,
@@ -394,8 +400,7 @@ fun OverviewSection(
     Section(
         sectionHeader = {
             SectionHeader(
-                title = stringResource(id = R.string.overview),
-                hideTrailingAction = true
+                title = stringResource(id = R.string.overview)
             )
         },
         hideIf = overview.isEmpty(),
@@ -415,7 +420,6 @@ fun OverviewSection(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Highlights(
     highlights: List<Highlight>,
@@ -466,7 +470,6 @@ fun HighlightItem(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun ImageShotsSection(
     imageShots: List<ImageShot>,
@@ -553,7 +556,7 @@ fun VideoShotsSection(
         headerContentSpacing = SectionContentHeaderSpacing,
         modifier = modifier
     ) {
-        HorizontalList(items = videos) {
+        HorizontalLazyList(items = videos) {
             VideoItem(
                 video = it,
                 onVideoClick = {
@@ -755,10 +758,10 @@ fun CreditSection(
             )
         },
         headerContentSpacing = SectionContentHeaderSpacing,
-        hideIf = casts.isNullOrEmpty(),
+        hideIf = casts.isEmpty(),
         modifier = modifier
     ) {
-        HorizontalList(items = casts) {
+        HorizontalLazyList(items = casts) {
             CastItem(
                 cast = it,
                 onClick = {
@@ -809,7 +812,8 @@ fun RelevantMoviesSection(
     openMovieDetails: (movieId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Section(
+    HorizontalLazyListSection(
+        items = movies,
         sectionHeader = {
             SectionHeader(
                 title = stringResource(id = sectionTitleRes),
@@ -817,11 +821,7 @@ fun RelevantMoviesSection(
                 hideTrailingAction = true
             )
         },
-        headerContentSpacing = SectionContentHeaderSpacing,
-        hideIf = movies.isNullOrEmpty(),
-        modifier = modifier
-    ) {
-        HorizontalList(items = movies) {
+        itemContent = {
             MediaItem(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
@@ -830,8 +830,10 @@ fun RelevantMoviesSection(
                     openMovieDetails(it.id)
                 }
             )
-        }
-    }
+        },
+        hideIf = movies.isEmpty(),
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -841,7 +843,8 @@ fun TagsSection(
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int = R.string.tags,
 ) {
-    Section(
+    HorizontalLazyListSection(
+        items = keywords,
         sectionHeader = {
             SectionHeader(
                 title = stringResource(id = titleRes),
@@ -849,16 +852,14 @@ fun TagsSection(
                 hideTrailingAction = true
             )
         },
-        headerContentSpacing = SectionContentHeaderSpacing,
-        hideIf = keywords.isNullOrEmpty(),
-        modifier = modifier
-    ) {
-        HorizontalList(items = keywords) {
+        hideIf = keywords.isEmpty(),
+        itemContent = {
             TagItem(keyword = it) {
                 onClick(it)
             }
-        }
-    }
+        },
+        modifier = modifier,
+    )
 }
 
 val ActionSize = 40.dp

@@ -1,4 +1,5 @@
 import com.ssverma.Deps
+import com.ssverma.Modules
 import com.ssverma.Versions
 
 plugins {
@@ -40,6 +41,8 @@ android {
 }
 
 dependencies {
+
+    implementation project(Modules.Core.ui)
 
     implementation Deps.Compose.ui
     implementation Deps.Compose.material

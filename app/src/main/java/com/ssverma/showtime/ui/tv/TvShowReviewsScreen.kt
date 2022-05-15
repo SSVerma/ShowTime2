@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.ReviewsList
-import com.ssverma.showtime.ui.common.AppTopAppBar
 
 @Composable
 fun TvShowReviewsScreen(
@@ -20,7 +20,10 @@ fun TvShowReviewsScreen(
     Column(
         modifier = Modifier.systemBarsPadding()
     ) {
-        AppTopAppBar(title = stringResource(id = R.string.reviews), onBackPressed = onBackPress)
+        ShowTimeTopAppBar(
+            title = stringResource(id = R.string.reviews),
+            onBackPressed = onBackPress
+        )
         ReviewsList(reviewItems = reviewPagingItems)
     }
 }

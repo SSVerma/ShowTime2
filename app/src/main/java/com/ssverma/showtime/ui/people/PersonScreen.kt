@@ -3,7 +3,6 @@ package com.ssverma.showtime.ui.people
 import MediaItem
 import TmdbPosterAspectRatio
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,13 +22,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.ui.UiText
+import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.Gender
 import com.ssverma.showtime.domain.model.MediaType
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.PersonMedia
-import com.ssverma.showtime.ui.UiText
-import com.ssverma.showtime.ui.common.*
+import com.ssverma.showtime.ui.common.PagedContent
+import com.ssverma.showtime.ui.common.PagedListIndexed
 import com.ssverma.showtime.ui.home.HomePageAppBar
 
 @Composable
@@ -83,7 +86,6 @@ fun PersonScreen(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun PersonItem(
     person: Person,
@@ -181,7 +183,7 @@ private fun PersonItem(
                     .padding(vertical = 16.dp)
             ) {
                 person.popularMedia?.let {
-                    HorizontalList(items = it) { media ->
+                    HorizontalLazyList(items = it) { media ->
                         MediaItem(
                             title = media.title,
                             posterImageUrl = media.posterImageUrl,

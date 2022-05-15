@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,9 +15,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.ui.common.AppTopAppBar
 import com.ssverma.showtime.ui.common.PagedContent
 import com.ssverma.showtime.ui.common.PagedGrid
 import com.ssverma.showtime.ui.movie.ImageShotItem
@@ -47,14 +49,14 @@ fun PersonImageShotsScreen(
             }
 
             Column(Modifier.statusBarsPadding()) {
-                AppTopAppBar(
+                ShowTimeTopAppBar(
                     title = "",
                     onBackPressed = {
                         coroutineScope.launch {
                             bottomSheetScaffoldState.bottomSheetState.collapse()
                         }
                     },
-                    navIconRes = R.drawable.ic_expand_more,
+                    navIcon = AppIcons.KeyboardArrowDown,
                     elevation = 0.dp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -75,7 +77,7 @@ fun PersonImageShotsScreen(
                 .padding(it)
                 .statusBarsPadding()
         ) {
-            AppTopAppBar(
+            ShowTimeTopAppBar(
                 title = stringResource(id = R.string.tagged_images),
                 onBackPressed = onBackPressed
             )

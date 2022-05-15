@@ -19,10 +19,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.showtime.R
 import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.navigation.StandaloneDestination
-import com.ssverma.showtime.ui.common.AppIcons
 
 sealed class HomeBottomNavItem(
     val linkedDestination: StandaloneDestination,

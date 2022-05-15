@@ -1,4 +1,4 @@
-package com.ssverma.showtime.ui.theme
+package com.ssverma.core.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
@@ -7,7 +7,7 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import com.ssverma.showtime.R
+import com.ssverma.core.ui.R
 
 private val DarkColorPalette = darkColors(
     primary = darkGreen200,
@@ -33,9 +33,9 @@ private val LightColorPalette = lightColors(
     onSurface = gray900,
 )
 
-private val LightImages = Images(errorIllustration = R.drawable.illustration_error_light)
+private val LightImages = Images(errorIllustrationResId = R.drawable.illustration_error_light)
 
-private val DarkImages = Images(errorIllustration = R.drawable.illustration_error_dark)
+private val DarkImages = Images(errorIllustrationResId = R.drawable.illustration_error_dark)
 
 @Composable
 fun ShowTimeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {

@@ -16,11 +16,11 @@ import androidx.navigation.NavGraph
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.showtime.navigation.ShowTimeNavHost
 import com.ssverma.showtime.navigation.navigateTo
 import com.ssverma.showtime.ui.home.HomeBottomNavItem
 import com.ssverma.showtime.ui.home.homeBottomNavItems
-import com.ssverma.showtime.ui.theme.ShowTimeTheme
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
