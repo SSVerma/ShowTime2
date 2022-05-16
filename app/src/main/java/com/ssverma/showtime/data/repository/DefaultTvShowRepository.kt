@@ -8,12 +8,12 @@ import com.ssverma.api.service.tmdb.paging.ReviewsPagingSource
 import com.ssverma.api.service.tmdb.paging.TvShowsPagingSource
 import com.ssverma.api.service.tmdb.response.*
 import com.ssverma.api.service.tmdb.utils.TmdbFirstPageNumber
+import com.ssverma.core.domain.failure.Failure
 import com.ssverma.showtime.data.mapper.*
 import com.ssverma.showtime.data.remote.TvShowRemoteDataSource
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.TvDiscoverConfig
-import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.tv.TvEpisodeFailure
 import com.ssverma.showtime.domain.failure.tv.TvSeasonFailure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
@@ -88,7 +88,7 @@ class DefaultTvShowRepository @Inject constructor(
         ).flow
     }
 
-    override suspend fun fetchTopRatedTvShows(): DomainResult<List<TvShow>, Failure<TvShowFailure>> {
+    override suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>> {
         val apiResponse = tvShowRemoteDataSource.fetchTopRatedTvShows(page = TmdbFirstPageNumber)
 
         return apiResponse.asDomainResult(
@@ -100,7 +100,7 @@ class DefaultTvShowRepository @Inject constructor(
 
     override suspend fun fetchTrendingTvShows(
         timeWindow: TimeWindow
-    ): DomainResult<List<TvShow>, Failure<TvShowFailure>> {
+    ): Result<List<TvShow>, Failure<TvShowFailure>> {
         val apiResponse = tvShowRemoteDataSource.fetchTrendingTvShows(
             timeWindow = timeWindow.asTmdbQueryValue(),
             page = TmdbFirstPageNumber
@@ -115,7 +115,7 @@ class DefaultTvShowRepository @Inject constructor(
 
     override suspend fun discoverTvShows(
         discoverConfig: TvDiscoverConfig
-    ): DomainResult<List<TvShow>, Failure<TvShowFailure>> {
+    ): Result<List<TvShow>, Failure<TvShowFailure>> {
         val apiResponse = tvShowRemoteDataSource.discoverTvShows(
             queryMap = discoverConfig.asQueryMap(),
             page = TmdbFirstPageNumber
@@ -128,7 +128,7 @@ class DefaultTvShowRepository @Inject constructor(
         )
     }
 
-    override suspend fun fetchTvShowGenre(): DomainResult<List<Genre>, Failure.CoreFailure> {
+    override suspend fun fetchTvShowGenre(): Result<List<Genre>, Failure.CoreFailure> {
         val apiResponse = tvShowRemoteDataSource.fetchTvShowGenre()
 
         return apiResponse.asDomainResult(
@@ -159,7 +159,7 @@ class DefaultTvShowRepository @Inject constructor(
 
     override suspend fun fetchTvShowDetails(
         detailsConfig: TvShowDetailsConfig
-    ): DomainResult<TvShow, Failure<TvShowFailure>> {
+    ): Result<TvShow, Failure<TvShowFailure>> {
         val apiResponse = tvShowRemoteDataSource.fetchTvShowDetails(
             tvShowId = detailsConfig.tvShowId,
             queryMap = detailsConfig.appendable.asQueryMap()
@@ -174,7 +174,7 @@ class DefaultTvShowRepository @Inject constructor(
 
     override suspend fun fetchTvSeasonDetails(
         seasonConfig: TvSeasonConfig
-    ): DomainResult<TvSeason, Failure<TvSeasonFailure>> {
+    ): Result<TvSeason, Failure<TvSeasonFailure>> {
         val apiResponse = tvShowRemoteDataSource.fetchTvSeasonDetails(
             tvShowId = seasonConfig.tvShowId,
             seasonNumber = seasonConfig.seasonNumber,
@@ -190,7 +190,7 @@ class DefaultTvShowRepository @Inject constructor(
 
     override suspend fun fetchTvEpisodeDetails(
         tvEpisodeConfig: TvEpisodeConfig
-    ): DomainResult<TvEpisode, Failure<TvEpisodeFailure>> {
+    ): Result<TvEpisode, Failure<TvEpisodeFailure>> {
         val apiResponse = tvShowRemoteDataSource.fetchTvEpisodeDetails(
             tvShowId = tvEpisodeConfig.tvShowId,
             seasonNumber = tvEpisodeConfig.seasonNumber,

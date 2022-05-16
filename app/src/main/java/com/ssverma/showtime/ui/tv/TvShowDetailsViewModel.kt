@@ -8,14 +8,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.model.tv.TvShowDetailsConfig
 import com.ssverma.showtime.domain.model.tv.imageShots
 import com.ssverma.showtime.domain.usecase.tv.TvShowDetailsUseCase
 import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.ui.FetchDataUiState
+import com.ssverma.core.ui.UiState
 import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +34,7 @@ class TvShowDetailsViewModel @Inject constructor(
     private val _imageShots = mutableStateOf<List<ImageShot>>(emptyList())
     val imageShots: State<List<ImageShot>> get() = _imageShots
 
-    var tvShowDetailsUiState by mutableStateOf<TvShowDetailsUiState>(FetchDataUiState.Idle)
+    var tvShowDetailsUiState by mutableStateOf<TvShowDetailsUiState>(UiState.Idle)
         private set
 
     init {
@@ -42,19 +42,19 @@ class TvShowDetailsViewModel @Inject constructor(
     }
 
     fun fetchTvShowDetails(coroutineScope: CoroutineScope = viewModelScope) {
-        tvShowDetailsUiState = FetchDataUiState.Loading
+        tvShowDetailsUiState = UiState.Loading
 
         val config = TvShowDetailsConfig(tvShowId = tvShowId)
 
         coroutineScope.launch {
             val result = tvShowDetailsUseCase(config)
             tvShowDetailsUiState = when (result) {
-                is DomainResult.Error -> {
-                    FetchDataUiState.Error(result.error)
+                is Result.Error -> {
+                    UiState.Error(result.error)
                 }
-                is DomainResult.Success -> {
+                is Result.Success -> {
                     _imageShots.value = result.data.imageShots()
-                    FetchDataUiState.Success(result.data)
+                    UiState.Success(result.data)
                 }
             }
         }

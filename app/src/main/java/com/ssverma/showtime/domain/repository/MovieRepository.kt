@@ -1,10 +1,10 @@
 package com.ssverma.showtime.domain.repository
 
 import androidx.paging.PagingData
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.failure.Failure
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.TimeWindow
-import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.movie.MovieFailure
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Review
@@ -37,26 +37,26 @@ interface MovieRepository {
      * wheres [fetchTopRatedMoviesGradually] can be used to fetch all available top rated movies
      * in paginated form.
      */
-    suspend fun fetchTopRatedMovies(): DomainResult<List<Movie>, Failure<MovieFailure>>
+    suspend fun fetchTopRatedMovies(): Result<List<Movie>, Failure<MovieFailure>>
 
     /**
      * Fetch first collection of trending movies based on the given [TimeWindow].
      */
     suspend fun fetchTrendingMovies(
         timeWindow: TimeWindow
-    ): DomainResult<List<Movie>, Failure<MovieFailure>>
+    ): Result<List<Movie>, Failure<MovieFailure>>
 
     /**
      * Allows to find movies based on various query params.
      */
     suspend fun discoverMovies(
         discoverConfig: MovieDiscoverConfig
-    ): DomainResult<List<Movie>, Failure<MovieFailure>>
+    ): Result<List<Movie>, Failure<MovieFailure>>
 
     /**
      * Fetch all movie genres.
      */
-    suspend fun fetchMovieGenre(): DomainResult<List<Genre>, Failure.CoreFailure>
+    suspend fun fetchMovieGenre(): Result<List<Genre>, Failure.CoreFailure>
 
     /**
      * Fetch all the movie reviews by given @param[movieId]
@@ -70,5 +70,5 @@ interface MovieRepository {
      */
     suspend fun fetchMovieDetails(
         movieDetailsConfig: MovieDetailsConfig
-    ): DomainResult<Movie, Failure<MovieFailure>>
+    ): Result<Movie, Failure<MovieFailure>>
 }

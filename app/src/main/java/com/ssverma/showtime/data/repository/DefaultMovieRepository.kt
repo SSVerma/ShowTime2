@@ -11,12 +11,12 @@ import com.ssverma.api.service.tmdb.response.RemoteGenre
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.api.service.tmdb.utils.TmdbFirstPageNumber
+import com.ssverma.core.domain.Result
+import com.ssverma.core.domain.failure.Failure
 import com.ssverma.showtime.data.mapper.*
 import com.ssverma.showtime.data.remote.MovieRemoteDataSource
-import com.ssverma.showtime.domain.DomainResult
 import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.TimeWindow
-import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.movie.MovieFailure
 import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.Review
@@ -85,7 +85,7 @@ class DefaultMovieRepository @Inject constructor(
         ).flow
     }
 
-    override suspend fun fetchTopRatedMovies(): DomainResult<List<Movie>, Failure<MovieFailure>> {
+    override suspend fun fetchTopRatedMovies(): Result<List<Movie>, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.fetchTopRatedMovies(page = TmdbFirstPageNumber)
 
         return apiResponse.asDomainResult(
@@ -95,7 +95,7 @@ class DefaultMovieRepository @Inject constructor(
         )
     }
 
-    override suspend fun fetchTrendingMovies(timeWindow: TimeWindow): DomainResult<List<Movie>, Failure<MovieFailure>> {
+    override suspend fun fetchTrendingMovies(timeWindow: TimeWindow): Result<List<Movie>, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.fetchTrendingMovies(
             timeWindow = TmdbApiTiedConstants.AvailableTimeWindows.DAY,
             page = TmdbFirstPageNumber
@@ -108,7 +108,7 @@ class DefaultMovieRepository @Inject constructor(
         )
     }
 
-    override suspend fun discoverMovies(discoverConfig: MovieDiscoverConfig): DomainResult<List<Movie>, Failure<MovieFailure>> {
+    override suspend fun discoverMovies(discoverConfig: MovieDiscoverConfig): Result<List<Movie>, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.discoverMovies(
             queryMap = discoverConfig.asQueryMap(),
             page = TmdbFirstPageNumber
@@ -121,7 +121,7 @@ class DefaultMovieRepository @Inject constructor(
         )
     }
 
-    override suspend fun fetchMovieGenre(): DomainResult<List<Genre>, Failure.CoreFailure> {
+    override suspend fun fetchMovieGenre(): Result<List<Genre>, Failure.CoreFailure> {
         val apiResponse = movieRemoteDataSource.fetchMovieGenre()
 
         return apiResponse.asDomainResult(
@@ -150,7 +150,7 @@ class DefaultMovieRepository @Inject constructor(
 
     override suspend fun fetchMovieDetails(
         movieDetailsConfig: MovieDetailsConfig
-    ): DomainResult<Movie, Failure<MovieFailure>> {
+    ): Result<Movie, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.fetchMovieDetails(
             movieId = movieDetailsConfig.movieId,
             queryMap = movieDetailsConfig.appendable.asQueryMap()

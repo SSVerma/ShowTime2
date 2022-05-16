@@ -1,10 +1,10 @@
 package com.ssverma.showtime.domain.repository
 
 import androidx.paging.PagingData
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.failure.Failure
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.TvDiscoverConfig
-import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.tv.TvEpisodeFailure
 import com.ssverma.showtime.domain.failure.tv.TvSeasonFailure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
@@ -38,26 +38,26 @@ interface TvShowRepository {
      * wheres [fetchTopRatedTvShowsGradually] can be used to fetch all available top rated tv shows
      * in paginated form.
      */
-    suspend fun fetchTopRatedTvShows(): DomainResult<List<TvShow>, Failure<TvShowFailure>>
+    suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>>
 
     /**
      * Fetch first collection of trending tv shows based on the given [TimeWindow].
      */
     suspend fun fetchTrendingTvShows(
         timeWindow: TimeWindow
-    ): DomainResult<List<TvShow>, Failure<TvShowFailure>>
+    ): Result<List<TvShow>, Failure<TvShowFailure>>
 
     /**
      * Allows to find tv shows based on various query params.
      */
     suspend fun discoverTvShows(
         discoverConfig: TvDiscoverConfig
-    ): DomainResult<List<TvShow>, Failure<TvShowFailure>>
+    ): Result<List<TvShow>, Failure<TvShowFailure>>
 
     /**
      * Fetch all tv shows genres.
      */
-    suspend fun fetchTvShowGenre(): DomainResult<List<Genre>, Failure.CoreFailure>
+    suspend fun fetchTvShowGenre(): Result<List<Genre>, Failure.CoreFailure>
 
     /**
      * Fetch all the tv show reviews by the given [tvShowId]
@@ -71,19 +71,19 @@ interface TvShowRepository {
      */
     suspend fun fetchTvShowDetails(
         detailsConfig: TvShowDetailsConfig
-    ): DomainResult<TvShow, Failure<TvShowFailure>>
+    ): Result<TvShow, Failure<TvShowFailure>>
 
     /**
      * Fetch details of a particular tv season.
      */
     suspend fun fetchTvSeasonDetails(
         seasonConfig: TvSeasonConfig
-    ): DomainResult<TvSeason, Failure<TvSeasonFailure>>
+    ): Result<TvSeason, Failure<TvSeasonFailure>>
 
     /**
      * Fetch details of a particular tv episode.
      */
     suspend fun fetchTvEpisodeDetails(
         tvEpisodeConfig: TvEpisodeConfig
-    ): DomainResult<TvEpisode, Failure<TvEpisodeFailure>>
+    ): Result<TvEpisode, Failure<TvEpisodeFailure>>
 }

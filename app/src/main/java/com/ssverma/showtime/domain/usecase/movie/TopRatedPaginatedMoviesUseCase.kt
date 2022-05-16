@@ -1,10 +1,10 @@
 package com.ssverma.showtime.domain.usecase.movie
 
 import androidx.paging.PagingData
+import com.ssverma.core.domain.usecase.NoParamFlowUseCase
 import com.ssverma.showtime.di.DefaultDispatcher
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.repository.MovieRepository
-import com.ssverma.showtime.domain.usecase.NoParamFlowUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

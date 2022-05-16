@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.TvDiscoverConfig
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.model.tv.TvShowListingConfig
@@ -77,10 +77,10 @@ class TvShowListListViewModel @Inject constructor(
         viewModelScope.launch {
             discoverOptionResult.collect { result ->
                 filterUiState = when (result) {
-                    is DomainResult.Error -> {
+                    is Result.Error -> {
                         FilterUiState(filters = emptyList())
                     }
-                    is DomainResult.Success -> {
+                    is Result.Success -> {
                         FilterUiState(
                             filters = result.data.asUiFilters()
                         )

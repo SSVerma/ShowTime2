@@ -76,6 +76,7 @@ dependencies {
     implementation project(Modules.ApiService.tmdb)
     implementation project(Modules.Core.ui)
     implementation project(Modules.Shared.ui)
+    implementation project(Modules.Core.domain)
 
     implementation Deps.core
     implementation Deps.appcompat

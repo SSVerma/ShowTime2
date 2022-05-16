@@ -3,11 +3,11 @@ package com.ssverma.showtime.ui.tv
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.model.tv.TvSeasonConfig
 import com.ssverma.showtime.domain.usecase.tv.TvSeasonUseCase
 import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.ui.FetchDataUiState
+import com.ssverma.core.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +27,7 @@ class TvSeasonDetailsViewModel @Inject constructor(
     private val seasonNumber = savedStateHandle
         .get<Int>(AppDestination.TvSeasonDetails.ArgTvSeasonNumber) ?: 0
 
-    private val _observableSeason = MutableStateFlow<TvSeasonUiState>(FetchDataUiState.Idle)
+    private val _observableSeason = MutableStateFlow<TvSeasonUiState>(UiState.Idle)
     val observableTvSeason = _observableSeason.asStateFlow()
 
     init {
@@ -35,7 +35,7 @@ class TvSeasonDetailsViewModel @Inject constructor(
     }
 
     fun fetchTvSeason(coroutineScope: CoroutineScope = viewModelScope) {
-        _observableSeason.update { FetchDataUiState.Loading }
+        _observableSeason.update { UiState.Loading }
 
         coroutineScope.launch {
             val tvSeasonConfig = TvSeasonConfig(
@@ -47,11 +47,11 @@ class TvSeasonDetailsViewModel @Inject constructor(
 
             _observableSeason.update {
                 when (result) {
-                    is DomainResult.Error -> {
-                        FetchDataUiState.Error(result.error)
+                    is Result.Error -> {
+                        UiState.Error(result.error)
                     }
-                    is DomainResult.Success -> {
-                        FetchDataUiState.Success(result.data)
+                    is Result.Success -> {
+                        UiState.Success(result.data)
                     }
                 }
             }

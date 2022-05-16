@@ -5,7 +5,7 @@ import com.ssverma.showtime.di.DefaultDispatcher
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.repository.MovieRepository
-import com.ssverma.showtime.domain.usecase.FlowUseCase
+import com.ssverma.core.domain.usecase.FlowUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

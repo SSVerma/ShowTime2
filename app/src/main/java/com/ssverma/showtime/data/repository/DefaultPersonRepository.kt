@@ -8,13 +8,13 @@ import com.ssverma.api.service.tmdb.paging.ImagePagingSource
 import com.ssverma.api.service.tmdb.paging.PersonPagingSource
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
+import com.ssverma.core.domain.Result
+import com.ssverma.core.domain.failure.Failure
 import com.ssverma.showtime.data.mapper.ListMapper
 import com.ssverma.showtime.data.mapper.Mapper
 import com.ssverma.showtime.data.mapper.asDomainResult
 import com.ssverma.showtime.data.mapper.asQueryMap
 import com.ssverma.showtime.data.remote.PersonRemoteDataSource
-import com.ssverma.showtime.domain.DomainResult
-import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.person.PersonFailure
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.Person
@@ -32,7 +32,7 @@ class DefaultPersonRepository @Inject constructor(
 
     override suspend fun fetchPersonDetails(
         personDetailsConfig: PersonDetailsConfig
-    ): DomainResult<Person, Failure<PersonFailure>> {
+    ): Result<Person, Failure<PersonFailure>> {
         val apiResponse = personRemoteDataSource.fetchPersonDetails(
             personId = personDetailsConfig.personId,
             queryMap = personDetailsConfig.appendable.asQueryMap()

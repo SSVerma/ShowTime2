@@ -1,9 +1,13 @@
 package com.ssverma.showtime.ui.filter
 
+import com.ssverma.core.domain.Result
+import com.ssverma.core.domain.failure.Failure
+import com.ssverma.core.domain.usecase.NoParamFlowUseCase
 import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.*
-import com.ssverma.showtime.domain.failure.Failure
-import com.ssverma.showtime.domain.usecase.NoParamFlowUseCase
+import com.ssverma.showtime.domain.DiscoverOption
+import com.ssverma.showtime.domain.Filter
+import com.ssverma.showtime.domain.FilterId
+import com.ssverma.showtime.domain.StaticFilterItem
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -11,10 +15,10 @@ import javax.inject.Inject
 
 class MovieFilterUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher
-) : NoParamFlowUseCase<DomainResult<List<Filter>, Failure.CoreFailure>>(
+) : NoParamFlowUseCase<Result<List<Filter>, Failure.CoreFailure>>(
     coroutineDispatcher
 ) {
-    override fun execute(): Flow<DomainResult<List<Filter>, Failure.CoreFailure>> {
+    override fun execute(): Flow<Result<List<Filter>, Failure.CoreFailure>> {
         val result = mutableListOf<Filter>()
 
         val staticFilters = prepareStaticFilters()
@@ -29,7 +33,7 @@ class MovieFilterUseCase @Inject constructor(
         result.add(ratingFilter)
 
         return flow {
-            emit(DomainResult.Success(data = result))
+            emit(Result.Success(data = result))
         }
     }
 

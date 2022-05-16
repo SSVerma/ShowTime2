@@ -5,15 +5,17 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.*
-import com.ssverma.showtime.domain.DomainResult
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
 import com.ssverma.showtime.domain.model.movie.imageShots
 import com.ssverma.showtime.domain.usecase.movie.MovieDetailsUseCase
 import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.ui.FetchDataUiState
+import com.ssverma.core.ui.UiState
 import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +34,7 @@ class MovieDetailsViewModel @Inject constructor(
     private val _imageShots = mutableStateOf<List<ImageShot>>(emptyList())
     val imageShots: State<List<ImageShot>> get() = _imageShots
 
-    var movieDetailsUiState by mutableStateOf<MovieDetailsUiState>(FetchDataUiState.Idle)
+    var movieDetailsUiState by mutableStateOf<MovieDetailsUiState>(UiState.Idle)
         private set
 
     init {
@@ -40,19 +42,19 @@ class MovieDetailsViewModel @Inject constructor(
     }
 
     fun fetchMovieDetails(coroutineScope: CoroutineScope = viewModelScope) {
-        movieDetailsUiState = FetchDataUiState.Loading
+        movieDetailsUiState = UiState.Loading
 
         val config = MovieDetailsConfig(movieId = movieId)
 
         coroutineScope.launch {
             val result = movieDetailsUseCase(config)
             movieDetailsUiState = when (result) {
-                is DomainResult.Error -> {
-                    FetchDataUiState.Error(result.error)
+                is Result.Error -> {
+                    UiState.Error(result.error)
                 }
-                is DomainResult.Success -> {
+                is Result.Success -> {
                     _imageShots.value = result.data.imageShots()
-                    FetchDataUiState.Success(result.data)
+                    UiState.Success(result.data)
                 }
             }
         }

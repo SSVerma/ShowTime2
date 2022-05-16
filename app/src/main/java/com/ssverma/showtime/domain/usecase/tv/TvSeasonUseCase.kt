@@ -1,22 +1,22 @@
 package com.ssverma.showtime.domain.usecase.tv
 
+import com.ssverma.core.domain.failure.Failure
 import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.DomainResult
-import com.ssverma.showtime.domain.failure.Failure
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.failure.tv.TvSeasonFailure
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvSeasonConfig
 import com.ssverma.showtime.domain.repository.TvShowRepository
-import com.ssverma.showtime.domain.usecase.UseCase
+import com.ssverma.core.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
 class TvSeasonUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val tvShowRepository: TvShowRepository
-) : UseCase<TvSeasonConfig, DomainResult<TvSeason, Failure<TvSeasonFailure>>>(coroutineDispatcher) {
+) : UseCase<TvSeasonConfig, Result<TvSeason, Failure<TvSeasonFailure>>>(coroutineDispatcher) {
 
-    override suspend fun execute(params: TvSeasonConfig): DomainResult<TvSeason, Failure<TvSeasonFailure>> {
+    override suspend fun execute(params: TvSeasonConfig): Result<TvSeason, Failure<TvSeasonFailure>> {
         return tvShowRepository.fetchTvSeasonDetails(seasonConfig = params)
     }
 }

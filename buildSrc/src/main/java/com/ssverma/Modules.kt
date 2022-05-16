@@ -5,6 +5,7 @@ object Modules {
         const val networking = ":core-networking"
         const val paging = ":core-paging"
         const val ui = ":core-ui"
+        const val domain = ":core-domain"
     }
 
     object Shared {

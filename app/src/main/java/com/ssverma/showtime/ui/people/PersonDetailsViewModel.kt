@@ -7,12 +7,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.person.PersonDetailsConfig
 import com.ssverma.showtime.domain.usecase.person.PersonDetailsUseCase
 import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.ui.FetchDataUiState
+import com.ssverma.core.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -29,7 +29,7 @@ class PersonDetailsViewModel @Inject constructor(
     private val _imageShots = mutableStateOf<List<ImageShot>>(emptyList())
     val imageShots: State<List<ImageShot>> get() = _imageShots
 
-    var personDetailUiState by mutableStateOf<PersonDetailUiState>(FetchDataUiState.Idle)
+    var personDetailUiState by mutableStateOf<PersonDetailUiState>(UiState.Idle)
         private set
 
     init {
@@ -37,19 +37,19 @@ class PersonDetailsViewModel @Inject constructor(
     }
 
     fun fetchPersonDetails(coroutineScope: CoroutineScope = viewModelScope) {
-        personDetailUiState = FetchDataUiState.Loading
+        personDetailUiState = UiState.Loading
 
         coroutineScope.launch {
             val personDetailsConfig = PersonDetailsConfig(personId = personId)
             val result = personDetailsUseCase(personDetailsConfig)
 
             personDetailUiState = when (result) {
-                is DomainResult.Error -> {
-                    FetchDataUiState.Error(result.error)
+                is Result.Error -> {
+                    UiState.Error(result.error)
                 }
-                is DomainResult.Success -> {
+                is Result.Success -> {
                     _imageShots.value = result.data.imageShots
-                    FetchDataUiState.Success(result.data)
+                    UiState.Success(result.data)
                 }
             }
         }

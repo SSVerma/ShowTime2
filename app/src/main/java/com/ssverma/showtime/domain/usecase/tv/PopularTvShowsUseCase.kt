@@ -1,22 +1,22 @@
 package com.ssverma.showtime.domain.usecase.tv
 
+import com.ssverma.core.domain.failure.Failure
 import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.defaults.tv.TvShowDefaults
-import com.ssverma.showtime.domain.failure.Failure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.repository.TvShowRepository
-import com.ssverma.showtime.domain.usecase.NoParamUseCase
+import com.ssverma.core.domain.usecase.NoParamUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
 class PopularTvShowsUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val tvShowRepository: TvShowRepository
-) : NoParamUseCase<DomainResult<List<TvShow>, Failure<TvShowFailure>>>(coroutineDispatcher) {
+) : NoParamUseCase<Result<List<TvShow>, Failure<TvShowFailure>>>(coroutineDispatcher) {
 
-    override suspend fun execute(): DomainResult<List<TvShow>, Failure<TvShowFailure>> {
+    override suspend fun execute(): Result<List<TvShow>, Failure<TvShowFailure>> {
         val tvShowConfig = TvShowDefaults.DiscoverDefaults.popular()
         return tvShowRepository.discoverTvShows(tvShowConfig)
     }

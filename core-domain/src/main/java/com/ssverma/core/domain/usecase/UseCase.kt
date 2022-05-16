@@ -1,4 +1,4 @@
-package com.ssverma.showtime.domain.usecase
+package com.ssverma.core.domain.usecase
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

@@ -8,10 +8,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.domain.failure.Failure
+import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.failure.Failure
-import com.ssverma.showtime.ui.FetchDataUiState
 
 @Composable
 fun DefaultLoadingIndicator(modifier: Modifier = Modifier) {
@@ -22,7 +22,7 @@ fun DefaultLoadingIndicator(modifier: Modifier = Modifier) {
 
 @Composable
 fun <S, FeatureFailure> DriveCompose(
-    uiState: FetchDataUiState<S, FeatureFailure>,
+    uiState: UiState<S, FeatureFailure>,
     loading: @Composable () -> Unit = { DefaultLoadingIndicator() },
     coreErrorContent: @Composable (error: Failure.CoreFailure) -> Unit = {
         DefaultCoreErrorView(error = it, onRetry = onRetry)
@@ -33,10 +33,10 @@ fun <S, FeatureFailure> DriveCompose(
     content: @Composable (data: S) -> Unit,
 ) {
     when (uiState) {
-        is FetchDataUiState.Idle -> {
+        is UiState.Idle -> {
             idleContent()
         }
-        is FetchDataUiState.Error -> {
+        is UiState.Error -> {
             when (val errorResult = uiState.failure) {
                 Failure.CoreFailure.NetworkFailure,
                 Failure.CoreFailure.ServiceFailure,
@@ -48,10 +48,10 @@ fun <S, FeatureFailure> DriveCompose(
                 }
             }
         }
-        FetchDataUiState.Loading -> {
+        UiState.Loading -> {
             loading()
         }
-        is FetchDataUiState.Success -> {
+        is UiState.Success -> {
             content(uiState.data)
         }
     }

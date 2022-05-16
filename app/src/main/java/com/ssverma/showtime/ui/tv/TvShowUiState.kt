@@ -6,12 +6,12 @@ import com.ssverma.showtime.domain.failure.tv.TvShowFailure
 import com.ssverma.showtime.domain.model.tv.TvEpisode
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.showtime.ui.FetchDataUiState
+import com.ssverma.core.ui.UiState
 
-typealias TvShowListUiState = FetchDataUiState<List<TvShow>, TvShowFailure>
+typealias TvShowListUiState = UiState<List<TvShow>, TvShowFailure>
 
-typealias TvShowDetailsUiState = FetchDataUiState<TvShow, TvShowFailure>
+typealias TvShowDetailsUiState = UiState<TvShow, TvShowFailure>
 
-typealias TvSeasonUiState = FetchDataUiState<TvSeason, TvSeasonFailure>
+typealias TvSeasonUiState = UiState<TvSeason, TvSeasonFailure>
 
-typealias TvEpisodeUiState = FetchDataUiState<TvEpisode, TvEpisodeFailure>
+typealias TvEpisodeUiState = UiState<TvEpisode, TvEpisodeFailure>

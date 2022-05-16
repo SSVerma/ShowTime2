@@ -3,11 +3,11 @@ package com.ssverma.showtime.ui.tv
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.showtime.domain.DomainResult
+import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.model.tv.TvEpisodeConfig
 import com.ssverma.showtime.domain.usecase.tv.TvEpisodeUseCase
 import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.ui.FetchDataUiState
+import com.ssverma.core.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +31,7 @@ class TvEpisodeDetailsViewModel @Inject constructor(
     private val episodeNumber = savedStateHandle
         .get<Int>(AppDestination.TvEpisodeDetails.ArgEpisodeNumber) ?: 0
 
-    private val _observableEpisode = MutableStateFlow<TvEpisodeUiState>(FetchDataUiState.Idle)
+    private val _observableEpisode = MutableStateFlow<TvEpisodeUiState>(UiState.Idle)
     val observableTvEpisode = _observableEpisode.asStateFlow()
 
     init {
@@ -39,7 +39,7 @@ class TvEpisodeDetailsViewModel @Inject constructor(
     }
 
     fun fetchTvEpisode(coroutineScope: CoroutineScope = viewModelScope) {
-        _observableEpisode.update { FetchDataUiState.Loading }
+        _observableEpisode.update { UiState.Loading }
 
         coroutineScope.launch {
             val tvEpisodeConfig = TvEpisodeConfig(
@@ -52,11 +52,11 @@ class TvEpisodeDetailsViewModel @Inject constructor(
 
             _observableEpisode.update {
                 when (result) {
-                    is DomainResult.Error -> {
-                        FetchDataUiState.Error(result.error)
+                    is Result.Error -> {
+                        UiState.Error(result.error)
                     }
-                    is DomainResult.Success -> {
-                        FetchDataUiState.Success(result.data)
+                    is Result.Success -> {
+                        UiState.Success(result.data)
                     }
                 }
             }

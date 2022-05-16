@@ -6,6 +6,7 @@ object Versions {
     const val material = "1.6.0"
     const val compose = "1.2.0-beta01"
     const val accompanist = "0.24.8-beta"
+    const val Coroutines = "1.6.1"
 
     object Lifecycle {
         const val runtime = "2.4.1"
@@ -45,6 +46,7 @@ object Deps {
     const val core = "androidx.core:core-ktx:${Versions.core}"
     const val appcompat = "androidx.appcompat:appcompat:${Versions.appcompat}"
     const val material = "com.google.android.material:material:${Versions.material}"
+    const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.Coroutines}"
 
     object Compose {
         const val ui = "androidx.compose.ui:ui:${Versions.compose}"
