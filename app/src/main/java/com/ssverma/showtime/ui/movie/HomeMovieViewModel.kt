@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiState
-import com.ssverma.core.ui.asErrorOrSuccessUiState
+import com.ssverma.core.ui.asSuccessOrErrorUiState
 import com.ssverma.showtime.data.repository.UnsplashRepository
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.usecase.movie.*
@@ -58,7 +58,7 @@ class HomeMovieViewModel @Inject constructor(
     fun fetchMovieGeneres(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             movieGenresUiState = UiState.Loading
-            movieGenresUiState = movieGeneUseCase().asErrorOrSuccessUiState()
+            movieGenresUiState = movieGeneUseCase().asSuccessOrErrorUiState()
         }
     }
 
@@ -66,35 +66,35 @@ class HomeMovieViewModel @Inject constructor(
         coroutineScope.launch {
             trendingMoviesUiState = UiState.Loading
             trendingMoviesUiState =
-                trendingMoviesUseCase(TimeWindow.Daily).asErrorOrSuccessUiState()
+                trendingMoviesUseCase(TimeWindow.Daily).asSuccessOrErrorUiState()
         }
     }
 
     fun fetchTopRatedMovies(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             topRatedMoviesUiState = UiState.Loading
-            topRatedMoviesUiState = topRatedMoviesUseCase().asErrorOrSuccessUiState()
+            topRatedMoviesUiState = topRatedMoviesUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchPopularMovies(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             popularMoviesUiState = UiState.Loading
-            popularMoviesUiState = popularMoviesUseCase().asErrorOrSuccessUiState()
+            popularMoviesUiState = popularMoviesUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchInCinemaMovies(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             inCinemasMoviesUiState = UiState.Loading
-            inCinemasMoviesUiState = inCinemaMoviesUseCase().asErrorOrSuccessUiState()
+            inCinemasMoviesUiState = inCinemaMoviesUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchUpcomingMovies(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             upcomingMoviesUiState = UiState.Loading
-            upcomingMoviesUiState = upcomingMoviesUseCase().asErrorOrSuccessUiState()
+            upcomingMoviesUiState = upcomingMoviesUseCase().asSuccessOrErrorUiState()
         }
     }
 }

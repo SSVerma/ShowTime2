@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.icon.AppIcons
@@ -36,14 +37,13 @@ import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.core.ui.layout.*
 import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.shared.ui.component.BackdropNavigationAction
+import com.ssverma.shared.ui.placeholderIfNullOrEmpty
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.*
 import com.ssverma.showtime.domain.model.movie.Movie
-import com.ssverma.showtime.extension.placeholderIfNullOrEmpty
 import com.ssverma.showtime.ui.GenreItem
 import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.TagItem
-import com.ssverma.showtime.ui.common.DriveCompose
 import com.ssverma.showtime.ui.highlightedItems
 
 @Composable

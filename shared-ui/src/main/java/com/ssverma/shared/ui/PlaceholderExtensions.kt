@@ -1,4 +1,4 @@
-package com.ssverma.showtime.extension
+package com.ssverma.shared.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable

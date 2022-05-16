@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.usecase.tv.*
 import com.ssverma.core.ui.UiState
-import com.ssverma.core.ui.asErrorOrSuccessUiState
+import com.ssverma.core.ui.asSuccessOrErrorUiState
 import com.ssverma.showtime.ui.movie.GenresUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -60,49 +60,49 @@ class HomeTvShowViewModel @Inject constructor(
     fun fetchTvGeneres(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             tvGenresUiState = UiState.Loading
-            tvGenresUiState = tvGenresUseCase().asErrorOrSuccessUiState()
+            tvGenresUiState = tvGenresUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchTrendingTvShows(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             trendingTvShowsUiState = UiState.Loading
-            trendingTvShowsUiState = trendingTvShowsUseCase(TimeWindow.Daily).asErrorOrSuccessUiState()
+            trendingTvShowsUiState = trendingTvShowsUseCase(TimeWindow.Daily).asSuccessOrErrorUiState()
         }
     }
 
     fun fetchTopRatedTvShows(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             topRatedTvShowsUiState = UiState.Loading
-            topRatedTvShowsUiState = topRatedTvShowsUseCase().asErrorOrSuccessUiState()
+            topRatedTvShowsUiState = topRatedTvShowsUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchPopularTvShows(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             popularTvShowsUiState = UiState.Loading
-            popularTvShowsUiState = popularTvShowsUseCase().asErrorOrSuccessUiState()
+            popularTvShowsUiState = popularTvShowsUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchTodayAiringTvShows(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             todayAiringTvShowsUiState = UiState.Loading
-            todayAiringTvShowsUiState = todayAiringTvShowsUseCase().asErrorOrSuccessUiState()
+            todayAiringTvShowsUiState = todayAiringTvShowsUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchNowAiringTvShows(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             nowAiringTvShowsUiState = UiState.Loading
-            nowAiringTvShowsUiState = nowAiringTvShowsUseCase().asErrorOrSuccessUiState()
+            nowAiringTvShowsUiState = nowAiringTvShowsUseCase().asSuccessOrErrorUiState()
         }
     }
 
     fun fetchUpcomingTvShows(coroutineScope: CoroutineScope = viewModelScope) {
         coroutineScope.launch {
             upcomingTvShowsUiState = UiState.Loading
-            upcomingTvShowsUiState = upcomingTvShowsUseCase().asErrorOrSuccessUiState()
+            upcomingTvShowsUiState = upcomingTvShowsUseCase().asSuccessOrErrorUiState()
         }
     }
 }

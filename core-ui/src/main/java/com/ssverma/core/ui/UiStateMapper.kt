@@ -1,4 +1,4 @@
-package com.ssverma.showtime.ui.common
+package com.ssverma.core.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.OutlinedButton
@@ -9,23 +9,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
-import com.ssverma.showtime.R
-
-@Composable
-fun DefaultLoadingIndicator(modifier: Modifier = Modifier) {
-    return Box(modifier = modifier.fillMaxSize()) {
-        ShowTimeLoadingIndicator(modifier = Modifier.align(Alignment.Center))
-    }
-}
 
 @Composable
 fun <S, FeatureFailure> DriveCompose(
     uiState: UiState<S, FeatureFailure>,
     loading: @Composable () -> Unit = { DefaultLoadingIndicator() },
     coreErrorContent: @Composable (error: Failure.CoreFailure) -> Unit = {
-        DefaultCoreErrorView(error = it, onRetry = onRetry)
+        DefaultCoreErrorIndicator(error = it, onRetry = onRetry)
     },
     onRetry: () -> Unit = {},
     featureErrorContent: @Composable (error: Failure.FeatureFailure<FeatureFailure>) -> Unit = {},
@@ -58,7 +49,14 @@ fun <S, FeatureFailure> DriveCompose(
 }
 
 @Composable
-private fun DefaultCoreErrorView(
+fun DefaultLoadingIndicator(modifier: Modifier = Modifier) {
+    return Box(modifier = modifier.fillMaxSize()) {
+        ShowTimeLoadingIndicator(modifier = Modifier.align(Alignment.Center))
+    }
+}
+
+@Composable
+private fun DefaultCoreErrorIndicator(
     error: Failure.CoreFailure,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier

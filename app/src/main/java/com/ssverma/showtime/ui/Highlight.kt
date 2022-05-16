@@ -1,12 +1,12 @@
 package com.ssverma.showtime.ui
 
 import androidx.annotation.StringRes
+import com.ssverma.shared.ui.emptyIfAbsent
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.model.tv.TvEpisode
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.showtime.extension.emptyIfAbsent
 import com.ssverma.showtime.utils.DateUtils
 
 data class Highlight(

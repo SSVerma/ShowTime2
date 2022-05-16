@@ -17,7 +17,7 @@ import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.shared.ui.component.BackdropNavigationAction
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvEpisode
-import com.ssverma.showtime.ui.common.DriveCompose
+import com.ssverma.core.ui.DriveCompose
 import com.ssverma.showtime.ui.common.ImageShotBottomSheet
 import com.ssverma.showtime.ui.common.SheetContentType
 import com.ssverma.showtime.ui.highlightedItems

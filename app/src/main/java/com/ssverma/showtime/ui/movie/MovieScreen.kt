@@ -28,7 +28,7 @@ import com.ssverma.showtime.domain.model.Genre
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.ui.AttributionFooter
 import com.ssverma.showtime.ui.GenreItem
-import com.ssverma.showtime.ui.common.DriveCompose
+import com.ssverma.core.ui.DriveCompose
 import com.ssverma.showtime.ui.home.HomePageAppBar
 
 @Composable

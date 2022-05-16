@@ -41,7 +41,7 @@ import com.ssverma.showtime.domain.model.PersonMedia
 import com.ssverma.showtime.domain.model.emptyImageShot
 import com.ssverma.showtime.ui.Highlight
 import com.ssverma.showtime.ui.ImagePagerScreen
-import com.ssverma.showtime.ui.common.DriveCompose
+import com.ssverma.core.ui.DriveCompose
 import com.ssverma.showtime.ui.movie.Highlights
 import com.ssverma.showtime.ui.movie.ImageShotItem
 import kotlinx.coroutines.launch
