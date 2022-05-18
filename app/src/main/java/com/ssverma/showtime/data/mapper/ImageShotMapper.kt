@@ -2,7 +2,7 @@ package com.ssverma.showtime.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
-import com.ssverma.showtime.domain.model.ImageShot
+import com.ssverma.core.domain.model.ImageShot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

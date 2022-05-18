@@ -16,7 +16,7 @@ import com.ssverma.showtime.domain.model.tv.TvShowListingConfig
 import com.ssverma.showtime.domain.usecase.tv.PaginatedTvShowUseCase
 import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.ui.filter.FilterUiState
-import com.ssverma.showtime.ui.filter.TvShowFilterUseCase
+import com.ssverma.showtime.domain.usecase.filter.TvShowFilterUseCase
 import com.ssverma.showtime.ui.filter.asUiFilters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

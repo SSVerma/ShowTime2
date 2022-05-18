@@ -19,10 +19,10 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.core.ui.paging.PagedContent
+import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.movie.Movie
-import com.ssverma.showtime.ui.common.PagedContent
-import com.ssverma.showtime.ui.common.PagedGrid
 import com.ssverma.showtime.ui.filter.MovieFiltersScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

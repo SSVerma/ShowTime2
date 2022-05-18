@@ -8,7 +8,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.showtime.R
-import com.ssverma.showtime.ui.ReviewsList
+import com.ssverma.shared.ui.component.ReviewsList
 
 @Composable
 fun MovieReviewsScreen(

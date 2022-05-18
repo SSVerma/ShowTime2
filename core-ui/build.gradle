@@ -44,9 +44,9 @@ dependencies {
     
     implementation project(Modules.Core.domain)
 
-    implementation Deps.Compose.ui
-    implementation Deps.Compose.material
-    implementation Deps.Compose.tooling
+    api Deps.Compose.ui
+    api Deps.Compose.material
+    api Deps.Compose.tooling
 
     /*Image Handling*/
     implementation Deps.ComposeSupport.coil

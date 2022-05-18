@@ -12,8 +12,8 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.ssverma.showtime.ui.ImagePagerScreen
-import com.ssverma.showtime.ui.ImageShotsListScreen
+import com.ssverma.shared.ui.bottomsheet.ImagePagerScreen
+import com.ssverma.shared.ui.bottomsheet.ImageShotsListScreen
 import com.ssverma.showtime.ui.library.LibraryScreen
 import com.ssverma.showtime.ui.movie.*
 import com.ssverma.showtime.ui.people.PersonDetailsScreen
@@ -163,7 +163,7 @@ fun ShowTimeNavHost(
                 navController.destinationViewModel(destination = AppDestination.MovieDetails)
 
             ImageShotsListScreen(
-                observableImageShots = movieDetailsViewModel.imageShots,
+                imageShots = movieDetailsViewModel.imageShots,
                 onBackPressed = { navController.popBackStack() },
                 openImagePager = {
                     navController.navigateTo(AppDestination.MovieImagePager.actualRoute(it))
@@ -176,7 +176,7 @@ fun ShowTimeNavHost(
                 .destinationViewModel<MovieDetailsViewModel>(destination = AppDestination.MovieDetails)
 
             ImagePagerScreen(
-                observableImageShots = movieDetailsViewModel.imageShots,
+                imageShots = movieDetailsViewModel.imageShots,
                 defaultPageIndex = it.arguments?.getInt(AppDestination.MovieImagePager.PageIndex)
                     ?: 0,
                 onBackPressed = { navController.popBackStack() }
@@ -253,7 +253,7 @@ fun ShowTimeNavHost(
                 navController.destinationViewModel(destination = AppDestination.TvShowDetails)
 
             ImageShotsListScreen(
-                observableImageShots = tvShowDetailsViewModel.imageShots,
+                imageShots = tvShowDetailsViewModel.imageShots,
                 onBackPressed = { navController.popBackStack() },
                 openImagePager = {
                     navController.navigateTo(AppDestination.TvImagePager.actualRoute(it))
@@ -273,7 +273,7 @@ fun ShowTimeNavHost(
                 .destinationViewModel<TvShowDetailsViewModel>(destination = AppDestination.TvShowDetails)
 
             ImagePagerScreen(
-                observableImageShots = tvShowDetailsViewModel.imageShots,
+                imageShots = tvShowDetailsViewModel.imageShots,
                 defaultPageIndex = it.arguments?.getInt(AppDestination.TvImagePager.PageIndex)
                     ?: 0,
                 onBackPressed = { navController.popBackStack() }

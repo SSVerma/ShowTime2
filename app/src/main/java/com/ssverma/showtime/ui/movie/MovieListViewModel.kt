@@ -16,7 +16,7 @@ import com.ssverma.showtime.domain.model.movie.MovieListingConfig
 import com.ssverma.showtime.domain.usecase.movie.PaginatedMoviesUseCase
 import com.ssverma.showtime.navigation.AppDestination
 import com.ssverma.showtime.ui.filter.FilterUiState
-import com.ssverma.showtime.ui.filter.MovieFilterUseCase
+import com.ssverma.showtime.domain.usecase.filter.MovieFilterUseCase
 import com.ssverma.showtime.ui.filter.asUiFilters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

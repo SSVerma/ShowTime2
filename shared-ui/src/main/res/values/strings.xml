@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shots">Shots</string>
+    <string name="na">N/A</string>
+    <string name="overview">Overview</string>
+    <string name="tags">Tags</string>
+    <string name="casts">Casts</string>
+    <string name="unknown">Unknown</string>
+    <string name="reviews">Reviews</string>
+    <string name="videos">Videos</string>
+    <string name="video_header_subtitle">Trailer, Teaser, Bloopers and more</string>
+    <string name="tmdb_attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
+</resources>

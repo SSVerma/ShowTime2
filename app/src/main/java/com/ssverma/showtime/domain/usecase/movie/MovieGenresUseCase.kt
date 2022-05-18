@@ -3,7 +3,7 @@ package com.ssverma.showtime.domain.usecase.movie
 import com.ssverma.core.domain.failure.Failure
 import com.ssverma.showtime.di.DefaultDispatcher
 import com.ssverma.core.domain.Result
-import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.core.domain.model.Genre
 import com.ssverma.showtime.domain.repository.MovieRepository
 import com.ssverma.core.domain.usecase.NoParamUseCase
 import kotlinx.coroutines.CoroutineDispatcher

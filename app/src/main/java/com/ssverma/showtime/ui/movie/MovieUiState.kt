@@ -1,7 +1,7 @@
 package com.ssverma.showtime.ui.movie
 
 import com.ssverma.showtime.domain.failure.movie.MovieFailure
-import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.core.domain.model.Genre
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.core.ui.UiState
 

@@ -1,5 +1,7 @@
 package com.ssverma.showtime.domain.model
 
+import com.ssverma.core.domain.model.Genre
+import com.ssverma.core.domain.model.ImageShot
 import java.time.LocalDate
 
 data class Person(

@@ -2,7 +2,7 @@ package com.ssverma.showtime.domain.usecase.person
 
 import androidx.paging.PagingData
 import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.model.ImageShot
+import com.ssverma.core.domain.model.ImageShot
 import com.ssverma.showtime.domain.repository.PersonRepository
 import com.ssverma.core.domain.usecase.FlowUseCase
 import kotlinx.coroutines.CoroutineDispatcher

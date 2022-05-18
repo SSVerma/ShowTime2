@@ -1,9 +1,9 @@
 package com.ssverma.showtime.domain.model.tv
 
-import com.ssverma.showtime.domain.model.Cast
-import com.ssverma.showtime.domain.model.Crew
-import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.domain.model.Video
+import com.ssverma.core.domain.model.Cast
+import com.ssverma.core.domain.model.Crew
+import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.core.domain.model.Video
 
 data class TvEpisode(
     val id: Int,

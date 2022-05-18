@@ -77,14 +77,11 @@ dependencies {
     implementation project(Modules.Core.ui)
     implementation project(Modules.Shared.ui)
     implementation project(Modules.Core.domain)
+    implementation project(Modules.Core.uiPaging)
 
-    implementation Deps.core
+    implementation Deps.coreKtx
     implementation Deps.appcompat
     implementation Deps.material
-
-    implementation Deps.Compose.ui
-    implementation Deps.Compose.material
-    implementation Deps.Compose.tooling
 
     implementation Deps.Lifecycle.runtime
     implementation Deps.ComposeSupport.activity

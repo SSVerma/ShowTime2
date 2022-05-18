@@ -1,7 +1,7 @@
 package com.ssverma.showtime.data.mapper
 
 import com.ssverma.api.service.tmdb.response.RemoteGenre
-import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.core.domain.model.Genre
 import javax.inject.Inject
 
 class GenresMapper @Inject constructor() : ListMapper<RemoteGenre, Genre>() {

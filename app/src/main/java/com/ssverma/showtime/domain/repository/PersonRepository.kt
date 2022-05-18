@@ -4,7 +4,7 @@ import androidx.paging.PagingData
 import com.ssverma.core.domain.failure.Failure
 import com.ssverma.core.domain.Result
 import com.ssverma.showtime.domain.failure.person.PersonFailure
-import com.ssverma.showtime.domain.model.ImageShot
+import com.ssverma.core.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.person.PersonDetailsConfig
 import kotlinx.coroutines.flow.Flow

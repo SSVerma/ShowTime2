@@ -43,10 +43,13 @@ android {
 dependencies {
 
     implementation project(Modules.Core.ui)
+    implementation project(Modules.Core.domain)
+    implementation project(Modules.Core.uiPaging)
 
-    implementation Deps.Compose.ui
-    implementation Deps.Compose.material
-    implementation Deps.Compose.tooling
+    implementation Deps.ComposeSupport.activity
+    implementation Deps.ComposeSupport.constraintLayout
+    implementation Deps.Accompanist.pager
+    implementation Deps.Accompanist.pagerIndicators
 
     testImplementation Deps.Test.Local.junit
     androidTestImplementation Deps.Test.Instrument.junit

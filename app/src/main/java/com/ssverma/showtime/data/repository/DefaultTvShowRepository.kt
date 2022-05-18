@@ -17,8 +17,8 @@ import com.ssverma.showtime.domain.TvDiscoverConfig
 import com.ssverma.showtime.domain.failure.tv.TvEpisodeFailure
 import com.ssverma.showtime.domain.failure.tv.TvSeasonFailure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
-import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.Review
+import com.ssverma.core.domain.model.Genre
+import com.ssverma.core.domain.model.Review
 import com.ssverma.showtime.domain.model.tv.*
 import com.ssverma.showtime.domain.repository.TvShowRepository
 import kotlinx.coroutines.flow.Flow

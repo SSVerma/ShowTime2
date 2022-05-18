@@ -15,13 +15,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.domain.model.ImageShot
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.core.ui.paging.PagedContent
+import com.ssverma.core.ui.paging.PagedGrid
+import com.ssverma.shared.ui.component.ImageShotItem
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.ImageShot
-import com.ssverma.showtime.ui.common.PagedContent
-import com.ssverma.showtime.ui.common.PagedGrid
-import com.ssverma.showtime.ui.movie.ImageShotItem
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)

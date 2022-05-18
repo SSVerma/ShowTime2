@@ -1,6 +1,6 @@
 package com.ssverma.showtime.domain.model.movie
 
-import com.ssverma.showtime.domain.model.*
+import com.ssverma.core.domain.model.*
 
 class Movie(
     val id: Int,

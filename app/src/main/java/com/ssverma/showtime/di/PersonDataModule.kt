@@ -2,11 +2,11 @@ package com.ssverma.showtime.di
 
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
+import com.ssverma.core.domain.model.ImageShot
 import com.ssverma.showtime.data.mapper.*
 import com.ssverma.showtime.data.remote.DefaultPersonRemoteDataSource
 import com.ssverma.showtime.data.remote.PersonRemoteDataSource
 import com.ssverma.showtime.data.repository.DefaultPersonRepository
-import com.ssverma.showtime.domain.model.ImageShot
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.repository.PersonRepository
 import dagger.Binds

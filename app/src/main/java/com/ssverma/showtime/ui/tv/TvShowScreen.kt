@@ -17,9 +17,9 @@ import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.layout.SectionLoadingIndicator
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.Genre
+import com.ssverma.core.domain.model.Genre
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.showtime.ui.GenreItem
+import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.showtime.ui.home.HomePageAppBar
 import com.ssverma.showtime.ui.movie.GenresUiState

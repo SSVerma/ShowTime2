@@ -7,8 +7,8 @@ import com.ssverma.showtime.data.mapper.*
 import com.ssverma.showtime.data.remote.DefaultMovieRemoteDataSource
 import com.ssverma.showtime.data.remote.MovieRemoteDataSource
 import com.ssverma.showtime.data.repository.DefaultMovieRepository
-import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.Review
+import com.ssverma.core.domain.model.Genre
+import com.ssverma.core.domain.model.Review
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.repository.MovieRepository
 import dagger.Binds

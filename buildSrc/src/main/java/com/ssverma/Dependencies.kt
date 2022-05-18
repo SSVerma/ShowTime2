@@ -43,7 +43,7 @@ object Versions {
 }
 
 object Deps {
-    const val core = "androidx.core:core-ktx:${Versions.core}"
+    const val coreKtx = "androidx.core:core-ktx:${Versions.core}"
     const val appcompat = "androidx.appcompat:appcompat:${Versions.appcompat}"
     const val material = "com.google.android.material:material:${Versions.material}"
     const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.Coroutines}"

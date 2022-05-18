@@ -3,8 +3,8 @@ package com.ssverma.showtime.data.mapper
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.api.service.tmdb.response.RemoteReviewAuthor
-import com.ssverma.showtime.domain.model.Review
-import com.ssverma.showtime.domain.model.ReviewAuthor
+import com.ssverma.core.domain.model.Review
+import com.ssverma.core.domain.model.ReviewAuthor
 import com.ssverma.showtime.utils.DateUtils
 import com.ssverma.showtime.utils.formatLocally
 import kotlinx.coroutines.Dispatchers

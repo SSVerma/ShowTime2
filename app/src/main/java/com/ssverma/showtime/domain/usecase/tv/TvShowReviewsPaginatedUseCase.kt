@@ -2,7 +2,7 @@ package com.ssverma.showtime.domain.usecase.tv
 
 import androidx.paging.PagingData
 import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.model.Review
+import com.ssverma.core.domain.model.Review
 import com.ssverma.showtime.domain.repository.TvShowRepository
 import com.ssverma.core.domain.usecase.FlowUseCase
 import kotlinx.coroutines.CoroutineDispatcher

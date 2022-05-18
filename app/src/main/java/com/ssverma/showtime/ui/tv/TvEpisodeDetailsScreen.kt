@@ -1,39 +1,50 @@
 package com.ssverma.showtime.ui.tv
 
-import TmdbBackdropAspectRatio
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.DriveCompose
+import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
+import com.ssverma.shared.ui.bottomsheet.SheetContentType
+import com.ssverma.shared.ui.bottomsheet.rememberImageShotBottomSheetState
 import com.ssverma.shared.ui.component.BackdropNavigationAction
+import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.section.CreditSection
+import com.ssverma.shared.ui.component.section.ImageShotsSection
+import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvEpisode
-import com.ssverma.core.ui.DriveCompose
-import com.ssverma.showtime.ui.common.ImageShotBottomSheet
-import com.ssverma.showtime.ui.common.SheetContentType
 import com.ssverma.showtime.ui.highlightedItems
-import com.ssverma.showtime.ui.movie.CreditSection
-import com.ssverma.showtime.ui.movie.Highlights
-import com.ssverma.showtime.ui.movie.ImageShotsSection
-import com.ssverma.showtime.ui.movie.OverviewSection
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TvEpisodeDetailsScreen(
     viewModel: TvEpisodeDetailsViewModel,
     onBackPress: () -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
 ) {
-    val bottomSheetCurrentItem = remember { mutableStateOf(SheetContentType.None) }
-    val clickedImageIndex = remember { mutableStateOf(0) }
+    val imageSheetState = rememberImageShotBottomSheetState(
+        bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+    )
+
+    val coroutineScope = rememberCoroutineScope()
 
     val tvEpisodeUiState by viewModel.observableTvEpisode.collectAsState()
 
@@ -43,19 +54,21 @@ fun TvEpisodeDetailsScreen(
     ) { episode ->
         ImageShotBottomSheet(
             imageShots = episode.stills,
-            sheetItem = bottomSheetCurrentItem,
-            tappedImageIndex = clickedImageIndex
+            sheetState = imageSheetState,
         ) {
             TvEpisodeContent(
                 episode = episode,
                 onBackPress = onBackPress,
                 openPersonDetails = openPersonDetails,
                 openImageShotsList = {
-                    bottomSheetCurrentItem.value = SheetContentType.ImageList
+                    coroutineScope.launch {
+                        imageSheetState.show(SheetContentType.ImageList)
+                    }
                 },
                 openImageShot = { pageIndex ->
-                    clickedImageIndex.value = pageIndex
-                    bottomSheetCurrentItem.value = SheetContentType.ImagePager
+                    coroutineScope.launch {
+                        imageSheetState.show(SheetContentType.ImagePager(pageIndex))
+                    }
                 },
                 modifier = Modifier
                     .padding(it)

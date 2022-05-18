@@ -15,17 +15,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.shared.ui.component.BackdropHeader
+import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.section.*
+import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
+import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.showtime.ui.GenreItem
-import com.ssverma.core.ui.DriveCompose
+import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.showtime.ui.highlightedItems
-import com.ssverma.showtime.ui.movie.*
 
 @Composable
 fun TvShowDetailsScreen(
@@ -195,7 +199,7 @@ private fun TvShowContent(
         /*Image shots*/
         item {
             ImageShotsSection(
-                imageShots = viewModel.imageShots.value,
+                imageShots = viewModel.imageShots,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 maxImageShots = MaxImageShots,
@@ -304,7 +308,7 @@ private fun SeasonsSection(
     modifier: Modifier = Modifier
 ) {
     var seasonCount by remember {
-        mutableStateOf(if (seasons.size < MaxSeason) seasons.size else MaxReviews)
+        mutableStateOf(if (seasons.size < MaxSeason) seasons.size else MaxSeason)
     }
 
     val showSeasonViewAll by remember { derivedStateOf { seasonCount < seasons.size } }

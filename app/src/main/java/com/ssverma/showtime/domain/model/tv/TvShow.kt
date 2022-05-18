@@ -1,6 +1,6 @@
 package com.ssverma.showtime.domain.model.tv
 
-import com.ssverma.showtime.domain.model.*
+import com.ssverma.core.domain.model.*
 
 class TvShow(
     val id: Int,

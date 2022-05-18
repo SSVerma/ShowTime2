@@ -2,7 +2,7 @@ package com.ssverma.showtime.data.mapper
 
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
 import com.ssverma.api.service.tmdb.response.RemoteVideo
-import com.ssverma.showtime.domain.model.Video
+import com.ssverma.core.domain.model.Video
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

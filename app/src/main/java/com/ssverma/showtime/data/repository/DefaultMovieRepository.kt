@@ -18,8 +18,8 @@ import com.ssverma.showtime.data.remote.MovieRemoteDataSource
 import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.TimeWindow
 import com.ssverma.showtime.domain.failure.movie.MovieFailure
-import com.ssverma.showtime.domain.model.Genre
-import com.ssverma.showtime.domain.model.Review
+import com.ssverma.core.domain.model.Genre
+import com.ssverma.core.domain.model.Review
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
 import com.ssverma.showtime.domain.repository.MovieRepository

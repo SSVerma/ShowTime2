@@ -3,7 +3,7 @@ package com.ssverma.showtime.domain.usecase.movie
 import androidx.paging.PagingData
 import com.ssverma.core.domain.usecase.FlowUseCase
 import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.model.Review
+import com.ssverma.core.domain.model.Review
 import com.ssverma.showtime.domain.repository.MovieRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
