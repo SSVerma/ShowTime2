@@ -7,6 +7,7 @@ object Modules {
         const val ui = ":core-ui"
         const val domain = ":core-domain"
         const val uiPaging = ":core-ui-paging"
+        const val navigation = ":core-navigation"
     }
 
     object Shared {

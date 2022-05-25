@@ -13,11 +13,11 @@ import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.MovieDiscoverConfig
 import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.model.movie.MovieListingConfig
-import com.ssverma.showtime.domain.usecase.movie.PaginatedMoviesUseCase
-import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.ui.filter.FilterUiState
 import com.ssverma.showtime.domain.usecase.filter.MovieFilterUseCase
+import com.ssverma.showtime.domain.usecase.movie.PaginatedMoviesUseCase
+import com.ssverma.showtime.ui.filter.FilterUiState
 import com.ssverma.showtime.ui.filter.asUiFilters
+import com.ssverma.showtime.ui.movie.navigation.MovieListDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -96,12 +96,12 @@ class MovieListViewModel @Inject constructor(
 }
 
 private fun SavedStateHandle.buildMovieListingArgs(): MovieListingArgs {
-    val genreId = get<Int>(AppDestination.MovieList.ArgGenreId) ?: 0
-    val keywordId = get<Int>(AppDestination.MovieList.ArgKeywordId) ?: 0
+    val genreId = get<Int>(MovieListDestination.ArgGenreId) ?: 0
+    val keywordId = get<Int>(MovieListDestination.ArgKeywordId) ?: 0
 
-    val listingType = get<Int>(AppDestination.MovieList.ArgListingType) ?: 0
-    val titleRes = get<Int>(AppDestination.MovieList.ArgTitleRes) ?: 0
-    val title = get<String>(AppDestination.MovieList.ArgTitle)
+    val listingType = get<Int>(MovieListDestination.ArgListingType) ?: 0
+    val titleRes = get<Int>(MovieListDestination.ArgTitleRes) ?: 0
+    val title = get<String>(MovieListDestination.ArgTitle)
 
     return MovieListingArgs(
         listingType = listingType,

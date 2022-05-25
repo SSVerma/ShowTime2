@@ -14,7 +14,7 @@ import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.model.movie.MovieDetailsConfig
 import com.ssverma.showtime.domain.model.movie.imageShots
 import com.ssverma.showtime.domain.usecase.movie.MovieDetailsUseCase
-import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.movie.navigation.MovieDetailDestination
 import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -28,7 +28,7 @@ class MovieDetailsViewModel @Inject constructor(
     val movieDetailsUseCase: MovieDetailsUseCase
 ) : AndroidViewModel(application) {
 
-    private val movieId = savedStateHandle.get<Int>(AppDestination.MovieDetails.ArgMovieId) ?: 0
+    private val movieId = savedStateHandle.get<Int>(MovieDetailDestination.ArgMovieId) ?: 0
 
     var imageShots by mutableStateOf<List<ImageShot>>(emptyList())
 

@@ -1,4 +1,4 @@
-package com.ssverma.showtime.navigation
+package com.ssverma.core.navigation
 
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType

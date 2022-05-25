@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.ssverma.showtime.domain.usecase.person.PersonImagesPaginatedUseCase
-import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.people.navigation.PersonImageShotsDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -15,7 +15,7 @@ class PersonImagesViewModel @Inject constructor(
     personImagesUseCase: PersonImagesPaginatedUseCase
 ) : ViewModel() {
 
-    private val personId = savedStateHandle.get<Int>(AppDestination.PersonImages.PersonId) ?: 0
+    private val personId = savedStateHandle.get<Int>(PersonImageShotsDestination.PersonId) ?: 0
 
     val personImages = personImagesUseCase(personId)
         .cachedIn(viewModelScope)

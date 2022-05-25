@@ -1,7 +1,5 @@
 package com.ssverma.showtime.ui.home
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -21,45 +19,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.showtime.R
-import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.navigation.StandaloneDestination
-
-sealed class HomeBottomNavItem(
-    val linkedDestination: StandaloneDestination,
-    @StringRes val tabTitleRes: Int,
-    @DrawableRes val tabIconRes: Int
-) {
-    object Movie : HomeBottomNavItem(
-        linkedDestination = AppDestination.HomeBottomNavDestination.Movie,
-        tabTitleRes = R.string.movie,
-        tabIconRes = R.drawable.ic_movie
-    )
-
-    object Tv : HomeBottomNavItem(
-        linkedDestination = AppDestination.HomeBottomNavDestination.Tv,
-        tabTitleRes = R.string.tv_show,
-        tabIconRes = R.drawable.ic_tv
-    )
-
-    object People : HomeBottomNavItem(
-        linkedDestination = AppDestination.HomeBottomNavDestination.People,
-        tabTitleRes = R.string.people,
-        tabIconRes = R.drawable.ic_people
-    )
-
-    object Library : HomeBottomNavItem(
-        linkedDestination = AppDestination.HomeBottomNavDestination.Library,
-        tabTitleRes = R.string.library,
-        tabIconRes = R.drawable.ic_library
-    )
-}
-
-val homeBottomNavItems = listOf(
-    HomeBottomNavItem.Movie,
-    HomeBottomNavItem.Tv,
-    HomeBottomNavItem.People,
-    HomeBottomNavItem.Library,
-)
 
 @Composable
 fun HomePageAppBar(

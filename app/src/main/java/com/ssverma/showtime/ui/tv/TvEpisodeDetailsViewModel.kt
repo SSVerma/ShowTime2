@@ -4,10 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.domain.Result
+import com.ssverma.core.ui.UiState
 import com.ssverma.showtime.domain.model.tv.TvEpisodeConfig
 import com.ssverma.showtime.domain.usecase.tv.TvEpisodeUseCase
-import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.core.ui.UiState
+import com.ssverma.showtime.ui.tv.navigation.TvEpisodeDetailDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,13 +23,13 @@ class TvEpisodeDetailsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tvShowId = savedStateHandle
-        .get<Int>(AppDestination.TvEpisodeDetails.ArgTvShowId) ?: 0
+        .get<Int>(TvEpisodeDetailDestination.ArgTvShowId) ?: 0
 
     private val seasonNumber = savedStateHandle
-        .get<Int>(AppDestination.TvEpisodeDetails.ArgSeasonNumber) ?: 0
+        .get<Int>(TvEpisodeDetailDestination.ArgSeasonNumber) ?: 0
 
     private val episodeNumber = savedStateHandle
-        .get<Int>(AppDestination.TvEpisodeDetails.ArgEpisodeNumber) ?: 0
+        .get<Int>(TvEpisodeDetailDestination.ArgEpisodeNumber) ?: 0
 
     private val _observableEpisode = MutableStateFlow<TvEpisodeUiState>(UiState.Idle)
     val observableTvEpisode = _observableEpisode.asStateFlow()

@@ -7,7 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssverma.core.domain.model.Review
 import com.ssverma.showtime.domain.usecase.movie.MovieReviewsPaginatedUseCase
-import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.movie.navigation.MovieReviewsDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -18,7 +18,7 @@ class MovieReviewsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val movieId: Int = savedStateHandle.get<Int>(AppDestination.MovieReviews.MovieId) ?: 0
+    private val movieId: Int = savedStateHandle.get<Int>(MovieReviewsDestination.MovieId) ?: 0
 
     val pagedReviews: Flow<PagingData<Review>> =
         reviewsUseCase(movieId).cachedIn(viewModelScope)

@@ -8,16 +8,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.showtime.R
 import com.ssverma.core.domain.Result
+import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.TvDiscoverConfig
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.model.tv.TvShowListingConfig
-import com.ssverma.showtime.domain.usecase.tv.PaginatedTvShowUseCase
-import com.ssverma.showtime.navigation.AppDestination
-import com.ssverma.showtime.ui.filter.FilterUiState
 import com.ssverma.showtime.domain.usecase.filter.TvShowFilterUseCase
+import com.ssverma.showtime.domain.usecase.tv.PaginatedTvShowUseCase
+import com.ssverma.showtime.ui.filter.FilterUiState
 import com.ssverma.showtime.ui.filter.asUiFilters
+import com.ssverma.showtime.ui.tv.navigation.TvShowListDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -96,12 +96,12 @@ class TvShowListListViewModel @Inject constructor(
 }
 
 private fun SavedStateHandle.buildTvShowListingArgs(): TvShowListingArgs {
-    val genreId = get<Int>(AppDestination.TvShowList.ArgGenreId) ?: 0
-    val keywordId = get<Int>(AppDestination.TvShowList.ArgKeywordId) ?: 0
+    val genreId = get<Int>(TvShowListDestination.ArgGenreId) ?: 0
+    val keywordId = get<Int>(TvShowListDestination.ArgKeywordId) ?: 0
 
-    val listingType = get<Int>(AppDestination.TvShowList.ArgListingType) ?: 0
-    val titleRes = get<Int>(AppDestination.TvShowList.ArgTitleRes) ?: 0
-    val title = get<String>(AppDestination.TvShowList.ArgTitle)
+    val listingType = get<Int>(TvShowListDestination.ArgListingType) ?: 0
+    val titleRes = get<Int>(TvShowListDestination.ArgTitleRes) ?: 0
+    val title = get<String>(TvShowListDestination.ArgTitle)
 
     return TvShowListingArgs(
         listingType = listingType,

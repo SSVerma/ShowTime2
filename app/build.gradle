@@ -78,6 +78,7 @@ dependencies {
     implementation project(Modules.Shared.ui)
     implementation project(Modules.Core.domain)
     implementation project(Modules.Core.uiPaging)
+    implementation project(Modules.Core.navigation)
 
     implementation Deps.coreKtx
     implementation Deps.appcompat
@@ -88,14 +89,11 @@ dependencies {
     implementation Deps.ComposeSupport.constraintLayout
 
     /*AAC*/
-    implementation Deps.ComposeSupport.navigation
     implementation Deps.Lifecycle.viewModel
-    implementation Deps.ComposeSupport.paging
 
     /*Compose Utils*/
     implementation Deps.Accompanist.pager
     implementation Deps.Accompanist.pagerIndicators
-    implementation Deps.Accompanist.navAnimation
 
     /*Image Handling*/
     implementation Deps.ComposeSupport.coil

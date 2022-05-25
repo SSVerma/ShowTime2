@@ -11,7 +11,7 @@ import com.ssverma.core.domain.model.ImageShot
 import com.ssverma.core.ui.UiState
 import com.ssverma.showtime.domain.model.person.PersonDetailsConfig
 import com.ssverma.showtime.domain.usecase.person.PersonDetailsUseCase
-import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.people.navigation.PersonDetailDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -23,7 +23,7 @@ class PersonDetailsViewModel @Inject constructor(
     private val personDetailsUseCase: PersonDetailsUseCase
 ) : ViewModel() {
 
-    private val personId = savedStateHandle.get<Int>(AppDestination.PersonDetails.PersonId) ?: 0
+    private val personId = savedStateHandle.get<Int>(PersonDetailDestination.PersonId) ?: 0
 
     var imageShots by mutableStateOf<List<ImageShot>>(emptyList())
 

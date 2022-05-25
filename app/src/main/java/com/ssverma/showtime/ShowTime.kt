@@ -5,33 +5,41 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavGraph
-import androidx.navigation.NavHostController
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.showtime.navigation.ShowTimeNavHost
-import com.ssverma.showtime.navigation.navigateTo
-import com.ssverma.showtime.ui.home.HomeBottomNavItem
-import com.ssverma.showtime.ui.home.homeBottomNavItems
+import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
+import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ShowTime() {
     ShowTimeTheme {
-        val bottomNavItems = remember { homeBottomNavItems }
         val navController = rememberAnimatedNavController()
+
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
 
         Scaffold(
             bottomBar = {
-                ShowTimeBottomBar(navController = navController, bottomNavItems)
+                ShowTimeBottomBar(
+                    currentNavDestination = currentDestination,
+                    onTopLevelNavItemSelected = { navItem ->
+                        selectTopLevelNavItem(
+                            navItem = navItem,
+                            navController = navController
+                        )
+                    }
+                )
             }
         ) { innerPaddingModifier ->
             ShowTimeNavHost(
@@ -42,68 +50,64 @@ fun ShowTime() {
     }
 }
 
+private fun selectTopLevelNavItem(
+    navItem: ShowTimeTopLevelNavItem,
+    navController: NavController
+) {
+    navController.navigate(navItem.destination.placeholderRoute.asNavRoute()) {
+        popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
 private fun showBottomBar(
-    backStackEntry: NavBackStackEntry?,
-    bottomNavScreens: List<HomeBottomNavItem>
+    currentNavDestination: NavDestination?,
+    bottomNavDestinations: List<ShowTimeTopLevelNavItem>
 ): Boolean {
-    val routes = bottomNavScreens.map { it.linkedDestination.placeholderRoute.asNavRoute() }
-    return routes.contains(backStackEntry?.destination?.route)
+    val routes = bottomNavDestinations.map { it.destination.placeholderRoute.asNavRoute() }
+    return routes.contains(currentNavDestination?.route)
 }
 
 @Composable
 fun ShowTimeBottomBar(
-    navController: NavHostController,
-    bottomNavItems: List<HomeBottomNavItem>
+    currentNavDestination: NavDestination?,
+    onTopLevelNavItemSelected: (ShowTimeTopLevelNavItem) -> Unit,
+    modifier: Modifier = Modifier,
+    bottomNavItems: List<ShowTimeTopLevelNavItem> = ShowTimeTopLevelNavItems,
 ) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-
-    if (!showBottomBar(navBackStackEntry, bottomNavItems)) {
+    if (!showBottomBar(currentNavDestination, bottomNavItems)) {
         return
     }
 
-    val currentPlaceholderRoute = navBackStackEntry?.destination?.route
-        ?: HomeBottomNavItem.Movie.linkedDestination.placeholderRoute.asNavRoute()
-
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.background,
-        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
-        elevation = 16.dp
+        modifier = modifier.windowInsetsPadding(WindowInsets.navigationBars),
+        elevation = 16.dp,
     ) {
         bottomNavItems.forEach { navItem ->
-            val navItemDestinationRoute =
-                navItem.linkedDestination.placeholderRoute.asNavRoute()
+            val selected = currentNavDestination
+                ?.hierarchy
+                ?.any { it.route == navItem.destination.placeholderRoute.asNavRoute() } == true
 
             BottomNavigationItem(
                 icon = {
                     Icon(
-                        painter = painterResource(id = navItem.tabIconRes),
-                        contentDescription = stringResource(id = navItem.tabTitleRes)
+                        painter = painterResource(id = navItem.iconResId),
+                        contentDescription = stringResource(id = navItem.titleResId)
                     )
                 },
-                label = { Text(text = stringResource(id = navItem.tabTitleRes)) },
-                selected = currentPlaceholderRoute == navItemDestinationRoute,
+                label = { Text(text = stringResource(id = navItem.titleResId)) },
+                selected = selected,
                 selectedContentColor = MaterialTheme.colors.primary,
                 unselectedContentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.87f),
                 modifier = Modifier.navigationBarsPadding(),
                 onClick = {
-                    if (navItemDestinationRoute != currentPlaceholderRoute) {
-                        navController.navigateTo(navItem.linkedDestination.actualRoute) {
-                            launchSingleTop = true
-                            restoreState = true
-                            popUpTo(findStartDestination(navController.graph).id) {
-                                saveState = true
-                            }
-                        }
-                    }
+                    onTopLevelNavItemSelected(navItem)
                 }
             )
         }
     }
-}
-
-private val NavGraph.startDestination: NavDestination?
-    get() = findNode(startDestinationId)
-
-private tailrec fun findStartDestination(graph: NavDestination): NavDestination {
-    return if (graph is NavGraph) findStartDestination(graph.startDestination!!) else graph
 }

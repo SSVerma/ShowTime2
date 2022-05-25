@@ -14,7 +14,7 @@ import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.model.tv.TvShowDetailsConfig
 import com.ssverma.showtime.domain.model.tv.imageShots
 import com.ssverma.showtime.domain.usecase.tv.TvShowDetailsUseCase
-import com.ssverma.showtime.navigation.AppDestination
+import com.ssverma.showtime.ui.tv.navigation.TvShowDetailDestination
 import com.ssverma.showtime.utils.AppUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -28,7 +28,7 @@ class TvShowDetailsViewModel @Inject constructor(
     private val tvShowDetailsUseCase: TvShowDetailsUseCase
 ) : AndroidViewModel(application) {
 
-    val tvShowId = savedStateHandle.get<Int>(AppDestination.TvShowDetails.ArgTvShowId) ?: 0
+    val tvShowId = savedStateHandle.get<Int>(TvShowDetailDestination.ArgTvShowId) ?: 0
 
     var imageShots by mutableStateOf<List<ImageShot>>(emptyList())
         private set
