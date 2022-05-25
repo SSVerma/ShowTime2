@@ -67,6 +67,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion Versions.compose
     }
+    namespace 'com.ssverma.showtime'
 }
 
 dependencies {
