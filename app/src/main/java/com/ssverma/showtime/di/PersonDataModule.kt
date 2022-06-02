@@ -3,7 +3,11 @@ package com.ssverma.showtime.di
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
 import com.ssverma.core.domain.model.ImageShot
-import com.ssverma.showtime.data.mapper.*
+import com.ssverma.shared.data.mapper.ImageShotsMapper
+import com.ssverma.shared.data.mapper.ListMapper
+import com.ssverma.shared.data.mapper.Mapper
+import com.ssverma.showtime.data.mapper.PersonMapper
+import com.ssverma.showtime.data.mapper.PersonsMapper
 import com.ssverma.showtime.data.remote.DefaultPersonRemoteDataSource
 import com.ssverma.showtime.data.remote.PersonRemoteDataSource
 import com.ssverma.showtime.data.repository.DefaultPersonRepository

@@ -1,13 +1,13 @@
 package com.ssverma.showtime.domain.usecase.person
 
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.showtime.di.DefaultDispatcher
+import com.ssverma.core.di.DefaultDispatcher
 import com.ssverma.core.domain.Result
+import com.ssverma.core.domain.failure.Failure
+import com.ssverma.core.domain.usecase.UseCase
 import com.ssverma.showtime.domain.failure.person.PersonFailure
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.person.PersonDetailsConfig
 import com.ssverma.showtime.domain.repository.PersonRepository
-import com.ssverma.core.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 

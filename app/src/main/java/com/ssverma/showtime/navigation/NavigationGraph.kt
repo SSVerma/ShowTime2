@@ -8,9 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.ssverma.core.navigation.StandaloneDestination
+import com.ssverma.feature.movie.navigation.*
 import com.ssverma.showtime.ui.home.HomeDestination
 import com.ssverma.showtime.ui.home.homeGraph
-import com.ssverma.showtime.ui.movie.navigation.*
 import com.ssverma.showtime.ui.people.navigation.personDetailGraph
 import com.ssverma.showtime.ui.people.navigation.personImageShotsGraph
 import com.ssverma.showtime.ui.tv.navigation.*

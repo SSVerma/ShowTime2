@@ -1,5 +1,6 @@
 package com.ssverma.showtime.di
 
+import com.ssverma.core.di.DefaultDispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

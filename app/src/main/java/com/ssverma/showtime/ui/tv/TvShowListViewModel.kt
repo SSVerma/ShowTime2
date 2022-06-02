@@ -9,14 +9,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.ssverma.core.domain.Result
+import com.ssverma.core.domain.TvDiscoverConfig
+import com.ssverma.feature.filter.ui.FilterUiState
+import com.ssverma.feature.filter.ui.asUiFilters
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.TvDiscoverConfig
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.model.tv.TvShowListingConfig
 import com.ssverma.showtime.domain.usecase.filter.TvShowFilterUseCase
 import com.ssverma.showtime.domain.usecase.tv.PaginatedTvShowUseCase
-import com.ssverma.showtime.ui.filter.FilterUiState
-import com.ssverma.showtime.ui.filter.asUiFilters
 import com.ssverma.showtime.ui.tv.navigation.TvShowListDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

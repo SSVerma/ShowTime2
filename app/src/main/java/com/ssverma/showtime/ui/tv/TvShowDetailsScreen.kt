@@ -21,6 +21,7 @@ import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.shared.ui.component.BackdropHeader
+import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.section.*
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
@@ -28,7 +29,6 @@ import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSp
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.showtime.ui.highlightedItems
 
 @Composable

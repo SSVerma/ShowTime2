@@ -1,13 +1,13 @@
 package com.ssverma.showtime.domain.usecase.tv
 
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.showtime.di.DefaultDispatcher
+import com.ssverma.core.di.DefaultDispatcher
 import com.ssverma.core.domain.Result
-import com.ssverma.showtime.domain.TimeWindow
+import com.ssverma.core.domain.TimeWindow
+import com.ssverma.core.domain.failure.Failure
+import com.ssverma.core.domain.usecase.UseCase
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.repository.TvShowRepository
-import com.ssverma.core.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 

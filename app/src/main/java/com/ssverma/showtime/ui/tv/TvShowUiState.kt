@@ -1,5 +1,6 @@
 package com.ssverma.showtime.ui.tv
 
+import com.ssverma.core.domain.model.Genre
 import com.ssverma.showtime.domain.failure.tv.TvEpisodeFailure
 import com.ssverma.showtime.domain.failure.tv.TvSeasonFailure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure
@@ -15,3 +16,5 @@ typealias TvShowDetailsUiState = UiState<TvShow, TvShowFailure>
 typealias TvSeasonUiState = UiState<TvSeason, TvSeasonFailure>
 
 typealias TvEpisodeUiState = UiState<TvEpisode, TvEpisodeFailure>
+
+typealias GenresUiState = UiState<List<Genre>, Nothing>

@@ -1,13 +1,13 @@
 package com.ssverma.showtime.domain.usecase.filter
 
+import com.ssverma.core.di.DefaultDispatcher
+import com.ssverma.core.domain.DiscoverOption
 import com.ssverma.core.domain.Result
 import com.ssverma.core.domain.failure.Failure
 import com.ssverma.core.domain.usecase.NoParamFlowUseCase
-import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.DiscoverOption
-import com.ssverma.showtime.domain.Filter
-import com.ssverma.showtime.domain.FilterId
-import com.ssverma.showtime.domain.StaticFilterItem
+import com.ssverma.feature.filter.domain.Filter
+import com.ssverma.feature.filter.domain.FilterId
+import com.ssverma.feature.filter.domain.StaticFilterItem
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

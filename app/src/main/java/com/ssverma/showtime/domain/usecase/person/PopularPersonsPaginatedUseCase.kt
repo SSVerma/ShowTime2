@@ -1,8 +1,8 @@
 package com.ssverma.showtime.domain.usecase.person
 
 import androidx.paging.PagingData
+import com.ssverma.core.di.DefaultDispatcher
 import com.ssverma.core.domain.usecase.NoParamFlowUseCase
-import com.ssverma.showtime.di.DefaultDispatcher
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.repository.PersonRepository
 import kotlinx.coroutines.CoroutineDispatcher

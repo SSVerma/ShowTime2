@@ -1,7 +1,9 @@
 package com.ssverma.showtime.domain.model
 
+import com.ssverma.core.domain.model.Gender
 import com.ssverma.core.domain.model.Genre
 import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.core.domain.model.MediaType
 import java.time.LocalDate
 
 data class Person(
@@ -35,15 +37,3 @@ data class PersonMedia(
     val job: String?,
     val mediaType: MediaType
 )
-
-sealed interface MediaType {
-    object Movie : MediaType
-    object Tv : MediaType
-    object Unknown : MediaType
-}
-
-sealed interface Gender {
-    object Male : Gender
-    object Female : Gender
-    object Unknown : Gender
-}

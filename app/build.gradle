@@ -77,9 +77,15 @@ dependencies {
     implementation project(Modules.ApiService.tmdb)
     implementation project(Modules.Core.ui)
     implementation project(Modules.Shared.ui)
+    implementation project(Modules.Shared.data)
     implementation project(Modules.Core.domain)
     implementation project(Modules.Core.uiPaging)
     implementation project(Modules.Core.navigation)
+    implementation project(Modules.Core.di)
+
+    implementation project(Modules.Feature.movie)
+    //TODO: Remove once tv show feature migration completes
+    implementation project(Modules.Feature.filter)
 
     implementation Deps.coreKtx
     implementation Deps.appcompat

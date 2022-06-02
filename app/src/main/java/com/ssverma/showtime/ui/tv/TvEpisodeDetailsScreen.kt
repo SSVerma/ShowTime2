@@ -18,8 +18,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.DriveCompose
-import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
 import com.ssverma.shared.ui.bottomsheet.SheetContentType
 import com.ssverma.shared.ui.bottomsheet.rememberImageShotBottomSheetState

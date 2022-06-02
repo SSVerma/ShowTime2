@@ -26,8 +26,10 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
+import com.ssverma.core.domain.model.MediaType
 import com.ssverma.core.domain.model.emptyImageShot
-import com.ssverma.core.ui.*
+import com.ssverma.core.ui.DriveCompose
+import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.core.ui.layout.HorizontalLazyListIndexed
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
@@ -36,7 +38,6 @@ import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImagePagerScreen
 import com.ssverma.shared.ui.component.*
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.MediaType
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.PersonMedia
 import kotlinx.coroutines.launch

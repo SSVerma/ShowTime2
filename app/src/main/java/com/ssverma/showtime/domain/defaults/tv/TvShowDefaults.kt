@@ -1,11 +1,11 @@
 package com.ssverma.showtime.domain.defaults.tv
 
-import com.ssverma.showtime.domain.DiscoverOption
-import com.ssverma.showtime.domain.Order
-import com.ssverma.showtime.domain.SortBy
-import com.ssverma.showtime.domain.TvDiscoverConfig
-import com.ssverma.showtime.domain.model.MediaDetailsAppendable
-import com.ssverma.showtime.utils.DateUtils
+import com.ssverma.core.domain.DiscoverOption
+import com.ssverma.core.domain.Order
+import com.ssverma.core.domain.SortBy
+import com.ssverma.core.domain.TvDiscoverConfig
+import com.ssverma.core.domain.model.MediaDetailsAppendable
+import com.ssverma.core.domain.utils.DateUtils
 
 object TvShowDefaults {
     object DiscoverDefaults {

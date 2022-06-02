@@ -1,9 +1,9 @@
 package com.ssverma.showtime.domain.usecase.tv
 
 import androidx.paging.PagingData
+import com.ssverma.core.di.DefaultDispatcher
+import com.ssverma.core.domain.TvDiscoverConfig
 import com.ssverma.core.domain.usecase.FlowUseCase
-import com.ssverma.showtime.di.DefaultDispatcher
-import com.ssverma.showtime.domain.TvDiscoverConfig
 import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.showtime.domain.model.tv.TvShowListingConfig
 import kotlinx.coroutines.CoroutineDispatcher

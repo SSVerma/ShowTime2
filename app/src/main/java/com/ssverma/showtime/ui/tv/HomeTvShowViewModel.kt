@@ -5,11 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.showtime.domain.TimeWindow
+import com.ssverma.core.domain.TimeWindow
 import com.ssverma.showtime.domain.usecase.tv.*
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.asSuccessOrErrorUiState
-import com.ssverma.showtime.ui.movie.GenresUiState
+import com.ssverma.feature.movie.ui.GenresUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -44,7 +44,7 @@ class HomeTvShowViewModel @Inject constructor(
     var upcomingTvShowsUiState by mutableStateOf<TvShowListUiState>(UiState.Idle)
         private set
 
-    var tvGenresUiState by mutableStateOf<GenresUiState>(UiState.Idle)
+    var tvGenresUiState by mutableStateOf<com.ssverma.feature.movie.ui.GenresUiState>(UiState.Idle)
         private set
 
     init {

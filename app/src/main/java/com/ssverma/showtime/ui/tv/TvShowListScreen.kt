@@ -22,7 +22,6 @@ import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.showtime.ui.filter.TvFiltersScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

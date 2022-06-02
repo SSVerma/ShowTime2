@@ -3,8 +3,8 @@ package com.ssverma.showtime.domain.repository
 import androidx.paging.PagingData
 import com.ssverma.core.domain.failure.Failure
 import com.ssverma.core.domain.Result
-import com.ssverma.showtime.domain.TimeWindow
-import com.ssverma.showtime.domain.TvDiscoverConfig
+import com.ssverma.core.domain.TimeWindow
+import com.ssverma.core.domain.TvDiscoverConfig
 import com.ssverma.showtime.domain.failure.tv.TvEpisodeFailure
 import com.ssverma.showtime.domain.failure.tv.TvSeasonFailure
 import com.ssverma.showtime.domain.failure.tv.TvShowFailure

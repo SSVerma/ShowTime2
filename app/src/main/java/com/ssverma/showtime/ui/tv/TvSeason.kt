@@ -12,8 +12,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.showtime.R
 import com.ssverma.showtime.domain.model.tv.TvSeason
 

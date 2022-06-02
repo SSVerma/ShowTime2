@@ -12,17 +12,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.domain.model.Genre
+import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.layout.SectionLoadingIndicator
-import com.ssverma.showtime.R
-import com.ssverma.core.domain.model.Genre
-import com.ssverma.showtime.domain.model.tv.TvShow
 import com.ssverma.shared.ui.component.GenreItem
-import com.ssverma.core.ui.DriveCompose
-import com.ssverma.showtime.ui.home.HomePageAppBar
-import com.ssverma.showtime.ui.movie.GenresUiState
+import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.showtime.R
+import com.ssverma.showtime.domain.model.tv.TvShow
 
 @Composable
 fun TvShowScreen(

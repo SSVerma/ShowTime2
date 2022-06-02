@@ -3,40 +3,9 @@ package com.ssverma.showtime.ui
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.emptyIfAbsent
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.movie.Movie
 import com.ssverma.showtime.domain.model.tv.TvEpisode
 import com.ssverma.showtime.domain.model.tv.TvSeason
 import com.ssverma.showtime.domain.model.tv.TvShow
-import com.ssverma.showtime.utils.DateUtils
-
-fun Movie.highlightedItems(): List<Highlight> {
-    return listOf(
-        Highlight(
-            labelRes = R.string.rating,
-            value = voteAvg.emptyIfAbsent()
-        ),
-        Highlight(
-            labelRes = R.string.release_date,
-            value = displayReleaseDate.orEmpty(),
-        ),
-        Highlight(
-            labelRes = R.string.status,
-            value = status
-        ),
-        Highlight(
-            labelRes = R.string.language,
-            value = originalLanguage
-        ),
-        Highlight(
-            labelRes = R.string.runtime,
-            value = if (runtime == 0) runtime.emptyIfAbsent() else DateUtils.formatMinutes(runtime)
-        ),
-        Highlight(
-            labelRes = R.string.revenue,
-            value = if (revenue == 0L) revenue.emptyIfAbsent() else "$$revenue"
-        )
-    )
-}
 
 fun TvShow.highlightedItems(): List<Highlight> {
     return listOf(

@@ -11,10 +11,10 @@ import com.ssverma.api.service.tmdb.response.RemotePerson
 import com.ssverma.core.domain.Result
 import com.ssverma.core.domain.failure.Failure
 import com.ssverma.core.domain.model.ImageShot
-import com.ssverma.showtime.data.mapper.ListMapper
-import com.ssverma.showtime.data.mapper.Mapper
-import com.ssverma.showtime.data.mapper.asDomainResult
-import com.ssverma.showtime.data.mapper.asQueryMap
+import com.ssverma.shared.data.mapper.ListMapper
+import com.ssverma.shared.data.mapper.Mapper
+import com.ssverma.shared.data.mapper.asDomainResult
+import com.ssverma.shared.data.mapper.asQueryMap
 import com.ssverma.showtime.data.remote.PersonRemoteDataSource
 import com.ssverma.showtime.domain.failure.person.PersonFailure
 import com.ssverma.showtime.domain.model.Person

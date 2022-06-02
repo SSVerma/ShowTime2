@@ -21,19 +21,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.ssverma.shared.ui.TmdbPosterAspectRatio
+import com.ssverma.core.domain.model.Gender
+import com.ssverma.core.domain.model.MediaType
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedListIndexed
+import com.ssverma.shared.ui.TmdbPosterAspectRatio
+import com.ssverma.shared.ui.component.HomePageAppBar
 import com.ssverma.showtime.R
-import com.ssverma.showtime.domain.model.Gender
-import com.ssverma.showtime.domain.model.MediaType
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.PersonMedia
-import com.ssverma.showtime.ui.home.HomePageAppBar
 
 @Composable
 fun PersonScreen(

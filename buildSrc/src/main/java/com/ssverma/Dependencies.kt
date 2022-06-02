@@ -81,6 +81,7 @@ object Deps {
 
     object Di {
         const val daggerHilt = "com.google.dagger:hilt-android:${Versions.Di.daggerHilt}"
+        const val daggerHiltCore = "com.google.dagger:hilt-core:${Versions.Di.daggerHilt}"
         const val hiltCompose = "androidx.hilt:hilt-navigation-compose:${Versions.Di.hiltCompose}"
 
         object Kapt {

@@ -3,7 +3,12 @@ package com.ssverma.showtime.di
 import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
 import com.ssverma.api.service.tmdb.response.RemoteTvSeason
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
-import com.ssverma.showtime.data.mapper.*
+import com.ssverma.shared.data.mapper.ListMapper
+import com.ssverma.shared.data.mapper.Mapper
+import com.ssverma.showtime.data.mapper.TvEpisodeMapper
+import com.ssverma.showtime.data.mapper.TvSeasonMapper
+import com.ssverma.showtime.data.mapper.TvShowMapper
+import com.ssverma.showtime.data.mapper.TvShowsMapper
 import com.ssverma.showtime.data.remote.DefaultTvShowRemoteDataSource
 import com.ssverma.showtime.data.remote.TvShowRemoteDataSource
 import com.ssverma.showtime.data.repository.DefaultTvShowRepository

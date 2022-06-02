@@ -4,12 +4,13 @@ import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemotePerson
 import com.ssverma.api.service.tmdb.response.RemotePersonCredit
 import com.ssverma.api.service.tmdb.response.RemotePersonMedia
-import com.ssverma.showtime.domain.model.MediaType
+import com.ssverma.core.domain.model.MediaType
+import com.ssverma.core.domain.utils.DateUtils
+import com.ssverma.core.domain.utils.FormatterUtils
+import com.ssverma.core.domain.utils.formatLocally
+import com.ssverma.shared.data.mapper.*
 import com.ssverma.showtime.domain.model.Person
 import com.ssverma.showtime.domain.model.PersonMedia
-import com.ssverma.showtime.utils.DateUtils
-import com.ssverma.showtime.utils.FormatterUtils
-import com.ssverma.showtime.utils.formatLocally
 import javax.inject.Inject
 
 class PersonMapper @Inject constructor(

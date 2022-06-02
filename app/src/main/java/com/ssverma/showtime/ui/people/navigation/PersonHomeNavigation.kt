@@ -6,7 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.StandaloneDestination
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
-import com.ssverma.showtime.ui.movie.navigation.MovieDetailDestination
+import com.ssverma.feature.movie.navigation.MovieDetailDestination
 import com.ssverma.showtime.ui.people.PersonScreen
 import com.ssverma.showtime.ui.tv.navigation.TvShowDetailDestination
 
