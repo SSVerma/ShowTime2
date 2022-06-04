@@ -9,7 +9,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.domain.Result
 import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
+import com.ssverma.feature.tv.domain.model.TvShow
 import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.feature.tv.domain.model.imageShots
 import com.ssverma.feature.tv.domain.usecase.TvShowDetailsUseCase
@@ -58,11 +60,11 @@ class TvShowDetailsViewModel @Inject constructor(
     }
 
     fun openYoutubeApp(videoId: String) {
-        //TODO
-//        AppUtils.dispatchOpenYoutubeIntent(getApplication(), videoId)
+        getApplication<Application>()
+            .dispatchYoutubeIntent(videoId = videoId)
     }
 
-    fun onPlayTrailerClicked(tvShow: com.ssverma.feature.tv.domain.model.TvShow) {
+    fun onPlayTrailerClicked(tvShow: TvShow) {
         tvShow.videos.firstOrNull()?.let {
             openYoutubeApp(it.key)
         }

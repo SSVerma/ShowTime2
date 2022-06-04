@@ -9,6 +9,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.domain.Result
 import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
@@ -58,8 +59,8 @@ class MovieDetailsViewModel @Inject constructor(
     }
 
     fun openYoutubeApp(videoId: String) {
-        //TODO: Migrate AppUtils to separate module
-//        AppUtils.dispatchOpenYoutubeIntent(getApplication(), videoId)
+        getApplication<Application>()
+            .dispatchYoutubeIntent(videoId = videoId)
     }
 
     fun onPlayTrailerClicked(movie: Movie) {
