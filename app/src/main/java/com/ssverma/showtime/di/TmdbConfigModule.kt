@@ -11,7 +11,7 @@ import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
-class NetworkModule {
+class TmdbConfigModule {
     @TmdbServiceApiKey
     @Singleton
     @Provides
@@ -23,6 +23,6 @@ class NetworkModule {
     @Singleton
     @Provides
     fun provideTmdbServiceBaseUrl(): String {
-        return BuildConfig.BASE_URL
+        return BuildConfig.TMDB_BASE_URL
     }
 }

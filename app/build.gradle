@@ -37,7 +37,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    def FIELD_BASE_URL = "BASE_URL"
+    def FIELD_TMDB_BASE_URL = "TMDB_BASE_URL"
     def FIELD_TMDB_API_KEY = "TMDB_API_KEY"
 
     buildTypes {
@@ -48,7 +48,7 @@ android {
 
         debug {
             minifyEnabled false
-            buildConfigField("String", FIELD_BASE_URL, debugProps.getProperty("baseUrl"))
+            buildConfigField("String", FIELD_TMDB_BASE_URL, debugProps.getProperty("baseUrl"))
             buildConfigField("String", FIELD_TMDB_API_KEY, coreProps.getProperty("tmdbApiKey"))
         }
     }
