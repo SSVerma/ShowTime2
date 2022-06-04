@@ -1,6 +1,6 @@
 package com.ssverma.feature.tv.domain.model
 
-import com.ssverma.core.domain.model.MediaDetailsAppendable
+import com.ssverma.shared.domain.model.MediaDetailsAppendable
 import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
 
 data class TvShowDetailsConfig(

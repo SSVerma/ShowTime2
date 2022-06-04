@@ -1,6 +1,6 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.core.domain.model.Gender
+import com.ssverma.shared.domain.model.Gender
 import javax.inject.Inject
 
 class GenderMapper @Inject constructor() : Mapper<Int, Gender>() {

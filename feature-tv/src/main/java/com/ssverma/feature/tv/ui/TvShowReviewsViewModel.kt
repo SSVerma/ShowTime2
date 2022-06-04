@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.core.domain.model.Review
+import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.tv.domain.usecase.TvShowReviewsPaginatedUseCase
 import com.ssverma.feature.tv.navigation.TvShowReviewsDestination
 import dagger.hilt.android.lifecycle.HiltViewModel

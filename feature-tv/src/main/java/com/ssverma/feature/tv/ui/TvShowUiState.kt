@@ -1,6 +1,6 @@
 package com.ssverma.feature.tv.ui
 
-import com.ssverma.core.domain.model.Genre
+import com.ssverma.shared.domain.model.Genre
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.tv.domain.failure.TvEpisodeFailure
 import com.ssverma.feature.tv.domain.failure.TvSeasonFailure

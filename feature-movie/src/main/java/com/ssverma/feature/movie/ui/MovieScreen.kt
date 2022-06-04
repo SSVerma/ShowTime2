@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.model.Genre
+import com.ssverma.shared.domain.model.Genre
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.image.NetworkImage

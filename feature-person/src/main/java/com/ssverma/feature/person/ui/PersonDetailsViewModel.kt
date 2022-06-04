@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.person.navigation.PersonDetailDestination
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -3,8 +3,8 @@ package com.ssverma.shared.data.mapper
 import com.ssverma.api.service.tmdb.AppendableQueryMap
 import com.ssverma.api.service.tmdb.QueryMultiValue
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
-import com.ssverma.core.domain.model.MediaDetailsAppendable
-import com.ssverma.core.domain.model.PersonDetailAppendable
+import com.ssverma.shared.domain.model.MediaDetailsAppendable
+import com.ssverma.shared.domain.model.PersonDetailAppendable
 
 fun List<MediaDetailsAppendable>.asQueryMap(): Map<String, String> {
     val queryBuilder = QueryMultiValue.andBuilder()

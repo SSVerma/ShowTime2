@@ -1,9 +1,9 @@
 package com.ssverma.feature.person.domain.model
 
-import com.ssverma.core.domain.model.Gender
-import com.ssverma.core.domain.model.Genre
-import com.ssverma.core.domain.model.ImageShot
-import com.ssverma.core.domain.model.MediaType
+import com.ssverma.shared.domain.model.Gender
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.ImageShot
+import com.ssverma.shared.domain.model.MediaType
 import java.time.LocalDate
 
 data class Person(

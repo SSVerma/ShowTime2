@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.layout.HorizontalLazyList

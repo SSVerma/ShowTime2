@@ -1,4 +1,4 @@
-package com.ssverma.core.domain
+package com.ssverma.shared.domain
 
 abstract class DiscoverConfig(
     val discoverOptions: Set<DiscoverOption.OptionScope>,

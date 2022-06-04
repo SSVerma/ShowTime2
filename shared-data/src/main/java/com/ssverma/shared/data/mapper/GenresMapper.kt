@@ -1,7 +1,7 @@
 package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.response.RemoteGenre
-import com.ssverma.core.domain.model.Genre
+import com.ssverma.shared.domain.model.Genre
 import javax.inject.Inject
 
 class GenresMapper @Inject constructor() : ListMapper<RemoteGenre, Genre>() {

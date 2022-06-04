@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.core.domain.MovieDiscoverConfig
-import com.ssverma.core.domain.Result
+import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.domain.Result
 import com.ssverma.feature.filter.ui.FilterUiState
 import com.ssverma.feature.filter.ui.asUiFilters
 import com.ssverma.feature.movie.R

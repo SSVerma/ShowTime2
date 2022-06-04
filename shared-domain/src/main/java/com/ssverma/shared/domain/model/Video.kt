@@ -1,4 +1,4 @@
-package com.ssverma.core.domain.model
+package com.ssverma.shared.domain.model
 
 private const val YoutubeVideoUrl = "https://www.youtube.com/watch?v="
 private const val YoutubeThumbnailUrl = "https://img.youtube.com/vi/"

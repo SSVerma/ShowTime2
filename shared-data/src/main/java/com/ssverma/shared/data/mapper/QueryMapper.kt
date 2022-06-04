@@ -1,7 +1,7 @@
 package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
-import com.ssverma.core.domain.TimeWindow
+import com.ssverma.shared.domain.TimeWindow
 
 fun TimeWindow.asTmdbQueryValue(): String {
     return when (this) {

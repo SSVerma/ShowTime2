@@ -3,10 +3,10 @@ package com.ssverma.shared.data.mapper
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.api.service.tmdb.response.RemoteReviewAuthor
-import com.ssverma.core.domain.model.Review
-import com.ssverma.core.domain.model.ReviewAuthor
-import com.ssverma.core.domain.utils.DateUtils
-import com.ssverma.core.domain.utils.formatLocally
+import com.ssverma.shared.domain.model.Review
+import com.ssverma.shared.domain.model.ReviewAuthor
+import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.formatLocally
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

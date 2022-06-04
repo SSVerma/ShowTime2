@@ -3,7 +3,7 @@ package com.ssverma.feature.tv.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.core.domain.Result
+import com.ssverma.shared.domain.Result
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.tv.domain.model.TvSeasonConfig
 import com.ssverma.feature.tv.domain.usecase.TvSeasonUseCase

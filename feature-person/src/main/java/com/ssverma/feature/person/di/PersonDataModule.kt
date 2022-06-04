@@ -2,7 +2,7 @@ package com.ssverma.feature.person.di
 
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
-import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.feature.person.data.mapper.PersonMapper
 import com.ssverma.feature.person.data.mapper.PersonsMapper
 import com.ssverma.feature.person.data.remote.DefaultPersonRemoteDataSource

@@ -5,7 +5,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.model.Genre
+import com.ssverma.shared.domain.model.Genre
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

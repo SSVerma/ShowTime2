@@ -1,4 +1,4 @@
-package com.ssverma.core.domain
+package com.ssverma.shared.domain
 
 import java.time.LocalDate
 

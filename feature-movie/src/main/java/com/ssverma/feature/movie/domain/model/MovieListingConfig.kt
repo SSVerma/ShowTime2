@@ -1,8 +1,8 @@
 package com.ssverma.feature.movie.domain.model
 
-import com.ssverma.core.domain.DiscoverOption
-import com.ssverma.core.domain.MovieDiscoverConfig
-import com.ssverma.core.domain.TimeWindow
+import com.ssverma.shared.domain.DiscoverOption
+import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.feature.movie.domain.defaults.MovieDefaults
 
 sealed interface MovieListingConfig {

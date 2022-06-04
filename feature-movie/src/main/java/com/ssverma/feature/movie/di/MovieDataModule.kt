@@ -3,8 +3,8 @@ package com.ssverma.feature.movie.di
 import com.ssverma.api.service.tmdb.response.RemoteGenre
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
-import com.ssverma.core.domain.model.Genre
-import com.ssverma.core.domain.model.Review
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.movie.data.mapper.MovieMapper
 import com.ssverma.feature.movie.data.mapper.MoviesMapper
 import com.ssverma.feature.movie.domain.model.Movie

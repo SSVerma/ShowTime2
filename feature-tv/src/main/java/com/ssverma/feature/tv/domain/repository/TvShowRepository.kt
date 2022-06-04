@@ -1,12 +1,12 @@
 package com.ssverma.feature.tv.domain.repository
 
 import androidx.paging.PagingData
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.TimeWindow
-import com.ssverma.core.domain.TvDiscoverConfig
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.domain.model.Genre
-import com.ssverma.core.domain.model.Review
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.TvDiscoverConfig
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.tv.domain.failure.TvEpisodeFailure
 import com.ssverma.feature.tv.domain.failure.TvSeasonFailure
 import com.ssverma.feature.tv.domain.failure.TvShowFailure

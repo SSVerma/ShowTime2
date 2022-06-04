@@ -1,4 +1,4 @@
-package com.ssverma.core.domain.utils
+package com.ssverma.shared.domain.utils
 
 import java.time.DateTimeException
 import java.time.LocalDate

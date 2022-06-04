@@ -13,7 +13,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
-import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.shared.ui.component.ImageShotItem

@@ -26,8 +26,8 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
-import com.ssverma.core.domain.model.MediaType
-import com.ssverma.core.domain.model.emptyImageShot
+import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.emptyImageShot
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.image.NetworkImage

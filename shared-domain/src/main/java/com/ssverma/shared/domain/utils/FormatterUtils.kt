@@ -1,4 +1,4 @@
-package com.ssverma.core.domain.utils
+package com.ssverma.shared.domain.utils
 
 import java.text.DecimalFormat
 

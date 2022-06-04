@@ -1,6 +1,6 @@
 package com.ssverma.feature.filter.ui
 
-import com.ssverma.core.domain.DiscoverOption
+import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.core.ui.MultiSelectableState
 import com.ssverma.core.ui.SingleSelectableState
 import com.ssverma.core.ui.UiText

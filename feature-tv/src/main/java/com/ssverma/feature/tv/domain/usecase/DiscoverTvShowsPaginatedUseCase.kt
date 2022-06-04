@@ -2,8 +2,8 @@ package com.ssverma.feature.tv.domain.usecase
 
 import androidx.paging.PagingData
 import com.ssverma.core.di.DefaultDispatcher
-import com.ssverma.core.domain.TvDiscoverConfig
-import com.ssverma.core.domain.usecase.FlowUseCase
+import com.ssverma.shared.domain.TvDiscoverConfig
+import com.ssverma.shared.domain.usecase.FlowUseCase
 import com.ssverma.feature.tv.domain.model.TvShow
 import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import kotlinx.coroutines.CoroutineDispatcher

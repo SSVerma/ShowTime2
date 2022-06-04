@@ -2,8 +2,8 @@ package com.ssverma.showtime.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvSeason
-import com.ssverma.core.domain.utils.DateUtils
-import com.ssverma.core.domain.utils.formatLocally
+import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.feature.tv.data.mapper.asTvEpisodes
 import com.ssverma.shared.data.mapper.*
 import javax.inject.Inject

@@ -8,9 +8,9 @@ import com.ssverma.api.service.tmdb.paging.ImagePagingSource
 import com.ssverma.api.service.tmdb.paging.PersonPagingSource
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.feature.person.data.remote.PersonRemoteDataSource
 import com.ssverma.feature.person.domain.failure.PersonFailure
 import com.ssverma.feature.person.domain.model.Person

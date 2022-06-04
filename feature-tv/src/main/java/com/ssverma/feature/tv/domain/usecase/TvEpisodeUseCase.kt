@@ -1,9 +1,9 @@
 package com.ssverma.feature.tv.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.domain.usecase.UseCase
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.usecase.UseCase
 import com.ssverma.feature.tv.domain.failure.TvEpisodeFailure
 import com.ssverma.feature.tv.domain.model.TvEpisode
 import com.ssverma.feature.tv.domain.model.TvEpisodeConfig

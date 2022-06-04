@@ -12,7 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.model.Genre
+import com.ssverma.shared.domain.model.Genre
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section

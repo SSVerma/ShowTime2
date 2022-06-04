@@ -1,7 +1,7 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.failure.Failure
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.core.networking.adapter.ApiResponse
 
 suspend fun <RemoteSuccess, RemoteError, DomainSuccess, FeatureFailure> ApiResponse<RemoteSuccess, RemoteError>.asDomainResult(

@@ -4,8 +4,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ssverma.core.domain.DiscoverOption
-import com.ssverma.core.domain.TvDiscoverConfig
+import com.ssverma.shared.domain.DiscoverOption
+import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.feature.filter.ui.FilterGroup
 import com.ssverma.feature.filter.ui.FiltersScreen
 

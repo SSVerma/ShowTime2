@@ -1,4 +1,4 @@
-package com.ssverma.core.domain.utils
+package com.ssverma.shared.domain.utils
 
 object CoreUtils {
     fun buildImageUrl(baseUrl: String, imagePath: String?): String {

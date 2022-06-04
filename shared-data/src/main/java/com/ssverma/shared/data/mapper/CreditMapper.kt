@@ -3,8 +3,8 @@ package com.ssverma.shared.data.mapper
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteCast
 import com.ssverma.api.service.tmdb.response.RemoteCrew
-import com.ssverma.core.domain.model.Cast
-import com.ssverma.core.domain.model.Crew
+import com.ssverma.shared.domain.model.Cast
+import com.ssverma.shared.domain.model.Crew
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

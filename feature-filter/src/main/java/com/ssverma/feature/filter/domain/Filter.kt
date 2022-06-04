@@ -1,6 +1,6 @@
 package com.ssverma.feature.filter.domain
 
-import com.ssverma.core.domain.DiscoverOption
+import com.ssverma.shared.domain.DiscoverOption
 import java.time.LocalDate
 
 sealed interface Filter {

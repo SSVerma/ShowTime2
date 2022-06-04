@@ -1,4 +1,4 @@
-package com.ssverma.core.domain.model
+package com.ssverma.shared.domain.model
 
 sealed interface MediaType {
     object Movie : MediaType

@@ -1,4 +1,4 @@
-package com.ssverma.core.domain.failure
+package com.ssverma.shared.domain.failure
 
 sealed interface Failure<out FeatureFailure> {
     data class FeatureFailure<out FeatureFailure>(

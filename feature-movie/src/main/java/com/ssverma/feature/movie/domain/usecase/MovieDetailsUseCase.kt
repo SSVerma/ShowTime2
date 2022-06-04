@@ -1,9 +1,9 @@
 package com.ssverma.feature.movie.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.domain.usecase.UseCase
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.usecase.UseCase
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig

@@ -2,10 +2,10 @@ package com.ssverma.showtime.data.mapper
 
 import com.ssverma.api.service.tmdb.TMDB_IMAGE_BASE_URL
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
-import com.ssverma.core.domain.utils.CoreUtils
-import com.ssverma.core.domain.utils.DateUtils
-import com.ssverma.core.domain.utils.FormatterUtils
-import com.ssverma.core.domain.utils.formatLocally
+import com.ssverma.shared.domain.utils.CoreUtils
+import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.FormatterUtils
+import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.shared.data.mapper.*
 import com.ssverma.feature.tv.domain.model.TvShow
 import kotlinx.coroutines.Dispatchers

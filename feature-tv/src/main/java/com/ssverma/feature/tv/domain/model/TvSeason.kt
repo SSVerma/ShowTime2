@@ -1,9 +1,9 @@
 package com.ssverma.feature.tv.domain.model
 
-import com.ssverma.core.domain.model.ImageShot
-import com.ssverma.core.domain.model.Cast
-import com.ssverma.core.domain.model.Crew
-import com.ssverma.core.domain.model.Video
+import com.ssverma.shared.domain.model.ImageShot
+import com.ssverma.shared.domain.model.Cast
+import com.ssverma.shared.domain.model.Crew
+import com.ssverma.shared.domain.model.Video
 
 data class TvSeason(
     val id: Int,

@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation project(Modules.Core.domain)
+    implementation project(Modules.Shared.domain)
     implementation project(Modules.Core.networking)
     implementation project(Modules.ApiService.tmdb)
 

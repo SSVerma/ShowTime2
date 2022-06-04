@@ -2,8 +2,8 @@ package com.ssverma.feature.tv.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
-import com.ssverma.core.domain.utils.DateUtils
-import com.ssverma.core.domain.utils.formatLocally
+import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.feature.tv.domain.model.TvEpisode
 import com.ssverma.shared.data.mapper.*
 import javax.inject.Inject

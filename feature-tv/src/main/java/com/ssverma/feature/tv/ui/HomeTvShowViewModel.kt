@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.core.domain.TimeWindow
+import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.asSuccessOrErrorUiState
 import com.ssverma.feature.tv.domain.usecase.*

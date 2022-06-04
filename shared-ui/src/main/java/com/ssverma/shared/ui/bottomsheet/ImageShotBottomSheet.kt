@@ -14,7 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.shared.domain.model.ImageShot
 import kotlinx.coroutines.launch
 
 sealed interface SheetContentType {

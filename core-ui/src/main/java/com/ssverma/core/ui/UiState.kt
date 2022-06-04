@@ -1,8 +1,8 @@
 package com.ssverma.core.ui
 
 import androidx.compose.runtime.Stable
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.failure.Failure
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 
 @Stable
 sealed interface UiState<out S, out FeatureFailure> {

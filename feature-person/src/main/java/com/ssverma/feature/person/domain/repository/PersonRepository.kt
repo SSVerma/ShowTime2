@@ -1,9 +1,9 @@
 package com.ssverma.feature.person.domain.repository
 
 import androidx.paging.PagingData
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.domain.model.ImageShot
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.feature.person.domain.failure.PersonFailure
 import com.ssverma.feature.person.domain.model.Person
 import com.ssverma.feature.person.domain.model.PersonDetailsConfig

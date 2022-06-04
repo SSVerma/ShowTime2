@@ -2,10 +2,10 @@ package com.ssverma.feature.movie.data.mapper
 
 import com.ssverma.api.service.tmdb.TMDB_IMAGE_BASE_URL
 import com.ssverma.api.service.tmdb.response.RemoteMovie
-import com.ssverma.core.domain.utils.CoreUtils
-import com.ssverma.core.domain.utils.DateUtils
-import com.ssverma.core.domain.utils.FormatterUtils
-import com.ssverma.core.domain.utils.formatLocally
+import com.ssverma.shared.domain.utils.CoreUtils
+import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.FormatterUtils
+import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.shared.data.mapper.*
 import kotlinx.coroutines.Dispatchers

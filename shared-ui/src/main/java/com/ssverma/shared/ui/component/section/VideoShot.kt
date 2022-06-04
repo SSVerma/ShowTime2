@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.model.Video
-import com.ssverma.core.domain.model.youtubeThumbnailUrl
+import com.ssverma.shared.domain.model.Video
+import com.ssverma.shared.domain.model.youtubeThumbnailUrl
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.icon.AppIcons

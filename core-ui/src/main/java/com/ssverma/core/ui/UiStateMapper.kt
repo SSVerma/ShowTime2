@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.failure.Failure
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 
 @Composable

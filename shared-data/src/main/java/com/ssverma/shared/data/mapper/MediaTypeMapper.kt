@@ -1,7 +1,7 @@
 package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
-import com.ssverma.core.domain.model.MediaType
+import com.ssverma.shared.domain.model.MediaType
 import javax.inject.Inject
 
 class TmdbMediaTypeMapper @Inject constructor() : Mapper<String, MediaType>() {

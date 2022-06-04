@@ -46,7 +46,7 @@ dependencies {
     implementation project(Modules.Shared.data)
     implementation project(Modules.Core.uiPaging)
     implementation project(Modules.Core.navigation)
-    implementation project(Modules.Core.domain)
+    implementation project(Modules.Shared.domain)
     implementation project(Modules.Core.networking)
     implementation project(Modules.Core.paging)
     implementation project(Modules.Core.di)

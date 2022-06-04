@@ -21,8 +21,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.ssverma.core.domain.model.Gender
-import com.ssverma.core.domain.model.MediaType
+import com.ssverma.shared.domain.model.Gender
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.image.NetworkImage

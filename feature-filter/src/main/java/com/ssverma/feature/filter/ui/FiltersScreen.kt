@@ -15,9 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.domain.DiscoverOption
-import com.ssverma.core.domain.MovieDiscoverConfig
-import com.ssverma.core.domain.TvDiscoverConfig
+import com.ssverma.shared.domain.DiscoverOption
+import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.SliderScale
 import com.ssverma.feature.filter.R

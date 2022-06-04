@@ -1,12 +1,12 @@
 package com.ssverma.feature.movie.domain.repository
 
 import androidx.paging.PagingData
-import com.ssverma.core.domain.MovieDiscoverConfig
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.TimeWindow
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.domain.model.Genre
-import com.ssverma.core.domain.model.Review
+import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig

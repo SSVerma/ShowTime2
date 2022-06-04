@@ -2,8 +2,8 @@ package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.QueryMultiValue
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
-import com.ssverma.core.domain.*
-import com.ssverma.core.domain.utils.formatAsIso
+import com.ssverma.shared.domain.*
+import com.ssverma.shared.domain.utils.formatAsIso
 
 fun DiscoverConfig.asQueryMap(): Map<String, String> {
     val queryMap = mutableMapOf<String, String>()

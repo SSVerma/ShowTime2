@@ -1,4 +1,4 @@
-package com.ssverma.core.domain
+package com.ssverma.shared.domain
 
 sealed class Result<out S, out E> {
     data class Success<S>(

@@ -4,10 +4,10 @@ import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemotePerson
 import com.ssverma.api.service.tmdb.response.RemotePersonCredit
 import com.ssverma.api.service.tmdb.response.RemotePersonMedia
-import com.ssverma.core.domain.model.MediaType
-import com.ssverma.core.domain.utils.DateUtils
-import com.ssverma.core.domain.utils.FormatterUtils
-import com.ssverma.core.domain.utils.formatLocally
+import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.FormatterUtils
+import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.feature.person.domain.model.Person
 import com.ssverma.feature.person.domain.model.PersonMedia
 import com.ssverma.shared.data.mapper.*

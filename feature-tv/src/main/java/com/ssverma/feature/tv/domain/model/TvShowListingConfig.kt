@@ -1,8 +1,8 @@
 package com.ssverma.feature.tv.domain.model
 
-import com.ssverma.core.domain.DiscoverOption
-import com.ssverma.core.domain.TimeWindow
-import com.ssverma.core.domain.TvDiscoverConfig
+import com.ssverma.shared.domain.DiscoverOption
+import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
 
 sealed interface TvShowListingConfig {

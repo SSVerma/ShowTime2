@@ -1,10 +1,10 @@
 package com.ssverma.feature.tv.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
-import com.ssverma.core.domain.Result
-import com.ssverma.core.domain.failure.Failure
-import com.ssverma.core.domain.model.Genre
-import com.ssverma.core.domain.usecase.NoParamUseCase
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.usecase.NoParamUseCase
 import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
