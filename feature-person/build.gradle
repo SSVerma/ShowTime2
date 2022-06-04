@@ -56,6 +56,7 @@ dependencies {
 
     api project(Modules.Feature.personNavigation)
     implementation project(Modules.Feature.movieNavigation)
+    implementation project(Modules.Feature.tvNavigation)
 
     implementation Deps.ComposeSupport.constraintLayout
     implementation Deps.Accompanist.pager

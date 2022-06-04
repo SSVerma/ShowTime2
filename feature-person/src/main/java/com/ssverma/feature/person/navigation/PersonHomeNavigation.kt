@@ -7,6 +7,7 @@ import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
 import com.ssverma.feature.person.ui.PersonScreen
+import com.ssverma.feature.tv.navigation.TvShowDetailDestination
 
 fun NavGraphBuilder.personHomeGraph(
     navController: NavController
@@ -20,8 +21,7 @@ fun NavGraphBuilder.personHomeGraph(
             navController.navigateTo(MovieDetailDestination.actualRoute(movieId))
         },
         openTvShowDetailsScreen = { tvShowId ->
-            // TODO: uncomment when tv show navigation is up
-//            navController.navigateTo(TvShowDetailDestination.actualRoute(tvShowId))
+            navController.navigateTo(TvShowDetailDestination.actualRoute(tvShowId))
         }
     )
 }

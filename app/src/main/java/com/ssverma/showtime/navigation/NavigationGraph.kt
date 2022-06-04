@@ -11,9 +11,9 @@ import com.ssverma.core.navigation.StandaloneDestination
 import com.ssverma.feature.movie.navigation.*
 import com.ssverma.feature.person.navigation.personDetailGraph
 import com.ssverma.feature.person.navigation.personImageShotsGraph
+import com.ssverma.feature.tv.navigation.*
 import com.ssverma.showtime.ui.home.HomeDestination
 import com.ssverma.showtime.ui.home.homeGraph
-import com.ssverma.showtime.ui.tv.navigation.*
 
 
 @OptIn(ExperimentalAnimationApi::class)

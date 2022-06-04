@@ -84,9 +84,8 @@ dependencies {
     implementation project(Modules.Core.di)
 
     implementation project(Modules.Feature.movie)
+    implementation project(Modules.Feature.tv)
     implementation project(Modules.Feature.person)
-    //TODO: Remove once tv show feature migration completes
-    implementation project(Modules.Feature.filter)
 
     implementation Deps.coreKtx
     implementation Deps.appcompat
