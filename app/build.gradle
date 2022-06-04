@@ -86,6 +86,7 @@ dependencies {
     implementation project(Modules.Feature.movie)
     implementation project(Modules.Feature.tv)
     implementation project(Modules.Feature.person)
+    implementation project(Modules.Feature.library)
 
     implementation Deps.coreKtx
     implementation Deps.appcompat

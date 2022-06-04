@@ -2,12 +2,21 @@ package com.ssverma.showtime.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.Destination
+import com.ssverma.core.navigation.GraphDestination
+import com.ssverma.core.navigation.navigation
+import com.ssverma.feature.library.navigation.LibraryHomeDestination
+import com.ssverma.feature.library.navigation.libraryHomeGraph
 import com.ssverma.feature.movie.navigation.MovieHomeDestination
+import com.ssverma.feature.movie.navigation.movieHomeGraph
 import com.ssverma.feature.person.navigation.PersonHomeDestination
+import com.ssverma.feature.person.navigation.personHomeGraph
 import com.ssverma.feature.tv.navigation.TvShowHomeDestination
+import com.ssverma.feature.tv.navigation.tvShowHomeGraph
 import com.ssverma.showtime.R
-import com.ssverma.showtime.ui.library.navigation.LibraryHomeDestination
 
 sealed class ShowTimeTopLevelNavItem(
     val destination: Destination,
@@ -45,3 +54,18 @@ val ShowTimeTopLevelNavItems = listOf(
     ShowTimeTopLevelNavItem.Person,
     ShowTimeTopLevelNavItem.Library,
 )
+
+object ShowTimeTopLevelDestination : GraphDestination("home")
+
+@OptIn(ExperimentalAnimationApi::class)
+fun NavGraphBuilder.topLevelNavGraph(
+    navController: NavController
+) = navigation(
+    graphDestination = ShowTimeTopLevelDestination,
+    startDestination = MovieHomeDestination
+) {
+    movieHomeGraph(navController)
+    tvShowHomeGraph(navController)
+    personHomeGraph(navController)
+    libraryHomeGraph()
+}

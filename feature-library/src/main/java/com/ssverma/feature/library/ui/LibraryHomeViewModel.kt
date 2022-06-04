@@ -1,10 +1,10 @@
-package com.ssverma.showtime.ui.library
+package com.ssverma.feature.library.ui
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeLibraryViewModel @Inject constructor() : ViewModel() {
+class LibraryHomeViewModel @Inject constructor() : ViewModel() {
     //
 }

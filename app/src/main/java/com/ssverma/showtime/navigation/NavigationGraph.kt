@@ -12,8 +12,6 @@ import com.ssverma.feature.movie.navigation.*
 import com.ssverma.feature.person.navigation.personDetailGraph
 import com.ssverma.feature.person.navigation.personImageShotsGraph
 import com.ssverma.feature.tv.navigation.*
-import com.ssverma.showtime.ui.home.HomeDestination
-import com.ssverma.showtime.ui.home.homeGraph
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -21,7 +19,7 @@ import com.ssverma.showtime.ui.home.homeGraph
 fun ShowTimeNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    startDestination: StandaloneDestination = HomeDestination
+    startDestination: StandaloneDestination = ShowTimeTopLevelDestination
 ) {
     val springStiffness = 900f
 
@@ -55,7 +53,7 @@ fun ShowTimeNavHost(
         modifier = modifier
     ) {
 
-        homeGraph(navController)
+        topLevelNavGraph(navController)
 
         movieListGraph(navController)
         movieDetailGraph(navController)
