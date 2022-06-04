@@ -55,6 +55,8 @@ dependencies {
     implementation project(Modules.Core.di)
     implementation project(Modules.ApiService.tmdb)
 
+    api project(Modules.Feature.movieNavigation)
+    implementation project(Modules.Feature.personNavigation)
     implementation project(Modules.Feature.filter)
 
     /*DI*/

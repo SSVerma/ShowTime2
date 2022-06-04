@@ -3,25 +3,10 @@ package com.ssverma.feature.movie.navigation
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
-import com.ssverma.core.navigation.*
+import com.ssverma.core.navigation.composable
+import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.movie.ui.MovieDetailsScreen
-
-object MovieDetailDestination : DependentDestination<Int>("movie") {
-    const val ArgMovieId = "movieId"
-
-    override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
-        return builder
-            .mandatoryArg(ArgMovieId, navType = NavType.IntType)
-            .build()
-    }
-
-    override fun actualRoute(input: Int, builder: ActualRoute.ActualRouteBuilder): ActualRoute {
-        return builder
-            .mandatoryArg(ArgMovieId, input)
-            .build()
-    }
-}
+import com.ssverma.feature.person.navigation.PersonDetailDestination
 
 fun NavGraphBuilder.movieDetailGraph(
     navController: NavController
@@ -42,8 +27,7 @@ fun NavGraphBuilder.movieDetailGraph(
             navController.navigateTo(MovieReviewsDestination.actualRoute(movieId))
         },
         openPersonDetails = { personId ->
-            //TODO: Uncomment once feature-person-navigation is up
-//            navController.navigateTo(PersonDetailDestination.actualRoute(personId))
+            navController.navigateTo(PersonDetailDestination.actualRoute(personId))
         },
         openMovieList = { listingArgs ->
             navController.navigateTo(MovieListDestination.actualRoute(listingArgs))

@@ -22,6 +22,9 @@ object Modules {
 
     object Feature {
         const val movie = ":feature-movie"
+        const val movieNavigation = ":feature-movie-navigation"
+        const val person = ":feature-person"
+        const val personNavigation = ":feature-person-navigation"
         const val filter = ":feature-filter"
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="known_for">Known For</string>
+    <string name="dob">Date of Birth</string>
+    <string name="place_of_birth">Place of Birth</string>
+    <string name="view_tagged_images">View Tagged Images</string>
+    <string name="movie">Movie</string>
+    <string name="tv">TV</string>
+    <string name="as_n">as %1s</string>
+    <string name="tagged_images">Tagged Images</string>
+    <string name="gender_n">Gender: %1s</string>
+    <string name="known_for_n">Known for: %1s</string>
+    <string name="popular_media">Popular Media</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+</resources>

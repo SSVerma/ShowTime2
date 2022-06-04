@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import com.ssverma.core.navigation.*
-import com.ssverma.showtime.ui.people.navigation.PersonDetailDestination
+import com.ssverma.feature.person.navigation.PersonDetailDestination
 import com.ssverma.showtime.ui.tv.TvEpisodeArgs
 import com.ssverma.showtime.ui.tv.TvEpisodeDetailsScreen
 

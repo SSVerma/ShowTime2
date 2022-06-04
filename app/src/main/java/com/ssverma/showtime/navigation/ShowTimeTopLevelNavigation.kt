@@ -4,9 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.ssverma.core.navigation.Destination
 import com.ssverma.feature.movie.navigation.MovieHomeDestination
+import com.ssverma.feature.person.navigation.PersonHomeDestination
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.library.navigation.LibraryHomeDestination
-import com.ssverma.showtime.ui.people.navigation.PersonHomeDestination
 import com.ssverma.showtime.ui.tv.navigation.TvShowHomeDestination
 
 sealed class ShowTimeTopLevelNavItem(

@@ -7,8 +7,8 @@ import com.ssverma.core.navigation.GraphDestination
 import com.ssverma.core.navigation.navigation
 import com.ssverma.feature.movie.navigation.MovieHomeDestination
 import com.ssverma.feature.movie.navigation.movieHomeGraph
+import com.ssverma.feature.person.navigation.personHomeGraph
 import com.ssverma.showtime.ui.library.navigation.libraryHomeGraph
-import com.ssverma.showtime.ui.people.navigation.personHomeGraph
 import com.ssverma.showtime.ui.tv.navigation.tvShowHomeGraph
 
 object HomeDestination : GraphDestination("home")

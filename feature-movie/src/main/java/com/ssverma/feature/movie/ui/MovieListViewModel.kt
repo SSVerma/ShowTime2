@@ -18,6 +18,8 @@ import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.domain.usecase.MovieFilterUseCase
 import com.ssverma.feature.movie.domain.usecase.PaginatedMoviesUseCase
 import com.ssverma.feature.movie.navigation.MovieListDestination
+import com.ssverma.feature.movie.navigation.args.MovieListingArgs
+import com.ssverma.feature.movie.navigation.convertor.asMovieListingConfigs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
