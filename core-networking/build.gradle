@@ -1,3 +1,5 @@
+import com.ssverma.Deps
+
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
@@ -12,8 +14,8 @@ java {
 dependencies {
 
     /* Dependency Injection */
-    implementation "com.google.dagger:hilt-core:2.40.5"
-    kapt "com.google.dagger:hilt-compiler:2.40.5"
+    implementation Deps.Di.daggerHiltCore
+    kapt Deps.Di.Kapt.daggerHiltCompiler
 
     /* Networking */
     implementation "com.squareup.retrofit2:retrofit:2.9.0"

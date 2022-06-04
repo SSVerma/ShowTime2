@@ -5,8 +5,6 @@ import com.ssverma.Versions
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
-    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -53,14 +51,4 @@ dependencies {
     implementation project(Modules.Core.paging)
     implementation project(Modules.Core.di)
     implementation project(Modules.ApiService.tmdb)
-
-    /*DI*/
-    implementation Deps.Di.daggerHilt
-    kapt Deps.Di.Kapt.daggerHiltCompiler
-
-    implementation Deps.Di.hiltCompose
-    kapt Deps.Di.Kapt.hiltCompiler
-
-    /*De-sugaring*/
-    coreLibraryDesugaring Deps.Desugaring.jdk
 }

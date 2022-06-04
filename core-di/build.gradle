@@ -33,8 +33,7 @@ android {
 }
 
 dependencies {
-
-    implementation Deps.Di.daggerHiltCore
+    implementation Deps.Di.daggerHilt
     kapt Deps.Di.Kapt.daggerHiltCompiler
 
     implementation Deps.coroutines

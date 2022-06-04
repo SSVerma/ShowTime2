@@ -41,7 +41,4 @@ dependencies {
     implementation Deps.coroutines
 
     implementation "javax.inject:javax.inject:1"
-
-    /*De-sugaring*/
-    coreLibraryDesugaring Deps.Desugaring.jdk
 }

@@ -71,47 +71,21 @@ android {
 }
 
 dependencies {
-
-    implementation project(Modules.Core.networking)
-    implementation project(Modules.Core.paging)//Fix it, should be inside api-service-tmdb only
     implementation project(Modules.ApiService.tmdb)
     implementation project(Modules.Core.ui)
-    implementation project(Modules.Shared.ui)
-    implementation project(Modules.Shared.data)
-    implementation project(Modules.Core.domain)
-    implementation project(Modules.Core.uiPaging)
     implementation project(Modules.Core.navigation)
-    implementation project(Modules.Core.di)
 
     implementation project(Modules.Feature.movie)
     implementation project(Modules.Feature.tv)
     implementation project(Modules.Feature.person)
     implementation project(Modules.Feature.library)
 
-    implementation Deps.coreKtx
-    implementation Deps.appcompat
     implementation Deps.material
-
-    implementation Deps.Lifecycle.runtime
     implementation Deps.ComposeSupport.activity
-    implementation Deps.ComposeSupport.constraintLayout
-
-    /*AAC*/
-    implementation Deps.Lifecycle.viewModel
-
-    /*Compose Utils*/
-    implementation Deps.Accompanist.pager
-    implementation Deps.Accompanist.pagerIndicators
-
-    /*Image Handling*/
-    implementation Deps.ComposeSupport.coil
 
     /*DI*/
     implementation Deps.Di.daggerHilt
     kapt Deps.Di.Kapt.daggerHiltCompiler
-
-    implementation Deps.Di.hiltCompose
-    kapt Deps.Di.Kapt.hiltCompiler
 
     /*De-sugaring*/
     coreLibraryDesugaring Deps.Desugaring.jdk

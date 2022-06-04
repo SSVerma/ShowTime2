@@ -65,7 +65,4 @@ dependencies {
 
     implementation Deps.Di.hiltCompose
     kapt Deps.Di.Kapt.hiltCompiler
-
-    /*De-sugaring*/
-    coreLibraryDesugaring Deps.Desugaring.jdk
 }

@@ -41,7 +41,8 @@ android {
 }
 
 dependencies {
-    implementation Deps.ComposeSupport.navigation
+    api Deps.ComposeSupport.navigation
     api Deps.Accompanist.navAnimation
+
     implementation Deps.Di.hiltCompose
 }

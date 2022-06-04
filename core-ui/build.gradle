@@ -42,7 +42,6 @@ android {
 }
 
 dependencies {
-    
     implementation project(Modules.Core.domain)
 
     api Deps.Compose.ui

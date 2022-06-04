@@ -27,6 +27,10 @@ object Versions {
         const val hiltCompose = "1.0.0"
     }
 
+    object Paging {
+        const val common = "3.1.1"
+    }
+
     object Desugaring {
         const val jdk = "1.1.5"
     }
@@ -89,6 +93,10 @@ object Deps {
                 "com.google.dagger:hilt-compiler:${Versions.Di.daggerHilt}"
             const val hiltCompiler = "androidx.hilt:hilt-compiler:${Versions.Di.hiltCompiler}"
         }
+    }
+
+    object Paging {
+        const val common = "androidx.paging:paging-common-ktx:${Versions.Paging.common}"
     }
 
     object Desugaring {

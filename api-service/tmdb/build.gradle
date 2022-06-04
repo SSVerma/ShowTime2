@@ -1,3 +1,6 @@
+import com.ssverma.Deps
+import com.ssverma.Modules
+
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
@@ -10,10 +13,10 @@ java {
 }
 
 dependencies {
-    implementation project(":core-networking")
-    implementation project(":core-paging")
+    implementation project(Modules.Core.networking)
+    implementation project(Modules.Core.paging)
 
     /* Dependency Injection */
-    implementation "com.google.dagger:hilt-core:2.40.5"
-    kapt "com.google.dagger:hilt-compiler:2.40.5"
+    implementation Deps.Di.daggerHiltCore
+    kapt Deps.Di.Kapt.daggerHiltCompiler
 }
