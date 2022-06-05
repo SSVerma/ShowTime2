@@ -18,7 +18,7 @@ object Versions {
         const val constraintLayout = "1.0.0"
         const val navigation = "2.5.0-beta01"
         const val paging = "1.0.0-alpha14"
-        const val coil = "1.3.2"
+        const val coil = "2.1.0"
     }
 
     object Di {

@@ -5,6 +5,7 @@ core-domain/build
 core-paging/build
 core-ui/build
 core-ui-paging/build
+core-image/build
 shared-ui/build
 shared-data/build
 feature-filter/build

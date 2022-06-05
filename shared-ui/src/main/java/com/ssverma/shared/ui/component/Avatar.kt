@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.core.image.NetworkImage
 
 @Composable
 fun Avatar(

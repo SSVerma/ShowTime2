@@ -11,16 +11,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.domain.model.Video
-import com.ssverma.shared.domain.model.youtubeThumbnailUrl
-import com.ssverma.shared.ui.TmdbBackdropAspectRatio
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.icon.AppIcons
-import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.shared.domain.model.Video
+import com.ssverma.shared.domain.model.youtubeThumbnailUrl
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable

@@ -16,9 +16,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.ssverma.shared.ui.TmdbBackdropAspectRatio
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.icon.AppIcons
-import com.ssverma.core.ui.image.NetworkImage
+import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 
 @Composable
 fun BackdropHeader(

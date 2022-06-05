@@ -46,6 +46,7 @@ dependencies {
     implementation project(Modules.Core.ui)
     implementation project(Modules.Shared.domain)
     implementation project(Modules.Core.uiPaging)
+    implementation project(Modules.Core.image)
 
     implementation Deps.ComposeSupport.activity
     implementation Deps.ComposeSupport.constraintLayout

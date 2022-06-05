@@ -21,17 +21,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.ssverma.shared.domain.model.Gender
-import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.icon.AppIcons
-import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedListIndexed
 import com.ssverma.feature.person.R
 import com.ssverma.feature.person.domain.model.Person
 import com.ssverma.feature.person.domain.model.PersonMedia
+import com.ssverma.shared.domain.model.Gender
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.HomePageAppBar
 

@@ -52,6 +52,7 @@ dependencies {
     implementation project(Modules.Core.networking)
     implementation project(Modules.Core.paging)
     implementation project(Modules.Core.di)
+    implementation project(Modules.Core.image)
     implementation project(Modules.ApiService.tmdb)
 
     api project(Modules.Feature.personNavigation)

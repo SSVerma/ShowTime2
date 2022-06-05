@@ -8,6 +8,7 @@ object Modules {
         const val uiPaging = ":core-ui-paging"
         const val navigation = ":core-navigation"
         const val di = ":core-di"
+        const val image = ":core-image"
     }
 
     object Shared {

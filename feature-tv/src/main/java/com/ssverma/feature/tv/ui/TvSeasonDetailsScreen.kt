@@ -16,8 +16,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
-import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.domain.model.TvEpisode

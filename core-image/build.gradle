@@ -38,16 +38,9 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion Versions.compose
     }
-    namespace 'com.ssverma.core.ui'
 }
 
 dependencies {
-    implementation project(Modules.Core.image)
-
-    api Deps.Compose.ui
-    api Deps.Compose.material
-    api Deps.Compose.tooling
-
-    testImplementation Deps.Test.Local.junit
-    androidTestImplementation Deps.Test.Instrument.junit
+    api Deps.ComposeSupport.coil
+    implementation Deps.Compose.material
 }

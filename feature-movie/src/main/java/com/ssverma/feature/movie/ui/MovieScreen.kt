@@ -17,10 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.domain.model.Genre
+import coil.request.CachePolicy
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.component.scrim
-import com.ssverma.core.ui.image.NetworkImage
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
@@ -29,6 +29,7 @@ import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
+import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.HomePageAppBar
@@ -226,6 +227,7 @@ fun HeaderSection(
             url = viewModel.movieBackdrop,
             contentDescription = null,
             contentScale = ContentScale.FillWidth,
+            diskCachePolicy = CachePolicy.DISABLED,
             modifier = Modifier
                 .aspectRatio(1f)
                 .scrim(

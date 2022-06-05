@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.ImageShot
-import com.ssverma.core.ui.image.NetworkImage
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

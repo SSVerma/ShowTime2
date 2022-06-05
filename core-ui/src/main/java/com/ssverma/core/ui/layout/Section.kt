@@ -18,9 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.R
 import com.ssverma.core.ui.ScreenLoadingIndicator
-import com.ssverma.core.ui.image.NetworkImage
 
 @Composable
 fun SectionHeader(
