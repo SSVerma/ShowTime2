@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "message": "This is meta message",
+    "timestamp": 2121323922
+  },
+  "user": {
+    "id": 1232,
+    "name": "SS Verma"
+  },
+
+  "foo": {
+    "foo_id": 143,
+    "foo_name": "Foo Bar"
+  }
+}

@@ -1,10 +1,31 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        jcenter() // Warning: this repository is going to shut down soon
     }
 }
 rootProject.name = "ShowTime"
 include ':app'
+include ':core-networking'
+include ':api-service:tmdb'
+include ':core-paging'
+include ':shared-ui'
+include ':core-ui'
+include ':shared-domain'
+include ':core-ui-paging'
+include ':core-navigation'
+include ':feature-movie'
+include ':shared-data'
+include ':core-di'
+include ':feature-filter'
+include ':feature-person'
+include ':feature-person-navigation'
+include ':feature-movie-navigation'
+include ':feature-tv'
+include ':feature-tv-navigation'
+include ':feature-library'
+include ':feature-library-navigation'
+include ':core-image'
