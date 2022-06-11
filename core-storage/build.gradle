@@ -1,10 +1,9 @@
 import com.ssverma.Deps
-import com.ssverma.Modules
-import com.ssverma.Versions
 
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -30,25 +29,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
-        useIR = true
     }
-    buildFeatures {
-        compose true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion Versions.compose
-    }
-    namespace 'com.ssverma.core.ui'
 }
 
 dependencies {
-    implementation project(Modules.Core.image)
-    implementation project(Modules.Shared.domain)
+    api Deps.Storage.room
+    api Deps.Storage.dataStorePreferences
 
-    api Deps.Compose.ui
-    api Deps.Compose.material
-    api Deps.Compose.tooling
-
-    testImplementation Deps.Test.Local.junit
-    androidTestImplementation Deps.Test.Instrument.junit
+    implementation Deps.Di.daggerHiltCore
+    implementation Deps.Di.Kapt.daggerHiltCompiler
 }

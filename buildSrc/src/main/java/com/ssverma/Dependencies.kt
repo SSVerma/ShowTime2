@@ -31,6 +31,11 @@ object Versions {
         const val common = "3.1.1"
     }
 
+    object Storage {
+        const val room = "2.4.2"
+        const val dataStore = "1.0.0"
+    }
+
     object Desugaring {
         const val jdk = "1.1.5"
     }
@@ -97,6 +102,17 @@ object Deps {
 
     object Paging {
         const val common = "androidx.paging:paging-common-ktx:${Versions.Paging.common}"
+    }
+
+    object Storage {
+        const val room = "androidx.room:room-runtime:${Versions.Storage.room}"
+        const val dataStorePreferences =
+            "androidx.datastore:datastore-preferences:${Versions.Storage.dataStore}"
+        const val dataStoreProto = "androidx.datastore:datastore:${Versions.Storage.dataStore}"
+
+        object AnnotationProcessor {
+            const val room = "androidx.room:room-compiler:${Versions.Storage.room}"
+        }
     }
 
     object Desugaring {
