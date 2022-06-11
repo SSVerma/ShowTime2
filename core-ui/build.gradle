@@ -43,6 +43,7 @@ android {
 
 dependencies {
     implementation project(Modules.Core.image)
+    implementation project(Modules.Shared.domain)
 
     api Deps.Compose.ui
     api Deps.Compose.material
