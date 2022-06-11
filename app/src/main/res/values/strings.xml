@@ -1,12 +1,8 @@
 <resources>
     <string name="app_name">ShowTime</string>
-    <string name="home">Home</string>
-    <string name="explore">Explore</string>
     <string name="library">Library</string>
     <string name="account">Account</string>
     <string name="popuplar">Popular</string>
-    <string name="latest">Latest</string>
-    <string name="now_playing">Now Playing</string>
     <string name="upcoming">Upcoming</string>
     <string name="top_rated">Top Rated</string>
     <string name="search">Search</string>
@@ -17,7 +13,6 @@
     <string name="retry">Retry</string>
     <string name="trending_today">Trending Today</string>
     <string name="free">Free</string>
-    <string name="streaming_now">Streaming Now</string>
     <string name="now_in_cinemas">Now in Cinemas</string>
     <string name="popular_info">Highest voted by the users</string>
     <string name="something_went_wrong">Something went wrong</string>
@@ -49,8 +44,6 @@
     <string name="filter">Filter</string>
     <string name="movies">Movies</string>
     <string name="status">Status</string>
-    <string name="original_language">Original Language</string>
-    <string name="budget">Budget</string>
     <string name="revenue">Revenue</string>
     <string name="shots">Shots</string>
     <string name="overview">Overview</string>
