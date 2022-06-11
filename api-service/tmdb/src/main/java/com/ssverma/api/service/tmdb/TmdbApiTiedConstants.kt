@@ -1,14 +1,5 @@
 package com.ssverma.api.service.tmdb
 
-import com.ssverma.api.service.tmdb.utils.ImageUtils
-
-const val TMDB_API_PAGE_SIZE = 20
-const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500" //TODO: Fetch from configs
-
-fun String?.convertToFullTmdbImageUrl(): String {
-    return ImageUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, this)
-}
-
 object TmdbApiTiedConstants {
 
     object AvailableMediaTypes {

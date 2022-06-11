@@ -1,7 +1,7 @@
 app/build
+api-service/tmdb/build
 core-di/build
 core-navigation/build
-core-domain/build
 core-paging/build
 core-ui/build
 core-ui-paging/build

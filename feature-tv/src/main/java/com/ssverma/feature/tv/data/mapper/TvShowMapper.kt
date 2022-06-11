@@ -1,13 +1,12 @@
-package com.ssverma.showtime.data.mapper
+package com.ssverma.feature.tv.data.mapper
 
-import com.ssverma.api.service.tmdb.TMDB_IMAGE_BASE_URL
+import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
-import com.ssverma.shared.domain.utils.CoreUtils
+import com.ssverma.shared.data.mapper.*
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.domain.utils.formatLocally
-import com.ssverma.shared.data.mapper.*
-import com.ssverma.feature.tv.domain.model.TvShow
+import com.ssverma.showtime.data.mapper.asTvSeasons
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -30,8 +29,8 @@ suspend fun RemoteTvShow.asTvShow(): com.ssverma.feature.tv.domain.model.TvShow 
         title = title.orEmpty(),
         tagline = if (tagline.isNullOrEmpty()) null else tagline,
         overview = overview.orEmpty(),
-        posterImageUrl = CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, posterPath),
-        backdropImageUrl = CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, backdropPath),
+        posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
+        backdropImageUrl = backdropPath.convertToFullTmdbImageUrl(),
         status = status.orEmpty(),
         voteAvg = voteAvg,
         voteAvgPercentage = voteAvg * 10f,

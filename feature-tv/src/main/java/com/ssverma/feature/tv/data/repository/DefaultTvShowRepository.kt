@@ -3,17 +3,10 @@ package com.ssverma.feature.tv.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.ssverma.api.service.tmdb.TMDB_API_PAGE_SIZE
+import com.ssverma.api.service.tmdb.TmdbDefaults
 import com.ssverma.api.service.tmdb.paging.ReviewsPagingSource
 import com.ssverma.api.service.tmdb.paging.TvShowsPagingSource
 import com.ssverma.api.service.tmdb.response.*
-import com.ssverma.api.service.tmdb.utils.TmdbFirstPageNumber
-import com.ssverma.shared.domain.Result
-import com.ssverma.shared.domain.TimeWindow
-import com.ssverma.shared.domain.TvDiscoverConfig
-import com.ssverma.shared.domain.failure.Failure
-import com.ssverma.shared.domain.model.Genre
-import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.tv.data.remote.TvShowRemoteDataSource
 import com.ssverma.feature.tv.domain.failure.TvEpisodeFailure
 import com.ssverma.feature.tv.domain.failure.TvSeasonFailure
@@ -21,6 +14,12 @@ import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.feature.tv.domain.model.*
 import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.TvDiscoverConfig
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.Review
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -38,7 +37,7 @@ class DefaultTvShowRepository @Inject constructor(
         discoverConfig: TvDiscoverConfig
     ): Flow<PagingData<TvShow>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 TvShowsPagingSource(
                     tvShowApiCall = { pageNumber ->
@@ -57,7 +56,7 @@ class DefaultTvShowRepository @Inject constructor(
         timeWindow: TimeWindow
     ): Flow<PagingData<TvShow>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 TvShowsPagingSource(
                     tvShowApiCall = { pageNumber ->
@@ -74,7 +73,7 @@ class DefaultTvShowRepository @Inject constructor(
 
     override fun fetchTopRatedTvShowsGradually(): Flow<PagingData<TvShow>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 TvShowsPagingSource(
                     tvShowApiCall = { pageNumber ->
@@ -89,7 +88,9 @@ class DefaultTvShowRepository @Inject constructor(
     }
 
     override suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>> {
-        val apiResponse = tvShowRemoteDataSource.fetchTopRatedTvShows(page = TmdbFirstPageNumber)
+        val apiResponse = tvShowRemoteDataSource.fetchTopRatedTvShows(
+            page = TmdbDefaults.ApiDefaults.FirstPageNumber
+        )
 
         return apiResponse.asDomainResult(
             mapRemoteToDomain = {
@@ -103,7 +104,7 @@ class DefaultTvShowRepository @Inject constructor(
     ): Result<List<TvShow>, Failure<TvShowFailure>> {
         val apiResponse = tvShowRemoteDataSource.fetchTrendingTvShows(
             timeWindow = timeWindow.asTmdbQueryValue(),
-            page = TmdbFirstPageNumber
+            page = TmdbDefaults.ApiDefaults.FirstPageNumber
         )
 
         return apiResponse.asDomainResult(
@@ -118,7 +119,7 @@ class DefaultTvShowRepository @Inject constructor(
     ): Result<List<TvShow>, Failure<TvShowFailure>> {
         val apiResponse = tvShowRemoteDataSource.discoverTvShows(
             queryMap = discoverConfig.asQueryMap(),
-            page = TmdbFirstPageNumber
+            page = TmdbDefaults.ApiDefaults.FirstPageNumber
         )
 
         return apiResponse.asDomainResult(
@@ -142,7 +143,7 @@ class DefaultTvShowRepository @Inject constructor(
         tvShowId: Int
     ): Flow<PagingData<Review>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 ReviewsPagingSource(
                     reviewsApiCall = { pageNumber ->

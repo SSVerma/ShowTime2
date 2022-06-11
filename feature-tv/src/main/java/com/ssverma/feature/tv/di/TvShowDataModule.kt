@@ -14,8 +14,8 @@ import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import com.ssverma.shared.data.mapper.ListMapper
 import com.ssverma.shared.data.mapper.Mapper
 import com.ssverma.showtime.data.mapper.TvSeasonMapper
-import com.ssverma.showtime.data.mapper.TvShowMapper
-import com.ssverma.showtime.data.mapper.TvShowsMapper
+import com.ssverma.feature.tv.data.mapper.TvShowMapper
+import com.ssverma.feature.tv.data.mapper.TvShowsMapper
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

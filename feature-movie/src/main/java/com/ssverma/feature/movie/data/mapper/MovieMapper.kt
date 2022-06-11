@@ -1,13 +1,12 @@
 package com.ssverma.feature.movie.data.mapper
 
-import com.ssverma.api.service.tmdb.TMDB_IMAGE_BASE_URL
+import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovie
-import com.ssverma.shared.domain.utils.CoreUtils
+import com.ssverma.feature.movie.domain.model.Movie
+import com.ssverma.shared.data.mapper.*
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.domain.utils.formatLocally
-import com.ssverma.feature.movie.domain.model.Movie
-import com.ssverma.shared.data.mapper.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -31,8 +30,8 @@ suspend fun RemoteMovie.asMovie(): Movie {
         title = title.orEmpty(),
         tagline = if (tagline.isNullOrEmpty()) null else tagline,
         overview = overview ?: "",
-        posterImageUrl = CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, posterPath),
-        backdropImageUrl = CoreUtils.buildImageUrl(TMDB_IMAGE_BASE_URL, backdropPath),
+        posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
+        backdropImageUrl = backdropPath.convertToFullTmdbImageUrl(),
         budget = budget,
         status = status.orEmpty(),
         videoAvailable = videoAvailable,

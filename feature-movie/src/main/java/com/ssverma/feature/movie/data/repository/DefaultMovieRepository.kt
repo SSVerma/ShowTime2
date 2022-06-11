@@ -3,26 +3,25 @@ package com.ssverma.feature.movie.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.ssverma.api.service.tmdb.TMDB_API_PAGE_SIZE
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
+import com.ssverma.api.service.tmdb.TmdbDefaults
 import com.ssverma.api.service.tmdb.paging.MoviePagingSource
 import com.ssverma.api.service.tmdb.paging.ReviewsPagingSource
 import com.ssverma.api.service.tmdb.response.RemoteGenre
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
-import com.ssverma.api.service.tmdb.utils.TmdbFirstPageNumber
-import com.ssverma.shared.domain.MovieDiscoverConfig
-import com.ssverma.shared.domain.Result
-import com.ssverma.shared.domain.TimeWindow
-import com.ssverma.shared.domain.failure.Failure
-import com.ssverma.shared.domain.model.Genre
-import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.movie.data.remote.MovieRemoteDataSource
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.Review
 import kotlinx.coroutines.flow.Flow
 import java.net.HttpURLConnection
 import javax.inject.Inject
@@ -37,7 +36,7 @@ class DefaultMovieRepository @Inject constructor(
 
     override fun discoverMoviesGradually(discoverConfig: MovieDiscoverConfig): Flow<PagingData<Movie>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 MoviePagingSource(
                     movieApiCall = { pageNumber ->
@@ -54,7 +53,7 @@ class DefaultMovieRepository @Inject constructor(
 
     override fun fetchTrendingMoviesGradually(timeWindow: TimeWindow): Flow<PagingData<Movie>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 MoviePagingSource(
                     movieApiCall = { pageNumber ->
@@ -71,7 +70,7 @@ class DefaultMovieRepository @Inject constructor(
 
     override fun fetchTopRatedMoviesGradually(): Flow<PagingData<Movie>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 MoviePagingSource(
                     movieApiCall = { pageNumber ->
@@ -86,7 +85,8 @@ class DefaultMovieRepository @Inject constructor(
     }
 
     override suspend fun fetchTopRatedMovies(): Result<List<Movie>, Failure<MovieFailure>> {
-        val apiResponse = movieRemoteDataSource.fetchTopRatedMovies(page = TmdbFirstPageNumber)
+        val apiResponse =
+            movieRemoteDataSource.fetchTopRatedMovies(page = TmdbDefaults.ApiDefaults.FirstPageNumber)
 
         return apiResponse.asDomainResult(
             mapRemoteToDomain = {
@@ -98,7 +98,7 @@ class DefaultMovieRepository @Inject constructor(
     override suspend fun fetchTrendingMovies(timeWindow: TimeWindow): Result<List<Movie>, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.fetchTrendingMovies(
             timeWindow = TmdbApiTiedConstants.AvailableTimeWindows.DAY,
-            page = TmdbFirstPageNumber
+            page = TmdbDefaults.ApiDefaults.FirstPageNumber
         )
 
         return apiResponse.asDomainResult(
@@ -111,7 +111,7 @@ class DefaultMovieRepository @Inject constructor(
     override suspend fun discoverMovies(discoverConfig: MovieDiscoverConfig): Result<List<Movie>, Failure<MovieFailure>> {
         val apiResponse = movieRemoteDataSource.discoverMovies(
             queryMap = discoverConfig.asQueryMap(),
-            page = TmdbFirstPageNumber
+            page = TmdbDefaults.ApiDefaults.FirstPageNumber
         )
 
         return apiResponse.asDomainResult(
@@ -133,7 +133,7 @@ class DefaultMovieRepository @Inject constructor(
 
     override fun fetchMovieReviewsGradually(movieId: Int): Flow<PagingData<Review>> {
         return Pager(
-            config = PagingConfig(pageSize = TMDB_API_PAGE_SIZE),
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
             pagingSourceFactory = {
                 ReviewsPagingSource(
                     reviewsApiCall = { pageNumber ->
