@@ -3,28 +3,27 @@ package com.ssverma.feature.tv.data.mapper
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.showtime.data.mapper.asTvSeasons
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class TvShowMapper @Inject constructor() : Mapper<RemoteTvShow, com.ssverma.feature.tv.domain.model.TvShow>() {
-    override suspend fun map(input: RemoteTvShow): com.ssverma.feature.tv.domain.model.TvShow {
+class TvShowMapper @Inject constructor() : Mapper<RemoteTvShow, TvShow>() {
+    override suspend fun map(input: RemoteTvShow): TvShow {
         return input.asTvShow()
     }
 }
 
-class TvShowsMapper @Inject constructor() : ListMapper<RemoteTvShow, com.ssverma.feature.tv.domain.model.TvShow>() {
-    override suspend fun mapItem(input: RemoteTvShow): com.ssverma.feature.tv.domain.model.TvShow {
+class TvShowsMapper @Inject constructor() : ListMapper<RemoteTvShow, TvShow>() {
+    override suspend fun mapItem(input: RemoteTvShow): TvShow {
         return input.asTvShow()
     }
 }
 
-suspend fun RemoteTvShow.asTvShow(): com.ssverma.feature.tv.domain.model.TvShow {
-    return com.ssverma.feature.tv.domain.model.TvShow(
+private suspend fun RemoteTvShow.asTvShow(): TvShow {
+    return TvShow(
         id = id,
         title = title.orEmpty(),
         tagline = if (tagline.isNullOrEmpty()) null else tagline,
@@ -57,8 +56,6 @@ suspend fun RemoteTvShow.asTvShow(): com.ssverma.feature.tv.domain.model.TvShow 
     )
 }
 
-suspend fun List<RemoteTvShow>.asTvShows(): List<com.ssverma.feature.tv.domain.model.TvShow> {
-    return withContext(Dispatchers.Default) {
-        map { it.asTvShow() }
-    }
+private suspend fun List<RemoteTvShow>.asTvShows(): List<TvShow> {
+    return map { it.asTvShow() }
 }

@@ -7,11 +7,14 @@ import javax.inject.Inject
 class TmdbMediaTypeMapper @Inject constructor() : Mapper<String, MediaType>() {
     override suspend fun map(input: String): MediaType {
         return when (input) {
-            TmdbApiTiedConstants.AvailableMediaType.Movie -> {
+            TmdbApiTiedConstants.AvailableMediaTypes.Movie -> {
                 MediaType.Movie
             }
-            TmdbApiTiedConstants.AvailableMediaType.Tv -> {
+            TmdbApiTiedConstants.AvailableMediaTypes.Tv -> {
                 MediaType.Tv
+            }
+            TmdbApiTiedConstants.AvailableMediaTypes.Person -> {
+                MediaType.Person
             }
             else -> {
                 MediaType.Unknown

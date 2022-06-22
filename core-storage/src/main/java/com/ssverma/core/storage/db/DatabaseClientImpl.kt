@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 internal class DatabaseClientImpl @Inject constructor() : DatabaseClient {
     override fun <T : RoomDatabase> createDatabase(
         context: Context,

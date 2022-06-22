@@ -6,22 +6,23 @@ import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.feature.tv.data.mapper.asTvEpisodes
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.shared.domain.model.tv.TvSeason
 import javax.inject.Inject
 
-class TvSeasonMapper @Inject constructor() : Mapper<RemoteTvSeason, com.ssverma.feature.tv.domain.model.TvSeason>() {
-    override suspend fun map(input: RemoteTvSeason): com.ssverma.feature.tv.domain.model.TvSeason {
+class TvSeasonMapper @Inject constructor() : Mapper<RemoteTvSeason, TvSeason>() {
+    override suspend fun map(input: RemoteTvSeason): TvSeason {
         return input.asTvSeason()
     }
 }
 
-class TvSeasonsMapper @Inject constructor() : ListMapper<RemoteTvSeason, com.ssverma.feature.tv.domain.model.TvSeason>() {
-    override suspend fun mapItem(input: RemoteTvSeason): com.ssverma.feature.tv.domain.model.TvSeason {
+class TvSeasonsMapper @Inject constructor() : ListMapper<RemoteTvSeason, TvSeason>() {
+    override suspend fun mapItem(input: RemoteTvSeason): TvSeason {
         return input.asTvSeason()
     }
 }
 
-suspend fun RemoteTvSeason.asTvSeason(): com.ssverma.feature.tv.domain.model.TvSeason {
-    return com.ssverma.feature.tv.domain.model.TvSeason(
+suspend fun RemoteTvSeason.asTvSeason(): TvSeason {
+    return TvSeason(
         id = id,
         title = title.orEmpty(),
         posterImageUrl = posterPath.convertToFullTmdbImageUrl(),

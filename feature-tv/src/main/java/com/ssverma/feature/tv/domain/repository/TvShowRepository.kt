@@ -1,16 +1,21 @@
 package com.ssverma.feature.tv.domain.repository
 
 import androidx.paging.PagingData
+import com.ssverma.feature.tv.domain.failure.TvEpisodeFailure
+import com.ssverma.feature.tv.domain.failure.TvSeasonFailure
+import com.ssverma.feature.tv.domain.failure.TvShowFailure
+import com.ssverma.feature.tv.domain.model.TvEpisodeConfig
+import com.ssverma.feature.tv.domain.model.TvSeasonConfig
+import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
-import com.ssverma.feature.tv.domain.failure.TvEpisodeFailure
-import com.ssverma.feature.tv.domain.failure.TvSeasonFailure
-import com.ssverma.feature.tv.domain.failure.TvShowFailure
-import com.ssverma.feature.tv.domain.model.*
+import com.ssverma.shared.domain.model.tv.TvEpisode
+import com.ssverma.shared.domain.model.tv.TvSeason
+import com.ssverma.shared.domain.model.tv.TvShow
 import kotlinx.coroutines.flow.Flow
 
 interface TvShowRepository {

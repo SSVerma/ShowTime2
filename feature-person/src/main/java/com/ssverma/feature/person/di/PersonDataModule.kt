@@ -8,7 +8,7 @@ import com.ssverma.feature.person.data.mapper.PersonsMapper
 import com.ssverma.feature.person.data.remote.DefaultPersonRemoteDataSource
 import com.ssverma.feature.person.data.remote.PersonRemoteDataSource
 import com.ssverma.feature.person.data.repository.DefaultPersonRepository
-import com.ssverma.feature.person.domain.model.Person
+import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.repository.PersonRepository
 import com.ssverma.shared.data.mapper.ImageShotsMapper
 import com.ssverma.shared.data.mapper.ListMapper

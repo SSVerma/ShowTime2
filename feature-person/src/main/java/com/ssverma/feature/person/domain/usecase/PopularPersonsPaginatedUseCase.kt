@@ -3,7 +3,7 @@ package com.ssverma.feature.person.domain.usecase
 import androidx.paging.PagingData
 import com.ssverma.core.di.DefaultDispatcher
 import com.ssverma.shared.domain.usecase.NoParamFlowUseCase
-import com.ssverma.feature.person.domain.model.Person
+import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.repository.PersonRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

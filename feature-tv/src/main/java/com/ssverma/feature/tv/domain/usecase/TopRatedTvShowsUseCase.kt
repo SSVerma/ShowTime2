@@ -5,7 +5,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.usecase.NoParamUseCase
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
-import com.ssverma.feature.tv.domain.model.TvShow
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject

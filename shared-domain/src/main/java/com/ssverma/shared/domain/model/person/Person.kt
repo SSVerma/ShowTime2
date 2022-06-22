@@ -1,4 +1,4 @@
-package com.ssverma.feature.person.domain.model
+package com.ssverma.shared.domain.model.person
 
 import com.ssverma.shared.domain.model.Gender
 import com.ssverma.shared.domain.model.Genre

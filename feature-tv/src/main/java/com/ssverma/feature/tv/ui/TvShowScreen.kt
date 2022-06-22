@@ -12,16 +12,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.domain.model.Genre
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.layout.SectionLoadingIndicator
 import com.ssverma.feature.tv.R
-import com.ssverma.feature.tv.domain.model.TvShow
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.HomePageAppBar
 
@@ -29,12 +29,14 @@ import com.ssverma.shared.ui.component.HomePageAppBar
 fun TvShowScreen(
     viewModel: HomeTvShowViewModel,
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
-    openTvShowDetails: (tvShowId: Int) -> Unit
+    openTvShowDetails: (tvShowId: Int) -> Unit,
+    openSearchPage: () -> Unit,
 ) {
     TvShowContent(
         viewModel = viewModel,
         openTvShowList = openTvShowList,
-        openTvShowDetails = openTvShowDetails
+        openTvShowDetails = openTvShowDetails,
+        onSearchIconPressed = openSearchPage
     )
 }
 
@@ -42,12 +44,16 @@ fun TvShowScreen(
 private fun TvShowContent(
     viewModel: HomeTvShowViewModel,
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
-    openTvShowDetails: (tvShowId: Int) -> Unit
+    openTvShowDetails: (tvShowId: Int) -> Unit,
+    onSearchIconPressed: () -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
-            HomePageAppBar(backgroundColor = MaterialTheme.colors.background)
+            HomePageAppBar(
+                backgroundColor = MaterialTheme.colors.background,
+                onSearchIconPressed = onSearchIconPressed
+            )
             Spacer(modifier = Modifier.height(DefaultTvShowSectionSpacing))
         }
 

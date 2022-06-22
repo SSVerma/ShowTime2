@@ -1,9 +1,9 @@
 package com.ssverma.feature.movie.ui
 
-import com.ssverma.shared.domain.model.Genre
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.failure.MovieFailure
-import com.ssverma.feature.movie.domain.model.Movie
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.movie.Movie
 
 //typealias don't support nested sealed classes
 // Can't access -> MovieListUiState.Loading

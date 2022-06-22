@@ -21,7 +21,7 @@ import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.tv.R
-import com.ssverma.feature.tv.domain.model.TvShow
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.navigation.args.TvShowListingType
 import kotlinx.coroutines.CoroutineScope

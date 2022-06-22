@@ -5,7 +5,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.feature.person.domain.failure.PersonFailure
-import com.ssverma.feature.person.domain.model.Person
+import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.model.PersonDetailsConfig
 import kotlinx.coroutines.flow.Flow
 

@@ -2,8 +2,8 @@ package com.ssverma.feature.movie.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovie
-import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.domain.utils.formatLocally
@@ -23,7 +23,7 @@ class MoviesMapper @Inject constructor() : ListMapper<RemoteMovie, Movie>() {
     }
 }
 
-suspend fun RemoteMovie.asMovie(): Movie {
+private suspend fun RemoteMovie.asMovie(): Movie {
     return Movie(
         id = id,
         imdbId = imdbId,
@@ -58,7 +58,7 @@ suspend fun RemoteMovie.asMovie(): Movie {
     )
 }
 
-suspend fun List<RemoteMovie>.asMovies(): List<Movie> {
+private suspend fun List<RemoteMovie>.asMovies(): List<Movie> {
     return withContext(Dispatchers.Default) {
         map { it.asMovie() }
     }

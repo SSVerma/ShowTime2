@@ -23,6 +23,7 @@ import com.ssverma.shared.ui.R
 @Composable
 fun HomePageAppBar(
     modifier: Modifier = Modifier,
+    onSearchIconPressed: () -> Unit,
     backgroundColor: Color = MaterialTheme.colors.primarySurface,
     contentColor: Color = contentColorFor(backgroundColor),
     elevation: Dp = AppBarDefaults.TopAppBarElevation
@@ -49,7 +50,7 @@ fun HomePageAppBar(
         Spacer(modifier = Modifier.weight(1f))
         IconButton(
             modifier = Modifier.align(Alignment.CenterVertically),
-            onClick = { /* todo */ }
+            onClick = onSearchIconPressed
         ) {
             Icon(
                 imageVector = AppIcons.Search,

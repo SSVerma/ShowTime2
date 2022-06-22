@@ -26,10 +26,10 @@ import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.layout.SectionLoadingIndicator
 import com.ssverma.feature.movie.R
-import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.HomePageAppBar
@@ -38,10 +38,12 @@ import com.ssverma.shared.ui.component.HomePageAppBar
 fun MovieScreen(
     viewModel: HomeMovieViewModel,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
-    openMovieDetails: (movieId: Int) -> Unit
+    openMovieDetails: (movieId: Int) -> Unit,
+    openSearchPage: () -> Unit,
 ) {
     MovieContent(
         viewModel = viewModel,
+        onSearchIconPressed = openSearchPage,
         openMovieList = openMovieList,
         openMovieDetails = openMovieDetails
     )
@@ -50,6 +52,7 @@ fun MovieScreen(
 @Composable
 private fun MovieContent(
     viewModel: HomeMovieViewModel,
+    onSearchIconPressed: () -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
@@ -58,6 +61,7 @@ private fun MovieContent(
         item {
             HeaderSection(
                 viewModel = viewModel,
+                onSearchIconPressed = onSearchIconPressed,
                 onNavigateToMovieList = openMovieList,
                 openMovieDetails = openMovieDetails
             )
@@ -216,6 +220,7 @@ fun MoviesSection(
 @Composable
 fun HeaderSection(
     viewModel: HomeMovieViewModel,
+    onSearchIconPressed: () -> Unit,
     onNavigateToMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
@@ -257,11 +262,12 @@ fun HeaderSection(
             HomePageAppBar(
                 elevation = 0.dp,
                 backgroundColor = Color.Transparent,
-                contentColor = Color.White
+                contentColor = Color.White,
+                onSearchIconPressed = onSearchIconPressed
             )
             Spacer(modifier = Modifier.height(DefaultMovieSectionSpacing))
             MovieGenres(
-                generesUiState = viewModel.movieGenresUiState,
+                genresUiState = viewModel.movieGenresUiState,
                 onGenreClicked = { genre ->
                     onNavigateToMovieList(
                         MovieListingArgs(
@@ -298,12 +304,12 @@ fun HeaderSection(
 
 @Composable
 fun MovieGenres(
-    generesUiState: GenresUiState,
+    genresUiState: GenresUiState,
     onRetry: () -> Unit,
     onGenreClicked: (genre: Genre) -> Unit
 ) {
     DriveCompose(
-        uiState = generesUiState,
+        uiState = genresUiState,
         loading = { SectionLoadingIndicator() },
         onRetry = onRetry
     ) { genres ->

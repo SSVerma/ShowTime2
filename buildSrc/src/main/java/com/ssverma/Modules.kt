@@ -9,6 +9,7 @@ object Modules {
         const val navigation = ":core-navigation"
         const val di = ":core-di"
         const val image = ":core-image"
+        const val storage = ":core-storage"
     }
 
     object Shared {
@@ -31,5 +32,7 @@ object Modules {
         const val library = ":feature-library"
         const val libraryNavigation = ":feature-library-navigation"
         const val filter = ":feature-filter"
+        const val search = ":feature-search"
+        const val searchNavigation = ":feature-search-navigation"
     }
 }

@@ -8,7 +8,9 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 internal class StorageClientImpl @Inject constructor(
     private val databaseClient: DatabaseClient,
     private val keyValueStorageClient: KeyValueStorageClient

@@ -6,6 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.movie.ui.MovieScreen
+import com.ssverma.feature.search.navigation.SearchDestination
 
 fun NavGraphBuilder.movieHomeGraph(
     navController: NavController
@@ -17,6 +18,9 @@ fun NavGraphBuilder.movieHomeGraph(
         },
         openMovieDetails = { movieId ->
             navController.navigateTo(MovieDetailDestination.actualRoute(movieId))
+        },
+        openSearchPage = {
+            navController.navigateTo(SearchDestination.actualRoute)
         }
     )
 }

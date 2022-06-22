@@ -1,15 +1,15 @@
 package com.ssverma.feature.movie.domain.repository
 
 import androidx.paging.PagingData
+import com.ssverma.feature.movie.domain.failure.MovieFailure
+import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
-import com.ssverma.feature.movie.domain.failure.MovieFailure
-import com.ssverma.feature.movie.domain.model.Movie
-import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
+import com.ssverma.shared.domain.model.movie.Movie
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {

@@ -201,14 +201,14 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
         }
         DiscoverOption.MediaType.Movie -> {
             return Pair(
-                first = TmdbApiTiedConstants.AvailableMediaType.Movie,
-                second = TmdbApiTiedConstants.AvailableMediaType.Movie
+                first = TmdbApiTiedConstants.AvailableMediaTypes.Movie,
+                second = TmdbApiTiedConstants.AvailableMediaTypes.Movie
             )
         }
         DiscoverOption.MediaType.Tv -> {
             return Pair(
-                first = TmdbApiTiedConstants.AvailableMediaType.Tv,
-                second = TmdbApiTiedConstants.AvailableMediaType.Tv
+                first = TmdbApiTiedConstants.AvailableMediaTypes.Tv,
+                second = TmdbApiTiedConstants.AvailableMediaTypes.Tv
             )
         }
         DiscoverOption.Monetization.Ads -> {

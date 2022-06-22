@@ -31,8 +31,8 @@ import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.layout.HorizontalLazyListIndexed
 import com.ssverma.feature.person.R
-import com.ssverma.feature.person.domain.model.Person
-import com.ssverma.feature.person.domain.model.PersonMedia
+import com.ssverma.shared.domain.model.person.Person
+import com.ssverma.shared.domain.model.person.PersonMedia
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.emptyImageShot
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
@@ -547,7 +547,7 @@ fun MediaType.asUiText(): UiText.StaticText {
     return when (this) {
         MediaType.Movie -> UiText.StaticText(resId = R.string.movie)
         MediaType.Tv -> UiText.StaticText(resId = R.string.tv)
-        MediaType.Unknown -> UiText.StaticText(resId = R.string.unknown)
+        else -> UiText.StaticText(resId = R.string.unknown)
     }
 }
 

@@ -3,10 +3,10 @@ package com.ssverma.api.service.tmdb
 object TmdbApiTiedConstants {
 
     object AvailableMediaTypes {
-        const val ALL = "all"
-        const val MOVIE = "movie"
-        const val TV = "tv"
-        const val PERSON = "person"
+        const val Movie = "movie"
+        const val Tv = "tv"
+        const val Person = "person"
+        const val All = "all"
     }
 
     object AvailableTimeWindows {
@@ -98,11 +98,6 @@ object TmdbApiTiedConstants {
         const val Reviews = "reviews"
         const val Similar = "similar"
         const val Recommendations = "recommendations"
-    }
-
-    object AvailableMediaType {
-        const val Movie = "movie"
-        const val Tv = "tv"
     }
 
     object PersonDetailsAppendableResponseTypes {

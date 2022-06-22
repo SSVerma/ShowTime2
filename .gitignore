@@ -17,6 +17,8 @@ feature-person/build
 feature-person-navigation/build
 feature-library/build
 feature-library-navigation/build
+feature-search/build
+feature-search-navigation/build
 
 /.gradle
 /.idea

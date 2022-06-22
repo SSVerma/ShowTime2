@@ -19,7 +19,7 @@ interface TmdbApiService {
         @QueryMap queryMap: Map<String, String>,
     ): TmdbApiResponse<RemoteMovie>
 
-    @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.MOVIE}/{timeWindow}")
+    @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.Movie}/{timeWindow}")
     suspend fun getTrendingMovies(
         @Path("timeWindow") timeWindow: String,
         @Query("page") page: Int
@@ -102,7 +102,7 @@ interface TmdbApiService {
         @Query("page", encoded = false) page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
-    @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.TV}/{timeWindow}")
+    @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.Tv}/{timeWindow}")
     suspend fun getTrendingTvShows(
         @Path("timeWindow") timeWindow: String,
         @Query("page") page: Int
@@ -128,4 +128,9 @@ interface TmdbApiService {
         @Path("episodeNumber") episodeNumber: Int,
         @QueryMap queryMap: Map<String, String>,
     ): TmdbApiResponse<RemoteTvEpisode>
+
+    @GET("3/search/multi")
+    suspend fun multiSearch(
+        @Query("query") query: String
+    ): TmdbApiResponse<PagedPayload<RemoteMultiSearchSuggestion>>
 }
