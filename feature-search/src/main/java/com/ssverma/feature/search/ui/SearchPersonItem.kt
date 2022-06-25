@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.feature.search.domain.model.SearchSuggestion
 import com.ssverma.feature.search.ui.common.SearchSuggestionDefaults
+import com.ssverma.feature.search.ui.common.SuggestionText
 import com.ssverma.shared.domain.model.Gender
 import com.ssverma.shared.ui.component.Avatar
 
@@ -22,6 +22,7 @@ import com.ssverma.shared.ui.component.Avatar
 @Composable
 fun SearchPersonItem(
     person: SearchSuggestion.Person,
+    query: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -46,12 +47,12 @@ fun SearchPersonItem(
                 modifier = Modifier.size(32.dp)
             )
 
-            Text(
-                text = person.name,
-                style = MaterialTheme.typography.body1,
+            SuggestionText(
+                primaryText = person.name,
+                query = query,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = SearchSuggestionDefaults.TitleHorizontalSpacing)
             )
         }
     }
@@ -69,6 +70,7 @@ private fun SearchPersonItemPreview() {
             gender = Gender.Male,
             popularity = 9f
         ),
+        query = "Mr",
         onClick = {}
     )
 }

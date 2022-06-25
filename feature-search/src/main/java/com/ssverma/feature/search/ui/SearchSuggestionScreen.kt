@@ -79,6 +79,7 @@ fun SearchSuggestionScreen(
 
             suggestions(
                 items = searchSuggestions,
+                query = query,
                 onSuggestionClick = { suggestion ->
                     when (suggestion) {
                         is SearchSuggestion.Movie -> {
@@ -122,6 +123,7 @@ private fun LazyListScope.historyItems(
 
 private fun LazyListScope.suggestions(
     items: List<SearchSuggestion>,
+    query: String,
     onSuggestionClick: (SearchSuggestion) -> Unit
 ) = items(items) { suggestion ->
     SuggestionItem {
@@ -129,6 +131,7 @@ private fun LazyListScope.suggestions(
             is SearchSuggestion.Movie -> {
                 SearchMovieItem(
                     movie = suggestion,
+                    query = query,
                     onClick = {
                         onSuggestionClick(suggestion)
                     }
@@ -137,6 +140,7 @@ private fun LazyListScope.suggestions(
             is SearchSuggestion.Person -> {
                 SearchPersonItem(
                     person = suggestion,
+                    query = query,
                     onClick = {
                         onSuggestionClick(suggestion)
                     }
@@ -145,6 +149,7 @@ private fun LazyListScope.suggestions(
             is SearchSuggestion.TvShow -> {
                 SearchTvShowItem(
                     tvShow = suggestion,
+                    query = query,
                     onClick = {
                         onSuggestionClick(suggestion)
                     }

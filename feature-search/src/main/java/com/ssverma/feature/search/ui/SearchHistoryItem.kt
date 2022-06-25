@@ -9,12 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.feature.search.domain.model.SearchHistory
-import com.ssverma.feature.search.domain.model.SearchSuggestion
 import com.ssverma.feature.search.ui.common.SearchSuggestionDefaults
-import com.ssverma.shared.domain.model.Gender
+import com.ssverma.shared.domain.model.MediaType
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -57,15 +55,13 @@ fun SearchHistoryItem(
 @Preview
 @Composable
 private fun SearchPersonItemPreview() {
-    SearchPersonItem(
-        person = SearchSuggestion.Person(
+    SearchHistoryItem(
+        history = SearchHistory(
             id = 1,
             name = "Mr Stark",
-            imageUrl = "/stTEycfG9928HYGEISBFaG1ngjM.jpg".convertToFullTmdbImageUrl(),
-            department = "acting",
-            gender = Gender.Male,
-            popularity = 9f
+            mediaType = MediaType.Movie
         ),
-        onClick = {}
+        onClick = {},
+        onHistoryClearClick = {}
     )
 }
