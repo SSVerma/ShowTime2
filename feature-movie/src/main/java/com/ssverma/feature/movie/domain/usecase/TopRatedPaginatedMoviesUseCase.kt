@@ -2,9 +2,9 @@ package com.ssverma.feature.movie.domain.usecase
 
 import androidx.paging.PagingData
 import com.ssverma.core.di.DefaultDispatcher
-import com.ssverma.shared.domain.usecase.NoParamFlowUseCase
-import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.domain.repository.MovieRepository
+import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.usecase.NoParamFlowUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

@@ -7,6 +7,7 @@ import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
 import com.ssverma.feature.person.ui.PersonScreen
+import com.ssverma.feature.search.navigation.SearchDestination
 import com.ssverma.feature.tv.navigation.TvShowDetailDestination
 
 fun NavGraphBuilder.personHomeGraph(
@@ -22,6 +23,9 @@ fun NavGraphBuilder.personHomeGraph(
         },
         openTvShowDetailsScreen = { tvShowId ->
             navController.navigateTo(TvShowDetailDestination.actualRoute(tvShowId))
+        },
+        openSearchPage = {
+            navController.navigateTo(SearchDestination.actualRoute)
         }
     )
 }

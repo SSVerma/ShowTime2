@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.feature.tv.R
-import com.ssverma.feature.tv.domain.model.TvEpisode
+import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
 import com.ssverma.shared.ui.bottomsheet.SheetContentType

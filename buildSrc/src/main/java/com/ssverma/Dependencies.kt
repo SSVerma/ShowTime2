@@ -105,12 +105,12 @@ object Deps {
     }
 
     object Storage {
-        const val room = "androidx.room:room-runtime:${Versions.Storage.room}"
+        const val room = "androidx.room:room-ktx:${Versions.Storage.room}"
         const val dataStorePreferences =
             "androidx.datastore:datastore-preferences:${Versions.Storage.dataStore}"
         const val dataStoreProto = "androidx.datastore:datastore:${Versions.Storage.dataStore}"
 
-        object AnnotationProcessor {
+        object Kapt {
             const val room = "androidx.room:room-compiler:${Versions.Storage.room}"
         }
     }

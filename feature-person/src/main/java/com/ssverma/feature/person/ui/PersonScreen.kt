@@ -28,10 +28,10 @@ import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedListIndexed
 import com.ssverma.feature.person.R
-import com.ssverma.feature.person.domain.model.Person
-import com.ssverma.feature.person.domain.model.PersonMedia
 import com.ssverma.shared.domain.model.Gender
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.person.Person
+import com.ssverma.shared.domain.model.person.PersonMedia
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.HomePageAppBar
 
@@ -41,13 +41,17 @@ fun PersonScreen(
     openPersonDetailsScreen: (personId: Int) -> Unit,
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
+    openSearchPage: () -> Unit,
 ) {
     val pagedPersons = viewModel.popularPersons.collectAsLazyPagingItems()
 
     var selectedPersonId by remember { mutableStateOf(-1) }
 
     Column(modifier = Modifier.statusBarsPadding()) {
-        HomePageAppBar(backgroundColor = MaterialTheme.colors.background)
+        HomePageAppBar(
+            backgroundColor = MaterialTheme.colors.background,
+            onSearchIconPressed = openSearchPage
+        )
 
         PagedContent(pagingItems = pagedPersons) {
             PagedListIndexed(
@@ -75,7 +79,7 @@ fun PersonScreen(
                             MediaType.Tv -> {
                                 openTvShowDetailsScreen(media.id)
                             }
-                            MediaType.Unknown -> {
+                            else -> {
                                 //Do nothing
                             }
                         }
@@ -165,11 +169,13 @@ private fun PersonItem(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(text = stringResource(id = R.string.popular_media))
                                 Spacer(modifier = Modifier.padding(4.dp))
-                                Icon(imageVector = if (showPopularMedia) {
-                                    AppIcons.KeyboardArrowUp
-                                } else {
-                                    AppIcons.KeyboardArrowDown
-                                }, contentDescription = null)
+                                Icon(
+                                    imageVector = if (showPopularMedia) {
+                                        AppIcons.KeyboardArrowUp
+                                    } else {
+                                        AppIcons.KeyboardArrowDown
+                                    }, contentDescription = null
+                                )
                             }
                         }
                     }

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.feature.person.domain.model.Person
+import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.usecase.PopularPersonsPaginatedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow

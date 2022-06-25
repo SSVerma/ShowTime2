@@ -34,6 +34,8 @@ android {
 
 dependencies {
     api Deps.Storage.room
+    kapt Deps.Storage.Kapt.room
+
     api Deps.Storage.dataStorePreferences
 
     implementation Deps.Di.daggerHiltCore

@@ -10,7 +10,7 @@ import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
 import com.ssverma.feature.person.data.remote.PersonRemoteDataSource
 import com.ssverma.feature.person.domain.failure.PersonFailure
-import com.ssverma.feature.person.domain.model.Person
+import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.model.PersonDetailsConfig
 import com.ssverma.feature.person.domain.repository.PersonRepository
 import com.ssverma.shared.data.mapper.ListMapper

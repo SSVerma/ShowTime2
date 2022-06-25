@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.domain.model
+package com.ssverma.shared.domain.model.movie
 
 data class MovieCollection(
     val id: Int,

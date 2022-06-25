@@ -8,8 +8,8 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.domain.utils.formatLocally
-import com.ssverma.feature.person.domain.model.Person
-import com.ssverma.feature.person.domain.model.PersonMedia
+import com.ssverma.shared.domain.model.person.Person
+import com.ssverma.shared.domain.model.person.PersonMedia
 import com.ssverma.shared.data.mapper.*
 import javax.inject.Inject
 

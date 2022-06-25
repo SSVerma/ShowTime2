@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 
@@ -22,18 +23,20 @@ fun Avatar(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.Crop,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    borderWidth: Dp = AvatarDefaults.BorderWidth,
+    borderSpacing: Dp = AvatarDefaults.BorderSpacing
 ) {
     Box(
         modifier = modifier
             .background(color = MaterialTheme.colors.surface, shape = CircleShape)
-            .size(48.dp)
+            .size(AvatarDefaults.Size)
             .border(
-                width = 2.dp,
+                width = borderWidth,
                 color = MaterialTheme.colors.primaryVariant,
                 shape = CircleShape
             )
-            .padding(4.dp)
+            .padding(borderSpacing)
             .clip(CircleShape)
             .clickable { onClick() }
     ) {
@@ -46,4 +49,10 @@ fun Avatar(
                 .clip(CircleShape)
         )
     }
+}
+
+object AvatarDefaults {
+    val Size = 48.dp
+    val BorderWidth = 2.dp
+    val BorderSpacing = 4.dp
 }

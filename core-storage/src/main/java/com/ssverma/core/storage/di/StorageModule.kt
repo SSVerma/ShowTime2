@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal abstract class StorageModule {
+abstract class StorageModule {
 
     @Singleton
     @Binds

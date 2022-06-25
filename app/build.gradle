@@ -67,6 +67,9 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion Versions.compose
     }
+    packagingOptions {
+        exclude 'META-INF/gradle/incremental.annotation.processors'
+    }
     namespace 'com.ssverma.showtime'
 }
 
@@ -79,6 +82,7 @@ dependencies {
     implementation project(Modules.Feature.tv)
     implementation project(Modules.Feature.person)
     implementation project(Modules.Feature.library)
+    implementation project(Modules.Feature.search)
 
     implementation Deps.material
     implementation Deps.ComposeSupport.activity

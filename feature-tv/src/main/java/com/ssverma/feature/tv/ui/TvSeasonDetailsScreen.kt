@@ -20,8 +20,8 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.tv.R
-import com.ssverma.feature.tv.domain.model.TvEpisode
-import com.ssverma.feature.tv.domain.model.TvSeason
+import com.ssverma.shared.domain.model.tv.TvEpisode
+import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.feature.tv.navigation.args.TvEpisodeArgs
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.TmdbPosterAspectRatio

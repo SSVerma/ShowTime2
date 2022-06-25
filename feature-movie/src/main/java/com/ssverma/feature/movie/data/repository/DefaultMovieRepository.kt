@@ -12,7 +12,6 @@ import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.feature.movie.data.remote.MovieRemoteDataSource
 import com.ssverma.feature.movie.domain.failure.MovieFailure
-import com.ssverma.feature.movie.domain.model.Movie
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.data.mapper.*
@@ -22,6 +21,7 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
+import com.ssverma.shared.domain.model.movie.Movie
 import kotlinx.coroutines.flow.Flow
 import java.net.HttpURLConnection
 import javax.inject.Inject
