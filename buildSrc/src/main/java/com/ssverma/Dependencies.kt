@@ -1,11 +1,11 @@
 package com.ssverma
 
 object Versions {
-    const val core = "1.7.0"
-    const val appcompat = "1.4.1"
-    const val material = "1.6.0"
-    const val compose = "1.2.0-beta01"
-    const val accompanist = "0.24.8-beta"
+    const val core = "1.8.0"
+    const val appcompat = "1.4.2"
+    const val material = "1.6.1"
+    const val compose = "1.2.0-rc02"
+    const val accompanist = "0.24.12-rc"
     const val Coroutines = "1.6.1"
 
     object Lifecycle {
@@ -17,7 +17,7 @@ object Versions {
         const val activity = "1.4.0"
         const val constraintLayout = "1.0.0"
         const val navigation = "2.5.0-beta01"
-        const val paging = "1.0.0-alpha14"
+        const val paging = "1.0.0-alpha15"
         const val coil = "2.1.0"
     }
 
