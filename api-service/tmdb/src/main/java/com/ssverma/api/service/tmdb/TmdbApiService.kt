@@ -1,11 +1,12 @@
 package com.ssverma.api.service.tmdb
 
+import com.ssverma.api.service.tmdb.request.AccessTokenBody
+import com.ssverma.api.service.tmdb.request.LogoutBody
+import com.ssverma.api.service.tmdb.request.RequestTokenBody
+import com.ssverma.api.service.tmdb.request.SessionBody
 import com.ssverma.api.service.tmdb.response.*
 import com.ssverma.core.networking.adapter.ApiResponse
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
-import retrofit2.http.QueryMap
+import retrofit2.http.*
 
 typealias TmdbApiResponse<T> = ApiResponse<T, TmdbErrorPayload>
 
@@ -133,4 +134,29 @@ interface TmdbApiService {
     suspend fun multiSearch(
         @Query("query") query: String
     ): TmdbApiResponse<PagedPayload<RemoteMultiSearchSuggestion>>
+
+    @POST("4/auth/request_token")
+    suspend fun createRequestToken(
+        @Body requestTokenBody: RequestTokenBody
+    ): TmdbApiResponse<RequestTokenPayload>
+
+    @POST("4/auth/access_token")
+    suspend fun createAccessToken(
+        @Body accessTokenBody: AccessTokenBody
+    ): TmdbApiResponse<AccessTokenPayload>
+
+    @HTTP(method = "DELETE", path = "4/auth/access_token", hasBody = true)
+    suspend fun logout(
+        @Body logoutBody: LogoutBody
+    ): TmdbApiResponse<Unit>
+
+    @POST("3/authentication/session/convert/4")
+    suspend fun createSessionId(
+        @Body sessionBody: SessionBody
+    ): TmdbApiResponse<SessionPayload>
+
+    @GET("3/account")
+    suspend fun getAccount(
+        @Query("session_id") sessionId: String
+    ): TmdbApiResponse<AccountPayload>
 }

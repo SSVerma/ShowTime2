@@ -1,0 +1,70 @@
+import com.ssverma.Deps
+import com.ssverma.Modules
+import com.ssverma.Versions
+
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+}
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 32
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion Versions.compose
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+    implementation project(Modules.ApiService.tmdb)
+    implementation project(Modules.Core.ui)
+    implementation project(Modules.Core.navigation)
+    implementation project(Modules.Core.di)
+    implementation project(Modules.Core.networking)
+    implementation project(Modules.Core.storage)
+    implementation project(Modules.Shared.domain)
+    implementation project(Modules.Shared.data)
+    implementation project(Modules.Shared.ui)
+    api project(Modules.Feature.authNavigation)
+
+    /*DI*/
+    implementation Deps.Di.daggerHilt
+    kapt Deps.Di.Kapt.daggerHiltCompiler
+
+    implementation Deps.Di.hiltCompose
+    kapt Deps.Di.Kapt.hiltCompiler
+}

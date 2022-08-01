@@ -10,6 +10,10 @@ object TmdbDefaults {
     object ImageDefaults {
         const val ImageBaseUrl = "https://image.tmdb.org/t/p/w500" //TODO: Fetch from configs
     }
+
+    fun authApprovalRedirectUrl(requestToken: String): String {
+        return "https://www.themoviedb.org/auth/access?request_token=$requestToken"
+    }
 }
 
 fun String?.convertToFullTmdbImageUrl(): String {

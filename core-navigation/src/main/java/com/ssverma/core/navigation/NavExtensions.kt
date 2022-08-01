@@ -1,13 +1,15 @@
 package com.ssverma.core.navigation
 
 import androidx.compose.animation.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.*
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 
 @Composable
 inline fun <reified VM : ViewModel> NavController.destinationViewModel(destination: Destination): VM {
@@ -79,6 +81,77 @@ fun NavController.navigateTo(route: ActualRoute, builder: NavOptionsBuilder.() -
         route = route.asNavRoute(),
         builder = builder
     )
+}
+
+/**
+ * @param coroutineScope: scope should live longer than the destination of [route]
+ */
+fun <T> NavController.navigateForResult(
+    route: ActualRoute,
+    resultKey: String,
+    coroutineScope: CoroutineScope,
+    initialResultValue: T? = null,
+    onResult: (result: T) -> Unit
+) {
+    val resultFlow = currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow(key = resultKey, initialValue = initialResultValue)
+
+    // order is important, should be done after above statement otherwise current
+    // entry would become previous after navigation.
+    navigateTo(route = route)
+
+    coroutineScope.launch {
+        val result = resultFlow?.firstOrNull(predicate = { it != null })
+        result?.let {
+            onResult(it)
+            currentBackStackEntry?.savedStateHandle?.remove<T>(resultKey)
+        }
+    }
+}
+
+fun <T> NavController.putResultForPreviousDestination(
+    resultKey: String,
+    resultValue: T
+) {
+    previousBackStackEntry?.savedStateHandle?.set(resultKey, resultValue)
+}
+
+fun <T> NavController.putResultAndPopCurrentDestination(
+    resultKey: String,
+    resultValue: T
+) {
+    putResultForPreviousDestination(resultKey, resultValue)
+    popBackStack()
+}
+
+@Composable
+fun <T> NavController.NavigationResult(
+    resultKey: String,
+    onResult: (result: T) -> Unit
+) {
+    val currentOnResult by rememberUpdatedState(newValue = onResult)
+
+    val result = currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow<T?>(key = resultKey, initialValue = null)
+        ?.collectAsState()?.value
+
+    result?.let {
+        currentOnResult(it)
+        currentBackStackEntry?.savedStateHandle?.remove<T>(resultKey)
+    }
+}
+
+@Composable
+fun <T> NavController.NavigationResult(
+    resultKey: String,
+    onResult: (result: T?) -> Unit,
+    pendingNavigationProvider: ((route: ActualRoute) -> Unit) -> Unit
+) {
+    pendingNavigationProvider { navigateTo(it) }
+
+    NavigationResult(resultKey = resultKey, onResult = onResult)
 }
 
 data class NavGraphElement<T : ViewModel>(

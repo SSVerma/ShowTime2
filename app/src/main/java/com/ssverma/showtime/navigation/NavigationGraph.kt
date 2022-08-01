@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.ssverma.core.navigation.StandaloneDestination
+import com.ssverma.feature.account.navigation.profileGraph
+import com.ssverma.feature.auth.navigation.authGraph
 import com.ssverma.feature.movie.navigation.*
 import com.ssverma.feature.person.navigation.personDetailGraph
 import com.ssverma.feature.person.navigation.personImageShotsGraph
@@ -75,5 +77,9 @@ fun ShowTimeNavHost(
         tvEpisodeDetailGraph(navController)
 
         searchGraph(navController)
+
+        authGraph(navController)
+
+        profileGraph(navController)
     }
 }

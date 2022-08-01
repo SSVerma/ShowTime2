@@ -31,12 +31,14 @@ fun TvShowScreen(
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
+    openAccountPage: () -> Unit,
 ) {
     TvShowContent(
         viewModel = viewModel,
         openTvShowList = openTvShowList,
         openTvShowDetails = openTvShowDetails,
-        onSearchIconPressed = openSearchPage
+        onSearchIconPressed = openSearchPage,
+        onAccountIconPressed = openAccountPage
     )
 }
 
@@ -45,14 +47,16 @@ private fun TvShowContent(
     viewModel: HomeTvShowViewModel,
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
-    onSearchIconPressed: () -> Unit
+    onSearchIconPressed: () -> Unit,
+    onAccountIconPressed: () -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             HomePageAppBar(
                 backgroundColor = MaterialTheme.colors.background,
-                onSearchIconPressed = onSearchIconPressed
+                onSearchIconPressed = onSearchIconPressed,
+                onAccountIconPressed = onAccountIconPressed
             )
             Spacer(modifier = Modifier.height(DefaultTvShowSectionSpacing))
         }

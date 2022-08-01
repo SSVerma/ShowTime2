@@ -32,6 +32,16 @@ object IntentDispatcher {
             }
         )
     }
+
+    fun Context.dispatchBrowserIntent(
+        webUrl: String,
+        onNoDestinationFound: () -> Unit = {}
+    ) {
+        dispatchImplicitIntent(
+            intent = CommonIntent.browserIntent(webUrl = webUrl),
+            onDestinationNotFound = onNoDestinationFound
+        )
+    }
 }
 
 object CommonIntent {
@@ -42,9 +52,13 @@ object CommonIntent {
     }
 
     fun youtubeWebIntent(youtubeVideoId: String): Intent {
+        return browserIntent(webUrl = "http://www.youtube.com/watch?v=$youtubeVideoId")
+    }
+
+    fun browserIntent(webUrl: String): Intent {
         return Intent(
             Intent.ACTION_VIEW,
-            Uri.parse("http://www.youtube.com/watch?v=$youtubeVideoId")
+            Uri.parse(webUrl)
         ).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }

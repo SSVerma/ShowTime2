@@ -9,6 +9,7 @@ import retrofit2.Converter
 import retrofit2.Response
 import java.io.IOException
 import java.net.ConnectException
+import java.net.UnknownHostException
 
 internal class ApiResponseCall<S, E>(
     private val call: Call<S>,
@@ -33,7 +34,7 @@ internal class ApiResponseCall<S, E>(
 
             override fun onFailure(call: Call<S>, throwable: Throwable) {
                 val apiResponse = when (throwable) {
-                    is ConnectException -> {
+                    is ConnectException, is UnknownHostException -> {
                         ApiResponse.Error.NetworkError(throwable)
                     }
                     else -> {

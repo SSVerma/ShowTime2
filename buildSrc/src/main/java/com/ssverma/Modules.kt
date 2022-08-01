@@ -34,5 +34,9 @@ object Modules {
         const val filter = ":feature-filter"
         const val search = ":feature-search"
         const val searchNavigation = ":feature-search-navigation"
+        const val auth = ":feature-auth"
+        const val authNavigation = ":feature-auth-navigation"
+        const val account = ":feature-account"
+        const val accountNavigation = ":feature-account-navigation"
     }
 }

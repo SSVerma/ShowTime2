@@ -120,7 +120,7 @@ class ApiResponseCallAdaptorFactoryTest {
         assertThat(response).isInstanceOf(ApiResponse.Error.NetworkError::class.java)
 
         val errorResponse = response as ApiResponse.Error.NetworkError
-        assertThat(errorResponse.connectionException).hasCauseThat()
+        assertThat(errorResponse.throwable).hasCauseThat()
     }
 
     @Test

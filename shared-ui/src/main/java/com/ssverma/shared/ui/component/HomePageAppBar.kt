@@ -24,6 +24,7 @@ import com.ssverma.shared.ui.R
 fun HomePageAppBar(
     modifier: Modifier = Modifier,
     onSearchIconPressed: () -> Unit,
+    onAccountIconPressed: () -> Unit,
     backgroundColor: Color = MaterialTheme.colors.primarySurface,
     contentColor: Color = contentColorFor(backgroundColor),
     elevation: Dp = AppBarDefaults.TopAppBarElevation
@@ -59,7 +60,7 @@ fun HomePageAppBar(
         }
         IconButton(
             modifier = Modifier.align(Alignment.CenterVertically),
-            onClick = { /* todo */ }
+            onClick = onAccountIconPressed
         ) {
             Icon(
                 imageVector = AppIcons.AccountCircle,

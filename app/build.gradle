@@ -83,6 +83,8 @@ dependencies {
     implementation project(Modules.Feature.person)
     implementation project(Modules.Feature.library)
     implementation project(Modules.Feature.search)
+    implementation project(Modules.Feature.auth)
+    implementation project(Modules.Feature.account)
 
     implementation Deps.material
     implementation Deps.ComposeSupport.activity
