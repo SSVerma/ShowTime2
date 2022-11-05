@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
-import com.ssverma.feature.auth.navigation.AuthDestination
+import com.ssverma.feature.account.navigation.ProfileDestination
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
 import com.ssverma.feature.person.ui.PersonScreen
 import com.ssverma.feature.search.navigation.SearchDestination
@@ -29,7 +29,7 @@ fun NavGraphBuilder.personHomeGraph(
             navController.navigateTo(SearchDestination.actualRoute)
         },
         openAccountPage = {
-            navController.navigateTo(AuthDestination.actualRoute)
+            navController.navigateTo(ProfileDestination.actualRoute)
         }
     )
 }

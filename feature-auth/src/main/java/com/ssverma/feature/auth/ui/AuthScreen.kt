@@ -25,20 +25,6 @@ import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.shared.domain.failure.Failure
 
 @Composable
-fun AuthContainer(
-    modifier: Modifier = Modifier,
-    onBackPressed: () -> Unit,
-    authorizedContent: @Composable (session: AuthState.Authorized.WithSession) -> Unit
-) {
-    AuthScreen(
-        onAuthSessionEstablished = {},
-        onBackPressed = onBackPressed,
-        authorizedContent = authorizedContent,
-        modifier = modifier
-    )
-}
-
-@Composable
 internal fun AuthScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = hiltViewModel(),

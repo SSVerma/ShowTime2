@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
-import com.ssverma.feature.auth.navigation.AuthDestination
+import com.ssverma.feature.account.navigation.ProfileDestination
 import com.ssverma.feature.search.navigation.SearchDestination
 import com.ssverma.feature.tv.ui.TvShowScreen
 
@@ -26,7 +26,7 @@ fun NavGraphBuilder.tvShowHomeGraph(
             navController.navigateTo(SearchDestination.actualRoute)
         },
         openAccountPage = {
-            navController.navigateTo(AuthDestination.actualRoute)
+            navController.navigateTo(ProfileDestination.actualRoute)
         }
     )
 }

@@ -1,19 +1,20 @@
 package com.ssverma.api.service.tmdb.interceptor
 
 import com.ssverma.api.service.tmdb.di.TmdbServiceReadAccessToken
-import com.ssverma.api.service.tmdb.di.TmdbServiceReadWriteAccessToken
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
 
+interface TmdbReadWriteAccessTokenProvider {
+    suspend fun provideWriteAccessToken(): String
+}
+
 internal class AuthInterceptor @Inject constructor(
     @TmdbServiceReadAccessToken private val tmdbApiReadAccessToken: String,
-    @TmdbServiceReadWriteAccessToken private val tmdbApiReadWriteAccessToken: String
+    private val readWriteAccessTokenProvider: TmdbReadWriteAccessTokenProvider
 ) : ApplicationInterceptor {
-
-    // TODO: Find a mechanism to instantly load read-write token after login
-    // Currently it loaded after next app launch
 
     companion object {
         private const val HEADER_AUTHORIZATION = "Authorization"
@@ -21,7 +22,7 @@ internal class AuthInterceptor @Inject constructor(
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = tmdbApiReadWriteAccessToken.ifEmpty {
+        val token = runBlocking { readWriteAccessTokenProvider.provideWriteAccessToken() }.ifEmpty {
             tmdbApiReadAccessToken
         }
 

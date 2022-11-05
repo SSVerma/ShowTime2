@@ -9,7 +9,3 @@ annotation class TmdbServiceBaseUrl
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class TmdbServiceReadAccessToken
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class TmdbServiceReadWriteAccessToken
