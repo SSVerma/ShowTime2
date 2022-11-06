@@ -40,10 +40,12 @@ fun MovieScreen(
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openSearchPage: () -> Unit,
+    openAccountPage: () -> Unit
 ) {
     MovieContent(
         viewModel = viewModel,
         onSearchIconPressed = openSearchPage,
+        onAccountIconPressed = openAccountPage,
         openMovieList = openMovieList,
         openMovieDetails = openMovieDetails
     )
@@ -53,6 +55,7 @@ fun MovieScreen(
 private fun MovieContent(
     viewModel: HomeMovieViewModel,
     onSearchIconPressed: () -> Unit,
+    onAccountIconPressed: () -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
@@ -62,6 +65,7 @@ private fun MovieContent(
             HeaderSection(
                 viewModel = viewModel,
                 onSearchIconPressed = onSearchIconPressed,
+                onAccountIconPressed = onAccountIconPressed,
                 onNavigateToMovieList = openMovieList,
                 openMovieDetails = openMovieDetails
             )
@@ -221,6 +225,7 @@ fun MoviesSection(
 fun HeaderSection(
     viewModel: HomeMovieViewModel,
     onSearchIconPressed: () -> Unit,
+    onAccountIconPressed: () -> Unit,
     onNavigateToMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
@@ -263,7 +268,8 @@ fun HeaderSection(
                 elevation = 0.dp,
                 backgroundColor = Color.Transparent,
                 contentColor = Color.White,
-                onSearchIconPressed = onSearchIconPressed
+                onSearchIconPressed = onSearchIconPressed,
+                onAccountIconPressed = onAccountIconPressed
             )
             Spacer(modifier = Modifier.height(DefaultMovieSectionSpacing))
             MovieGenres(

@@ -16,7 +16,7 @@ fun <S, FeatureFailure> DriveCompose(
     uiState: UiState<S, FeatureFailure>,
     loading: @Composable () -> Unit = { DefaultLoadingIndicator() },
     coreErrorContent: @Composable (error: Failure.CoreFailure) -> Unit = {
-        DefaultCoreErrorIndicator(error = it, onRetry = onRetry)
+        DefaultCoreErrorIndicator(failure = it, onRetry = onRetry)
     },
     onRetry: () -> Unit = {},
     featureErrorContent: @Composable (error: Failure.FeatureFailure<FeatureFailure>) -> Unit = {},
@@ -56,8 +56,8 @@ fun DefaultLoadingIndicator(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun DefaultCoreErrorIndicator(
-    error: Failure.CoreFailure,
+fun DefaultCoreErrorIndicator(
+    failure: Failure.CoreFailure,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {

@@ -53,7 +53,7 @@ sealed class ApiResponse<out S, out E> {
          * Called for network errors occurred while making network request.
          */
         data class NetworkError(
-            val connectionException: ConnectException
+            val throwable: Throwable
         ) : Error<Nothing>()
 
         /**

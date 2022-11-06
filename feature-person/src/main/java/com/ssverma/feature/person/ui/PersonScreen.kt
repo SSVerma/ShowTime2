@@ -42,6 +42,7 @@ fun PersonScreen(
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
+    openAccountPage: () -> Unit
 ) {
     val pagedPersons = viewModel.popularPersons.collectAsLazyPagingItems()
 
@@ -50,7 +51,8 @@ fun PersonScreen(
     Column(modifier = Modifier.statusBarsPadding()) {
         HomePageAppBar(
             backgroundColor = MaterialTheme.colors.background,
-            onSearchIconPressed = openSearchPage
+            onSearchIconPressed = openSearchPage,
+            onAccountIconPressed = openAccountPage
         )
 
         PagedContent(pagingItems = pagedPersons) {

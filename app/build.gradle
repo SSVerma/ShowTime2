@@ -38,7 +38,7 @@ android {
     }
 
     def FIELD_TMDB_BASE_URL = "TMDB_BASE_URL"
-    def FIELD_TMDB_API_KEY = "TMDB_API_KEY"
+    def FIELD_TMDB_API_READ_ACCESS_TOKEN = "TMDB_API_READ_ACCESS_TOKEN"
 
     buildTypes {
         release {
@@ -49,7 +49,7 @@ android {
         debug {
             minifyEnabled false
             buildConfigField("String", FIELD_TMDB_BASE_URL, debugProps.getProperty("baseUrl"))
-            buildConfigField("String", FIELD_TMDB_API_KEY, coreProps.getProperty("tmdbApiKey"))
+            buildConfigField("String", FIELD_TMDB_API_READ_ACCESS_TOKEN, coreProps.getProperty("tmdbApiReadAccessToken"))
         }
     }
     compileOptions {
@@ -83,6 +83,8 @@ dependencies {
     implementation project(Modules.Feature.person)
     implementation project(Modules.Feature.library)
     implementation project(Modules.Feature.search)
+    implementation project(Modules.Feature.auth)
+    implementation project(Modules.Feature.account)
 
     implementation Deps.material
     implementation Deps.ComposeSupport.activity

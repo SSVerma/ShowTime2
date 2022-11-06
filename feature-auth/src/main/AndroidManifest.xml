@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ssverma.feature.auth">
+
+    <application>
+        <activity
+            android:name=".ui.AuthenticationApprovalActivity"
+            android:exported="true"
+            android:label="@string/title_activity_authentication_approval"
+            android:theme="@style/Theme.ShowTime">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "showtime://auth-approved" -->
+                <data
+                    android:host="auth-approved"
+                    android:scheme="showtime" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

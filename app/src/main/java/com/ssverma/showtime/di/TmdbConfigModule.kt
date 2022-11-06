@@ -1,6 +1,6 @@
 package com.ssverma.showtime.di
 
-import com.ssverma.api.service.tmdb.di.TmdbServiceApiKey
+import com.ssverma.api.service.tmdb.di.TmdbServiceReadAccessToken
 import com.ssverma.api.service.tmdb.di.TmdbServiceBaseUrl
 import com.ssverma.showtime.BuildConfig
 import dagger.Module
@@ -12,11 +12,11 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 @Module
 class TmdbConfigModule {
-    @TmdbServiceApiKey
+    @TmdbServiceReadAccessToken
     @Singleton
     @Provides
     fun provideTmdbApiKey(): String {
-        return BuildConfig.TMDB_API_KEY
+        return BuildConfig.TMDB_API_READ_ACCESS_TOKEN
     }
 
     @TmdbServiceBaseUrl

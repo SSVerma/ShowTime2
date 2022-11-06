@@ -7,6 +7,10 @@ interface Destination {
     val arguments: List<NamedNavArgument>
 }
 
+interface ResultDestination : Destination {
+    val resultKey: String
+}
+
 abstract class StandaloneDestination(private val identifier: String) : Destination {
     override val placeholderRoute: PlaceholderRoute
         get() = Route.placeholderOf(identifier).build()
@@ -34,5 +38,11 @@ abstract class DependentDestination<T>(private val identifier: String) : Destina
         builder: ActualRoute.ActualRouteBuilder = Route.actualOf(identifier)
     ): ActualRoute
 }
+
+abstract class StandaloneResultDestination(identifier: String) :
+    StandaloneDestination(identifier), ResultDestination
+
+abstract class DependentResultDestination<T>(identifier: String) :
+    DependentDestination<T>(identifier), ResultDestination
 
 abstract class GraphDestination(identifier: String) : StandaloneDestination(identifier)
