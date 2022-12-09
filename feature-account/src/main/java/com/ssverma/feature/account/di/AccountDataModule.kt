@@ -1,5 +1,7 @@
 package com.ssverma.feature.account.di
 
+import com.ssverma.feature.account.data.local.AccountLocalDataSource
+import com.ssverma.feature.account.data.local.DefaultAccountLocalDataSource
 import com.ssverma.feature.account.data.remote.AccountRemoteDataSource
 import com.ssverma.feature.account.data.remote.DefaultAccountRemoteDataSource
 import com.ssverma.feature.account.data.repository.DefaultAccountRepository
@@ -16,6 +18,11 @@ internal abstract class AccountDataModule {
     abstract fun bindAccountRemoteDataSource(
         defaultAccountRemoteDataSource: DefaultAccountRemoteDataSource
     ): AccountRemoteDataSource
+
+    @Binds
+    abstract fun bindAccountLocalDataSource(
+        defaultAccountLocalDataSource: DefaultAccountLocalDataSource
+    ): AccountLocalDataSource
 
     @Binds
     abstract fun bindAccountRepository(

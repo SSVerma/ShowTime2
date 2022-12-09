@@ -9,7 +9,10 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -193,10 +196,8 @@ class AuthManager @Inject constructor(
     }
 }
 
-suspend fun AuthManager.sessionIdIfHasSessionOrEmpty(): String {
+suspend fun AuthManager.sessionIdOrNull(): String? {
     return if (authFlow.firstOrNull() is AuthState.Authorized.WithSession) {
         (authFlow.firstOrNull() as AuthState.Authorized.WithSession).sessionId
-    } else {
-        ""
-    }
+    } else null
 }

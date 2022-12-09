@@ -8,4 +8,6 @@ interface AccountRepository {
     suspend fun fetchProfile(
         sessionId: String
     ): Result<Profile, Failure.CoreFailure>
+
+    suspend fun removeUserAccount()
 }

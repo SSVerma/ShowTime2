@@ -34,6 +34,8 @@ object Versions {
     object Storage {
         const val room = "2.4.2"
         const val dataStore = "1.0.0"
+        const val protobuf = "3.21.9"
+        const val protobufPlugin = "0.9.1"
     }
 
     object Desugaring {
@@ -109,6 +111,8 @@ object Deps {
         const val dataStorePreferences =
             "androidx.datastore:datastore-preferences:${Versions.Storage.dataStore}"
         const val dataStoreProto = "androidx.datastore:datastore:${Versions.Storage.dataStore}"
+        const val protobuf = "com.google.protobuf:protobuf-javalite:${Versions.Storage.protobuf}"
+        const val protoc = "com.google.protobuf:protoc:${Versions.Storage.protobuf}"
 
         object Kapt {
             const val room = "androidx.room:room-compiler:${Versions.Storage.room}"
