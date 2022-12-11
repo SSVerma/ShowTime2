@@ -44,8 +44,10 @@ internal fun AuthScreen(
             .statusBarsPadding()
             .fillMaxSize()
     ) {
-        IconButton(onClick = onBackPressed) {
-            Icon(imageVector = AppIcons.Close, contentDescription = null)
+        if (authUiState.authState is AuthState.Unauthorized) {
+            IconButton(onClick = onBackPressed) {
+                Icon(imageVector = AppIcons.Close, contentDescription = null)
+            }
         }
 
         if (authUiState.loading) {

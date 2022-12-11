@@ -5,10 +5,8 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material.*
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -17,19 +15,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
+import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.tv.R
-import com.ssverma.shared.domain.model.tv.TvSeason
-import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
-import com.ssverma.shared.ui.component.BackdropHeader
-import com.ssverma.shared.ui.component.GenreItem
-import com.ssverma.shared.ui.component.Highlight
-import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.tv.TvSeason
+import com.ssverma.shared.domain.model.tv.TvShow
+import com.ssverma.shared.ui.component.*
 import com.ssverma.shared.ui.component.section.*
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
@@ -99,7 +97,20 @@ private fun TvShowContent(
             BackdropHeader(
                 backdropImageUrl = tvShow.backdropImageUrl,
                 onCloseIconClick = onBackPressed,
-                onTrailerFabClick = { viewModel.onPlayTrailerClicked(tvShow) }
+                onTrailerFabClick = { viewModel.onPlayTrailerClicked(tvShow) },
+                secondaryActions = {
+                    MediaStatsAction(
+                        mediaType = MediaType.Tv,
+                        mediaId = tvShow.id
+                    )
+                    FloatingActionButton(
+                        onClick = {},
+                        backgroundColor = MaterialTheme.colors.surface,
+                        modifier = modifier.size(ActionSize)
+                    ) {
+                        Icon(imageVector = AppIcons.Send, contentDescription = null)
+                    }
+                }
             )
         }
 

@@ -13,4 +13,8 @@
     <string name="videos">Videos</string>
     <string name="video_header_subtitle">Trailer, Teaser, Bloopers and more</string>
     <string name="tmdb_attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
+    <string name="add_to_favorite">Add to favorite</string>
+    <string name="add_to_watchlist">Add to watchlist</string>
+    <string name="remove_from_favorite">Remove from favorite</string>
+    <string name="remove_from_watchlist">Remove from watchlist</string>
 </resources>
