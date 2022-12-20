@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.data.mapper
+package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovieCollection

@@ -52,8 +52,20 @@ dependencies {
     implementation project(Modules.Core.networking)
     implementation project(Modules.Core.paging)
     implementation project(Modules.Core.di)
+    implementation project(Modules.Core.image)
+    implementation project(Modules.ApiService.tmdb)
 
     api project(Modules.Feature.libraryNavigation)
+    implementation project(Modules.Feature.personNavigation)
+    implementation project(Modules.Feature.searchNavigation)
+    implementation project(Modules.Feature.movieNavigation)
+    implementation project(Modules.Feature.tvNavigation)
+
+    implementation project(Modules.Feature.account)
+    implementation project(Modules.Feature.auth)
+
+    implementation Deps.Accompanist.pager
+    implementation Deps.Accompanist.pagerIndicators
 
     /*DI*/
     implementation Deps.Di.daggerHilt

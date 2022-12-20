@@ -171,14 +171,18 @@ interface TmdbApiService {
         @Body watchlistBody: WatchlistMediaBody
     ): TmdbApiResponse<Unit>
 
-    @GET("3/account/favorite/movies")
+    @GET("3/account/{accountId}/favorite/movies")
     suspend fun getFavoriteMovies(
-        @Query("session_id") sessionId: String
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
-    @GET("3/account/favorite/tv")
+    @GET("3/account/{accountId}/favorite/tv")
     suspend fun getFavoriteTvShows(
-        @Query("session_id") sessionId: String
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
     @GET("3/movie/{movieId}/account_states")
@@ -192,4 +196,18 @@ interface TmdbApiService {
         @Path("tvShowId") tvShowId: Int,
         @Query("session_id") sessionId: String
     ): TmdbApiResponse<MediaStatsPayload>
+
+    @GET("3/account/{accountId}/watchlist/movies")
+    suspend fun getWatchlistMovies(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteMovie>>
+
+    @GET("3/account/{accountId}/watchlist/tv")
+    suspend fun getWatchlistTvShows(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 }

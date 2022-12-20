@@ -1,6 +1,12 @@
 package com.ssverma.feature.account.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
+import com.ssverma.api.service.tmdb.TmdbDefaults
+import com.ssverma.api.service.tmdb.paging.MoviePagingSource
+import com.ssverma.api.service.tmdb.paging.TvShowsPagingSource
 import com.ssverma.api.service.tmdb.request.FavoriteMediaBody
 import com.ssverma.api.service.tmdb.request.WatchlistMediaBody
 import com.ssverma.feature.account.data.local.AccountLocalDataSource
@@ -10,18 +16,28 @@ import com.ssverma.feature.account.data.remote.AccountRemoteDataSource
 import com.ssverma.feature.account.domain.model.MediaStats
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.domain.repository.AccountRepository
+import com.ssverma.feature.auth.domain.AuthManager
+import com.ssverma.feature.auth.domain.sessionIdOrNull
+import com.ssverma.shared.data.mapper.MoviesMapper
+import com.ssverma.shared.data.mapper.TvShowsMapper
 import com.ssverma.shared.data.mapper.asDomainResult
 import com.ssverma.shared.domain.CoreResult
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.tv.TvShow
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 internal class DefaultAccountRepository @Inject constructor(
     private val accountRemoteDataSource: AccountRemoteDataSource,
     private val accountLocalDataSource: AccountLocalDataSource,
+    private val authManager: AuthManager,
     private val profileMapper: ProfileMapper,
-    private val mediaStatsMapper: MediaStatsMapper
+    private val mediaStatsMapper: MediaStatsMapper,
+    private val moviesMapper: MoviesMapper,
+    private val tvShowsMapper: TvShowsMapper
 ) : AccountRepository {
 
     override suspend fun fetchProfile(sessionId: String): Result<Profile, Failure.CoreFailure> {
@@ -136,5 +152,85 @@ internal class DefaultAccountRepository @Inject constructor(
             accountId = accountId,
             watchlistBody = watchlistBody
         ).asDomainResult {}
+    }
+
+    override fun fetchFavoriteMoviesGradually(): Flow<PagingData<Movie>> {
+        return Pager(
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
+            pagingSourceFactory = {
+                MoviePagingSource(
+                    movieApiCall = { pageNumber ->
+                        val accountId = accountLocalDataSource.loadUserAccount().accountId
+
+                        accountRemoteDataSource.fetchFavoriteMovies(
+                            accountId = accountId,
+                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            page = pageNumber
+                        )
+                    },
+                    mapRemoteToDomain = { moviesMapper.map(it) }
+                )
+            }
+        ).flow
+    }
+
+    override fun fetchFavoriteTvShowsGradually(): Flow<PagingData<TvShow>> {
+        return Pager(
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
+            pagingSourceFactory = {
+                TvShowsPagingSource(
+                    tvShowApiCall = { pageNumber ->
+                        val accountId = accountLocalDataSource.loadUserAccount().accountId
+
+                        accountRemoteDataSource.fetchFavoriteTvShows(
+                            accountId = accountId,
+                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            page = pageNumber
+                        )
+                    },
+                    mapRemoteToDomain = { tvShowsMapper.map(it) }
+                )
+            }
+        ).flow
+    }
+
+    override fun fetchWatchlistMoviesGradually(): Flow<PagingData<Movie>> {
+        return Pager(
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
+            pagingSourceFactory = {
+                MoviePagingSource(
+                    movieApiCall = { pageNumber ->
+                        val accountId = accountLocalDataSource.loadUserAccount().accountId
+
+                        accountRemoteDataSource.fetchWatchlistMovies(
+                            accountId = accountId,
+                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            page = pageNumber
+                        )
+                    },
+                    mapRemoteToDomain = { moviesMapper.map(it) }
+                )
+            }
+        ).flow
+    }
+
+    override fun fetchWatchlistTvShowsGradually(): Flow<PagingData<TvShow>> {
+        return Pager(
+            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
+            pagingSourceFactory = {
+                TvShowsPagingSource(
+                    tvShowApiCall = { pageNumber ->
+                        val accountId = accountLocalDataSource.loadUserAccount().accountId
+
+                        accountRemoteDataSource.fetchWatchlistTvShows(
+                            accountId = accountId,
+                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            page = pageNumber
+                        )
+                    },
+                    mapRemoteToDomain = { tvShowsMapper.map(it) }
+                )
+            }
+        ).flow
     }
 }

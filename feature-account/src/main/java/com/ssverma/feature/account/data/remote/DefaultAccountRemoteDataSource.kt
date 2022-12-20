@@ -4,11 +4,10 @@ import com.ssverma.api.service.tmdb.TmdbApiResponse
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.request.FavoriteMediaBody
 import com.ssverma.api.service.tmdb.request.WatchlistMediaBody
-import com.ssverma.api.service.tmdb.response.AccountPayload
-import com.ssverma.api.service.tmdb.response.MediaStatsPayload
+import com.ssverma.api.service.tmdb.response.*
 import javax.inject.Inject
 
-class DefaultAccountRemoteDataSource @Inject constructor(
+internal class DefaultAccountRemoteDataSource @Inject constructor(
     private val tmdbApiService: TmdbApiService
 ) : AccountRemoteDataSource {
 
@@ -57,6 +56,54 @@ class DefaultAccountRemoteDataSource @Inject constructor(
             sessionId = sessionId,
             accountId = accountId,
             watchlistBody = watchlistBody
+        )
+    }
+
+    override suspend fun fetchFavoriteMovies(
+        sessionId: String,
+        accountId: Int,
+        page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteMovie>> {
+        return tmdbApiService.getFavoriteMovies(
+            sessionId = sessionId,
+            accountId = accountId,
+            page = page
+        )
+    }
+
+    override suspend fun fetchFavoriteTvShows(
+        sessionId: String,
+        accountId: Int,
+        page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteTvShow>> {
+        return tmdbApiService.getFavoriteTvShows(
+            sessionId = sessionId,
+            accountId = accountId,
+            page = page
+        )
+    }
+
+    override suspend fun fetchWatchlistMovies(
+        sessionId: String,
+        accountId: Int,
+        page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteMovie>> {
+        return tmdbApiService.getWatchlistMovies(
+            sessionId = sessionId,
+            accountId = accountId,
+            page = page
+        )
+    }
+
+    override suspend fun fetchWatchlistTvShows(
+        sessionId: String,
+        accountId: Int,
+        page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteTvShow>> {
+        return tmdbApiService.getWatchlistTvShows(
+            sessionId = sessionId,
+            accountId = accountId,
+            page = page
         )
     }
 }

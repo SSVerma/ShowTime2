@@ -1,11 +1,15 @@
 package com.ssverma.feature.account.domain.repository
 
+import androidx.paging.PagingData
 import com.ssverma.feature.account.domain.model.MediaStats
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.shared.domain.CoreResult
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.tv.TvShow
+import kotlinx.coroutines.flow.Flow
 
 interface AccountRepository {
     suspend fun fetchProfile(
@@ -33,4 +37,12 @@ interface AccountRepository {
         mediaId: Int,
         inWatchlist: Boolean
     ): CoreResult<Unit>
+
+    fun fetchFavoriteMoviesGradually(): Flow<PagingData<Movie>>
+
+    fun fetchFavoriteTvShowsGradually(): Flow<PagingData<TvShow>>
+
+    fun fetchWatchlistMoviesGradually(): Flow<PagingData<Movie>>
+
+    fun fetchWatchlistTvShowsGradually(): Flow<PagingData<TvShow>>
 }
