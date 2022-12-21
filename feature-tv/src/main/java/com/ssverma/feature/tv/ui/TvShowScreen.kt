@@ -56,9 +56,10 @@ private fun TvShowContent(
             HomePageAppBar(
                 backgroundColor = MaterialTheme.colors.background,
                 onSearchIconPressed = onSearchIconPressed,
-                onAccountIconPressed = onAccountIconPressed
+                onAccountIconPressed = onAccountIconPressed,
+                elevation = 0.dp
             )
-            Spacer(modifier = Modifier.height(DefaultTvShowSectionSpacing))
+            Spacer(modifier = Modifier.height(DefaultTvShowSectionSpacing / 2))
         }
 
         //Genre
@@ -249,7 +250,7 @@ fun TvShowsSection(
 
     AnimatedVisibility(
         visible = shouldVisible,
-        modifier = modifier.padding(top = 32.dp)
+        modifier = modifier.padding(top = DefaultTvShowSectionSpacing)
     ) {
         Section(
             sectionHeader = {
@@ -295,5 +296,5 @@ fun TvShowGenres(
     }
 }
 
-private val DefaultTvShowSectionSpacing = 32.dp
+private val DefaultTvShowSectionSpacing = 24.dp
 private val FooterSpacerHeight = 56.dp

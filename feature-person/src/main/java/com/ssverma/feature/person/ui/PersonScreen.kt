@@ -48,46 +48,47 @@ fun PersonScreen(
 
     var selectedPersonId by remember { mutableStateOf(-1) }
 
-    Column(modifier = Modifier.statusBarsPadding()) {
-        HomePageAppBar(
-            backgroundColor = MaterialTheme.colors.background,
-            onSearchIconPressed = openSearchPage,
-            onAccountIconPressed = openAccountPage
-        )
-
-        PagedContent(pagingItems = pagedPersons) {
-            PagedListIndexed(
-                pagingItems = it,
-                contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) { index, person ->
-                PersonItem(
-                    person = person,
-                    index = index,
-                    showPopularMedia = selectedPersonId == person.id,
-                    onClick = { openPersonDetailsScreen(person.id) },
-                    onPopularMediaBtnClick = { personId ->
-                        if (selectedPersonId == personId) {
-                            selectedPersonId = -1
-                        } else {
-                            selectedPersonId = personId
-                        }
-                    },
-                    onMediaClick = { media ->
-                        when (media.mediaType) {
-                            MediaType.Movie -> {
-                                openMovieDetailsScreen(media.id)
-                            }
-                            MediaType.Tv -> {
-                                openTvShowDetailsScreen(media.id)
-                            }
-                            else -> {
-                                //Do nothing
-                            }
-                        }
-                    }
+    PagedContent(pagingItems = pagedPersons) {
+        PagedListIndexed(
+            pagingItems = it,
+            contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            header = {
+                HomePageAppBar(
+                    backgroundColor = MaterialTheme.colors.background,
+                    onSearchIconPressed = openSearchPage,
+                    onAccountIconPressed = openAccountPage,
+                    elevation = 0.dp,
+                    modifier = Modifier.statusBarsPadding()
                 )
             }
+        ) { index, person ->
+            PersonItem(
+                person = person,
+                index = index,
+                showPopularMedia = selectedPersonId == person.id,
+                onClick = { openPersonDetailsScreen(person.id) },
+                onPopularMediaBtnClick = { personId ->
+                    if (selectedPersonId == personId) {
+                        selectedPersonId = -1
+                    } else {
+                        selectedPersonId = personId
+                    }
+                },
+                onMediaClick = { media ->
+                    when (media.mediaType) {
+                        MediaType.Movie -> {
+                            openMovieDetailsScreen(media.id)
+                        }
+                        MediaType.Tv -> {
+                            openTvShowDetailsScreen(media.id)
+                        }
+                        else -> {
+                            //Do nothing
+                        }
+                    }
+                }
+            )
         }
     }
 }

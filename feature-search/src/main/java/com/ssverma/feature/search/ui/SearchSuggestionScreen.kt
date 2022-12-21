@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -180,6 +182,13 @@ private fun SearchBar(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(true) {
+        focusRequester.requestFocus()
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -201,7 +210,9 @@ private fun SearchBar(
                 ),
                 maxLines = 1,
                 cursorBrush = SolidColor(MaterialTheme.colors.onBackground),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
             )
         }
         AnimatedVisibility(visible = query.isNotBlank()) {

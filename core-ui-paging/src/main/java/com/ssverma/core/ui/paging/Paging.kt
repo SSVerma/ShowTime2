@@ -35,6 +35,7 @@ fun <T : Any> PagedList(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
+    header: @Composable () -> Unit = {},
     itemContent: @Composable (item: T) -> Unit
 ) {
     PagedListIndexed(
@@ -45,7 +46,8 @@ fun <T : Any> PagedList(
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
         pagingLoadingIndicator = pagingLoadingIndicator,
-        placeholderItemContent = placeholderItemContent
+        placeholderItemContent = placeholderItemContent,
+        header = header
     ) { _, item ->
         itemContent(item)
     }
@@ -63,6 +65,7 @@ fun <T : Any> PagedListIndexed(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
+    header: @Composable () -> Unit = {},
     itemContent: @Composable (index: Int, item: T) -> Unit
 ) {
     LazyColumn(
@@ -73,6 +76,7 @@ fun <T : Any> PagedListIndexed(
         horizontalAlignment = horizontalAlignment,
         modifier = modifier
     ) {
+        item { header() }
         items(pagingItems.itemCount) { index ->
             val pagingItem = pagingItems[index]
             if (pagingItem == null) {
