@@ -25,12 +25,12 @@ if (debugConfigFile != null && debugConfigFile.canRead()) {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion Versions.AndroidSdk.Compile
 
     defaultConfig {
         applicationId "com.ssverma.showtime"
-        minSdkVersion 21
-        targetSdkVersion 32
+        minSdkVersion Versions.AndroidSdk.Min
+        targetSdkVersion Versions.AndroidSdk.Target
         versionCode 1
         versionName "1.0"
 
@@ -59,7 +59,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
-        useIR = true
     }
     buildFeatures {
         compose true

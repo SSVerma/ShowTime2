@@ -1,5 +1,4 @@
 import com.ssverma.Deps
-import com.ssverma.Modules
 import com.ssverma.Versions
 
 plugins {
@@ -8,11 +7,11 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk Versions.AndroidSdk.Compile
 
     defaultConfig {
-        minSdk 21
-        targetSdk 32
+        minSdk Versions.AndroidSdk.Min
+        targetSdk Versions.AndroidSdk.Target
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -30,7 +29,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
-        useIR = true
     }
     buildFeatures {
         compose true

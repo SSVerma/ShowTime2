@@ -31,10 +31,10 @@ import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.layout.HorizontalLazyListIndexed
 import com.ssverma.feature.person.R
-import com.ssverma.shared.domain.model.person.Person
-import com.ssverma.shared.domain.model.person.PersonMedia
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.emptyImageShot
+import com.ssverma.shared.domain.model.person.Person
+import com.ssverma.shared.domain.model.person.PersonMedia
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.TmdbPersonAspectRatio
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
@@ -329,7 +329,7 @@ private fun PersonMediaTabs(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
-                        itemsIndexed(entry.value) { index, media ->
+                        itemsIndexed(entry.value) { _, media ->
                             TimelineItem(
                                 media = media,
                                 onInfoIconClick = { clickedMediaInfo = media.overview },
@@ -421,8 +421,8 @@ private fun TimelineItem(
                     MediaType.Tv -> {
                         openTvShowDetails(media.id)
                     }
-                    MediaType.Unknown -> {
-                        //
+                    else -> {
+                        // no-op
                     }
                 }
             },

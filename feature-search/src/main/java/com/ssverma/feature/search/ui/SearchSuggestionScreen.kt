@@ -209,6 +209,7 @@ private fun SearchBar(
                     color = MaterialTheme.colors.onBackground
                 ),
                 maxLines = 1,
+                singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colors.onBackground),
                 modifier = Modifier
                     .fillMaxWidth()

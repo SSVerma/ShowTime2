@@ -1,12 +1,18 @@
 package com.ssverma
 
 object Versions {
-    const val core = "1.8.0"
-    const val appcompat = "1.4.2"
+    const val core = "1.9.0"
+    const val appcompat = "1.6.0-rc01"
     const val material = "1.6.1"
-    const val compose = "1.2.0-rc02"
-    const val accompanist = "0.24.12-rc"
+    const val compose = "1.4.0-alpha02"
+    const val accompanist = "0.28.0"
     const val Coroutines = "1.6.1"
+
+    object AndroidSdk {
+        const val Min = 21
+        const val Compile = 33
+        const val Target = 33
+    }
 
     object Lifecycle {
         const val runtime = "2.4.1"
@@ -14,17 +20,17 @@ object Versions {
     }
 
     object ComposeSupport {
-        const val activity = "1.4.0"
-        const val constraintLayout = "1.0.0"
-        const val navigation = "2.5.0-beta01"
-        const val paging = "1.0.0-alpha15"
-        const val coil = "2.1.0"
+        const val activity = "1.6.1"
+        const val constraintLayout = "1.0.1"
+        const val navigation = "2.5.3"
+        const val paging = "1.0.0-alpha17"
+        const val coil = "2.2.2"
     }
 
     object Di {
-        const val daggerHilt = "2.42"
+        const val daggerHilt = "2.44.2"
         const val hiltCompiler = "1.0.0"
-        const val hiltCompose = "1.0.0"
+        const val hiltCompose = "1.1.0-alpha01"
     }
 
     object Paging {
@@ -32,7 +38,7 @@ object Versions {
     }
 
     object Storage {
-        const val room = "2.4.2"
+        const val room = "2.5.0-rc01"
         const val dataStore = "1.0.0"
         const val protobuf = "3.21.9"
         const val protobufPlugin = "0.9.1"
