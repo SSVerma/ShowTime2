@@ -9,10 +9,12 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.icon.AppIcons
@@ -27,6 +29,7 @@ import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.shared.ui.component.*
 import com.ssverma.shared.ui.component.section.*
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
@@ -86,6 +89,9 @@ private fun TvShowContent(
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val context = LocalContext.current
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -104,7 +110,16 @@ private fun TvShowContent(
                         mediaId = tvShow.id
                     )
                     FloatingActionButton(
-                        onClick = {},
+                        onClick = {
+                            val shareableText = ShareMediaUtils.buildShareableMediaText(
+                                mediaTitle = tvShow.title,
+                                mediaTagline = tvShow.tagline,
+                                mediaOverview = tvShow.overview,
+                                appPackageName = context.packageName
+                            )
+
+                            context.dispatchShareTextIntent(text = shareableText)
+                        },
                         backgroundColor = MaterialTheme.colors.surface,
                         modifier = modifier.size(ActionSize)
                     ) {

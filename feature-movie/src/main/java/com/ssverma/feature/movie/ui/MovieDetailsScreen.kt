@@ -9,10 +9,12 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.icon.AppIcons
@@ -26,6 +28,7 @@ import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.shared.ui.component.*
 import com.ssverma.shared.ui.component.section.*
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
@@ -84,6 +87,8 @@ fun MovieContent(
     modifier: Modifier = Modifier
 ) {
 
+    val context = LocalContext.current
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -102,7 +107,16 @@ fun MovieContent(
                         mediaId = movie.id
                     )
                     FloatingActionButton(
-                        onClick = {},
+                        onClick = {
+                            val shareableText = ShareMediaUtils.buildShareableMediaText(
+                                mediaTitle = movie.title,
+                                mediaTagline = movie.tagline,
+                                mediaOverview = movie.overview,
+                                appPackageName = context.packageName
+                            )
+
+                            context.dispatchShareTextIntent(text = shareableText)
+                        },
                         backgroundColor = MaterialTheme.colors.surface,
                         modifier = modifier.size(ActionSize)
                     ) {

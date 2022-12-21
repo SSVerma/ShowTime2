@@ -42,6 +42,16 @@ object IntentDispatcher {
             onDestinationNotFound = onNoDestinationFound
         )
     }
+
+    fun Context.dispatchShareTextIntent(
+        text: String,
+        onNoDestinationFound: () -> Unit = {}
+    ) {
+        dispatchImplicitIntent(
+            intent = CommonIntent.shareTextIntent(text = text),
+            onDestinationNotFound = onNoDestinationFound
+        )
+    }
 }
 
 object CommonIntent {
@@ -62,5 +72,15 @@ object CommonIntent {
         ).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
+    }
+
+    fun shareTextIntent(text: String): Intent {
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, text)
+            type = "text/plain"
+        }
+
+        return Intent.createChooser(sendIntent, null)
     }
 }
