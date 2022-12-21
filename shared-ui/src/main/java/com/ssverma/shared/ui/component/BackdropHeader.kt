@@ -6,13 +6,10 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -26,6 +23,7 @@ fun BackdropHeader(
     backdropImageUrl: String,
     onCloseIconClick: () -> Unit,
     onTrailerFabClick: () -> Unit,
+    secondaryActions: @Composable RowScope.() -> Unit = {}
 ) {
     ConstraintLayout(modifier) {
         val (refBackdrop, refRoundedSurface, refTrailerFab, refSecondaryActions) = createRefs()
@@ -90,8 +88,7 @@ fun BackdropHeader(
 
         /*Secondary actions*/
         Actions(
-            onAddToClick = { /*TODO*/ },
-            onSendIconClick = {/*TODO*/ },
+            secondaryActions = secondaryActions,
             modifier = Modifier
                 .padding(end = 16.dp)
                 .constrainAs(refSecondaryActions) {
@@ -104,44 +101,16 @@ fun BackdropHeader(
 }
 
 @Composable
-fun Actions(
+private fun Actions(
     modifier: Modifier = Modifier,
-    onAddToClick: () -> Unit,
-    onSendIconClick: () -> Unit,
+    secondaryActions: @Composable RowScope.() -> Unit
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        //Add to ... (Favorite, Watchlist, etc.)
-        Action(
-            icon = AppIcons.Add,
-            onClick = onAddToClick
-        )
-        //Send
-        Action(
-            icon = AppIcons.Send,
-            onClick = onSendIconClick
-        )
-    }
+    ) { secondaryActions() }
 }
 
-
-@Composable
-fun Action(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
-    FloatingActionButton(
-        onClick = onClick,
-        backgroundColor = MaterialTheme.colors.surface,
-        modifier = modifier.size(ActionSize)
-    ) {
-        Icon(imageVector = icon, contentDescription = null)
-    }
-}
-
-private val ActionSize = 40.dp
 private val SurfaceCornerRoundSize = 12.dp
+val ActionSize = 40.dp

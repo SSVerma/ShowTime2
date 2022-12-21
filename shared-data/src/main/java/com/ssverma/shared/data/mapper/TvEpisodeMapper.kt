@@ -1,11 +1,10 @@
-package com.ssverma.feature.tv.data.mapper
+package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
+import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.formatLocally
-import com.ssverma.shared.domain.model.tv.TvEpisode
-import com.ssverma.shared.data.mapper.*
 import javax.inject.Inject
 
 class TvEpisodeMapper @Inject constructor() : Mapper<RemoteTvEpisode, TvEpisode>() {

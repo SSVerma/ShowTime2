@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="favorite_movies">Favorite Movies</string>
+    <string name="watchlist_movies">Watchlist Movies</string>
+    <string name="favorite_tv_shows">Favorite TV Shows</string>
+    <string name="watchlist_tv_shows">Watchlist TV Shows</string>
+</resources>

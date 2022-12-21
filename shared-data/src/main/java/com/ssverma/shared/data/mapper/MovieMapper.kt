@@ -1,8 +1,7 @@
-package com.ssverma.feature.movie.data.mapper
+package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovie
-import com.ssverma.shared.data.mapper.*
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils

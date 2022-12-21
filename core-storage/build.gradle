@@ -37,6 +37,8 @@ dependencies {
     kapt Deps.Storage.Kapt.room
 
     api Deps.Storage.dataStorePreferences
+    api Deps.Storage.dataStoreProto
+    api Deps.Storage.protobuf
 
     implementation Deps.Di.daggerHiltCore
     implementation Deps.Di.Kapt.daggerHiltCompiler

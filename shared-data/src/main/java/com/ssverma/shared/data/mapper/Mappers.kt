@@ -19,3 +19,9 @@ abstract class ListMapper<in I, out O>(
 
     abstract suspend fun mapItem(input: I): O
 }
+
+abstract class MultiMapper<in Remote, in Local, out Domain> {
+    abstract suspend fun mapRemote(remote: Remote): Domain
+
+    abstract suspend fun mapLocal(local: Local): Domain
+}

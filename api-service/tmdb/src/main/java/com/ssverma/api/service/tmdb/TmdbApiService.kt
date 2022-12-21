@@ -1,9 +1,6 @@
 package com.ssverma.api.service.tmdb
 
-import com.ssverma.api.service.tmdb.request.AccessTokenBody
-import com.ssverma.api.service.tmdb.request.LogoutBody
-import com.ssverma.api.service.tmdb.request.RequestTokenBody
-import com.ssverma.api.service.tmdb.request.SessionBody
+import com.ssverma.api.service.tmdb.request.*
 import com.ssverma.api.service.tmdb.response.*
 import com.ssverma.core.networking.adapter.ApiResponse
 import retrofit2.http.*
@@ -159,4 +156,58 @@ interface TmdbApiService {
     suspend fun getAccount(
         @Query("session_id") sessionId: String
     ): TmdbApiResponse<AccountPayload>
+
+    @POST("3/account/{accountId}/favorite")
+    suspend fun markMediaAsFavorite(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Body mediaBody: FavoriteMediaBody
+    ): TmdbApiResponse<Unit>
+
+    @POST("3/account/{accountId}/watchlist")
+    suspend fun markMediaInWatchlist(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Body watchlistBody: WatchlistMediaBody
+    ): TmdbApiResponse<Unit>
+
+    @GET("3/account/{accountId}/favorite/movies")
+    suspend fun getFavoriteMovies(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteMovie>>
+
+    @GET("3/account/{accountId}/favorite/tv")
+    suspend fun getFavoriteTvShows(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
+
+    @GET("3/movie/{movieId}/account_states")
+    suspend fun getMovieAccountStats(
+        @Path("movieId") movieId: Int,
+        @Query("session_id") sessionId: String
+    ): TmdbApiResponse<MediaStatsPayload>
+
+    @GET("3/tv/{tvShowId}/account_states")
+    suspend fun getTvShowAccountStats(
+        @Path("tvShowId") tvShowId: Int,
+        @Query("session_id") sessionId: String
+    ): TmdbApiResponse<MediaStatsPayload>
+
+    @GET("3/account/{accountId}/watchlist/movies")
+    suspend fun getWatchlistMovies(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteMovie>>
+
+    @GET("3/account/{accountId}/watchlist/tv")
+    suspend fun getWatchlistTvShows(
+        @Path("accountId") accountId: Int,
+        @Query("session_id") sessionId: String,
+        @Query("page") page: Int
+    ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 }

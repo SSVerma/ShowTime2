@@ -67,5 +67,5 @@ fun NavGraphBuilder.topLevelNavGraph(
     movieHomeGraph(navController)
     tvShowHomeGraph(navController)
     personHomeGraph(navController)
-    libraryHomeGraph()
+    libraryHomeGraph(navController)
 }

@@ -4,9 +4,8 @@ import MediaItem
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,18 +15,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
+import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
-import com.ssverma.shared.ui.component.BackdropHeader
-import com.ssverma.shared.ui.component.GenreItem
-import com.ssverma.shared.ui.component.Highlight
-import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.*
 import com.ssverma.shared.ui.component.section.*
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
 import com.ssverma.shared.ui.emptyIfAbsent
@@ -96,7 +95,20 @@ fun MovieContent(
             BackdropHeader(
                 backdropImageUrl = movie.backdropImageUrl,
                 onCloseIconClick = onBackPressed,
-                onTrailerFabClick = { viewModel.onPlayTrailerClicked(movie) }
+                onTrailerFabClick = { viewModel.onPlayTrailerClicked(movie) },
+                secondaryActions = {
+                    MediaStatsAction(
+                        mediaType = MediaType.Movie,
+                        mediaId = movie.id
+                    )
+                    FloatingActionButton(
+                        onClick = {},
+                        backgroundColor = MaterialTheme.colors.surface,
+                        modifier = modifier.size(ActionSize)
+                    ) {
+                        Icon(imageVector = AppIcons.Send, contentDescription = null)
+                    }
+                }
             )
         }
 

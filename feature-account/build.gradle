@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'com.google.protobuf' version '0.9.1'
 }
 
 android {
@@ -53,6 +54,7 @@ dependencies {
     implementation project(Modules.Core.paging)
     implementation project(Modules.Core.di)
     implementation project(Modules.Core.image)
+    implementation project(Modules.Core.storage)
     implementation project(Modules.ApiService.tmdb)
     implementation project(Modules.Feature.auth)
     api project(Modules.Feature.accountNavigation)
@@ -63,4 +65,21 @@ dependencies {
 
     implementation Deps.Di.hiltCompose
     kapt Deps.Di.Kapt.hiltCompiler
+}
+
+protobuf {
+    protoc {
+        artifact = Deps.Storage.protoc
+    }
+
+    // Generates the java Protobuf-lite code for the Protobuf in this project.
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option 'lite'
+                }
+            }
+        }
+    }
 }
