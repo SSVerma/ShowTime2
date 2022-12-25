@@ -86,6 +86,20 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
 
 ShowTime demonstrates uses of [MVVM](https://developer.android.com/jetpack/docs/guide#recommended-app-arch) architecture.
 
+- core-* : Modules which can be resued across projects (beyond ShowTime, plug and play). Some refactoring is pending to reduce dependencies at some places.
+- shared-*: Modules which are shared across feature modules.
+- feature-*: Modules representing a particular app feature.
+- feature-*-navigation: Modules representing entry points to access corresponding feature.
+
 ## API Key
 
 You need to supply API key for [TMDB](https://www.themoviedb.org/documentation/api) to build the project.
+
+## Planned work
+
+- Material design 3 support
+- Multi form factor support like Tablet, Wear etc.
+- Move **core-*** modules as independent supporting libraries and add them as dependencies
+- Improve navigation support including bottom sheets, dialog etc.
+- Improve library and sharing features
+- Cross platform experiments using Compose
