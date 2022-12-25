@@ -1,9 +1,17 @@
+import com.ssverma.Deps
+import com.ssverma.Modules
+import com.ssverma.Versions
+
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-android-extensions'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
 }
+
+def releaseProps = new Properties()
+def releaseConfigFile = file('../release/release.properties')
 
 def coreProps = new Properties()
 def coreConfigFile = file('../core.properties')
@@ -20,31 +28,47 @@ if (debugConfigFile != null && debugConfigFile.canRead()) {
 }
 
 android {
-    compileSdkVersion 32
+    signingConfigs {
+        releaseConfig {
+            if (releaseConfigFile != null && releaseConfigFile.canRead()) {
+                releaseConfigFile.withInputStream { releaseProps.load(it) }
+                keyAlias releaseProps.getProperty("keyAlias")
+                keyPassword releaseProps.getProperty("keyPassword")
+                storeFile file(releaseProps.getProperty("keyStoreFilePath"))
+                storePassword releaseProps.getProperty("keyStorePassword")
+            }
+        }
+    }
+
+    compileSdkVersion Versions.AndroidSdk.Compile
 
     defaultConfig {
         applicationId "com.ssverma.showtime"
-        minSdkVersion 21
-        targetSdkVersion 32
+        minSdkVersion Versions.AndroidSdk.Min
+        targetSdkVersion Versions.AndroidSdk.Target
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    def FIELD_BASE_URL = "BASE_URL"
-    def FIELD_TMDB_API_KEY = "TMDB_API_KEY"
+    def FIELD_TMDB_BASE_URL = "TMDB_BASE_URL"
+    def FIELD_TMDB_API_READ_ACCESS_TOKEN = "TMDB_API_READ_ACCESS_TOKEN"
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.releaseConfig
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("String", FIELD_TMDB_BASE_URL, releaseProps.getProperty("baseUrl"))
+            buildConfigField("String", FIELD_TMDB_API_READ_ACCESS_TOKEN, coreProps.getProperty("tmdbApiReadAccessToken"))
         }
 
         debug {
             minifyEnabled false
-            buildConfigField("String", FIELD_BASE_URL, debugProps.getProperty("baseUrl"))
-            buildConfigField("String", FIELD_TMDB_API_KEY, coreProps.getProperty("tmdbApiKey"))
+            buildConfigField("String", FIELD_TMDB_BASE_URL, debugProps.getProperty("baseUrl"))
+            buildConfigField("String", FIELD_TMDB_API_READ_ACCESS_TOKEN, coreProps.getProperty("tmdbApiReadAccessToken"))
         }
     }
     compileOptions {
@@ -54,60 +78,46 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
-        useIR = true
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion Versions.compose
     }
+    packagingOptions {
+        exclude 'META-INF/gradle/incremental.annotation.processors'
+    }
+    namespace 'com.ssverma.showtime'
 }
 
 dependencies {
+    implementation project(Modules.ApiService.tmdb)
+    implementation project(Modules.Core.ui)
+    implementation project(Modules.Core.navigation)
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.0'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
-    implementation "androidx.activity:activity-compose:1.4.0"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc02"
+    //TODO: revisit once Java module GSON progaurd issue fixed
+    implementation project(Modules.Core.networking)
 
-    /*AAC*/
-    implementation "androidx.navigation:navigation-compose:2.4.0-rc01"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.0"
-    implementation "androidx.compose.runtime:runtime-livedata:1.0.5"
-    implementation "androidx.paging:paging-compose:1.0.0-alpha14"
+    implementation project(Modules.Feature.movie)
+    implementation project(Modules.Feature.tv)
+    implementation project(Modules.Feature.person)
+    implementation project(Modules.Feature.library)
+    implementation project(Modules.Feature.search)
+    implementation project(Modules.Feature.auth)
+    implementation project(Modules.Feature.account)
 
-    /*Compose Utils*/
-    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-navigation-animation:$accompanist_version"
-
-    /*Image Handling*/
-    implementation "io.coil-kt:coil-compose:1.3.2"
+    implementation Deps.material
+    implementation Deps.ComposeSupport.activity
 
     /*DI*/
-    implementation "com.google.dagger:hilt-android:2.40.5"
-    kapt "com.google.dagger:hilt-compiler:2.40.5"
-    implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
-    kapt "androidx.hilt:hilt-compiler:1.0.0"
-    implementation 'androidx.hilt:hilt-navigation-compose:1.0.0-rc01'
+    implementation Deps.Di.daggerHilt
+    kapt Deps.Di.Kapt.daggerHiltCompiler
 
-    //Networking
-    implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.9.1"
+    /*De-sugaring*/
+    coreLibraryDesugaring Deps.Desugaring.jdk
 
-    //De-sugaring
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    /*Test*/
+    testImplementation Deps.Test.Local.junit
+    androidTestImplementation Deps.Test.Instrument.junit
 }

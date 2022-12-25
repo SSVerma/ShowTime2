@@ -11,41 +11,43 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
 <table>
   <tr>
     <td>Home</td>
-    <td>Home</td>
-    <td>Movie List</td>
-    <td>Movie List</td>
+    <td>People</td>
+    <td>Search</td>
+    <td>Library</td>
   </tr>
   <tr>
-    <td><img src="screenshots/home_1_dark.png" width=270></td>
-    <td><img src="screenshots/home_1_light.png" width=270></td>
-    <td><img src="screenshots/list_1_dark.png" width=270></td>
-    <td><img src="screenshots/list_1_light.png" width=270></td>
+    <td><img src="screenshots/movie_home.png" width=270></td>
+    <td><img src="screenshots/people.png" width=270></td>
+    <td><img src="screenshots/search.png" width=270></td>
+    <td><img src="screenshots/library.png" width=270></td>
   </tr>
  </table>
 
 <table>
   <tr>
-    <td>Filter</td>
-    <td>Filter</td>
-    <td>Filter</td>
+    <td>Movie Details</td>
+    <td>Movie Details</td>
+    <td>Movie Details</td>
+    <td>Movie Details</td>
   </tr>
   <tr>
-    <td><img src="screenshots/filter_dark.png" width=270></td>
-    <td><img src="screenshots/filter_light.png" width=270></td>
-    <td><img src="screenshots/filter.gif" width=270></td>
+    <td><img src="screenshots/movie_details_1.png" width=270></td>
+    <td><img src="screenshots/movie_details_2.png" width=270></td>
+    <td><img src="screenshots/movie_details_3.png" width=270></td>
+    <td><img src="screenshots/movie_details_4.png" width=270></td>
   </tr>
 </table>
 
 <table>
   <tr>
     <td>Movie Details</td>
-    <td>Movie Details</td>
-    <td>Movie Details</td>
+    <td>Home</td>
+    <td>People</td>
   </tr>
   <tr>
     <td><img src="screenshots/movie_details_1_dark.png" width=270></td>
-    <td><img src="screenshots/movie_details_1_light.png" width=270></td>
-    <td><img src="screenshots/movie_details_dark.gif" width=270></td>
+    <td><img src="screenshots/movie_home_dark.png" width=270></td>
+    <td><img src="screenshots/people_dark.png" width=270></td>
   </tr>
 </table>
 
@@ -84,6 +86,20 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
 
 ShowTime demonstrates uses of [MVVM](https://developer.android.com/jetpack/docs/guide#recommended-app-arch) architecture.
 
+- core-* : Modules which can be resued across projects (beyond ShowTime, plug and play). Some refactoring is pending to reduce dependencies at some places.
+- shared-*: Modules which are shared across feature modules.
+- feature-*: Modules representing a particular app feature.
+- feature-*-navigation: Modules representing entry points to access corresponding feature.
+
 ## API Key
 
 You need to supply API key for [TMDB](https://www.themoviedb.org/documentation/api) to build the project.
+
+## Planned work
+
+- Material design 3 support
+- Multi form factor support like Tablet, Wear etc.
+- Move **core-*** modules as independent supporting libraries and add them as dependencies
+- Improve navigation support including bottom sheets, dialog etc.
+- Improve library and sharing features
+- Cross platform experiments using Compose

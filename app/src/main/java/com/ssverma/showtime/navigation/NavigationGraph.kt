@@ -1,34 +1,28 @@
 package com.ssverma.showtime.navigation
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.navigation.*
+import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.navigation
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.ssverma.showtime.ui.ImagePagerScreen
-import com.ssverma.showtime.ui.ImageShotsListScreen
-import com.ssverma.showtime.ui.home.HomeViewModel
-import com.ssverma.showtime.ui.library.LibraryScreen
-import com.ssverma.showtime.ui.movie.*
-import com.ssverma.showtime.ui.people.PersonDetailsScreen
-import com.ssverma.showtime.ui.people.PersonImageShotsScreen
-import com.ssverma.showtime.ui.people.PersonScreen
-import com.ssverma.showtime.ui.tv.*
+import com.ssverma.core.navigation.StandaloneDestination
+import com.ssverma.feature.account.navigation.profileGraph
+import com.ssverma.feature.auth.navigation.authGraph
+import com.ssverma.feature.movie.navigation.*
+import com.ssverma.feature.person.navigation.personDetailGraph
+import com.ssverma.feature.person.navigation.personImageShotsGraph
+import com.ssverma.feature.search.navigation.searchGraph
+import com.ssverma.feature.tv.navigation.*
 
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ShowTimeNavHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberAnimatedNavController(),
-    startDestination: StandaloneDestination = AppDestination.Home
+    navController: NavHostController,
+    startDestination: StandaloneDestination = ShowTimeTopLevelDestination
 ) {
     val springStiffness = 900f
 
@@ -62,343 +56,30 @@ fun ShowTimeNavHost(
         modifier = modifier
     ) {
 
-        navigation(
-            graphDestination = AppDestination.Home,
-            startDestination = AppDestination.HomeBottomNavDestination.Movie,
-        ) {
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.Movie,
-                navController = navController
-            ) {
-                MovieScreen(
-                    viewModel = it.graphScopedViewModel,
-                    openMovieList = { launchable ->
-                        navController.navigateTo(AppDestination.MovieList.actualRoute(launchable))
-                    },
-                    openMovieDetails = { movieId ->
-                        navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
-                    }
-                )
-            }
+        topLevelNavGraph(navController)
 
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.Tv,
-                navController = navController
-            ) {
-                TvShowScreen(
-                    viewModel = it.graphScopedViewModel,
-                    openTvShowDetails = { tvShowId ->
-                        navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
-                    },
-                    openTvShowList = { tvShowLaunchable ->
-                        navController.navigateTo(
-                            AppDestination.TvShowList.actualRoute(tvShowLaunchable)
-                        )
-                    }
-                )
-            }
+        movieListGraph(navController)
+        movieDetailGraph(navController)
+        movieImageShotsGraph(navController)
+        movieImagePagerGraph(navController)
+        movieReviewsGraph(navController)
 
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.People,
-                navController = navController
-            ) {
-                PersonScreen(
-                    viewModel = it.graphScopedViewModel,
-                    openPersonDetailsScreen = { personId ->
-                        navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
-                    },
-                    openMovieDetailsScreen = { movieId ->
-                        navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
-                    },
-                    openTvShowDetailsScreen = { tvShowId ->
-                        navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
-                    }
-                )
-            }
+        personDetailGraph(navController)
+        personImageShotsGraph(navController)
 
-            composable<HomeViewModel>(
-                graphDestination = AppDestination.Home,
-                destination = AppDestination.HomeBottomNavDestination.Library,
-                navController = navController
-            ) {
-                LibraryScreen()
-            }
-        }
+        tvShowListGraph(navController)
+        tvShowDetailGraph(navController)
+        tvShowReviewsGraph(navController)
+        tvShowImageShotsGraph(navController)
+        tvShowImagePagerGraph(navController)
 
-        composable(AppDestination.MovieList) {
-            val viewModel = hiltViewModel<MovieListViewModel>(it)
+        tvSeasonDetailGraph(navController)
+        tvEpisodeDetailGraph(navController)
 
-            MovieListScreen(
-                viewModel = viewModel,
-                onBackPressed = { navController.popBackStack() },
-                openMovieDetails = { movieId ->
-                    navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
-                }
-            )
-        }
+        searchGraph(navController)
 
-        composable(destination = AppDestination.MovieDetails) {
-            MovieDetailsScreen(
-                viewModel = hiltViewModel(),
-                onBackPressed = { navController.popBackStack() },
-                openMovieDetails = { movieId ->
-                    navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
-                },
-                openImageShotsList = {
-                    navController.navigateTo(AppDestination.MovieImageShots.actualRoute)
-                },
-                openImageShot = { index ->
-                    navController.navigateTo(AppDestination.MovieImagePager.actualRoute(index))
-                },
-                openReviewsList = { movieId ->
-                    navController.navigateTo(AppDestination.MovieReviews.actualRoute(movieId))
-                },
-                openPersonDetails = { personId ->
-                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
-                },
-                openMovieList = { launchable ->
-                    navController.navigateTo(
-                        AppDestination.MovieList.actualRoute(launchable)
-                    )
-                }
-            )
-        }
+        authGraph(navController)
 
-        composable(AppDestination.MovieImageShots) {
-            val movieDetailsViewModel: MovieDetailsViewModel =
-                navController.destinationViewModel(destination = AppDestination.MovieDetails)
-
-            ImageShotsListScreen(
-                liveImageShots = movieDetailsViewModel.imageShots,
-                onBackPressed = { navController.popBackStack() },
-                openImagePager = {
-                    navController.navigateTo(AppDestination.MovieImagePager.actualRoute(it))
-                }
-            )
-        }
-
-        composable(AppDestination.MovieImagePager) {
-            val movieDetailsViewModel = navController
-                .destinationViewModel<MovieDetailsViewModel>(destination = AppDestination.MovieDetails)
-
-            ImagePagerScreen(
-                liveImageShots = movieDetailsViewModel.imageShots,
-                defaultPageIndex = it.arguments?.getInt(AppDestination.MovieImagePager.PageIndex)
-                    ?: 0,
-                onBackPressed = { navController.popBackStack() }
-            )
-        }
-
-        composable(destination = AppDestination.MovieReviews) {
-            val viewModel = hiltViewModel<MovieReviewsViewModel>(it)
-            MovieReviewsScreen(
-                viewModel = viewModel,
-                onBackPress = { navController.popBackStack() }
-            )
-        }
-
-        composable(destination = AppDestination.PersonDetails) {
-            PersonDetailsScreen(
-                viewModel = hiltViewModel(it),
-                onBackPress = { navController.popBackStack() },
-                openMovieDetails = { movieId ->
-                    navController.navigateTo(AppDestination.MovieDetails.actualRoute(movieId))
-                },
-                openTvShowDetails = { tvShowId ->
-                    navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
-                },
-                openPersonAllImages = { personId ->
-                    navController.navigateTo(AppDestination.PersonImages.actualRoute(personId))
-                }
-            )
-        }
-
-        composable(destination = AppDestination.PersonImages) {
-            PersonImageShotsScreen(
-                viewModel = hiltViewModel(it),
-                onBackPressed = { navController.popBackStack() },
-            )
-        }
-
-        composable(destination = AppDestination.TvShowDetails) {
-            TvShowDetailsScreen(
-                viewModel = hiltViewModel(it),
-                onBackPressed = { navController.popBackStack() },
-                openTvShowDetails = { tvShowId ->
-                    navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
-                },
-                openImageShotsList = {
-                    navController.navigateTo(AppDestination.TvShowImageShots.actualRoute)
-                },
-                openImageShot = { index ->
-                    navController.navigateTo(AppDestination.TvImagePager.actualRoute(index))
-                },
-                openReviewsList = { tvShowId ->
-                    navController.navigateTo(AppDestination.TvShowReviews.actualRoute(tvShowId))
-                },
-                openPersonDetails = { personId ->
-                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
-                },
-                openTvShowList = { tvShowLaunchable ->
-                    navController.navigateTo(
-                        AppDestination.TvShowList.actualRoute(tvShowLaunchable)
-                    )
-                },
-                openTvSeasonDetails = { seasonLaunchable ->
-                    navController.navigateTo(
-                        AppDestination.TvSeasonDetails.actualRoute(
-                            seasonLaunchable
-                        )
-                    )
-                }
-            )
-        }
-
-        composable(AppDestination.TvShowImageShots) {
-            val tvShowDetailsViewModel: TvShowDetailsViewModel =
-                navController.destinationViewModel(destination = AppDestination.TvShowDetails)
-
-            ImageShotsListScreen(
-                liveImageShots = tvShowDetailsViewModel.imageShots,
-                onBackPressed = { navController.popBackStack() },
-                openImagePager = {
-                    navController.navigateTo(AppDestination.TvImagePager.actualRoute(it))
-                }
-            )
-        }
-
-        composable(destination = AppDestination.TvShowReviews) {
-            TvShowReviewsScreen(
-                viewModel = hiltViewModel(it),
-                onBackPress = { navController.popBackStack() }
-            )
-        }
-
-        composable(AppDestination.TvImagePager) {
-            val tvShowDetailsViewModel = navController
-                .destinationViewModel<TvShowDetailsViewModel>(destination = AppDestination.TvShowDetails)
-
-            ImagePagerScreen(
-                liveImageShots = tvShowDetailsViewModel.imageShots,
-                defaultPageIndex = it.arguments?.getInt(AppDestination.TvImagePager.PageIndex)
-                    ?: 0,
-                onBackPressed = { navController.popBackStack() }
-            )
-        }
-
-        composable(destination = AppDestination.TvSeasonDetails) {
-            TvSeasonDetailsScreen(
-                viewModel = hiltViewModel(it),
-                onBackPress = { navController.popBackStack() },
-                openEpisodeDetails = { episodeLaunchable ->
-                    navController.navigateTo(
-                        AppDestination.TvEpisodeDetails.actualRoute(episodeLaunchable)
-                    )
-                },
-                openPersonDetails = { personId ->
-                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
-                }
-            )
-        }
-
-        composable(destination = AppDestination.TvEpisodeDetails) {
-            TvEpisodeDetailsScreen(
-                viewModel = hiltViewModel(it),
-                onBackPress = { navController.popBackStack() },
-                openPersonDetails = { personId ->
-                    navController.navigateTo(AppDestination.PersonDetails.actualRoute(personId))
-                }
-            )
-        }
-
-        composable(AppDestination.TvShowList) {
-            TvShowListScreen(
-                viewModel = hiltViewModel(it),
-                onBackPressed = { navController.popBackStack() },
-                openTvShowDetails = { tvShowId ->
-                    navController.navigateTo(AppDestination.TvShowDetails.actualRoute(tvShowId))
-                }
-            )
-        }
+        profileGraph(navController)
     }
 }
-
-@Composable
-private inline fun <reified VM : ViewModel> NavController.destinationViewModel(destination: Destination): VM {
-    return hiltViewModel(
-        remember { getBackStackEntry(destination.placeholderRoute.asNavRoute()) }
-    )
-}
-
-@OptIn(ExperimentalAnimationApi::class)
-private fun NavGraphBuilder.composable(
-    destination: Destination,
-    content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
-) {
-    composable(
-        route = destination.placeholderRoute.asNavRoute(),
-        arguments = destination.arguments,
-        content = content
-    )
-}
-
-@OptIn(ExperimentalAnimationApi::class)
-private inline fun <reified VM : ViewModel> NavGraphBuilder.composable(
-    graphDestination: GraphDestination,
-    destination: Destination,
-    navController: NavHostController,
-    crossinline content: @Composable (navGraphElement: NavGraphElement<VM>) -> Unit
-) {
-    composable(
-        route = destination.placeholderRoute.asNavRoute(),
-        arguments = destination.arguments,
-    ) {
-        val viewModel = navController.destinationViewModel<VM>(destination = graphDestination)
-        content(
-            NavGraphElement(
-                graphScopedViewModel = viewModel,
-                navBackStackEntry = it
-            )
-        )
-    }
-}
-
-@OptIn(ExperimentalAnimationApi::class)
-private fun NavGraphBuilder.navigation(
-    graphDestination: GraphDestination,
-    startDestination: Destination,
-    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
-    popEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = enterTransition,
-    popExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = exitTransition,
-    builder: NavGraphBuilder.() -> Unit
-) {
-    navigation(
-        route = graphDestination.placeholderRoute.asNavRoute(),
-        startDestination = startDestination.placeholderRoute.asNavRoute(),
-        enterTransition = enterTransition,
-        exitTransition = exitTransition,
-        popEnterTransition = popEnterTransition,
-        popExitTransition = popExitTransition,
-        builder = builder
-    )
-}
-
-fun NavController.navigateTo(route: ActualRoute) {
-    navigate(route = route.asNavRoute())
-}
-
-fun NavController.navigateTo(route: ActualRoute, builder: NavOptionsBuilder.() -> Unit) {
-    navigate(
-        route = route.asNavRoute(),
-        builder = builder
-    )
-}
-
-class NavGraphElement<T : ViewModel>(
-    val graphScopedViewModel: T,
-    val navBackStackEntry: NavBackStackEntry
-)

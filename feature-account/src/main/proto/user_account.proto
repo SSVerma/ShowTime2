@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_package = "com.ssverma.showtime";
+option java_multiple_files = true;
+
+message UserAccount {
+  int32 accountId = 1;
+  string username = 2;
+  string displayName = 3;
+  string imageUrl = 4;
+}

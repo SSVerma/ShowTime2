@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rating_n">%1s rating</string>
+    <string name="episodes">Episodes</string>
+    <string name="season_number">Season Number</string>
+    <string name="rating">Rating</string>
+    <string name="first_air_date">First Air Date</string>
+    <string name="status">Status</string>
+    <string name="language">Language</string>
+    <string name="seasons">Seasons</string>
+    <string name="seasons_n">Seasons (%1s)</string>
+    <string name="episode_number">Episode Number</string>
+    <string name="view_more">View more</string>
+    <string name="similar_shows">Similar Shows</string>
+    <string name="recommendations">Recommendations</string>
+    <string name="trending_today">Trending Today</string>
+    <string name="airing_today">Airing Today</string>
+    <string name="popular">Popular</string>
+    <string name="popular_info">Highest voted by the users</string>
+    <string name="top_rated">Top Rated</string>
+    <string name="now_airing">Now Airing</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="guest_appearance">Guest Appearance</string>
+    <string name="episodes_n">%1s episodes</string>
+</resources>

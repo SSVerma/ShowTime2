@@ -1,0 +1,84 @@
+import com.ssverma.Deps
+import com.ssverma.Modules
+import com.ssverma.Versions
+
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+    id 'com.google.protobuf' version '0.9.1'
+}
+
+android {
+    compileSdk Versions.AndroidSdk.Compile
+
+    defaultConfig {
+        minSdk Versions.AndroidSdk.Min
+        targetSdk Versions.AndroidSdk.Target
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion Versions.compose
+    }
+}
+
+dependencies {
+    implementation project(Modules.Core.ui)
+    implementation project(Modules.Shared.ui)
+    implementation project(Modules.Shared.data)
+    implementation project(Modules.Core.uiPaging)
+    implementation project(Modules.Core.navigation)
+    implementation project(Modules.Shared.domain)
+    implementation project(Modules.Core.networking)
+    implementation project(Modules.Core.paging)
+    implementation project(Modules.Core.di)
+    implementation project(Modules.Core.image)
+    implementation project(Modules.Core.storage)
+    implementation project(Modules.ApiService.tmdb)
+    implementation project(Modules.Feature.auth)
+    api project(Modules.Feature.accountNavigation)
+
+    /*DI*/
+    implementation Deps.Di.daggerHilt
+    kapt Deps.Di.Kapt.daggerHiltCompiler
+
+    implementation Deps.Di.hiltCompose
+    kapt Deps.Di.Kapt.hiltCompiler
+}
+
+protobuf {
+    protoc {
+        artifact = Deps.Storage.protoc
+    }
+
+    // Generates the java Protobuf-lite code for the Protobuf in this project.
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option 'lite'
+                }
+            }
+        }
+    }
+}

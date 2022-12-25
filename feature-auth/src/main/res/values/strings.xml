@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tmdb_connect_info">You will be redirected to TMDB website. After login or signup
+        you can access your watchlist, favorites etc on ShowTime.</string>
+    <string name="connect_with_tmdb">Connect with TMDB</string>
+    <string name="logout">Logout</string>
+    <string name="title_activity_authentication_approval">AuthenticationApprovalActivity</string>
+    <string name="redirecting">Redirecting…</string>
+    <string name="authorizing">Authorizing</string>
+    <string name="approval_rejection_info">Please approve request on TMDB in order to complete login process.</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="network_error">No internet. Please check and retry.</string>
+    <string name="retry">Retry</string>
+    <string name="no_session">We were not able to complete login process due to some technical
+        issue. Please complete login process now.</string>
+    <string name="proceed">Proceed</string>
+    <string name="username_n">\@%1s</string>
+</resources>
