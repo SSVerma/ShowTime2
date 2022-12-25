@@ -10,6 +10,9 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+def releaseProps = new Properties()
+def releaseConfigFile = file('../release/release.properties')
+
 def coreProps = new Properties()
 def coreConfigFile = file('../core.properties')
 
@@ -25,6 +28,18 @@ if (debugConfigFile != null && debugConfigFile.canRead()) {
 }
 
 android {
+    signingConfigs {
+        releaseConfig {
+            if (releaseConfigFile != null && releaseConfigFile.canRead()) {
+                releaseConfigFile.withInputStream { releaseProps.load(it) }
+                keyAlias releaseProps.getProperty("keyAlias")
+                keyPassword releaseProps.getProperty("keyPassword")
+                storeFile file(releaseProps.getProperty("keyStoreFilePath"))
+                storePassword releaseProps.getProperty("keyStorePassword")
+            }
+        }
+    }
+
     compileSdkVersion Versions.AndroidSdk.Compile
 
     defaultConfig {
@@ -42,8 +57,12 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.releaseConfig
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("String", FIELD_TMDB_BASE_URL, releaseProps.getProperty("baseUrl"))
+            buildConfigField("String", FIELD_TMDB_API_READ_ACCESS_TOKEN, coreProps.getProperty("tmdbApiReadAccessToken"))
         }
 
         debug {
@@ -76,6 +95,9 @@ dependencies {
     implementation project(Modules.ApiService.tmdb)
     implementation project(Modules.Core.ui)
     implementation project(Modules.Core.navigation)
+
+    //TODO: revisit once Java module GSON progaurd issue fixed
+    implementation project(Modules.Core.networking)
 
     implementation project(Modules.Feature.movie)
     implementation project(Modules.Feature.tv)
