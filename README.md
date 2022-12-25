@@ -47,7 +47,7 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
   <tr>
     <td><img src="screenshots/movie_details_1_dark.png" width=270></td>
     <td><img src="screenshots/movie_home_dark.png" width=270></td>
-    <td><img src="screenshots/people_dark" width=270></td>
+    <td><img src="screenshots/people_dark.png" width=270></td>
   </tr>
 </table>
 
