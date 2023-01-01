@@ -19,6 +19,6 @@ object FormatterUtils {
 
     fun roundOffDecimal(number: Double, pattern: String = "#.#"): Double {
         val df = DecimalFormat(pattern)
-        return df.format(number).toDouble()
+        return df.format(number).toDoubleOrNull() ?: 0f.toDouble()
     }
 }
