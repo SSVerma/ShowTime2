@@ -33,7 +33,7 @@ interface TmdbApiService {
         @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
-    @GET("4/discover/movie")
+    @GET("3/discover/movie")
     suspend fun getDiscoveredMovies(
         @QueryMap queryMap: Map<String, String>,
         @Query("page", encoded = false) page: Int
@@ -94,7 +94,7 @@ interface TmdbApiService {
         @QueryMap queryMap: Map<String, String>,
     ): TmdbApiResponse<RemoteTvShow>
 
-    @GET("4/discover/tv")
+    @GET("3/discover/tv")
     suspend fun getDiscoveredTvShows(
         @QueryMap queryMap: Map<String, String>,
         @Query("page", encoded = false) page: Int
