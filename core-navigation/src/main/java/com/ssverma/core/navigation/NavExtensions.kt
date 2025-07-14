@@ -1,16 +1,17 @@
 package com.ssverma.core.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.*
 import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.*
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.navigation
+import androidx.navigation.compose.composable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnrememberedGetBackStackEntry")
 @Composable
 inline fun <reified VM : ViewModel> NavController.destinationViewModel(destination: Destination): VM {
     return hiltViewModel(
@@ -18,26 +19,25 @@ inline fun <reified VM : ViewModel> NavController.destinationViewModel(destinati
     )
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+
 fun NavGraphBuilder.composable(
     destination: Destination,
-    content: @Composable AnimatedVisibilityScope.(NavBackStackEntry) -> Unit
+    content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
 ) {
-    composable(
+    this.composable(
         route = destination.placeholderRoute.asNavRoute(),
         arguments = destination.arguments,
         content = content
     )
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 inline fun <reified VM : ViewModel> NavGraphBuilder.composable(
     graphDestination: GraphDestination,
     destination: Destination,
     navController: NavHostController,
     crossinline content: @Composable (navGraphElement: NavGraphElement<VM>) -> Unit
 ) {
-    composable(
+    this.composable(
         route = destination.placeholderRoute.asNavRoute(),
         arguments = destination.arguments,
     ) {
@@ -55,19 +55,15 @@ inline fun <reified VM : ViewModel> NavGraphBuilder.composable(
 fun NavGraphBuilder.navigation(
     graphDestination: GraphDestination,
     startDestination: Destination,
-    enterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
-    exitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
-    popEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?)? = enterTransition,
-    popExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?)? = exitTransition,
+    enterTransition: (AnimatedContentScope.() -> EnterTransition?)? = null,
+    exitTransition: (AnimatedContentScope.() -> ExitTransition?)? = null,
+    popEnterTransition: (AnimatedContentScope.() -> EnterTransition?)? = enterTransition,
+    popExitTransition: (AnimatedContentScope.() -> ExitTransition?)? = exitTransition,
     builder: NavGraphBuilder.() -> Unit
 ) {
     navigation(
         route = graphDestination.placeholderRoute.asNavRoute(),
         startDestination = startDestination.placeholderRoute.asNavRoute(),
-        enterTransition = enterTransition,
-        exitTransition = exitTransition,
-        popEnterTransition = popEnterTransition,
-        popExitTransition = popExitTransition,
         builder = builder
     )
 }

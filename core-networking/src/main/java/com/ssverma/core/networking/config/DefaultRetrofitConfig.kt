@@ -10,8 +10,8 @@ import javax.inject.Singleton
 
 @Singleton
 internal class DefaultRetrofitConfig @Inject constructor(
-    @CoreNetworking private val gsonConverterFactory: GsonConverterFactory,
-    @CoreNetworking private val apiResponseCallAdaptorFactory: ApiResponseCallAdaptorFactory
+    @param:CoreNetworking private val gsonConverterFactory: GsonConverterFactory,
+    @param:CoreNetworking private val apiResponseCallAdaptorFactory: ApiResponseCallAdaptorFactory
 ) : RetrofitConfig {
     override val annotatedConvertorFactories: Map<Class<out Annotation>, Converter.Factory>
         get() = emptyMap()

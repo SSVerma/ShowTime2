@@ -26,6 +26,6 @@ internal object DatabaseProvider {
             ).fallbackToDestructiveMigration()
                 .build()
         }
-        return (dbEntries[dbConfig.databaseName] as T?)!!
+        return (dbEntries[dbConfig.databaseName] as T)
     }
 }

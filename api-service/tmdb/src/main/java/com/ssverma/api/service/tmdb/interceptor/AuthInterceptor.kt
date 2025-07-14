@@ -12,7 +12,7 @@ interface TmdbReadWriteAccessTokenProvider {
 }
 
 internal class AuthInterceptor @Inject constructor(
-    @TmdbServiceReadAccessToken private val tmdbApiReadAccessToken: String,
+    @param:TmdbServiceReadAccessToken private val tmdbApiReadAccessToken: String,
     private val readWriteAccessTokenProvider: TmdbReadWriteAccessTokenProvider
 ) : ApplicationInterceptor {
 
@@ -28,7 +28,7 @@ internal class AuthInterceptor @Inject constructor(
 
         val original = chain.request()
         val headers = original
-            .headers().newBuilder()
+            .headers.newBuilder()
             .add(HEADER_AUTHORIZATION, "$BEARER $token")
             .build()
 

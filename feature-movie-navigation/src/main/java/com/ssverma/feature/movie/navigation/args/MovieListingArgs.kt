@@ -7,9 +7,9 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class MovieListingArgs(
-    @MovieListingType
+    @param:MovieListingType
     val listingType: Int,
-    @StringRes val titleRes: Int = 0,
+    @param:StringRes val titleRes: Int = 0,
     val title: String? = null,
     val genreId: Int = 0,
     val keywordId: Int = 0

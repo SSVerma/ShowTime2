@@ -28,3 +28,9 @@ feature-search-navigation/build
 **/.DS_Store
 buildSrc/build
 buildSrc/.gradle
+.kotlin
+app/release
+build/
+buildSrc/.kotlin
+gradlew.bat
+gradlew

@@ -3,9 +3,27 @@ package com.ssverma.feature.library.ui
 import MediaItem
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScrollableTabRow
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRowDefaults
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -136,6 +154,7 @@ private fun LibraryContent(
                     )
                 }
             }
+
             is LibraryTabType.FavoriteTvShows -> {
                 PagedContent(pagingItems = tab.tabType.tvShows) {
                     TvShowsGrid(
@@ -144,6 +163,7 @@ private fun LibraryContent(
                     )
                 }
             }
+
             is LibraryTabType.WatchlistMovies -> {
                 PagedContent(pagingItems = tab.tabType.movies) {
                     MoviesGrid(
@@ -152,6 +172,7 @@ private fun LibraryContent(
                     )
                 }
             }
+
             is LibraryTabType.WatchlistTvShows -> {
                 PagedContent(pagingItems = tab.tabType.tvShows) {
                     TvShowsGrid(

@@ -22,4 +22,8 @@
     <string name="upcoming">Upcoming</string>
     <string name="guest_appearance">Guest Appearance</string>
     <string name="episodes_n">%1s episodes</string>
+    <string name="air_date">Air Date</string>
+    <string name="filter">Filter</string>
+    <string name="tv_show">TV Show</string>
+    <string name="reviews">Reviews</string>
 </resources>

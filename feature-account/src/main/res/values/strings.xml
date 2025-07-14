@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="profile">Profile</string>
+    <string name="remove_from_favorite">Remove from favorite</string>
+    <string name="remove_from_watchlist">Remove from watchlist</string>
+    <string name="add_to_favorite">Add to favorite</string>
+    <string name="username_n">\@%1s</string>
+    <string name="logout">Logout</string>
+    <string name="add_to_watchlist">Add to watchlist</string>
 </resources>

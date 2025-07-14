@@ -21,9 +21,9 @@ import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.tv.R
-import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.navigation.args.TvShowListingType
+import com.ssverma.shared.domain.model.tv.TvShow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -82,9 +82,7 @@ fun TvShowListScreen(
         },
         headerHeight = BackdropScaffoldDefaults.HeaderHeight + BackdropScaffoldDefaults.HeaderHeight,
         modifier = Modifier.statusBarsPadding()
-    ) {
-
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -174,14 +172,17 @@ private fun Indicator(type: Int, tvShow: TvShow) {
         TvShowListingAvailableTypes.Popular -> {
             ValueIndicator(value = tvShow.displayPopularity)
         }
+
         TvShowListingAvailableTypes.TopRated -> {
             ScoreIndicator(score = tvShow.voteAvgPercentage)
         }
+
         TvShowListingAvailableTypes.Upcoming -> {
             tvShow.displayFirstAirDate?.let { date ->
                 ValueIndicator(value = date)
             }
         }
+
         else -> {
             //Nothing
         }

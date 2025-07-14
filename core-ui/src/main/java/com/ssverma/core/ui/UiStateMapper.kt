@@ -15,10 +15,10 @@ import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 fun <S, FeatureFailure> DriveCompose(
     uiState: UiState<S, FeatureFailure>,
     loading: @Composable () -> Unit = { DefaultLoadingIndicator() },
+    onRetry: () -> Unit = {},
     coreErrorContent: @Composable (error: Failure.CoreFailure) -> Unit = {
         DefaultCoreErrorIndicator(failure = it, onRetry = onRetry)
     },
-    onRetry: () -> Unit = {},
     featureErrorContent: @Composable (error: Failure.FeatureFailure<FeatureFailure>) -> Unit = {},
     idleContent: @Composable () -> Unit = {},
     content: @Composable (data: S) -> Unit,

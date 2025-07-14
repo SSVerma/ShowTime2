@@ -2,7 +2,7 @@ package com.ssverma.feature.account.data.local.serializer
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
-import androidx.datastore.preferences.protobuf.InvalidProtocolBufferException
+import com.google.protobuf.InvalidProtocolBufferException
 import com.ssverma.showtime.UserAccount
 import java.io.InputStream
 import java.io.OutputStream

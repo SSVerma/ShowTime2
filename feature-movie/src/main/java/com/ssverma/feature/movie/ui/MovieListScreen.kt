@@ -5,10 +5,23 @@ import ScoreIndicator
 import ValueIndicator
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.BackdropScaffold
+import androidx.compose.material.BackdropScaffoldDefaults
+import androidx.compose.material.BackdropScaffoldState
+import androidx.compose.material.BackdropValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.rememberBackdropScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -92,9 +105,7 @@ fun MovieListScreen(
         },
         headerHeight = BackdropScaffoldDefaults.HeaderHeight + BackdropScaffoldDefaults.HeaderHeight,
         modifier = Modifier.statusBarsPadding()
-    ) {
-
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -185,14 +196,17 @@ private fun Indicator(@MovieListingType type: Int, movie: Movie) {
         MovieListingAvailableTypes.Popular -> {
             ValueIndicator(value = movie.displayPopularity)
         }
+
         MovieListingAvailableTypes.TopRated -> {
             ScoreIndicator(score = movie.voteAvgPercentage)
         }
+
         MovieListingAvailableTypes.Upcoming -> {
             movie.displayReleaseDate?.let { date ->
                 ValueIndicator(value = date)
             }
         }
+
         else -> {
             //Nothing
         }

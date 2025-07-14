@@ -12,7 +12,7 @@ import javax.inject.Singleton
 @Singleton
 internal class RestClientImpl @Inject constructor(
     private val retrofitBuilder: Retrofit.Builder,
-    @CoreNetworking private val okHttpClient: OkHttpClient
+    @param:CoreNetworking private val okHttpClient: OkHttpClient
 ) : RestClient {
 
     @Synchronized

@@ -1,6 +1,6 @@
 plugins {
+    alias(libs.plugins.kotlin.jvm)
     id("java-library")
-    id("org.jetbrains.kotlin.jvm")
 }
 
 java {
@@ -8,6 +8,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 dependencies {
-    implementation(libs.coroutines.core)
+    api(libs.paging.common)
 }

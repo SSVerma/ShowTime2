@@ -6,7 +6,7 @@ import androidx.compose.ui.res.stringResource
 
 sealed interface UiText {
     class StaticText(
-        @StringRes val resId: Int,
+        @param:StringRes val resId: Int,
         vararg val formatArgs: Any
     ) : UiText
 

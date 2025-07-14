@@ -20,8 +20,8 @@ import com.ssverma.showtime.R
 
 sealed class ShowTimeTopLevelNavItem(
     val destination: Destination,
-    @StringRes val titleResId: Int,
-    @DrawableRes val iconResId: Int
+    @param:StringRes val titleResId: Int,
+    @param:DrawableRes val iconResId: Int
 ) {
     object Movie : ShowTimeTopLevelNavItem(
         destination = MovieHomeDestination,

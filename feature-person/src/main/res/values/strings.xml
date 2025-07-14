@@ -13,4 +13,7 @@
     <string name="popular_media">Popular Media</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
+    <string name="see_all">See All</string>
+    <string name="unknown">Unknown</string>
+    <string name="na">N/A</string>
 </resources>

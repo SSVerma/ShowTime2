@@ -1,20 +1,30 @@
 package com.ssverma.showtime.navigation
 
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.google.accompanist.navigation.animation.AnimatedNavHost
+import androidx.navigation.compose.NavHost
 import com.ssverma.core.navigation.StandaloneDestination
 import com.ssverma.feature.account.navigation.profileGraph
 import com.ssverma.feature.auth.navigation.authGraph
-import com.ssverma.feature.movie.navigation.*
+import com.ssverma.feature.movie.navigation.movieDetailGraph
+import com.ssverma.feature.movie.navigation.movieImagePagerGraph
+import com.ssverma.feature.movie.navigation.movieImageShotsGraph
+import com.ssverma.feature.movie.navigation.movieListGraph
+import com.ssverma.feature.movie.navigation.movieReviewsGraph
 import com.ssverma.feature.person.navigation.personDetailGraph
 import com.ssverma.feature.person.navigation.personImageShotsGraph
 import com.ssverma.feature.search.navigation.searchGraph
-import com.ssverma.feature.tv.navigation.*
+import com.ssverma.feature.tv.navigation.tvEpisodeDetailGraph
+import com.ssverma.feature.tv.navigation.tvSeasonDetailGraph
+import com.ssverma.feature.tv.navigation.tvShowDetailGraph
+import com.ssverma.feature.tv.navigation.tvShowImagePagerGraph
+import com.ssverma.feature.tv.navigation.tvShowImageShotsGraph
+import com.ssverma.feature.tv.navigation.tvShowListGraph
+import com.ssverma.feature.tv.navigation.tvShowReviewsGraph
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -26,30 +36,30 @@ fun ShowTimeNavHost(
 ) {
     val springStiffness = 900f
 
-    AnimatedNavHost(
+    NavHost(
         navController = navController,
         startDestination = startDestination.placeholderRoute.asNavRoute(),
         enterTransition = {
             slideIntoContainer(
-                AnimatedContentScope.SlideDirection.Up,
+                towards = AnimatedContentTransitionScope.SlideDirection.Up,
                 animationSpec = spring(stiffness = springStiffness)
             )
         },
         exitTransition = {
             slideOutOfContainer(
-                AnimatedContentScope.SlideDirection.Up,
+                towards = AnimatedContentTransitionScope.SlideDirection.Up,
                 animationSpec = spring(stiffness = springStiffness)
             )
         },
         popEnterTransition = {
             slideIntoContainer(
-                AnimatedContentScope.SlideDirection.Down,
+                towards = AnimatedContentTransitionScope.SlideDirection.Down,
                 animationSpec = spring(stiffness = springStiffness)
             )
         },
         popExitTransition = {
             slideOutOfContainer(
-                AnimatedContentScope.SlideDirection.Down,
+                towards = AnimatedContentTransitionScope.SlideDirection.Down,
                 animationSpec = spring(stiffness = springStiffness)
             )
         },
