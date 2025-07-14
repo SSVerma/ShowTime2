@@ -52,8 +52,6 @@ dependencies {
 
     implementation(libs.compose.activity)
     implementation(libs.compose.constraintlayout)
-    implementation(libs.accompanist.pager)
-    implementation(libs.accompanist.pager.indicators)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

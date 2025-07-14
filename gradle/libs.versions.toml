@@ -2,7 +2,6 @@
 core = "1.16.0"
 material = "1.12.0"
 compose = "1.8.3"
-accompanist = "0.36.0"
 coroutines = "1.10.2"
 
 lifecycle-runtime = "2.9.1"
@@ -61,10 +60,6 @@ compose-paging = { module = "androidx.paging:paging-compose", version.ref = "com
 compose-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "material-icons" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
-
-# Accompanist
-accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanist" }
-accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanist" }
 
 # DI - Hilt
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger-hilt" }

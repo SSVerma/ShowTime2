@@ -2,6 +2,8 @@ package com.ssverma.shared.ui.bottomsheet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
@@ -9,13 +11,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.google.accompanist.pager.rememberPagerState
-import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.ui.component.ImageShotItem
 
 @Composable
@@ -43,7 +41,6 @@ fun ImagePagerScreen(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ImagePager(
     imageShots: List<ImageShot>,
@@ -54,10 +51,10 @@ fun ImagePager(
         return
     }
 
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(pageCount = { imageShots.size })
 
     Box(modifier) {
-        HorizontalPager(state = pagerState, count = imageShots.size) { page ->
+        HorizontalPager(state = pagerState) { page ->
             ImageShotItem(
                 imageShot = imageShots[page],
                 onClick = {},
@@ -66,13 +63,13 @@ fun ImagePager(
             )
         }
 
-        HorizontalPagerIndicator(
-            pagerState = pagerState,
-            indicatorWidth = 4.dp,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(vertical = 16.dp, horizontal = 32.dp)
-        )
+//        HorizontalPagerIndicator(
+//            pagerState = pagerState,
+//            indicatorWidth = 4.dp,
+//            modifier = Modifier
+//                .align(Alignment.BottomCenter)
+//                .padding(vertical = 16.dp, horizontal = 32.dp)
+//        )
     }
 
     LaunchedEffect(pagerState, defaultPageIndex) {

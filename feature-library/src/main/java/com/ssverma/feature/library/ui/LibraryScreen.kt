@@ -16,10 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Tab
-import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -30,10 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.paging.PagedContent
@@ -102,7 +99,6 @@ fun LibraryScreen(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun LibraryContent(
     modifier: Modifier = Modifier,
@@ -110,16 +106,11 @@ private fun LibraryContent(
     onMovieClicked: (movieId: Int) -> Unit,
     onTvShowClicked: (tvShowId: Int) -> Unit
 ) {
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
     ScrollableTabRow(
         selectedTabIndex = pagerState.currentPage,
-        indicator = { tabPositions ->
-            TabRowDefaults.Indicator(
-                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
-            )
-        },
         backgroundColor = MaterialTheme.colors.background,
         modifier = modifier
     ) {
@@ -136,7 +127,6 @@ private fun LibraryContent(
 
     HorizontalPager(
         state = pagerState,
-        count = tabs.size,
         verticalAlignment = Alignment.Top,
         modifier = Modifier
             .fillMaxSize()

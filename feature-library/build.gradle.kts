@@ -1,5 +1,5 @@
-import com.ssverma.Modules
 import com.ssverma.AndroidConfig
+import com.ssverma.Modules
 
 plugins {
     alias(libs.plugins.android.library)
@@ -67,9 +67,6 @@ dependencies {
 
     implementation(project(Modules.Feature.account))
     implementation(project(Modules.Feature.auth))
-
-    implementation(libs.accompanist.pager)
-    implementation(libs.accompanist.pager.indicators)
 
     implementation(libs.dagger.hilt.android)
     kapt(libs.dagger.hilt.compiler)

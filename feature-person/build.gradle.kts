@@ -67,8 +67,6 @@ dependencies {
     implementation(project(Modules.Feature.accountNavigation))
 
     implementation(libs.compose.constraintlayout)
-    implementation(libs.accompanist.pager)
-    implementation(libs.accompanist.pager.indicators)
 
     implementation(libs.dagger.hilt.android)
     kapt(libs.dagger.hilt.compiler)
