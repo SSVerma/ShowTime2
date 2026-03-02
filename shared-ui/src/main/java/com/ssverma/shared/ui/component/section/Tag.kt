@@ -4,14 +4,14 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.domain.model.Keyword
 import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.shared.domain.model.Keyword
 import com.ssverma.shared.ui.R
 
 @Composable
@@ -40,24 +40,25 @@ fun TagsSection(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TagItem(keyword: Keyword, onTagClicked: () -> Unit) {
-    Chip(
+    SuggestionChip(
         shape = MaterialTheme.shapes.small.copy(CornerSize(8.dp)),
-        colors = ChipDefaults.outlinedChipColors(
-            backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.24f)
+        colors = SuggestionChipDefaults.suggestionChipColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.24f)
         ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.87f)
+        border = SuggestionChipDefaults.suggestionChipBorder(
+            enabled = true,
+            borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.87f),
+            borderWidth = 1.dp
         ),
         onClick = onTagClicked,
-    ) {
-        Text(
-            text = "#${keyword.name}",
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.onSurface
-        )
-    }
+        label = {
+            Text(
+                text = "#${keyword.name}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    )
 }

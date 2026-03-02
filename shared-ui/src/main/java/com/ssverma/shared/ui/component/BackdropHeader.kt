@@ -3,10 +3,10 @@ package com.ssverma.shared.ui.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +57,7 @@ fun BackdropHeader(
                 .fillMaxWidth()
                 .height(SurfaceCornerRoundSize)
                 .background(
-                    color = MaterialTheme.colors.background,
+                    color = MaterialTheme.colorScheme.background,
                     shape = MaterialTheme.shapes.medium.copy(
                         topStart = CornerSize(SurfaceCornerRoundSize),
                         topEnd = CornerSize(SurfaceCornerRoundSize),

@@ -1,48 +1,28 @@
 package com.ssverma.core.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.graphics.Color
-import com.ssverma.core.ui.R
-
-private val DarkColorPalette = darkColors(
-    primary = darkGreen200,
-    primaryVariant = darkGreen800,
-    secondary = yellow200,
-    background = gray900,
-    surface = gray800,
-    onPrimary = gray900,
-    onSecondary = gray900,
-    onBackground = Color.White,
-    onSurface = white100,
-)
-
-private val LightColorPalette = lightColors(
-    primary = blue600,
-    primaryVariant = blue800,
-    secondary = green600,
-    background = Color.White,
-    surface = white100,
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = gray900,
-    onSurface = gray900,
-)
-
-private val LightImages = Images(errorIllustrationResId = R.drawable.illustration_error_light)
-
-private val DarkImages = Images(errorIllustrationResId = R.drawable.illustration_error_dark)
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun ShowTimeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
-    } else {
-        LightColorPalette
+fun ShowTimeTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
     }
 
     val images = if (darkTheme) DarkImages else LightImages
@@ -51,7 +31,7 @@ fun ShowTimeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composab
         LocalImages provides images
     ) {
         MaterialTheme(
-            colors = colors,
+            colorScheme = colorScheme,
             typography = Typography,
             shapes = Shapes,
             content = content

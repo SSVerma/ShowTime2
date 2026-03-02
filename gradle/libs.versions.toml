@@ -37,6 +37,8 @@ ksp = "2.2.0-2.0.2"
 retrofit = "3.0.0"
 okhttpLogging = "5.1.0"
 
+material3 = "1.4.0"
+
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -49,8 +51,8 @@ retrofitConverterGson = { group = "com.squareup.retrofit2", name = "converter-gs
 
 # Compose
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
 compose-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 
 # Compose support
 compose-activity = { module = "androidx.activity:activity-compose", version.ref = "compose-activity" }

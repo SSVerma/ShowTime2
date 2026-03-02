@@ -4,7 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -49,12 +49,15 @@ fun NetworkImage(
             is AsyncImagePainter.State.Success -> {
                 // No op, can use it to perform transitions
             }
+
             is AsyncImagePainter.State.Empty -> {
                 //No op
             }
+
             is AsyncImagePainter.State.Loading -> {
                 loadingPlaceholder()
             }
+
             is AsyncImagePainter.State.Error -> {
                 errorPlaceholder()
             }
@@ -68,7 +71,7 @@ fun DefaultImagePlaceHolder(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .background(
-                MaterialTheme.colors.onSurface.copy(
+                MaterialTheme.colorScheme.onSurface.copy(
                     alpha = NetworkImageDefaults.PlaceHolderAlpha
                 )
             )

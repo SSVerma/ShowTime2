@@ -1,13 +1,33 @@
 package com.ssverma.feature.tv.ui
 
-import MediaItem
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.runtime.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -17,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
@@ -30,10 +49,20 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
-import com.ssverma.shared.ui.component.*
-import com.ssverma.shared.ui.component.section.*
+import com.ssverma.shared.ui.component.ActionSize
+import com.ssverma.shared.ui.component.BackdropHeader
+import com.ssverma.shared.ui.component.GenreItem
+import com.ssverma.shared.ui.component.Highlight
+import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.section.CreditSection
+import com.ssverma.shared.ui.component.section.ImageShotsSection
+import com.ssverma.shared.ui.component.section.OverviewSection
+import com.ssverma.shared.ui.component.section.ReviewsSection
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
+import com.ssverma.shared.ui.component.section.TagsSection
+import com.ssverma.shared.ui.component.section.VideoShotsSection
 import com.ssverma.shared.ui.emptyIfAbsent
 
 @Composable
@@ -48,7 +77,7 @@ fun TvShowDetailsScreen(
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit
 ) {
-    Surface(color = MaterialTheme.colors.background) {
+    Surface(color = MaterialTheme.colorScheme.background) {
         DriveCompose(
             uiState = viewModel.tvShowDetailsUiState,
             onRetry = {
@@ -120,10 +149,10 @@ private fun TvShowContent(
 
                             context.dispatchShareTextIntent(text = shareableText)
                         },
-                        backgroundColor = MaterialTheme.colors.surface,
+                        containerColor = MaterialTheme.colorScheme.surface,
                         modifier = modifier.size(ActionSize)
                     ) {
-                        Icon(imageVector = AppIcons.Send, contentDescription = null)
+                        Icon(imageVector = Icons.Default.Send, contentDescription = null)
                     }
                 }
             )
@@ -133,7 +162,7 @@ private fun TvShowContent(
         item {
             Text(
                 text = tvShow.title,
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -148,7 +177,7 @@ private fun TvShowContent(
                 Emphasize {
                     Text(
                         text = tagline,
-                        style = MaterialTheme.typography.caption,
+                        style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                         fontStyle = FontStyle.Italic,
                         modifier = Modifier

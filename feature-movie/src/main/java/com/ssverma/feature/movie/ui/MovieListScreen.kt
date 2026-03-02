@@ -1,27 +1,22 @@
 package com.ssverma.feature.movie.ui
 
-import MediaItem
-import ScoreIndicator
-import ValueIndicator
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.BackdropScaffold
-import androidx.compose.material.BackdropScaffoldDefaults
-import androidx.compose.material.BackdropScaffoldState
-import androidx.compose.material.BackdropValue
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.rememberBackdropScaffoldState
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -31,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.movie.R
@@ -39,10 +33,13 @@ import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.feature.movie.navigation.args.MovieListingType
 import com.ssverma.feature.movie.ui.filter.MovieFiltersScreen
 import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.ScoreIndicator
+import com.ssverma.shared.ui.component.ValueIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MovieListScreen(
     viewModel: MovieListViewModel,
@@ -51,78 +48,71 @@ fun MovieListScreen(
 ) {
     val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
 
-    val backdropScaffoldState =
-        rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
-    BackdropScaffold(
-        scaffoldState = backdropScaffoldState,
-        backLayerBackgroundColor = MaterialTheme.colors.background,
-        frontLayerBackgroundColor = MaterialTheme.colors.background,
+    ModalNavigationDrawer(
+        drawerState = drawerState,
         gesturesEnabled = viewModel.filterApplicable,
-        appBar = {
-            MovieListAppBar(
-                backdropScaffoldState,
-                viewModel,
-                onBackPressed,
-                coroutineScope
-            )
-        },
-        backLayerContent = {
-            if (backdropScaffoldState.isRevealed) {
-                BackHandler {
-                    coroutineScope.launch {
-                        backdropScaffoldState.conceal()
-                    }
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier.fillMaxWidth(0.85f),
+                drawerContainerColor = MaterialTheme.colorScheme.background
+            ) {
+                if (viewModel.filterApplicable) {
+                    MovieFiltersScreen(
+                        filterGroups = viewModel.filters.filters,
+                        onFilterApplied = {
+                            coroutineScope.launch {
+                                drawerState.close()
+                            }
+                            viewModel.onFiltersApplied(it)
+                        }
+                    )
                 }
             }
-            if (viewModel.filterApplicable) {
-                MovieFiltersScreen(
-                    filterGroups = viewModel.filters.filters,
-                    onFilterApplied = {
-                        coroutineScope.launch {
-                            backdropScaffoldState.conceal()
-                        }
-                        viewModel.onFiltersApplied(it)
-                    }
-                )
-            } else {
-                //Workaround for -> java.lang.IllegalArgumentException: The initial value must have an associated anchor.
-                //reason is peekHeight
-                Box(modifier = Modifier.height(1.dp))
-            }
         },
-        frontLayerContent = {
-            PagedContent(pagingItems = moviePagingItems) {
-                MoviesGrid(
-                    moviePagingItems = it,
-                    type = viewModel.listingType,
-                    openMovieDetails = { movie ->
-                        openMovieDetails(movie)
-                    }
-                )
+        content = {
+            Scaffold(
+                topBar = {
+                    MovieListAppBar(
+                        drawerState,
+                        viewModel,
+                        onBackPressed,
+                        coroutineScope
+                    )
+                }
+            ) { padding ->
+                PagedContent(pagingItems = moviePagingItems) {
+                    MoviesGrid(
+                        moviePagingItems = it,
+                        type = viewModel.listingType,
+                        openMovieDetails = { movie ->
+                            openMovieDetails(movie)
+                        },
+                        modifier = Modifier.padding(padding)
+                    )
+                }
             }
-        },
-        headerHeight = BackdropScaffoldDefaults.HeaderHeight + BackdropScaffoldDefaults.HeaderHeight,
-        modifier = Modifier.statusBarsPadding()
+        }
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MovieListAppBar(
-    backdropScaffoldState: BackdropScaffoldState,
+    drawerState: DrawerState,
     viewModel: MovieListViewModel,
     onBackPressed: () -> Unit,
     coroutineScope: CoroutineScope
 ) {
-    val navIcon = if (backdropScaffoldState.isConcealed) {
-        AppIcons.ArrowBack
+    val navIcon = if (drawerState.isClosed) {
+        Icons.Default.ArrowBack
     } else {
-        AppIcons.Close
+        Icons.Default.Close
     }
 
-    val title = if (backdropScaffoldState.isConcealed) {
+    val title = if (drawerState.isClosed) {
         viewModel.title ?: stringResource(id = viewModel.titleRes)
     } else {
         stringResource(id = R.string.filter)
@@ -130,25 +120,23 @@ private fun MovieListAppBar(
 
     ShowTimeTopAppBar(
         title = title,
-        backgroundColor = MaterialTheme.colors.background,
-        elevation = 0.dp,
         onBackPressed = {
-            if (backdropScaffoldState.isConcealed) {
+            if (drawerState.isClosed) {
                 onBackPressed()
             } else {
-                coroutineScope.launch { backdropScaffoldState.conceal() }
+                coroutineScope.launch { drawerState.close() }
             }
         },
         navIcon = navIcon,
         actions = {
-            if (viewModel.filterApplicable && backdropScaffoldState.isConcealed) {
+            if (viewModel.filterApplicable && drawerState.isClosed) {
                 IconButton(
                     onClick = {
                         coroutineScope.launch {
-                            if (backdropScaffoldState.isConcealed) {
-                                backdropScaffoldState.reveal()
+                            if (drawerState.isClosed) {
+                                drawerState.open()
                             } else {
-                                backdropScaffoldState.conceal()
+                                drawerState.close()
                             }
                         }
                     },
@@ -170,11 +158,13 @@ fun MoviesGrid(
     moviePagingItems: LazyPagingItems<Movie>,
     @MovieListingType
     type: Int,
-    openMovieDetails: (movieId: Int) -> Unit
+    openMovieDetails: (movieId: Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     PagedGrid(
         pagingItems = moviePagingItems,
-        contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp)
+        contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp),
+        modifier = modifier
     ) {
         MediaItem(
             title = it.title,

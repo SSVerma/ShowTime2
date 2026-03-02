@@ -1,9 +1,9 @@
 package com.ssverma.feature.auth.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +26,7 @@ fun LoginContent(
         Avatar(imageUrl = "", onClick = {}, modifier = Modifier.size(72.dp))
         Text(
             text = stringResource(R.string.tmdb_connect_info),
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = ContentSpacing)
         )

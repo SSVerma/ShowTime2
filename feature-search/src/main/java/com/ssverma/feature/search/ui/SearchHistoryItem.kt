@@ -2,9 +2,7 @@ package com.ssverma.feature.search.ui
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.*
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,8 +11,10 @@ import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.feature.search.domain.model.SearchHistory
 import com.ssverma.feature.search.ui.common.SearchSuggestionDefaults
 import com.ssverma.shared.domain.model.MediaType
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SearchHistoryItem(
     history: SearchHistory,
@@ -24,7 +24,7 @@ fun SearchHistoryItem(
 ) {
     Surface(
         onClick = onClick,
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = modifier,
     ) {
         Row(
@@ -35,18 +35,18 @@ fun SearchHistoryItem(
                     start = SearchSuggestionDefaults.HorizontalPadding
                 )
         ) {
-            Icon(imageVector = AppIcons.Refresh, contentDescription = null)
+            Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
 
             Text(
                 text = history.name,
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = SearchSuggestionDefaults.HorizontalPadding)
             )
 
             IconButton(onClick = onHistoryClearClick) {
-                Icon(imageVector = AppIcons.Close, contentDescription = null)
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
             }
         }
     }

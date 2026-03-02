@@ -1,10 +1,7 @@
 package com.ssverma.feature.tv.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,7 +14,6 @@ import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TvSeasonItem(
     tvSeason: TvSeason,
@@ -42,20 +38,20 @@ fun TvSeasonItem(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(text = tvSeason.title, style = MaterialTheme.typography.subtitle1)
+                Text(text = tvSeason.title, style = MaterialTheme.typography.titleMedium)
                 Text(
                     text = tvSeason.displayAirDate.orEmpty(),
-                    style = MaterialTheme.typography.caption,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
                     text = stringResource(id = R.string.episodes_n, tvSeason.episodeCount),
-                    style = MaterialTheme.typography.caption,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
                     text = tvSeason.overview,
-                    style = MaterialTheme.typography.caption,
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     fontStyle = FontStyle.Italic,
                     overflow = TextOverflow.Ellipsis,

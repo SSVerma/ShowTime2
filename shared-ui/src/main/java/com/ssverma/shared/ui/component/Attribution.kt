@@ -3,8 +3,8 @@ package com.ssverma.shared.ui.component
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,12 +21,13 @@ fun AttributionFooter(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .background(color = MaterialTheme.colors.onSurface.copy(alpha = 0.16f))
+            .fillMaxWidth()
+            .background(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f))
             .padding(horizontal = 16.dp, vertical = 32.dp)
     ) {
         Text(
             text = stringResource(id = R.string.tmdb_attribution),
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.labelSmall,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(16.dp))

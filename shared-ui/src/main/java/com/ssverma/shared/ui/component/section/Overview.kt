@@ -1,8 +1,8 @@
 package com.ssverma.shared.ui.component.section
 
 import androidx.compose.foundation.clickable
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -31,7 +31,7 @@ fun OverviewSection(
     ) {
         Text(
             text = overview,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Justify,
             maxLines = if (expanded) Int.MAX_VALUE else OverviewMaxLines,
             overflow = TextOverflow.Ellipsis,

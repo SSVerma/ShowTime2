@@ -45,5 +45,5 @@ kotlin {
 
 dependencies {
     api(libs.coil.compose)
-    implementation(libs.compose.material)
+    implementation(libs.compose.material3)
 }

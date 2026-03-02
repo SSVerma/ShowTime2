@@ -1,15 +1,24 @@
 package com.ssverma.feature.movie.ui
 
-import MediaItem
-import ScoreIndicator
-import ValueIndicator
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -33,6 +42,9 @@ import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.ScoreIndicator
+import com.ssverma.shared.ui.component.ValueIndicator
 
 @Composable
 fun MovieScreen(
@@ -221,6 +233,7 @@ fun MoviesSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeaderSection(
     viewModel: HomeMovieViewModel,
@@ -229,8 +242,8 @@ fun HeaderSection(
     onNavigateToMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openMovieDetails: (movieId: Int) -> Unit
 ) {
-    val blurColor = MaterialTheme.colors.background
-    val scrimColor = MaterialTheme.colors.onBackground
+    val blurColor = MaterialTheme.colorScheme.background
+    val scrimColor = MaterialTheme.colorScheme.onBackground
 
     Box(modifier = Modifier.background(color = scrimColor)) {
         NetworkImage(
@@ -263,11 +276,12 @@ fun HeaderSection(
                     )
                 )
         ) {
-            Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             HomePageAppBar(
-                elevation = 0.dp,
-                backgroundColor = Color.Transparent,
-                contentColor = Color.White,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                ),
                 onSearchIconPressed = onSearchIconPressed,
                 onAccountIconPressed = onAccountIconPressed
             )

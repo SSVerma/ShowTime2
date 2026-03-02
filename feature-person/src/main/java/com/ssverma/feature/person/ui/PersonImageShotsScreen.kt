@@ -4,11 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.material.BottomSheetScaffold
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -17,14 +15,13 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.person.R
 import com.ssverma.shared.ui.component.ImageShotItem
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PersonImageShotsScreen(
     viewModel: PersonImagesViewModel,
@@ -40,10 +37,10 @@ fun PersonImageShotsScreen(
     BottomSheetScaffold(
         scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
-            if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+            if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                 BackHandler {
                     coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                        bottomSheetScaffoldState.bottomSheetState.partialExpand()
                     }
                 }
             }
@@ -53,11 +50,10 @@ fun PersonImageShotsScreen(
                     title = "",
                     onBackPressed = {
                         coroutineScope.launch {
-                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                            bottomSheetScaffoldState.bottomSheetState.partialExpand()
                         }
                     },
-                    navIcon = AppIcons.KeyboardArrowDown,
-                    elevation = 0.dp
+                    navIcon = Icons.Default.KeyboardArrowDown
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 clickedImageShot?.let {
@@ -70,11 +66,11 @@ fun PersonImageShotsScreen(
                 }
             }
         },
-        sheetBackgroundColor = MaterialTheme.colors.background,
-    ) {
+        sheetContainerColor = MaterialTheme.colorScheme.background,
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(it)
+                .padding(paddingValues)
                 .statusBarsPadding()
         ) {
             ShowTimeTopAppBar(
@@ -96,7 +92,7 @@ fun PersonImageShotsScreen(
                         },
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .aspectRatio(imageShots[0]?.aspectRatio ?: 0f)
+                            .aspectRatio(imageShots[0]?.aspectRatio ?: 1f)
                             .padding(4.dp)
                     )
                 }

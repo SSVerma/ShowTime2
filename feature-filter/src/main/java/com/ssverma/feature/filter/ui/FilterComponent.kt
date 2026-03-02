@@ -2,16 +2,14 @@ package com.ssverma.feature.filter.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.*
 import com.ssverma.shared.ui.component.ClickThroughFilterChip
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NonSelectedFilterChip(
     text: String,
@@ -21,18 +19,17 @@ fun NonSelectedFilterChip(
         modifier = modifier,
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.56f)
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.56f)
         ),
         selected = false
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.subtitle1
+            style = MaterialTheme.typography.titleMedium
         )
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SelectedFilterChip(
     text: String,
@@ -40,13 +37,13 @@ fun SelectedFilterChip(
 ) {
     ClickThroughFilterChip(
         modifier = modifier,
-        elevation = 4.dp,
+        tonalElevation = 4.dp,
         selected = true
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.subtitle1,
-            color = MaterialTheme.colors.onPrimary
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
 }

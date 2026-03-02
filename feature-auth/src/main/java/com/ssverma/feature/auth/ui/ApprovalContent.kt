@@ -1,14 +1,13 @@
 package com.ssverma.feature.auth.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.ui.ScreenLoadingIndicator
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.feature.auth.R
 
@@ -19,7 +18,7 @@ fun ApprovalAskedContent(
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = stringResource(R.string.redirecting),
-            style = MaterialTheme.typography.body1
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
@@ -35,7 +34,7 @@ fun ApprovalGrantedContent(
     ) {
         Text(
             text = stringResource(R.string.authorizing),
-            style = MaterialTheme.typography.body1
+            style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
         ShowTimeLoadingIndicator()
@@ -49,7 +48,7 @@ fun ApprovalRejectedContent(
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = stringResource(R.string.approval_rejection_info),
-            style = MaterialTheme.typography.body1
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }

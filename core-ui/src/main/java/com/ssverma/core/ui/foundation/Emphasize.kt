@@ -1,16 +1,15 @@
 package com.ssverma.core.ui.foundation
 
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
 @Composable
 fun Emphasize(
-    contentAlpha: Float = ContentAlpha.medium,
+    alpha: Float = 0.6f,
     content: @Composable () -> Unit
 ) {
-    CompositionLocalProvider(LocalContentAlpha provides contentAlpha) {
+    CompositionLocalProvider(LocalContentColor provides LocalContentColor.current.copy(alpha = alpha)) {
         content()
     }
 }

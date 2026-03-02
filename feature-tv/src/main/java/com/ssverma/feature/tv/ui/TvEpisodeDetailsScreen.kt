@@ -4,10 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,15 +27,16 @@ import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TvEpisodeDetailsScreen(
     viewModel: TvEpisodeDetailsViewModel,
     onBackPress: () -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
 ) {
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val imageSheetState = rememberImageShotBottomSheetState(
-        bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+        bottomSheetScaffoldState = bottomSheetScaffoldState
     )
 
     val coroutineScope = rememberCoroutineScope()
@@ -95,7 +93,7 @@ private fun TvEpisodeContent(
         item {
             Text(
                 text = episode.title,
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,7 +183,7 @@ private fun BackdropHeader(
                 .fillMaxWidth()
                 .height(SurfaceCornerRoundSize)
                 .background(
-                    color = MaterialTheme.colors.background,
+                    color = MaterialTheme.colorScheme.background,
                     shape = MaterialTheme.shapes.medium.copy(
                         topStart = CornerSize(SurfaceCornerRoundSize),
                         topEnd = CornerSize(SurfaceCornerRoundSize),

@@ -1,9 +1,9 @@
 package com.ssverma.feature.account.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,8 +28,7 @@ fun ProfileScreen(
 
     Screen(
         title = stringResource(R.string.profile),
-        onBackPressed = onBackPressed,
-        modifier = Modifier.statusBarsPadding()
+        onBackPressed = onBackPressed
     ) {
         when (profileUiState) {
             is ProfileUiState.ShowProfileContent -> {
@@ -70,12 +69,12 @@ private fun ProfileContent(
 
         Text(
             text = stringResource(id = R.string.username_n, profile.userName),
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(top = 12.dp)
         )
         Text(
             text = profile.displayName,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(top = 12.dp)
         )
 

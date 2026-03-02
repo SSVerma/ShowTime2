@@ -4,8 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,12 +60,12 @@ fun HighlightItem(
     ) {
 
         Emphasize {
-            Text(text = stringResource(id = labelRes), style = MaterialTheme.typography.caption)
+            Text(text = stringResource(id = labelRes), style = MaterialTheme.typography.labelMedium)
         }
 
         Text(
             text = value,
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 4.dp)
         )

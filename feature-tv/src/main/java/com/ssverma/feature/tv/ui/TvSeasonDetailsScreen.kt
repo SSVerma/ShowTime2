@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +36,7 @@ import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TvSeasonDetailsScreen(
     viewModel: TvSeasonDetailsViewModel,
@@ -44,8 +44,9 @@ fun TvSeasonDetailsScreen(
     openEpisodeDetails: (episodeArgs: TvEpisodeArgs) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
 ) {
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
     val imageSheetState = rememberImageShotBottomSheetState(
-        bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+        bottomSheetScaffoldState = bottomSheetScaffoldState
     )
 
     val coroutineScope = rememberCoroutineScope()
@@ -112,7 +113,7 @@ private fun TvSeasonContent(
         item {
             Text(
                 text = tvSeason.title,
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,7 +214,7 @@ private fun BackdropHeader(
                 .fillMaxWidth()
                 .height(SurfaceCornerRoundSize)
                 .background(
-                    color = MaterialTheme.colors.background,
+                    color = MaterialTheme.colorScheme.background,
                     shape = MaterialTheme.shapes.medium.copy(
                         topStart = CornerSize(SurfaceCornerRoundSize),
                         topEnd = CornerSize(SurfaceCornerRoundSize),
@@ -226,7 +227,6 @@ private fun BackdropHeader(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TvEpisodeItem(
     tvEpisode: TvEpisode,
@@ -252,20 +252,20 @@ fun TvEpisodeItem(
             )
 
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = tvEpisode.title, style = MaterialTheme.typography.subtitle1)
+                Text(text = tvEpisode.title, style = MaterialTheme.typography.titleMedium)
                 Text(
                     text = tvEpisode.displayAirDate.orEmpty(),
-                    style = MaterialTheme.typography.caption,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
                     text = stringResource(id = R.string.rating_n, tvEpisode.voteAvg),
-                    style = MaterialTheme.typography.caption,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
                     text = tvEpisode.overview,
-                    style = MaterialTheme.typography.caption,
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     fontStyle = FontStyle.Italic,
                     overflow = TextOverflow.Ellipsis,

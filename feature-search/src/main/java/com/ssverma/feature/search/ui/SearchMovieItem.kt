@@ -4,9 +4,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +20,6 @@ import com.ssverma.feature.search.ui.common.SearchSuggestionDefaults
 import com.ssverma.feature.search.ui.common.SuggestionText
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SearchMovieItem(
     movie: SearchSuggestion.Movie,
@@ -31,7 +29,7 @@ fun SearchMovieItem(
 ) {
     Surface(
         onClick = onClick,
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) {
         Row(

@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui
 
-import MediaItem
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -18,10 +17,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ScrollableTabRow
-import androidx.compose.material.Tab
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,6 +38,7 @@ import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.shared.ui.component.MediaItem
 import kotlinx.coroutines.launch
 
 @Composable
@@ -87,7 +87,6 @@ fun LibraryScreen(
     Column {
         Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
         HomePageAppBar(
-            backgroundColor = MaterialTheme.colors.background,
             onSearchIconPressed = openSearchPage,
             onAccountIconPressed = openAccountPage
         )
@@ -111,13 +110,13 @@ private fun LibraryContent(
 
     ScrollableTabRow(
         selectedTabIndex = pagerState.currentPage,
-        backgroundColor = MaterialTheme.colors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) {
         tabs.forEachIndexed { index, tab ->
             Tab(
                 text = {
-                    Text(text = tab.title.asString())
+                    Text(text = tab.title.asString(), style = MaterialTheme.typography.titleSmall)
                 },
                 selected = pagerState.currentPage == index,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
@@ -130,7 +129,7 @@ private fun LibraryContent(
         verticalAlignment = Alignment.Top,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.background)
+            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
     ) { page ->
         val tab = tabs[page]

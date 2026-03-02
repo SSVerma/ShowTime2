@@ -1,6 +1,6 @@
 package com.ssverma.core.ui.theme
 
-import androidx.compose.material.Typography
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -9,77 +9,57 @@ import androidx.compose.ui.unit.sp
 import com.ssverma.core.ui.R
 
 private val Nunito = FontFamily(
-    Font(R.font.nunito_sans_regular),
-    Font(R.font.nunito_sans_semibold, FontWeight.W500),
+    Font(R.font.nunito_sans_regular, FontWeight.Normal),
+    Font(R.font.nunito_sans_semibold, FontWeight.SemiBold),
     Font(R.font.nunito_sans_bold, FontWeight.Bold)
 )
 
-val Typography = typographyFromDefaults(
-    defaultFontFamily = Nunito,
-    h4 = TextStyle(
+val Typography = Typography(
+    displayLarge = TextStyle(
+        fontFamily = Nunito,
         fontWeight = FontWeight.Bold,
-        lineHeight = 40.sp
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp
     ),
-    h5 = TextStyle(
-        fontWeight = FontWeight.Bold
+    headlineMedium = TextStyle(
+        fontFamily = Nunito,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 36.sp
     ),
-    h6 = TextStyle(
-        fontWeight = FontWeight.W500,
+    titleLarge = TextStyle(
+        fontFamily = Nunito,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 22.sp,
         lineHeight = 28.sp
     ),
-    subtitle1 = TextStyle(
-        fontWeight = FontWeight.W500,
-        lineHeight = 22.sp
+    titleMedium = TextStyle(
+        fontFamily = Nunito,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.15.sp
     ),
-    subtitle2 = TextStyle(
-        fontWeight = FontWeight.W500
-    ),
-    body1 = TextStyle(
+    bodyLarge = TextStyle(
+        fontFamily = Nunito,
         fontWeight = FontWeight.Normal,
-        lineHeight = 28.sp
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
     ),
-    body2 = TextStyle(
+    bodyMedium = TextStyle(
+        fontFamily = Nunito,
         fontWeight = FontWeight.Normal,
-        lineHeight = 16.sp
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.25.sp
     ),
-    button = TextStyle(
-        fontWeight = FontWeight.Bold
-    ),
-    caption = TextStyle(
-        fontFamily = Nunito
+    labelLarge = TextStyle(
+        fontFamily = Nunito,
+        fontWeight = FontWeight.Bold,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
     )
 )
-
-private fun typographyFromDefaults(
-    defaultFontFamily: FontFamily,
-    h1: TextStyle? = null,
-    h2: TextStyle? = null,
-    h3: TextStyle? = null,
-    h4: TextStyle? = null,
-    h5: TextStyle? = null,
-    h6: TextStyle? = null,
-    subtitle1: TextStyle? = null,
-    subtitle2: TextStyle? = null,
-    body1: TextStyle? = null,
-    body2: TextStyle? = null,
-    button: TextStyle? = null,
-    caption: TextStyle? = null,
-    overline: TextStyle? = null
-): Typography {
-    val defaults = Typography(defaultFontFamily = defaultFontFamily)
-    return Typography(
-        h1 = defaults.h1.merge(h1),
-        h2 = defaults.h2.merge(h2),
-        h3 = defaults.h3.merge(h3),
-        h4 = defaults.h4.merge(h4),
-        h5 = defaults.h5.merge(h5),
-        h6 = defaults.h6.merge(h6),
-        subtitle1 = defaults.subtitle1.merge(subtitle1),
-        subtitle2 = defaults.subtitle2.merge(subtitle2),
-        body1 = defaults.body1.merge(body1),
-        body2 = defaults.body2.merge(body2),
-        button = defaults.button.merge(button),
-        caption = defaults.caption.merge(caption),
-        overline = defaults.overline.merge(overline)
-    )
-}

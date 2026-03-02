@@ -4,10 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -15,9 +12,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.domain.model.Review
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.Avatar
 
@@ -55,14 +52,13 @@ fun ReviewsSection(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ReviewItem(
     review: Review,
     modifier: Modifier = Modifier
 ) {
 
-    var expended by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
@@ -79,9 +75,9 @@ fun ReviewItem(
         Surface(
             shape = MaterialTheme.shapes.medium.copy(topStart = CornerSize(0.dp)),
             onClick = {
-                expended = !expended
+                expanded = !expanded
             },
-            elevation = if (expended) 0.5.dp else 0.dp
+            tonalElevation = if (expanded) 2.dp else 0.dp
         ) {
             Column(
                 modifier = Modifier
@@ -106,13 +102,13 @@ fun ReviewItem(
                     BoxWithConstraints {
                         Text(
                             text = authorName.orEmpty(),
-                            style = MaterialTheme.typography.subtitle1.copy(
+                            style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
                             modifier = Modifier
                                 .padding(end = 16.dp)
                                 .background(
-                                    color = MaterialTheme.colors.primary.copy(alpha = 0.16f),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
                                     shape = MaterialTheme.shapes.medium
                                 )
                                 .padding(horizontal = 4.dp)
@@ -124,7 +120,7 @@ fun ReviewItem(
                     review.displayCreatedAt?.let {
                         Text(
                             text = it,
-                            style = MaterialTheme.typography.caption,
+                            style = MaterialTheme.typography.labelSmall,
                             textAlign = TextAlign.End
                         )
                     }
@@ -133,8 +129,8 @@ fun ReviewItem(
                 /*Review content*/
                 Text(
                     text = review.content,
-                    style = MaterialTheme.typography.body1,
-                    maxLines = if (expended) Int.MAX_VALUE else 4,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = if (expanded) Int.MAX_VALUE else 4,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 16.dp)
                 )

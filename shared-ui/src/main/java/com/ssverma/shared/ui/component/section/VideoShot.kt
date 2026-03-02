@@ -4,8 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,7 +12,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.component.scrim
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
@@ -21,6 +19,8 @@ import com.ssverma.shared.domain.model.Video
 import com.ssverma.shared.domain.model.youtubeThumbnailUrl
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -56,7 +56,6 @@ fun VideoShotsSection(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun VideoItem(
     video: Video,
@@ -65,7 +64,7 @@ fun VideoItem(
 ) {
     Card(
         shape = MaterialTheme.shapes.medium.copy(CornerSize(8.dp)),
-        elevation = 0.dp,
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         onClick = onVideoClick,
         modifier = modifier.aspectRatio(TmdbBackdropAspectRatio)
     ) {
@@ -77,15 +76,15 @@ fun VideoItem(
                     .fillMaxSize()
                     .scrim(
                         colors = listOf(
-                            MaterialTheme.colors.surface.copy(alpha = 0.30f),
-                            MaterialTheme.colors.surface.copy(alpha = 0.10f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.30f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.10f),
                         )
                     )
             )
 
             Surface(
                 shape = CircleShape,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.54f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
                 onClick = onVideoClick,
                 modifier = Modifier
                     .wrapContentSize()
@@ -93,12 +92,12 @@ fun VideoItem(
                     .padding(4.dp)
             ) {
                 Icon(
-                    imageVector = AppIcons.PlayArrow,
+                    imageVector = Icons.Default.PlayArrow,
                     contentDescription = null,
                     modifier = Modifier
                         .padding(4.dp)
                         .size(20.dp),
-                    tint = MaterialTheme.colors.surface
+                    tint = MaterialTheme.colorScheme.surface
                 )
             }
         }

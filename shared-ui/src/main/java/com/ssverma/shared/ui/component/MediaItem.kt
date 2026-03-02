@@ -1,21 +1,37 @@
+package com.ssverma.shared.ui.component
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 
 @Composable
@@ -27,7 +43,7 @@ fun MediaItem(
     indicator: (@Composable () -> Unit)? = null,
     onOverflowIconClick: (() -> Unit)? = null,
     titleMaxLines: Int = 1,
-    titleTextStyle: TextStyle = MaterialTheme.typography.subtitle1,
+    titleTextStyle: TextStyle = MaterialTheme.typography.titleMedium,
     onClick: () -> Unit = {},
 ) {
     Column(modifier = modifier) {
@@ -51,7 +67,6 @@ fun MediaItem(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MediaPoster(
     posterImageUrl: String,
@@ -60,16 +75,18 @@ fun MediaPoster(
     onOverflowIconClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
-    Card(
+    Surface(
         modifier = modifier,
-        onClick = onClick
+        onClick = onClick,
+        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 2.dp
     ) {
         Box {
             NetworkImage(
                 url = posterImageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = modifier
+                modifier = Modifier.fillMaxSize()
             )
             indicator?.let { it() }
             onOverflowIconClick?.let {
@@ -80,7 +97,11 @@ fun MediaPoster(
                         .size(24.dp),
                     onClick = it
                 ) {
-                    Icon(imageVector = AppIcons.MoreVert, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
                 }
             }
         }
@@ -91,15 +112,15 @@ fun MediaPoster(
 fun ValueIndicator(value: String, modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(50),
-        color = MaterialTheme.colors.background,
+        color = MaterialTheme.colorScheme.background,
         modifier = modifier
             .padding(start = 4.dp, top = 4.dp)
-            .border(1.dp, MaterialTheme.colors.primary, RoundedCornerShape(50))
+            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
     ) {
         Text(
             text = value,
-            color = MaterialTheme.colors.onBackground,
-            style = MaterialTheme.typography.caption,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.labelSmall,
             modifier = Modifier
                 .padding(horizontal = 6.dp, vertical = 4.dp)
         )
@@ -112,10 +133,10 @@ fun ScoreIndicator(score: Float) {
         modifier = Modifier
             .padding(4.dp)
             .clip(CircleShape)
-            .background(color = MaterialTheme.colors.background)
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         CircularProgressIndicator(
-            progress = score / 100f,
+            progress = { score / 100f },
             strokeWidth = 1.dp,
             modifier = Modifier
                 .size(36.dp)
@@ -124,8 +145,8 @@ fun ScoreIndicator(score: Float) {
         Text(
             text = "${score.toInt()}%",
             modifier = Modifier.align(Alignment.Center),
-            color = MaterialTheme.colors.onBackground,
-            style = MaterialTheme.typography.caption.copy(fontSize = 10.sp)
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)
         )
     }
 }

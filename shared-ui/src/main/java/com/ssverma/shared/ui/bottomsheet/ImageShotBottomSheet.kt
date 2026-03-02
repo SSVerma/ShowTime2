@@ -6,10 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.BottomSheetScaffold
-import androidx.compose.material.BottomSheetScaffoldState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +20,7 @@ sealed interface SheetContentType {
     object None : SheetContentType
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageShotBottomSheet(
     imageShots: List<ImageShot>,
@@ -53,13 +50,12 @@ fun ImageShotBottomSheet(
             )
         },
         sheetPeekHeight = 0.dp,
-        sheetBackgroundColor = MaterialTheme.colors.background,
+        sheetContainerColor = MaterialTheme.colorScheme.background,
         modifier = modifier.fillMaxSize(),
         content = content
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ImageSheetContent(
     imageShots: List<ImageShot>,
@@ -107,7 +103,7 @@ private fun ImageSheetContent(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun rememberImageShotBottomSheetState(
     bottomSheetScaffoldState: BottomSheetScaffoldState
@@ -119,7 +115,7 @@ fun rememberImageShotBottomSheetState(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 class ImageShotBottomSheetState(
     val bottomSheetScaffoldState: BottomSheetScaffoldState
 ) {
@@ -129,13 +125,13 @@ class ImageShotBottomSheetState(
     suspend fun show(contentType: SheetContentType) {
         sheetContentType = contentType
 
-        if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+        if (bottomSheetScaffoldState.bottomSheetState.currentValue != SheetValue.Expanded) {
             bottomSheetScaffoldState.bottomSheetState.expand()
         }
     }
 
     suspend fun collapse() {
-        bottomSheetScaffoldState.bottomSheetState.collapse()
+        bottomSheetScaffoldState.bottomSheetState.partialExpand()
     }
 
     suspend fun showPreviousOrCollapse() {
@@ -144,7 +140,7 @@ class ImageShotBottomSheetState(
     }
 
     fun expended(): Boolean {
-        return bottomSheetScaffoldState.bottomSheetState.isExpanded
+        return bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
     }
 
 }

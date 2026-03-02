@@ -1,19 +1,21 @@
 package com.ssverma.showtime
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -49,7 +51,11 @@ fun ShowTime() {
         ) { innerPaddingModifier ->
             ShowTimeNavHost(
                 navController = navController,
-                modifier = Modifier.padding(innerPaddingModifier)
+                modifier = Modifier.padding(
+                    start = innerPaddingModifier.calculateStartPadding(LayoutDirection.Ltr),
+                    end = innerPaddingModifier.calculateEndPadding(LayoutDirection.Ltr),
+                    bottom = innerPaddingModifier.calculateBottomPadding()
+                )
             )
         }
     }
@@ -87,8 +93,7 @@ fun ShowTimeBottomBar(
         return
     }
 
-    BottomNavigation(
-        backgroundColor = MaterialTheme.colors.background,
+    NavigationBar(
         modifier = modifier,
     ) {
         bottomNavItems.forEach { navItem ->
@@ -96,7 +101,7 @@ fun ShowTimeBottomBar(
                 ?.hierarchy
                 ?.any { it.route == navItem.destination.placeholderRoute.asNavRoute() } == true
 
-            BottomNavigationItem(
+            NavigationBarItem(
                 icon = {
                     Icon(
                         painter = painterResource(id = navItem.iconResId),
@@ -105,8 +110,6 @@ fun ShowTimeBottomBar(
                 },
                 label = { Text(text = stringResource(id = navItem.titleResId)) },
                 selected = selected,
-                selectedContentColor = MaterialTheme.colors.primary,
-                unselectedContentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.87f),
                 modifier = Modifier.navigationBarsPadding(),
                 onClick = {
                     onTopLevelNavItemSelected(navItem)

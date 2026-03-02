@@ -1,12 +1,23 @@
 package com.ssverma.core.ui.layout
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.material.contentColorFor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,7 +28,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.R
 import com.ssverma.core.ui.ScreenLoadingIndicator
@@ -172,7 +182,6 @@ fun SectionHeader(
     titleTextStyle: TextStyle = SectionDefaults.titleTextStyle(),
     subtitleTextStyle: TextStyle = SectionDefaults.subtitleTextStyle(),
 ) {
-
     SectionHeader(
         modifier = modifier,
         titleContent = {
@@ -334,16 +343,16 @@ object SectionDefaults {
 
     @Composable
     fun titleTextStyle(): TextStyle {
-        return MaterialTheme.typography.h6.copy(
-            fontWeight = FontWeight.SemiBold,
-            color = contentColorFor(backgroundColor = MaterialTheme.colors.background)
+        return MaterialTheme.typography.titleLarge.copy(
+            fontWeight = FontWeight.Bold,
+            color = contentColorFor(backgroundColor = MaterialTheme.colorScheme.background)
         )
     }
 
     @Composable
     fun subtitleTextStyle(): TextStyle {
-        return MaterialTheme.typography.body1.copy(
-            fontSize = 12.sp
+        return MaterialTheme.typography.labelMedium.copy(
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

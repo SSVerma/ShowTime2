@@ -1,133 +1,76 @@
 package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.foundation.ClickThroughSurface
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ClickThroughFilterChip(
     selected: Boolean,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    elevation: Dp = 0.dp,
-    shape: Shape = MaterialTheme.shapes.small.copy(CornerSize(percent = 50)),
+    tonalElevation: Dp = 0.dp,
+    shadowElevation: Dp = 0.dp,
+    shape: Shape = MaterialTheme.shapes.small,
     border: BorderStroke? = null,
-    colors: SelectableChipColors = ChipDefaults.filterChipColors(
-        backgroundColor = if (selected) {
-            MaterialTheme.colors.primary
-        } else {
-            MaterialTheme.colors.surface
-        }
-    ),
+    containerColor: Color = if (selected) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.surface
+    },
+    labelColor: Color = if (selected) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    },
     leadingIcon: @Composable (() -> Unit)? = null,
     selectedIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     content: @Composable RowScope.() -> Unit
 ) {
-    val contentColor = colors.contentColor(enabled, selected)
+    val finalContainerColor = if (enabled) containerColor else containerColor.copy(alpha = 0.38f)
+    val finalContentColor = if (enabled) labelColor else labelColor.copy(alpha = 0.38f)
 
     ClickThroughSurface(
         modifier = modifier,
-        color = colors.backgroundColor(enabled, selected).value,
+        color = finalContainerColor,
         shape = shape,
-        contentColor = contentColor.value.copy(1.0f),
+        contentColor = finalContentColor,
         border = border,
-        elevation = elevation,
+        tonalElevation = tonalElevation,
+        shadowElevation = shadowElevation
     ) {
-        CompositionLocalProvider(LocalContentAlpha provides contentColor.value.alpha) {
-            ProvideTextStyle(
-                value = MaterialTheme.typography.body2
-            ) {
-                Row(
-                    Modifier
-                        .defaultMinSize(
-                            minHeight = ChipDefaults.MinHeight
-                        )
-                        .padding(
-                            start =
-                            if (leadingIcon != null || (selected && selectedIcon != null)) {
-                                0.dp
-                            } else {
-                                HorizontalPadding
-                            },
-                            end =
-                            if (trailingIcon == null) {
-                                HorizontalPadding
-                            } else {
-                                0.dp
-                            }
-                        ),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (leadingIcon != null || (selected && selectedIcon != null)) {
-                        Spacer(Modifier.width(LeadingIconStartSpacing))
-                        Box {
-                            if (leadingIcon != null) {
-                                val leadingIconColor = colors.leadingIconColor(
-                                    enabled,
-                                    selected
-                                )
-                                CompositionLocalProvider(
-                                    LocalContentColor provides leadingIconColor.value,
-                                    LocalContentAlpha provides leadingIconColor.value.alpha,
-                                    content = leadingIcon
-                                )
-                            }
-                            if (selected && selectedIcon != null) {
-                                var overlayModifier: Modifier = Modifier
-                                var iconColor = contentColor.value
-                                if (leadingIcon != null) {
-                                    overlayModifier = Modifier
-                                        .requiredSize(SelectedIconContainerSize)
-                                        .background(
-                                            color = contentColor.value,
-                                            shape = CircleShape
-                                        )
-                                        .clip(CircleShape)
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (selected && selectedIcon != null) {
+                Box(modifier = Modifier.padding(end = 8.dp)) {
+                    selectedIcon()
+                }
+            } else if (leadingIcon != null) {
+                Box(modifier = Modifier.padding(end = 8.dp)) {
+                    leadingIcon()
+                }
+            }
 
-                                    iconColor = colors.backgroundColor(enabled, selected).value
-                                }
-                                Box(
-                                    modifier = overlayModifier,
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CompositionLocalProvider(
-                                        LocalContentColor provides iconColor,
-                                        content = selectedIcon
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(Modifier.width(LeadingIconEndSpacing))
-                    }
-                    content()
-                    if (trailingIcon != null) {
-                        Spacer(Modifier.width(TrailingIconSpacing))
-                        trailingIcon()
-                        Spacer(Modifier.width(TrailingIconSpacing))
-                    }
+            content()
+
+            if (trailingIcon != null) {
+                Box(modifier = Modifier.padding(start = 8.dp)) {
+                    trailingIcon()
                 }
             }
         }
     }
 }
-
-private val HorizontalPadding = 12.dp
-private val LeadingIconStartSpacing = 4.dp
-private val LeadingIconEndSpacing = 8.dp
-private val TrailingIconSpacing = 8.dp
-private val SelectedIconContainerSize = 24.dp

@@ -4,7 +4,7 @@ import androidx.annotation.IntRange
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,11 +26,11 @@ fun SliderScale(
     primaryIndicatorModifier: Modifier = Modifier,
     secondaryIndicatorModifier: Modifier = Modifier,
     showLabel: Boolean = true,
-    labelTextStyle: TextStyle = MaterialTheme.typography.caption.copy(
-        color = MaterialTheme.colors.onSurface
+    labelTextStyle: TextStyle = MaterialTheme.typography.labelSmall.copy(
+        color = MaterialTheme.colorScheme.onSurface
     ),
     sliderColors: SliderColors = SliderDefaults.colors(
-        inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.24f),
+        inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.24f),
         inactiveTickColor = Color.Transparent
     ),
     scaleDimensions: ScaleDimensions = SliderScaleDefaults.scaleDimensions
@@ -53,16 +53,20 @@ fun SliderScale(
                 for (i in 0..secondarySteps) {
                     val primaryIndicator = i % primarySteps == 0
 
+                    val isActive = secondaryGap * i <= sliderValue
+                    val indicatorColor = if (isActive) {
+                        sliderColors.activeTrackColor
+                    } else {
+                        sliderColors.inactiveTrackColor
+                    }
+
                     if (primaryIndicator) {
                         Box(
                             primaryIndicatorModifier
                                 .width(scaleDimensions.primaryIndicatorWidth)
                                 .height(scaleDimensions.primaryIndicatorHeight)
                                 .background(
-                                    color = sliderColors.trackColor(
-                                        enabled = true,
-                                        active = secondaryGap * i <= sliderValue
-                                    ).value,
+                                    color = indicatorColor,
                                     shape = SliderScaleDefaults.primaryIndicatorShape
                                 )
                         )
@@ -72,10 +76,7 @@ fun SliderScale(
                                 .width(scaleDimensions.secondaryIndicatorWidth)
                                 .height(scaleDimensions.secondaryIndicatorHeight)
                                 .background(
-                                    color = sliderColors.trackColor(
-                                        enabled = true,
-                                        active = secondaryGap * i <= sliderValue
-                                    ).value,
+                                    color = indicatorColor,
                                     shape = SliderScaleDefaults.secondaryIndicatorShape
                                 )
                         )

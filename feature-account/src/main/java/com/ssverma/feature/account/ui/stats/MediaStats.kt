@@ -3,7 +3,8 @@ package com.ssverma.feature.account.ui.stats
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.*
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
@@ -13,7 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.layout.Popup
 import com.ssverma.feature.account.R
 import com.ssverma.feature.auth.ui.AuthScreenContainer
@@ -39,41 +39,50 @@ fun MediaStatsAction(
                         mediaId = mediaId
                     )
                 },
-                backgroundColor = MaterialTheme.colors.surface,
+                containerColor = MaterialTheme.colorScheme.surface,
                 modifier = modifier.size(com.ssverma.shared.ui.component.ActionSize)
             ) {
-                Icon(imageVector = AppIcons.Add, contentDescription = null)
+                Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         },
         expandState = popupExpansionState,
     ) {
         when (mediaStatsUiState) {
             is MediaStatsUiState.Error -> {
-                DropdownMenuItem(onClick = { popupExpansionState.value = false }) {
-                    Text(
-                        text = stringResource(
-                            id = com.ssverma.core.ui.R.string.something_went_wrong
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(
+                                id = com.ssverma.core.ui.R.string.something_went_wrong
+                            )
                         )
-                    )
-                }
+                    },
+                    onClick = { popupExpansionState.value = false }
+                )
             }
             MediaStatsUiState.Unauthorized -> {
-                DropdownMenuItem(onClick = {}) {
-                    AuthScreenContainer(
-                        onBackPressed = { popupExpansionState.value = false }
-                    ) {
-                        LaunchedEffect(true) {
-                            viewModel.fetchMediaStats(mediaType = mediaType, mediaId = mediaId)
+                DropdownMenuItem(
+                    text = {
+                        AuthScreenContainer(
+                            onBackPressed = { popupExpansionState.value = false }
+                        ) {
+                            LaunchedEffect(Unit) {
+                                viewModel.fetchMediaStats(mediaType = mediaType, mediaId = mediaId)
+                            }
                         }
-                    }
-                }
+                    },
+                    onClick = {}
+                )
             }
             MediaStatsUiState.Loading -> {
-                DropdownMenuItem(onClick = {}) {
-                    ShowTimeLoadingIndicator()
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(text = stringResource(id = com.ssverma.core.ui.R.string.loading))
-                }
+                DropdownMenuItem(
+                    text = {
+                        ShowTimeLoadingIndicator()
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(text = stringResource(id = com.ssverma.core.ui.R.string.loading))
+                    },
+                    onClick = {}
+                )
             }
             is MediaStatsUiState.Success -> {
                 val mediaStats = (mediaStatsUiState as MediaStatsUiState.Success).mediaStats
@@ -115,9 +124,9 @@ private fun FavoriteMenuItem(
     }
 
     val favoriteIcon = if (favorite) {
-        AppIcons.Delete
+        Icons.Default.Delete
     } else {
-        AppIcons.Add
+        Icons.Default.Add
     }
 
     MediaStatsItem(title = favoriteTitle, icon = favoriteIcon, onClick = onClick)
@@ -135,9 +144,9 @@ private fun WatchlistMenuItem(
     }
 
     val watchlistIcon = if (inWatchlist) {
-        AppIcons.Delete
+        Icons.Default.Delete
     } else {
-        AppIcons.Add
+        Icons.Default.Add
     }
 
     MediaStatsItem(title = watchlistTitle, icon = watchlistIcon, onClick = onClick)
@@ -149,10 +158,9 @@ private fun MediaStatsItem(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
-    DropdownMenuItem(onClick = onClick) {
-        Icon(imageVector = icon, contentDescription = null)
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = title)
-    }
+    DropdownMenuItem(
+        text = { Text(text = title) },
+        leadingIcon = { Icon(imageVector = icon, contentDescription = null) },
+        onClick = onClick
+    )
 }
-

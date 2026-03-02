@@ -5,9 +5,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +68,7 @@ fun ScreenErrorIndicator(
                 modifier = Modifier.size(imageSize)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = errorMessage, style = MaterialTheme.typography.body1)
+            Text(text = errorMessage, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -90,7 +90,7 @@ fun ScreenErrorIndicator(
                 modifier = Modifier.size(imageSize)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = errorMessage, style = MaterialTheme.typography.body1)
+            Text(text = errorMessage, style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(onClick = onRetryClick) {
                 Text(text = stringResource(id = R.string.retry))
@@ -120,7 +120,7 @@ fun ScreenEmptyIndicator(
             modifier = Modifier
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.54f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f),
                     shape = MaterialTheme.shapes.medium.copy(CornerSize(8.dp))
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)

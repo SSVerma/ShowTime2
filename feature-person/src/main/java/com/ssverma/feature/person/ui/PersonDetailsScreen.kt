@@ -29,20 +29,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.BottomSheetScaffold
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,7 +73,7 @@ private enum class BottomSheetContent {
     Media
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonDetailsScreen(
     viewModel: PersonDetailsViewModel,
@@ -107,12 +96,12 @@ fun PersonDetailsScreen(
     ) { person ->
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
-            sheetGesturesEnabled = false,
+            sheetSwipeEnabled = false,
             sheetContent = {
-                if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+                if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                     BackHandler {
                         coroutineScope.launch {
-                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                            bottomSheetScaffoldState.bottomSheetState.partialExpand()
                         }
                     }
                 }
@@ -124,7 +113,7 @@ fun PersonDetailsScreen(
                             defaultPageIndex = profileImagePageIndex,
                             onBackPressed = {
                                 coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    bottomSheetScaffoldState.bottomSheetState.partialExpand()
                                 }
                             }
                         )
@@ -144,7 +133,7 @@ fun PersonDetailsScreen(
                     }
                 }
             },
-            sheetBackgroundColor = MaterialTheme.colors.background,
+            sheetContainerColor = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxSize()
         ) { padding ->
             PersonContent(
@@ -184,7 +173,7 @@ fun PersonContent(
     modifier: Modifier = Modifier
 ) {
 
-    var isBioExpended by remember { mutableStateOf(false) }
+    var isBioExpanded by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier) {
         item {
@@ -198,7 +187,7 @@ fun PersonContent(
         item {
             Text(
                 text = person.name,
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -225,15 +214,15 @@ fun PersonContent(
             Text(
                 text = person.biography,
                 textAlign = TextAlign.Start,
-                maxLines = if (isBioExpended) Int.MAX_VALUE else BiographyMaxLines,
+                maxLines = if (isBioExpanded) Int.MAX_VALUE else BiographyMaxLines,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.body1,
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 4.dp)
                     .padding(top = SectionSpacing)
                     .animateContentSize()
                     .clickable {
-                        isBioExpended = !isBioExpended
+                        isBioExpanded = !isBioExpanded
                     }
             )
         }
@@ -265,7 +254,7 @@ fun PersonContent(
                             .aspectRatio(TmdbPersonAspectRatio)
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colors.onSurface,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 shape = MaterialTheme.shapes.medium.copy(CornerSize(16.dp))
                             )
                             .clickable {
@@ -275,6 +264,7 @@ fun PersonContent(
                         Text(
                             text = stringResource(id = R.string.view_tagged_images),
                             textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(8.dp)
@@ -314,13 +304,16 @@ private fun PersonMediaTabs(
 
     TabRow(
         selectedTabIndex = pagerState.currentPage,
-        backgroundColor = MaterialTheme.colors.background,
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
     ) {
         personMediaByType.onEachIndexed { index, entry ->
             Tab(
                 text = {
-                    Text(text = stringResource(id = entry.key.asUiText().resId) + " (${entry.value.size})")
+                    Text(
+                        text = stringResource(id = entry.key.asUiText().resId) + " (${entry.value.size})",
+                        style = MaterialTheme.typography.titleSmall
+                    )
                 },
                 selected = pagerState.currentPage == index,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
@@ -339,6 +332,7 @@ private fun PersonMediaTabs(
             ) {
                 Text(
                     text = clickedMediaInfo.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -349,35 +343,32 @@ private fun PersonMediaTabs(
         state = pagerState,
         verticalAlignment = Alignment.Top,
         modifier = Modifier
-            .background(MaterialTheme.colors.background)
+            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
-    ) { page ->
-        personMediaByType.onEachIndexed { pageIndex, entry ->
-            if (pageIndex == page) {
-                if (showAllMedia) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp)
-                    ) {
-                        itemsIndexed(entry.value) { _, media ->
-                            TimelineItem(
-                                media = media,
-                                onInfoIconClick = { clickedMediaInfo = media.overview },
-                                openMovieDetails = openMovieDetails,
-                                openTvShowDetails = openTvShowDetails
-                            )
-                        }
-                    }
-                } else {
-                    PersonRecentMedia(
-                        entry = entry,
-                        onMediaInfoClicked = { clickedMediaInfo = it },
+    ) { pageIndex ->
+        val entry = personMediaByType.entries.elementAt(pageIndex)
+        if (showAllMedia) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
+                itemsIndexed(entry.value) { _, media ->
+                    TimelineItem(
+                        media = media,
+                        onInfoIconClick = { clickedMediaInfo = media.overview },
                         openMovieDetails = openMovieDetails,
-                        openTvShowDetails = openTvShowDetails,
-                        onViewAllMediaClicked = onViewAllMediaClicked
+                        openTvShowDetails = openTvShowDetails
                     )
                 }
             }
+        } else {
+            PersonRecentMedia(
+                entry = entry,
+                onMediaInfoClicked = { clickedMediaInfo = it },
+                openMovieDetails = openMovieDetails,
+                openTvShowDetails = openTvShowDetails,
+                onViewAllMediaClicked = onViewAllMediaClicked
+            )
         }
     }
 }
@@ -420,7 +411,6 @@ private fun PersonRecentMedia(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun TimelineItem(
     media: PersonMedia,
@@ -436,13 +426,13 @@ private fun TimelineItem(
 
         Text(
             text = media.displayReleaseDate ?: "",
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.labelSmall,
             modifier = Modifier
                 .weight(0.30f)
                 .padding(horizontal = 16.dp)
         )
 
-        Card(
+        Surface(
             onClick = {
                 when (media.mediaType) {
                     MediaType.Movie -> {
@@ -458,6 +448,8 @@ private fun TimelineItem(
                     }
                 }
             },
+            shape = MaterialTheme.shapes.medium,
+            tonalElevation = 1.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.70f)
@@ -480,14 +472,14 @@ private fun TimelineItem(
                 ) {
                     Text(
                         text = media.title,
-                        style = MaterialTheme.typography.subtitle1,
+                        style = MaterialTheme.typography.titleSmall,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = stringResource(id = R.string.as_n, media.character),
-                        style = MaterialTheme.typography.caption
+                        style = MaterialTheme.typography.labelSmall
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
@@ -499,7 +491,7 @@ private fun TimelineItem(
                     Icon(
                         imageVector = Icons.Outlined.Info,
                         contentDescription = null,
-                        tint = MaterialTheme.colors.onSurface.copy(alpha = 0.54f)
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.54f)
                     )
                 }
             }
@@ -547,7 +539,7 @@ private fun BackdropHeader(
                 .fillMaxWidth()
                 .height(SurfaceCornerRoundSize)
                 .background(
-                    color = MaterialTheme.colors.background,
+                    color = MaterialTheme.colorScheme.background,
                     shape = MaterialTheme.shapes.medium.copy(
                         topStart = CornerSize(SurfaceCornerRoundSize),
                         topEnd = CornerSize(SurfaceCornerRoundSize),

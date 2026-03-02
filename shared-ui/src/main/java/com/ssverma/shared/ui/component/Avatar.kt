@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,11 +29,11 @@ fun Avatar(
 ) {
     Box(
         modifier = modifier
-            .background(color = MaterialTheme.colors.surface, shape = CircleShape)
+            .background(color = MaterialTheme.colorScheme.surface, shape = CircleShape)
             .size(AvatarDefaults.Size)
             .border(
                 width = borderWidth,
-                color = MaterialTheme.colors.primaryVariant,
+                color = MaterialTheme.colorScheme.primary,
                 shape = CircleShape
             )
             .padding(borderSpacing)

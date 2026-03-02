@@ -4,7 +4,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.*
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -19,27 +22,25 @@ import androidx.compose.ui.unit.dp
 fun ClickThroughSurface(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.small,
-    color: Color = MaterialTheme.colors.surface,
+    color: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = contentColorFor(color),
     border: BorderStroke? = null,
-    elevation: Dp = 0.dp,
+    tonalElevation: Dp = 0.dp,
+    shadowElevation: Dp = 0.dp,
     content: @Composable () -> Unit
 ) {
-    val elevationOverlay = LocalElevationOverlay.current
-    val absoluteElevation = LocalAbsoluteElevation.current + elevation
-    val backgroundColor =
-        if (color == MaterialTheme.colors.surface && elevationOverlay != null) {
-            elevationOverlay.apply(color, absoluteElevation)
-        } else {
-            color
-        }
+    val backgroundColor = if (tonalElevation > 0.dp && color == MaterialTheme.colorScheme.surface) {
+        MaterialTheme.colorScheme.surfaceColorAtElevation(tonalElevation)
+    } else {
+        color
+    }
+
     CompositionLocalProvider(
-        LocalContentColor provides contentColor,
-        LocalAbsoluteElevation provides absoluteElevation
+        LocalContentColor provides contentColor
     ) {
         Box(
-            modifier
-                .shadow(elevation, shape, clip = true)
+            modifier = modifier
+                .shadow(shadowElevation, shape, clip = false)
                 .then(if (border != null) Modifier.border(border, shape) else Modifier)
                 .background(
                     color = backgroundColor,

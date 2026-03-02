@@ -6,9 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.*
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +22,9 @@ import com.ssverma.feature.search.R
 import com.ssverma.feature.search.domain.model.SearchHistory
 import com.ssverma.feature.search.domain.model.SearchSuggestion
 import com.ssverma.shared.domain.model.MediaType
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 
 @Composable
 fun SearchSuggestionScreen(
@@ -52,7 +53,7 @@ fun SearchSuggestionScreen(
             onBackPressed = onBackPressed
         )
 
-        Divider()
+        HorizontalDivider()
 
         LazyColumn {
             historyItems(
@@ -171,7 +172,7 @@ private fun SuggestionItem(
 ) {
     Column(modifier) {
         content()
-        Divider(thickness = 0.5.dp)
+        HorizontalDivider(thickness = 0.5.dp)
     }
 }
 
@@ -185,7 +186,7 @@ private fun SearchBar(
 
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
 
@@ -196,21 +197,25 @@ private fun SearchBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackPressed) {
-            Icon(imageVector = AppIcons.ArrowBack, contentDescription = null)
+            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
         }
         Box(Modifier.weight(1f)) {
             if (query.isEmpty()) {
-                Text(text = stringResource(R.string.search))
+                Text(
+                    text = stringResource(R.string.search),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             BasicTextField(
                 value = query,
                 onValueChange = onQueryChanged,
-                textStyle = MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.onBackground
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onBackground
                 ),
                 maxLines = 1,
                 singleLine = true,
-                cursorBrush = SolidColor(MaterialTheme.colors.onBackground),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -218,7 +223,7 @@ private fun SearchBar(
         }
         AnimatedVisibility(visible = query.isNotBlank()) {
             IconButton(onClick = { onQueryChanged("") }) {
-                Icon(imageVector = AppIcons.Close, contentDescription = null)
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
             }
         }
     }

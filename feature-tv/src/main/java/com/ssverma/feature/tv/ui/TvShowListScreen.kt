@@ -1,13 +1,22 @@
 package com.ssverma.feature.tv.ui
 
-import MediaItem
-import ScoreIndicator
-import ValueIndicator
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -17,17 +26,19 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.navigation.args.TvShowListingType
 import com.ssverma.shared.domain.model.tv.TvShow
+import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.ScoreIndicator
+import com.ssverma.shared.ui.component.ValueIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TvShowListScreen(
     viewModel: TvShowListListViewModel,
@@ -36,70 +47,70 @@ fun TvShowListScreen(
 ) {
     val moviePagingItems = viewModel.pagedTvShows.collectAsLazyPagingItems()
 
-    val backdropScaffoldState =
-        rememberBackdropScaffoldState(initialValue = BackdropValue.Concealed)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
-    BackdropScaffold(
-        scaffoldState = backdropScaffoldState,
-        backLayerBackgroundColor = MaterialTheme.colors.background,
-        frontLayerBackgroundColor = MaterialTheme.colors.background,
-        appBar = {
-            TvShowListAppBar(
-                backdropScaffoldState,
-                viewModel,
-                onBackPressed,
-                coroutineScope
-            )
-        },
-        backLayerContent = {
-            if (viewModel.filterApplicable) {
-                TvFiltersScreen(
-                    filterGroups = viewModel.filterUiState.filters,
-                    onFilterApplied = {
-                        coroutineScope.launch {
-                            backdropScaffoldState.conceal()
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = viewModel.filterApplicable,
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier.fillMaxWidth(0.85f),
+                drawerContainerColor = MaterialTheme.colorScheme.background
+            ) {
+                if (viewModel.filterApplicable) {
+                    TvFiltersScreen(
+                        filterGroups = viewModel.filterUiState.filters,
+                        onFilterApplied = {
+                            coroutineScope.launch {
+                                drawerState.close()
+                            }
+                            viewModel.onFiltersApplied(it)
                         }
-                        viewModel.onFiltersApplied(it)
-                    }
-                )
-            } else {
-                //Workaround for -> java.lang.IllegalArgumentException: The initial value must have an associated anchor.
-                //reason is peekHeight
-                Box(modifier = Modifier.height(1.dp))
+                    )
+                }
             }
-        },
-        frontLayerContent = {
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TvShowListAppBar(
+                    drawerState,
+                    viewModel,
+                    onBackPressed,
+                    coroutineScope
+                )
+            }
+        ) { padding ->
             PagedContent(pagingItems = moviePagingItems) {
                 TvShowsGrid(
                     tvShowPagingItems = it,
                     type = viewModel.listingType,
                     openMovieDetails = { tvShow ->
                         openTvShowDetails(tvShow)
-                    }
+                    },
+                    modifier = Modifier.padding(padding)
                 )
             }
-        },
-        headerHeight = BackdropScaffoldDefaults.HeaderHeight + BackdropScaffoldDefaults.HeaderHeight,
-        modifier = Modifier.statusBarsPadding()
-    )
+        }
+    }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TvShowListAppBar(
-    backdropScaffoldState: BackdropScaffoldState,
+    drawerState: DrawerState,
     viewModel: TvShowListListViewModel,
     onBackPressed: () -> Unit,
     coroutineScope: CoroutineScope
 ) {
-    val navIconRes = if (backdropScaffoldState.isConcealed) {
-        AppIcons.ArrowBack
+    val navIcon = if (drawerState.isClosed) {
+        Icons.Default.ArrowBack
     } else {
-        AppIcons.Close
+        Icons.Default.Close
     }
 
-    val title = if (backdropScaffoldState.isConcealed) {
+    val title = if (drawerState.isClosed) {
         viewModel.title ?: stringResource(id = viewModel.titleRes)
     } else {
         stringResource(id = R.string.filter)
@@ -107,25 +118,23 @@ private fun TvShowListAppBar(
 
     ShowTimeTopAppBar(
         title = title,
-        backgroundColor = MaterialTheme.colors.background,
-        elevation = 0.dp,
         onBackPressed = {
-            if (backdropScaffoldState.isConcealed) {
+            if (drawerState.isClosed) {
                 onBackPressed()
             } else {
-                coroutineScope.launch { backdropScaffoldState.conceal() }
+                coroutineScope.launch { drawerState.close() }
             }
         },
-        navIcon = navIconRes,
+        navIcon = navIcon,
         actions = {
-            if (viewModel.filterApplicable && backdropScaffoldState.isConcealed) {
+            if (viewModel.filterApplicable && drawerState.isClosed) {
                 IconButton(
                     onClick = {
                         coroutineScope.launch {
-                            if (backdropScaffoldState.isConcealed) {
-                                backdropScaffoldState.reveal()
+                            if (drawerState.isClosed) {
+                                drawerState.open()
                             } else {
-                                backdropScaffoldState.conceal()
+                                drawerState.close()
                             }
                         }
                     },
@@ -146,11 +155,13 @@ private fun TvShowListAppBar(
 private fun TvShowsGrid(
     tvShowPagingItems: LazyPagingItems<TvShow>,
     @TvShowListingType type: Int,
-    openMovieDetails: (movieId: Int) -> Unit
+    openMovieDetails: (movieId: Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     PagedGrid(
         pagingItems = tvShowPagingItems,
-        contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp)
+        contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp),
+        modifier = modifier
     ) {
         MediaItem(
             title = it.title,

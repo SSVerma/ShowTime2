@@ -50,6 +50,7 @@ dependencies {
     implementation(project(Modules.Core.uiPaging))
     implementation(project(Modules.Core.image))
 
+    implementation(libs.compose.material3)
     implementation(libs.compose.activity)
     implementation(libs.compose.constraintlayout)
 

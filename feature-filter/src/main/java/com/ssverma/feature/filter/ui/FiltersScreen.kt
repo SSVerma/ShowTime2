@@ -6,22 +6,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Divider
-import androidx.compose.material.ExtendedFloatingActionButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.domain.DiscoverOption
-import com.ssverma.shared.domain.MovieDiscoverConfig
-import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.SliderScale
 import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.domain.FilterId
+import com.ssverma.shared.domain.DiscoverOption
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -37,21 +32,19 @@ fun <T : DiscoverOption.OptionScope> FiltersScreen(
     Box(modifier) {
         FilterContent(filterGroups, listState, selectedCountry)
         ExtendedFloatingActionButton(
-            text = {
-                Text(
-                    text = stringResource(id = R.string.apply),
-                    color = MaterialTheme.colors.onSecondary
-                )
-            },
             onClick = {
                 val options = buildDiscoverConfig<T>(filterGroups, selectedCountry)
                 onFilterApplied(options)
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .padding(bottom = ApplyButtonVerticalSpacing)
                 .height(ApplyButtonHeight)
-                .padding(vertical = ApplyButtonVerticalSpacing)
-        )
+        ) {
+            Text(
+                text = stringResource(id = R.string.apply)
+            )
+        }
     }
 }
 
@@ -76,9 +69,9 @@ fun FilterContent(
                     if (group.groupId is FilterId.CollectionTypeId.Static.Availability) {
                         Text(
                             text = selectedCountry,
-                            style = MaterialTheme.typography.caption,
+                            style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier
-                                .border(1.dp, color = MaterialTheme.colors.onBackground)
+                                .border(1.dp, color = MaterialTheme.colorScheme.onBackground)
                                 .padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
@@ -144,8 +137,8 @@ private fun FilterGroupItem(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.h6,
-                color = MaterialTheme.colors.onSurface,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
             )
             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -155,8 +148,8 @@ private fun FilterGroupItem(
         content()
         Spacer(modifier = Modifier.height(16.dp))
         if (showDivider) {
-            Divider(
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.37f),
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.37f),
                 thickness = 0.5.dp
             )
         }
@@ -164,7 +157,7 @@ private fun FilterGroupItem(
 }
 
 private val ApplyButtonVerticalSpacing = 16.dp
-private val ApplyButtonHeight = 72.dp
+private val ApplyButtonHeight = 56.dp
 
 private fun <T : DiscoverOption.OptionScope> buildDiscoverConfig(
     filterGroups: List<FilterGroup>,

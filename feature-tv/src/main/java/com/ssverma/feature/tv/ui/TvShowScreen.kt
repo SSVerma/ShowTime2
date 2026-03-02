@@ -1,14 +1,17 @@
 package com.ssverma.feature.tv.ui
 
-import MediaItem
-import ScoreIndicator
-import ValueIndicator
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,6 +27,9 @@ import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.ScoreIndicator
+import com.ssverma.shared.ui.component.ValueIndicator
 
 @Composable
 fun TvShowScreen(
@@ -52,12 +58,9 @@ private fun TvShowContent(
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
-            Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
             HomePageAppBar(
-                backgroundColor = MaterialTheme.colors.background,
                 onSearchIconPressed = onSearchIconPressed,
-                onAccountIconPressed = onAccountIconPressed,
-                elevation = 0.dp
+                onAccountIconPressed = onAccountIconPressed
             )
             Spacer(modifier = Modifier.height(DefaultTvShowSectionSpacing / 2))
         }

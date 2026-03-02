@@ -2,11 +2,10 @@ package com.ssverma.feature.auth.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,6 +22,8 @@ import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.feature.auth.R
 import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.shared.domain.failure.Failure
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 
 @Composable
 internal fun AuthScreen(
@@ -46,7 +47,7 @@ internal fun AuthScreen(
     ) {
         if (authUiState.authState is AuthState.Unauthorized) {
             IconButton(onClick = onBackPressed) {
-                Icon(imageVector = AppIcons.Close, contentDescription = null)
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
             }
         }
 
