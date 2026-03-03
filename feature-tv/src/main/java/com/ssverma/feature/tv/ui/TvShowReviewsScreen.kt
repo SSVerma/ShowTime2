@@ -2,6 +2,7 @@ package com.ssverma.feature.tv.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -10,6 +11,7 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.ui.component.ReviewsList
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TvShowReviewsScreen(
     viewModel: TvShowReviewsViewModel,

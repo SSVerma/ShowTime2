@@ -7,6 +7,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -15,6 +16,7 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.ui.component.ImageShotItem
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImagePagerScreen(
     imageShots: List<ImageShot>,

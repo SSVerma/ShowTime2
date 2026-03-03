@@ -99,9 +99,11 @@ fun <T : Any> PagedListIndexed(
             is LoadState.NotLoading -> {
                 /*Need not to show anything*/
             }
+
             is LoadState.Loading -> {
                 item { pagingLoadingIndicator() }
             }
+
             is LoadState.Error -> {
                 item { DefaultPagingErrorIndicator(onRetry = { pagingItems.retry() }) }
             }
@@ -116,6 +118,10 @@ fun <T : Any> PagedGrid(
     modifier: Modifier = Modifier,
     cells: GridCells = GridCells.Fixed(count = 2),
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
     pagingErrorIndicator: @Composable (pagingItems: LazyPagingItems<T>) -> Unit = { DefaultPagingErrorIndicator { it.retry() } },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
@@ -126,6 +132,8 @@ fun <T : Any> PagedGrid(
         modifier = modifier,
         cells = cells,
         contentPadding = contentPadding,
+        verticalArrangement = verticalArrangement,
+        horizontalArrangement = horizontalArrangement,
         pagingLoadingIndicator = pagingLoadingIndicator,
         pagingErrorIndicator = pagingErrorIndicator,
         placeholderItemContent = placeholderItemContent
@@ -141,6 +149,10 @@ fun <T : Any> PagedGridIndexed(
     modifier: Modifier = Modifier,
     cells: GridCells = GridCells.Fixed(count = 2),
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
     pagingErrorIndicator: @Composable (pagingItems: LazyPagingItems<T>) -> Unit = { DefaultPagingErrorIndicator { it.retry() } },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
@@ -149,6 +161,8 @@ fun <T : Any> PagedGridIndexed(
     LazyVerticalGrid(
         columns = cells,
         contentPadding = contentPadding,
+        verticalArrangement = verticalArrangement,
+        horizontalArrangement = horizontalArrangement,
         modifier = modifier
     ) {
         items(pagingItems.itemCount) { index ->
@@ -165,9 +179,11 @@ fun <T : Any> PagedGridIndexed(
             is LoadState.NotLoading -> {
                 /*Need not to show anything*/
             }
+
             is LoadState.Loading -> {
                 item { pagingLoadingIndicator() }
             }
+
             is LoadState.Error -> {
                 item { pagingErrorIndicator(pagingItems) }
             }
@@ -189,9 +205,11 @@ fun <T : Any> PagedContent(
                 content(pagingItems)
             }
         }
+
         is LoadState.Loading -> {
             ScreenLoadingIndicator()
         }
+
         is LoadState.Error -> {
             ScreenErrorIndicator(
                 errorMessage = stringResource(id = R.string.something_went_wrong),

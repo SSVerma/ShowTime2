@@ -1,0 +1,16 @@
+package com.ssverma.feature.movie.ui.home
+
+import com.ssverma.core.ui.UiState
+import com.ssverma.feature.movie.domain.failure.MovieFailure
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.movie.MoviePreview
+
+data class HomeUiState(
+    val trendingMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
+    val topRatedMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
+    val popularMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
+    val inCinemasMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
+    val upcomingMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
+    val genres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Idle
+)

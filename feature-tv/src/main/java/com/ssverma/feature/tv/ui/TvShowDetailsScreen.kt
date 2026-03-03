@@ -54,7 +54,7 @@ import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
-import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.media.MediaItem
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.OverviewSection

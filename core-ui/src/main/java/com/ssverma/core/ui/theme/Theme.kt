@@ -28,7 +28,8 @@ fun ShowTimeTheme(
     val images = if (darkTheme) DarkImages else LightImages
 
     CompositionLocalProvider(
-        LocalImages provides images
+        LocalImages provides images,
+        LocalSpacing provides Spacing(),
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

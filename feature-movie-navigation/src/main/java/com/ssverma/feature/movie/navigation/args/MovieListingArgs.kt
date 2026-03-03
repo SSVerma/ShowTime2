@@ -16,6 +16,7 @@ data class MovieListingArgs(
 ) : Parcelable
 
 object MovieListingAvailableTypes {
+    const val Default = 0
     const val TrendingToday = 1
     const val Popular = 2
     const val TopRated = 3
@@ -26,6 +27,7 @@ object MovieListingAvailableTypes {
 }
 
 @IntDef(
+    MovieListingAvailableTypes.Default,
     MovieListingAvailableTypes.TrendingToday,
     MovieListingAvailableTypes.Popular,
     MovieListingAvailableTypes.TopRated,

@@ -50,7 +50,7 @@ import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.shared.domain.model.person.PersonMedia
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.HomePageAppBar
-import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.media.MediaItem
 
 @Composable
 fun PersonScreen(

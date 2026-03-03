@@ -32,9 +32,9 @@ import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.navigation.args.TvShowListingType
 import com.ssverma.shared.domain.model.tv.TvShow
-import com.ssverma.shared.ui.component.MediaItem
-import com.ssverma.shared.ui.component.ScoreIndicator
-import com.ssverma.shared.ui.component.ValueIndicator
+import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.shared.ui.component.media.ScoreBadge
+import com.ssverma.shared.ui.component.media.ValueIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -185,7 +185,7 @@ private fun Indicator(type: Int, tvShow: TvShow) {
         }
 
         TvShowListingAvailableTypes.TopRated -> {
-            ScoreIndicator(score = tvShow.voteAvgPercentage)
+            ScoreBadge(score = tvShow.voteAvgPercentage)
         }
 
         TvShowListingAvailableTypes.Upcoming -> {

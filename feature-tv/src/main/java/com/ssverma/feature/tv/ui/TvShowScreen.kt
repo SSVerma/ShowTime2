@@ -27,9 +27,9 @@ import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.HomePageAppBar
-import com.ssverma.shared.ui.component.MediaItem
-import com.ssverma.shared.ui.component.ScoreIndicator
-import com.ssverma.shared.ui.component.ValueIndicator
+import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.shared.ui.component.media.ScoreBadge
+import com.ssverma.shared.ui.component.media.ValueIndicator
 
 @Composable
 fun TvShowScreen(
@@ -174,7 +174,7 @@ private fun TvShowContent(
                 MediaItem(
                     title = it.title,
                     posterImageUrl = it.posterImageUrl,
-                    indicator = { ScoreIndicator(score = it.voteAvgPercentage) },
+                    indicator = { ScoreBadge(score = it.voteAvgPercentage) },
                     onClick = { openTvShowDetails(it.id) }
                 )
             }

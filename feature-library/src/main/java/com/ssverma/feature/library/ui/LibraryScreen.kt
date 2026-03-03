@@ -38,7 +38,7 @@ import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.ui.component.HomePageAppBar
-import com.ssverma.shared.ui.component.MediaItem
+import com.ssverma.shared.ui.component.media.MediaItem
 import kotlinx.coroutines.launch
 
 @Composable

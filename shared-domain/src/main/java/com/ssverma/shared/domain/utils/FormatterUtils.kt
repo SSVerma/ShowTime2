@@ -22,3 +22,13 @@ object FormatterUtils {
         return df.format(number).toDoubleOrNull() ?: 0f.toDouble()
     }
 }
+
+fun formatPopularity(popularity: Float): String {
+    val popInt = popularity.toInt()
+    return when {
+        popInt >= 1_000_000 -> "${popInt / 1_000_000}M+"
+        popInt >= 1_000 -> "${popInt / 1_000}K+"
+        popInt >= 100 -> "${(popInt / 100) * 100}+" // Rounds 511 down to 500+
+        else -> popInt.toString()
+    }
+}
