@@ -15,9 +15,11 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -45,14 +47,14 @@ fun DiscoverySection(
     popularMoviesState: MoviePreviewUiState,
     topRatedMoviesState: MoviePreviewUiState,
     upcomingMoviesState: MoviePreviewUiState,
-    onRetryPopular: () -> Unit,
-    onRetryTopRated: () -> Unit,
-    onRetryUpcoming: () -> Unit,
+    onFetchPopular: () -> Unit,
+    onFetchTopRated: () -> Unit,
+    onFetchUpcoming: () -> Unit,
     onMovieClicked: (Int) -> Unit,
     onSeeAllClicked: (MovieListingArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
     val categories = remember(popularMoviesState, topRatedMoviesState, upcomingMoviesState) {
         listOf(
@@ -74,7 +76,15 @@ fun DiscoverySection(
         )
     }
 
-    Column(modifier = modifier.padding(top = MaterialTheme.spacing.medium)) {
+    LaunchedEffect(selectedTabIndex) {
+        when (categories[selectedTabIndex].type) {
+            MovieListingAvailableTypes.Popular -> onFetchPopular()
+            MovieListingAvailableTypes.TopRated -> onFetchTopRated()
+            MovieListingAvailableTypes.Upcoming -> onFetchUpcoming()
+        }
+    }
+
+    Column(modifier = modifier) {
         SectionHeader(
             modifier = Modifier.padding(start = MaterialTheme.spacing.large),
             title = stringResource(R.string.discover),
@@ -119,9 +129,9 @@ fun DiscoverySection(
                 loading = { DiscoveryLoadingPlaceholder() },
                 onRetry = {
                     when (category.type) {
-                        MovieListingAvailableTypes.Popular -> onRetryPopular()
-                        MovieListingAvailableTypes.TopRated -> onRetryTopRated()
-                        MovieListingAvailableTypes.Upcoming -> onRetryUpcoming()
+                        MovieListingAvailableTypes.Popular -> onFetchPopular()
+                        MovieListingAvailableTypes.TopRated -> onFetchTopRated()
+                        MovieListingAvailableTypes.Upcoming -> onFetchUpcoming()
                     }
                 }
             ) { movies ->

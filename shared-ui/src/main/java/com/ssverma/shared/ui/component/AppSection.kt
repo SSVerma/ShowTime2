@@ -2,7 +2,6 @@ package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -27,7 +26,7 @@ fun <T, FF> AppSection(
     content: @Composable (T) -> Unit
 ) {
     Section(
-        modifier = modifier.padding(top = 32.dp),
+        modifier = modifier,
         sectionHeader = {
             SectionHeader(
                 modifier = Modifier.padding(start = 16.dp),

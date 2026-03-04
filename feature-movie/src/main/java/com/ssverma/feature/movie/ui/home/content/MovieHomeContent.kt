@@ -57,7 +57,8 @@ fun MovieHomeContent(
                         )
                     )
                 },
-                onRetry = { viewModel.fetchMovieGenres() }
+                onRetry = { viewModel.fetchMovieGenres() },
+                modifier = Modifier.padding(top = MaterialTheme.spacing.large)
             )
         }
 
@@ -68,9 +69,10 @@ fun MovieHomeContent(
                 upcomingMoviesState = uiState.upcomingMovies,
                 onMovieClicked = openMovieDetails,
                 onSeeAllClicked = openMovieList,
-                onRetryPopular = { viewModel.fetchPopularMovies() },
-                onRetryTopRated = { viewModel.fetchTopRatedMovies() },
-                onRetryUpcoming = { viewModel.fetchUpcomingMovies() }
+                onFetchPopular = { viewModel.fetchPopularMovies() },
+                onFetchTopRated = { viewModel.fetchTopRatedMovies() },
+                onFetchUpcoming = { viewModel.fetchUpcomingMovies() },
+                modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
 
@@ -89,6 +91,7 @@ fun MovieHomeContent(
                 },
                 onRetry = { viewModel.fetchInCinemaMovies() },
                 loadingPlaceholder = { MediaListItemShimmer() },
+                modifier = Modifier.padding(top = MaterialTheme.spacing.medium),
             ) { moviePreview ->
                 MovieListItem(
                     movie = moviePreview,

@@ -16,7 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.CarouselState
-import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
+import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +35,12 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.theme.spacing
 
+object CarouselDefaults {
+    val HeroMaxItemWidth = Dp.Unspecified
+    val HeroItemHeight = 200.dp
+    val SmallItemMaskWidth = 56.dp
+}
+
 /**
  * Stateful version: Handles Loading/Error states via DriveCompose.
  */
@@ -45,10 +51,10 @@ fun <T, FF> AppHeroCarousel(
     carouselState: CarouselState,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    itemWidth: Dp = 320.dp,
-    itemHeight: Dp = 200.dp,
-    itemSpacing: Dp = MaterialTheme.spacing.medium, // 12.dp
-    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large), // 16.dp
+    maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
+    itemHeight: Dp = CarouselDefaults.HeroItemHeight,
+    itemSpacing: Dp = MaterialTheme.spacing.medium,
+    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
     imageUrl: (T) -> String,
     title: (T) -> String,
     onItemClick: (T) -> Unit
@@ -56,30 +62,52 @@ fun <T, FF> AppHeroCarousel(
     DriveCompose(
         uiState = uiState,
         loading = {
+            // Shimmer exactly mimics the Centered Hero Spec: [Small] - [Large] - [Small]
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(contentPadding),
-                horizontalArrangement = Arrangement.spacedBy(itemSpacing)
+                horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(2) {
-                    ShimmerPlaceholder(
-                        modifier = Modifier
-                            .height(itemHeight)
-                            .width(itemWidth),
-                        shape = MaterialTheme.shapes.extraLarge
-                    )
+                // Left Small Mask
+                ShimmerPlaceholder(
+                    modifier = Modifier
+                        .height(itemHeight)
+                        .width(CarouselDefaults.SmallItemMaskWidth),
+                    shape = MaterialTheme.shapes.extraLarge
+                )
+
+                // Center Large Item (Takes up remaining space just like Dp.Unspecified)
+                val centerModifier = if (maxItemWidth == Dp.Unspecified) {
+                    Modifier.weight(1f)
+                } else {
+                    Modifier.width(maxItemWidth)
                 }
+
+                ShimmerPlaceholder(
+                    modifier = Modifier
+                        .height(itemHeight)
+                        .then(centerModifier),
+                    shape = MaterialTheme.shapes.extraLarge
+                )
+
+                // Right Small Mask
+                ShimmerPlaceholder(
+                    modifier = Modifier
+                        .height(itemHeight)
+                        .width(CarouselDefaults.SmallItemMaskWidth),
+                    shape = MaterialTheme.shapes.extraLarge
+                )
             }
         },
         onRetry = onRetry
     ) { items ->
-        // Calls the stateless overload below
         AppHeroCarousel(
             items = items,
             carouselState = carouselState,
             modifier = modifier,
-            itemWidth = itemWidth,
+            maxItemWidth = maxItemWidth,
             itemHeight = itemHeight,
             itemSpacing = itemSpacing,
             contentPadding = contentPadding,
@@ -92,7 +120,7 @@ fun <T, FF> AppHeroCarousel(
 
 /**
  * Stateless version: Purely for rendering a list of items.
- * Used for better decoupling in HeroSection.
+ * Uses HorizontalCenteredHeroCarousel for the official M3 Hero Spec.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,8 +128,8 @@ fun <T> AppHeroCarousel(
     items: List<T>,
     carouselState: CarouselState,
     modifier: Modifier = Modifier,
-    itemWidth: Dp = 320.dp,
-    itemHeight: Dp = 200.dp,
+    maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
+    itemHeight: Dp = CarouselDefaults.HeroItemHeight,
     itemSpacing: Dp = MaterialTheme.spacing.medium,
     contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
     itemShape: Shape = MaterialTheme.shapes.extraLarge,
@@ -112,20 +140,20 @@ fun <T> AppHeroCarousel(
     title: (T) -> String,
     onItemClick: (T) -> Unit
 ) {
-
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(itemHeight)
     ) {
-        HorizontalUncontainedCarousel(
+        HorizontalCenteredHeroCarousel(
             state = carouselState,
-            itemWidth = itemWidth,
+            maxItemWidth = maxItemWidth,
             itemSpacing = itemSpacing,
             contentPadding = contentPadding,
             modifier = Modifier.fillMaxSize()
         ) { index ->
             val item = items[index]
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()

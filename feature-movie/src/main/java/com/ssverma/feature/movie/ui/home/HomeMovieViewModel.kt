@@ -41,9 +41,6 @@ class HomeMovieViewModel @Inject constructor(
         fetchMovieGenres()
         fetchTrendingMovies()
         fetchInCinemaMovies()
-        fetchPopularMovies()
-        fetchTopRatedMovies()
-        fetchUpcomingMovies()
     }
 
     fun fetchMovieGenres() = viewModelScope.launch {
@@ -78,39 +75,54 @@ class HomeMovieViewModel @Inject constructor(
         }
     }
 
-    fun fetchPopularMovies() = viewModelScope.launch {
-        _uiState.update { it.copy(popularMovies = UiState.Loading) }
-        when (val result = popularMoviesUseCase()) {
-            is Result.Success -> {
-                val previews = result.data.map { it.asMoviePreview() }
-                _uiState.update { it.copy(popularMovies = UiState.Success(previews)) }
-            }
+    fun fetchPopularMovies() {
+        val currentState = _uiState.value.popularMovies
+        if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-            is Result.Error -> _uiState.update { it.copy(popularMovies = UiState.Error(result.error)) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(popularMovies = UiState.Loading) }
+            when (val result = popularMoviesUseCase()) {
+                is Result.Success -> {
+                    val previews = result.data.map { it.asMoviePreview() }
+                    _uiState.update { it.copy(popularMovies = UiState.Success(previews)) }
+                }
+
+                is Result.Error -> _uiState.update { it.copy(popularMovies = UiState.Error(result.error)) }
+            }
         }
     }
 
-    fun fetchTopRatedMovies() = viewModelScope.launch {
-        _uiState.update { it.copy(topRatedMovies = UiState.Loading) }
-        when (val result = topRatedMoviesUseCase()) {
-            is Result.Success -> {
-                val previews = result.data.map { it.asMoviePreview() }
-                _uiState.update { it.copy(topRatedMovies = UiState.Success(previews)) }
-            }
+    fun fetchTopRatedMovies() {
+        val currentState = _uiState.value.topRatedMovies
+        if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-            is Result.Error -> _uiState.update { it.copy(topRatedMovies = UiState.Error(result.error)) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(topRatedMovies = UiState.Loading) }
+            when (val result = topRatedMoviesUseCase()) {
+                is Result.Success -> {
+                    val previews = result.data.map { it.asMoviePreview() }
+                    _uiState.update { it.copy(topRatedMovies = UiState.Success(previews)) }
+                }
+
+                is Result.Error -> _uiState.update { it.copy(topRatedMovies = UiState.Error(result.error)) }
+            }
         }
     }
 
-    fun fetchUpcomingMovies() = viewModelScope.launch {
-        _uiState.update { it.copy(upcomingMovies = UiState.Loading) }
-        when (val result = upcomingMoviesUseCase()) {
-            is Result.Success -> {
-                val previews = result.data.map { it.asMoviePreview() }
-                _uiState.update { it.copy(upcomingMovies = UiState.Success(previews)) }
-            }
+    fun fetchUpcomingMovies() {
+        val currentState = _uiState.value.upcomingMovies
+        if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-            is Result.Error -> _uiState.update { it.copy(upcomingMovies = UiState.Error(result.error)) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(upcomingMovies = UiState.Loading) }
+            when (val result = upcomingMoviesUseCase()) {
+                is Result.Success -> {
+                    val previews = result.data.map { it.asMoviePreview() }
+                    _uiState.update { it.copy(upcomingMovies = UiState.Success(previews)) }
+                }
+
+                is Result.Error -> _uiState.update { it.copy(upcomingMovies = UiState.Error(result.error)) }
+            }
         }
     }
 }
