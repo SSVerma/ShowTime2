@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 
 @Composable
@@ -20,10 +19,12 @@ fun ShimmerPlaceholder(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium
 ) {
+    val baseColor = MaterialTheme.colorScheme.onSurface
+
     val shimmerColors = listOf(
-        Color.LightGray.copy(alpha = 0.3f),
-        Color.LightGray.copy(alpha = 0.5f),
-        Color.LightGray.copy(alpha = 0.3f),
+        baseColor.copy(alpha = 0.08f),
+        baseColor.copy(alpha = 0.16f),
+        baseColor.copy(alpha = 0.08f),
     )
 
     val transition = rememberInfiniteTransition(label = "shimmer")
@@ -44,7 +45,6 @@ fun ShimmerPlaceholder(
     )
 
     Spacer(
-        modifier = modifier
-            .background(brush = brush, shape = shape)
+        modifier = modifier.background(brush = brush, shape = shape)
     )
 }

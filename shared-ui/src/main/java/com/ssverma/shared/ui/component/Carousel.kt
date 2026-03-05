@@ -175,7 +175,20 @@ fun <T> AppHeroCarousel(
                     url = imageUrl(item),
                     contentDescription = title(item),
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    loadingPlaceholder = {
+                        ShimmerPlaceholder(
+                            modifier = Modifier.fillMaxSize(),
+                            shape = itemShape
+                        )
+                    },
+                    errorPlaceholder = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                    }
                 )
 
                 // Info Overlay
