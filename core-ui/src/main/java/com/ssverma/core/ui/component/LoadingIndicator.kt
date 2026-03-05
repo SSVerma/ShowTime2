@@ -1,21 +1,12 @@
 package com.ssverma.core.ui.component
 
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ShowTimeLoadingIndicator(modifier: Modifier = Modifier) {
-    CircularProgressIndicator(
-        strokeWidth = ShowTimeLoadingIndicatorDefaults.StrokeWidth,
-        modifier = modifier
-            .size(ShowTimeLoadingIndicatorDefaults.Size)
-    )
-}
-
-object ShowTimeLoadingIndicatorDefaults {
-    val Size = 24.dp
-    val StrokeWidth = 2.dp
+    LoadingIndicator(modifier = modifier)
 }

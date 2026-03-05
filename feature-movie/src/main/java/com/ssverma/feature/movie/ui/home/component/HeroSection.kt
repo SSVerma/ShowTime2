@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,12 +26,14 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.core.ui.DriveCompose
+import com.ssverma.core.ui.DefaultCoreErrorIndicator
+import com.ssverma.core.ui.StatefulContent
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.domain.failure.MovieFailure
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
@@ -49,19 +52,27 @@ fun HeroSection(
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
     contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large)
 ) {
-    DriveCompose(
-        uiState = trendingMoviesState,
+    StatefulContent(
+        state = trendingMoviesState,
+        modifier = modifier,
         loading = {
             HeroShimmerPlaceholder(
                 maxItemWidth = maxItemWidth,
                 itemHeight = itemHeight,
                 contentPadding = contentPadding,
                 onSearchClicked = onSearchClicked,
-                onAccountClicked = onAccountClicked,
-                modifier = modifier
+                onAccountClicked = onAccountClicked
             )
         },
-        onRetry = onRetry
+        coreErrorContent = { failure ->
+            HeroErrorPlaceholder(
+                failure = failure,
+                onRetry = onRetry,
+                itemHeight = itemHeight,
+                onSearchClicked = onSearchClicked,
+                onAccountClicked = onAccountClicked
+            )
+        }
     ) { movies ->
         val carouselState = rememberCarouselState { movies.size }
 
@@ -181,6 +192,43 @@ private fun HeroShimmerPlaceholder(
                     shape = MaterialTheme.shapes.extraLarge
                 )
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HeroErrorPlaceholder(
+    failure: Failure.CoreFailure,
+    onRetry: () -> Unit,
+    itemHeight: Dp,
+    onSearchClicked: () -> Unit,
+    onAccountClicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            HomePageAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                onSearchIconPressed = onSearchClicked,
+                onAccountIconPressed = onAccountClicked
+            )
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            DefaultCoreErrorIndicator(
+                failure = failure,
+                onRetry = onRetry,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = itemHeight)
+            )
         }
     }
 }

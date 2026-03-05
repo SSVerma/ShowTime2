@@ -52,6 +52,7 @@ dependencies {
     api(libs.compose.material3)
     api(libs.compose.tooling)
     api(libs.compose.material.icons.core)
+    api(libs.compose.material.icons.extended)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

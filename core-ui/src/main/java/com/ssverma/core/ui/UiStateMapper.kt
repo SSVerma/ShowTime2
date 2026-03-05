@@ -1,14 +1,6 @@
 package com.ssverma.core.ui
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.shared.domain.failure.Failure
 
 @Composable
@@ -27,6 +19,7 @@ fun <S, FeatureFailure> DriveCompose(
         is UiState.Idle -> {
             idleContent()
         }
+
         is UiState.Error -> {
             when (val errorResult = uiState.failure) {
                 Failure.CoreFailure.NetworkFailure,
@@ -34,45 +27,19 @@ fun <S, FeatureFailure> DriveCompose(
                 Failure.CoreFailure.UnexpectedFailure -> {
                     coreErrorContent(errorResult as Failure.CoreFailure)
                 }
+
                 is Failure.FeatureFailure -> {
                     featureErrorContent(errorResult)
                 }
             }
         }
+
         UiState.Loading -> {
             loading()
         }
+
         is UiState.Success -> {
             content(uiState.data)
-        }
-    }
-}
-
-@Composable
-fun DefaultLoadingIndicator(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize()) {
-        ShowTimeLoadingIndicator(modifier = Modifier.align(Alignment.Center))
-    }
-}
-
-@Composable
-fun DefaultCoreErrorIndicator(
-    failure: Failure.CoreFailure,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-
-    //TODO: use [error] to create separate screens based on the error context
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier.fillMaxSize()
-    ) {
-        Text(text = stringResource(id = R.string.something_went_wrong))
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedButton(onClick = onRetry) {
-            Text(text = stringResource(R.string.retry))
         }
     }
 }

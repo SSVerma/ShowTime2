@@ -8,8 +8,9 @@
     <string name="redirecting">Redirecting…</string>
     <string name="authorizing">Authorizing</string>
     <string name="approval_rejection_info">Please approve request on TMDB in order to complete login process.</string>
-    <string name="something_went_wrong">Something went wrong</string>
-    <string name="network_error">No internet. Please check and retry.</string>
+    <string name="something_went_wrong">Plot twist! Something went wrong behind the scenes.</string>
+    <string name="network_error">Lost connection to the box office. Please check your Wi-Fi.</string>
+    <string name="service_error">Intermission! Our servers are currently taking a quick break.</string>
     <string name="retry">Retry</string>
     <string name="no_session">We were not able to complete login process due to some technical
         issue. Please complete login process now.</string>

@@ -11,7 +11,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,11 +30,10 @@ fun MediaPoster(
     onOverflowIconClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
-    Surface(
+    OutlinedCard(
         modifier = modifier,
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
-        shadowElevation = 4.dp
     ) {
         Box {
             NetworkImage(

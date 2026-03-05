@@ -22,7 +22,7 @@ fun MoviesListContent(
 ) {
     PagedList(
         pagingItems = moviePagingItems,
-        contentPadding = PaddingValues(MaterialTheme.spacing.small),
+        contentPadding = PaddingValues(MaterialTheme.spacing.medium),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
         modifier = modifier
     ) { movie ->

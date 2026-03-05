@@ -19,6 +19,7 @@ fun <S, FeatureFailure> Result<S, Failure<FeatureFailure>>.asSuccessOrErrorUiSta
         is Result.Error -> {
             UiState.Error(this.error)
         }
+
         is Result.Success -> {
             UiState.Success(data = this.data)
         }

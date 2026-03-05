@@ -37,7 +37,7 @@ ksp = "2.2.0-2.0.2"
 retrofit = "3.0.0"
 okhttpLogging = "5.1.0"
 
-material3 = "1.4.0"
+material3 = "1.5.0-alpha15"
 
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core" }
