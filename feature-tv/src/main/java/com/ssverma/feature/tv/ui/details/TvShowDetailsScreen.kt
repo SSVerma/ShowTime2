@@ -27,6 +27,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -367,7 +368,7 @@ private fun SeasonsSection(
     onSeasonClick: (season: TvSeason) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var seasonCount by remember {
+    var seasonCount by rememberSaveable {
         mutableIntStateOf(if (seasons.size < 3) seasons.size else 3)
     }
 

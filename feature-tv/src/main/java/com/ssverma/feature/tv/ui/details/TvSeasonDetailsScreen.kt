@@ -1,6 +1,7 @@
 package com.ssverma.feature.tv.ui.details
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -52,6 +54,8 @@ import com.ssverma.shared.ui.bottomsheet.rememberImageShotBottomSheetState
 import com.ssverma.shared.ui.component.BackdropNavigationAction
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.media.DateBadge
+import com.ssverma.shared.ui.component.media.ScoreBadge
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
@@ -198,7 +202,7 @@ private fun TvSeasonContent(
                 tvEpisode = it,
                 onClick = { onEpisodeClick(it) },
                 modifier = Modifier
-                    .padding(top = 8.dp)
+                    .padding(vertical = 6.dp)
                     .padding(horizontal = 16.dp)
             )
         }
@@ -261,7 +265,11 @@ fun TvEpisodeItem(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        shape = MaterialTheme.shapes.medium
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -271,31 +279,42 @@ fun TvEpisodeItem(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .padding(start = 16.dp)
-                    .width(72.dp)
-                    .aspectRatio(TmdbPosterAspectRatio)
-                    .clip(MaterialTheme.shapes.medium.copy(CornerSize(8.dp)))
+                    .width(110.dp)
+                    .aspectRatio(TmdbBackdropAspectRatio)
+                    .clip(MaterialTheme.shapes.medium)
             )
 
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = tvEpisode.title, style = MaterialTheme.typography.titleMedium)
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .weight(1f)
+            ) {
                 Text(
-                    text = tvEpisode.displayAirDate.orEmpty(),
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 4.dp)
+                    text = "${tvEpisode.episodeNumber}. ${tvEpisode.title}",
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = stringResource(id = R.string.rating_n, tvEpisode.voteAvg),
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+
+                Row(
+                    modifier = Modifier.padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    tvEpisode.displayAirDate?.let {
+                        DateBadge(dateText = it)
+                    }
+                    ScoreBadge(score = (tvEpisode.voteAvg * 10))
+                }
+
                 Text(
                     text = tvEpisode.overview,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
-                    fontStyle = FontStyle.Italic,
+                    fontStyle = FontStyle.Normal,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
