@@ -1,16 +1,20 @@
 package com.ssverma.shared.ui.bottomsheet
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.ssverma.shared.domain.model.ImageShot
 import kotlinx.coroutines.launch
 
@@ -30,46 +34,43 @@ fun ImageShotBottomSheet(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    BottomSheetScaffold(
-        scaffoldState = sheetState.bottomSheetScaffoldState,
-        sheetContent = {
-            ImageSheetContent(
-                imageShots = imageShots,
-                sheetContentType = sheetState.sheetContentType,
-                sheetVisible = sheetState.expended(),
-                openImagePager = { pageIndex ->
-                    coroutineScope.launch {
-                        sheetState.show(SheetContentType.ImagePager(pageIndex))
+    Box(modifier = modifier.fillMaxSize()) {
+        content(PaddingValues())
+
+        if (sheetState.isVisible) {
+            ModalBottomSheet(
+                onDismissRequest = { sheetState.hide() },
+                sheetState = sheetState.modalBottomSheetState,
+                containerColor = MaterialTheme.colorScheme.background,
+                dragHandle = null,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                ImageSheetContent(
+                    imageShots = imageShots,
+                    sheetContentType = sheetState.sheetContentType,
+                    openImagePager = { pageIndex ->
+                        coroutineScope.launch {
+                            sheetState.show(SheetContentType.ImagePager(pageIndex))
+                        }
+                    },
+                    onBackPress = {
+                        coroutineScope.launch {
+                            sheetState.showPreviousOrCollapse()
+                        }
                     }
-                },
-                onBackPress = {
-                    coroutineScope.launch {
-                        sheetState.showPreviousOrCollapse()
-                    }
-                }
-            )
-        },
-        sheetPeekHeight = 0.dp,
-        sheetContainerColor = MaterialTheme.colorScheme.background,
-        modifier = modifier.fillMaxSize(),
-        content = content
-    )
+                )
+            }
+        }
+    }
 }
 
 @Composable
 private fun ImageSheetContent(
     imageShots: List<ImageShot>,
     sheetContentType: SheetContentType,
-    sheetVisible: Boolean,
     openImagePager: (pageIndex: Int) -> Unit,
     onBackPress: () -> Unit
 ) {
-
-    if (sheetVisible) {
-        BackHandler {
-            onBackPress()
-        }
-    }
     when (sheetContentType) {
         SheetContentType.ImageList -> {
             ImageShotsListScreen(
@@ -83,6 +84,7 @@ private fun ImageSheetContent(
                 modifier = Modifier.fillMaxSize()
             )
         }
+
         is SheetContentType.ImagePager -> {
             ImagePagerContent(
                 imageShots = imageShots,
@@ -92,55 +94,46 @@ private fun ImageSheetContent(
                 }
             )
         }
+
         SheetContentType.None -> {
-            //Workaround to prevent no associated anchor exception
-            Box(
-                modifier = Modifier
-                    .height(1.dp)
-                    .background(color = Color.Transparent)
-            )
+            /* no-op */
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun rememberImageShotBottomSheetState(
-    bottomSheetScaffoldState: BottomSheetScaffoldState
-): ImageShotBottomSheetState {
-    return remember {
-        ImageShotBottomSheetState(
-            bottomSheetScaffoldState = bottomSheetScaffoldState
-        )
+fun rememberImageShotBottomSheetState(): ImageShotBottomSheetState {
+    val modalBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    return remember(modalBottomSheetState) {
+        ImageShotBottomSheetState(modalBottomSheetState)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 class ImageShotBottomSheetState(
-    val bottomSheetScaffoldState: BottomSheetScaffoldState
+    val modalBottomSheetState: SheetState
 ) {
     var sheetContentType by mutableStateOf<SheetContentType>(SheetContentType.None)
         private set
 
+    var isVisible by mutableStateOf(false)
+        private set
+
     suspend fun show(contentType: SheetContentType) {
         sheetContentType = contentType
-
-        if (bottomSheetScaffoldState.bottomSheetState.currentValue != SheetValue.Expanded) {
-            bottomSheetScaffoldState.bottomSheetState.expand()
-        }
+        isVisible = true
+        modalBottomSheetState.show()
     }
 
-    suspend fun collapse() {
-        bottomSheetScaffoldState.bottomSheetState.partialExpand()
+    fun hide() {
+        isVisible = false
+        sheetContentType = SheetContentType.None
     }
 
     suspend fun showPreviousOrCollapse() {
-        // TODO: show last destination, update with navigation graph
-        collapse()
+        // For now, just collapse. This can be enhanced to handle history.
+        modalBottomSheetState.hide()
+        hide()
     }
-
-    fun expended(): Boolean {
-        return bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-    }
-
 }

@@ -14,11 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -53,16 +50,7 @@ fun TvEpisodeDetailsScreen(
     openPersonDetails: (personId: Int) -> Unit,
     viewModel: TvEpisodeDetailsViewModel = hiltViewModel()
 ) {
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            skipHiddenState = false
-        )
-    )
-    val imageSheetState = rememberImageShotBottomSheetState(
-        bottomSheetScaffoldState = bottomSheetScaffoldState
-    )
-
+    val imageSheetState = rememberImageShotBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
 
     val tvEpisodeUiState by viewModel.uiState.collectAsStateWithLifecycle()

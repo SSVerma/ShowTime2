@@ -58,7 +58,7 @@ fun PersonTimelineItem(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = media.displayReleaseDate ?: "N/A",
+                text = media.displayReleaseDate ?: stringResource(id = R.string.na),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center

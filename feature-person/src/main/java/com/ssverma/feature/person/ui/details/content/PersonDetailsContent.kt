@@ -132,7 +132,7 @@ fun PersonDetailsContent(
                 openImageShotsList = { openPersonAllImages(person.id) },
                 openImageShot = openImagePage,
                 maxImageShots = 6,
-                modifier = Modifier.padding(vertical = SectionVerticalSpacing)
+                modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
 
