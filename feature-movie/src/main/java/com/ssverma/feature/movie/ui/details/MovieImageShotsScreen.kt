@@ -15,10 +15,10 @@ fun MovieImageShotsScreen(
     openImagePager: (Int) -> Unit,
     viewModel: MovieDetailsViewModel = navController.destinationViewModel(destination = MovieDetailDestination)
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val imageShots by viewModel.imageShots.collectAsStateWithLifecycle()
 
     ImageShotsListScreen(
-        imageShots = uiState.imageShots,
+        imageShots = imageShots,
         onBackPressed = onBackPressed,
         openImagePager = openImagePager
     )

@@ -15,10 +15,10 @@ fun TvShowImagePagerScreen(
     onBackPressed: () -> Unit,
     viewModel: TvShowDetailsViewModel = navController.destinationViewModel(destination = TvShowDetailDestination)
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val imageShots by viewModel.imageShots.collectAsStateWithLifecycle()
 
     ImagePagerScreen(
-        imageShots = uiState.imageShots,
+        imageShots = imageShots,
         defaultPageIndex = defaultPageIndex,
         onBackPressed = onBackPressed
     )

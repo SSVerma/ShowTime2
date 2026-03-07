@@ -1,6 +1,5 @@
 package com.ssverma.feature.movie.ui.details
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -71,24 +70,19 @@ fun MovieDetailsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Surface(
-        color = MaterialTheme.colorScheme.background
-    ) {
+    Surface(color = MaterialTheme.colorScheme.background) {
         DriveCompose(
-            uiState = uiState.movieDetailsUiState,
-            onRetry = {
-                viewModel.fetchMovieDetails()
-            }
-        ) { movie ->
+            uiState = uiState,
+            onRetry = { viewModel.fetchMovieDetails() }
+        ) { data ->
             MovieContent(
-                movie = movie,
+                data = data,
                 viewModel = viewModel,
-                uiState = uiState,
                 onBackPressed = onBackPressed,
                 openMovieDetails = openMovieDetails,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
-                openReviewsList = { openReviewsList(movie.id) },
+                openReviewsList = { openReviewsList(data.movie.id) },
                 openYoutube = { videoId ->
                     viewModel.openYoutubeApp(videoId = videoId)
                 },
@@ -101,9 +95,8 @@ fun MovieDetailsScreen(
 
 @Composable
 fun MovieContent(
-    movie: Movie,
+    data: MovieDetailsData,
     viewModel: MovieDetailsViewModel,
-    uiState: MovieDetailsScreenUiState,
     onBackPressed: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openImageShotsList: () -> Unit,
@@ -114,7 +107,7 @@ fun MovieContent(
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
+    val movie = data.movie
     val context = LocalContext.current
 
     LazyColumn(
@@ -122,18 +115,13 @@ fun MovieContent(
             .fillMaxSize()
             .navigationBarsPadding()
     ) {
-
-        /*Backdrop*/
         item {
             BackdropHeader(
                 backdropImageUrl = movie.backdropImageUrl,
                 onCloseIconClick = onBackPressed,
                 onTrailerFabClick = { viewModel.onPlayTrailerClicked(movie) },
                 secondaryActions = {
-                    MediaStatsAction(
-                        mediaType = MediaType.Movie,
-                        mediaId = movie.id
-                    )
+                    MediaStatsAction(mediaType = MediaType.Movie, mediaId = movie.id)
                     FloatingActionButton(
                         onClick = {
                             val shareableText = ShareMediaUtils.buildShareableMediaText(
@@ -142,19 +130,20 @@ fun MovieContent(
                                 mediaOverview = movie.overview,
                                 appPackageName = context.packageName
                             )
-
                             context.dispatchShareTextIntent(text = shareableText)
                         },
                         containerColor = MaterialTheme.colorScheme.surface,
                         modifier = modifier.size(ActionSize)
                     ) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = null
+                        )
                     }
                 }
             )
         }
 
-        /*Title*/
         item {
             Text(
                 text = movie.title,
@@ -167,7 +156,6 @@ fun MovieContent(
             )
         }
 
-        /*Tagline*/
         movie.tagline?.let { tagline ->
             item {
                 Emphasize {
@@ -185,7 +173,6 @@ fun MovieContent(
             }
         }
 
-        /*Highlights*/
         item {
             Highlights(
                 highlights = remember(movie) { movie.highlightedItems() },
@@ -193,7 +180,6 @@ fun MovieContent(
             )
         }
 
-        /*Overview section*/
         item {
             OverviewSection(
                 overview = movie.overview,
@@ -203,7 +189,6 @@ fun MovieContent(
             )
         }
 
-        /*Genre*/
         item {
             HorizontalLazyList(
                 items = movie.generes,
@@ -225,7 +210,6 @@ fun MovieContent(
             }
         }
 
-        /*Cast*/
         item {
             CreditSection(
                 casts = movie.casts,
@@ -234,17 +218,15 @@ fun MovieContent(
             )
         }
 
-        /*Image shots*/
         item {
             ImageShotsSection(
-                imageShots = uiState.imageShots,
+                imageShots = data.imageShots,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
 
-        /*Video shots*/
         item {
             VideoShotsSection(
                 videos = movie.videos,
@@ -253,7 +235,6 @@ fun MovieContent(
             )
         }
 
-        /*Reviews*/
         item {
             ReviewsSection(
                 reviews = movie.reviews,
@@ -262,7 +243,6 @@ fun MovieContent(
             )
         }
 
-        /*Similar movies*/
         item {
             RelevantMoviesSection(
                 movies = movie.similarMovies,
@@ -272,7 +252,6 @@ fun MovieContent(
             )
         }
 
-        /*Recommendations*/
         item {
             RelevantMoviesSection(
                 movies = movie.recommendations,
@@ -282,7 +261,6 @@ fun MovieContent(
             )
         }
 
-        /*Keyword*/
         item {
             TagsSection(
                 keywords = movie.keywords,
@@ -299,18 +277,14 @@ fun MovieContent(
             )
         }
 
-        /*Bottom spacing*/
-        item {
-            Spacer(modifier = Modifier.height(48.dp))
-        }
+        item { Spacer(modifier = Modifier.height(48.dp)) }
     }
 }
-
 
 @Composable
 fun RelevantMoviesSection(
     movies: List<Movie>,
-    @StringRes sectionTitleRes: Int,
+    @androidx.annotation.StringRes sectionTitleRes: Int,
     openMovieDetails: (movieId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -328,9 +302,7 @@ fun RelevantMoviesSection(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
                 modifier = Modifier.width(100.dp),
-                onClick = {
-                    openMovieDetails(it.id)
-                }
+                onClick = { openMovieDetails(it.id) }
             )
         },
         hideIf = movies.isEmpty(),
@@ -358,11 +330,11 @@ private fun Movie.highlightedItems(): List<Highlight> {
         ),
         Highlight(
             labelRes = R.string.runtime,
-            value = if (runtime == 0) runtime.emptyIfAbsent() else DateUtils.formatMinutes(runtime)
+            value = if (runtime == 0) 0.emptyIfAbsent() else DateUtils.formatMinutes(runtime)
         ),
         Highlight(
             labelRes = R.string.revenue,
-            value = if (revenue == 0L) revenue.emptyIfAbsent() else "$$revenue"
+            value = if (revenue == 0L) 0.emptyIfAbsent() else "$$revenue"
         )
     )
 }

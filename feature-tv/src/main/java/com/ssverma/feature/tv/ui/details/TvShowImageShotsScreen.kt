@@ -15,10 +15,10 @@ fun TvShowImageShotsScreen(
     openImagePager: (Int) -> Unit,
     viewModel: TvShowDetailsViewModel = navController.destinationViewModel(destination = TvShowDetailDestination)
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val imageShots by viewModel.imageShots.collectAsStateWithLifecycle()
 
     ImageShotsListScreen(
-        imageShots = uiState.imageShots,
+        imageShots = imageShots,
         onBackPressed = onBackPressed,
         openImagePager = openImagePager
     )

@@ -6,25 +6,28 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
+import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
-import com.ssverma.feature.movie.ui.MovieDetailsUiState
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.movie.imageShots
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class MovieDetailsScreenUiState(
-    val movieDetailsUiState: MovieDetailsUiState = UiState.Idle,
-    val imageShots: List<ImageShot> = emptyList()
+data class MovieDetailsData(
+    val movie: Movie,
+    val imageShots: List<ImageShot>
 )
 
 @HiltViewModel
@@ -36,15 +39,23 @@ class MovieDetailsViewModel @Inject constructor(
 
     private val movieId = savedStateHandle.get<Int>(MovieDetailDestination.ArgMovieId) ?: 0
 
-    private val _uiState = MutableStateFlow(MovieDetailsScreenUiState())
-    val uiState: StateFlow<MovieDetailsScreenUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<UiState<MovieDetailsData, MovieFailure>>(UiState.Idle)
+    val uiState: StateFlow<UiState<MovieDetailsData, MovieFailure>> = _uiState.asStateFlow()
+
+    val imageShots: StateFlow<List<ImageShot>> = uiState
+        .map { (it as? UiState.Success)?.data?.imageShots ?: emptyList() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     init {
         fetchMovieDetails()
     }
 
     fun fetchMovieDetails() {
-        _uiState.update { it.copy(movieDetailsUiState = UiState.Loading) }
+        _uiState.update { UiState.Loading }
 
         val config = MovieDetailsConfig(movieId = movieId)
 
@@ -52,15 +63,13 @@ class MovieDetailsViewModel @Inject constructor(
             val result = movieDetailsUseCase(config)
             _uiState.update {
                 when (result) {
-                    is Result.Error -> {
-                        it.copy(movieDetailsUiState = UiState.Error(result.error))
-                    }
-                    is Result.Success -> {
-                        it.copy(
-                            movieDetailsUiState = UiState.Success(result.data),
+                    is Result.Error -> UiState.Error(result.error)
+                    is Result.Success -> UiState.Success(
+                        MovieDetailsData(
+                            movie = result.data,
                             imageShots = result.data.imageShots()
                         )
-                    }
+                    )
                 }
             }
         }
