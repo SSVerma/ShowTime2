@@ -28,7 +28,7 @@ import com.ssverma.shared.ui.component.ImageShotItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImagePagerScreen(
+fun ImagePagerContent(
     imageShots: List<ImageShot>,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,

@@ -63,9 +63,7 @@ fun ErrorImagePlaceHolder(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(
-                    alpha = NetworkImageDefaults.PlaceHolderAlpha
-                )
+                MaterialTheme.colorScheme.surfaceVariant
             )
     )
 }

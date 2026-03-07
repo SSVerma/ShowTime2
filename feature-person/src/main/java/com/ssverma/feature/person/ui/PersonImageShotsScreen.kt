@@ -35,7 +35,9 @@ fun PersonImageShotsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     BottomSheetScaffold(
+        modifier = Modifier.statusBarsPadding(),
         scaffoldState = bottomSheetScaffoldState,
+        sheetPeekHeight = 0.dp,
         sheetContent = {
             if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                 BackHandler {

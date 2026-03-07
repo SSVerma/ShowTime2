@@ -6,7 +6,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ssverma.core.navigation.destinationViewModel
 import com.ssverma.feature.tv.navigation.TvShowDetailDestination
-import com.ssverma.shared.ui.bottomsheet.ImagePagerScreen
+import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
 
 @Composable
 fun TvShowImagePagerScreen(
@@ -17,7 +17,7 @@ fun TvShowImagePagerScreen(
 ) {
     val imageShots by viewModel.imageShots.collectAsStateWithLifecycle()
 
-    ImagePagerScreen(
+    ImagePagerContent(
         imageShots = imageShots,
         defaultPageIndex = defaultPageIndex,
         onBackPressed = onBackPressed

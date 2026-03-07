@@ -84,7 +84,7 @@ private fun ImageSheetContent(
             )
         }
         is SheetContentType.ImagePager -> {
-            ImagePagerScreen(
+            ImagePagerContent(
                 imageShots = imageShots,
                 defaultPageIndex = sheetContentType.tappedImageIndex,
                 onBackPressed = {

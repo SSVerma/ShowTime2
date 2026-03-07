@@ -7,7 +7,7 @@ import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.account.navigation.ProfileDestination
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
-import com.ssverma.feature.person.ui.PersonScreen
+import com.ssverma.feature.person.ui.home.PersonScreen
 import com.ssverma.feature.search.navigation.SearchDestination
 import com.ssverma.feature.tv.navigation.TvShowDetailDestination
 
@@ -15,7 +15,6 @@ fun NavGraphBuilder.personHomeGraph(
     navController: NavController
 ) = composable(destination = PersonHomeDestination) {
     PersonScreen(
-        viewModel = hiltViewModel(),
         openPersonDetailsScreen = { personId ->
             navController.navigateTo(PersonDetailDestination.actualRoute(personId))
         },

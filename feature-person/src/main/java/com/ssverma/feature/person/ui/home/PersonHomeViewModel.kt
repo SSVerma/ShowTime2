@@ -1,4 +1,4 @@
-package com.ssverma.feature.person.ui
+package com.ssverma.feature.person.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
