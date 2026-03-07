@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
@@ -48,9 +49,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TvEpisodeDetailsScreen(
-    viewModel: TvEpisodeDetailsViewModel,
     onBackPress: () -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
+    viewModel: TvEpisodeDetailsViewModel = hiltViewModel()
 ) {
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = rememberStandardBottomSheetState(

@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui
+package com.ssverma.feature.movie.ui.details
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,13 +12,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
@@ -57,7 +60,6 @@ import com.ssverma.shared.ui.emptyIfAbsent
 
 @Composable
 fun MovieDetailsScreen(
-    viewModel: MovieDetailsViewModel,
     onBackPressed: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openImageShotsList: () -> Unit,
@@ -65,12 +67,15 @@ fun MovieDetailsScreen(
     openReviewsList: (movieId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
+    viewModel: MovieDetailsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Surface(
         color = MaterialTheme.colorScheme.background
     ) {
         DriveCompose(
-            uiState = viewModel.movieDetailsUiState,
+            uiState = uiState.movieDetailsUiState,
             onRetry = {
                 viewModel.fetchMovieDetails()
             }
@@ -78,6 +83,7 @@ fun MovieDetailsScreen(
             MovieContent(
                 movie = movie,
                 viewModel = viewModel,
+                uiState = uiState,
                 onBackPressed = onBackPressed,
                 openMovieDetails = openMovieDetails,
                 openImageShotsList = openImageShotsList,
@@ -97,6 +103,7 @@ fun MovieDetailsScreen(
 fun MovieContent(
     movie: Movie,
     viewModel: MovieDetailsViewModel,
+    uiState: MovieDetailsScreenUiState,
     onBackPressed: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openImageShotsList: () -> Unit,
@@ -141,7 +148,7 @@ fun MovieContent(
                         containerColor = MaterialTheme.colorScheme.surface,
                         modifier = modifier.size(ActionSize)
                     ) {
-                        Icon(imageVector = Icons.Default.Send, contentDescription = null)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
                     }
                 }
             )
@@ -230,7 +237,7 @@ fun MovieContent(
         /*Image shots*/
         item {
             ImageShotsSection(
-                imageShots = viewModel.imageShots,
+                imageShots = uiState.imageShots,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)

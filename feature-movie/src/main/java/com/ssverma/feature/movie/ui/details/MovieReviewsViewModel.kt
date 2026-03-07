@@ -1,13 +1,13 @@
-package com.ssverma.feature.movie.ui
+package com.ssverma.feature.movie.ui.details
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.movie.domain.usecase.MovieReviewsPaginatedUseCase
 import com.ssverma.feature.movie.navigation.MovieReviewsDestination
+import com.ssverma.shared.domain.model.Review
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

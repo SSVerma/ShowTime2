@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,13 +35,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.layout.HorizontalLazyList
+import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.account.ui.stats.MediaStatsAction
@@ -54,7 +54,6 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
-import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.ActionSize
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
@@ -73,24 +72,22 @@ import com.ssverma.shared.ui.emptyIfAbsent
 
 @Composable
 fun TvShowDetailsScreen(
-    viewModel: TvShowDetailsViewModel,
     onBackPressed: () -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
-    openReviewsList: (movieId: Int) -> Unit,
+    openReviewsList: (tvShowId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
-    openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit
+    openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
+    viewModel: TvShowDetailsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Surface(color = MaterialTheme.colorScheme.background) {
         DriveCompose(
             uiState = uiState.tvShowDetailsUiState,
-            onRetry = {
-                viewModel.fetchTvShowDetails()
-            }
+            onRetry = { viewModel.fetchTvShowDetails() }
         ) { tvShow ->
             TvShowContent(
                 tvShow = tvShow,
@@ -101,9 +98,7 @@ fun TvShowDetailsScreen(
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 openReviewsList = { openReviewsList(tvShow.id) },
-                openYoutube = { videoId ->
-                    viewModel.openYoutubeApp(videoId = videoId)
-                },
+                openYoutube = { videoId -> viewModel.openYoutubeApp(videoId = videoId) },
                 openPersonDetails = openPersonDetails,
                 openTvShowList = openTvShowList,
                 openTvSeasonDetails = openTvSeasonDetails
@@ -128,7 +123,6 @@ private fun TvShowContent(
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     val context = LocalContext.current
 
     LazyColumn(
@@ -136,8 +130,6 @@ private fun TvShowContent(
             .fillMaxSize()
             .navigationBarsPadding()
     ) {
-
-        /*Backdrop*/
         item {
             BackdropHeader(
                 backdropImageUrl = tvShow.backdropImageUrl,
@@ -156,7 +148,6 @@ private fun TvShowContent(
                                 mediaOverview = tvShow.overview,
                                 appPackageName = context.packageName
                             )
-
                             context.dispatchShareTextIntent(text = shareableText)
                         },
                         containerColor = MaterialTheme.colorScheme.surface,
@@ -168,7 +159,6 @@ private fun TvShowContent(
             )
         }
 
-        /*Title*/
         item {
             Text(
                 text = tvShow.title,
@@ -181,7 +171,6 @@ private fun TvShowContent(
             )
         }
 
-        /*Tagline*/
         tvShow.tagline?.let { tagline ->
             item {
                 Emphasize {
@@ -199,7 +188,6 @@ private fun TvShowContent(
             }
         }
 
-        /*Highlights*/
         item {
             Highlights(
                 highlights = remember(tvShow) { tvShow.highlightedItems() },
@@ -207,7 +195,6 @@ private fun TvShowContent(
             )
         }
 
-        /*Overview section title*/
         item {
             OverviewSection(
                 overview = tvShow.overview,
@@ -217,15 +204,10 @@ private fun TvShowContent(
             )
         }
 
-        /*Genre*/
         item {
             HorizontalLazyList(
                 items = tvShow.generes,
-                contentPadding = PaddingValues(
-                    top = SectionVerticalSpacing,
-                    start = 16.dp,
-                    end = 16.dp
-                )
+                contentPadding = PaddingValues(top = SectionVerticalSpacing, start = 16.dp, end = 16.dp)
             ) { genre ->
                 GenreItem(genre = genre) {
                     openTvShowList(
@@ -239,7 +221,6 @@ private fun TvShowContent(
             }
         }
 
-        /*Seasons*/
         item {
             SeasonsSection(
                 seasons = tvShow.seasons,
@@ -251,12 +232,10 @@ private fun TvShowContent(
                         )
                     )
                 },
-                modifier = Modifier
-                    .padding(top = SectionVerticalSpacing)
+                modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
 
-        /*Cast*/
         item {
             CreditSection(
                 casts = tvShow.casts,
@@ -265,18 +244,16 @@ private fun TvShowContent(
             )
         }
 
-        /*Image shots*/
         item {
             ImageShotsSection(
                 imageShots = uiState.imageShots,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
-                maxImageShots = MaxImageShots,
+                maxImageShots = 6,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
 
-        /*Video shots*/
         item {
             VideoShotsSection(
                 videos = tvShow.videos,
@@ -285,7 +262,6 @@ private fun TvShowContent(
             )
         }
 
-        /*Reviews*/
         item {
             ReviewsSection(
                 reviews = tvShow.reviews,
@@ -294,9 +270,8 @@ private fun TvShowContent(
             )
         }
 
-        /*Similar TV shows*/
         item {
-            SimilarTvShowsSection(
+            RelevantTvShowsSection(
                 tvShows = tvShow.similarTvShows,
                 sectionTitleRes = R.string.similar_shows,
                 openTvShowDetails = openTvShowDetails,
@@ -304,9 +279,8 @@ private fun TvShowContent(
             )
         }
 
-        /*Recommendations*/
         item {
-            SimilarTvShowsSection(
+            RelevantTvShowsSection(
                 tvShows = tvShow.recommendations,
                 sectionTitleRes = R.string.recommendations,
                 openTvShowDetails = openTvShowDetails,
@@ -314,7 +288,6 @@ private fun TvShowContent(
             )
         }
 
-        /*Keyword*/
         item {
             TagsSection(
                 keywords = tvShow.keywords,
@@ -331,21 +304,18 @@ private fun TvShowContent(
             )
         }
 
-        /*Bottom spacing*/
-        item {
-            Spacer(modifier = Modifier.height(48.dp))
-        }
+        item { Spacer(modifier = Modifier.height(48.dp)) }
     }
 }
 
 @Composable
-private fun SimilarTvShowsSection(
+private fun RelevantTvShowsSection(
     tvShows: List<TvShow>,
-    @androidx.annotation.StringRes sectionTitleRes: Int,
+    @StringRes sectionTitleRes: Int,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    com.ssverma.core.ui.layout.HorizontalLazyListSection(
+    HorizontalLazyListSection(
         items = tvShows,
         sectionHeader = {
             SectionHeader(
@@ -359,9 +329,7 @@ private fun SimilarTvShowsSection(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
                 modifier = Modifier.width(100.dp),
-                onClick = {
-                    openTvShowDetails(it.id)
-                }
+                onClick = { openTvShowDetails(it.id) }
             )
         },
         hideIf = tvShows.isEmpty(),
@@ -376,9 +344,8 @@ private fun SeasonsSection(
     modifier: Modifier = Modifier
 ) {
     var seasonCount by remember {
-        mutableIntStateOf(if (seasons.size < MaxSeason) seasons.size else MaxSeason)
+        mutableIntStateOf(if (seasons.size < 3) seasons.size else 3)
     }
-
     val showSeasonViewAll by remember { derivedStateOf { seasonCount < seasons.size } }
 
     Section(
@@ -395,23 +362,13 @@ private fun SeasonsSection(
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .animateContentSize()
+            modifier = Modifier.padding(horizontal = 16.dp).animateContentSize()
         ) {
             for (i in 0 until seasonCount) {
-                TvSeasonItem(
-                    tvSeason = seasons[i],
-                    onClick = {
-                        onSeasonClick(seasons[i])
-                    }
-                )
+                TvSeasonItem(tvSeason = seasons[i], onClick = { onSeasonClick(seasons[i]) })
             }
             if (showSeasonViewAll) {
-                TextButton(
-                    onClick = { seasonCount = seasons.size },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                TextButton(onClick = { seasonCount = seasons.size }, modifier = Modifier.fillMaxWidth()) {
                     Text(text = stringResource(id = R.string.view_more))
                 }
             }
@@ -419,34 +376,13 @@ private fun SeasonsSection(
     }
 }
 
-private fun TvShow.highlightedItems(): List<com.ssverma.shared.ui.component.Highlight> {
+private fun TvShow.highlightedItems(): List<Highlight> {
     return listOf(
-        com.ssverma.shared.ui.component.Highlight(
-            labelRes = R.string.rating,
-            value = voteAvg.emptyIfAbsent()
-        ),
-        com.ssverma.shared.ui.component.Highlight(
-            labelRes = R.string.first_air_date,
-            value = displayFirstAirDate.orEmpty(),
-        ),
-        com.ssverma.shared.ui.component.Highlight(
-            labelRes = R.string.status,
-            value = status
-        ),
-        com.ssverma.shared.ui.component.Highlight(
-            labelRes = R.string.language,
-            value = originalLanguage
-        ),
-        com.ssverma.shared.ui.component.Highlight(
-            labelRes = R.string.seasons,
-            value = seasonCount.toString()
-        ),
-        com.ssverma.shared.ui.component.Highlight(
-            labelRes = R.string.episode_number,
-            value = episodeCount.toString()
-        )
+        Highlight(labelRes = R.string.rating, value = voteAvg.emptyIfAbsent()),
+        Highlight(labelRes = R.string.first_air_date, value = displayFirstAirDate.orEmpty()),
+        Highlight(labelRes = R.string.status, value = status),
+        Highlight(labelRes = R.string.language, value = originalLanguage),
+        Highlight(labelRes = R.string.seasons, value = seasonCount.toString()),
+        Highlight(labelRes = R.string.episode_number, value = episodeCount.toString())
     )
 }
-
-private const val MaxImageShots = 6
-private const val MaxSeason = 3

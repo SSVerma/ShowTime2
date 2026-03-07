@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.ui.layout.AppPage
@@ -27,9 +28,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MovieListScreen(
-    viewModel: MovieListViewModel,
     onBackPressed: () -> Unit,
-    openMovieDetails: (movieId: Int) -> Unit
+    openMovieDetails: (movieId: Int) -> Unit,
+    viewModel: MovieListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
@@ -54,7 +55,7 @@ fun MovieListScreen(
     ) { innerPadding ->
 
         PagedContent(pagingItems = moviePagingItems) { items ->
-            Crossfade(uiState.isGridView) { isGrid ->
+            Crossfade(uiState.isGridView, label = "MovieListViewModeTransition") { isGrid ->
                 if (isGrid) {
                     MoviesGridContent(
                         moviePagingItems = items,
