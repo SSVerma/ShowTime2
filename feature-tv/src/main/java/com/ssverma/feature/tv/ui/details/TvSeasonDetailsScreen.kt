@@ -1,12 +1,32 @@
-package com.ssverma.feature.tv.ui
+package com.ssverma.feature.tv.ui.details
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,13 +36,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.tv.R
+import com.ssverma.feature.tv.navigation.args.TvEpisodeArgs
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
-import com.ssverma.feature.tv.navigation.args.TvEpisodeArgs
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
@@ -44,17 +65,22 @@ fun TvSeasonDetailsScreen(
     openEpisodeDetails: (episodeArgs: TvEpisodeArgs) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
 ) {
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            skipHiddenState = false
+        )
+    )
     val imageSheetState = rememberImageShotBottomSheetState(
         bottomSheetScaffoldState = bottomSheetScaffoldState
     )
 
     val coroutineScope = rememberCoroutineScope()
 
-    val tvSeasonUiState by viewModel.observableTvSeason.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DriveCompose(
-        uiState = tvSeasonUiState,
+        uiState = uiState,
         onRetry = { viewModel.fetchTvSeason() }
     ) { tvSeason ->
         ImageShotBottomSheet(

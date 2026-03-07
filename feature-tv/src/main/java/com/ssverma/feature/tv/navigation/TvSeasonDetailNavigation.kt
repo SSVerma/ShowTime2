@@ -6,7 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.person.navigation.PersonDetailDestination
-import com.ssverma.feature.tv.ui.TvSeasonDetailsScreen
+import com.ssverma.feature.tv.ui.details.TvSeasonDetailsScreen
 
 fun NavGraphBuilder.tvSeasonDetailGraph(
     navController: NavController

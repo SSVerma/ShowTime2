@@ -7,7 +7,7 @@ import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.account.navigation.ProfileDestination
 import com.ssverma.feature.search.navigation.SearchDestination
-import com.ssverma.feature.tv.ui.TvShowScreen
+import com.ssverma.feature.tv.ui.home.TvShowScreen
 
 fun NavGraphBuilder.tvShowHomeGraph(
     navController: NavController

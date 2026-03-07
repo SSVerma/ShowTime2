@@ -1,16 +1,17 @@
-package com.ssverma.feature.tv.ui
+package com.ssverma.feature.tv.ui.details
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.shared.domain.Result
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.tv.domain.model.TvSeasonConfig
 import com.ssverma.feature.tv.domain.usecase.TvSeasonUseCase
 import com.ssverma.feature.tv.navigation.TvSeasonDetailDestination
+import com.ssverma.feature.tv.ui.TvSeasonUiState
+import com.ssverma.shared.domain.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,22 +23,20 @@ class TvSeasonDetailsViewModel @Inject constructor(
     private val tvSeasonUseCase: TvSeasonUseCase
 ) : ViewModel() {
 
-    val tvShowId = savedStateHandle
-        .get<Int>(TvSeasonDetailDestination.ArgTvShowId) ?: 0
-    private val seasonNumber = savedStateHandle
-        .get<Int>(TvSeasonDetailDestination.ArgTvSeasonNumber) ?: 0
+    val tvShowId = savedStateHandle.get<Int>(TvSeasonDetailDestination.ArgTvShowId) ?: 0
+    private val seasonNumber = savedStateHandle.get<Int>(TvSeasonDetailDestination.ArgTvSeasonNumber) ?: 0
 
-    private val _observableSeason = MutableStateFlow<TvSeasonUiState>(UiState.Idle)
-    val observableTvSeason = _observableSeason.asStateFlow()
+    private val _uiState = MutableStateFlow<TvSeasonUiState>(UiState.Idle)
+    val uiState: StateFlow<TvSeasonUiState> = _uiState.asStateFlow()
 
     init {
         fetchTvSeason()
     }
 
-    fun fetchTvSeason(coroutineScope: CoroutineScope = viewModelScope) {
-        _observableSeason.update { UiState.Loading }
+    fun fetchTvSeason() {
+        _uiState.update { UiState.Loading }
 
-        coroutineScope.launch {
+        viewModelScope.launch {
             val tvSeasonConfig = TvSeasonConfig(
                 tvShowId = tvShowId,
                 seasonNumber = seasonNumber
@@ -45,17 +44,12 @@ class TvSeasonDetailsViewModel @Inject constructor(
 
             val result = tvSeasonUseCase(tvSeasonConfig)
 
-            _observableSeason.update {
+            _uiState.update {
                 when (result) {
-                    is Result.Error -> {
-                        UiState.Error(result.error)
-                    }
-                    is Result.Success -> {
-                        UiState.Success(result.data)
-                    }
+                    is Result.Error -> UiState.Error(result.error)
+                    is Result.Success -> UiState.Success(result.data)
                 }
             }
         }
     }
-
 }

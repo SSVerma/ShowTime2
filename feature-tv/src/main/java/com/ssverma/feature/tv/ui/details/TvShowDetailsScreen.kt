@@ -1,11 +1,13 @@
-package com.ssverma.feature.tv.ui
+package com.ssverma.feature.tv.ui.details
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,7 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,15 +27,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
@@ -49,6 +54,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
+import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.ActionSize
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
@@ -77,21 +83,24 @@ fun TvShowDetailsScreen(
     openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Surface(color = MaterialTheme.colorScheme.background) {
         DriveCompose(
-            uiState = viewModel.tvShowDetailsUiState,
+            uiState = uiState.tvShowDetailsUiState,
             onRetry = {
                 viewModel.fetchTvShowDetails()
             }
-        ) {
+        ) { tvShow ->
             TvShowContent(
-                tvShow = it,
+                tvShow = tvShow,
                 viewModel = viewModel,
+                uiState = uiState,
                 onBackPressed = onBackPressed,
                 openTvShowDetails = openTvShowDetails,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
-                openReviewsList = { openReviewsList(it.id) },
+                openReviewsList = { openReviewsList(tvShow.id) },
                 openYoutube = { videoId ->
                     viewModel.openYoutubeApp(videoId = videoId)
                 },
@@ -107,6 +116,7 @@ fun TvShowDetailsScreen(
 private fun TvShowContent(
     tvShow: TvShow,
     viewModel: TvShowDetailsViewModel,
+    uiState: TvShowDetailsScreenUiState,
     onBackPressed: () -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openImageShotsList: () -> Unit,
@@ -150,9 +160,9 @@ private fun TvShowContent(
                             context.dispatchShareTextIntent(text = shareableText)
                         },
                         containerColor = MaterialTheme.colorScheme.surface,
-                        modifier = modifier.size(ActionSize)
+                        modifier = Modifier.size(ActionSize)
                     ) {
-                        Icon(imageVector = Icons.Default.Send, contentDescription = null)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null)
                     }
                 }
             )
@@ -258,7 +268,7 @@ private fun TvShowContent(
         /*Image shots*/
         item {
             ImageShotsSection(
-                imageShots = viewModel.imageShots,
+                imageShots = uiState.imageShots,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 maxImageShots = MaxImageShots,
@@ -289,7 +299,7 @@ private fun TvShowContent(
             SimilarTvShowsSection(
                 tvShows = tvShow.similarTvShows,
                 sectionTitleRes = R.string.similar_shows,
-                openMovieDetails = openTvShowDetails,
+                openTvShowDetails = openTvShowDetails,
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
@@ -299,7 +309,7 @@ private fun TvShowContent(
             SimilarTvShowsSection(
                 tvShows = tvShow.recommendations,
                 sectionTitleRes = R.string.recommendations,
-                openMovieDetails = openTvShowDetails,
+                openTvShowDetails = openTvShowDetails,
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
@@ -331,11 +341,12 @@ private fun TvShowContent(
 @Composable
 private fun SimilarTvShowsSection(
     tvShows: List<TvShow>,
-    @StringRes sectionTitleRes: Int,
-    openMovieDetails: (movieId: Int) -> Unit,
+    @androidx.annotation.StringRes sectionTitleRes: Int,
+    openTvShowDetails: (tvShowId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Section(
+    com.ssverma.core.ui.layout.HorizontalLazyListSection(
+        items = tvShows,
         sectionHeader = {
             SectionHeader(
                 title = stringResource(id = sectionTitleRes),
@@ -343,21 +354,19 @@ private fun SimilarTvShowsSection(
                 hideTrailingAction = true
             )
         },
-        headerContentSpacing = SectionContentHeaderSpacing,
-        hideIf = tvShows.isEmpty(),
-        modifier = modifier
-    ) {
-        HorizontalLazyList(items = tvShows) {
+        itemContent = {
             MediaItem(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
                 modifier = Modifier.width(100.dp),
                 onClick = {
-                    openMovieDetails(it.id)
+                    openTvShowDetails(it.id)
                 }
             )
-        }
-    }
+        },
+        hideIf = tvShows.isEmpty(),
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -367,7 +376,7 @@ private fun SeasonsSection(
     modifier: Modifier = Modifier
 ) {
     var seasonCount by remember {
-        mutableStateOf(if (seasons.size < MaxSeason) seasons.size else MaxSeason)
+        mutableIntStateOf(if (seasons.size < MaxSeason) seasons.size else MaxSeason)
     }
 
     val showSeasonViewAll by remember { derivedStateOf { seasonCount < seasons.size } }
@@ -410,29 +419,29 @@ private fun SeasonsSection(
     }
 }
 
-private fun TvShow.highlightedItems(): List<Highlight> {
+private fun TvShow.highlightedItems(): List<com.ssverma.shared.ui.component.Highlight> {
     return listOf(
-        Highlight(
+        com.ssverma.shared.ui.component.Highlight(
             labelRes = R.string.rating,
             value = voteAvg.emptyIfAbsent()
         ),
-        Highlight(
+        com.ssverma.shared.ui.component.Highlight(
             labelRes = R.string.first_air_date,
             value = displayFirstAirDate.orEmpty(),
         ),
-        Highlight(
+        com.ssverma.shared.ui.component.Highlight(
             labelRes = R.string.status,
             value = status
         ),
-        Highlight(
+        com.ssverma.shared.ui.component.Highlight(
             labelRes = R.string.language,
             value = originalLanguage
         ),
-        Highlight(
+        com.ssverma.shared.ui.component.Highlight(
             labelRes = R.string.seasons,
             value = seasonCount.toString()
         ),
-        Highlight(
+        com.ssverma.shared.ui.component.Highlight(
             labelRes = R.string.episode_number,
             value = episodeCount.toString()
         )

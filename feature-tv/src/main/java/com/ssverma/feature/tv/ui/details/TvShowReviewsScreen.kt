@@ -1,4 +1,4 @@
-package com.ssverma.feature.tv.ui
+package com.ssverma.feature.tv.ui.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.systemBarsPadding

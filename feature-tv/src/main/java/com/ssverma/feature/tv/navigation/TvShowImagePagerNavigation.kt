@@ -1,21 +1,25 @@
 package com.ssverma.feature.tv.navigation
 
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
-import com.ssverma.core.navigation.*
+import com.ssverma.core.navigation.composable
+import com.ssverma.core.navigation.destinationViewModel
+import com.ssverma.feature.tv.ui.details.TvShowDetailsViewModel
 import com.ssverma.shared.ui.bottomsheet.ImagePagerScreen
-import com.ssverma.feature.tv.ui.TvShowDetailsViewModel
 
 fun NavGraphBuilder.tvShowImagePagerGraph(
     navController: NavController
-) = composable(TvShowImagePagerDestination) {
+) = composable(destination = TvShowImagePagerDestination) { navBackStackEntry ->
     val tvShowDetailsViewModel = navController
         .destinationViewModel<TvShowDetailsViewModel>(destination = TvShowDetailDestination)
 
+    val uiState by tvShowDetailsViewModel.uiState.collectAsStateWithLifecycle()
+
     ImagePagerScreen(
-        imageShots = tvShowDetailsViewModel.imageShots,
-        defaultPageIndex = it.arguments?.getInt(TvShowImagePagerDestination.PageIndex) ?: 0,
+        imageShots = uiState.imageShots,
+        defaultPageIndex = navBackStackEntry.arguments?.getInt(TvShowImagePagerDestination.PageIndex) ?: 0,
         onBackPressed = { navController.popBackStack() }
     )
 }

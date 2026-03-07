@@ -1,13 +1,13 @@
-package com.ssverma.feature.tv.ui
+package com.ssverma.feature.tv.ui.details
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ssverma.shared.domain.model.Review
 import com.ssverma.feature.tv.domain.usecase.TvShowReviewsPaginatedUseCase
 import com.ssverma.feature.tv.navigation.TvShowReviewsDestination
+import com.ssverma.shared.domain.model.Review
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
