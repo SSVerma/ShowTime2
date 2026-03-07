@@ -33,7 +33,7 @@ fun PersonHomeContent(
     PagedListIndexed(
         pagingItems = pagedPersons,
         contentPadding = PaddingValues(bottom = MaterialTheme.spacing.medium),
-        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
         header = {
             HomePageAppBar(
                 onSearchIconPressed = openSearchPage,

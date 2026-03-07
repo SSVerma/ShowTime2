@@ -55,7 +55,7 @@ fun DefaultCoreErrorIndicator(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .defaultMinSize(minHeight = 160.dp)
             .padding(MaterialTheme.spacing.large)
     ) {

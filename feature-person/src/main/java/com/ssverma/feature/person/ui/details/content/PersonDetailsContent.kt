@@ -24,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.ssverma.core.ui.layout.HorizontalLazyListIndexed
+import com.ssverma.core.ui.layout.Section
+import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.R
 import com.ssverma.feature.person.ui.details.component.PersonDetailsBackdropHeader
@@ -33,8 +36,9 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
-import com.ssverma.shared.ui.component.section.ImageShotsSection
+import com.ssverma.shared.ui.component.ImageShotItem
 import com.ssverma.shared.ui.component.section.OverviewSection
+import com.ssverma.shared.ui.component.section.SectionDefaults
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -127,13 +131,25 @@ fun PersonDetailsContent(
         }
 
         item {
-            ImageShotsSection(
-                imageShots = person.imageShots,
-                openImageShotsList = { openPersonAllImages(person.id) },
-                openImageShot = openImagePage,
-                maxImageShots = 6,
+            Section(
+                sectionHeader = {
+                    SectionHeader(
+                        title = stringResource(id = com.ssverma.shared.ui.R.string.shots),
+                        trailingActionLabel = stringResource(id = R.string.see_more),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        onTrailingActionClicked = {
+                            openPersonAllImages(person.id)
+                        },
+                    )
+                },
+                headerContentSpacing = SectionDefaults.SectionContentHeaderSpacing,
+                hideIf = person.imageShots.isEmpty(),
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
-            )
+            ) {
+                HorizontalLazyListIndexed(items = person.imageShots) { index, imageShot ->
+                    ImageShotItem(imageShot = imageShot, onClick = { openImagePage(index) })
+                }
+            }
         }
 
         stickyHeader {
