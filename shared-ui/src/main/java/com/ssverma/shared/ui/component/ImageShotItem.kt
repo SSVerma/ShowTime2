@@ -17,24 +17,40 @@ import com.ssverma.shared.domain.model.ImageShot
 @Composable
 fun ImageShotItem(
     imageShot: ImageShot,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     contentScale: ContentScale = ContentScale.Fit,
     shape: Shape = MaterialTheme.shapes.medium.copy(CornerSize(16.dp))
 ) {
-    Card(
-        shape = shape,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        onClick = onClick,
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
-    ) {
-        NetworkImage(
-            url = imageShot.imageUrl,
-            contentDescription = null,
-            contentScale = contentScale,
-            modifier = Modifier.fillMaxSize()
-        )
+    if (onClick != null) {
+        Card(
+            shape = shape,
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            onClick = onClick,
+            modifier = modifier,
+            colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        ) {
+            ImageContent(imageShot, contentScale)
+        }
+    } else {
+        Card(
+            shape = shape,
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            modifier = modifier,
+            colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        ) {
+            ImageContent(imageShot, contentScale)
+        }
     }
+}
+
+@Composable
+private fun ImageContent(imageShot: ImageShot, contentScale: ContentScale) {
+    NetworkImage(
+        url = imageShot.imageUrl,
+        contentDescription = null,
+        contentScale = contentScale,
+        modifier = Modifier.fillMaxSize()
+    )
 }
