@@ -1,5 +1,7 @@
 package com.ssverma.shared.domain.model.tv
 
+import com.ssverma.shared.domain.utils.DateUtils
+
 data class TvShowPreview(
     val id: Int,
     val title: String,
@@ -27,7 +29,7 @@ fun TvShow.asTvShowPreview(): TvShowPreview {
         voteAvgPercentage = voteAvgPercentage,
         voteCount = voteCount,
         displayFirstAirDate = displayFirstAirDate,
-        displayYear = displayFirstAirDate?.split(" ")?.lastOrNull() ?: "",
+        displayYear = DateUtils.parseIsoDate(displayFirstAirDate)?.year?.toString().orEmpty(),
         popularity = popularity,
         displayPopularity = displayPopularity,
         genreIds = generes.map { it.id },
