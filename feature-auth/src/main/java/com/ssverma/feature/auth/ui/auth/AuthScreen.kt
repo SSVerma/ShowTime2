@@ -103,6 +103,7 @@ internal fun AuthScreen(
                 }
                 AuthState.Unauthorized -> {
                     LoginContent(
+                        modifier = Modifier.fillMaxSize(),
                         onTmdbConnectClick = {
                             viewModel.startAuthentication()
                         }
