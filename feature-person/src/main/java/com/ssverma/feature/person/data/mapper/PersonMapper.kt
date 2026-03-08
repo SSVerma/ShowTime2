@@ -51,7 +51,9 @@ private suspend fun RemotePerson.asPerson(
     placeOfBirth = placeOfBirth.orEmpty(),
     imageShots = personImage?.profileImages?.asImagesShots().orEmpty(),
     mediaByType = credit?.asMediaByType(mediaTypeMapper).orEmpty(),
-    popularMedia = popularMedia?.asPersonMedias(mediaTypeMapper)
+    popularMedia = popularMedia?.asPersonMedias(mediaTypeMapper),
+    popularity = popularity,
+    displayPopularity = FormatterUtils.toRangeSymbol(popularity)
 )
 
 private suspend fun RemotePersonCredit.asMediaByType(
@@ -79,6 +81,8 @@ private suspend fun RemotePersonMedia.asPersonMedia(
     releaseDate = DateUtils.parseIsoDate(releaseDate),
     popularity = popularity,
     displayPopularity = FormatterUtils.toRangeSymbol(popularity),
+    voteAverage = voteAverage,
+    voteCount = voteCount,
     genres = genres?.asGenres() ?: emptyList(),
     creditId = creditId,
     department = department,

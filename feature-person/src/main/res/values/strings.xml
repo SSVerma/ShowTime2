@@ -10,6 +10,8 @@
     <string name="tagged_images">Tagged Images</string>
     <string name="gender_n">Gender: %1s</string>
     <string name="known_for_n">Known for: %1s</string>
+    <string name="dob_n">Born on: %1s</string>
+    <string name="place_of_birth_n">Born in: %1s</string>
     <string name="popular_media">Popular Media</string>
     <string name="male">Male</string>
     <string name="female">Female</string>

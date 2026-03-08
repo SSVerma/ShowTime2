@@ -17,7 +17,9 @@ data class Person(
     val placeOfBirth: String,
     val imageShots: List<ImageShot>,
     val mediaByType: Map<MediaType, List<PersonMedia>>,
-    val popularMedia: List<PersonMedia>?
+    val popularMedia: List<PersonMedia>?,
+    val popularity: Float,
+    val displayPopularity: String
 )
 
 data class PersonMedia(
@@ -31,6 +33,8 @@ data class PersonMedia(
     val releaseDate: LocalDate?,
     val popularity: Float,
     val displayPopularity: String,
+    val voteAverage: Float,
+    val voteCount: Int,
     val genres: List<Genre>,
     val creditId: String?,
     val department: String?,

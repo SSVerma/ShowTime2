@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import com.ssverma.core.image.NetworkImage
 
 @Composable
@@ -25,6 +26,7 @@ fun Avatar(
     contentScale: ContentScale = ContentScale.Crop,
     onClick: () -> Unit,
     borderWidth: Dp = AvatarDefaults.BorderWidth,
+    borderColor: Color = MaterialTheme.colorScheme.primary,
     borderSpacing: Dp = AvatarDefaults.BorderSpacing
 ) {
     Box(
@@ -33,7 +35,7 @@ fun Avatar(
             .size(AvatarDefaults.Size)
             .border(
                 width = borderWidth,
-                color = MaterialTheme.colorScheme.primary,
+                color = borderColor,
                 shape = CircleShape
             )
             .padding(borderSpacing)

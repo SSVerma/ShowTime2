@@ -34,7 +34,10 @@ class RemotePerson(
     val credit: RemotePersonCredit?,
 
     @SerializedName("known_for")
-    val popularMedia: List<RemotePersonMedia>?
+    val popularMedia: List<RemotePersonMedia>?,
+
+    @SerializedName("popularity")
+    val popularity: Float
 )
 
 class RemotePersonImage(
@@ -74,6 +77,12 @@ class RemotePersonMedia(
 
     @SerializedName("popularity")
     val popularity: Float,
+
+    @SerializedName("vote_average")
+    val voteAverage: Float,
+
+    @SerializedName("vote_count")
+    val voteCount: Int,
 
     @SerializedName("generes")
     val genres: List<RemoteGenre>?,
