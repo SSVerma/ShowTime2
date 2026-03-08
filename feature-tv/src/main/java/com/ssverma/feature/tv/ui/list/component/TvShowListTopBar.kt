@@ -3,7 +3,7 @@ package com.ssverma.feature.tv.ui.list.component
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +34,7 @@ fun TvShowListTopBar(
         actions = {
             IconButton(onClick = onToggleViewMode) {
                 Icon(
-                    imageVector = if (uiState.isGridView) Icons.AutoMirrored.Filled.List else Icons.Default.Menu,
+                    imageVector = if (uiState.isGridView) Icons.AutoMirrored.Filled.List else Icons.Default.GridView,
                     contentDescription = null
                 )
             }

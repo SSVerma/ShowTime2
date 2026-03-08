@@ -103,7 +103,6 @@ fun TvSeasonDetailsScreen(
                 },
                 modifier = Modifier
                     .padding(it)
-                    .navigationBarsPadding()
             )
         }
     }

@@ -113,7 +113,6 @@ fun MovieContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .navigationBarsPadding()
     ) {
         item {
             BackdropHeader(

@@ -127,7 +127,6 @@ private fun TvShowContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .navigationBarsPadding()
     ) {
         item {
             BackdropHeader(

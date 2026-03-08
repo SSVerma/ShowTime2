@@ -80,7 +80,6 @@ fun TvEpisodeDetailsScreen(
                     },
                     modifier = Modifier
                         .padding(it)
-                        .navigationBarsPadding()
                 )
             }
         }
