@@ -22,10 +22,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -114,6 +117,29 @@ fun PersonListItem(
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
+
+                    // Birth details
+                    if (!person.dob.isNullOrBlank() || person.placeOfBirth.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
+                        ) {
+                            val dob = person.dob
+                            if (!dob.isNullOrBlank()) {
+                                LabelValueIcon(
+                                    icon = Icons.Rounded.CalendarMonth,
+                                    value = dob
+                                )
+                            }
+                            if (person.placeOfBirth.isNotBlank()) {
+                                LabelValueIcon(
+                                    icon = Icons.Rounded.LocationOn,
+                                    value = person.placeOfBirth
+                                )
+                            }
+                        }
+                    }
                 }
 
                 // Expand/Collapse button
@@ -123,6 +149,18 @@ fun PersonListItem(
                         onClick = { onPopularMediaBtnClick(person.id) }
                     )
                 }
+            }
+
+            // Biography snippet
+            if (person.biography.isNotBlank()) {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+                Text(
+                    text = person.biography,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
             // Expandable popular media section
@@ -316,6 +354,33 @@ private fun ExpandCollapseButton(
                 tint = iconTint
             )
         }
+    }
+}
+
+@Composable
+private fun LabelValueIcon(
+    icon: ImageVector,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

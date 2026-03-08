@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="tmdb_connect_info">You will be redirected to TMDB website. After login or signup
-        you can access your watchlist, favorites etc on ShowTime.</string>
-    <string name="connect_with_tmdb">Connect with TMDB</string>
+    <string name="tmdb_connect_info">Sync your watchlist, favorites, and ratings by connecting your TMDB account. Experience ShowTime across all your devices.</string>
+    <string name="connect_with_tmdb">Connect to TMDB</string>
+    <string name="unlock_library">Unlock Your Library</string>
+    <string name="login_feature_watchlist">Manage your watchlist</string>
+    <string name="login_feature_favorites">Save your favorites</string>
+    <string name="login_feature_ratings">Rate movies and shows</string>
     <string name="logout">Logout</string>
     <string name="title_activity_authentication_approval">AuthenticationApprovalActivity</string>
     <string name="redirecting">Redirecting…</string>
