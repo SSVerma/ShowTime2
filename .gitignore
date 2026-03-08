@@ -34,3 +34,5 @@ build/
 buildSrc/.kotlin
 gradlew.bat
 gradlew
+bin/
+*/bin/
