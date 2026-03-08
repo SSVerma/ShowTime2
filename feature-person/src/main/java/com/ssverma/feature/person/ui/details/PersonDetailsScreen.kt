@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.ui.DriveCompose
+import com.ssverma.feature.person.ui.common.PersonDetailUiState
 import com.ssverma.feature.person.ui.details.content.PersonDetailsContent
 import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
 import kotlinx.coroutines.launch

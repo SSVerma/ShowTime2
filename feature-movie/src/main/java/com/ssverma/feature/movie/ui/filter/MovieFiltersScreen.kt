@@ -6,8 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.MovieDiscoverConfig
-import com.ssverma.feature.filter.ui.FilterGroup
-import com.ssverma.feature.filter.ui.FiltersScreen
+import com.ssverma.feature.filter.ui.filter.FilterGroup
+import com.ssverma.feature.filter.ui.filter.FiltersScreen
 
 @Composable
 fun MovieFiltersScreen(

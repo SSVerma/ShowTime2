@@ -6,7 +6,7 @@ import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
 import com.ssverma.feature.person.navigation.PersonDetailDestination
-import com.ssverma.feature.search.ui.SearchSuggestionScreen
+import com.ssverma.feature.search.ui.suggestion.SearchSuggestionScreen
 import com.ssverma.feature.tv.navigation.TvShowDetailDestination
 
 fun NavGraphBuilder.searchGraph(

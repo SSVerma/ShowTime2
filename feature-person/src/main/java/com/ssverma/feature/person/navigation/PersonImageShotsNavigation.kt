@@ -4,7 +4,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
-import com.ssverma.feature.person.ui.PersonImageShotsScreen
+import com.ssverma.feature.person.ui.shots.PersonImageShotsScreen
 
 fun NavGraphBuilder.personImageShotsGraph(
     navController: NavController

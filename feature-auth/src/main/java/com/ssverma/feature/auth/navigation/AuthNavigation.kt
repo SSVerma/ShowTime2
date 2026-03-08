@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.putResultAndPopCurrentDestination
 import com.ssverma.core.navigation.putResultForPreviousDestination
-import com.ssverma.feature.auth.ui.AuthScreen
+import com.ssverma.feature.auth.ui.auth.AuthScreen
 
 fun NavGraphBuilder.authGraph(
     navController: NavController

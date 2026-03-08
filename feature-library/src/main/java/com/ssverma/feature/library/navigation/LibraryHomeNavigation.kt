@@ -5,8 +5,8 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.account.navigation.ProfileDestination
-import com.ssverma.feature.auth.ui.AuthScreenContainer
-import com.ssverma.feature.library.ui.LibraryScreen
+import com.ssverma.feature.auth.ui.auth.AuthScreenContainer
+import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
 import com.ssverma.feature.search.navigation.SearchDestination
 import com.ssverma.feature.tv.navigation.TvShowDetailDestination

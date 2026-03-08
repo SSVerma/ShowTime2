@@ -16,7 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.Popup
 import com.ssverma.feature.account.R
-import com.ssverma.feature.auth.ui.AuthScreenContainer
+import com.ssverma.feature.auth.ui.auth.AuthScreenContainer
 import com.ssverma.shared.domain.model.MediaType
 
 @Composable

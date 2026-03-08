@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.ssverma.feature.filter.ui.FilterUiState
-import com.ssverma.feature.filter.ui.asUiFilters
+import com.ssverma.feature.filter.ui.filter.FilterUiState
+import com.ssverma.feature.filter.ui.filter.asUiFilters
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.domain.usecase.MovieFilterUseCase

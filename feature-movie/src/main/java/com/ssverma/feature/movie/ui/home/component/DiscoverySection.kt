@@ -30,7 +30,7 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
-import com.ssverma.feature.movie.ui.MoviePreviewUiState
+import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.ui.component.MediaItemShimmer
 import com.ssverma.shared.ui.component.media.MovieGridItem

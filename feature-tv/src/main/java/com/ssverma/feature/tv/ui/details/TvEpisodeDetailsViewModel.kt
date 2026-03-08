@@ -7,7 +7,7 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.feature.tv.domain.model.TvEpisodeConfig
 import com.ssverma.feature.tv.domain.usecase.TvEpisodeUseCase
 import com.ssverma.feature.tv.navigation.TvEpisodeDetailDestination
-import com.ssverma.feature.tv.ui.TvEpisodeUiState
+import com.ssverma.feature.tv.ui.common.TvEpisodeUiState
 import com.ssverma.shared.domain.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

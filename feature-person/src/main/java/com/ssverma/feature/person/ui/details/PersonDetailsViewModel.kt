@@ -10,7 +10,7 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.feature.person.domain.model.PersonDetailsConfig
 import com.ssverma.feature.person.domain.usecase.PersonDetailsUseCase
 import com.ssverma.feature.person.navigation.PersonDetailDestination
-import com.ssverma.feature.person.ui.PersonDetailUiState
+import com.ssverma.feature.person.ui.common.PersonDetailUiState
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
 import dagger.hilt.android.lifecycle.HiltViewModel
