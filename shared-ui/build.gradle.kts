@@ -4,6 +4,8 @@ import com.ssverma.Modules
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt)
     alias(libs.plugins.compose.compiler)
 }
 
@@ -47,13 +49,19 @@ kotlin {
 dependencies {
     implementation(project(Modules.Core.ui))
     implementation(project(Modules.Shared.domain))
+    implementation(project(Modules.Shared.data))
     implementation(project(Modules.Core.uiPaging))
     implementation(project(Modules.Core.image))
+    implementation(project(Modules.Core.di))
 
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
     implementation(libs.compose.constraintlayout)
     implementation(libs.compose.material.icons.extended)
+
+    implementation(libs.dagger.hilt.android)
+    kapt(libs.dagger.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

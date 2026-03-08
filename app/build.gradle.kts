@@ -128,6 +128,9 @@ dependencies {
     implementation(project(Modules.Core.navigation))
     implementation(project(Modules.Core.networking))
 
+    implementation(project(Modules.Shared.ui))
+    implementation(project(Modules.Shared.domain))
+
     implementation(project(Modules.Feature.movie))
     implementation(project(Modules.Feature.tv))
     implementation(project(Modules.Feature.person))
@@ -141,6 +144,7 @@ dependencies {
 
     implementation(libs.dagger.hilt.android)
     kapt(libs.dagger.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

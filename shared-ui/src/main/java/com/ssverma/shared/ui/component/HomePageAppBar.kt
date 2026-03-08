@@ -20,9 +20,9 @@ import com.ssverma.shared.ui.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePageAppBar(
-    modifier: Modifier = Modifier,
     onSearchIconPressed: () -> Unit,
     onAccountIconPressed: () -> Unit,
+    modifier: Modifier = Modifier,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors()
 ) {
     TopAppBar(
@@ -42,6 +42,7 @@ fun HomePageAppBar(
             }
         },
         actions = {
+            ThemeToggleButton()
             IconButton(onClick = onSearchIconPressed) {
                 Icon(
                     imageVector = Icons.Default.Search,

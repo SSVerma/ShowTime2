@@ -9,14 +9,21 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import com.ssverma.shared.domain.model.AppTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ShowTimeTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    appTheme: AppTheme = AppTheme.System,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (appTheme) {
+        AppTheme.System -> isSystemInDarkTheme()
+        AppTheme.Light -> false
+        AppTheme.Dark -> true
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

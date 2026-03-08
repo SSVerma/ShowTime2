@@ -11,6 +11,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -23,6 +24,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ssverma.core.ui.theme.ShowTimeTheme
+import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.ui.LocalAppStateHolder
 import com.ssverma.showtime.navigation.ShowTimeNavHost
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
@@ -30,7 +33,14 @@ import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ShowTime() {
-    ShowTimeTheme {
+    val appStateHolder = LocalAppStateHolder.current
+    val appTheme by appStateHolder.appTheme.collectAsState(initial = AppTheme.System)
+    val isDynamicColorEnabled by appStateHolder.isDynamicColorEnabled.collectAsState(initial = false)
+
+    ShowTimeTheme(
+        appTheme = appTheme,
+        dynamicColor = isDynamicColorEnabled
+    ) {
         val navController = rememberNavController()
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()

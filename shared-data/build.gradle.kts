@@ -4,6 +4,8 @@ import com.ssverma.Modules
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -38,10 +40,13 @@ android {
 dependencies {
     implementation(project(Modules.Shared.domain))
     implementation(project(Modules.Core.networking))
+    implementation(project(Modules.Core.storage))
     implementation(project(Modules.ApiService.tmdb))
 
     implementation(libs.core.ktx)
     implementation(libs.coroutines.core)
+    implementation(libs.datastore.preferences)
 
-    implementation("javax.inject:javax.inject:1")
+    implementation(libs.dagger.hilt.android)
+    kapt(libs.dagger.hilt.compiler)
 }

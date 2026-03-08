@@ -1,0 +1,45 @@
+package com.ssverma.shared.data.di
+
+import android.content.Context
+import com.ssverma.core.storage.keyvalue.KeyValueStorage
+import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
+import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.shared.data.repository.DefaultAppConfigRepository
+import com.ssverma.shared.domain.repository.AppConfigRepository
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class AppConfigBindingModule {
+    @Singleton
+    @Binds
+    abstract fun bindAppConfigRepository(
+        repository: DefaultAppConfigRepository
+    ): AppConfigRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppConfigModule {
+
+    @Singleton
+    @Provides
+    @Named("app_config")
+    fun provideAppConfigKeyValueStorage(
+        @ApplicationContext
+        context: Context,
+        keyValueStorageClient: KeyValueStorageClient
+    ): KeyValueStorage {
+        return keyValueStorageClient.createKeyValueStorage(
+            context = context,
+            config = KeyValueStorageConfig(fileName = "app_config")
+        )
+    }
+}
