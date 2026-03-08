@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
@@ -33,73 +35,78 @@ fun LoginContent(
     onTmdbConnectClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp)
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Surface(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = MaterialTheme.shapes.extraLarge,
-            modifier = Modifier.size(120.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Avatar(
-                    imageUrl = "",
-                    onClick = {},
-                    modifier = Modifier.size(80.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-            text = stringResource(R.string.unlock_library),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = stringResource(R.string.tmdb_connect_info),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Feature list
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            FeatureItem(text = stringResource(R.string.login_feature_favorites))
-            FeatureItem(text = stringResource(R.string.login_feature_watchlist))
-            FeatureItem(text = stringResource(R.string.login_feature_ratings))
-        }
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Button(
-            onClick = onTmdbConnectClick,
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            shape = MaterialTheme.shapes.large
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp)
         ) {
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = MaterialTheme.shapes.extraLarge,
+                modifier = Modifier.size(120.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Avatar(
+                        imageUrl = "",
+                        onClick = {},
+                        modifier = Modifier.size(80.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             Text(
-                text = stringResource(R.string.connect_with_tmdb),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                text = stringResource(R.string.unlock_library),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.tmdb_connect_info),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Feature list
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FeatureItem(text = stringResource(R.string.login_feature_favorites))
+                FeatureItem(text = stringResource(R.string.login_feature_watchlist))
+                FeatureItem(text = stringResource(R.string.login_feature_ratings))
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Button(
+                onClick = onTmdbConnectClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Text(
+                    text = stringResource(R.string.connect_with_tmdb),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
