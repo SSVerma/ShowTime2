@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Info Bottom Sheet -->
+    <string name="app_info_welcome">Welcome to ShowTime!</string>
+    <string name="app_info_description">ShowTime is an open-source movie and TV show information provider. It is NOT a streaming service and does not play any media itself. It respects your privacy.</string>
+    <string name="app_info_feature_tmdb">Information provider only (Powered by TMDB API)</string>
+    <string name="app_info_feature_indie_dev">Independently developed and maintained by a single developer</string>
+    <string name="app_info_feature_rating">If you enjoy using ShowTime, consider leaving a 5★ review!</string>
+    <string name="app_info_version">Version: %s</string>
+    <string name="app_info_developed_by">Developed by: SS Verma</string>
+    <string name="app_info_twitter">X (Twitter)</string>
+    <string name="app_info_github">GitHub</string>
+    <string name="app_info_dont_show_again">Don\'t show again</string>
+    <string name="app_info_got_it">Got it!</string>
+    <string name="app_logo_desc">App Logo</string>
+</resources>

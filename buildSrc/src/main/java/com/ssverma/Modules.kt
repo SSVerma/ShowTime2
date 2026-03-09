@@ -18,6 +18,10 @@ object Modules {
         const val data = ":shared-data"
     }
 
+    object Common {
+        const val ui = ":common-ui"
+    }
+
     object ApiService {
         const val tmdb = ":api-service:tmdb"
     }

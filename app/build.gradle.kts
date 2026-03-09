@@ -130,6 +130,7 @@ dependencies {
 
     implementation(project(Modules.Shared.ui))
     implementation(project(Modules.Shared.domain))
+    implementation(project(Modules.Common.ui))
 
     implementation(project(Modules.Feature.movie))
     implementation(project(Modules.Feature.tv))

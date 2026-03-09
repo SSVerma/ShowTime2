@@ -10,13 +10,12 @@ plugins {
 }
 
 android {
-    namespace = "com.ssverma.feature.library"
+    namespace = "com.ssverma.common.ui"
 
     compileSdk = AndroidConfig.CompileSdk
 
     defaultConfig {
         minSdk = AndroidConfig.MinSdk
-        targetSdk = AndroidConfig.TargetSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -39,6 +38,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -49,27 +49,19 @@ kotlin {
 dependencies {
     implementation(project(Modules.Core.ui))
     implementation(project(Modules.Shared.ui))
-    implementation(project(Modules.Common.ui))
-    implementation(project(Modules.Shared.data))
-    implementation(project(Modules.Core.uiPaging))
-    implementation(project(Modules.Core.navigation))
     implementation(project(Modules.Shared.domain))
-    implementation(project(Modules.Core.networking))
-    implementation(project(Modules.Core.paging))
-    implementation(project(Modules.Core.di))
+    implementation(project(Modules.Shared.data))
     implementation(project(Modules.Core.image))
-    implementation(project(Modules.ApiService.tmdb))
 
-    api(project(Modules.Feature.libraryNavigation))
-    implementation(project(Modules.Feature.personNavigation))
-    implementation(project(Modules.Feature.searchNavigation))
-    implementation(project(Modules.Feature.movieNavigation))
-    implementation(project(Modules.Feature.tvNavigation))
-
-    implementation(project(Modules.Feature.account))
-    implementation(project(Modules.Feature.auth))
+    implementation(libs.compose.material3)
+    implementation(libs.compose.activity)
+    implementation(libs.compose.constraintlayout)
+    implementation(libs.compose.material.icons.extended)
 
     implementation(libs.dagger.hilt.android)
     kapt(libs.dagger.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
 }

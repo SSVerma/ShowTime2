@@ -50,6 +50,7 @@ kotlin {
 dependencies {
     implementation(project(Modules.Core.ui))
     implementation(project(Modules.Shared.ui))
+    implementation(project(Modules.Common.ui))
     implementation(project(Modules.Shared.data))
     implementation(project(Modules.Core.uiPaging))
     implementation(project(Modules.Core.navigation))

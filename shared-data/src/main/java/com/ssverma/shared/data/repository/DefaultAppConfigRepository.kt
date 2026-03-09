@@ -35,8 +35,16 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(DynamicColorKey, enabled)
     }
 
+    override val isAppInfoBottomSheetDismissed: Flow<Boolean>
+        get() = keyValueStorage.observe(AppInfoBottomSheetDismissedKey, false)
+
+    override suspend fun dismissAppInfoBottomSheet() {
+        keyValueStorage.write(AppInfoBottomSheetDismissedKey, true)
+    }
+
     companion object {
         private val AppThemeKey = stringPreferencesKey("app_theme")
         private val DynamicColorKey = booleanPreferencesKey("dynamic_color")
+        private val AppInfoBottomSheetDismissedKey = booleanPreferencesKey("app_info_bottom_sheet_dismissed")
     }
 }

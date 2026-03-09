@@ -11,4 +11,8 @@ interface AppConfigRepository {
     suspend fun updateAppTheme(theme: AppTheme)
 
     suspend fun updateDynamicColor(enabled: Boolean)
+
+    val isAppInfoBottomSheetDismissed: Flow<Boolean>
+
+    suspend fun dismissAppInfoBottomSheet()
 }
