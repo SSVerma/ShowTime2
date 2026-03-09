@@ -112,6 +112,7 @@ android {
     packaging {
         resources {
             excludes += "META-INF/gradle/incremental.annotation.processors"
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
 }
