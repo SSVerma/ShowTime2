@@ -4,7 +4,7 @@
 
     <application>
         <activity
-            android:name=".ui.AuthenticationApprovalActivity"
+            android:name=".ui.auth.AuthenticationApprovalActivity"
             android:exported="true"
             android:label="@string/title_activity_authentication_approval"
             android:theme="@style/Theme.ShowTime">

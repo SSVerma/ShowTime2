@@ -1,7 +1,15 @@
 package com.ssverma.feature.auth.ui.auth
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -18,13 +26,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchBrowserIntent
 import com.ssverma.core.ui.ScreenLoadingIndicator
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.feature.auth.R
-import com.ssverma.feature.auth.ui.auth.content.*
 import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.feature.auth.ui.auth.content.ApprovalAskedContent
+import com.ssverma.feature.auth.ui.auth.content.ApprovalGrantedContent
+import com.ssverma.feature.auth.ui.auth.content.ApprovalRejectedContent
+import com.ssverma.feature.auth.ui.auth.content.LoginContent
+import com.ssverma.feature.auth.ui.auth.content.NoSessionContent
 import com.ssverma.shared.domain.failure.Failure
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 
 @Composable
 internal fun AuthScreen(
@@ -66,15 +75,19 @@ internal fun AuthScreen(
                                 AuthState.Approval.Granted -> {
                                     viewModel.startAuthorization()
                                 }
+
                                 AuthState.Unauthorized -> {
                                     viewModel.startAuthentication()
                                 }
+
                                 is AuthState.Authorized.WithSession -> {
                                     viewModel.logout()
                                 }
+
                                 AuthState.Authorized.WithoutSession -> {
                                     viewModel.createSession()
                                 }
+
                                 else -> {
                                     // No op
                                 }
@@ -82,6 +95,7 @@ internal fun AuthScreen(
                         }
                     )
                 }
+
                 else -> {
                     AuthErrorIndicator()
                 }
@@ -94,6 +108,7 @@ internal fun AuthScreen(
                 is AuthState.Authorized.WithSession -> {
                     authorizedContent?.let { it(authState) } ?: currentOnAuthSessionEstablished()
                 }
+
                 AuthState.Authorized.WithoutSession -> {
                     NoSessionContent(
                         onProceedClick = {
@@ -101,6 +116,7 @@ internal fun AuthScreen(
                         }
                     )
                 }
+
                 AuthState.Unauthorized -> {
                     LoginContent(
                         modifier = Modifier.fillMaxSize(),
@@ -109,18 +125,22 @@ internal fun AuthScreen(
                         }
                     )
                 }
+
                 is AuthState.Approval.Needed -> {
                     context.dispatchBrowserIntent(
                         webUrl = authState.approvalUrl
                     )
                     viewModel.onApprovalAsked()
                 }
+
                 AuthState.Approval.Asked -> {
                     ApprovalAskedContent()
                 }
+
                 AuthState.Approval.Granted -> {
                     ApprovalGrantedContent()
                 }
+
                 AuthState.Approval.Rejected -> {
                     ApprovalRejectedContent()
                 }

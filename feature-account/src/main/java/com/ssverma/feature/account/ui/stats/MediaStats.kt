@@ -1,13 +1,24 @@
 package com.ssverma.feature.account.ui.stats
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -60,6 +71,7 @@ fun MediaStatsAction(
                     onClick = { popupExpansionState.value = false }
                 )
             }
+
             MediaStatsUiState.Unauthorized -> {
                 DropdownMenuItem(
                     text = {
@@ -74,16 +86,20 @@ fun MediaStatsAction(
                     onClick = {}
                 )
             }
+
             MediaStatsUiState.Loading -> {
                 DropdownMenuItem(
                     text = {
-                        ShowTimeLoadingIndicator()
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(text = stringResource(id = com.ssverma.core.ui.R.string.loading))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            ShowTimeLoadingIndicator()
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(text = stringResource(id = com.ssverma.core.ui.R.string.loading))
+                        }
                     },
                     onClick = {}
                 )
             }
+
             is MediaStatsUiState.Success -> {
                 val mediaStats = (mediaStatsUiState as MediaStatsUiState.Success).mediaStats
                 FavoriteMenuItem(
