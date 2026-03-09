@@ -1,16 +1,18 @@
-import com.ssverma.Modules
-
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.kapt)
     id("java-library")
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.kapt")
 }
 
 dependencies {
-    implementation(project(Modules.Core.networking))
-    implementation(project(Modules.Core.paging))
+    implementation(projects.sharedDomain)
+    implementation(projects.coreNetworking)
+    implementation(projects.corePaging)
 
-    /* Dependency Injection */
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.okhttpLoggingInterceptor)
+
     implementation(libs.dagger.hilt.core)
     kapt(libs.dagger.hilt.compiler)
 }

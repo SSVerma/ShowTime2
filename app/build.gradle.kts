@@ -1,14 +1,12 @@
-import com.ssverma.AndroidConfig
-import com.ssverma.Modules
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-    alias(libs.plugins.compose.compiler)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
+    id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.parcelize")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 val releaseProps by lazy {
@@ -40,15 +38,15 @@ val debugProps by lazy {
 
 android {
     namespace = "com.ssverma.showtime"
-    compileSdk = AndroidConfig.CompileSdk
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     val FIELD_TMDB_BASE_URL = "TMDB_BASE_URL"
     val FIELD_TMDB_API_READ_ACCESS_TOKEN = "TMDB_API_READ_ACCESS_TOKEN"
 
     defaultConfig {
         applicationId = "com.ssverma.showtime"
-        minSdk = AndroidConfig.MinSdk
-        targetSdk = AndroidConfig.TargetSdk
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 8
         versionName = "1.0.4"
 
@@ -123,22 +121,22 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(Modules.ApiService.tmdb))
-    implementation(project(Modules.Core.ui))
-    implementation(project(Modules.Core.navigation))
-    implementation(project(Modules.Core.networking))
+    implementation(projects.apiService.tmdb)
+    implementation(projects.coreUi)
+    implementation(projects.coreNavigation)
+    implementation(projects.coreNetworking)
 
-    implementation(project(Modules.Shared.ui))
-    implementation(project(Modules.Shared.domain))
-    implementation(project(Modules.Common.ui))
+    implementation(projects.sharedUi)
+    implementation(projects.sharedDomain)
+    implementation(projects.commonUi)
 
-    implementation(project(Modules.Feature.movie))
-    implementation(project(Modules.Feature.tv))
-    implementation(project(Modules.Feature.person))
-    implementation(project(Modules.Feature.library))
-    implementation(project(Modules.Feature.search))
-    implementation(project(Modules.Feature.auth))
-    implementation(project(Modules.Feature.account))
+    implementation(projects.featureMovie)
+    implementation(projects.featureTv)
+    implementation(projects.featurePerson)
+    implementation(projects.featureLibrary)
+    implementation(projects.featureSearch)
+    implementation(projects.featureAuth)
+    implementation(projects.featureAccount)
 
     implementation(libs.material)
     implementation(libs.compose.activity)
