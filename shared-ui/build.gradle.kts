@@ -15,6 +15,7 @@ dependencies {
     implementation(projects.coreUiPaging)
     implementation(projects.coreImage)
     implementation(projects.coreDi)
+    implementation(projects.coreNavigation)
 
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)

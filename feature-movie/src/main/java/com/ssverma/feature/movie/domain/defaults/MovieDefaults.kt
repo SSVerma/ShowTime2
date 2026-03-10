@@ -38,6 +38,7 @@ object MovieDefaults {
             MediaDetailsAppendable.Reviews,
             MediaDetailsAppendable.Similar,
             MediaDetailsAppendable.Recommendations,
+            MediaDetailsAppendable.WatchProviders,
         )
     }
 }

@@ -61,6 +61,8 @@ fun HomePageAppBar(
             }
         },
         actions = {
+            WatchRegionSelector()
+
             IconButton(onClick = onSearchIconPressed) {
                 Icon(
                     imageVector = Icons.Default.Search,

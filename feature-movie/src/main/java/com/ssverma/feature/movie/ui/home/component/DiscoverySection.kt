@@ -145,7 +145,7 @@ fun DiscoverySection(
                         indicator = { preview ->
                             MovieIndicator(type = category.type, movie = preview)
                         },
-                        onClick = { preview -> onMovieClicked(preview.id) }
+                        onClick = { preview -> onMovieClicked(preview.id) },
                     )
                 }
             }

@@ -7,4 +7,5 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofitConverterGson)
     implementation(libs.coroutines.core)
+    implementation(libs.javax.inject)
 }

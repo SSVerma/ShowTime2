@@ -6,6 +6,7 @@ import com.ssverma.api.service.tmdb.response.GenrePayload
 import com.ssverma.api.service.tmdb.response.PagedPayload
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
+import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
 
 interface MovieRemoteDataSource {
     suspend fun discoverMovies(
@@ -32,4 +33,7 @@ interface MovieRemoteDataSource {
         queryMap: Map<String, String>
     ): TmdbApiResponse<RemoteMovie>
 
+    suspend fun fetchMovieWatchProviders(
+        movieId: Int
+    ): TmdbApiResponse<RemoteWatchProviderResponse>
 }

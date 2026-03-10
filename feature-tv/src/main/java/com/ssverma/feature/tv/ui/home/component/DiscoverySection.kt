@@ -149,7 +149,7 @@ fun DiscoverySection(
                         indicator = { preview ->
                             TvIndicator(type = category.type, tvShow = preview)
                         },
-                        onClick = { preview -> onTvShowClicked(preview.id) }
+                        onClick = { preview -> onTvShowClicked(preview.id) },
                     )
                 }
             }

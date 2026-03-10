@@ -2,6 +2,7 @@ package com.ssverma.feature.tv.data.remote
 
 import com.ssverma.api.service.tmdb.TmdbApiResponse
 import com.ssverma.api.service.tmdb.response.*
+import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
 
 interface TvShowRemoteDataSource {
     suspend fun discoverTvShows(
@@ -43,4 +44,7 @@ interface TvShowRemoteDataSource {
         queryMap: Map<String, String>
     ): TmdbApiResponse<RemoteTvEpisode>
 
+    suspend fun fetchTvShowWatchProviders(
+        tvShowId: Int
+    ): TmdbApiResponse<RemoteWatchProviderResponse>
 }

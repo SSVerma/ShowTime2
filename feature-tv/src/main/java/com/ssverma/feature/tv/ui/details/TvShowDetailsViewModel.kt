@@ -14,6 +14,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.tv.imageShots
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,7 +35,8 @@ data class TvShowDetailsData(
 class TvShowDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     application: Application,
-    private val tvShowDetailsUseCase: TvShowDetailsUseCase
+    private val tvShowDetailsUseCase: TvShowDetailsUseCase,
+    val appConfigRepository: AppConfigRepository
 ) : AndroidViewModel(application) {
 
     val tvShowId = savedStateHandle.get<Int>(TvShowDetailDestination.ArgTvShowId) ?: 0
@@ -49,6 +51,7 @@ class TvShowDetailsViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+    val watchProviderRegion: StateFlow<String> = appConfigRepository.watchProviderRegion
 
     init {
         fetchTvShowDetails()

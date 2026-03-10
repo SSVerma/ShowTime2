@@ -22,6 +22,8 @@ import com.ssverma.shared.ui.component.AppSection
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
 import com.ssverma.shared.ui.component.media.MovieListItem
+import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.core.ui.UiState
 
 @Composable
 fun MovieHomeContent(
@@ -101,10 +103,11 @@ fun MovieHomeContent(
                             type = MovieListingAvailableTypes.NowInCinemas,
                             movie = it
                         )
-                    }
+                    },
                 )
             }
         }
+
 
         item { AttributionFooter(modifier = Modifier.padding(top = MaterialTheme.spacing.large)) }
     }

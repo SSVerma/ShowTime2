@@ -70,5 +70,8 @@ class RemoteTvShow(
     val recommendations: PagedPayload<RemoteTvShow>?,
 
     @SerializedName("seasons")
-    val seasons: List<RemoteTvSeason>?
+    val seasons: List<RemoteTvSeason>?,
+
+    @SerializedName("watch/providers")
+    val watchProviders: RemoteWatchProviderResponse?
 )

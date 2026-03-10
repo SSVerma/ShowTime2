@@ -11,9 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.padding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 
 @Composable
 fun MovieGridItem(
@@ -21,13 +24,21 @@ fun MovieGridItem(
     modifier: Modifier = Modifier,
     posterModifier: Modifier = Modifier,
     indicator: (@Composable (MoviePreview) -> Unit)? = null,
-    onClick: (MoviePreview) -> Unit
+    onClick: (MoviePreview) -> Unit,
 ) {
     Column(modifier = modifier) {
         MediaPoster(
             posterImageUrl = movie.posterImageUrl,
             indicator = indicator?.let { { it(movie) } },
             onClick = { onClick(movie) },
+            overlayContent = {
+                WatchProviderTrigger(
+                    mediaId = movie.id,
+                    isMovie = true,
+                    variant = WatchProviderTriggerVariant.Icon,
+                    modifier = Modifier.padding(MaterialTheme.spacing.small)
+                )
+            },
             modifier = posterModifier
                 .width(MediaItemDefaults.PosterWidth)
                 .aspectRatio(TmdbPosterAspectRatio)
@@ -44,11 +55,11 @@ fun MovieGridItem(
         )
 
         if (movie.displayYear.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
             Text(
                 text = movie.displayYear,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.width(MediaItemDefaults.PosterWidth)
             )
         }
     }

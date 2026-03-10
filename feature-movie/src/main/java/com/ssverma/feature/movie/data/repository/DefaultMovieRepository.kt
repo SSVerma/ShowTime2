@@ -15,7 +15,10 @@ import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
+import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.data.mapper.asWatchProvidersMap
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
@@ -167,6 +170,13 @@ class DefaultMovieRepository @Inject constructor(
             mapRemoteToDomain = {
                 movieMapper.map(it.body)
             }
+        )
+    }
+
+    override suspend fun fetchWatchProviders(movieId: Int): Result<Map<String, WatchProvider>, Failure<MovieFailure>> {
+        val apiResponse = movieRemoteDataSource.fetchMovieWatchProviders(movieId = movieId)
+        return apiResponse.asDomainResult(
+            mapRemoteToDomain = { it.body.asWatchProvidersMap() }
         )
     }
 }

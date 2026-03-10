@@ -12,13 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import java.util.Locale
 
 @Composable
@@ -37,7 +38,7 @@ fun MovieListItem(
     movie: MoviePreview,
     modifier: Modifier = Modifier,
     indicator: (@Composable (MoviePreview) -> Unit)? = null,
-    onClick: (MoviePreview) -> Unit
+    onClick: (MoviePreview) -> Unit,
 ) {
     OutlinedCard(
         onClick = { onClick(movie) },
@@ -136,15 +137,29 @@ fun MovieListItem(
                     )
                 }
 
-                // Bottom Row: Overview
-                Text(
-                    text = movie.overview,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 20.sp
-                )
+                // Bottom Row: Overview and Watch Provider Action
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = movie.overview,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = 20.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    WatchProviderTrigger(
+                        mediaId = movie.id,
+                        isMovie = true,
+                        variant = WatchProviderTriggerVariant.Icon,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
         }
     }

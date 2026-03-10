@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +30,7 @@ fun MediaPoster(
     modifier: Modifier = Modifier,
     indicator: (@Composable () -> Unit)? = null,
     onOverflowIconClick: (() -> Unit)? = null,
+    overlayContent: @Composable () -> Unit = {},
     onClick: () -> Unit,
 ) {
     OutlinedCard(
@@ -52,6 +55,13 @@ fun MediaPoster(
                 ) {
                     customIndicator()
                 }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+            ) {
+                overlayContent()
             }
 
             onOverflowIconClick?.let {

@@ -9,6 +9,7 @@ sealed interface MediaDetailsAppendable {
     object Reviews : MediaDetailsAppendable
     object Similar : MediaDetailsAppendable
     object Recommendations : MediaDetailsAppendable
+    object WatchProviders : MediaDetailsAppendable
 }
 
 sealed interface PersonDetailAppendable {

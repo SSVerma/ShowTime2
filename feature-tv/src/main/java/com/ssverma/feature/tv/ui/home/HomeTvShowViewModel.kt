@@ -10,9 +10,9 @@ import com.ssverma.feature.tv.domain.usecase.TopRatedTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.feature.tv.domain.usecase.UpcomingTvShowsUseCase
+import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
-import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +31,7 @@ class HomeTvShowViewModel @Inject constructor(
     private val popularTvShowsUseCase: PopularTvShowsUseCase,
     private val tvGenresUseCase: TvGenresUseCase,
 ) : ViewModel() {
+
 
     private val _uiState = MutableStateFlow(HomeTvUiState())
     val uiState: StateFlow<HomeTvUiState> = _uiState.asStateFlow()
@@ -145,4 +146,5 @@ class HomeTvShowViewModel @Inject constructor(
             }
         }
     }
+
 }

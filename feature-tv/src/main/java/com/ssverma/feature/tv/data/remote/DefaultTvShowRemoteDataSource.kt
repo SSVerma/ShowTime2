@@ -3,6 +3,7 @@ package com.ssverma.feature.tv.data.remote
 import com.ssverma.api.service.tmdb.TmdbApiResponse
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.response.*
+import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
 import javax.inject.Inject
 
 class DefaultTvShowRemoteDataSource @Inject constructor(
@@ -83,5 +84,9 @@ class DefaultTvShowRemoteDataSource @Inject constructor(
             episodeNumber = episodeNumber,
             queryMap = queryMap
         )
+    }
+
+    override suspend fun fetchTvShowWatchProviders(tvShowId: Int): TmdbApiResponse<RemoteWatchProviderResponse> {
+        return tmdbApiService.getTvShowWatchProviders(tvShowId = tvShowId)
     }
 }

@@ -54,6 +54,7 @@ private suspend fun RemoteMovie.asMovie(): Movie {
         reviews = reviews?.results?.asReviews()?.asReversed() ?: emptyList(),
         similarMovies = similarMovies?.results?.asMovies() ?: emptyList(),
         recommendations = recommendations?.results?.asMovies() ?: emptyList(),
+        watchProviders = watchProviders?.asWatchProvidersMap() ?: emptyMap(),
     )
 }
 

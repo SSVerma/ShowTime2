@@ -9,11 +9,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.padding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 
 @Composable
 fun TvShowGridItem(
@@ -21,13 +24,21 @@ fun TvShowGridItem(
     modifier: Modifier = Modifier,
     posterModifier: Modifier = Modifier,
     indicator: (@Composable (TvShowPreview) -> Unit)? = null,
-    onClick: (TvShowPreview) -> Unit
+    onClick: (TvShowPreview) -> Unit,
 ) {
     Column(modifier = modifier) {
         MediaPoster(
             posterImageUrl = tvShow.posterImageUrl,
             indicator = indicator?.let { { it(tvShow) } },
             onClick = { onClick(tvShow) },
+            overlayContent = {
+                WatchProviderTrigger(
+                    mediaId = tvShow.id,
+                    isMovie = false,
+                    variant = WatchProviderTriggerVariant.Icon,
+                    modifier = Modifier.padding(MaterialTheme.spacing.small)
+                )
+            },
             modifier = posterModifier
                 .width(MediaItemDefaults.PosterWidth)
                 .aspectRatio(TmdbPosterAspectRatio)
@@ -44,11 +55,11 @@ fun TvShowGridItem(
         )
 
         if (tvShow.displayYear.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
             Text(
                 text = tvShow.displayYear,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.width(MediaItemDefaults.PosterWidth)
             )
         }
     }

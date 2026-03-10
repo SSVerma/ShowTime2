@@ -29,7 +29,7 @@ fun MoviesListContent(
         MovieListItem(
             movie = movie,
             indicator = { preview -> MovieIndicator(type = type, movie = preview) },
-            onClick = { preview -> openMovieDetails(preview.id) }
+            onClick = { preview -> openMovieDetails(preview.id) },
         )
     }
 }

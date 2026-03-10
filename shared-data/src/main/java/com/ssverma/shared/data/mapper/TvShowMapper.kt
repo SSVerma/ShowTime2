@@ -50,7 +50,8 @@ private suspend fun RemoteTvShow.asTvShow(): TvShow {
         reviews = reviews?.results?.asReviews()?.asReversed() ?: emptyList(),
         similarTvShows = similarTvShows?.results?.asTvShows() ?: emptyList(),
         recommendations = recommendations?.results?.asTvShows() ?: emptyList(),
-        seasons = seasons?.asTvSeasons()?.reversed() ?: emptyList()
+        seasons = seasons?.asTvSeasons()?.reversed() ?: emptyList(),
+        watchProviders = watchProviders?.asWatchProvidersMap() ?: emptyMap(),
     )
 }
 

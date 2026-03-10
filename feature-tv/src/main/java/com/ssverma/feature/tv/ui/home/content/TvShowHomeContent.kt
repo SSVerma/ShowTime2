@@ -22,6 +22,8 @@ import com.ssverma.shared.ui.component.AppSection
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
 import com.ssverma.shared.ui.component.media.TvShowListItem
+import com.ssverma.shared.domain.model.tv.TvShowPreview
+import com.ssverma.core.ui.UiState
 
 @Composable
 fun TvShowHomeContent(
@@ -101,7 +103,7 @@ fun TvShowHomeContent(
                             type = TvShowListingAvailableTypes.TodayAiring,
                             tvShow = it
                         )
-                    }
+                    },
                 )
             }
         }
@@ -131,10 +133,11 @@ fun TvShowHomeContent(
                             type = TvShowListingAvailableTypes.NowAiring,
                             tvShow = it
                         )
-                    }
+                    },
                 )
             }
         }
+
 
         item { AttributionFooter(modifier = Modifier.padding(top = MaterialTheme.spacing.large)) }
     }

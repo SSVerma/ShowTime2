@@ -34,6 +34,6 @@ fun Movie.asMoviePreview(): MoviePreview {
         popularity = popularity,
         displayPopularity = displayPopularity,
         genreIds = generes.map { it.id },
-        adult = false,
+        adult = false
     )
 }

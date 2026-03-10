@@ -29,7 +29,7 @@ fun TvShowsListContent(
         TvShowListItem(
             tvShow = tvShow,
             indicator = { preview -> TvIndicator(type = type, tvShow = preview) },
-            onClick = { preview -> openTvShowDetails(preview.id) }
+            onClick = { preview -> openTvShowDetails(preview.id) },
         )
     }
 }

@@ -23,6 +23,8 @@ import com.ssverma.feature.movie.ui.filter.MovieFiltersScreen
 import com.ssverma.feature.movie.ui.list.component.MovieListTopBar
 import com.ssverma.feature.movie.ui.list.content.MoviesGridContent
 import com.ssverma.feature.movie.ui.list.content.MoviesListContent
+import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.core.ui.UiState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -93,4 +95,5 @@ fun MovieListScreen(
             )
         }
     }
+
 }

@@ -41,6 +41,7 @@ object TvShowDefaults {
             MediaDetailsAppendable.Reviews,
             MediaDetailsAppendable.Similar,
             MediaDetailsAppendable.Recommendations,
+            MediaDetailsAppendable.WatchProviders,
         )
     }
 
@@ -48,6 +49,7 @@ object TvShowDefaults {
         return listOf(
             MediaDetailsAppendable.Credits,
             MediaDetailsAppendable.Images,
+            MediaDetailsAppendable.WatchProviders,
         )
     }
 

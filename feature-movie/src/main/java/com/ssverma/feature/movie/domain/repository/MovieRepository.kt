@@ -10,6 +10,7 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.WatchProvider
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
@@ -71,4 +72,11 @@ interface MovieRepository {
     suspend fun fetchMovieDetails(
         movieDetailsConfig: MovieDetailsConfig
     ): Result<Movie, Failure<MovieFailure>>
+
+    /**
+     * Fetch watch providers for a particular movie.
+     */
+    suspend fun fetchWatchProviders(
+        movieId: Int
+    ): Result<Map<String, WatchProvider>, Failure<MovieFailure>>
 }

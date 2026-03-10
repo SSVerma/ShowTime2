@@ -35,9 +35,11 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.movie.MoviePreview
-import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
 import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
+import com.ssverma.shared.ui.component.AppHeroCarousel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,6 +123,13 @@ fun HeroSection(
                     imageUrl = { it.posterImageUrl },
                     title = { it.title },
                     onItemClick = { onMovieClicked(it.id) },
+                    overlayContent = {
+                        WatchProviderTrigger(
+                            mediaId = it.id,
+                            isMovie = true,
+                            variant = WatchProviderTriggerVariant.Icon
+                        )
+                    }
                 )
             }
         }

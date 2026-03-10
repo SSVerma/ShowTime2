@@ -6,6 +6,7 @@ import com.ssverma.api.service.tmdb.response.GenrePayload
 import com.ssverma.api.service.tmdb.response.PagedPayload
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
+import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
 import javax.inject.Inject
 
 class DefaultMovieRemoteDataSource @Inject constructor(
@@ -60,4 +61,7 @@ class DefaultMovieRemoteDataSource @Inject constructor(
         )
     }
 
+    override suspend fun fetchMovieWatchProviders(movieId: Int): TmdbApiResponse<RemoteWatchProviderResponse> {
+        return tmdbApiService.getMovieWatchProviders(movieId = movieId)
+    }
 }

@@ -20,6 +20,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
+import com.ssverma.core.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -45,8 +46,10 @@ data class TvShowPaginatedListUiState(
 class TvShowListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val paginatedTvShowUseCase: PaginatedTvShowUseCase,
-    private val tvShowFilterUseCase: TvShowFilterUseCase
+    private val tvShowFilterUseCase: TvShowFilterUseCase,
+    val appConfigRepository: com.ssverma.shared.domain.repository.AppConfigRepository
 ) : ViewModel() {
+
 
     private val tvShowListingArgs = savedStateHandle.buildTvShowListingArgs()
     private val tvShowListingConfig = tvShowListingArgs.asTvShowListingConfigs()
@@ -101,6 +104,7 @@ class TvShowListViewModel @Inject constructor(
     fun toggleViewMode() {
         _uiState.update { it.copy(isGridView = !it.isGridView) }
     }
+
 }
 
 private fun SavedStateHandle.buildTvShowListingArgs(): TvShowListingArgs {

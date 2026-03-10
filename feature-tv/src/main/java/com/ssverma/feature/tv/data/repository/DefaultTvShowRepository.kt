@@ -16,6 +16,8 @@ import com.ssverma.feature.tv.domain.model.TvSeasonConfig
 import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.shared.domain.model.WatchProvider
+import com.ssverma.shared.data.mapper.asWatchProvidersMap
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.TvDiscoverConfig
@@ -208,6 +210,13 @@ class DefaultTvShowRepository @Inject constructor(
             mapRemoteToDomain = {
                 tvEpisodeMapper.map(it.body)
             }
+        )
+    }
+
+    override suspend fun fetchWatchProviders(tvShowId: Int): Result<Map<String, WatchProvider>, Failure<TvShowFailure>> {
+        val apiResponse = tvShowRemoteDataSource.fetchTvShowWatchProviders(tvShowId = tvShowId)
+        return apiResponse.asDomainResult(
+            mapRemoteToDomain = { it.body.asWatchProvidersMap() }
         )
     }
 }

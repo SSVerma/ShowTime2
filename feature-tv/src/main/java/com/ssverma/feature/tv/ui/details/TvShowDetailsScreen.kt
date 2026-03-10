@@ -67,6 +67,7 @@ import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHea
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
 import com.ssverma.shared.ui.component.section.TagsSection
 import com.ssverma.shared.ui.component.section.VideoShotsSection
+import com.ssverma.shared.ui.component.section.WatchProvidersSection
 import com.ssverma.shared.ui.emptyIfAbsent
 
 @Composable
@@ -123,6 +124,7 @@ private fun TvShowContent(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
 
     LazyColumn(
         modifier = modifier
@@ -195,6 +197,13 @@ private fun TvShowContent(
         item {
             Highlights(
                 highlights = remember(tvShow) { tvShow.highlightedItems() },
+                modifier = Modifier.padding(top = SectionVerticalSpacing)
+            )
+        }
+
+        item(key = "watch_providers") {
+            WatchProvidersSection(
+                watchProvider = tvShow.watchProviders[watchProviderRegion],
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }

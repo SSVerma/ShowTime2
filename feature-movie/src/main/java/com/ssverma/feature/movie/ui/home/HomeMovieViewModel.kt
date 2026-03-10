@@ -9,9 +9,9 @@ import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TopRatedMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.UpcomingMoviesUseCase
+import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
-import com.ssverma.shared.domain.model.movie.asMoviePreview
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +29,7 @@ class HomeMovieViewModel @Inject constructor(
     private val popularMoviesUseCase: PopularMoviesUseCase,
     private val movieGenreUseCase: MovieGenresUseCase,
 ) : ViewModel() {
+
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -125,4 +126,5 @@ class HomeMovieViewModel @Inject constructor(
             }
         }
     }
+
 }

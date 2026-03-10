@@ -1,9 +1,37 @@
 package com.ssverma.api.service.tmdb
 
-import com.ssverma.api.service.tmdb.request.*
-import com.ssverma.api.service.tmdb.response.*
+import com.ssverma.api.service.tmdb.request.AccessTokenBody
+import com.ssverma.api.service.tmdb.request.FavoriteMediaBody
+import com.ssverma.api.service.tmdb.request.LogoutBody
+import com.ssverma.api.service.tmdb.request.RequestTokenBody
+import com.ssverma.api.service.tmdb.request.SessionBody
+import com.ssverma.api.service.tmdb.request.WatchlistMediaBody
+import com.ssverma.api.service.tmdb.response.AccessTokenPayload
+import com.ssverma.api.service.tmdb.response.AccountPayload
+import com.ssverma.api.service.tmdb.response.GenrePayload
+import com.ssverma.api.service.tmdb.response.MediaStatsPayload
+import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteImageShot
+import com.ssverma.api.service.tmdb.response.RemoteMovie
+import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
+import com.ssverma.api.service.tmdb.response.RemotePerson
+import com.ssverma.api.service.tmdb.response.RemoteReview
+import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
+import com.ssverma.api.service.tmdb.response.RemoteTvSeason
+import com.ssverma.api.service.tmdb.response.RemoteTvShow
+import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
+import com.ssverma.api.service.tmdb.response.RequestTokenPayload
+import com.ssverma.api.service.tmdb.response.SessionPayload
+import com.ssverma.api.service.tmdb.response.TmdbErrorPayload
+import com.ssverma.api.service.tmdb.response.WatchProviderRegionPayload
 import com.ssverma.core.networking.adapter.ApiResponse
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.HTTP
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.QueryMap
 
 typealias TmdbApiResponse<T> = ApiResponse<T, TmdbErrorPayload>
 
@@ -41,6 +69,14 @@ interface TmdbApiService {
 
     @GET("3/genre/movie/list")
     suspend fun getMovieGenres(): TmdbApiResponse<GenrePayload>
+
+    @GET("3/watch/providers/regions")
+    suspend fun getWatchProviderRegions(): TmdbApiResponse<WatchProviderRegionPayload>
+
+    @GET("3/movie/{movieId}/watch/providers")
+    suspend fun getMovieWatchProviders(
+        @Path("movieId") movieId: Int
+    ): TmdbApiResponse<RemoteWatchProviderResponse>
 
     @GET("3/movie/{movieId}/reviews")
     suspend fun getMovieReviews(
@@ -105,6 +141,11 @@ interface TmdbApiService {
         @Path("timeWindow") timeWindow: String,
         @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
+
+    @GET("3/tv/{tvShowId}/watch/providers")
+    suspend fun getTvShowWatchProviders(
+        @Path("tvShowId") tvShowId: Int
+    ): TmdbApiResponse<RemoteWatchProviderResponse>
 
     @GET("3/tv/{tvShowId}/reviews")
     suspend fun getTvShowReviews(

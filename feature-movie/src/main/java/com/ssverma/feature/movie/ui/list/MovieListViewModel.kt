@@ -20,6 +20,7 @@ import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.movie.asMoviePreview
+import com.ssverma.core.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -45,8 +46,10 @@ data class MoviePaginatedListUiState(
 class MovieListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val paginatedMoviesUseCase: PaginatedMoviesUseCase,
-    private val movieFilterUseCase: MovieFilterUseCase
+    private val movieFilterUseCase: MovieFilterUseCase,
+    val appConfigRepository: com.ssverma.shared.domain.repository.AppConfigRepository
 ) : ViewModel() {
+
 
     private val movieListingArgs = savedStateHandle.buildMovieListingArgs()
     private val movieListingConfig = movieListingArgs.asMovieListingConfigs()
@@ -101,6 +104,7 @@ class MovieListViewModel @Inject constructor(
     fun toggleViewMode() {
         _uiState.update { it.copy(isGridView = !it.isGridView) }
     }
+
 }
 
 private fun SavedStateHandle.buildMovieListingArgs(): MovieListingArgs {

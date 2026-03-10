@@ -57,7 +57,8 @@ fun <T, FF> AppHeroCarousel(
     contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
     imageUrl: (T) -> String,
     title: (T) -> String,
-    onItemClick: (T) -> Unit
+    onItemClick: (T) -> Unit,
+    overlayContent: @Composable (T) -> Unit = {}
 ) {
     DriveCompose(
         uiState = uiState,
@@ -113,7 +114,8 @@ fun <T, FF> AppHeroCarousel(
             contentPadding = contentPadding,
             imageUrl = imageUrl,
             title = title,
-            onItemClick = onItemClick
+            onItemClick = onItemClick,
+            overlayContent = overlayContent
         )
     }
 }
@@ -138,7 +140,8 @@ fun <T> AppHeroCarousel(
     ),
     imageUrl: (T) -> String,
     title: (T) -> String,
-    onItemClick: (T) -> Unit
+    onItemClick: (T) -> Unit,
+    overlayContent: @Composable (T) -> Unit = {}
 ) {
     Box(
         modifier = modifier
@@ -209,6 +212,14 @@ fun <T> AppHeroCarousel(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(MaterialTheme.spacing.medium)
+                ) {
+                    overlayContent(item)
                 }
             }
         }

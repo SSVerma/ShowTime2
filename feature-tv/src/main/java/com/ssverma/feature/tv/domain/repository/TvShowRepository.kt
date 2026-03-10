@@ -16,6 +16,7 @@ import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
+import com.ssverma.shared.domain.model.WatchProvider
 import kotlinx.coroutines.flow.Flow
 
 interface TvShowRepository {
@@ -91,4 +92,11 @@ interface TvShowRepository {
     suspend fun fetchTvEpisodeDetails(
         tvEpisodeConfig: TvEpisodeConfig
     ): Result<TvEpisode, Failure<TvEpisodeFailure>>
+
+    /**
+     * Fetch watch providers for a particular tv show.
+     */
+    suspend fun fetchWatchProviders(
+        tvShowId: Int
+    ): Result<Map<String, WatchProvider>, Failure<TvShowFailure>>
 }

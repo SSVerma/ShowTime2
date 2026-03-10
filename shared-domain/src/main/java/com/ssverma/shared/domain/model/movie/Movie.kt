@@ -33,6 +33,7 @@ class Movie(
     val reviews: List<Review>,
     val similarMovies: List<Movie>,
     val recommendations: List<Movie>,
+    val watchProviders: Map<String, WatchProvider>
 )
 
 fun Movie.imageShots(): List<ImageShot> {

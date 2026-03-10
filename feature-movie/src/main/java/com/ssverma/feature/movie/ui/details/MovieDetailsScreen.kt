@@ -1,11 +1,11 @@
 package com.ssverma.feature.movie.ui.details
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -55,6 +55,7 @@ import com.ssverma.shared.ui.component.section.ReviewsSection
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
 import com.ssverma.shared.ui.component.section.TagsSection
 import com.ssverma.shared.ui.component.section.VideoShotsSection
+import com.ssverma.shared.ui.component.section.WatchProvidersSection
 import com.ssverma.shared.ui.emptyIfAbsent
 
 @Composable
@@ -109,6 +110,7 @@ fun MovieContent(
 ) {
     val movie = data.movie
     val context = LocalContext.current
+    val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
 
     LazyColumn(
         modifier = modifier
@@ -175,6 +177,13 @@ fun MovieContent(
         item {
             Highlights(
                 highlights = remember(movie) { movie.highlightedItems() },
+                modifier = Modifier.padding(top = SectionVerticalSpacing)
+            )
+        }
+
+        item(key = "watch_providers") {
+            WatchProvidersSection(
+                watchProvider = movie.watchProviders[watchProviderRegion],
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
@@ -283,7 +292,7 @@ fun MovieContent(
 @Composable
 fun RelevantMoviesSection(
     movies: List<Movie>,
-    @androidx.annotation.StringRes sectionTitleRes: Int,
+    @StringRes sectionTitleRes: Int,
     openMovieDetails: (movieId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {

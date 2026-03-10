@@ -14,6 +14,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.movie.imageShots
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,7 +35,8 @@ data class MovieDetailsData(
 class MovieDetailsViewModel @Inject constructor(
     application: Application,
     savedStateHandle: SavedStateHandle,
-    private val movieDetailsUseCase: MovieDetailsUseCase
+    private val movieDetailsUseCase: MovieDetailsUseCase,
+    val appConfigRepository: AppConfigRepository
 ) : AndroidViewModel(application) {
 
     private val movieId = savedStateHandle.get<Int>(MovieDetailDestination.ArgMovieId) ?: 0
@@ -49,6 +51,7 @@ class MovieDetailsViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+    val watchProviderRegion: StateFlow<String> = appConfigRepository.watchProviderRegion
 
     init {
         fetchMovieDetails()
