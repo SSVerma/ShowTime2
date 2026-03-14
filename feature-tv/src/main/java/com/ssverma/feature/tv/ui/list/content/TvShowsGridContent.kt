@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.media.TvShowGridItem
@@ -31,6 +32,7 @@ fun TvShowsGridContent(
     ) { tvShow ->
         TvShowGridItem(
             tvShow = tvShow,
+            showRating = type != TvShowListingAvailableTypes.Upcoming && type != TvShowListingAvailableTypes.TopRated,
             indicator = { preview -> TvIndicator(type = type, tvShow = preview) },
             onClick = { preview -> openTvShowDetails(preview.id) },
             posterModifier = Modifier.fillMaxWidth()

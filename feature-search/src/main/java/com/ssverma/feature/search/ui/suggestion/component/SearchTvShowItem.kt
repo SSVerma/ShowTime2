@@ -1,17 +1,25 @@
 package com.ssverma.feature.search.ui.suggestion.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.feature.search.R
@@ -44,21 +52,53 @@ fun SearchTvShowItem(
             NetworkImage(
                 url = tvShow.posterImageUrl,
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .width(SearchSuggestionDefaults.MediaPosterWidth)
                     .aspectRatio(TmdbPosterAspectRatio)
                     .clip(MaterialTheme.shapes.medium)
             )
 
-            SuggestionText(
-                primaryText = tvShow.title,
-                query = query,
+            Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = SearchSuggestionDefaults.TitleHorizontalSpacing)
-            )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SuggestionText(
+                        primaryText = tvShow.title,
+                        query = query,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Label(
+                        text = stringResource(id = R.string.tv),
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
 
-            Label(text = stringResource(id = R.string.tv))
+                if (tvShow.displayFirstAirDate != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = tvShow.displayFirstAirDate,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (tvShow.overview.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = tvShow.overview,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ private suspend fun RemoteMovie.asMovie(): Movie {
         voteAvg = voteAvg,
         voteAvgPercentage = voteAvg * 10f,
         voteCount = voteCount,
+        releaseDate = DateUtils.parseIsoDate(releaseDate),
         displayReleaseDate = DateUtils.parseIsoDate(releaseDate)?.formatLocally(),
         revenue = revenue,
         runtime = runtime,

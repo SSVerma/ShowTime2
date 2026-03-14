@@ -97,6 +97,7 @@ fun MovieHomeContent(
             ) { moviePreview ->
                 MovieListItem(
                     movie = moviePreview,
+                    showRating = true,
                     onClick = { openMovieDetails(it.id) },
                     indicator = {
                         MovieIndicator(

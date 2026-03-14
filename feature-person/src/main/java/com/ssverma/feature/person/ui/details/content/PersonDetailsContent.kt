@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,6 +35,7 @@ import com.ssverma.feature.person.ui.details.component.PersonMediaTabRow
 import com.ssverma.feature.person.ui.details.component.PersonTimelineItem
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.person.Person
+import com.ssverma.shared.ui.TmdbPersonAspectRatio
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.ImageShotItem
@@ -147,7 +149,13 @@ fun PersonDetailsContent(
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             ) {
                 HorizontalLazyListIndexed(items = person.imageShots) { index, imageShot ->
-                    ImageShotItem(imageShot = imageShot, onClick = { openImagePage(index) })
+                    ImageShotItem(
+                        imageShot = imageShot,
+                        onClick = { openImagePage(index) },
+                        modifier = Modifier
+                            .height(200.dp)
+                            .aspectRatio(TmdbPersonAspectRatio)
+                    )
                 }
             }
         }

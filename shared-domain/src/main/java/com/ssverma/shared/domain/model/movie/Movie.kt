@@ -1,6 +1,7 @@
 package com.ssverma.shared.domain.model.movie
 
 import com.ssverma.shared.domain.model.*
+import java.time.LocalDate
 
 class Movie(
     val id: Int,
@@ -16,6 +17,7 @@ class Movie(
     val voteAvg: Float,
     val voteAvgPercentage: Float,
     val voteCount: Int,
+    val releaseDate: LocalDate?,
     val displayReleaseDate: String?,
     val revenue: Long,
     val runtime: Int,

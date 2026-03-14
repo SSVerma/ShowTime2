@@ -142,6 +142,7 @@ fun DiscoverySection(
                 ) { moviePreview ->
                     MovieGridItem(
                         movie = moviePreview,
+                        showRating = category.type != MovieListingAvailableTypes.Upcoming && category.type != MovieListingAvailableTypes.TopRated,
                         indicator = { preview ->
                             MovieIndicator(type = category.type, movie = preview)
                         },

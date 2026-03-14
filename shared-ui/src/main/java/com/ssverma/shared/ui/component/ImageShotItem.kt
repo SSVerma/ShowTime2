@@ -20,7 +20,7 @@ fun ImageShotItem(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    contentScale: ContentScale = ContentScale.Fit,
+    contentScale: ContentScale = ContentScale.Crop,
     shape: Shape = MaterialTheme.shapes.medium.copy(CornerSize(16.dp))
 ) {
     if (onClick != null) {

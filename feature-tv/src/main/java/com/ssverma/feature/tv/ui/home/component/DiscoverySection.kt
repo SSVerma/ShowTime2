@@ -146,6 +146,7 @@ fun DiscoverySection(
                 ) { tvShowPreview ->
                     TvShowGridItem(
                         tvShow = tvShowPreview,
+                        showRating = category.type != TvShowListingAvailableTypes.Upcoming && category.type != TvShowListingAvailableTypes.TopRated,
                         indicator = { preview ->
                             TvIndicator(type = category.type, tvShow = preview)
                         },

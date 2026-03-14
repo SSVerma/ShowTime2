@@ -1,5 +1,6 @@
 package com.ssverma.feature.person.ui.details.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -13,15 +14,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +32,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.R
 import com.ssverma.shared.domain.model.MediaType
@@ -71,7 +73,7 @@ fun PersonTimelineItem(
             )
         }
 
-        Surface(
+        OutlinedCard(
             onClick = {
                 when (media.mediaType) {
                     MediaType.Movie -> {
@@ -87,8 +89,14 @@ fun PersonTimelineItem(
                     }
                 }
             },
-            shape = MaterialTheme.shapes.medium,
-            tonalElevation = 1.dp,
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.75f)
@@ -101,13 +109,14 @@ fun PersonTimelineItem(
                 NetworkImage(
                     url = media.posterImageUrl,
                     contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .width(48.dp)
+                        .width(56.dp)
                         .aspectRatio(TmdbPosterAspectRatio)
                 )
                 Column(
                     modifier = Modifier
-                        .padding(horizontal = MaterialTheme.spacing.smallMedium)
+                        .padding(horizontal = MaterialTheme.spacing.medium)
                         .weight(1f)
                 ) {
                     Text(
@@ -117,11 +126,12 @@ fun PersonTimelineItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Emphasize {
+                    if (media.character.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = stringResource(id = R.string.as_n, media.character),
                             style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontStyle = FontStyle.Italic
                         )
                     }

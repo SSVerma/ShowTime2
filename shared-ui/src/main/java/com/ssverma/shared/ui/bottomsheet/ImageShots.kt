@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.TmdbPersonAspectRatio
 import com.ssverma.shared.ui.component.ImageShotItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +61,7 @@ fun ImageShotsContent(
                 onClick = { openImagePager(index) },
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .aspectRatio(imageShots.first().aspectRatio)
+                    .aspectRatio(TmdbPersonAspectRatio)
                     .padding(4.dp)
             )
         }

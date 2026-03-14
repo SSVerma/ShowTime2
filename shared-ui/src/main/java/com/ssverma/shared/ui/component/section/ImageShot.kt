@@ -13,6 +13,7 @@ import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.layout.VerticalGrid
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.TmdbPersonAspectRatio
 import com.ssverma.shared.ui.component.ImageShotItem
 
 @Composable
@@ -49,7 +50,7 @@ fun ImageShotsSection(
                 onClick = { openImageShot(index) },
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .aspectRatio(imageShots.first().aspectRatio)
+                    .aspectRatio(TmdbPersonAspectRatio)
             )
         }
     }

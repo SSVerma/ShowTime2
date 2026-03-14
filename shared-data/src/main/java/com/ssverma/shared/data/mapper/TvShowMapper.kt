@@ -32,6 +32,7 @@ private suspend fun RemoteTvShow.asTvShow(): TvShow {
         voteAvg = voteAvg,
         voteAvgPercentage = voteAvg * 10f,
         voteCount = voteCount,
+        firstAirDate = DateUtils.parseIsoDate(firstAirDate),
         displayFirstAirDate = DateUtils.parseIsoDate(firstAirDate)?.formatLocally(),
         popularity = popularity,
         displayPopularity = FormatterUtils.toRangeSymbol(popularity),

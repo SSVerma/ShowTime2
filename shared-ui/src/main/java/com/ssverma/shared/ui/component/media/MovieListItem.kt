@@ -27,16 +27,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
-import java.util.Locale
 
 @Composable
 fun MovieListItem(
     movie: MoviePreview,
     modifier: Modifier = Modifier,
+    showRating: Boolean = true,
     indicator: (@Composable (MoviePreview) -> Unit)? = null,
     onClick: (MoviePreview) -> Unit,
 ) {
@@ -67,6 +69,15 @@ fun MovieListItem(
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
+                )
+
+                WatchProviderTrigger(
+                    mediaId = movie.id,
+                    isMovie = true,
+                    variant = WatchProviderTriggerVariant.Icon,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(MaterialTheme.spacing.small)
                 )
             }
 
@@ -99,67 +110,57 @@ fun MovieListItem(
                 }
 
                 // Middle Row: Bullet-separated Metadata
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (movie.displayYear.isNotEmpty()) {
-                        Text(
-                            text = movie.displayYear,
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                if (showRating && movie.voteCount > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (movie.displayYear.isNotEmpty()) {
+                            Text(
+                                text = movie.displayYear,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "•",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "•",
+                            text = "${FormatterUtils.formatRating(movie.voteAvgPercentage)} ${FormatterUtils.formatVoteCount(movie.voteCount)}",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(14.dp)
-                    )
+                } else if (movie.displayYear.isNotEmpty()) {
                     Text(
-                        text = "${
-                            String.format(
-                                Locale.getDefault(),
-                                "%.1f",
-                                movie.voteAvgPercentage / 10f
-                            )
-                        } (${movie.voteCount})",
+                        text = movie.displayYear,
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                // Bottom Row: Overview and Watch Provider Action
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = movie.overview,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 20.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    WatchProviderTrigger(
-                        mediaId = movie.id,
-                        isMovie = true,
-                        variant = WatchProviderTriggerVariant.Icon,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
+                // Bottom Row: Overview
+                Text(
+                    text = movie.overview,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 20.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

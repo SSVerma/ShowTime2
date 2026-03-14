@@ -21,8 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.R
-import java.util.Locale
 
 @Composable
 fun ScoreBadge(
@@ -30,7 +30,7 @@ fun ScoreBadge(
     modifier: Modifier = Modifier
 ) {
     MediaBadge(
-        text = String.format(Locale.getDefault(), "%.1f", score / 10f),
+        text = FormatterUtils.formatRating(score),
         icon = Icons.Rounded.Star,
         iconContentDescription = stringResource(id = R.string.rating_icon_cd),
         containerColor = MaterialTheme.colorScheme.secondaryContainer,

@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.modifier.zoomable
@@ -89,6 +90,7 @@ fun ImagePager(
             ImageShotItem(
                 imageShot = imageShots[page],
                 backgroundColor = MaterialTheme.colorScheme.background,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 8.dp, vertical = 16.dp)

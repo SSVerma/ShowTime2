@@ -51,6 +51,7 @@ import com.ssverma.feature.person.R
 import com.ssverma.feature.person.ui.details.component.asUiText
 import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.shared.domain.model.person.PersonMedia
+import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.shared.ui.component.media.MediaItem
@@ -210,7 +211,7 @@ fun PersonListItem(
                                                     )
                                                     Spacer(modifier = Modifier.width(2.dp))
                                                     Text(
-                                                        text = String.format("%.1f", media.voteAverage),
+                                                        text = FormatterUtils.formatRating(media.voteAverage * 10f),
                                                         style = MaterialTheme.typography.labelSmall,
                                                         fontWeight = FontWeight.Bold
                                                     )

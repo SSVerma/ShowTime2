@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedList
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.navigation.args.TvShowListingType
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.domain.model.tv.TvShowPreview
@@ -28,6 +29,7 @@ fun TvShowsListContent(
     ) { tvShow ->
         TvShowListItem(
             tvShow = tvShow,
+            showRating = type != TvShowListingAvailableTypes.Upcoming && type != TvShowListingAvailableTypes.TopRated,
             indicator = { preview -> TvIndicator(type = type, tvShow = preview) },
             onClick = { preview -> openTvShowDetails(preview.id) },
         )

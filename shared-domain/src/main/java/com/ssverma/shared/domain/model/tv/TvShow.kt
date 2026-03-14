@@ -1,6 +1,7 @@
 package com.ssverma.shared.domain.model.tv
 
 import com.ssverma.shared.domain.model.*
+import java.time.LocalDate
 
 class TvShow(
     val id: Int,
@@ -13,6 +14,7 @@ class TvShow(
     val voteAvg: Float,
     val voteAvgPercentage: Float,
     val voteCount: Int,
+    val firstAirDate: LocalDate?,
     val displayFirstAirDate: String?,
     val popularity: Float,
     val displayPopularity: String,

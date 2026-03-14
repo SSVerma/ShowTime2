@@ -18,6 +18,7 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.person.R
+import com.ssverma.shared.ui.TmdbPersonAspectRatio
 import com.ssverma.shared.ui.component.ImageShotItem
 import kotlinx.coroutines.launch
 
@@ -61,6 +62,7 @@ fun PersonImageShotsScreen(
                 clickedImageShot?.let {
                     ImageShotItem(
                         imageShot = it,
+                        contentScale = ContentScale.Fit,
                         onClick = {
                             //Not needed
                         },
@@ -94,7 +96,7 @@ fun PersonImageShotsScreen(
                         },
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .aspectRatio(imageShots[0]?.aspectRatio ?: 1f)
+                            .aspectRatio(TmdbPersonAspectRatio)
                             .padding(4.dp)
                     )
                 }

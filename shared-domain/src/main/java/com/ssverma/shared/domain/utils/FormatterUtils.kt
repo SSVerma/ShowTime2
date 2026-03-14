@@ -1,6 +1,7 @@
 package com.ssverma.shared.domain.utils
 
 import java.text.DecimalFormat
+import java.util.Locale
 
 object FormatterUtils {
 
@@ -20,6 +21,14 @@ object FormatterUtils {
     fun roundOffDecimal(number: Double, pattern: String = "#.#"): Double {
         val df = DecimalFormat(pattern)
         return df.format(number).toDoubleOrNull() ?: 0f.toDouble()
+    }
+
+    fun formatRating(voteAvgPercentage: Float): String {
+        return String.format(Locale.getDefault(), "%.1f", voteAvgPercentage / 10f)
+    }
+
+    fun formatVoteCount(voteCount: Int): String {
+        return "($voteCount)"
     }
 }
 

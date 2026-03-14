@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedList
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.feature.movie.navigation.args.MovieListingType
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.domain.model.movie.MoviePreview
@@ -28,6 +29,7 @@ fun MoviesListContent(
     ) { movie ->
         MovieListItem(
             movie = movie,
+            showRating = type != MovieListingAvailableTypes.Upcoming && type != MovieListingAvailableTypes.TopRated,
             indicator = { preview -> MovieIndicator(type = type, movie = preview) },
             onClick = { preview -> openMovieDetails(preview.id) },
         )

@@ -1,7 +1,5 @@
 package com.ssverma.shared.domain.model.movie
 
-import com.ssverma.shared.domain.utils.DateUtils
-
 data class MoviePreview(
     val id: Int,
     val title: String,
@@ -30,7 +28,7 @@ fun Movie.asMoviePreview(): MoviePreview {
         voteAvgPercentage = voteAvgPercentage,
         voteCount = voteCount,
         displayReleaseDate = displayReleaseDate,
-        displayYear = DateUtils.parseIsoDate(displayReleaseDate)?.year?.toString().orEmpty(),
+        displayYear = releaseDate?.year?.toString().orEmpty(),
         popularity = popularity,
         displayPopularity = displayPopularity,
         genreIds = generes.map { it.id },

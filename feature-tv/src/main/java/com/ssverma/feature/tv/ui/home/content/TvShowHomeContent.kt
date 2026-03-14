@@ -97,6 +97,7 @@ fun TvShowHomeContent(
             ) { tvShowPreview ->
                 TvShowListItem(
                     tvShow = tvShowPreview,
+                    showRating = true,
                     onClick = { openTvShowDetails(it.id) },
                     indicator = {
                         TvIndicator(
@@ -127,6 +128,7 @@ fun TvShowHomeContent(
             ) { tvShowPreview ->
                 TvShowListItem(
                     tvShow = tvShowPreview,
+                    showRating = true,
                     onClick = { openTvShowDetails(it.id) },
                     indicator = {
                         TvIndicator(
