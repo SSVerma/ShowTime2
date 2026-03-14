@@ -1,6 +1,13 @@
 package com.ssverma.shared.ui.component
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -8,14 +15,31 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.theme.spacing
@@ -33,23 +57,24 @@ fun WatchRegionSelector(
     var showSheet by remember { mutableStateOf(false) }
     val currentRegion by viewModel.currentRegion.collectAsState()
 
-    Box(modifier = modifier) {
-        IconButton(onClick = {
+    IconButton(
+        onClick = {
             showSheet = true
             viewModel.loadAvailableRegions()
-        }) {
-            BadgedBox(
-                badge = {
-                    Badge {
-                        Text(text = currentRegion)
-                    }
+        },
+        modifier = modifier
+    ) {
+        BadgedBox(
+            badge = {
+                Badge {
+                    Text(text = currentRegion)
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Public,
-                    contentDescription = stringResource(R.string.watch_region)
-                )
             }
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Public,
+                contentDescription = stringResource(R.string.watch_region)
+            )
         }
     }
 
@@ -59,7 +84,7 @@ fun WatchRegionSelector(
         var selectedRegionIso by remember(currentRegion) { mutableStateOf(currentRegion) }
 
         ModalBottomSheet(
-            onDismissRequest = { 
+            onDismissRequest = {
                 showSheet = false
                 searchQuery = ""
             },
@@ -75,7 +100,10 @@ fun WatchRegionSelector(
                 Text(
                     text = stringResource(R.string.select_watch_region),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(horizontal = MaterialTheme.spacing.large, vertical = MaterialTheme.spacing.medium)
+                    modifier = Modifier.padding(
+                        horizontal = MaterialTheme.spacing.large,
+                        vertical = MaterialTheme.spacing.medium
+                    )
                 )
 
                 // Search Bar
@@ -84,7 +112,10 @@ fun WatchRegionSelector(
                     onValueChange = { searchQuery = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.spacing.large, vertical = MaterialTheme.spacing.small),
+                        .padding(
+                            horizontal = MaterialTheme.spacing.large,
+                            vertical = MaterialTheme.spacing.small
+                        ),
                     placeholder = { Text(stringResource(R.string.search_region)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = if (searchQuery.isNotEmpty()) {
@@ -112,6 +143,7 @@ fun WatchRegionSelector(
                                     .padding(MaterialTheme.spacing.large)
                             )
                         }
+
                         is UiState.Error<*> -> {
                             Column(
                                 modifier = Modifier
@@ -129,13 +161,17 @@ fun WatchRegionSelector(
                                 }
                             }
                         }
+
                         is UiState.Success<List<WatchProviderRegion>> -> {
                             val regions = regionsState.asSuccess().data
                             val filteredRegions = remember(regions, searchQuery) {
                                 if (searchQuery.isBlank()) regions
                                 else regions.filter {
                                     it.englishName.contains(searchQuery, ignoreCase = true) ||
-                                            it.nativeName.contains(searchQuery, ignoreCase = true) ||
+                                            it.nativeName.contains(
+                                                searchQuery,
+                                                ignoreCase = true
+                                            ) ||
                                             it.iso31661.contains(searchQuery, ignoreCase = true)
                                 }
                             }
@@ -153,7 +189,10 @@ fun WatchRegionSelector(
                                                     selectedRegionIso = region.iso31661
                                                 }
                                             )
-                                            .padding(vertical = MaterialTheme.spacing.medium, horizontal = MaterialTheme.spacing.large),
+                                            .padding(
+                                                vertical = MaterialTheme.spacing.medium,
+                                                horizontal = MaterialTheme.spacing.large
+                                            ),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         RadioButton(
@@ -177,6 +216,7 @@ fun WatchRegionSelector(
                                 }
                             }
                         }
+
                         else -> {}
                     }
                 }
