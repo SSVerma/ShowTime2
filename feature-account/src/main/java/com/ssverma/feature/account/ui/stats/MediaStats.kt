@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.Popup
 import com.ssverma.feature.account.R
+import com.ssverma.core.ui.R as CoreUiR
 import com.ssverma.feature.auth.ui.auth.AuthScreenContainer
 import com.ssverma.shared.domain.model.MediaType
 
@@ -64,7 +65,7 @@ fun MediaStatsAction(
                     text = {
                         Text(
                             text = stringResource(
-                                id = com.ssverma.core.ui.R.string.something_went_wrong
+                                id = CoreUiR.string.something_went_wrong
                             )
                         )
                     },
@@ -93,7 +94,7 @@ fun MediaStatsAction(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             ShowTimeLoadingIndicator()
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = stringResource(id = com.ssverma.core.ui.R.string.loading))
+                            Text(text = stringResource(id = CoreUiR.string.loading))
                         }
                     },
                     onClick = {}

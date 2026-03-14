@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.common.ui.R
+import com.ssverma.shared.ui.R as SharedUiR
 import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,75 +52,82 @@ fun AppInfoBottomSheet(
         modifier = modifier
     ) {
         Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(MaterialTheme.spacing.large)
+                .padding(horizontal = MaterialTheme.spacing.large)
+                .padding(bottom = MaterialTheme.spacing.large)
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = MaterialTheme.shapes.extraLarge,
-                modifier = Modifier.size(100.dp)
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = MaterialTheme.spacing.large)
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Image(
-                        painter = painterResource(id = com.ssverma.shared.ui.R.drawable.ic_launcher),
-                        contentDescription = stringResource(R.string.app_logo_desc),
-                        modifier = Modifier.size(80.dp)
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = MaterialTheme.shapes.extraLarge,
+                    modifier = Modifier.size(100.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Image(
+                            painter = painterResource(id = SharedUiR.drawable.ic_launcher),
+                            contentDescription = stringResource(R.string.app_logo_desc),
+                            modifier = Modifier.size(80.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+                Text(
+                    text = stringResource(R.string.app_info_welcome),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+                Text(
+                    text = stringResource(R.string.app_info_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = MaterialTheme.spacing.small)
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+                // Feature list
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+                ) {
+                    AppInfoFeatureItem(text = stringResource(R.string.app_info_feature_tmdb))
+                    AppInfoFeatureItem(text = stringResource(R.string.app_info_feature_indie_dev))
+                    AppInfoFeatureItem(
+                        text = stringResource(R.string.app_info_feature_rating),
+                        icon = Icons.Rounded.Favorite
                     )
                 }
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+                Text(
+                    text = stringResource(R.string.app_info_version, versionName),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                AppInfoLinks()
             }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-
-            Text(
-                text = stringResource(R.string.app_info_welcome),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
-            )
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            Text(
-                text = stringResource(R.string.app_info_description),
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.small)
-            )
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-
-            // Feature list
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
-            ) {
-                AppInfoFeatureItem(text = stringResource(R.string.app_info_feature_tmdb))
-                AppInfoFeatureItem(text = stringResource(R.string.app_info_feature_indie_dev))
-                AppInfoFeatureItem(
-                    text = stringResource(R.string.app_info_feature_rating),
-                    icon = Icons.Rounded.Favorite
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-
-            Text(
-                text = stringResource(R.string.app_info_version, versionName),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            AppInfoLinks()
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
             if (showDontShowAgain) {
                 Row(
@@ -127,10 +135,13 @@ fun AppInfoBottomSheet(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Checkbox(checked = dontShowAgain, onCheckedChange = { dontShowAgain = it })
-                    Text(stringResource(R.string.app_info_dont_show_again), style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.app_info_dont_show_again),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             }
 
             Button(

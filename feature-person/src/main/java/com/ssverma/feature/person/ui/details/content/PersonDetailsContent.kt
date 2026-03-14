@@ -30,6 +30,7 @@ import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.R
+import com.ssverma.shared.ui.R as SharedUiR
 import com.ssverma.feature.person.ui.details.component.PersonDetailsBackdropHeader
 import com.ssverma.feature.person.ui.details.component.PersonMediaTabRow
 import com.ssverma.feature.person.ui.details.component.PersonTimelineItem
@@ -71,7 +72,7 @@ fun PersonDetailsContent(
             ) {
                 Column(modifier = Modifier.padding(MaterialTheme.spacing.large)) {
                     Text(
-                        text = stringResource(id = com.ssverma.shared.ui.R.string.overview),
+                        text = stringResource(id = SharedUiR.string.overview),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -136,7 +137,7 @@ fun PersonDetailsContent(
             Section(
                 sectionHeader = {
                     SectionHeader(
-                        title = stringResource(id = com.ssverma.shared.ui.R.string.shots),
+                        title = stringResource(id = SharedUiR.string.shots),
                         trailingActionLabel = stringResource(id = R.string.see_more),
                         modifier = Modifier.padding(horizontal = 16.dp),
                         onTrailingActionClicked = {
