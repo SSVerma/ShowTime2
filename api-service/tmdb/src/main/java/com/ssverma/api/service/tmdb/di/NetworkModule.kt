@@ -2,6 +2,7 @@ package com.ssverma.api.service.tmdb.di
 
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.interceptor.AuthInterceptor
+import com.ssverma.api.service.tmdb.interceptor.RegionInterceptor
 import com.ssverma.core.networking.RestClient
 import com.ssverma.core.networking.config.AdditionalServiceConfig
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
@@ -32,10 +33,13 @@ class NetworkModule {
 
     @Singleton
     @Provides
-    internal fun provideServiceConfig(authInterceptor: AuthInterceptor): AdditionalServiceConfig {
+    internal fun provideServiceConfig(
+        authInterceptor: AuthInterceptor,
+        regionInterceptor: RegionInterceptor
+    ): AdditionalServiceConfig {
         return object : AdditionalServiceConfig() {
             override val applicationInterceptors: List<ApplicationInterceptor>
-                get() = listOf(authInterceptor)
+                get() = listOf(authInterceptor, regionInterceptor)
         }
     }
 

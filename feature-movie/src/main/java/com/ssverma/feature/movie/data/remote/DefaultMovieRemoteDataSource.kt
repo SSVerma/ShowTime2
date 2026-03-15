@@ -33,10 +33,6 @@ class DefaultMovieRemoteDataSource @Inject constructor(
         )
     }
 
-    override suspend fun fetchTopRatedMovies(page: Int): TmdbApiResponse<PagedPayload<RemoteMovie>> {
-        return tmdbApiService.getTopRatedMovies(page = page)
-    }
-
     override suspend fun fetchMovieGenre(): TmdbApiResponse<GenrePayload> {
         return tmdbApiService.getMovieGenres()
     }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -36,8 +38,12 @@ fun MovieListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
+    val watchRegion by viewModel.appConfigRepository.watchProviderRegion.collectAsStateWithLifecycle()
 
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var isClosingProgrammatically by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     val coroutineScope = rememberCoroutineScope()
     var showFilterSheet by remember { mutableStateOf(false) }
 
@@ -81,13 +87,27 @@ fun MovieListScreen(
         ModalBottomSheet(
             onDismissRequest = { showFilterSheet = false },
             sheetState = sheetState,
+            dragHandle = null,
+            tonalElevation = 0.dp
         ) {
             MovieFiltersScreen(
-                filterGroups = uiState.filterUiState.filters,
-                onFilterApplied = {
+                watchRegion = watchRegion,
+                initialConfig = uiState.discoverConfig,
+                onBackPressed = {
+                    isClosingProgrammatically = true
                     coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
                             showFilterSheet = false
+                            isClosingProgrammatically = false
+                        }
+                    }
+                },
+                onFilterApplied = {
+                    isClosingProgrammatically = true
+                    coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            showFilterSheet = false
+                            isClosingProgrammatically = false
                         }
                     }
                     viewModel.onFiltersApplied(it)

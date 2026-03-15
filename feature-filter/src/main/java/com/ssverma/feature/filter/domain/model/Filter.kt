@@ -1,4 +1,4 @@
-package com.ssverma.feature.filter.domain
+package com.ssverma.feature.filter.domain.model
 
 import com.ssverma.shared.domain.DiscoverOption
 import java.time.LocalDate
@@ -37,6 +37,13 @@ sealed interface Filter {
             override val to: LocalDate,
         ) : RangeFilter<LocalDate>
     }
+
+    sealed interface SelectionFilter : Filter {
+        data class Single(
+            override val id: FilterId.SelectionTypeId,
+            val items: List<StaticFilterItem>,
+        ) : SelectionFilter
+    }
 }
 
 data class DynamicFilterItem(
@@ -45,24 +52,68 @@ data class DynamicFilterItem(
 )
 
 data class StaticFilterItem(
-    val option: DiscoverOption
+    val option: Any // Using Any temporarily to support both DiscoverOption and SortBy
 )
 
 sealed interface FilterId {
+    val isRemoteSearchSupported: Boolean get() = false
+
     sealed interface CollectionTypeId : FilterId {
         sealed interface Static : CollectionTypeId {
             object Availability : Static
             object ReleaseType : Static
             object Certification : Static
+            object Status : Static
+            object Type : Static
+            object IncludeAdult : Static
+            object IncludeVideo : Static
+            object VoteCount : Static
         }
 
         sealed interface Dynamic : CollectionTypeId {
             object Language : Dynamic
             object Country : Dynamic
-            object Person : Dynamic
+            object Person : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
+            object Cast : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
+            object Crew : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
             object Genre : Dynamic
-            object Keyword : Dynamic
+            object WithoutGenre : Dynamic
+            object Keyword : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
+            object WithoutKeyword : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
+            object Company : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
+            object WithoutCompany : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
+            object Network : Dynamic {
+                override val isRemoteSearchSupported: Boolean = true
+            }
+
+            object WatchProviders : Dynamic
         }
+    }
+
+    sealed interface SelectionTypeId : FilterId {
+        object SortBy : SelectionTypeId
+        object SortOrder : SelectionTypeId
     }
 
     sealed interface RangeTypeId : FilterId {
@@ -73,6 +124,8 @@ sealed interface FilterId {
 
         sealed interface NumberRange : RangeTypeId {
             object Rating : NumberRange
+            object Runtime : NumberRange
+            object VoteAvg : NumberRange
         }
     }
 }

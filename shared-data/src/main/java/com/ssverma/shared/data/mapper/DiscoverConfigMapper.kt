@@ -14,10 +14,8 @@ fun DiscoverConfig.asQueryMap(): Map<String, String> {
         val entry = option.asQueryMapEntry()
         when (option.mode) {
             is OptionMode.MultiValue -> {
-                val pair = multiValueOptions.getOrDefault(
-                    entry.first,
-                    Pair(first = (option.mode as OptionMode.MultiValue).valueMode, mutableSetOf())
-                )
+                val pair = multiValueOptions[entry.first]
+                    ?: Pair(first = (option.mode as OptionMode.MultiValue).valueMode, mutableSetOf<String>())
                 pair.second.add(entry.second)
 
                 multiValueOptions[entry.first] = pair
@@ -86,7 +84,7 @@ private fun SortBy.asQueryMapEntry(): Pair<String, String> {
                         TmdbApiTiedConstants.AvailableSortingOptions.RevenueAsc
                     }
                     Order.Descending -> {
-                        TmdbApiTiedConstants.AvailableSortingOptions.ReleaseDateDesc
+                        TmdbApiTiedConstants.AvailableSortingOptions.RevenueDesc
                     }
                 }
             }
@@ -106,7 +104,7 @@ private fun SortBy.asQueryMapEntry(): Pair<String, String> {
                         TmdbApiTiedConstants.AvailableSortingOptions.VoteCountAsc
                     }
                     Order.Descending -> {
-                        TmdbApiTiedConstants.AvailableSortingOptions.VoteAvgDesc
+                        TmdbApiTiedConstants.AvailableSortingOptions.VoteCountDesc
                     }
                 }
             }
@@ -163,6 +161,13 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
             )
         }
 
+        is DiscoverOption.AirDate.Year -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateYear,
+                second = year.toString()
+            )
+        }
+
         DiscoverOption.Certification.A -> {
             return Pair(
                 first = TmdbApiTiedConstants.AvailableDiscoverOptions.certification,
@@ -183,7 +188,7 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
         }
         is DiscoverOption.Country -> {
             return Pair(
-                first = TmdbApiTiedConstants.AvailableDiscoverOptions.country,
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withOriginCountry,
                 second = iso3
             )
         }
@@ -193,9 +198,15 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
                 second = genreId.toString()
             )
         }
+        is DiscoverOption.WithoutGenre -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withoutGenres,
+                second = genreId.toString()
+            )
+        }
         is DiscoverOption.Language -> {
             return Pair(
-                first = TmdbApiTiedConstants.AvailableDiscoverOptions.language,
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withOriginalLanguage,
                 second = iso3
             )
         }
@@ -235,10 +246,10 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
                 second = TmdbApiTiedConstants.AvailableMonetizationTypes.Rent
             )
         }
-        DiscoverOption.Monetization.Stream -> {
+        DiscoverOption.Monetization.Flatrate -> {
             return Pair(
                 first = TmdbApiTiedConstants.AvailableDiscoverOptions.withMonetizationType,
-                second = TmdbApiTiedConstants.AvailableMonetizationTypes.Stream
+                second = TmdbApiTiedConstants.AvailableMonetizationTypes.Flatrate
             )
         }
         is DiscoverOption.Person -> {
@@ -247,16 +258,52 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
                 second = personId.toString()
             )
         }
+        is DiscoverOption.Cast -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withCast,
+                second = personId.toString()
+            )
+        }
+        is DiscoverOption.Crew -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withCrew,
+                second = personId.toString()
+            )
+        }
         is DiscoverOption.ReleaseDate.From -> {
             return Pair(
-                first = TmdbApiTiedConstants.AvailableDiscoverOptions.primaryReleaseDateGte,
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.releaseDateGte,
                 second = date.formatAsIso().orEmpty()
             )
         }
         is DiscoverOption.ReleaseDate.To -> {
             return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.releaseDateLte,
+                second = date.formatAsIso().orEmpty()
+            )
+        }
+        is DiscoverOption.ReleaseDate.Year -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.primaryReleaseYear,
+                second = year.toString()
+            )
+        }
+        is DiscoverOption.PrimaryReleaseDate.From -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.primaryReleaseDateGte,
+                second = date.formatAsIso().orEmpty()
+            )
+        }
+        is DiscoverOption.PrimaryReleaseDate.To -> {
+            return Pair(
                 first = TmdbApiTiedConstants.AvailableDiscoverOptions.primaryReleaseDateLte,
                 second = date.formatAsIso().orEmpty()
+            )
+        }
+        is DiscoverOption.PrimaryReleaseDate.Year -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.primaryReleaseYear,
+                second = year.toString()
             )
         }
         DiscoverOption.ReleaseType.Digital -> {
@@ -319,16 +366,70 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
                 second = to.toString()
             )
         }
+        is DiscoverOption.Rating.VoteCount -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.voteCountGte,
+                second = voteCount.toString()
+            )
+        }
         is DiscoverOption.Keyword -> {
             return Pair(
                 first = TmdbApiTiedConstants.AvailableDiscoverOptions.withKeywords,
                 second = keywordId.toString()
             )
         }
-        is DiscoverOption.Region -> {
+        is DiscoverOption.WithoutKeyword -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withoutKeywords,
+                second = keywordId.toString()
+            )
+        }
+        is DiscoverOption.Company -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withCompanies,
+                second = companyId.toString()
+            )
+        }
+        is DiscoverOption.WithoutCompany -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withoutCompanies,
+                second = companyId.toString()
+            )
+        }
+        is DiscoverOption.Network -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withNetworks,
+                second = networkId.toString()
+            )
+        }
+        is DiscoverOption.Status -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withStatus,
+                second = statusId.toString()
+            )
+        }
+        is DiscoverOption.WatchRegion -> {
             return Pair(
                 first = TmdbApiTiedConstants.AvailableDiscoverOptions.watchRegion,
                 second = iso3
+            )
+        }
+        is DiscoverOption.TvType -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withType,
+                second = typeId.toString()
+            )
+        }
+        is DiscoverOption.IncludeAdult -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.includeAdult,
+                second = include.toString()
+            )
+        }
+        is DiscoverOption.IncludeVideo -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.includeVideo,
+                second = include.toString()
             )
         }
     }

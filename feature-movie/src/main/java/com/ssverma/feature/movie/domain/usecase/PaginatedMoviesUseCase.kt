@@ -19,9 +19,6 @@ class PaginatedMoviesUseCase @Inject constructor(
 
     override fun execute(params: MovieListingConfig): Flow<PagingData<Movie>> {
         return when (params) {
-            MovieListingConfig.TopRated -> {
-                topRatedPaginatedMoviesUseCase()
-            }
             is MovieListingConfig.TrendingToday -> {
                 trendingPaginatedMoviesUseCase(params.timeWindow)
             }
@@ -31,7 +28,7 @@ class PaginatedMoviesUseCase @Inject constructor(
                 } ?: params.discoverConfig.movieOptions
 
                 val discoverConfig = MovieDiscoverConfig
-                    .builder(sortBy = params.discoverConfig.sortBy)
+                    .builder(sortBy = params.filterConfig?.sortBy ?: params.discoverConfig.sortBy)
                     .with(*allOptions.toTypedArray())
                     .build()
 

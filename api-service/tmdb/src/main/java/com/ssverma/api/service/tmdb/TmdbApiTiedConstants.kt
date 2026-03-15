@@ -19,7 +19,7 @@ object TmdbApiTiedConstants {
         const val Ads = "ads"
         const val Rent = "rent"
         const val Buy = "buy"
-        const val Stream = "stream"
+        const val Flatrate = "flatrate"
     }
 
     object AvailableReleaseTypes {
@@ -58,29 +58,47 @@ object TmdbApiTiedConstants {
     }
 
     object AvailableDiscoverOptions {
-        const val language: String = "with_original_language"
-        const val country: String = "country"
+        const val withOriginalLanguage: String = "with_original_language"
+        const val withOriginCountry: String = "with_origin_country"
         const val certification = "certification"
+        const val certificationCountry = "certification_country"
+        const val region = "region"
+        const val releaseDateLte = "release_date.lte"
+        const val releaseDateGte = "release_date.gte"
         const val primaryReleaseDateLte = "primary_release_date.lte"
         const val primaryReleaseDateGte = "primary_release_date.gte"
         const val primaryReleaseYear = "primary_release_year"
         const val releaseType = "with_release_type"
         const val voteAvgGte = "vote_average.gte"
         const val voteAvgLte = "vote_average.lte"
+        const val voteCountGte = "vote_count.gte"
+        const val voteCountLte = "vote_count.lte"
         const val runtimeGte = "with_runtime.gte"
         const val runtimeLte = "with_runtime.lte"
         const val withWatchProviders = "with_watch_providers"
         const val watchRegion = "watch_region"
         const val withMonetizationType = "with_watch_monetization_types"
         const val withPeople = "with_people"
+        const val withCast = "with_cast"
+        const val withCrew = "with_crew"
         const val withGenres = "with_genres"
+        const val withoutGenres = "without_genres"
         const val withKeywords = "with_keywords"
+        const val withoutKeywords = "without_keywords"
+        const val withCompanies = "with_companies"
+        const val withoutCompanies = "without_companies"
+        const val withNetworks = "with_networks"
+        const val withStatus = "with_status"
+        const val withType = "with_type"
+        const val includeAdult = "include_adult"
+        const val includeVideo = "include_video"
         const val sortBy = "sort_by"
 
         const val airDateLte = "air_date.lte"
         const val airDateGte = "air_date.gte"
         const val firstAirDateLte = "first_air_date.lte"
         const val firstAirDateGte = "first_air_date.gte"
+        const val firstAirDateYear = "first_air_date_year"
         const val timezone = "timezone"
     }
 

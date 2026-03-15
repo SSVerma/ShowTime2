@@ -1,6 +1,7 @@
 package com.ssverma.feature.tv.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.usecase.NoParamUseCase
@@ -13,11 +14,13 @@ import javax.inject.Inject
 
 class PopularTvShowsUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
-    private val tvShowRepository: TvShowRepository
+    private val tvShowRepository: TvShowRepository,
+    private val appConfigRepository: AppConfigRepository
 ) : NoParamUseCase<Result<List<TvShow>, Failure<TvShowFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(): Result<List<TvShow>, Failure<TvShowFailure>> {
-        val tvShowConfig = TvShowDefaults.DiscoverDefaults.popular()
+        val watchRegion = appConfigRepository.watchProviderRegion.value
+        val tvShowConfig = TvShowDefaults.DiscoverDefaults.popular(watchRegion)
         return tvShowRepository.discoverTvShows(tvShowConfig)
     }
 }

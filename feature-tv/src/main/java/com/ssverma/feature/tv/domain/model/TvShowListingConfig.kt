@@ -10,46 +10,80 @@ sealed interface TvShowListingConfig {
         val timeWindow: TimeWindow = TimeWindow.Daily
     ) : TvShowListingConfig
 
-    object TopRated : TvShowListingConfig
 
     sealed interface Filterable : TvShowListingConfig {
         val discoverConfig: TvDiscoverConfig
-        var filterConfig: TvDiscoverConfig?
+        val filterConfig: TvDiscoverConfig?
+
+        fun withFilter(filter: TvDiscoverConfig): Filterable
 
         data class ByGenre(
             val genreId: Int,
             override val discoverConfig: TvDiscoverConfig = TvDiscoverConfig.builder()
                 .with(DiscoverOption.Genre(genreId = genreId))
                 .build(),
-            override var filterConfig: TvDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: TvDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: TvDiscoverConfig): ByGenre {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class ByKeyword(
             val keywordId: Int,
             override val discoverConfig: TvDiscoverConfig = TvDiscoverConfig.builder()
                 .with(DiscoverOption.Keyword(keywordId = keywordId))
                 .build(),
-            override var filterConfig: TvDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: TvDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: TvDiscoverConfig): ByKeyword {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class Popular(
             override val discoverConfig: TvDiscoverConfig = TvShowDefaults.DiscoverDefaults.popular(),
-            override var filterConfig: TvDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: TvDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: TvDiscoverConfig): Popular {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class NowAiring(
             override val discoverConfig: TvDiscoverConfig = TvShowDefaults.DiscoverDefaults.nowAiring(),
-            override var filterConfig: TvDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: TvDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: TvDiscoverConfig): NowAiring {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class TodayAiring(
             override val discoverConfig: TvDiscoverConfig = TvShowDefaults.DiscoverDefaults.todayAiring(),
-            override var filterConfig: TvDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: TvDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: TvDiscoverConfig): TodayAiring {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class Upcoming(
             override val discoverConfig: TvDiscoverConfig = TvShowDefaults.DiscoverDefaults.upcoming(),
-            override var filterConfig: TvDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: TvDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: TvDiscoverConfig): Upcoming {
+                return copy(filterConfig = filter)
+            }
+        }
+
+        data class TopRated(
+            override val discoverConfig: TvDiscoverConfig = TvShowDefaults.DiscoverDefaults.topRated(),
+            override val filterConfig: TvDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: TvDiscoverConfig): TopRated {
+                return copy(filterConfig = filter)
+            }
+        }
     }
 }

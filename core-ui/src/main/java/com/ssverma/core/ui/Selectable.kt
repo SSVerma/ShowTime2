@@ -128,14 +128,16 @@ fun <T> rememberSelectableState(initialSelected: Set<T> = emptySet()): MultiSele
         MultiSelectableState(initialValue = initialSelected)
     }
 }
-
 interface SelectableState<T> {
     fun onSelectionChanged(item: T)
     fun isSelected(item: T): Boolean
+    fun clear()
+    fun isDefault(): Boolean
+    fun reset()
 }
 
 class SingleSelectableState<T>(
-    initialValue: T? = null
+    private val initialValue: T? = null
 ) : SelectableState<T> {
     private var selected by mutableStateOf(initialValue)
 
@@ -151,6 +153,18 @@ class SingleSelectableState<T>(
         return item == selected
     }
 
+    override fun clear() {
+        selected = initialValue
+    }
+
+    override fun isDefault(): Boolean {
+        return selected == initialValue
+    }
+
+    override fun reset() {
+        selected = null
+    }
+
     operator fun getValue(nothing: Nothing?, property: KProperty<*>): SingleSelectableState<T> {
         return this
     }
@@ -161,7 +175,7 @@ class SingleSelectableState<T>(
 }
 
 class MultiSelectableState<T>(
-    initialValue: Set<T> = emptySet()
+    private val initialValue: Set<T> = emptySet()
 ) : SelectableState<T> {
     private var selectedItems by mutableStateOf(
         value = initialValue.toMutableSet(),
@@ -179,6 +193,18 @@ class MultiSelectableState<T>(
 
     override fun isSelected(item: T): Boolean {
         return selectedItems.contains(item)
+    }
+
+    override fun clear() {
+        selectedItems = initialValue.toMutableSet()
+    }
+
+    override fun isDefault(): Boolean {
+        return selectedItems == initialValue
+    }
+
+    override fun reset() {
+        selectedItems = mutableSetOf()
     }
 
     operator fun getValue(nothing: Nothing?, property: KProperty<*>): MultiSelectableState<T> {

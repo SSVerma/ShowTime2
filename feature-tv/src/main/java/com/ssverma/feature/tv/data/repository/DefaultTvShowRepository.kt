@@ -16,11 +16,9 @@ import com.ssverma.feature.tv.domain.model.TvSeasonConfig
 import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import com.ssverma.shared.data.mapper.*
+import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
+import com.ssverma.shared.domain.*
 import com.ssverma.shared.domain.model.WatchProvider
-import com.ssverma.shared.data.mapper.asWatchProvidersMap
-import com.ssverma.shared.domain.Result
-import com.ssverma.shared.domain.TimeWindow
-import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
@@ -79,31 +77,13 @@ class DefaultTvShowRepository @Inject constructor(
     }
 
     override fun fetchTopRatedTvShowsGradually(): Flow<PagingData<TvShow>> {
-        return Pager(
-            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
-            pagingSourceFactory = {
-                TvShowsPagingSource(
-                    tvShowApiCall = { pageNumber ->
-                        tvShowRemoteDataSource.fetchTopRatedTvShows(
-                            page = pageNumber
-                        )
-                    },
-                    mapRemoteToDomain = { tvShowsMapper.map(it) }
-                )
-            }
-        ).flow
+        val config = TvShowDefaults.DiscoverDefaults.topRated()
+        return discoverTvShowsGradually(config)
     }
 
     override suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>> {
-        val apiResponse = tvShowRemoteDataSource.fetchTopRatedTvShows(
-            page = TmdbDefaults.ApiDefaults.FirstPageNumber
-        )
-
-        return apiResponse.asDomainResult(
-            mapRemoteToDomain = {
-                tvShowsMapper.map(it.body.results.orEmpty())
-            }
-        )
+        val config = TvShowDefaults.DiscoverDefaults.topRated()
+        return discoverTvShows(config)
     }
 
     override suspend fun fetchTrendingTvShows(

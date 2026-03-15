@@ -7,14 +7,16 @@ import com.ssverma.feature.movie.domain.defaults.MovieDefaults
 
 sealed interface MovieListingConfig {
     data class TrendingToday(
-        val timeWindow: TimeWindow = TimeWindow.Daily
+        val timeWindow: TimeWindow = TimeWindow.Daily,
+        val watchRegion: String? = null
     ) : MovieListingConfig
 
-    object TopRated : MovieListingConfig
 
     sealed interface Filterable : MovieListingConfig {
         val discoverConfig: MovieDiscoverConfig
-        var filterConfig: MovieDiscoverConfig?
+        val filterConfig: MovieDiscoverConfig?
+
+        fun withFilter(filter: MovieDiscoverConfig): Filterable
 
         data class ByGenre(
             val genreId: Int,
@@ -24,8 +26,12 @@ sealed interface MovieListingConfig {
                     DiscoverOption.Genre(genreId = genreId)
                 )
                 .build(),
-            override var filterConfig: MovieDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: MovieDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: MovieDiscoverConfig): ByGenre {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class ByKeyword(
             val keywordId: Int,
@@ -35,22 +41,47 @@ sealed interface MovieListingConfig {
                     DiscoverOption.Keyword(keywordId = keywordId)
                 )
                 .build(),
-            override var filterConfig: MovieDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: MovieDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: MovieDiscoverConfig): ByKeyword {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class Popular(
             override val discoverConfig: MovieDiscoverConfig = MovieDefaults.DiscoverDefaults.popular(),
-            override var filterConfig: MovieDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: MovieDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: MovieDiscoverConfig): Popular {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class NowInCinemas(
             override val discoverConfig: MovieDiscoverConfig = MovieDefaults.DiscoverDefaults.inCinemas(),
-            override var filterConfig: MovieDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: MovieDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: MovieDiscoverConfig): NowInCinemas {
+                return copy(filterConfig = filter)
+            }
+        }
 
         data class Upcoming(
             override val discoverConfig: MovieDiscoverConfig = MovieDefaults.DiscoverDefaults.upcoming(),
-            override var filterConfig: MovieDiscoverConfig? = null
-        ) : Filterable
+            override val filterConfig: MovieDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: MovieDiscoverConfig): Upcoming {
+                return copy(filterConfig = filter)
+            }
+        }
+
+        data class TopRated(
+            override val discoverConfig: MovieDiscoverConfig = MovieDefaults.DiscoverDefaults.topRated(),
+            override val filterConfig: MovieDiscoverConfig? = null
+        ) : Filterable {
+            override fun withFilter(filter: MovieDiscoverConfig): TopRated {
+                return copy(filterConfig = filter)
+            }
+        }
     }
 }

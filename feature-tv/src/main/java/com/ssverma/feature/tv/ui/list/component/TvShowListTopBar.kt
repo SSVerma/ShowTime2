@@ -9,9 +9,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.feature.filter.ui.filter.FilterActionIcon
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.ui.list.TvShowPaginatedListUiState
 
@@ -40,12 +40,10 @@ fun TvShowListTopBar(
             }
 
             if (uiState.isFilterApplicable) {
-                IconButton(onClick = onOpenFilters) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_filter),
-                        contentDescription = stringResource(id = R.string.filter)
-                    )
-                }
+                FilterActionIcon(
+                    isFilterApplied = uiState.isFilterApplied,
+                    onClick = onOpenFilters
+                )
             }
         }
     )

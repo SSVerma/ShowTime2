@@ -1,6 +1,8 @@
 package com.ssverma.feature.tv.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
+import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.usecase.NoParamUseCase
@@ -12,10 +14,13 @@ import javax.inject.Inject
 
 class TopRatedTvShowsUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
-    private val tvShowRepository: TvShowRepository
+    private val tvShowRepository: TvShowRepository,
+    private val appConfigRepository: AppConfigRepository
 ) : NoParamUseCase<Result<List<TvShow>, Failure<TvShowFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(): Result<List<TvShow>, Failure<TvShowFailure>> {
-        return tvShowRepository.fetchTopRatedTvShows()
+        val watchRegion = appConfigRepository.watchProviderRegion.value
+        val discoverConfig = TvShowDefaults.DiscoverDefaults.topRated(watchRegion)
+        return tvShowRepository.discoverTvShows(discoverConfig)
     }
 }

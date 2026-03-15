@@ -14,5 +14,6 @@ dependencies {
     implementation(projects.featureSearchNavigation)
 
     implementation(projects.featureFilter)
+    implementation(projects.featureSearch)
     implementation(projects.featureAccount)
 }

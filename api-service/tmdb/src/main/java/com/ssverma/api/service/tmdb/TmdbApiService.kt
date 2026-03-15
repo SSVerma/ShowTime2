@@ -11,14 +11,19 @@ import com.ssverma.api.service.tmdb.response.AccountPayload
 import com.ssverma.api.service.tmdb.response.GenrePayload
 import com.ssverma.api.service.tmdb.response.MediaStatsPayload
 import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteCompany
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
+import com.ssverma.api.service.tmdb.response.RemoteKeyword
+import com.ssverma.api.service.tmdb.response.RemoteLanguage
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
+import com.ssverma.api.service.tmdb.response.RemoteNetwork
 import com.ssverma.api.service.tmdb.response.RemotePerson
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
 import com.ssverma.api.service.tmdb.response.RemoteTvSeason
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
+import com.ssverma.api.service.tmdb.response.RemoteWatchProviderRegion
 import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
 import com.ssverma.api.service.tmdb.response.RequestTokenPayload
 import com.ssverma.api.service.tmdb.response.SessionPayload
@@ -51,16 +56,6 @@ interface TmdbApiService {
         @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
-    @GET("3/movie/popular")
-    suspend fun getPopularMovies(
-        @Query("page") page: Int
-    ): TmdbApiResponse<PagedPayload<RemoteMovie>>
-
-    @GET("3/movie/top_rated")
-    suspend fun getTopRatedMovies(
-        @Query("page") page: Int
-    ): TmdbApiResponse<PagedPayload<RemoteMovie>>
-
     @GET("3/discover/movie")
     suspend fun getDiscoveredMovies(
         @QueryMap queryMap: Map<String, String>,
@@ -69,6 +64,12 @@ interface TmdbApiService {
 
     @GET("3/genre/movie/list")
     suspend fun getMovieGenres(): TmdbApiResponse<GenrePayload>
+
+    @GET("3/configuration/countries")
+    suspend fun getCountries(): TmdbApiResponse<List<RemoteWatchProviderRegion>>
+
+    @GET("3/configuration/languages")
+    suspend fun getLanguages(): TmdbApiResponse<List<RemoteLanguage>>
 
     @GET("3/watch/providers/regions")
     suspend fun getWatchProviderRegions(): TmdbApiResponse<WatchProviderRegionPayload>
@@ -106,11 +107,6 @@ interface TmdbApiService {
 
     @GET("3/tv/popular")
     suspend fun getPopularTvShows(
-        @Query("page") page: Int
-    ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
-
-    @GET("3/tv/top_rated")
-    suspend fun getTopRatedTvShows(
         @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
@@ -172,6 +168,24 @@ interface TmdbApiService {
     suspend fun multiSearch(
         @Query("query") query: String
     ): TmdbApiResponse<PagedPayload<RemoteMultiSearchSuggestion>>
+
+    @GET("3/search/keyword")
+    suspend fun searchKeywords(
+        @Query("query") query: String,
+        @Query("page") page: Int = 1
+    ): TmdbApiResponse<PagedPayload<RemoteKeyword>>
+
+    @GET("3/search/company")
+    suspend fun searchCompanies(
+        @Query("query") query: String,
+        @Query("page") page: Int = 1
+    ): TmdbApiResponse<PagedPayload<RemoteCompany>>
+
+    @GET("3/search/network")
+    suspend fun searchNetworks(
+        @Query("query") query: String,
+        @Query("page") page: Int = 1
+    ): TmdbApiResponse<PagedPayload<RemoteNetwork>>
 
     @POST("4/auth/request_token")
     suspend fun createRequestToken(

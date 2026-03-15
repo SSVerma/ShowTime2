@@ -16,15 +16,22 @@ object MovieDefaults {
             .build()
 
         fun inCinemas() = MovieDiscoverConfig.builder(sortBy = SortBy.ReleaseDate())
-            .with(DiscoverOption.ReleaseDate.To(date = DateUtils.currentDate()))
+            .with(DiscoverOption.PrimaryReleaseDate.To(date = DateUtils.currentDate()))
             .build()
 
         fun upcoming() = MovieDiscoverConfig
             .builder(sortBy = SortBy.ReleaseDate(order = Order.Ascending))
             .with(
                 DefaultMovieReleaseType,
-                DiscoverOption.ReleaseDate.From(date = DateUtils.currentDate().plusDays(1)),
+                DiscoverOption.PrimaryReleaseDate.From(date = DateUtils.currentDate().plusDays(1)),
             )
+            .build()
+
+        fun topRated(region: String? = null) = MovieDiscoverConfig
+            .builder(sortBy = SortBy.Rating(Order.Descending))
+            .apply {
+                region?.let { with(DiscoverOption.WatchRegion(it)) }
+            }
             .build()
     }
 

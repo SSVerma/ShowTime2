@@ -21,9 +21,6 @@ class PaginatedTvShowUseCase @Inject constructor(
 
     override fun execute(params: TvShowListingConfig): Flow<PagingData<TvShow>> {
         return when (params) {
-            TvShowListingConfig.TopRated -> {
-                topRatedTvShowsUseCase()
-            }
             is TvShowListingConfig.TrendingToday -> {
                 trendingTvShowsUseCase(params.timeWindow)
             }
@@ -33,7 +30,7 @@ class PaginatedTvShowUseCase @Inject constructor(
                 } ?: params.discoverConfig.tvOptions
 
                 val discoverConfig = TvDiscoverConfig
-                    .builder(sortBy = params.discoverConfig.sortBy)
+                    .builder(sortBy = params.filterConfig?.sortBy ?: params.discoverConfig.sortBy)
                     .with(*allOptions.toTypedArray())
                     .build()
 

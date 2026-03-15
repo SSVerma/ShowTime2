@@ -19,8 +19,6 @@ interface MovieRemoteDataSource {
         page: Int
     ): TmdbApiResponse<PagedPayload<RemoteMovie>>
 
-    suspend fun fetchTopRatedMovies(page: Int): TmdbApiResponse<PagedPayload<RemoteMovie>>
-
     suspend fun fetchMovieGenre(): TmdbApiResponse<GenrePayload>
 
     suspend fun fetchMovieReviewsGradually(

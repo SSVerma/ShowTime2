@@ -13,7 +13,7 @@ fun MovieListingArgs.asMovieListingConfigs(): MovieListingConfig {
             MovieListingConfig.Filterable.Popular()
         }
         MovieListingAvailableTypes.TopRated -> {
-            MovieListingConfig.TopRated
+            MovieListingConfig.Filterable.TopRated()
         }
         MovieListingAvailableTypes.NowInCinemas -> {
             MovieListingConfig.Filterable.NowInCinemas()

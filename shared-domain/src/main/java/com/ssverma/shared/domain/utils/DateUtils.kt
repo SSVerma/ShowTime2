@@ -1,9 +1,13 @@
 package com.ssverma.shared.domain.utils
 
 import java.time.DateTimeException
+import java.util.Calendar
+import java.util.Date
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.format.FormatStyle
@@ -11,6 +15,14 @@ import java.time.format.FormatStyle
 object DateUtils {
     fun currentDate(): LocalDate {
         return LocalDate.now()
+    }
+
+    fun toMillis(date: LocalDate): Long {
+        return date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    }
+
+    fun fromMillis(millis: Long): LocalDate {
+        return java.time.Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
     }
 
     fun parseIsoDate(date: String?): LocalDate? {

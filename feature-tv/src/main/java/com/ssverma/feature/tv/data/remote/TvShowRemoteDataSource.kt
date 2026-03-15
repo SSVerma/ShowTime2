@@ -15,10 +15,6 @@ interface TvShowRemoteDataSource {
         page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
-    suspend fun fetchTopRatedTvShows(
-        page: Int
-    ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
-
     suspend fun fetchTvShowGenre(): TmdbApiResponse<GenrePayload>
 
     suspend fun fetchTvShowReviewsGradually(

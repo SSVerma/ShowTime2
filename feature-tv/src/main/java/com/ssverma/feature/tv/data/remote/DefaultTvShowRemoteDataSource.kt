@@ -30,12 +30,6 @@ class DefaultTvShowRemoteDataSource @Inject constructor(
         )
     }
 
-    override suspend fun fetchTopRatedTvShows(
-        page: Int
-    ): TmdbApiResponse<PagedPayload<RemoteTvShow>> {
-        return tmdbApiService.getTopRatedTvShows(page = page)
-    }
-
     override suspend fun fetchTvShowGenre(): TmdbApiResponse<GenrePayload> {
         return tmdbApiService.getTvGenres()
     }

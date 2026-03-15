@@ -13,7 +13,7 @@ fun TvShowListingArgs.asTvShowListingConfigs(): TvShowListingConfig {
             TvShowListingConfig.Filterable.Popular()
         }
         TvShowListingAvailableTypes.TopRated -> {
-            TvShowListingConfig.TopRated
+            TvShowListingConfig.Filterable.TopRated()
         }
         TvShowListingAvailableTypes.NowAiring -> {
             TvShowListingConfig.Filterable.NowAiring()

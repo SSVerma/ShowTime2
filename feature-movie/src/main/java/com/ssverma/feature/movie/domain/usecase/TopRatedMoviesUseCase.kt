@@ -6,18 +6,18 @@ import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.movie.Movie
-import com.ssverma.shared.domain.usecase.NoParamUseCase
+import com.ssverma.shared.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
 class TopRatedMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
-) : NoParamUseCase<Result<List<Movie>, Failure<MovieFailure>>>(
+) : UseCase<String?, Result<List<Movie>, Failure<MovieFailure>>>(
     coroutineDispatcher
 ) {
 
-    override suspend fun execute(): Result<List<Movie>, Failure<MovieFailure>> {
-        return movieRepository.fetchTopRatedMovies()
+    override suspend fun execute(params: String?): Result<List<Movie>, Failure<MovieFailure>> {
+        return movieRepository.fetchTopRatedMovies(region = params)
     }
 }

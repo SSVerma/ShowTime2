@@ -6,21 +6,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.ssverma.feature.filter.ui.filter.FilterUiState
-import com.ssverma.feature.filter.ui.filter.asUiFilters
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.domain.usecase.PaginatedTvShowUseCase
-import com.ssverma.feature.tv.domain.usecase.TvShowFilterUseCase
 import com.ssverma.feature.tv.navigation.TvShowListDestination
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.navigation.convertor.asTvShowListingConfigs
-import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
-import com.ssverma.core.ui.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -30,23 +25,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class TvShowPaginatedListUiState(
     val isGridView: Boolean = true,
-    val filterUiState: FilterUiState = FilterUiState(filters = emptyList()),
     val titleRes: Int = R.string.tv_show,
     val title: String? = null,
     val listingType: Int = 0,
-    val isFilterApplicable: Boolean = false
+    val isFilterApplicable: Boolean = false,
+    val isFilterApplied: Boolean = false,
+    val discoverConfig: TvDiscoverConfig? = null
 )
 
 @HiltViewModel
 class TvShowListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val paginatedTvShowUseCase: PaginatedTvShowUseCase,
-    private val tvShowFilterUseCase: TvShowFilterUseCase,
     val appConfigRepository: com.ssverma.shared.domain.repository.AppConfigRepository
 ) : ViewModel() {
 
@@ -59,46 +53,43 @@ class TvShowListViewModel @Inject constructor(
             titleRes = if (tvShowListingArgs.titleRes == 0) R.string.tv_show else tvShowListingArgs.titleRes,
             title = tvShowListingArgs.title,
             listingType = tvShowListingArgs.listingType,
-            isFilterApplicable = tvShowListingConfig is TvShowListingConfig.Filterable
+            isFilterApplicable = tvShowListingConfig is TvShowListingConfig.Filterable,
+            discoverConfig = (tvShowListingConfig as? TvShowListingConfig.Filterable)?.discoverConfig
         )
     )
     val uiState: StateFlow<TvShowPaginatedListUiState> = _uiState.asStateFlow()
 
-    private val appliedFilters = MutableStateFlow(TvDiscoverConfig.builder().build())
+    private val appliedFilters = MutableStateFlow(
+        (tvShowListingConfig as? TvShowListingConfig.Filterable)?.discoverConfig
+            ?: TvDiscoverConfig.builder().build()
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val pagedTvShows: Flow<PagingData<TvShowPreview>> = appliedFilters
         .flatMapLatest { filterConfig ->
-            if (tvShowListingConfig is TvShowListingConfig.Filterable) {
-                tvShowListingConfig.filterConfig = filterConfig
+            val config = if (tvShowListingConfig is TvShowListingConfig.Filterable) {
+                tvShowListingConfig.withFilter(filterConfig)
+            } else {
+                tvShowListingConfig
             }
-            paginatedTvShowUseCase(tvShowListingConfig)
+            paginatedTvShowUseCase(config)
         }
         .map { pagingData ->
             pagingData.map { tvShow -> tvShow.asTvShowPreview() }
         }
         .cachedIn(viewModelScope)
 
-    init {
-        if (_uiState.value.isFilterApplicable) {
-            loadFilters()
-        }
-    }
-
-    private fun loadFilters() {
-        viewModelScope.launch {
-            tvShowFilterUseCase().collect { result ->
-                val filters = when (result) {
-                    is Result.Success -> result.data.asUiFilters()
-                    is Result.Error -> emptyList()
-                }
-                _uiState.update { it.copy(filterUiState = FilterUiState(filters = filters)) }
-            }
-        }
-    }
-
     fun onFiltersApplied(discoverConfig: TvDiscoverConfig) {
         appliedFilters.update { discoverConfig }
+        val isApplied = (tvShowListingConfig as? TvShowListingConfig.Filterable)?.let {
+            it.discoverConfig != discoverConfig && !discoverConfig.isBare()
+        } ?: false
+        _uiState.update {
+            it.copy(
+                isFilterApplied = isApplied,
+                discoverConfig = discoverConfig
+            )
+        }
     }
 
     fun toggleViewMode() {
@@ -109,7 +100,8 @@ class TvShowListViewModel @Inject constructor(
 
 private fun SavedStateHandle.buildTvShowListingArgs(): TvShowListingArgs {
     return TvShowListingArgs(
-        listingType = get<Int>(TvShowListDestination.ArgListingType) ?: TvShowListingAvailableTypes.TrendingToday,
+        listingType = get<Int>(TvShowListDestination.ArgListingType)
+            ?: TvShowListingAvailableTypes.TrendingToday,
         titleRes = get<Int>(TvShowListDestination.ArgTitleRes) ?: 0,
         title = get<String>(TvShowListDestination.ArgTitle),
         genreId = get<Int>(TvShowListDestination.ArgGenreId) ?: 0,

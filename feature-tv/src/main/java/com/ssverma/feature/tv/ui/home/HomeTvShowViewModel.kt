@@ -30,6 +30,7 @@ class HomeTvShowViewModel @Inject constructor(
     private val nowAiringTvShowsUseCase: NowAiringTvShowsUseCase,
     private val popularTvShowsUseCase: PopularTvShowsUseCase,
     private val tvGenresUseCase: TvGenresUseCase,
+    private val appConfigRepository: com.ssverma.shared.domain.repository.AppConfigRepository
 ) : ViewModel() {
 
 
@@ -37,7 +38,11 @@ class HomeTvShowViewModel @Inject constructor(
     val uiState: StateFlow<HomeTvUiState> = _uiState.asStateFlow()
 
     init {
-        fetchAllHomeData()
+        viewModelScope.launch {
+            appConfigRepository.watchProviderRegion.collect {
+                fetchAllHomeData()
+            }
+        }
     }
 
     fun fetchAllHomeData() {

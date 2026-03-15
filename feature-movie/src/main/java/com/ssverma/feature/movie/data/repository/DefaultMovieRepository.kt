@@ -14,16 +14,20 @@ import com.ssverma.feature.movie.data.remote.MovieRemoteDataSource
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.repository.MovieRepository
-import com.ssverma.shared.data.mapper.*
-import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
-import com.ssverma.shared.domain.model.WatchProvider
-import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.data.mapper.ListMapper
+import com.ssverma.shared.data.mapper.Mapper
+import com.ssverma.shared.data.mapper.asDomainResult
+import com.ssverma.shared.data.mapper.asQueryMap
+import com.ssverma.shared.data.mapper.asTmdbQueryValue
 import com.ssverma.shared.data.mapper.asWatchProvidersMap
+import com.ssverma.feature.movie.domain.defaults.MovieDefaults
+import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
+import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.movie.Movie
 import kotlinx.coroutines.flow.Flow
 import java.net.HttpURLConnection
@@ -71,31 +75,18 @@ class DefaultMovieRepository @Inject constructor(
         ).flow
     }
 
-    override fun fetchTopRatedMoviesGradually(): Flow<PagingData<Movie>> {
-        return Pager(
-            config = PagingConfig(pageSize = TmdbDefaults.ApiDefaults.PageSize),
-            pagingSourceFactory = {
-                MoviePagingSource(
-                    movieApiCall = { pageNumber ->
-                        movieRemoteDataSource.fetchTopRatedMovies(
-                            page = pageNumber
-                        )
-                    },
-                    mapRemoteToDomain = { moviesMapper.map(it) }
-                )
-            }
-        ).flow
+    override fun fetchTopRatedMoviesGradually(
+        region: String?
+    ): Flow<PagingData<Movie>> {
+        val config = MovieDefaults.DiscoverDefaults.topRated(region = region)
+        return discoverMoviesGradually(config)
     }
 
-    override suspend fun fetchTopRatedMovies(): Result<List<Movie>, Failure<MovieFailure>> {
-        val apiResponse =
-            movieRemoteDataSource.fetchTopRatedMovies(page = TmdbDefaults.ApiDefaults.FirstPageNumber)
-
-        return apiResponse.asDomainResult(
-            mapRemoteToDomain = {
-                moviesMapper.map(it.body.results.orEmpty())
-            }
-        )
+    override suspend fun fetchTopRatedMovies(
+        region: String?
+    ): Result<List<Movie>, Failure<MovieFailure>> {
+        val config = MovieDefaults.DiscoverDefaults.topRated(region = region)
+        return discoverMovies(config)
     }
 
     override suspend fun fetchTrendingMovies(timeWindow: TimeWindow): Result<List<Movie>, Failure<MovieFailure>> {

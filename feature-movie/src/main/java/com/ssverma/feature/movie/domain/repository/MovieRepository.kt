@@ -31,14 +31,18 @@ interface MovieRepository {
     /**
      * Fetch movies in order of given rating and in paginated form.
      */
-    fun fetchTopRatedMoviesGradually(): Flow<PagingData<Movie>>
+    fun fetchTopRatedMoviesGradually(
+        region: String? = null
+    ): Flow<PagingData<Movie>>
 
     /**
      * Fetch top rated movies. It provides a limited collection of the top rated movies
      * wheres [fetchTopRatedMoviesGradually] can be used to fetch all available top rated movies
      * in paginated form.
      */
-    suspend fun fetchTopRatedMovies(): Result<List<Movie>, Failure<MovieFailure>>
+    suspend fun fetchTopRatedMovies(
+        region: String? = null
+    ): Result<List<Movie>, Failure<MovieFailure>>
 
     /**
      * Fetch first collection of trending movies based on the given [TimeWindow].

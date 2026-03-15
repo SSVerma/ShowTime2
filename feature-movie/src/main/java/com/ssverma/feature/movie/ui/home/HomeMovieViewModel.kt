@@ -28,6 +28,7 @@ class HomeMovieViewModel @Inject constructor(
     private val inCinemaMoviesUseCase: InCinemaMoviesUseCase,
     private val popularMoviesUseCase: PopularMoviesUseCase,
     private val movieGenreUseCase: MovieGenresUseCase,
+    private val appConfigRepository: com.ssverma.shared.domain.repository.AppConfigRepository
 ) : ViewModel() {
 
 
@@ -35,13 +36,18 @@ class HomeMovieViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        fetchAllHomeData()
+        viewModelScope.launch {
+            appConfigRepository.watchProviderRegion.collect {
+                fetchAllHomeData()
+            }
+        }
     }
 
     fun fetchAllHomeData() {
+        val region = appConfigRepository.watchProviderRegion.value
         fetchMovieGenres()
         fetchTrendingMovies()
-        fetchInCinemaMovies()
+        fetchInCinemaMovies(region)
     }
 
     fun fetchMovieGenres() = viewModelScope.launch {
@@ -64,9 +70,9 @@ class HomeMovieViewModel @Inject constructor(
         }
     }
 
-    fun fetchInCinemaMovies() = viewModelScope.launch {
+    fun fetchInCinemaMovies(region: String? = null) = viewModelScope.launch {
         _uiState.update { it.copy(inCinemasMovies = UiState.Loading) }
-        when (val result = inCinemaMoviesUseCase()) {
+        when (val result = inCinemaMoviesUseCase(region)) {
             is Result.Success -> {
                 val previews = result.data.map { it.asMoviePreview() }
                 _uiState.update { it.copy(inCinemasMovies = UiState.Success(previews)) }
@@ -80,9 +86,11 @@ class HomeMovieViewModel @Inject constructor(
         val currentState = _uiState.value.popularMovies
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
+        val region = appConfigRepository.watchProviderRegion.value
+
         viewModelScope.launch {
             _uiState.update { it.copy(popularMovies = UiState.Loading) }
-            when (val result = popularMoviesUseCase()) {
+            when (val result = popularMoviesUseCase(region)) {
                 is Result.Success -> {
                     val previews = result.data.map { it.asMoviePreview() }
                     _uiState.update { it.copy(popularMovies = UiState.Success(previews)) }
@@ -97,9 +105,11 @@ class HomeMovieViewModel @Inject constructor(
         val currentState = _uiState.value.topRatedMovies
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
+        val region = appConfigRepository.watchProviderRegion.value
+
         viewModelScope.launch {
             _uiState.update { it.copy(topRatedMovies = UiState.Loading) }
-            when (val result = topRatedMoviesUseCase()) {
+            when (val result = topRatedMoviesUseCase(region)) {
                 is Result.Success -> {
                     val previews = result.data.map { it.asMoviePreview() }
                     _uiState.update { it.copy(topRatedMovies = UiState.Success(previews)) }
@@ -114,9 +124,11 @@ class HomeMovieViewModel @Inject constructor(
         val currentState = _uiState.value.upcomingMovies
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
+        val region = appConfigRepository.watchProviderRegion.value
+
         viewModelScope.launch {
             _uiState.update { it.copy(upcomingMovies = UiState.Loading) }
-            when (val result = upcomingMoviesUseCase()) {
+            when (val result = upcomingMoviesUseCase(region)) {
                 is Result.Success -> {
                     val previews = result.data.map { it.asMoviePreview() }
                     _uiState.update { it.copy(upcomingMovies = UiState.Success(previews)) }
