@@ -76,16 +76,24 @@ class DefaultMovieRepository @Inject constructor(
     }
 
     override fun fetchTopRatedMoviesGradually(
-        region: String?
+        region: String?,
+        originalLanguage: String?
     ): Flow<PagingData<Movie>> {
-        val config = MovieDefaults.DiscoverDefaults.topRated(region = region)
+        val config = MovieDefaults.DiscoverDefaults.topRated(
+            region = region,
+            originalLanguage = originalLanguage
+        )
         return discoverMoviesGradually(config)
     }
 
     override suspend fun fetchTopRatedMovies(
-        region: String?
+        region: String?,
+        originalLanguage: String?
     ): Result<List<Movie>, Failure<MovieFailure>> {
-        val config = MovieDefaults.DiscoverDefaults.topRated(region = region)
+        val config = MovieDefaults.DiscoverDefaults.topRated(
+            region = region,
+            originalLanguage = originalLanguage
+        )
         return discoverMovies(config)
     }
 

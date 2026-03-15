@@ -210,6 +210,12 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
                 second = iso3
             )
         }
+        is DiscoverOption.OriginalLanguage -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withOriginalLanguage,
+                second = iso2
+            )
+        }
         DiscoverOption.MediaType.Movie -> {
             return Pair(
                 first = TmdbApiTiedConstants.AvailableMediaTypes.Movie,

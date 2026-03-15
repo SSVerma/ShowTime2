@@ -35,11 +35,20 @@
     <string name="ads">Ads</string>
     <string name="provided_by">Provided by</string>
     <string name="provided_by_justwatch">Data provided by JustWatch</string>
-    <string name="watch_region">Watch Region</string>
+    <string name="watch_region">Region</string>
     <string name="select_watch_region">Select Region</string>
-    <string name="search_region">Search Region</string>
+    <string name="search_region">Search regions</string>
     <string name="unexpected_error_msg">An unexpected error occurred. Please try again later.</string>
     <string name="retry">Retry</string>
     <string name="close">Close</string>
     <string name="not_available">Not available</string>
+
+    <string name="localization_settings">Region &amp; Language</string>
+    <string name="region_market">Content Region / Market</string>
+    <string name="search_language">Search languages</string>
+    <string name="metadata_language">Metadata Translation Language</string>
+    <string name="translate_app_content">Translate App Content</string>
+    <string name="translate_app_desc">Fetch titles &amp; overviews in selected language</string>
+    <string name="preferred_content_language">Preferred Original Language</string>
+    <string name="global_trending">Global / Trending</string>
 </resources>

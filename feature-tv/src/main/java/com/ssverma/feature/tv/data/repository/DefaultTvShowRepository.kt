@@ -76,13 +76,25 @@ class DefaultTvShowRepository @Inject constructor(
         ).flow
     }
 
-    override fun fetchTopRatedTvShowsGradually(): Flow<PagingData<TvShow>> {
-        val config = TvShowDefaults.DiscoverDefaults.topRated()
+    override fun fetchTopRatedTvShowsGradually(
+        watchRegion: String?,
+        originalLanguage: String?
+    ): Flow<PagingData<TvShow>> {
+        val config = TvShowDefaults.DiscoverDefaults.topRated(
+            watchRegion = watchRegion,
+            originalLanguage = originalLanguage
+        )
         return discoverTvShowsGradually(config)
     }
 
-    override suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>> {
-        val config = TvShowDefaults.DiscoverDefaults.topRated()
+    override suspend fun fetchTopRatedTvShows(
+        watchRegion: String?,
+        originalLanguage: String?
+    ): Result<List<TvShow>, Failure<TvShowFailure>> {
+        val config = TvShowDefaults.DiscoverDefaults.topRated(
+            watchRegion = watchRegion,
+            originalLanguage = originalLanguage
+        )
         return discoverTvShows(config)
     }
 

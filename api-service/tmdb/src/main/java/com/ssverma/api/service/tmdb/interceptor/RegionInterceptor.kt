@@ -21,15 +21,10 @@ class RegionInterceptor @Inject constructor(
 
         // Inject watch_region for discover APIs
         if (urlString.contains("discover/")) {
-            if (url.queryParameter("watch_region") == null) {
-                newUrlBuilder.addQueryParameter("watch_region", region)
-            }
+            newUrlBuilder.setQueryParameter("watch_region", region)
         } else {
             // Inject region for other APIs (movie, tv, search, etc.)
-            // Note: Not all APIs support 'region', but it's generally safe as TMDB ignores unknown params
-            if (url.queryParameter("region") == null) {
-                newUrlBuilder.addQueryParameter("region", region)
-            }
+            newUrlBuilder.setQueryParameter("region", region)
         }
 
         val request = original.newBuilder()

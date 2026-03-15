@@ -18,6 +18,14 @@ interface AppConfigRepository {
     suspend fun dismissAppInfoBottomSheet()
 
     val watchProviderRegion: StateFlow<String>
-
     suspend fun updateWatchProviderRegion(regionCode: String)
+
+    val isTranslationEnabled: StateFlow<Boolean>
+    suspend fun updateTranslationEnabled(enabled: Boolean)
+
+    val contentLanguage: StateFlow<String>
+    suspend fun updateContentLanguage(languageCode: String)
+
+    val preferredOriginalLanguage: StateFlow<String>
+    suspend fun updatePreferredOriginalLanguage(languageCode: String)
 }

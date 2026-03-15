@@ -11,26 +11,36 @@ object MovieDefaults {
     val DefaultMovieReleaseType = DiscoverOption.ReleaseType.Theatrical
 
     object DiscoverDefaults {
-        fun popular() = MovieDiscoverConfig.builder(sortBy = SortBy.Popularity())
+        fun popular(originalLanguage: String? = null) = MovieDiscoverConfig.builder(sortBy = SortBy.Popularity())
             .with(DefaultMovieReleaseType)
+            .apply {
+                originalLanguage?.let { with(DiscoverOption.OriginalLanguage(it)) }
+            }
             .build()
 
-        fun inCinemas() = MovieDiscoverConfig.builder(sortBy = SortBy.ReleaseDate())
+        fun inCinemas(originalLanguage: String? = null) = MovieDiscoverConfig.builder(sortBy = SortBy.ReleaseDate())
             .with(DiscoverOption.PrimaryReleaseDate.To(date = DateUtils.currentDate()))
+            .apply {
+                originalLanguage?.let { with(DiscoverOption.OriginalLanguage(it)) }
+            }
             .build()
 
-        fun upcoming() = MovieDiscoverConfig
+        fun upcoming(originalLanguage: String? = null) = MovieDiscoverConfig
             .builder(sortBy = SortBy.ReleaseDate(order = Order.Ascending))
             .with(
                 DefaultMovieReleaseType,
                 DiscoverOption.PrimaryReleaseDate.From(date = DateUtils.currentDate().plusDays(1)),
             )
+            .apply {
+                originalLanguage?.let { with(DiscoverOption.OriginalLanguage(it)) }
+            }
             .build()
 
-        fun topRated(region: String? = null) = MovieDiscoverConfig
+        fun topRated(region: String? = null, originalLanguage: String? = null) = MovieDiscoverConfig
             .builder(sortBy = SortBy.Rating(Order.Descending))
             .apply {
                 region?.let { with(DiscoverOption.WatchRegion(it)) }
+                originalLanguage?.let { with(DiscoverOption.OriginalLanguage(it)) }
             }
             .build()
     }

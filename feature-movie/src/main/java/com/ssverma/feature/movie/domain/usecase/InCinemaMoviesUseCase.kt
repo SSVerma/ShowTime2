@@ -11,13 +11,17 @@ import com.ssverma.shared.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
+import com.ssverma.shared.domain.model.DiscoveryParams
+
 class InCinemaMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val movieRepository: MovieRepository
-) : UseCase<String?, Result<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
+) : UseCase<DiscoveryParams?, Result<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
 
-    override suspend fun execute(params: String?): Result<List<Movie>, Failure<MovieFailure>> {
-        val movieConfig = MovieDefaults.DiscoverDefaults.inCinemas()
+    override suspend fun execute(params: DiscoveryParams?): Result<List<Movie>, Failure<MovieFailure>> {
+        val movieConfig = MovieDefaults.DiscoverDefaults.inCinemas(
+            originalLanguage = params?.originalLanguage
+        )
         return movieRepository.discoverMovies(movieConfig)
     }
 }

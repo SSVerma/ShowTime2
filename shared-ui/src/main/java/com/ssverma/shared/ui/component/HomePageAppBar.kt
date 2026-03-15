@@ -75,7 +75,7 @@ fun HomePageAppBar(
             }
         },
         actions = {
-            WatchRegionSelector()
+            LocalizationSelector()
 
             IconButton(onClick = onSearchIconPressed) {
                 Icon(

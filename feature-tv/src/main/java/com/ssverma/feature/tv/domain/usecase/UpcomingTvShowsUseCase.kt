@@ -4,7 +4,7 @@ import com.ssverma.core.di.DefaultDispatcher
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
-import com.ssverma.shared.domain.usecase.NoParamUseCase
+import com.ssverma.shared.domain.usecase.UseCase
 import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.shared.domain.model.tv.TvShow
@@ -12,15 +12,18 @@ import com.ssverma.feature.tv.domain.repository.TvShowRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
+import com.ssverma.shared.domain.model.DiscoveryParams
+
 class UpcomingTvShowsUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
-    private val tvShowRepository: TvShowRepository,
-    private val appConfigRepository: AppConfigRepository
-) : NoParamUseCase<Result<List<TvShow>, Failure<TvShowFailure>>>(coroutineDispatcher) {
+    private val tvShowRepository: TvShowRepository
+) : UseCase<DiscoveryParams?, Result<List<TvShow>, Failure<TvShowFailure>>>(coroutineDispatcher) {
 
-    override suspend fun execute(): Result<List<TvShow>, Failure<TvShowFailure>> {
-        val watchRegion = appConfigRepository.watchProviderRegion.value
-        val tvConfig = TvShowDefaults.DiscoverDefaults.upcoming(watchRegion)
+    override suspend fun execute(params: DiscoveryParams?): Result<List<TvShow>, Failure<TvShowFailure>> {
+        val tvConfig = TvShowDefaults.DiscoverDefaults.upcoming(
+            watchRegion = params?.region,
+            originalLanguage = params?.originalLanguage
+        )
         return tvShowRepository.discoverTvShows(tvConfig)
     }
 }

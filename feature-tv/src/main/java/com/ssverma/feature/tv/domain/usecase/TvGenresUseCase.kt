@@ -18,6 +18,10 @@ class TvGenresUseCase @Inject constructor(
 
     private var cachedGenres: List<Genre>? = null
 
+    fun invalidateCache() {
+        cachedGenres = null
+    }
+
     override suspend fun execute(): Result<List<Genre>, Failure.CoreFailure> {
         cachedGenres?.let { return Result.Success(it) }
 

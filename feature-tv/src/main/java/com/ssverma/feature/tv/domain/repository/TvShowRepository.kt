@@ -37,14 +37,20 @@ interface TvShowRepository {
     /**
      * Fetch tv shows in order of given rating and in paginated form.
      */
-    fun fetchTopRatedTvShowsGradually(): Flow<PagingData<TvShow>>
+    fun fetchTopRatedTvShowsGradually(
+        watchRegion: String? = null,
+        originalLanguage: String? = null
+    ): Flow<PagingData<TvShow>>
 
     /**
      * Fetch top rated tv shows. It provides a limited collection of the top rated tv shows.
      * wheres [fetchTopRatedTvShowsGradually] can be used to fetch all available top rated tv shows
      * in paginated form.
      */
-    suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>>
+    suspend fun fetchTopRatedTvShows(
+        watchRegion: String? = null,
+        originalLanguage: String? = null
+    ): Result<List<TvShow>, Failure<TvShowFailure>>
 
     /**
      * Fetch first collection of trending tv shows based on the given [TimeWindow].

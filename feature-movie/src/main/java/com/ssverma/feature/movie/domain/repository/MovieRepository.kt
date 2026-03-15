@@ -32,7 +32,8 @@ interface MovieRepository {
      * Fetch movies in order of given rating and in paginated form.
      */
     fun fetchTopRatedMoviesGradually(
-        region: String? = null
+        region: String? = null,
+        originalLanguage: String? = null
     ): Flow<PagingData<Movie>>
 
     /**
@@ -41,7 +42,8 @@ interface MovieRepository {
      * in paginated form.
      */
     suspend fun fetchTopRatedMovies(
-        region: String? = null
+        region: String? = null,
+        originalLanguage: String? = null
     ): Result<List<Movie>, Failure<MovieFailure>>
 
     /**

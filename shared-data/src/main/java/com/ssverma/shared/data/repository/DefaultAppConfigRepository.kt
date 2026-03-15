@@ -65,11 +65,53 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(WatchProviderRegionKey, regionCode)
     }
 
+    override val isTranslationEnabled: StateFlow<Boolean> = keyValueStorage.observe(
+        key = TranslationEnabledKey,
+        default = false
+    ).distinctUntilChanged().stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false
+    )
+
+    override suspend fun updateTranslationEnabled(enabled: Boolean) {
+        keyValueStorage.write(TranslationEnabledKey, enabled)
+    }
+
+    override val contentLanguage: StateFlow<String> = keyValueStorage.observe(
+        key = ContentLanguageKey,
+        default = Locale.getDefault().language.ifEmpty { "en" }
+    ).distinctUntilChanged().stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = Locale.getDefault().language.ifEmpty { "en" }
+    )
+
+    override suspend fun updateContentLanguage(languageCode: String) {
+        keyValueStorage.write(ContentLanguageKey, languageCode)
+    }
+
+    override val preferredOriginalLanguage: StateFlow<String> = keyValueStorage.observe(
+        key = PreferredOriginalLanguageKey,
+        default = ""
+    ).distinctUntilChanged().stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = ""
+    )
+
+    override suspend fun updatePreferredOriginalLanguage(languageCode: String) {
+        keyValueStorage.write(PreferredOriginalLanguageKey, languageCode)
+    }
+
     companion object {
         private val AppThemeKey = stringPreferencesKey("app_theme")
         private val DynamicColorKey = booleanPreferencesKey("dynamic_color")
         private val AppInfoBottomSheetDismissedKey =
             booleanPreferencesKey("app_info_bottom_sheet_dismissed")
         private val WatchProviderRegionKey = stringPreferencesKey("watch_provider_region")
+        private val TranslationEnabledKey = booleanPreferencesKey("translation_enabled")
+        private val ContentLanguageKey = stringPreferencesKey("content_language")
+        private val PreferredOriginalLanguageKey = stringPreferencesKey("preferred_original_language")
     }
 }

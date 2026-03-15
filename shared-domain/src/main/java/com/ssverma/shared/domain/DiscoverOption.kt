@@ -66,6 +66,11 @@ sealed interface DiscoverOption {
         override val mode: OptionMode = OptionMode.SingleValue
     ) : OptionScope.Movie, OptionScope.Tv
 
+    data class OriginalLanguage(
+        val iso2: String,
+        override val mode: OptionMode = OptionMode.SingleValue
+    ) : OptionScope.Movie, OptionScope.Tv
+
     data class WatchRegion(
         val iso3: String,
         override val mode: OptionMode = OptionMode.SingleValue
