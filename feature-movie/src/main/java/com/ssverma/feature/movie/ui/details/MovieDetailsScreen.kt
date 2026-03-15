@@ -231,6 +231,7 @@ fun MovieContent(
                 imageShots = data.imageShots,
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
+                maxImageShots = 6,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
