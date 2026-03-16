@@ -76,7 +76,7 @@ object MovieDefaults {
 
             return MovieDiscoverConfig.builder()
                 .with(DiscoverOption.WatchProvider(watchProviderId))
-                .with(DiscoverOption.ReleaseDate.From(tomorrow))
+                .with(DiscoverOption.PrimaryReleaseDate.From(tomorrow))
                 .sortBy(SortBy.ReleaseDate(Order.Ascending))
                 .build()
         }

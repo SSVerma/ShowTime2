@@ -103,7 +103,7 @@ class WatchProviderHubViewModel @Inject constructor(
             discoveryRepository.discoverMovies(
                 discoverConfig = MovieDiscoverConfig.builder()
                     .with(watchProvider)
-                    .with(DiscoverOption.ReleaseDate.From(today.plusDays(1)))
+                    .with(DiscoverOption.PrimaryReleaseDate.From(today.plusDays(1)))
                     .sortBy(SortBy.ReleaseDate(Order.Ascending))
                     .build()
             )
