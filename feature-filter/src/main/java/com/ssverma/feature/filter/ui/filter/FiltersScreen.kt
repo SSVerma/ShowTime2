@@ -9,33 +9,50 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.RangeSliderScale
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.component.SliderScale
-import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.ui.filter.component.*
+import com.ssverma.feature.filter.ui.filter.component.FilterPickerChip
+import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterFlowRow
+import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterRow
+import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterFlowRow
+import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterRow
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.Order
 import com.ssverma.shared.domain.SortBy
@@ -95,30 +112,25 @@ fun <T : DiscoverOption.OptionScope> FiltersScreen(
         },
         bottomBar = {
             if (uiState.filters.isNotEmpty()) {
-                Surface(
-                    tonalElevation = 3.dp,
-                    shadowElevation = 8.dp
-                ) {
-                    Button(
-                        onClick = {
-                            val (options, sortParams) = uiState.filters.asDiscoverOptions(
-                                watchRegion = watchRegion
-                            )
-                            val (sortBy, order) = sortParams
-                            @Suppress("UNCHECKED_CAST")
-                            onFilterApplied(options as List<T>, sortBy, order)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .height(56.dp),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.apply),
-                            style = MaterialTheme.typography.titleMedium
+                Button(
+                    onClick = {
+                        val (options, sortParams) = uiState.filters.asDiscoverOptions(
+                            watchRegion = watchRegion
                         )
-                    }
+                        val (sortBy, order) = sortParams
+                        @Suppress("UNCHECKED_CAST")
+                        onFilterApplied(options as List<T>, sortBy, order)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .height(56.dp),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.apply),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
             }
         },
@@ -608,7 +620,11 @@ private fun mapIntRange(groupId: FilterId, from: Int?, to: Int?): List<DiscoverO
     return if (options.isEmpty()) null else options
 }
 
-private fun mapDateRange(groupId: FilterId, from: LocalDate?, to: LocalDate?): List<DiscoverOption>? {
+private fun mapDateRange(
+    groupId: FilterId,
+    from: LocalDate?,
+    to: LocalDate?
+): List<DiscoverOption>? {
     val options = mutableListOf<DiscoverOption>()
     when (groupId) {
         FilterId.RangeTypeId.DateRange.ReleaseDate -> {

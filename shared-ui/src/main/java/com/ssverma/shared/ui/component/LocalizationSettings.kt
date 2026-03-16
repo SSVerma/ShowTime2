@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -44,12 +43,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.UiState
@@ -58,6 +57,7 @@ import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.viewmodel.WatchRegionViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,13 +66,13 @@ fun LocalizationSelector(
     viewModel: WatchRegionViewModel = hiltViewModel()
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showSheet by remember { mutableStateOf(false) }
-    
+    val scope = rememberCoroutineScope()
+
     val currentRegion by viewModel.currentRegion.collectAsStateWithLifecycle()
 
     IconButton(
         onClick = {
-            showSheet = true
+            scope.launch { sheetState.show() }
             viewModel.loadAvailableRegions()
             viewModel.loadAvailableLanguages()
         },
@@ -92,11 +92,11 @@ fun LocalizationSelector(
         }
     }
 
-    if (showSheet) {
+    if (sheetState.isVisible) {
         LocalizationSettingsBottomSheet(
             viewModel = viewModel,
             sheetState = sheetState,
-            onDismiss = { showSheet = false }
+            onDismiss = { scope.launch { sheetState.hide() } }
         )
     }
 }
@@ -110,7 +110,7 @@ fun LocalizationSettingsBottomSheet(
 ) {
     val regionsState by viewModel.regionsState.collectAsStateWithLifecycle()
     val languagesState by viewModel.languagesState.collectAsStateWithLifecycle()
-    
+
     val currentRegion by viewModel.currentRegion.collectAsStateWithLifecycle()
     val isTranslationEnabled by viewModel.isTranslationEnabled.collectAsStateWithLifecycle()
     val contentLanguage by viewModel.contentLanguage.collectAsStateWithLifecycle()
@@ -119,13 +119,15 @@ fun LocalizationSettingsBottomSheet(
     var selectedRegionIso by remember(currentRegion) { mutableStateOf(currentRegion) }
     var translationEnabled by remember(isTranslationEnabled) { mutableStateOf(isTranslationEnabled) }
     var selectedLanguageIso by remember(contentLanguage) { mutableStateOf(contentLanguage) }
-    var selectedOriginalLanguageIso by remember(preferredOriginalLanguage) { mutableStateOf(preferredOriginalLanguage) }
-
-    var showRegionPicker by remember { mutableStateOf(false) }
-    var showLanguagePicker by remember { mutableStateOf(false) }
+    var selectedOriginalLanguageIso by remember(preferredOriginalLanguage) {
+        mutableStateOf(
+            preferredOriginalLanguage
+        )
+    }
 
     val regionPickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val languagePickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
     val selectedRegionName = remember(selectedRegionIso, regionsState) {
         (regionsState as? UiState.Success)?.data?.find { it.iso31661 == selectedRegionIso }?.englishName
@@ -140,7 +142,7 @@ fun LocalizationSettingsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() },
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -163,7 +165,7 @@ fun LocalizationSettingsBottomSheet(
                     // Region Selection Hub Row
                     item {
                         Surface(
-                            onClick = { showRegionPicker = true },
+                            onClick = { scope.launch { regionPickerSheetState.show() } },
                             shape = MaterialTheme.shapes.medium,
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier
@@ -174,7 +176,12 @@ fun LocalizationSettingsBottomSheet(
                             ListItem(
                                 headlineContent = { Text("Select region") },
                                 supportingContent = { Text(selectedRegionName) },
-                                trailingContent = { Icon(Icons.Default.Search, contentDescription = null) },
+                                trailingContent = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = null
+                                    )
+                                },
                                 colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
                             )
                         }
@@ -214,7 +221,7 @@ fun LocalizationSettingsBottomSheet(
                         }
                         item {
                             Surface(
-                                onClick = { showLanguagePicker = true },
+                                onClick = { scope.launch { languagePickerSheetState.show() } },
                                 shape = MaterialTheme.shapes.medium,
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                 modifier = Modifier
@@ -224,7 +231,12 @@ fun LocalizationSettingsBottomSheet(
                                 ListItem(
                                     headlineContent = { Text("Select language") },
                                     supportingContent = { Text(selectedLanguageName) },
-                                    trailingContent = { Icon(Icons.Default.Language, contentDescription = null) },
+                                    trailingContent = {
+                                        Icon(
+                                            Icons.Default.Language,
+                                            contentDescription = null
+                                        )
+                                    },
                                     colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
                                 )
                             }
@@ -235,7 +247,7 @@ fun LocalizationSettingsBottomSheet(
                     item {
                         SettingsSectionHeader(stringResource(R.string.preferred_content_language))
                     }
-                    
+
                     item {
                         OriginalLanguageQuickSelect(
                             regionIso = selectedRegionIso,
@@ -244,60 +256,55 @@ fun LocalizationSettingsBottomSheet(
                             onLanguageSelected = { selectedOriginalLanguageIso = it }
                         )
                     }
-                    
+
                     item {
                         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
                     }
                 }
             }
 
-            // Sticky Done Button
-            Surface(
-                modifier = Modifier.fillMaxWidth()
+            Button(
+                onClick = {
+                    viewModel.updateRegion(selectedRegionIso)
+                    viewModel.updateTranslationEnabled(translationEnabled)
+                    viewModel.updateContentLanguage(selectedLanguageIso)
+                    viewModel.updatePreferredOriginalLanguage(selectedOriginalLanguageIso)
+                    onDismiss()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(MaterialTheme.spacing.large)
             ) {
-                Button(
-                    onClick = {
-                        viewModel.updateRegion(selectedRegionIso)
-                        viewModel.updateTranslationEnabled(translationEnabled)
-                        viewModel.updateContentLanguage(selectedLanguageIso)
-                        viewModel.updatePreferredOriginalLanguage(selectedOriginalLanguageIso)
-                        onDismiss()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(MaterialTheme.spacing.large)
-                ) {
-                    Text(text = stringResource(id = R.string.done))
-                }
+                Text(text = stringResource(id = R.string.done))
             }
         }
     }
 
-    if (showRegionPicker) {
+    if (regionPickerSheetState.isVisible) {
         RegionPickerBottomSheet(
             regionsState = regionsState,
             selectedRegionIso = selectedRegionIso,
             sheetState = regionPickerSheetState,
-            onRegionSelected = { 
+            onRegionSelected = {
                 selectedRegionIso = it
-                showRegionPicker = false
+                scope.launch { regionPickerSheetState.hide() }
             },
             onRetry = { viewModel.loadAvailableRegions() },
-            onDismiss = { showRegionPicker = false }
+            onDismiss = { scope.launch { regionPickerSheetState.hide() } }
         )
     }
 
-    if (showLanguagePicker) {
+    if (languagePickerSheetState.isVisible) {
         LanguagePickerBottomSheet(
             languagesState = languagesState,
             selectedLanguageIso = selectedLanguageIso,
             sheetState = languagePickerSheetState,
-            onLanguageSelected = { 
+            onLanguageSelected = {
                 selectedLanguageIso = it
-                showLanguagePicker = false
+                scope.launch { languagePickerSheetState.hide() }
             },
             onRetry = { viewModel.loadAvailableLanguages() },
-            onDismiss = { showLanguagePicker = false }
+            onDismiss = { scope.launch { languagePickerSheetState.hide() } }
         )
     }
 }
@@ -315,7 +322,7 @@ fun RegionPickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() },
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
@@ -324,7 +331,7 @@ fun RegionPickerBottomSheet(
                 .padding(bottom = MaterialTheme.spacing.medium)
         ) {
             Text(
-                text = "Select region",
+                text = stringResource(R.string.select_region),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.large)
             )
@@ -352,7 +359,7 @@ fun LanguagePickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() },
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
@@ -361,7 +368,7 @@ fun LanguagePickerBottomSheet(
                 .padding(bottom = MaterialTheme.spacing.medium)
         ) {
             Text(
-                text = "Select language",
+                text = stringResource(R.string.select_language),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.large)
             )
@@ -397,7 +404,7 @@ fun RegionPicker(
     onRetry: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    
+
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = searchQuery,
@@ -418,18 +425,24 @@ fun RegionPicker(
             shape = MaterialTheme.shapes.medium
         )
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f) // Take remaining height in the picker sheet
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // Take remaining height in the picker sheet
         ) {
             when (regionsState) {
                 is UiState.Loading -> {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(MaterialTheme.spacing.medium))
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(MaterialTheme.spacing.medium)
+                    )
                 }
+
                 is UiState.Success -> {
                     val filtered = regionsState.data.filter {
                         it.englishName.contains(searchQuery, ignoreCase = true) ||
-                        it.iso31661.contains(searchQuery, ignoreCase = true)
+                                it.iso31661.contains(searchQuery, ignoreCase = true)
                     }
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(filtered) { region ->
@@ -449,11 +462,13 @@ fun RegionPicker(
                         }
                     }
                 }
+
                 is UiState.Error -> {
                     TextButton(onClick = onRetry, modifier = Modifier.align(Alignment.Center)) {
                         Text(stringResource(R.string.retry))
                     }
                 }
+
                 else -> {}
             }
         }
@@ -468,7 +483,7 @@ fun LanguagePicker(
     onRetry: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    
+
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = searchQuery,
@@ -489,18 +504,24 @@ fun LanguagePicker(
             shape = MaterialTheme.shapes.medium
         )
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f) // Take remaining height in the picker sheet
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // Take remaining height in the picker sheet
         ) {
             when (languagesState) {
                 is UiState.Loading -> {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(MaterialTheme.spacing.medium))
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(MaterialTheme.spacing.medium)
+                    )
                 }
+
                 is UiState.Success -> {
                     val filtered = languagesState.data.filter {
                         it.englishName.contains(searchQuery, ignoreCase = true) ||
-                        it.iso6391.contains(searchQuery, ignoreCase = true)
+                                it.iso6391.contains(searchQuery, ignoreCase = true)
                     }
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(filtered) { language ->
@@ -520,11 +541,13 @@ fun LanguagePicker(
                         }
                     }
                 }
+
                 is UiState.Error -> {
                     TextButton(onClick = onRetry, modifier = Modifier.align(Alignment.Center)) {
                         Text(stringResource(R.string.retry))
                     }
                 }
+
                 else -> {}
             }
         }
@@ -565,7 +588,7 @@ fun OriginalLanguageQuickSelect(
                 label = { Text(label) }
             )
         }
-        
+
         // Custom search option could be added here if needed
     }
 }

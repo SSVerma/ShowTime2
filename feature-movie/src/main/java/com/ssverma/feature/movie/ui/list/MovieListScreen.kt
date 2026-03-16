@@ -4,17 +4,14 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -37,12 +34,8 @@ fun MovieListScreen(
     val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
     val watchRegion by viewModel.appConfigRepository.watchProviderRegion.collectAsStateWithLifecycle()
 
-    var isClosingProgrammatically by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
-    var showFilterSheet by remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -52,7 +45,9 @@ fun MovieListScreen(
             MovieListTopBar(
                 uiState = uiState,
                 onToggleViewMode = { viewModel.toggleViewMode() },
-                onOpenFilters = { showFilterSheet = true },
+                onOpenFilters = {
+                    coroutineScope.launch { sheetState.show() }
+                },
                 onBackPressed = onBackPressed,
                 scrollBehavior = behavior
             )
@@ -80,37 +75,27 @@ fun MovieListScreen(
         }
     }
 
-    if (showFilterSheet && uiState.isFilterApplicable) {
+    if (sheetState.isVisible && uiState.isFilterApplicable) {
         ModalBottomSheet(
-            onDismissRequest = { showFilterSheet = false },
+            onDismissRequest = {
+                coroutineScope.launch { sheetState.hide() }
+            },
             sheetState = sheetState,
             dragHandle = null,
-            tonalElevation = 0.dp
+            sheetGesturesEnabled = false,
+            containerColor = MaterialTheme.colorScheme.surface,
         ) {
             MovieFiltersScreen(
                 watchRegion = watchRegion,
                 initialConfig = uiState.filterConfig,
                 onBackPressed = {
-                    isClosingProgrammatically = true
-                    coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
-                            showFilterSheet = false
-                            isClosingProgrammatically = false
-                        }
-                    }
+                    coroutineScope.launch { sheetState.hide() }
                 },
                 onFilterApplied = { filterConfig ->
-                    isClosingProgrammatically = true
-                    coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
-                            showFilterSheet = false
-                            isClosingProgrammatically = false
-                        }
-                    }
+                    coroutineScope.launch { sheetState.hide() }
                     viewModel.onFiltersApplied(filterConfig)
                 }
             )
         }
     }
-
 }
