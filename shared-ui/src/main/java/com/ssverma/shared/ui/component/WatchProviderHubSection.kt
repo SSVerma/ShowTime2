@@ -281,38 +281,78 @@ private fun WatchProviderShimmer(modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .graphicsLayer {
+                shadowElevation = 8.dp.toPx()
+                shape = RoundedCornerShape(28.dp)
+                clip = true
+            }
+            .border(
+                border = BorderStroke(
+                    width = 2.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF4285F4),
+                            Color(0xFF9B72CB),
+                            Color(0xFFD96570),
+                            Color(0xFFF4AF5F)
+                        )
+                    )
+                ),
+                shape = RoundedCornerShape(28.dp)
+            ),
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            ShimmerPlaceholder(
-                modifier = Modifier
-                    .width(160.dp)
-                    .height(24.dp),
-                shape = RoundedCornerShape(4.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            ShimmerPlaceholder(
-                modifier = Modifier
-                    .width(220.dp)
-                    .height(16.dp),
-                shape = RoundedCornerShape(4.dp)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                maxItemsInEachRow = 5
-            ) {
-                repeat(5) {
-                    ShimmerPlaceholder(
-                        modifier = Modifier.size(56.dp),
-                        shape = CircleShape
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
+                        )
                     )
+                )
+                .padding(24.dp)
+        ) {
+            Column {
+                ShimmerPlaceholder(
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(28.dp),
+                    shape = RoundedCornerShape(4.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                ShimmerPlaceholder(
+                    modifier = Modifier
+                        .width(260.dp)
+                        .height(18.dp),
+                    shape = RoundedCornerShape(4.dp)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    maxItemsInEachRow = 5
+                ) {
+                    repeat(10) {
+                        ShimmerPlaceholder(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outlineVariant,
+                                    CircleShape
+                                ),
+                            shape = CircleShape
+                        )
+                    }
                 }
             }
         }
