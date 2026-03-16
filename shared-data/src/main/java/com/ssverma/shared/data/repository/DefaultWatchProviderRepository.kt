@@ -111,4 +111,9 @@ class DefaultWatchProviderRepository @Inject constructor(
 
         return result
     }
+
+    override fun invalidateCache() {
+        cachedMovieProviders = null
+        cachedTvProviders = null
+    }
 }

@@ -18,4 +18,6 @@ interface WatchProviderRepository {
     suspend fun fetchAllMovieWatchProviders(): CoreResult<List<ProviderInfo>>
 
     suspend fun fetchAllTvShowWatchProviders(): CoreResult<List<ProviderInfo>>
+
+    fun invalidateCache()
 }

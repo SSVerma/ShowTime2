@@ -58,6 +58,7 @@ class HomeMovieViewModel @Inject constructor(
 
     fun fetchAllHomeData() {
         movieGenreUseCase.invalidateCache()
+        fetchAllWatchProvidersUseCase.invalidateCache()
         val discoveryParams = DiscoveryParams(
             region = appConfigRepository.watchProviderRegion.value,
             originalLanguage = appConfigRepository.preferredOriginalLanguage.value

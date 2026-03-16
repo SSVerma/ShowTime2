@@ -15,4 +15,8 @@ class FetchAllWatchProvidersUseCase @Inject constructor(
     suspend fun fetchTvWatchProviders(): CoreResult<List<ProviderInfo>> {
         return watchProviderRepository.fetchAllTvShowWatchProviders()
     }
+
+    fun invalidateCache() {
+        watchProviderRepository.invalidateCache()
+    }
 }
