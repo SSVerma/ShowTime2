@@ -13,6 +13,7 @@ dependencies {
     implementation(projects.featureMovieNavigation)
     implementation(projects.featurePersonNavigation)
     implementation(projects.featureSearchNavigation)
+    implementation(projects.featureFilterNavigation)
 
     implementation(projects.featureFilter)
     implementation(projects.featureSearch)

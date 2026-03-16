@@ -139,12 +139,20 @@ abstract class RouteBuilder<R : Route> {
         return this.mandatoryArg(name, value.toString())
     }
 
+    fun mandatoryArg(name: String, value: Boolean): RouteBuilder<R> {
+        return this.mandatoryArg(name, value.toString())
+    }
+
     fun optionalArg(name: String, value: String?): RouteBuilder<R> {
         this.optionalArgs[name] = value
         return this
     }
 
     fun <T : Number> optionalArg(name: String, value: T): RouteBuilder<R> {
+        return this.optionalArg(name, value.toString())
+    }
+
+    fun optionalArg(name: String, value: Boolean): RouteBuilder<R> {
         return this.optionalArg(name, value.toString())
     }
 

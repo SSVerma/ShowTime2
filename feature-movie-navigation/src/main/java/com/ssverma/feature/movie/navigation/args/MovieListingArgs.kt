@@ -12,7 +12,9 @@ data class MovieListingArgs(
     @param:StringRes val titleRes: Int = 0,
     val title: String? = null,
     val genreId: Int = 0,
-    val keywordId: Int = 0
+    val keywordId: Int = 0,
+    val watchProviderId: Int = 0,
+    val watchRegion: String? = null
 ) : Parcelable
 
 object MovieListingAvailableTypes {
@@ -24,6 +26,11 @@ object MovieListingAvailableTypes {
     const val Upcoming = 5
     const val Genre = 6
     const val Keyword = 7
+    const val WatchProvider = 8
+    const val Discovery = 9
+    const val WatchProviderNew = 10
+    const val WatchProviderUpcoming = 11
+    const val WatchProviderTopRated = 12
 }
 
 @IntDef(
@@ -35,5 +42,10 @@ object MovieListingAvailableTypes {
     MovieListingAvailableTypes.Upcoming,
     MovieListingAvailableTypes.Genre,
     MovieListingAvailableTypes.Keyword,
+    MovieListingAvailableTypes.WatchProvider,
+    MovieListingAvailableTypes.Discovery,
+    MovieListingAvailableTypes.WatchProviderNew,
+    MovieListingAvailableTypes.WatchProviderUpcoming,
+    MovieListingAvailableTypes.WatchProviderTopRated,
 )
 annotation class MovieListingType

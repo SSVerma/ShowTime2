@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.Destination
 import com.ssverma.core.navigation.GraphDestination
 import com.ssverma.core.navigation.navigation
+import com.ssverma.feature.filter.navigation.watchProviderHubGraph
 import com.ssverma.feature.library.navigation.LibraryHomeDestination
 import com.ssverma.feature.library.navigation.libraryHomeGraph
 import com.ssverma.feature.movie.navigation.MovieHomeDestination
@@ -68,4 +69,5 @@ fun NavGraphBuilder.topLevelNavGraph(
     tvShowHomeGraph(navController)
     personHomeGraph(navController)
     libraryHomeGraph(navController)
+    watchProviderHubGraph(navController)
 }

@@ -1,13 +1,15 @@
 package com.ssverma.shared.data.repository
 
 import com.ssverma.api.service.tmdb.TmdbApiService
-import com.ssverma.shared.data.mapper.asWatchProviderRegions
-import com.ssverma.shared.data.mapper.asWatchProvidersMap
 import com.ssverma.shared.data.mapper.asDomainResult
 import com.ssverma.shared.data.mapper.asLanguages
+import com.ssverma.shared.data.mapper.asProviderInfos
+import com.ssverma.shared.data.mapper.asWatchProviderRegions
+import com.ssverma.shared.data.mapper.asWatchProvidersMap
 import com.ssverma.shared.domain.CoreResult
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.Language
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -22,6 +24,10 @@ class DefaultWatchProviderRepository @Inject constructor(
 
     private var cachedRegions: List<WatchProviderRegion>? = null
     private var cachedLanguages: List<Language>? = null
+
+    private var cachedMovieProviders: List<ProviderInfo>? = null
+
+    private var cachedTvProviders: List<ProviderInfo>? = null
 
     override suspend fun fetchMovieWatchProviders(movieId: Int): CoreResult<WatchProvider?> {
         val region = appConfigRepository.watchProviderRegion.first()
@@ -64,6 +70,43 @@ class DefaultWatchProviderRepository @Inject constructor(
 
         if (result is Result.Success) {
             cachedLanguages = result.data
+        }
+
+        return result
+    }
+
+    override suspend fun fetchAllMovieWatchProviders(): CoreResult<List<ProviderInfo>> {
+        cachedMovieProviders?.let {
+            return Result.Success(it)
+        }
+
+        val region = appConfigRepository.watchProviderRegion.first()
+
+        val result = tmdbApiService.getAllMovieWatchProviders(watchRegion = region)
+            .asDomainResult { response ->
+                response.body.asProviderInfos()
+            }
+
+        if (result is Result.Success) {
+            cachedMovieProviders = result.data
+        }
+
+        return result
+    }
+
+    override suspend fun fetchAllTvShowWatchProviders(): CoreResult<List<ProviderInfo>> {
+        cachedTvProviders?.let {
+            return Result.Success(it)
+        }
+
+        val region = appConfigRepository.watchProviderRegion.first()
+
+        val result = tmdbApiService.getAllTvWatchProviders(region).asDomainResult { response ->
+            response.body.asProviderInfos()
+        }
+
+        if (result is Result.Success) {
+            cachedTvProviders = result.data
         }
 
         return result

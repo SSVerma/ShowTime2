@@ -52,7 +52,14 @@ fun HeroSection(
     modifier: Modifier = Modifier,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
-    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large)
+    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
+    overlayContent: (@Composable (MoviePreview) -> Unit)? = {
+        WatchProviderTrigger(
+            mediaId = it.id,
+            isMovie = true,
+            variant = WatchProviderTriggerVariant.Icon
+        )
+    }
 ) {
     StatefulContent(
         state = trendingMoviesState,
@@ -123,13 +130,7 @@ fun HeroSection(
                     imageUrl = { it.posterImageUrl },
                     title = { it.title },
                     onItemClick = { onMovieClicked(it.id) },
-                    overlayContent = {
-                        WatchProviderTrigger(
-                            mediaId = it.id,
-                            isMovie = true,
-                            variant = WatchProviderTriggerVariant.Icon
-                        )
-                    }
+                    overlayContent = overlayContent
                 )
             }
         }

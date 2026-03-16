@@ -785,7 +785,7 @@ private fun isDynamicOptionMatch(groupId: FilterId, itemId: String, option: Disc
         FilterId.CollectionTypeId.Dynamic.Person -> option is DiscoverOption.Person && option.personId == itemId.toInt()
         FilterId.CollectionTypeId.Dynamic.Cast -> option is DiscoverOption.Cast && option.personId == itemId.toInt()
         FilterId.CollectionTypeId.Dynamic.Crew -> option is DiscoverOption.Crew && option.personId == itemId.toInt()
-        FilterId.CollectionTypeId.Dynamic.WatchProviders -> option is DiscoverOption.WatchRegion && option.iso3 == itemId
+        FilterId.CollectionTypeId.Dynamic.WatchProviders -> option is DiscoverOption.WatchProvider && option.providerId == itemId.toInt()
         else -> false
     }
 }

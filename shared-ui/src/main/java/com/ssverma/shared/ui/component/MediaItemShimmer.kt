@@ -14,15 +14,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
+import com.ssverma.shared.ui.component.media.MediaItemDefaults
 
 @Composable
 fun MediaItemShimmer(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    itemWidth: Dp = MediaItemDefaults.PosterWidth
 ) {
-    Column(modifier = modifier.width(140.dp)) {
+    Column(modifier = modifier.width(itemWidth)) {
         ShimmerPlaceholder(
             modifier = Modifier
                 .fillMaxWidth()
@@ -35,6 +40,25 @@ fun MediaItemShimmer(
                 .fillMaxWidth(0.7f)
                 .height(16.dp)
         )
+    }
+}
+
+@Composable
+fun MediaItemRowShimmer(
+    modifier: Modifier = Modifier,
+    itemCount: Int = 5,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(16.dp),
+    itemWidth: Dp = MediaItemDefaults.PosterWidth
+) {
+    LazyRow(
+        contentPadding = contentPadding,
+        horizontalArrangement = horizontalArrangement,
+        modifier = modifier
+    ) {
+        items(itemCount) {
+            MediaItemShimmer(itemWidth = itemWidth)
+        }
     }
 }
 

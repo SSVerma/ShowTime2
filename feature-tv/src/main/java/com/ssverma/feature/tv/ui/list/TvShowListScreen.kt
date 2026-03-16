@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -25,8 +24,6 @@ import com.ssverma.feature.tv.ui.filter.TvFiltersScreen
 import com.ssverma.feature.tv.ui.list.component.TvShowListTopBar
 import com.ssverma.feature.tv.ui.list.content.TvShowsGridContent
 import com.ssverma.feature.tv.ui.list.content.TvShowsListContent
-import com.ssverma.shared.domain.model.tv.TvShowPreview
-import com.ssverma.core.ui.UiState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -92,7 +89,7 @@ fun TvShowListScreen(
         ) {
             TvFiltersScreen(
                 watchRegion = watchRegion,
-                initialConfig = uiState.discoverConfig,
+                initialConfig = uiState.filterConfig,
                 onBackPressed = {
                     isClosingProgrammatically = true
                     coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -102,7 +99,7 @@ fun TvShowListScreen(
                         }
                     }
                 },
-                onFilterApplied = {
+                onFilterApplied = { filterConfig ->
                     isClosingProgrammatically = true
                     coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
@@ -110,7 +107,7 @@ fun TvShowListScreen(
                             isClosingProgrammatically = false
                         }
                     }
-                    viewModel.onFiltersApplied(it)
+                    viewModel.onFiltersApplied(filterConfig)
                 }
             )
         }

@@ -248,9 +248,14 @@ fun <T> HorizontalLazyListSection(
     sectionHeader: @Composable () -> Unit,
     itemContent: @Composable (item: T) -> Unit,
     modifier: Modifier = Modifier,
+    headerContentSpacing: Dp = 16.dp,
     contentPadding: PaddingValues = SectionListContentPadding,
     horizontalArrangement: Arrangement.Horizontal = SectionListHorizontalArrangement,
-) = Section(sectionHeader = sectionHeader, modifier = modifier) {
+) = Section(
+    sectionHeader = sectionHeader,
+    headerContentSpacing = headerContentSpacing,
+    modifier = modifier
+) {
     HorizontalLazyList(
         contentPadding = contentPadding,
         horizontalArrangement = horizontalArrangement,
@@ -265,12 +270,16 @@ fun <T> HorizontalLazyListSection(
     sectionHeader: @Composable () -> Unit,
     itemContent: @Composable (item: T) -> Unit,
     modifier: Modifier = Modifier,
+    headerContentSpacing: Dp = 16.dp,
     contentPadding: PaddingValues = SectionListContentPadding,
     horizontalArrangement: Arrangement.Horizontal = SectionListHorizontalArrangement,
     hideIf: Boolean = false
 ) {
     AnimatedVisibility(visible = !hideIf, modifier = modifier) {
-        Section(sectionHeader = sectionHeader) {
+        Section(
+            headerContentSpacing = headerContentSpacing,
+            sectionHeader = sectionHeader
+        ) {
             HorizontalLazyList(
                 contentPadding = contentPadding,
                 horizontalArrangement = horizontalArrangement,

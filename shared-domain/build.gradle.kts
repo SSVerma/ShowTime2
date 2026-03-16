@@ -8,4 +8,5 @@ dependencies {
     implementation(libs.retrofitConverterGson)
     implementation(libs.coroutines.core)
     implementation(libs.javax.inject)
+    implementation(projects.corePaging)
 }

@@ -438,5 +438,12 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
                 second = include.toString()
             )
         }
+
+        is DiscoverOption.WatchProvider -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.withWatchProviders,
+                second = providerId.toString()
+            )
+        }
     }
 }

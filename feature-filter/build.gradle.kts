@@ -14,6 +14,11 @@ android {
 
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
+
+    implementation(projects.featureFilterNavigation)
+    implementation(projects.featureMovieNavigation)
+    implementation(projects.featureTvNavigation)
+
     implementation(projects.coreUi)
     implementation(projects.sharedUi)
     implementation(projects.sharedData)
@@ -25,5 +30,6 @@ dependencies {
     implementation(projects.corePaging)
     implementation(projects.coreDi)
     implementation(projects.apiService.tmdb)
+    implementation(projects.coreImage)
     implementation(libs.hilt.navigation.compose)
 }

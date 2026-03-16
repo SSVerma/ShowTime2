@@ -4,6 +4,7 @@ import com.ssverma.core.di.DefaultDispatcher
 import com.ssverma.feature.filter.domain.FilterProvider
 import com.ssverma.feature.filter.domain.model.*
 import com.ssverma.feature.filter.domain.repository.FilterRepository
+import com.ssverma.shared.domain.repository.WatchProviderRepository
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.Order
 import com.ssverma.shared.domain.Result
@@ -25,7 +26,8 @@ enum class FilterType {
 
 class GetFiltersUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
-    private val filterRepository: FilterRepository
+    private val filterRepository: FilterRepository,
+    private val watchProviderRepository: WatchProviderRepository
 ) : NoParamFlowUseCase<Result<List<Filter>, Failure.CoreFailure>>(coroutineDispatcher), FilterProvider {
 
     private var filterType: FilterType = FilterType.Movie
@@ -140,6 +142,15 @@ class GetFiltersUseCase @Inject constructor(
                 )
             )
         }
+        
+        // Watch Providers
+        filters.add(
+            Filter.CollectionFilter.Dynamic(
+                id = FilterId.CollectionTypeId.Dynamic.WatchProviders,
+                items = emptyList(),
+                singleSelectable = false
+            )
+        )
 
         emit(Result.Success(data = filters))
     }
@@ -313,6 +324,16 @@ class GetFiltersUseCase @Inject constructor(
                     countries
                         .sortedBy { it.englishName }
                         .map { DynamicFilterItem(id = it.iso31661, displayText = it.englishName) }
+                }
+            }
+            FilterId.CollectionTypeId.Dynamic.WatchProviders -> {
+                val result = if (filterType == FilterType.Movie) {
+                    watchProviderRepository.fetchAllMovieWatchProviders()
+                } else {
+                    watchProviderRepository.fetchAllTvShowWatchProviders()
+                }
+                result.asSuccess { providers ->
+                    providers.map { DynamicFilterItem(id = it.providerId.toString(), displayText = it.providerName) }
                 }
             }
             else -> Result.Success(emptyList())

@@ -34,6 +34,14 @@ fun TvShowGridItem(
     posterModifier: Modifier = Modifier,
     showRating: Boolean = true,
     indicator: (@Composable (TvShowPreview) -> Unit)? = null,
+    overlayContent: (@Composable (TvShowPreview) -> Unit)? = {
+        WatchProviderTrigger(
+            mediaId = it.id,
+            isMovie = false,
+            variant = WatchProviderTriggerVariant.Icon,
+            modifier = Modifier.padding(MaterialTheme.spacing.small)
+        )
+    },
     onClick: (TvShowPreview) -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -42,12 +50,7 @@ fun TvShowGridItem(
             indicator = indicator?.let { { it(tvShow) } },
             onClick = { onClick(tvShow) },
             overlayContent = {
-                WatchProviderTrigger(
-                    mediaId = tvShow.id,
-                    isMovie = false,
-                    variant = WatchProviderTriggerVariant.Icon,
-                    modifier = Modifier.padding(MaterialTheme.spacing.small)
-                )
+                overlayContent?.invoke(tvShow)
             },
             modifier = posterModifier
                 .width(MediaItemDefaults.PosterWidth)

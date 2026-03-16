@@ -138,6 +138,7 @@ dependencies {
     implementation(projects.featureSearch)
     implementation(projects.featureAuth)
     implementation(projects.featureAccount)
+    implementation(projects.featureFilter)
 
     implementation(libs.material)
     implementation(libs.compose.activity)

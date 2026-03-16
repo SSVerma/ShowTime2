@@ -9,6 +9,8 @@ import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TopRatedMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.UpcomingMoviesUseCase
+import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.model.DiscoveryParams
@@ -32,6 +34,7 @@ class HomeMovieViewModel @Inject constructor(
     private val inCinemaMoviesUseCase: InCinemaMoviesUseCase,
     private val popularMoviesUseCase: PopularMoviesUseCase,
     private val movieGenreUseCase: MovieGenresUseCase,
+    private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
     private val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
@@ -62,6 +65,7 @@ class HomeMovieViewModel @Inject constructor(
         fetchMovieGenres()
         fetchTrendingMovies()
         fetchInCinemaMovies(discoveryParams)
+        fetchWatchProviders()
     }
 
     fun fetchMovieGenres() = viewModelScope.launch {
@@ -159,6 +163,15 @@ class HomeMovieViewModel @Inject constructor(
                 }
                 is Result.Error -> _uiState.update { it.copy(upcomingMovies = UiState.Error(result.error)) }
             }
+        }
+    }
+
+    fun fetchWatchProviders() = viewModelScope.launch {
+        _uiState.update { it.copy(watchProviders = UiState.Loading) }
+
+        when (val result = fetchAllWatchProvidersUseCase.fetchMovieWatchProviders()) {
+            is Result.Success -> _uiState.update { it.copy(watchProviders = UiState.Success(result.data)) }
+            is Result.Error -> _uiState.update { it.copy(watchProviders = UiState.Error(result.error)) }
         }
     }
 

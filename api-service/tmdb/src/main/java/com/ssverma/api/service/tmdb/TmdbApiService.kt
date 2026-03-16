@@ -28,6 +28,7 @@ import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
 import com.ssverma.api.service.tmdb.response.RequestTokenPayload
 import com.ssverma.api.service.tmdb.response.SessionPayload
 import com.ssverma.api.service.tmdb.response.TmdbErrorPayload
+import com.ssverma.api.service.tmdb.response.WatchProviderPayload
 import com.ssverma.api.service.tmdb.response.WatchProviderRegionPayload
 import com.ssverma.core.networking.adapter.ApiResponse
 import retrofit2.http.Body
@@ -265,4 +266,14 @@ interface TmdbApiService {
         @Query("session_id") sessionId: String,
         @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
+
+    @GET("3/watch/providers/movie")
+    suspend fun getAllMovieWatchProviders(
+        @Query("watch_region") watchRegion: String
+    ): TmdbApiResponse<WatchProviderPayload>
+
+    @GET("3/watch/providers/tv")
+    suspend fun getAllTvWatchProviders(
+        @Query("watch_region") watchRegion: String
+    ): TmdbApiResponse<WatchProviderPayload>
 }

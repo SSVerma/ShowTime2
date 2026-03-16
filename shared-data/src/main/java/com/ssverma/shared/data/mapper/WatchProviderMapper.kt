@@ -5,6 +5,7 @@ import com.ssverma.api.service.tmdb.response.RemoteProviderInfo
 import com.ssverma.api.service.tmdb.response.RemoteWatchProvider
 import com.ssverma.api.service.tmdb.response.RemoteWatchProviderRegion
 import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
+import com.ssverma.api.service.tmdb.response.WatchProviderPayload
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.WatchProviderRegion
@@ -51,4 +52,8 @@ fun RemoteWatchProviderRegion.asWatchProviderRegion(): WatchProviderRegion {
 
 fun List<RemoteWatchProviderRegion>.asWatchProviderRegions(): List<WatchProviderRegion> {
     return map { it.asWatchProviderRegion() }
+}
+
+fun WatchProviderPayload.asProviderInfos(): List<ProviderInfo> {
+    return results.asProviderInfos()
 }

@@ -16,4 +16,5 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.coroutines.core)
     implementation(libs.datastore.preferences)
+    implementation(projects.corePaging)
 }

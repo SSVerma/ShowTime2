@@ -51,4 +51,20 @@
     <string name="translate_app_desc">Fetch titles &amp; overviews in selected language</string>
     <string name="preferred_content_language">Preferred Original Language</string>
     <string name="global_trending">Global / Trending</string>
+    <string name="watch_providers">Watch Providers</string>
+    <string name="movies">Movies</string>
+    <string name="tv_shows">TV Shows</string>
+    <string name="see_all">See All</string>
+
+    <!-- Watch Provider Hub -->
+    <string name="streaming_universe">Streaming Universe</string>
+    <string name="streaming_universe_desc">Discover where to stream your favorites</string>
+    <string name="streaming_exclusively_on">Streaming exclusively on %1$s</string>
+    <string name="featured_originals">Featured Originals</string>
+    <string name="new_this_week">New This Week</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="top_rated_gems">Top Rated Gems</string>
+    <string name="end_of_curated_content">END OF CURATED CONTENT</string>
+    <string name="looking_for_more">Looking for more on %1$s?</string>
+    <string name="explore_by_genre">Explore by Genre</string>
 </resources>

@@ -12,10 +12,13 @@ data class TvShowListingArgs(
     @param:StringRes val titleRes: Int = 0,
     val title: String? = null,
     val genreId: Int = 0,
-    val keywordId: Int = 0
+    val keywordId: Int = 0,
+    val watchProviderId: Int = 0,
+    val watchRegion: String? = null
 ) : Parcelable
 
 object TvShowListingAvailableTypes {
+    const val Default = 0
     const val TrendingToday = 1
     const val Popular = 2
     const val TopRated = 3
@@ -24,9 +27,15 @@ object TvShowListingAvailableTypes {
     const val Upcoming = 6
     const val Genre = 7
     const val Keyword = 8
+    const val WatchProvider = 9
+    const val Discovery = 10
+    const val WatchProviderNew = 11
+    const val WatchProviderUpcoming = 12
+    const val WatchProviderTopRated = 13
 }
 
 @IntDef(
+    TvShowListingAvailableTypes.Default,
     TvShowListingAvailableTypes.TrendingToday,
     TvShowListingAvailableTypes.Popular,
     TvShowListingAvailableTypes.TopRated,
@@ -35,5 +44,10 @@ object TvShowListingAvailableTypes {
     TvShowListingAvailableTypes.Upcoming,
     TvShowListingAvailableTypes.Genre,
     TvShowListingAvailableTypes.Keyword,
+    TvShowListingAvailableTypes.WatchProvider,
+    TvShowListingAvailableTypes.Discovery,
+    TvShowListingAvailableTypes.WatchProviderNew,
+    TvShowListingAvailableTypes.WatchProviderUpcoming,
+    TvShowListingAvailableTypes.WatchProviderTopRated,
 )
 annotation class TvShowListingType

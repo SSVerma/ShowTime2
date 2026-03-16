@@ -4,9 +4,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ssverma.shared.domain.DiscoverOption
-import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.feature.filter.ui.filter.FiltersScreen
+import com.ssverma.shared.domain.MovieDiscoverConfig
 
 @Composable
 fun MovieFiltersScreen(
@@ -17,7 +16,7 @@ fun MovieFiltersScreen(
     watchRegion: String? = null,
     initialConfig: MovieDiscoverConfig? = null,
 ) {
-    FiltersScreen<DiscoverOption.OptionScope.Movie>(
+    FiltersScreen(
         isTv = false,
         modifier = modifier,
         listState = listState,

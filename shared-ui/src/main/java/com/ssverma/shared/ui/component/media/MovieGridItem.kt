@@ -34,6 +34,14 @@ fun MovieGridItem(
     posterModifier: Modifier = Modifier,
     showRating: Boolean = true,
     indicator: (@Composable (MoviePreview) -> Unit)? = null,
+    overlayContent: (@Composable (MoviePreview) -> Unit)? = {
+        WatchProviderTrigger(
+            mediaId = it.id,
+            isMovie = true,
+            variant = WatchProviderTriggerVariant.Icon,
+            modifier = Modifier.padding(MaterialTheme.spacing.small)
+        )
+    },
     onClick: (MoviePreview) -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -42,12 +50,7 @@ fun MovieGridItem(
             indicator = indicator?.let { { it(movie) } },
             onClick = { onClick(movie) },
             overlayContent = {
-                WatchProviderTrigger(
-                    mediaId = movie.id,
-                    isMovie = true,
-                    variant = WatchProviderTriggerVariant.Icon,
-                    modifier = Modifier.padding(MaterialTheme.spacing.small)
-                )
+                overlayContent?.invoke(movie)
             },
             modifier = posterModifier
                 .width(MediaItemDefaults.PosterWidth)

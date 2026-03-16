@@ -16,6 +16,7 @@ import com.ssverma.feature.tv.navigation.convertor.asTvShowListingConfigs
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -34,14 +35,14 @@ data class TvShowPaginatedListUiState(
     val listingType: Int = 0,
     val isFilterApplicable: Boolean = false,
     val isFilterApplied: Boolean = false,
-    val discoverConfig: TvDiscoverConfig? = null
+    val filterConfig: TvDiscoverConfig? = null
 )
 
 @HiltViewModel
 class TvShowListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val paginatedTvShowUseCase: PaginatedTvShowUseCase,
-    val appConfigRepository: com.ssverma.shared.domain.repository.AppConfigRepository
+    val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
 
@@ -54,40 +55,36 @@ class TvShowListViewModel @Inject constructor(
             title = tvShowListingArgs.title,
             listingType = tvShowListingArgs.listingType,
             isFilterApplicable = tvShowListingConfig is TvShowListingConfig.Filterable,
-            discoverConfig = (tvShowListingConfig as? TvShowListingConfig.Filterable)?.discoverConfig
+            filterConfig = (tvShowListingConfig as? TvShowListingConfig.Filterable)?.discoverConfig
         )
     )
+
     val uiState: StateFlow<TvShowPaginatedListUiState> = _uiState.asStateFlow()
 
-    private val appliedFilters = MutableStateFlow(
-        (tvShowListingConfig as? TvShowListingConfig.Filterable)?.discoverConfig
-            ?: TvDiscoverConfig.builder().build()
-    )
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagedTvShows: Flow<PagingData<TvShowPreview>> = appliedFilters
-        .flatMapLatest { filterConfig ->
-            val config = if (tvShowListingConfig is TvShowListingConfig.Filterable) {
-                tvShowListingConfig.withFilter(filterConfig)
-            } else {
-                tvShowListingConfig
-            }
-            paginatedTvShowUseCase(config)
+    val pagedTvShows: Flow<PagingData<TvShowPreview>> = _uiState.flatMapLatest { state ->
+        val config = if (
+            tvShowListingConfig is TvShowListingConfig.Filterable
+            && state.filterConfig != null
+        ) {
+            tvShowListingConfig.withFilter(state.filterConfig)
+        } else {
+            tvShowListingConfig
         }
-        .map { pagingData ->
-            pagingData.map { tvShow -> tvShow.asTvShowPreview() }
-        }
-        .cachedIn(viewModelScope)
+        paginatedTvShowUseCase(config)
+    }.map { pagingData ->
+        pagingData.map { tvShow -> tvShow.asTvShowPreview() }
+    }.cachedIn(viewModelScope)
 
-    fun onFiltersApplied(discoverConfig: TvDiscoverConfig) {
-        appliedFilters.update { discoverConfig }
+    fun onFiltersApplied(filterConfig: TvDiscoverConfig) {
         val isApplied = (tvShowListingConfig as? TvShowListingConfig.Filterable)?.let {
-            it.discoverConfig != discoverConfig && !discoverConfig.isBare()
+            it.discoverConfig != filterConfig && !filterConfig.isBare()
         } ?: false
+
         _uiState.update {
             it.copy(
                 isFilterApplied = isApplied,
-                discoverConfig = discoverConfig
+                filterConfig = filterConfig
             )
         }
     }
@@ -105,6 +102,8 @@ private fun SavedStateHandle.buildTvShowListingArgs(): TvShowListingArgs {
         titleRes = get<Int>(TvShowListDestination.ArgTitleRes) ?: 0,
         title = get<String>(TvShowListDestination.ArgTitle),
         genreId = get<Int>(TvShowListDestination.ArgGenreId) ?: 0,
-        keywordId = get<Int>(TvShowListDestination.ArgKeywordId) ?: 0
+        keywordId = get<Int>(TvShowListDestination.ArgKeywordId) ?: 0,
+        watchProviderId = get<Int>(TvShowListDestination.ArgWatchProviderId) ?: 0,
+        watchRegion = get<String>(TvShowListDestination.ArgWatchRegion)
     )
 }

@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.ui.home.content.MovieHomeContent
+import com.ssverma.shared.domain.model.ProviderInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,6 +16,7 @@ fun MovieScreen(
     openMovieDetails: (movieId: Int) -> Unit,
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
+    openWatchProviderHub: (ProviderInfo) -> Unit,
     viewModel: HomeMovieViewModel = hiltViewModel()
 ) {
     AppPage(
@@ -26,6 +28,7 @@ fun MovieScreen(
             openMovieDetails = openMovieDetails,
             openSearchPage = openSearchPage,
             openAccountPage = openAccountPage,
+            openWatchProviderHub = openWatchProviderHub,
         )
     }
 }

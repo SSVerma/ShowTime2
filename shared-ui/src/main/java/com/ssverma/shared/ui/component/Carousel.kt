@@ -58,7 +58,7 @@ fun <T, FF> AppHeroCarousel(
     imageUrl: (T) -> String,
     title: (T) -> String,
     onItemClick: (T) -> Unit,
-    overlayContent: @Composable (T) -> Unit = {}
+    overlayContent: (@Composable (T) -> Unit)? = null
 ) {
     DriveCompose(
         uiState = uiState,
@@ -141,7 +141,7 @@ fun <T> AppHeroCarousel(
     imageUrl: (T) -> String,
     title: (T) -> String,
     onItemClick: (T) -> Unit,
-    overlayContent: @Composable (T) -> Unit = {}
+    overlayContent: (@Composable (T) -> Unit)? = null
 ) {
     Box(
         modifier = modifier
@@ -214,12 +214,14 @@ fun <T> AppHeroCarousel(
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(MaterialTheme.spacing.medium)
-                ) {
-                    overlayContent(item)
+                overlayContent?.let {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(MaterialTheme.spacing.medium)
+                    ) {
+                        it(item)
+                    }
                 }
             }
         }

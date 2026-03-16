@@ -225,6 +225,11 @@ sealed interface DiscoverOption {
         val include: Boolean,
         override val mode: OptionMode = OptionMode.SingleValue
     ) : OptionScope.Movie
+
+    data class WatchProvider(
+        val providerId: Int,
+        override val mode: OptionMode = OptionMode.MultiValue(valueMode = MultiValueMode.Or)
+    ) : OptionScope.Movie, OptionScope.Tv
 }
 
 sealed interface SortBy {

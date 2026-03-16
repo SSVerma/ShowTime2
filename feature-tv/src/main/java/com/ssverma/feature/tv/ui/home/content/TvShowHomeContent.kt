@@ -22,8 +22,8 @@ import com.ssverma.shared.ui.component.AppSection
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
 import com.ssverma.shared.ui.component.media.TvShowListItem
-import com.ssverma.shared.domain.model.tv.TvShowPreview
-import com.ssverma.core.ui.UiState
+import com.ssverma.shared.ui.component.WatchProviderHubSection
+import com.ssverma.shared.domain.model.ProviderInfo
 
 @Composable
 fun TvShowHomeContent(
@@ -32,6 +32,7 @@ fun TvShowHomeContent(
     openTvShowDetails: (Int) -> Unit,
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
+    openWatchProviderHub: (ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,6 +62,15 @@ fun TvShowHomeContent(
                 },
                 onRetry = { viewModel.fetchTvGenres() },
                 modifier = Modifier.padding(top = MaterialTheme.spacing.large)
+            )
+        }
+
+        item {
+            WatchProviderHubSection(
+                providersUiState = uiState.watchProviders,
+                onProviderClick = openWatchProviderHub,
+                onRetry = { viewModel.fetchWatchProviders() },
+                modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
 

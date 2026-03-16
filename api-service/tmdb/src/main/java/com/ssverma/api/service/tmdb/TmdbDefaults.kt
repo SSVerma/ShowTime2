@@ -1,5 +1,7 @@
 package com.ssverma.api.service.tmdb
 
+import androidx.paging.PagingConfig
+
 
 object TmdbDefaults {
     object ApiDefaults {
@@ -13,6 +15,18 @@ object TmdbDefaults {
 
     fun authApprovalRedirectUrl(requestToken: String): String {
         return "https://www.themoviedb.org/auth/access?request_token=$requestToken"
+    }
+
+    fun pagingConfig(
+        pageSize: Int = ApiDefaults.PageSize,
+        prefetchDistance: Int = pageSize,
+        enablePlaceholders: Boolean = false
+    ): PagingConfig {
+        return PagingConfig(
+            pageSize = pageSize,
+            prefetchDistance = prefetchDistance,
+            enablePlaceholders = enablePlaceholders
+        )
     }
 }
 

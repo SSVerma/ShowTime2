@@ -35,7 +35,7 @@ data class MoviePaginatedListUiState(
     val listingType: Int = 0,
     val isFilterApplicable: Boolean = false,
     val isFilterApplied: Boolean = false,
-    val discoverConfig: MovieDiscoverConfig? = null
+    val filterConfig: MovieDiscoverConfig? = null,
 )
 
 @HiltViewModel
@@ -55,20 +55,18 @@ class MovieListViewModel @Inject constructor(
             title = movieListingArgs.title,
             listingType = movieListingArgs.listingType,
             isFilterApplicable = movieListingConfig is MovieListingConfig.Filterable,
-            discoverConfig = (movieListingConfig as? MovieListingConfig.Filterable)?.discoverConfig
+            filterConfig = (movieListingConfig as? MovieListingConfig.Filterable)?.discoverConfig
         )
     )
     val uiState: StateFlow<MoviePaginatedListUiState> = _uiState.asStateFlow()
 
-    private val appliedFilters = MutableStateFlow(
-        (movieListingConfig as? MovieListingConfig.Filterable)?.discoverConfig
-            ?: MovieDiscoverConfig.builder().build()
-    )
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagedMovies: Flow<PagingData<MoviePreview>> = appliedFilters.flatMapLatest { filterConfig ->
-        val config = if (movieListingConfig is MovieListingConfig.Filterable) {
-            movieListingConfig.withFilter(filterConfig)
+    val pagedMovies: Flow<PagingData<MoviePreview>> = _uiState.flatMapLatest { state ->
+        val config = if (
+            movieListingConfig is MovieListingConfig.Filterable
+            && state.filterConfig != null
+        ) {
+            movieListingConfig.withFilter(state.filterConfig)
         } else {
             movieListingConfig
         }
@@ -77,15 +75,15 @@ class MovieListViewModel @Inject constructor(
         pagingData.map { movie -> movie.asMoviePreview() }
     }.cachedIn(viewModelScope)
 
-    fun onFiltersApplied(discoverConfig: MovieDiscoverConfig) {
-        appliedFilters.update { discoverConfig }
+    fun onFiltersApplied(filterConfig: MovieDiscoverConfig) {
         val isApplied = (movieListingConfig as? MovieListingConfig.Filterable)?.let {
-            it.discoverConfig != discoverConfig && !discoverConfig.isBare()
+            it.discoverConfig != filterConfig && !filterConfig.isBare()
         } ?: false
+
         _uiState.update {
             it.copy(
                 isFilterApplied = isApplied,
-                discoverConfig = discoverConfig
+                filterConfig = filterConfig
             )
         }
     }
@@ -103,6 +101,8 @@ private fun SavedStateHandle.buildMovieListingArgs(): MovieListingArgs {
         titleRes = get<Int>(MovieListDestination.ArgTitleRes) ?: 0,
         title = get<String>(MovieListDestination.ArgTitle),
         genreId = get<Int>(MovieListDestination.ArgGenreId) ?: 0,
-        keywordId = get<Int>(MovieListDestination.ArgKeywordId) ?: 0
+        keywordId = get<Int>(MovieListDestination.ArgKeywordId) ?: 0,
+        watchProviderId = get<Int>(MovieListDestination.ArgWatchProviderId) ?: 0,
+        watchRegion = get<String>(MovieListDestination.ArgWatchRegion)
     )
 }

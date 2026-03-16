@@ -10,6 +10,8 @@ import com.ssverma.feature.tv.domain.usecase.TopRatedTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.feature.tv.domain.usecase.UpcomingTvShowsUseCase
+import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import com.ssverma.shared.domain.model.DiscoveryParams
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.Result
@@ -33,6 +35,7 @@ class HomeTvShowViewModel @Inject constructor(
     private val nowAiringTvShowsUseCase: NowAiringTvShowsUseCase,
     private val popularTvShowsUseCase: PopularTvShowsUseCase,
     private val tvGenresUseCase: TvGenresUseCase,
+    private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
     private val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
@@ -64,6 +67,7 @@ class HomeTvShowViewModel @Inject constructor(
         fetchTrendingTvShows()
         fetchTodayAiringTvShows(discoveryParams)
         fetchNowAiringTvShows(discoveryParams)
+        fetchWatchProviders()
     }
 
     fun fetchTvGenres() = viewModelScope.launch {
@@ -183,6 +187,14 @@ class HomeTvShowViewModel @Inject constructor(
                 }
                 is Result.Error -> _uiState.update { it.copy(nowAiringTvShows = UiState.Error(result.error)) }
             }
+        }
+    }
+
+    fun fetchWatchProviders() = viewModelScope.launch {
+        _uiState.update { it.copy(watchProviders = UiState.Loading) }
+        when (val result = fetchAllWatchProvidersUseCase.fetchTvWatchProviders()) {
+            is Result.Success -> _uiState.update { it.copy(watchProviders = UiState.Success(result.data)) }
+            is Result.Error -> _uiState.update { it.copy(watchProviders = UiState.Error(result.error)) }
         }
     }
 

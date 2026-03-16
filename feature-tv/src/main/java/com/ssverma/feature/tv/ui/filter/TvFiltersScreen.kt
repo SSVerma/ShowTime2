@@ -5,19 +5,18 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.ssverma.feature.filter.ui.filter.FiltersScreen
-import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.TvDiscoverConfig
 
 @Composable
 fun TvFiltersScreen(
-    onFilterApplied: (discoverConfig: TvDiscoverConfig) -> Unit,
+    onFilterApplied: (filterConfig: TvDiscoverConfig) -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
     watchRegion: String? = null,
     listState: LazyListState = rememberLazyListState(),
     initialConfig: TvDiscoverConfig? = null,
 ) {
-    FiltersScreen<DiscoverOption.OptionScope.Tv>(
+    FiltersScreen(
         isTv = true,
         modifier = modifier,
         listState = listState,

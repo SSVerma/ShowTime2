@@ -4,6 +4,7 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 
 data class HomeUiState(
@@ -12,5 +13,6 @@ data class HomeUiState(
     val popularMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
     val inCinemasMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
     val upcomingMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Idle,
-    val genres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Idle
+    val genres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Idle,
+    val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle
 )

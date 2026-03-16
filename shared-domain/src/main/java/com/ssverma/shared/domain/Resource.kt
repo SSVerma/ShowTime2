@@ -33,4 +33,12 @@ sealed class Result<out S, out E> {
     }
 }
 
+fun <S, E> Result<S, E>.getOrNull(): S? {
+    return if (this is Result.Success) data else null
+}
+
+fun <S, E> Result<S, E>.getOrDefault(default: S): S {
+    return if (this is Result.Success) data else default
+}
+
 typealias CoreResult<T> = Result<T, Failure.CoreFailure>

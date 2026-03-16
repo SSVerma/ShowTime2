@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -25,8 +24,6 @@ import com.ssverma.feature.movie.ui.filter.MovieFiltersScreen
 import com.ssverma.feature.movie.ui.list.component.MovieListTopBar
 import com.ssverma.feature.movie.ui.list.content.MoviesGridContent
 import com.ssverma.feature.movie.ui.list.content.MoviesListContent
-import com.ssverma.shared.domain.model.movie.MoviePreview
-import com.ssverma.core.ui.UiState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -51,13 +48,13 @@ fun MovieListScreen(
 
     AppPage(
         scrollBehavior = scrollBehavior,
-        topBar = { scrollBehavior ->
+        topBar = { behavior ->
             MovieListTopBar(
                 uiState = uiState,
                 onToggleViewMode = { viewModel.toggleViewMode() },
                 onOpenFilters = { showFilterSheet = true },
                 onBackPressed = onBackPressed,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = behavior
             )
         }
     ) { innerPadding ->
@@ -92,7 +89,7 @@ fun MovieListScreen(
         ) {
             MovieFiltersScreen(
                 watchRegion = watchRegion,
-                initialConfig = uiState.discoverConfig,
+                initialConfig = uiState.filterConfig,
                 onBackPressed = {
                     isClosingProgrammatically = true
                     coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -102,7 +99,7 @@ fun MovieListScreen(
                         }
                     }
                 },
-                onFilterApplied = {
+                onFilterApplied = { filterConfig ->
                     isClosingProgrammatically = true
                     coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
@@ -110,7 +107,7 @@ fun MovieListScreen(
                             isClosingProgrammatically = false
                         }
                     }
-                    viewModel.onFiltersApplied(it)
+                    viewModel.onFiltersApplied(filterConfig)
                 }
             )
         }

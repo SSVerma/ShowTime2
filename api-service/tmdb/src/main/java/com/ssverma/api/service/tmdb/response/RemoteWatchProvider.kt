@@ -40,3 +40,8 @@ class RemoteWatchProviderResponse(
     @SerializedName("results")
     val results: Map<String, RemoteWatchProvider>?
 )
+
+class WatchProviderPayload(
+    @SerializedName("results")
+    val results: List<RemoteProviderInfo>
+)

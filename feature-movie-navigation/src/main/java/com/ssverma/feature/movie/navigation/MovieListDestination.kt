@@ -12,6 +12,8 @@ object MovieListDestination : DependentDestination<MovieListingArgs>("movies") {
     const val ArgTitle = "title"
     const val ArgGenreId = "genreId"
     const val ArgKeywordId = "keywordId"
+    const val ArgWatchProviderId = "watchProviderId"
+    const val ArgWatchRegion = "watchRegion"
 
     override fun placeholderRoute(builder: PlaceholderRoute.PlaceHolderRouteBuilder): PlaceholderRoute {
         return builder
@@ -32,6 +34,13 @@ object MovieListDestination : DependentDestination<MovieListingArgs>("movies") {
             )
             .optionalArg(ArgGenreId, navType = NavType.IntType, defaultVal = 0)
             .optionalArg(ArgKeywordId, navType = NavType.IntType, defaultVal = 0)
+            .optionalArg(ArgWatchProviderId, navType = NavType.IntType, defaultVal = 0)
+            .optionalArg(
+                name = ArgWatchRegion,
+                navType = NavType.StringType,
+                isNullable = true,
+                defaultVal = null
+            )
             .build()
     }
 
@@ -44,6 +53,8 @@ object MovieListDestination : DependentDestination<MovieListingArgs>("movies") {
             .optionalArg(ArgTitle, input.title)
             .optionalArg(ArgGenreId, input.genreId)
             .optionalArg(ArgKeywordId, input.keywordId)
+            .optionalArg(ArgWatchProviderId, input.watchProviderId)
+            .optionalArg(ArgWatchRegion, input.watchRegion)
             .build()
     }
 }

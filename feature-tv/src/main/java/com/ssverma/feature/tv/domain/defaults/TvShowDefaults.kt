@@ -52,19 +52,52 @@ object TvShowDefaults {
 
         fun topRated(watchRegion: String? = null, originalLanguage: String? = null) =
             TvDiscoverConfig.builder(sortBy = SortBy.Rating())
-                .with(
-                    DiscoverOption.Rating.VoteCount(200),
-                    DiscoverOption.WithoutGenre(10770), // TV Movie
-                    DiscoverOption.WithoutGenre(99), // Documentary
-                    DiscoverOption.WithoutGenre(10763), // News
-                    DiscoverOption.WithoutGenre(10764), // Reality
-                    DiscoverOption.WithoutGenre(10767) // Talk
-                )
                 .apply {
                     watchRegion?.let { with(DiscoverOption.WatchRegion(iso3 = it)) }
                     originalLanguage?.let { with(DiscoverOption.OriginalLanguage(iso2 = it)) }
                 }
                 .build()
+
+        fun discoveryBy(
+            watchProviderId: Int? = null,
+            watchRegion: String? = null,
+            originalLanguage: String? = null,
+            sortBy: SortBy = SortBy.Popularity()
+        ) = TvDiscoverConfig.builder(sortBy = sortBy)
+            .apply {
+                watchProviderId?.let { with(DiscoverOption.WatchProvider(it)) }
+                watchRegion?.let { with(DiscoverOption.WatchRegion(iso3 = it)) }
+                originalLanguage?.let { with(DiscoverOption.OriginalLanguage(iso2 = it)) }
+            }
+            .build()
+
+        fun watchProviderNew(watchProviderId: Int): TvDiscoverConfig {
+            val today = DateUtils.currentDate()
+            val lastWeek = today.minusWeeks(1)
+            return TvDiscoverConfig.builder()
+                .with(DiscoverOption.WatchProvider(watchProviderId))
+                .with(DiscoverOption.AirDate.From(lastWeek))
+                .with(DiscoverOption.AirDate.To(today))
+                .sortBy(SortBy.AirDate(Order.Descending))
+                .build()
+        }
+
+        fun watchProviderUpcoming(watchProviderId: Int): TvDiscoverConfig {
+            val tomorrow = DateUtils.currentDate().plusDays(1)
+
+            return TvDiscoverConfig.builder()
+                .with(DiscoverOption.WatchProvider(watchProviderId))
+                .with(DiscoverOption.AirDate.From(tomorrow))
+                .sortBy(SortBy.AirDate(Order.Ascending))
+                .build()
+        }
+
+        fun watchProviderTopRated(watchProviderId: Int): TvDiscoverConfig {
+            return TvDiscoverConfig.builder()
+                .with(DiscoverOption.WatchProvider(watchProviderId))
+                .sortBy(SortBy.Rating(Order.Descending))
+                .build()
+        }
     }
 
     fun allTvShowDetailsAppendable(): List<MediaDetailsAppendable> {
