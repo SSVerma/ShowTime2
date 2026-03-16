@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -62,19 +63,20 @@ class TvShowListViewModel @Inject constructor(
     val uiState: StateFlow<TvShowPaginatedListUiState> = _uiState.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagedTvShows: Flow<PagingData<TvShowPreview>> = _uiState.flatMapLatest { state ->
-        val config = if (
-            tvShowListingConfig is TvShowListingConfig.Filterable
-            && state.filterConfig != null
-        ) {
-            tvShowListingConfig.withFilter(state.filterConfig)
-        } else {
-            tvShowListingConfig
+    val pagedTvShows: Flow<PagingData<TvShowPreview>> = _uiState
+        .map { state ->
+            if (tvShowListingConfig is TvShowListingConfig.Filterable && state.filterConfig != null) {
+                tvShowListingConfig.withFilter(state.filterConfig)
+            } else {
+                tvShowListingConfig
+            }
         }
-        paginatedTvShowUseCase(config)
-    }.map { pagingData ->
-        pagingData.map { tvShow -> tvShow.asTvShowPreview() }
-    }.cachedIn(viewModelScope)
+        .distinctUntilChanged()
+        .flatMapLatest { config ->
+            paginatedTvShowUseCase(config)
+        }.map { pagingData ->
+            pagingData.map { tvShow -> tvShow.asTvShowPreview() }
+        }.cachedIn(viewModelScope)
 
     fun onFiltersApplied(filterConfig: TvDiscoverConfig) {
         val isApplied = (tvShowListingConfig as? TvShowListingConfig.Filterable)?.let {

@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -61,19 +62,20 @@ class MovieListViewModel @Inject constructor(
     val uiState: StateFlow<MoviePaginatedListUiState> = _uiState.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val pagedMovies: Flow<PagingData<MoviePreview>> = _uiState.flatMapLatest { state ->
-        val config = if (
-            movieListingConfig is MovieListingConfig.Filterable
-            && state.filterConfig != null
-        ) {
-            movieListingConfig.withFilter(state.filterConfig)
-        } else {
-            movieListingConfig
+    val pagedMovies: Flow<PagingData<MoviePreview>> = _uiState
+        .map { state ->
+            if (movieListingConfig is MovieListingConfig.Filterable && state.filterConfig != null) {
+                movieListingConfig.withFilter(state.filterConfig)
+            } else {
+                movieListingConfig
+            }
         }
-        paginatedMoviesUseCase(config)
-    }.map { pagingData ->
-        pagingData.map { movie -> movie.asMoviePreview() }
-    }.cachedIn(viewModelScope)
+        .distinctUntilChanged()
+        .flatMapLatest { config ->
+            paginatedMoviesUseCase(config)
+        }.map { pagingData ->
+            pagingData.map { movie -> movie.asMoviePreview() }
+        }.cachedIn(viewModelScope)
 
     fun onFiltersApplied(filterConfig: MovieDiscoverConfig) {
         val isApplied = (movieListingConfig as? MovieListingConfig.Filterable)?.let {
