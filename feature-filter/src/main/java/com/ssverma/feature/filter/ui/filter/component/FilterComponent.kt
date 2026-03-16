@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,9 +44,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.MultiSelectableState
 import com.ssverma.core.ui.SelectableState
 import com.ssverma.core.ui.SingleSelectableState
@@ -53,7 +61,6 @@ import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.domain.model.FilterId
 import com.ssverma.feature.filter.ui.filter.FilterItem
 import com.ssverma.shared.ui.component.ClickThroughFilterChip
-import kotlinx.coroutines.delay
 
 @Composable
 fun NonSelectedFilterChip(
@@ -268,7 +275,7 @@ fun FilterPickerChip(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FilterPickerBottomSheet(
+fun FilterPickerBottomSheet(
     items: List<FilterItem>,
     selectableState: SelectableState<FilterItem>,
     onDismissRequest: () -> Unit,
@@ -368,11 +375,22 @@ private fun FilterPickerBottomSheet(
                         .fillMaxWidth()
                         .heightIn(max = 400.dp)
                 ) {
-                    items(filteredItems.size) { index ->
-                        val item = filteredItems[index]
-                        val isSelected = selectableState.isSelected(item)
-
+                    items(
+                        items = filteredItems
+                    ) { item ->
                         ListItem(
+                            leadingContent = {
+                                if (item.iconUrl != null) {
+                                    NetworkImage(
+                                        url = item.iconUrl!!,
+                                        contentDescription = item.text.asString(),
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(MaterialTheme.shapes.small),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            },
                             headlineContent = {
                                 Text(
                                     text = item.text.asString(),
@@ -380,6 +398,7 @@ private fun FilterPickerBottomSheet(
                                 )
                             },
                             trailingContent = {
+                                val isSelected = selectableState.isSelected(item)
                                 if (selectableState is MultiSelectableState) {
                                     Checkbox(
                                         checked = isSelected,
@@ -390,22 +409,28 @@ private fun FilterPickerBottomSheet(
                                         selected = isSelected,
                                         onClick = {
                                             selectableState.onSelectionChanged(item)
-                                            onDismissRequest()
                                         }
                                     )
                                 }
                             },
                             colors = ListItemDefaults.colors(
-                                containerColor = androidx.compose.ui.graphics.Color.Transparent
+                                containerColor = Color.Transparent
                             ),
                             modifier = Modifier.clickable {
                                 selectableState.onSelectionChanged(item)
-                                if (selectableState is SingleSelectableState) {
-                                    onDismissRequest()
-                                }
                             }
                         )
                     }
+                }
+
+                Button(
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .navigationBarsPadding()
+                ) {
+                    Text(text = stringResource(id = R.string.done))
                 }
             }
         }

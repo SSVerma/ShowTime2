@@ -48,7 +48,8 @@ sealed interface Filter {
 
 data class DynamicFilterItem(
     val id: String,
-    val displayText: String
+    val displayText: String,
+    val iconUrl: String? = null
 )
 
 data class StaticFilterItem(

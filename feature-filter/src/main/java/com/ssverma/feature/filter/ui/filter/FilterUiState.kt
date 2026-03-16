@@ -143,6 +143,7 @@ sealed interface FilterGroupContentType {
 
 sealed interface FilterItem {
     val text: UiText
+    val iconUrl: String? get() = null
 
     data class Static(
         val option: Any,
@@ -151,7 +152,8 @@ sealed interface FilterItem {
 
     data class Dynamic(
         val id: String,
-        override val text: UiText
+        override val text: UiText,
+        override val iconUrl: String? = null
     ) : FilterItem
 }
 
@@ -743,7 +745,8 @@ private fun List<DynamicFilterItem>.asUiFilterGroup(
     val items = this.map {
         FilterItem.Dynamic(
             text = UiText.DynamicText(text = it.displayText),
-            id = it.id
+            id = it.id,
+            iconUrl = it.iconUrl
         )
     }
     return if (singleSelectable) {
@@ -771,7 +774,7 @@ private fun List<DynamicFilterItem>.asUiFilterGroup(
     }
 }
 
-private fun isDynamicOptionMatch(groupId: FilterId, itemId: String, option: DiscoverOption): Boolean {
+fun isDynamicOptionMatch(groupId: FilterId, itemId: String, option: DiscoverOption): Boolean {
     return when (groupId) {
         FilterId.CollectionTypeId.Dynamic.Genre -> option is DiscoverOption.Genre && option.genreId == itemId.toInt()
         FilterId.CollectionTypeId.Dynamic.WithoutGenre -> option is DiscoverOption.WithoutGenre && option.genreId == itemId.toInt()

@@ -1,6 +1,7 @@
 package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ fun ClickThroughFilterChip(
     selected: Boolean,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
     tonalElevation: Dp = 0.dp,
     shadowElevation: Dp = 0.dp,
     shape: Shape = MaterialTheme.shapes.small,
@@ -39,8 +41,14 @@ fun ClickThroughFilterChip(
     val finalContainerColor = if (enabled) containerColor else containerColor.copy(alpha = 0.38f)
     val finalContentColor = if (enabled) labelColor else labelColor.copy(alpha = 0.38f)
 
+    val combinedModifier = if (onClick != null) {
+        modifier.clickable(enabled = enabled, onClick = onClick)
+    } else {
+        modifier
+    }
+
     ClickThroughSurface(
-        modifier = modifier,
+        modifier = combinedModifier,
         color = finalContainerColor,
         shape = shape,
         contentColor = finalContentColor,

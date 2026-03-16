@@ -144,6 +144,7 @@ fun WatchProviderHubContent(
                         items = heroItems,
                         isLoading = isLoading,
                         onItemClick = onMediaClick,
+                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.large)
                     )
                 }
 
@@ -155,7 +156,6 @@ fun WatchProviderHubContent(
                         isLoading = isLoading,
                         onItemClick = onMediaClick,
                         onSeeAllClick = { onSeeAllClick(WatchProviderHubSeeAllType.NewThisWeek) },
-                        modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                     )
                 }
 

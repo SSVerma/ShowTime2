@@ -47,6 +47,15 @@ class GetFiltersUseCase @Inject constructor(
             )
         )
 
+        // Watch Providers
+        filters.add(
+            Filter.CollectionFilter.Dynamic(
+                id = FilterId.CollectionTypeId.Dynamic.WatchProviders,
+                items = emptyList(),
+                singleSelectable = false
+            )
+        )
+
         // Static filters
         filters.addAll(getStaticFilters(filterType))
 
@@ -142,15 +151,6 @@ class GetFiltersUseCase @Inject constructor(
                 )
             )
         }
-        
-        // Watch Providers
-        filters.add(
-            Filter.CollectionFilter.Dynamic(
-                id = FilterId.CollectionTypeId.Dynamic.WatchProviders,
-                items = emptyList(),
-                singleSelectable = false
-            )
-        )
 
         emit(Result.Success(data = filters))
     }
@@ -333,7 +333,13 @@ class GetFiltersUseCase @Inject constructor(
                     watchProviderRepository.fetchAllTvShowWatchProviders()
                 }
                 result.asSuccess { providers ->
-                    providers.map { DynamicFilterItem(id = it.providerId.toString(), displayText = it.providerName) }
+                    providers.map {
+                        DynamicFilterItem(
+                            id = it.providerId.toString(),
+                            displayText = it.providerName,
+                            iconUrl = it.logoPath
+                        )
+                    }
                 }
             }
             else -> Result.Success(emptyList())

@@ -1,9 +1,11 @@
 package com.ssverma.feature.filter.ui.filter
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
@@ -36,6 +39,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -51,6 +56,8 @@ import com.ssverma.feature.filter.domain.model.FilterId
 import com.ssverma.feature.filter.ui.filter.component.FilterPickerChip
 import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterFlowRow
 import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterRow
+import com.ssverma.feature.filter.ui.filter.component.NonSelectedFilterChip
+import com.ssverma.feature.filter.ui.filter.component.SelectedFilterChip
 import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterFlowRow
 import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterRow
 import com.ssverma.shared.domain.DiscoverOption
@@ -58,6 +65,8 @@ import com.ssverma.shared.domain.Order
 import com.ssverma.shared.domain.SortBy
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.formatLocally
+import com.ssverma.shared.ui.component.ClickThroughFilterChip
+import com.ssverma.shared.ui.component.WatchProviderLogo
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.util.Locale
@@ -205,168 +214,182 @@ fun FilterContent(
                     }
                 }
             ) {
-                when (group.groupContent) {
-                    is FilterGroupContentType.ListType.SingleSelectableListType -> {
-                        when (group.groupContent.displayMode) {
-                            ListDisplayMode.HorizontalRow -> {
-                                SingleSelectableFilterRow(
-                                    items = group.groupContent.items,
-                                    selectableState = group.groupContent.selectionState
-                                )
-                            }
-
-                            ListDisplayMode.FlowRow -> {
-                                SingleSelectableFilterFlowRow(
-                                    items = group.groupContent.items,
-                                    selectableState = group.groupContent.selectionState
-                                )
-                            }
-
-                            ListDisplayMode.Picker -> {
-                                FilterPickerChip(
-                                    items = group.groupContent.items,
-                                    selectableState = group.groupContent.selectionState,
-                                    groupId = group.groupId,
-                                    isSearching = isSearching,
-                                    onSearchQueryChanged = onSearchQueryChanged,
-                                    onPickerOpened = { onFilterPickerOpened(group.groupId) }
-                                )
-                            }
-                        }
-                    }
-
-                    is FilterGroupContentType.ListType.MultiSelectableListType -> {
-                        when (group.groupContent.displayMode) {
-                            ListDisplayMode.HorizontalRow -> {
-                                MultiSelectableFilterRow(
-                                    items = group.groupContent.items,
-                                    selectableState = group.groupContent.selectionState
-                                )
-                            }
-
-                            ListDisplayMode.FlowRow -> {
-                                MultiSelectableFilterFlowRow(
-                                    items = group.groupContent.items,
-                                    selectableState = group.groupContent.selectionState
-                                )
-                            }
-
-                            ListDisplayMode.Picker -> {
-                                FilterPickerChip(
-                                    items = group.groupContent.items,
-                                    selectableState = group.groupContent.selectionState,
-                                    groupId = group.groupId,
-                                    isSearching = isSearching,
-                                    onSearchQueryChanged = onSearchQueryChanged,
-                                    onPickerOpened = { onFilterPickerOpened(group.groupId) }
-                                )
-                            }
-                        }
-                    }
-
-                    is FilterGroupContentType.RangeType.PickerRangeType.DatePickerRangeType -> {
-                        val dateRangeContent = group.groupContent
-                        var showDatePickerForFrom by remember { mutableStateOf(false) }
-                        var showDatePickerForTo by remember { mutableStateOf(false) }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            FilterDateChip(
-                                label = "From",
-                                date = dateRangeContent.state.fromValue,
-                                onClick = { showDatePickerForFrom = true }
-                            )
-                            FilterDateChip(
-                                label = "To",
-                                date = dateRangeContent.state.toValue,
-                                onClick = { showDatePickerForTo = true }
-                            )
-                        }
-
-                        if (showDatePickerForFrom) {
-                            FilterDatePickerDialog(
-                                initialDate = dateRangeContent.state.fromValue
-                                    ?: dateRangeContent.min,
-                                onDateSelected = { selectedDate ->
-                                    dateRangeContent.state.onFromValueSelected(selectedDate)
-                                    // Validation: if from > to, clear to or set to = from
-                                    dateRangeContent.state.toValue?.let { to ->
-                                        if (selectedDate.isAfter(to)) {
-                                            dateRangeContent.state.onToValueSelected(null)
-                                        }
-                                    }
-                                    showDatePickerForFrom = false
-                                },
-                                onDismiss = { showDatePickerForFrom = false }
-                            )
-                        }
-
-                        if (showDatePickerForTo) {
-                            FilterDatePickerDialog(
-                                initialDate = dateRangeContent.state.toValue
-                                    ?: dateRangeContent.max,
-                                onDateSelected = { selectedDate ->
-                                    dateRangeContent.state.onToValueSelected(selectedDate)
-                                    // Validation: if to < from, clear from or set from = to
-                                    dateRangeContent.state.fromValue?.let { from ->
-                                        if (selectedDate.isBefore(from)) {
-                                            dateRangeContent.state.onFromValueSelected(null)
-                                        }
-                                    }
-                                    showDatePickerForTo = false
-                                },
-                                onDismiss = { showDatePickerForTo = false }
-                            )
-                        }
-                    }
-
-                    is FilterGroupContentType.RangeType.ScaleRangeType.IntScaleRangeType -> {
-                        val rangeContent = group.groupContent
-                        if (rangeContent.isRange) {
-                            RangeSliderScale(
-                                secondaryGap = rangeContent.secondaryGap,
-                                primaryGap = rangeContent.primaryGap,
-                                min = rangeContent.min,
-                                max = rangeContent.max,
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                currentStart = rangeContent.state.fromValue?.toFloat()
-                                    ?: rangeContent.min.toFloat(),
-                                currentEnd = rangeContent.state.toValue?.toFloat()
-                                    ?: rangeContent.max.toFloat(),
-                                labelFormatter = {
-                                    when (group.groupId) {
-                                        FilterId.RangeTypeId.NumberRange.Runtime -> "${it.toInt()}m"
-                                        else -> "${it.toInt()}"
-                                    }
-                                },
-                                onValueChange = { start: Float, end: Float ->
-                                    rangeContent.state.onFromValueSelected(start.toInt())
-                                    rangeContent.state.onToValueSelected(end.toInt())
+                if (group.groupId == FilterId.CollectionTypeId.Dynamic.WatchProviders &&
+                    group.groupContent is FilterGroupContentType.ListType.MultiSelectableListType
+                ) {
+                    WatchProviderFilterRow(
+                        items = group.groupContent.items,
+                        selectableState = group.groupContent.selectionState,
+                        onPickerOpened = { onFilterPickerOpened(group.groupId) },
+                        isSearching = isSearching,
+                        onSearchQueryChanged = onSearchQueryChanged
+                    )
+                } else {
+                    when (group.groupContent) {
+                        is FilterGroupContentType.ListType.SingleSelectableListType -> {
+                            when (group.groupContent.displayMode) {
+                                ListDisplayMode.HorizontalRow -> {
+                                    SingleSelectableFilterRow(
+                                        items = group.groupContent.items,
+                                        selectableState = group.groupContent.selectionState
+                                    )
                                 }
-                            )
-                        } else {
-                            SliderScale(
-                                secondaryGap = rangeContent.secondaryGap,
-                                primaryGap = rangeContent.primaryGap,
-                                min = rangeContent.min,
-                                max = rangeContent.max,
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                current = rangeContent.state.toValue?.toFloat()
-                                    ?: rangeContent.min.toFloat(),
-                                labelFormatter = {
-                                    when (group.groupId) {
-                                        FilterId.RangeTypeId.NumberRange.Runtime -> "${it.toInt()}m"
-                                        else -> "${it.toInt()}"
-                                    }
-                                },
-                                onValueChange = {
-                                    rangeContent.state.onToValueSelected(it.toInt())
+
+                                ListDisplayMode.FlowRow -> {
+                                    SingleSelectableFilterFlowRow(
+                                        items = group.groupContent.items,
+                                        selectableState = group.groupContent.selectionState
+                                    )
                                 }
-                            )
+
+                                ListDisplayMode.Picker -> {
+                                    FilterPickerChip(
+                                        items = group.groupContent.items,
+                                        selectableState = group.groupContent.selectionState,
+                                        groupId = group.groupId,
+                                        isSearching = isSearching,
+                                        onSearchQueryChanged = onSearchQueryChanged,
+                                        onPickerOpened = { onFilterPickerOpened(group.groupId) }
+                                    )
+                                }
+                            }
+                        }
+
+                        is FilterGroupContentType.ListType.MultiSelectableListType -> {
+                            when (group.groupContent.displayMode) {
+                                ListDisplayMode.HorizontalRow -> {
+                                    MultiSelectableFilterRow(
+                                        items = group.groupContent.items,
+                                        selectableState = group.groupContent.selectionState
+                                    )
+                                }
+
+                                ListDisplayMode.FlowRow -> {
+                                    MultiSelectableFilterFlowRow(
+                                        items = group.groupContent.items,
+                                        selectableState = group.groupContent.selectionState
+                                    )
+                                }
+
+                                ListDisplayMode.Picker -> {
+                                    FilterPickerChip(
+                                        items = group.groupContent.items,
+                                        selectableState = group.groupContent.selectionState,
+                                        groupId = group.groupId,
+                                        isSearching = isSearching,
+                                        onSearchQueryChanged = onSearchQueryChanged,
+                                        onPickerOpened = { onFilterPickerOpened(group.groupId) }
+                                    )
+                                }
+                            }
+                        }
+
+                        is FilterGroupContentType.RangeType.PickerRangeType.DatePickerRangeType -> {
+                            val dateRangeContent = group.groupContent
+                            var showDatePickerForFrom by remember { mutableStateOf(false) }
+                            var showDatePickerForTo by remember { mutableStateOf(false) }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                FilterDateChip(
+                                    label = "From",
+                                    date = dateRangeContent.state.fromValue,
+                                    onClick = { showDatePickerForFrom = true }
+                                )
+                                FilterDateChip(
+                                    label = "To",
+                                    date = dateRangeContent.state.toValue,
+                                    onClick = { showDatePickerForTo = true }
+                                )
+                            }
+
+                            if (showDatePickerForFrom) {
+                                FilterDatePickerDialog(
+                                    initialDate = dateRangeContent.state.fromValue
+                                        ?: dateRangeContent.min,
+                                    onDateSelected = { selectedDate ->
+                                        dateRangeContent.state.onFromValueSelected(selectedDate)
+                                        // Validation: if from > to, clear to or set to = from
+                                        dateRangeContent.state.toValue?.let { to ->
+                                            if (selectedDate.isAfter(to)) {
+                                                dateRangeContent.state.onToValueSelected(null)
+                                            }
+                                        }
+                                        showDatePickerForFrom = false
+                                    },
+                                    onDismiss = { showDatePickerForFrom = false }
+                                )
+                            }
+
+                            if (showDatePickerForTo) {
+                                FilterDatePickerDialog(
+                                    initialDate = dateRangeContent.state.toValue
+                                        ?: dateRangeContent.max,
+                                    onDateSelected = { selectedDate ->
+                                        dateRangeContent.state.onToValueSelected(selectedDate)
+                                        // Validation: if to < from, clear from or set from = to
+                                        dateRangeContent.state.fromValue?.let { from ->
+                                            if (selectedDate.isBefore(from)) {
+                                                dateRangeContent.state.onFromValueSelected(null)
+                                            }
+                                        }
+                                        showDatePickerForTo = false
+                                    },
+                                    onDismiss = { showDatePickerForTo = false }
+                                )
+                            }
+                        }
+
+                        is FilterGroupContentType.RangeType.ScaleRangeType.IntScaleRangeType -> {
+                            val rangeContent = group.groupContent
+                            if (rangeContent.isRange) {
+                                RangeSliderScale(
+                                    secondaryGap = rangeContent.secondaryGap,
+                                    primaryGap = rangeContent.primaryGap,
+                                    min = rangeContent.min,
+                                    max = rangeContent.max,
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    currentStart = rangeContent.state.fromValue?.toFloat()
+                                        ?: rangeContent.min.toFloat(),
+                                    currentEnd = rangeContent.state.toValue?.toFloat()
+                                        ?: rangeContent.max.toFloat(),
+                                    labelFormatter = {
+                                        when (group.groupId) {
+                                            FilterId.RangeTypeId.NumberRange.Runtime -> "${it.toInt()}m"
+                                            else -> "${it.toInt()}"
+                                        }
+                                    },
+                                    onValueChange = { start: Float, end: Float ->
+                                        rangeContent.state.onFromValueSelected(start.toInt())
+                                        rangeContent.state.onToValueSelected(end.toInt())
+                                    }
+                                )
+                            } else {
+                                SliderScale(
+                                    secondaryGap = rangeContent.secondaryGap,
+                                    primaryGap = rangeContent.primaryGap,
+                                    min = rangeContent.min,
+                                    max = rangeContent.max,
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    current = rangeContent.state.toValue?.toFloat()
+                                        ?: rangeContent.min.toFloat(),
+                                    labelFormatter = {
+                                        when (group.groupId) {
+                                            FilterId.RangeTypeId.NumberRange.Runtime -> "${it.toInt()}m"
+                                            else -> "${it.toInt()}"
+                                        }
+                                    },
+                                    onValueChange = {
+                                        rangeContent.state.toValue?.let { _ ->
+                                            rangeContent.state.onToValueSelected(it.toInt())
+                                        } ?: rangeContent.state.onToValueSelected(it.toInt())
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -376,6 +399,94 @@ fun FilterContent(
         item(key = "footer") {
             Spacer(modifier = Modifier.height(ApplyButtonHeight + ApplyButtonVerticalSpacing))
         }
+    }
+}
+
+@Composable
+fun WatchProviderFilterRow(
+    items: List<FilterItem>,
+    selectableState: com.ssverma.core.ui.MultiSelectableState<FilterItem>,
+    onPickerOpened: () -> Unit,
+    modifier: Modifier = Modifier,
+    isSearching: Boolean = false,
+    onSearchQueryChanged: (FilterId, String) -> Unit = { _, _ -> }
+) {
+    val selectedItems = selectableState.selected()
+    var showPicker by remember { mutableStateOf(false) }
+
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        item {
+            ClickThroughFilterChip(
+                onClick = {
+                    onPickerOpened()
+                    showPicker = true
+                },
+                selected = false,
+                border = BorderStroke(
+                    width = 1.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF4285F4),
+                            Color(0xFF9B72CB),
+                            Color(0xFFD96570),
+                            Color(0xFFF4AF5F)
+                        )
+                    )
+                ),
+            ) {
+                Text(
+                    text = stringResource(id = R.string.select),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        items(selectedItems.size) { index ->
+            val item = selectedItems.elementAt(index)
+            val dynamicItem = item as? FilterItem.Dynamic
+            if (dynamicItem != null) {
+                WatchProviderLogo(
+                    provider = com.ssverma.shared.domain.model.ProviderInfo(
+                        logoPath = dynamicItem.iconUrl.orEmpty(),
+                        providerId = dynamicItem.id.toIntOrNull() ?: 0,
+                        providerName = dynamicItem.text.asString(),
+                        displayPriority = 0
+                    ),
+                    onClick = { selectableState.onSelectionChanged(item) },
+                    size = 40.dp,
+                    modifier = Modifier
+                        .border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape
+                        )
+                )
+            } else {
+                com.ssverma.core.ui.Toggleable(
+                    item = item,
+                    modifier = Modifier,
+                    selectableState = selectableState,
+                    onContent = { SelectedFilterChip(text = item.text.asString()) },
+                    offContent = { NonSelectedFilterChip(text = item.text.asString()) }
+                )
+            }
+        }
+    }
+
+    if (showPicker) {
+        com.ssverma.feature.filter.ui.filter.component.FilterPickerBottomSheet(
+            items = items,
+            selectableState = selectableState,
+            groupId = FilterId.CollectionTypeId.Dynamic.WatchProviders,
+            isSearching = isSearching,
+            onSearchQueryChanged = onSearchQueryChanged,
+            onDismissRequest = { showPicker = false }
+        )
     }
 }
 
@@ -596,7 +707,7 @@ private fun mapDynamicOption(groupId: FilterId, id: String): DiscoverOption {
         FilterId.CollectionTypeId.Dynamic.Person -> DiscoverOption.Person(id.toInt())
         FilterId.CollectionTypeId.Dynamic.Cast -> DiscoverOption.Cast(id.toInt())
         FilterId.CollectionTypeId.Dynamic.Crew -> DiscoverOption.Crew(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.WatchProviders -> DiscoverOption.WatchRegion(id)
+        FilterId.CollectionTypeId.Dynamic.WatchProviders -> DiscoverOption.WatchProvider(id.toInt())
         else -> throw IllegalArgumentException("Unknown dynamic filter group: $groupId")
     }
 }

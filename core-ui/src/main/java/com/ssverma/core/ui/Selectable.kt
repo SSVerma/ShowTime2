@@ -9,9 +9,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -128,6 +128,7 @@ fun <T> rememberSelectableState(initialSelected: Set<T> = emptySet()): MultiSele
         MultiSelectableState(initialValue = initialSelected)
     }
 }
+@Stable
 interface SelectableState<T> {
     fun onSelectionChanged(item: T)
     fun isSelected(item: T): Boolean
@@ -136,10 +137,15 @@ interface SelectableState<T> {
     fun reset()
 }
 
+@Stable
 class SingleSelectableState<T>(
     private val initialValue: T? = null
 ) : SelectableState<T> {
     private var selected by mutableStateOf(initialValue)
+
+    fun select(item: T?) {
+        selected = item
+    }
 
     override fun onSelectionChanged(item: T) {
         selected = if (selected == item) {
@@ -174,21 +180,22 @@ class SingleSelectableState<T>(
     }
 }
 
+@Stable
 class MultiSelectableState<T>(
     private val initialValue: Set<T> = emptySet()
 ) : SelectableState<T> {
-    private var selectedItems by mutableStateOf(
-        value = initialValue.toMutableSet(),
-        policy = neverEqualPolicy()
-    )
+    private var selectedItems by mutableStateOf(initialValue)
+
+    fun select(items: Set<T>) {
+        selectedItems = items
+    }
 
     override fun onSelectionChanged(item: T) {
-        if (selectedItems.contains(item)) {
-            selectedItems.remove(item)
+        selectedItems = if (selectedItems.contains(item)) {
+            selectedItems - item
         } else {
-            selectedItems.add(item)
+            selectedItems + item
         }
-        selectedItems = selectedItems
     }
 
     override fun isSelected(item: T): Boolean {
@@ -196,7 +203,7 @@ class MultiSelectableState<T>(
     }
 
     override fun clear() {
-        selectedItems = initialValue.toMutableSet()
+        selectedItems = initialValue
     }
 
     override fun isDefault(): Boolean {
@@ -204,7 +211,7 @@ class MultiSelectableState<T>(
     }
 
     override fun reset() {
-        selectedItems = mutableSetOf()
+        selectedItems = emptySet()
     }
 
     operator fun getValue(nothing: Nothing?, property: KProperty<*>): MultiSelectableState<T> {

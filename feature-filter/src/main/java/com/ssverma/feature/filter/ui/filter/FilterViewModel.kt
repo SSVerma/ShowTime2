@@ -40,6 +40,7 @@ class FilterViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow<SearchQuery?>(null)
 
     private var isTv: Boolean = false
+    private var initialOptions: List<DiscoverOption> = emptyList()
     private val cachedFilterItems = mutableMapOf<FilterId, List<FilterItem>>()
 
     init {
@@ -73,7 +74,8 @@ class FilterViewModel @Inject constructor(
                         val dynamicItems = items.map {
                             FilterItem.Dynamic(
                                 id = it.id,
-                                text = UiText.DynamicText(it.displayText)
+                                text = UiText.DynamicText(it.displayText),
+                                iconUrl = it.iconUrl
                             )
                         }
                         updateFilterItems(groupId, dynamicItems)
@@ -92,6 +94,7 @@ class FilterViewModel @Inject constructor(
         initialOrder: Order? = null
     ) {
         this.isTv = isTv
+        this.initialOptions = initialOptions
         if (_uiState.value.filters.isNotEmpty()) return
 
         viewModelScope.launch {
@@ -140,10 +143,28 @@ class FilterViewModel @Inject constructor(
                     if (filterGroup.groupId == groupId) {
                         when (val content = filterGroup.groupContent) {
                             is FilterGroupContentType.ListType.SingleSelectableListType -> {
+                                val selectedItem = newItems.find { item ->
+                                    val dynamicItem = item as? FilterItem.Dynamic ?: return@find false
+                                    initialOptions.any { option ->
+                                        isDynamicOptionMatch(groupId, dynamicItem.id, option)
+                                    }
+                                }
+                                if (selectedItem != null) {
+                                    content.selectionState.select(selectedItem)
+                                }
                                 filterGroup.copy(groupContent = content.copy(items = newItems))
                             }
 
                             is FilterGroupContentType.ListType.MultiSelectableListType -> {
+                                val selectedItems = newItems.filter { item ->
+                                    val dynamicItem = item as? FilterItem.Dynamic ?: return@filter false
+                                    initialOptions.any { option ->
+                                        isDynamicOptionMatch(groupId, dynamicItem.id, option)
+                                    }
+                                }
+                                if (selectedItems.isNotEmpty()) {
+                                    content.selectionState.select(selectedItems.toSet())
+                                }
                                 filterGroup.copy(groupContent = content.copy(items = newItems))
                             }
 
@@ -179,7 +200,8 @@ class FilterViewModel @Inject constructor(
                 val dynamicItems = items.map {
                     FilterItem.Dynamic(
                         id = it.id,
-                        text = UiText.DynamicText(it.displayText)
+                        text = UiText.DynamicText(it.displayText),
+                        iconUrl = it.iconUrl
                     )
                 }
                 cachedFilterItems[groupId] = dynamicItems

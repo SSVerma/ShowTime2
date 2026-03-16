@@ -206,6 +206,7 @@ class WatchProviderHubViewModel @Inject constructor(
         val ratedDeferred = viewModelScope.async {
             discoveryRepository.discoverTvShows(
                 discoverConfig = TvDiscoverConfig.builder()
+                    .with(watchProvider)
                     .sortBy(SortBy.Rating(Order.Descending))
                     .build()
             )
