@@ -84,6 +84,8 @@ android {
         }
 
         debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
             isMinifyEnabled = false
             buildConfigField(
                 type = "String",

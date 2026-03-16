@@ -37,12 +37,12 @@ fun AppInfoBottomSheet(
     showDontShowAgain: Boolean = true,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
-    var dontShowAgain by remember { mutableStateOf(false) }
+    var dontShowAgain by remember { mutableStateOf(true) }
     val context = LocalContext.current
     val packageInfo = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull()
     }
-    val versionName = packageInfo?.versionName ?: "1.0.4"
+    val versionName = packageInfo?.versionName.orEmpty()
 
 
     ModalBottomSheet(
