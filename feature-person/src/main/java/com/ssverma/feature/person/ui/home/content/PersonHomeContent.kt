@@ -12,8 +12,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
+import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.ui.paging.PagedListIndexed
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.person.analytics.PersonAnalyticsEvent
+import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
+import com.ssverma.feature.person.analytics.PersonAnalyticsValues
 import com.ssverma.feature.person.ui.home.component.PersonListItem
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.person.Person
@@ -29,6 +33,7 @@ fun PersonHomeContent(
     openAccountPage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val analytics = LocalAnalytics.current
     var selectedPersonId by rememberSaveable { mutableIntStateOf(-1) }
 
     PagedListIndexed(
@@ -50,11 +55,32 @@ fun PersonHomeContent(
             person = person,
             index = index,
             showPopularMedia = selectedPersonId == person.id,
-            onClick = { openPersonDetailsScreen(person.id) },
+            onClick = {
+                analytics.logEvent(
+                    PersonAnalyticsEvent.PersonClicked(
+                        personId = person.id,
+                        personName = person.name,
+                        sourceScreen = PersonAnalyticsScreenName.PERSON_LISTING
+                    )
+                )
+                openPersonDetailsScreen(person.id)
+            },
             onPopularMediaBtnClick = { personId ->
+                PersonAnalyticsEvent.ExpandMediaClicked(
+                    personId = personId,
+                    personName = person.name,
+                    sourceScreen = PersonAnalyticsScreenName.PERSON_LISTING
+                )
                 selectedPersonId = if (selectedPersonId == personId) -1 else personId
             },
             onMediaClick = { media ->
+                analytics.logEvent(
+                    PersonAnalyticsEvent.MediaClicked(
+                        media = media,
+                        section = PersonAnalyticsValues.SECTION_KNOW_FOR,
+                        sourceScreen = PersonAnalyticsScreenName.PERSON_LISTING
+                    )
+                )
                 when (media.mediaType) {
                     MediaType.Movie -> openMovieDetailsScreen(media.id)
                     MediaType.Tv -> openTvShowDetailsScreen(media.id)

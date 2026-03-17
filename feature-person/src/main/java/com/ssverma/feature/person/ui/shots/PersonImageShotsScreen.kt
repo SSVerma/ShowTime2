@@ -13,11 +13,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.person.R
+import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
 import com.ssverma.shared.ui.TmdbPersonAspectRatio
 import com.ssverma.shared.ui.component.ImageShotItem
 import kotlinx.coroutines.launch
@@ -28,6 +30,8 @@ fun PersonImageShotsScreen(
     viewModel: PersonImagesViewModel,
     onBackPressed: () -> Unit
 ) {
+    TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_IMAGES)
+
     val imageShots = viewModel.personImages.collectAsLazyPagingItems()
 
     var clickedImageShot: ImageShot? by remember { mutableStateOf(null) }

@@ -4,7 +4,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.paging.PagedContent
+import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
 import com.ssverma.feature.person.ui.home.content.PersonHomeContent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -17,6 +19,8 @@ fun PersonScreen(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit
 ) {
+    TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_LISTING)
+
     val pagedPersons = viewModel.popularPersons.collectAsLazyPagingItems()
 
     PagedContent(pagedPersons) { persons ->

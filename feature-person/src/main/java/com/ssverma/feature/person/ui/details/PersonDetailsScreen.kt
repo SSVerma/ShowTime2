@@ -14,7 +14,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.DriveCompose
+import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
 import com.ssverma.feature.person.ui.common.PersonDetailUiState
 import com.ssverma.feature.person.ui.details.content.PersonDetailsContent
 import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
@@ -29,6 +31,8 @@ fun PersonDetailsScreen(
     openPersonAllImages: (personId: Int) -> Unit,
     viewModel: PersonDetailsViewModel = hiltViewModel(),
 ) {
+    TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_DETAILS)
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
 

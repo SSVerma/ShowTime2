@@ -25,12 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.ui.layout.HorizontalLazyListIndexed
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.R
-import com.ssverma.shared.ui.R as SharedUiR
+import com.ssverma.feature.person.analytics.PersonAnalyticsEvent
+import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
+import com.ssverma.feature.person.analytics.PersonAnalyticsValues
 import com.ssverma.feature.person.ui.details.component.PersonDetailsBackdropHeader
 import com.ssverma.feature.person.ui.details.component.PersonMediaTabRow
 import com.ssverma.feature.person.ui.details.component.PersonTimelineItem
@@ -43,6 +46,7 @@ import com.ssverma.shared.ui.component.ImageShotItem
 import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.shared.ui.component.section.SectionDefaults
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
+import com.ssverma.shared.ui.R as SharedUiR
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -55,6 +59,7 @@ fun PersonDetailsContent(
     openPersonAllImages: (personId: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val analytics = LocalAnalytics.current
 
     var selectedMediaType by remember(person.mediaByType) {
         mutableStateOf(person.mediaByType.keys.firstOrNull() ?: MediaType.Movie)
@@ -178,8 +183,26 @@ fun PersonDetailsContent(
             PersonTimelineItem(
                 media = media,
                 onInfoIconClick = { clickedMediaInfo = media.overview },
-                openMovieDetails = openMovieDetails,
-                openTvShowDetails = openTvShowDetails,
+                openMovieDetails = { movieId ->
+                    analytics.logEvent(
+                        PersonAnalyticsEvent.MediaClicked(
+                            media = media,
+                            section = PersonAnalyticsValues.SECTION_MOVIE_CREDITS,
+                            sourceScreen = PersonAnalyticsScreenName.PERSON_DETAILS
+                        )
+                    )
+                    openMovieDetails(movieId)
+                },
+                openTvShowDetails = { tvShowId ->
+                    analytics.logEvent(
+                        PersonAnalyticsEvent.MediaClicked(
+                            media = media,
+                            section = PersonAnalyticsValues.SECTION_TV_CREDITS,
+                            sourceScreen = PersonAnalyticsScreenName.PERSON_DETAILS
+                        )
+                    )
+                    openTvShowDetails(tvShowId)
+                },
                 modifier = Modifier
                     .padding(horizontal = MaterialTheme.spacing.medium)
                     .padding(

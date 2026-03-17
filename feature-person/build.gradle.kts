@@ -7,6 +7,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
     implementation(projects.apiService.tmdb)
 
     api(projects.featurePersonNavigation)
