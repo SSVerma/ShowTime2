@@ -104,6 +104,13 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(PreferredOriginalLanguageKey, languageCode)
     }
 
+    override val isAnalyticsEnabled: Flow<Boolean>
+        get() = keyValueStorage.observe(AnalyticsEnabledKey, true)
+
+    override suspend fun updateAnalyticsEnabled(enabled: Boolean) {
+        keyValueStorage.write(AnalyticsEnabledKey, enabled)
+    }
+
     companion object {
         private val AppThemeKey = stringPreferencesKey("app_theme")
         private val DynamicColorKey = booleanPreferencesKey("dynamic_color")
@@ -113,5 +120,6 @@ class DefaultAppConfigRepository @Inject constructor(
         private val TranslationEnabledKey = booleanPreferencesKey("translation_enabled")
         private val ContentLanguageKey = stringPreferencesKey("content_language")
         private val PreferredOriginalLanguageKey = stringPreferencesKey("preferred_original_language")
+        private val AnalyticsEnabledKey = booleanPreferencesKey("analytics_enabled")
     }
 }

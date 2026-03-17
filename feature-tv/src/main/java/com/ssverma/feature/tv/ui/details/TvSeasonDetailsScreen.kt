@@ -158,7 +158,9 @@ private fun TvSeasonContent(
         item {
             CreditSection(
                 casts = tvSeason.casts,
-                onPersonClick = openPersonDetails,
+                onPersonClick = { cast ->
+                    openPersonDetails(cast.id)
+                },
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }

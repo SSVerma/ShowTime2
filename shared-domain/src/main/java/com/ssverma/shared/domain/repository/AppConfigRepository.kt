@@ -28,4 +28,7 @@ interface AppConfigRepository {
 
     val preferredOriginalLanguage: StateFlow<String>
     suspend fun updatePreferredOriginalLanguage(languageCode: String)
+
+    val isAnalyticsEnabled: Flow<Boolean>
+    suspend fun updateAnalyticsEnabled(enabled: Boolean)
 }

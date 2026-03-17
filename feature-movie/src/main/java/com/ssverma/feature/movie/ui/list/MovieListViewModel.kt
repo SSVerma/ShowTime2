@@ -48,7 +48,7 @@ class MovieListViewModel @Inject constructor(
 
 
     private val movieListingArgs = savedStateHandle.buildMovieListingArgs()
-    private val movieListingConfig = movieListingArgs.asMovieListingConfigs()
+    internal val movieListingConfig = movieListingArgs.asMovieListingConfigs()
 
     private val _uiState = MutableStateFlow(
         MoviePaginatedListUiState(

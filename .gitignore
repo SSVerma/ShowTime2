@@ -36,3 +36,6 @@ gradlew.bat
 gradlew
 bin/
 */bin/
+
+# Firebase
+**/google-services.json

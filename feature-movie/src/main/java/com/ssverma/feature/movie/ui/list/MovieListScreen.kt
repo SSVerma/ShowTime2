@@ -15,8 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.core.ui.paging.PagedContent
+import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
+import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
+import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
+import com.ssverma.feature.movie.analytics.asAnalyticsListingType
 import com.ssverma.feature.movie.ui.filter.MovieFiltersScreen
 import com.ssverma.feature.movie.ui.list.component.MovieListTopBar
 import com.ssverma.feature.movie.ui.list.content.MoviesGridContent
@@ -30,7 +36,15 @@ fun MovieListScreen(
     openMovieDetails: (movieId: Int) -> Unit,
     viewModel: MovieListViewModel = hiltViewModel()
 ) {
+    TrackScreenView(
+        screenName = MovieAnalyticsScreenName.MOVIE_LISTING,
+        screenClass = viewModel.movieListingConfig.asAnalyticsListingType()
+    )
+
+    val analytics = LocalAnalytics.current
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
     val watchRegion by viewModel.appConfigRepository.watchProviderRegion.collectAsStateWithLifecycle()
 
@@ -46,6 +60,11 @@ fun MovieListScreen(
                 uiState = uiState,
                 onToggleViewMode = { viewModel.toggleViewMode() },
                 onOpenFilters = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.FilterClicked(
+                            listingType = viewModel.movieListingConfig.asAnalyticsListingType()
+                        )
+                    )
                     coroutineScope.launch { sheetState.show() }
                 },
                 onBackPressed = onBackPressed,
@@ -60,14 +79,32 @@ fun MovieListScreen(
                     MoviesGridContent(
                         moviePagingItems = items,
                         type = uiState.listingType,
-                        openMovieDetails = openMovieDetails,
+                        openMovieDetails = { movie ->
+                            analytics.logEvent(
+                                MovieAnalyticsEvent.MovieClicked(
+                                    movie = movie,
+                                    section = MovieAnalyticsValues.SECTION_LISTING_GRID,
+                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING,
+                                )
+                            )
+                            openMovieDetails(movie.id)
+                        },
                         modifier = Modifier.padding(innerPadding),
                     )
                 } else {
                     MoviesListContent(
                         moviePagingItems = items,
                         type = uiState.listingType,
-                        openMovieDetails = openMovieDetails,
+                        openMovieDetails = { movie ->
+                            analytics.logEvent(
+                                MovieAnalyticsEvent.MovieClicked(
+                                    movie = movie,
+                                    section = MovieAnalyticsValues.SECTION_LISTING_LIST,
+                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING,
+                                )
+                            )
+                            openMovieDetails(movie.id)
+                        },
                         modifier = Modifier.padding(innerPadding),
                     )
                 }

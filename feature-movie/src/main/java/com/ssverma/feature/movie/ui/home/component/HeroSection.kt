@@ -47,7 +47,7 @@ fun HeroSection(
     trendingMoviesState: UiState<List<MoviePreview>, MovieFailure>,
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
-    onMovieClicked: (Int) -> Unit,
+    onMovieClicked: (movie: MoviePreview) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
@@ -129,7 +129,7 @@ fun HeroSection(
                     contentPadding = contentPadding,
                     imageUrl = { it.posterImageUrl },
                     title = { it.title },
-                    onItemClick = { onMovieClicked(it.id) },
+                    onItemClick = onMovieClicked,
                     overlayContent = overlayContent
                 )
             }

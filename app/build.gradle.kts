@@ -7,6 +7,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.parcelize")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.gms.google-services")
 }
 
 val releaseProps by lazy {
@@ -132,6 +133,7 @@ dependencies {
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)
     implementation(projects.commonUi)
+    implementation(projects.coreAnalytics)
 
     implementation(projects.featureMovie)
     implementation(projects.featureTv)

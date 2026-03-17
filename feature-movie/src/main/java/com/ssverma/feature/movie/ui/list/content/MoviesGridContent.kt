@@ -20,7 +20,7 @@ import com.ssverma.shared.ui.component.media.MovieGridItem
 fun MoviesGridContent(
     moviePagingItems: LazyPagingItems<MoviePreview>,
     type: Int,
-    openMovieDetails: (movieId: Int) -> Unit,
+    openMovieDetails: (movie: MoviePreview) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PagedGrid(
@@ -34,7 +34,7 @@ fun MoviesGridContent(
             movie = movie,
             showRating = type != MovieListingAvailableTypes.Upcoming && type != MovieListingAvailableTypes.TopRated,
             indicator = { preview -> MovieIndicator(type = type, movie = preview) },
-            onClick = { preview -> openMovieDetails(preview.id) },
+            onClick = { preview -> openMovieDetails(preview) },
             posterModifier = Modifier.fillMaxWidth()
         )
     }

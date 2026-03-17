@@ -63,6 +63,6 @@ val LocalAppStateHolder = staticCompositionLocalOf<AppStateHolder> {
     error("No AppStateHolder provided")
 }
 
-val LocalAppInfoTrigger = staticCompositionLocalOf<() -> Unit> {
+val LocalAppInfoTrigger = staticCompositionLocalOf {
     { } // No-op default
 }

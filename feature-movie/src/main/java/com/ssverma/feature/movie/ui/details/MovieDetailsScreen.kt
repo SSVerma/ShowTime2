@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
@@ -36,6 +38,9 @@ import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.movie.R
+import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
+import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
+import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.shared.domain.model.MediaType
@@ -70,6 +75,8 @@ fun MovieDetailsScreen(
     viewModel: MovieDetailsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    TrackScreenView(screenName = MovieAnalyticsScreenName.MOVIE_DETAILS)
 
     Surface(color = MaterialTheme.colorScheme.background) {
         DriveCompose(
@@ -111,6 +118,7 @@ fun MovieContent(
     val movie = data.movie
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
+    val analytics = LocalAnalytics.current
 
     LazyColumn(
         modifier = modifier
@@ -207,6 +215,12 @@ fun MovieContent(
                 )
             ) { genre ->
                 GenreItem(genre = genre) {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.GenreClicked(
+                            genre = genre,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
                     openMovieList(
                         MovieListingArgs(
                             listingType = MovieListingAvailableTypes.Genre,
@@ -221,7 +235,15 @@ fun MovieContent(
         item {
             CreditSection(
                 casts = movie.casts,
-                onPersonClick = openPersonDetails,
+                onPersonClick = { cast ->
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.CastClicked(
+                            cast = cast,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                    openPersonDetails(cast.id)
+                },
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
         }
@@ -256,7 +278,17 @@ fun MovieContent(
             RelevantMoviesSection(
                 movies = movie.similarMovies,
                 sectionTitleRes = R.string.similar_movies,
-                openMovieDetails = openMovieDetails,
+                onMovieClick = { moviePreview ->
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.MovieClicked(
+                            movieId = moviePreview.id,
+                            movieTitle = moviePreview.title,
+                            section = MovieAnalyticsValues.SECTION_SIMILAR,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS,
+                        )
+                    )
+                    openMovieDetails(moviePreview.id)
+                },
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
@@ -265,7 +297,17 @@ fun MovieContent(
             RelevantMoviesSection(
                 movies = movie.recommendations,
                 sectionTitleRes = R.string.recommendations,
-                openMovieDetails = openMovieDetails,
+                onMovieClick = { moviePreview ->
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.MovieClicked(
+                            movieId = moviePreview.id,
+                            movieTitle = moviePreview.title,
+                            section = MovieAnalyticsValues.SECTION_RECOMMENDED,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS,
+                        )
+                    )
+                    openMovieDetails(moviePreview.id)
+                },
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
@@ -294,7 +336,7 @@ fun MovieContent(
 fun RelevantMoviesSection(
     movies: List<Movie>,
     @StringRes sectionTitleRes: Int,
-    openMovieDetails: (movieId: Int) -> Unit,
+    onMovieClick: (movie: Movie) -> Unit,
     modifier: Modifier = Modifier
 ) {
     HorizontalLazyListSection(
@@ -311,7 +353,7 @@ fun RelevantMoviesSection(
                 title = it.title,
                 posterImageUrl = it.posterImageUrl,
                 modifier = Modifier.width(100.dp),
-                onClick = { openMovieDetails(it.id) }
+                onClick = { onMovieClick(it) }
             )
         },
         hideIf = movies.isEmpty(),

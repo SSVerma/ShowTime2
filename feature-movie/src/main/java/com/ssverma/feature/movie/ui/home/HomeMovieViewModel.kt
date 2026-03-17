@@ -9,14 +9,12 @@ import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TopRatedMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.UpcomingMoviesUseCase
-import com.ssverma.shared.domain.model.ProviderInfo
-import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
-import com.ssverma.shared.domain.model.movie.MoviePreview
-import com.ssverma.shared.domain.model.movie.asMoviePreview
-import com.ssverma.shared.domain.model.DiscoveryParams
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.model.DiscoveryParams
+import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,10 +79,11 @@ class HomeMovieViewModel @Inject constructor(
         _uiState.update { it.copy(trendingMovies = UiState.Loading) }
         when (val result = trendingMoviesUseCase(TimeWindow.Daily)) {
             is Result.Success -> {
-                _uiState.update { 
+                _uiState.update {
                     it.copy(trendingMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
                 }
             }
+
             is Result.Error -> _uiState.update { it.copy(trendingMovies = UiState.Error(result.error)) }
         }
     }
@@ -97,6 +96,7 @@ class HomeMovieViewModel @Inject constructor(
                     it.copy(inCinemasMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
                 }
             }
+
             is Result.Error -> _uiState.update { it.copy(inCinemasMovies = UiState.Error(result.error)) }
         }
     }
@@ -118,6 +118,7 @@ class HomeMovieViewModel @Inject constructor(
                         it.copy(popularMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
                     }
                 }
+
                 is Result.Error -> _uiState.update { it.copy(popularMovies = UiState.Error(result.error)) }
             }
         }
@@ -140,6 +141,7 @@ class HomeMovieViewModel @Inject constructor(
                         it.copy(topRatedMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
                     }
                 }
+
                 is Result.Error -> _uiState.update { it.copy(topRatedMovies = UiState.Error(result.error)) }
             }
         }
@@ -162,6 +164,7 @@ class HomeMovieViewModel @Inject constructor(
                         it.copy(upcomingMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
                     }
                 }
+
                 is Result.Error -> _uiState.update { it.copy(upcomingMovies = UiState.Error(result.error)) }
             }
         }
@@ -175,5 +178,4 @@ class HomeMovieViewModel @Inject constructor(
             is Result.Error -> _uiState.update { it.copy(watchProviders = UiState.Error(result.error)) }
         }
     }
-
 }

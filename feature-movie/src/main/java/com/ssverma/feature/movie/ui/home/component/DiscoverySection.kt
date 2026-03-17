@@ -34,6 +34,7 @@ import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.ui.component.MediaItemShimmer
 import com.ssverma.shared.ui.component.media.MovieGridItem
+import com.ssverma.shared.domain.model.movie.MoviePreview
 
 data class DiscoveryCategory(
     @StringRes val titleRes: Int,
@@ -50,7 +51,7 @@ fun DiscoverySection(
     onFetchPopular: () -> Unit,
     onFetchTopRated: () -> Unit,
     onFetchUpcoming: () -> Unit,
-    onMovieClicked: (Int) -> Unit,
+    onMovieClicked: (movie: MoviePreview) -> Unit,
     onSeeAllClicked: (MovieListingArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -146,7 +147,7 @@ fun DiscoverySection(
                         indicator = { preview ->
                             MovieIndicator(type = category.type, movie = preview)
                         },
-                        onClick = { preview -> onMovieClicked(preview.id) },
+                        onClick = onMovieClicked,
                     )
                 }
             }

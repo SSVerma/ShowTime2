@@ -2,13 +2,11 @@ package com.ssverma.feature.tv.ui.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
@@ -145,7 +143,9 @@ private fun TvEpisodeContent(
         item {
             CreditSection(
                 casts = episode.casts,
-                onPersonClick = openPersonDetails,
+                onPersonClick = { cast ->
+                    openPersonDetails(cast.id)
+                },
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }
@@ -154,7 +154,9 @@ private fun TvEpisodeContent(
             CreditSection(
                 casts = episode.guestStars,
                 titleRes = R.string.guest_appearance,
-                onPersonClick = openPersonDetails,
+                onPersonClick = { cast ->
+                    openPersonDetails(cast.id)
+                },
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }

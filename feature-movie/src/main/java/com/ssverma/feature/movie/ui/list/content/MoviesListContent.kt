@@ -18,7 +18,7 @@ import com.ssverma.shared.ui.component.media.MovieListItem
 fun MoviesListContent(
     moviePagingItems: LazyPagingItems<MoviePreview>,
     @MovieListingType type: Int,
-    openMovieDetails: (movieId: Int) -> Unit,
+    openMovieDetails: (movie: MoviePreview) -> Unit,
     modifier: Modifier = Modifier
 ) {
     PagedList(
@@ -31,7 +31,7 @@ fun MoviesListContent(
             movie = movie,
             showRating = type != MovieListingAvailableTypes.Upcoming && type != MovieListingAvailableTypes.TopRated,
             indicator = { preview -> MovieIndicator(type = type, movie = preview) },
-            onClick = { preview -> openMovieDetails(preview.id) },
+            onClick = { preview -> openMovieDetails(preview) },
         )
     }
 }

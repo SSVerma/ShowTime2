@@ -20,7 +20,7 @@ import com.ssverma.shared.ui.component.Avatar
 @Composable
 fun CreditSection(
     casts: List<Cast>,
-    onPersonClick: (personId: Int) -> Unit,
+    onPersonClick: (Cast) -> Unit,
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int = R.string.casts,
 ) {
@@ -40,7 +40,7 @@ fun CreditSection(
             CastItem(
                 cast = it,
                 onClick = {
-                    onPersonClick(it.id)
+                    onPersonClick(it)
                 },
                 modifier = Modifier.width(104.dp)
             )
