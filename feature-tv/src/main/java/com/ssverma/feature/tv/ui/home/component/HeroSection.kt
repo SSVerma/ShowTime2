@@ -47,7 +47,7 @@ fun HeroSection(
     trendingTvShowsState: UiState<List<TvShowPreview>, TvShowFailure>,
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
-    onTvShowClicked: (Int) -> Unit,
+    onTvShowClicked: (TvShowPreview) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
@@ -129,7 +129,7 @@ fun HeroSection(
                     contentPadding = contentPadding,
                     imageUrl = { it.posterImageUrl },
                     title = { it.title },
-                    onItemClick = { onTvShowClicked(it.id) },
+                    onItemClick = onTvShowClicked,
                     overlayContent = overlayContent
                 )
             }

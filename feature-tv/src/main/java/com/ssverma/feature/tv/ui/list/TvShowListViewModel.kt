@@ -48,7 +48,7 @@ class TvShowListViewModel @Inject constructor(
 
 
     private val tvShowListingArgs = savedStateHandle.buildTvShowListingArgs()
-    private val tvShowListingConfig = tvShowListingArgs.asTvShowListingConfigs()
+    internal val tvShowListingConfig = tvShowListingArgs.asTvShowListingConfigs()
 
     private val _uiState = MutableStateFlow(
         TvShowPaginatedListUiState(

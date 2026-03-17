@@ -36,6 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.foundation.Emphasize
@@ -45,6 +47,9 @@ import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.tv.R
+import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
+import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
+import com.ssverma.feature.tv.analytics.TvAnalyticsValues
 import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
@@ -82,6 +87,8 @@ fun TvShowDetailsScreen(
     viewModel: TvShowDetailsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    TrackScreenView(screenName = TvAnalyticsScreenName.TV_DETAILS)
 
     Surface(color = MaterialTheme.colorScheme.background) {
         DriveCompose(
@@ -124,6 +131,7 @@ private fun TvShowContent(
 ) {
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
+    val analytics = LocalAnalytics.current
 
     LazyColumn(
         modifier = modifier
@@ -228,6 +236,12 @@ private fun TvShowContent(
                 )
             ) { genre ->
                 GenreItem(genre = genre) {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.GenreClicked(
+                            genre = genre,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
                     openTvShowList(
                         TvShowListingArgs(
                             listingType = TvShowListingAvailableTypes.Genre,
@@ -244,6 +258,13 @@ private fun TvShowContent(
             SeasonsSection(
                 seasons = tvShow.seasons,
                 onSeasonClick = { season ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeasonClicked(
+                            season = season,
+                            tvShowId = tvShow.id,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
                     openTvSeasonDetails(
                         TvSeasonArgs(
                             tvShowId = viewModel.tvShowId,
@@ -261,6 +282,12 @@ private fun TvShowContent(
             CreditSection(
                 casts = tvShow.casts,
                 onPersonClick = { cast ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.CastClicked(
+                            cast = cast,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
                     openPersonDetails(cast.id)
                 },
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
@@ -301,7 +328,17 @@ private fun TvShowContent(
             SimilarTvShowsSection(
                 tvShows = tvShow.similarTvShows,
                 sectionTitleRes = R.string.similar_shows,
-                openTvShowDetails = openTvShowDetails,
+                onTvShowClick = { tvShowPreview ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.TvShowClicked(
+                            tvShowId = tvShowPreview.id,
+                            tvShowTitle = tvShowPreview.title,
+                            section = TvAnalyticsValues.SECTION_SIMILAR,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openTvShowDetails(tvShowPreview.id)
+                },
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
@@ -311,7 +348,17 @@ private fun TvShowContent(
             SimilarTvShowsSection(
                 tvShows = tvShow.recommendations,
                 sectionTitleRes = R.string.recommendations,
-                openTvShowDetails = openTvShowDetails,
+                onTvShowClick = { tvShowPreview ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.TvShowClicked(
+                            tvShowId = tvShowPreview.id,
+                            tvShowTitle = tvShowPreview.title,
+                            section = TvAnalyticsValues.SECTION_RECOMMENDED,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openTvShowDetails(tvShowPreview.id)
+                },
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
@@ -321,6 +368,12 @@ private fun TvShowContent(
             TagsSection(
                 keywords = tvShow.keywords,
                 onClick = { keyword ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.KeywordClicked(
+                            keyword = keyword,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
                     openTvShowList(
                         TvShowListingArgs(
                             listingType = TvShowListingAvailableTypes.Keyword,
@@ -344,7 +397,7 @@ private fun TvShowContent(
 private fun SimilarTvShowsSection(
     tvShows: List<TvShow>,
     @StringRes sectionTitleRes: Int,
-    openTvShowDetails: (tvShowId: Int) -> Unit,
+    onTvShowClick: (tvShow: TvShow) -> Unit,
     modifier: Modifier = Modifier
 ) {
     HorizontalLazyListSection(
@@ -362,7 +415,7 @@ private fun SimilarTvShowsSection(
                 posterImageUrl = it.posterImageUrl,
                 modifier = Modifier.width(100.dp),
                 onClick = {
-                    openTvShowDetails(it.id)
+                    onTvShowClick(it)
                 }
             )
         },

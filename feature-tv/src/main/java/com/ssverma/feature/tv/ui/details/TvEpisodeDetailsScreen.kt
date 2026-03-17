@@ -25,9 +25,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.feature.tv.R
+import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
+import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
@@ -52,6 +56,8 @@ fun TvEpisodeDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val tvEpisodeUiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    TrackScreenView(screenName = TvAnalyticsScreenName.TV_EPISODE)
 
     Surface(color = MaterialTheme.colorScheme.background) {
         DriveCompose(
@@ -93,6 +99,8 @@ private fun TvEpisodeContent(
     openImageShot: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val analytics = LocalAnalytics.current
+
     LazyColumn(modifier = modifier) {
         item {
             BackdropHeader(
@@ -144,6 +152,12 @@ private fun TvEpisodeContent(
             CreditSection(
                 casts = episode.casts,
                 onPersonClick = { cast ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.CastClicked(
+                            cast = cast,
+                            sourceScreen = TvAnalyticsScreenName.TV_EPISODE
+                        )
+                    )
                     openPersonDetails(cast.id)
                 },
                 modifier = Modifier.padding(top = SectionSpacing)
@@ -155,6 +169,12 @@ private fun TvEpisodeContent(
                 casts = episode.guestStars,
                 titleRes = R.string.guest_appearance,
                 onPersonClick = { cast ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.CastClicked(
+                            cast = cast,
+                            sourceScreen = TvAnalyticsScreenName.TV_EPISODE
+                        )
+                    )
                     openPersonDetails(cast.id)
                 },
                 modifier = Modifier.padding(top = SectionSpacing)

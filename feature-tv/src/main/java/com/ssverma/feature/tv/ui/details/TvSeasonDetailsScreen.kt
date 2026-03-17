@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,11 +35,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.tv.R
+import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
+import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.navigation.args.TvEpisodeArgs
+import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
@@ -65,10 +69,13 @@ fun TvSeasonDetailsScreen(
     openPersonDetails: (personId: Int) -> Unit,
     viewModel: TvSeasonDetailsViewModel = hiltViewModel()
 ) {
+    val analytics = LocalAnalytics.current
     val imageSheetState = rememberImageShotBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    TrackScreenView(screenName = TvAnalyticsScreenName.TV_SEASON)
 
     DriveCompose(
         uiState = uiState,
@@ -82,6 +89,13 @@ fun TvSeasonDetailsScreen(
                 tvSeason = tvSeason,
                 onBackPress = onBackPress,
                 onEpisodeClick = { episode ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.EpisodeClicked(
+                            episode = episode,
+                            tvShowId = viewModel.tvShowId,
+                            sourceScreen = TvAnalyticsScreenName.TV_SEASON
+                        )
+                    )
                     openEpisodeDetails(
                         TvEpisodeArgs(
                             tvShowId = viewModel.tvShowId,
@@ -90,7 +104,15 @@ fun TvSeasonDetailsScreen(
                         )
                     )
                 },
-                openPersonDetails = openPersonDetails,
+                openPersonDetails = { cast ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.CastClicked(
+                            cast = cast,
+                            sourceScreen = TvAnalyticsScreenName.TV_SEASON
+                        )
+                    )
+                    openPersonDetails(cast.id)
+                },
                 openImageShotsList = {
                     coroutineScope.launch {
                         imageSheetState.show(SheetContentType.ImageList)
@@ -113,7 +135,7 @@ private fun TvSeasonContent(
     tvSeason: TvSeason,
     onBackPress: () -> Unit,
     onEpisodeClick: (TvEpisode) -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier
@@ -158,9 +180,7 @@ private fun TvSeasonContent(
         item {
             CreditSection(
                 casts = tvSeason.casts,
-                onPersonClick = { cast ->
-                    openPersonDetails(cast.id)
-                },
+                onPersonClick = openPersonDetails,
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }

@@ -15,8 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.core.ui.paging.PagedContent
+import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
+import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
+import com.ssverma.feature.tv.analytics.TvAnalyticsValues
+import com.ssverma.feature.tv.analytics.asAnalyticsListingType
 import com.ssverma.feature.tv.ui.filter.TvFiltersScreen
 import com.ssverma.feature.tv.ui.list.component.TvShowListTopBar
 import com.ssverma.feature.tv.ui.list.content.TvShowsGridContent
@@ -30,6 +36,13 @@ fun TvShowListScreen(
     openTvShowDetails: (Int) -> Unit,
     viewModel: TvShowListViewModel = hiltViewModel()
 ) {
+    TrackScreenView(
+        screenName = TvAnalyticsScreenName.TV_LISTING,
+        screenClass = viewModel.tvShowListingConfig.asAnalyticsListingType()
+    )
+
+    val analytics = LocalAnalytics.current
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val tvShowPagingItems = viewModel.pagedTvShows.collectAsLazyPagingItems()
     val watchRegion by viewModel.appConfigRepository.watchProviderRegion.collectAsStateWithLifecycle()
@@ -45,7 +58,14 @@ fun TvShowListScreen(
             TvShowListTopBar(
                 uiState = uiState,
                 onToggleViewMode = { viewModel.toggleViewMode() },
-                onOpenFilters = { coroutineScope.launch { sheetState.show() } },
+                onOpenFilters = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.FilterClicked(
+                            listingType = viewModel.tvShowListingConfig.asAnalyticsListingType()
+                        )
+                    )
+                    coroutineScope.launch { sheetState.show() }
+                },
                 onBackPressed = onBackPressed,
                 scrollBehavior = behavior
             )
@@ -58,14 +78,32 @@ fun TvShowListScreen(
                     TvShowsGridContent(
                         tvShowPagingItems = items,
                         type = uiState.listingType,
-                        openTvShowDetails = openTvShowDetails,
+                        openTvShowDetails = { tvShow ->
+                            analytics.logEvent(
+                                TvAnalyticsEvent.TvShowClicked(
+                                    tvShow = tvShow,
+                                    section = TvAnalyticsValues.SECTION_LISTING_GRID,
+                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING,
+                                )
+                            )
+                            openTvShowDetails(tvShow.id)
+                        },
                         modifier = Modifier.padding(innerPadding),
                     )
                 } else {
                     TvShowsListContent(
                         tvShowPagingItems = items,
                         type = uiState.listingType,
-                        openTvShowDetails = openTvShowDetails,
+                        openTvShowDetails = { tvShow ->
+                            analytics.logEvent(
+                                TvAnalyticsEvent.TvShowClicked(
+                                    tvShow = tvShow,
+                                    section = TvAnalyticsValues.SECTION_LISTING_LIST,
+                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING,
+                                )
+                            )
+                            openTvShowDetails(tvShow.id)
+                        },
                         modifier = Modifier.padding(innerPadding),
                     )
                 }

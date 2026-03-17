@@ -18,7 +18,7 @@ import com.ssverma.shared.ui.component.media.TvShowListItem
 fun TvShowsListContent(
     tvShowPagingItems: LazyPagingItems<TvShowPreview>,
     @TvShowListingType type: Int,
-    openTvShowDetails: (Int) -> Unit,
+    openTvShowDetails: (TvShowPreview) -> Unit,
     modifier: Modifier = Modifier
 ) {
     PagedList(
@@ -31,7 +31,7 @@ fun TvShowsListContent(
             tvShow = tvShow,
             showRating = type != TvShowListingAvailableTypes.Upcoming && type != TvShowListingAvailableTypes.TopRated,
             indicator = { preview -> TvIndicator(type = type, tvShow = preview) },
-            onClick = { preview -> openTvShowDetails(preview.id) },
+            onClick = openTvShowDetails,
         )
     }
 }

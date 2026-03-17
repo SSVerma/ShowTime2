@@ -62,7 +62,7 @@ fun WatchProviderTrigger(
             WatchProviderTriggerVariant.Icon -> {
                 IconButton(
                     modifier = modifier
-                        .size(36.dp),
+                        .size(30.dp),
                     onClick = {
                         showBottomSheet = true
                         viewModel.fetchWatchProviders(mediaId = mediaId, isMovie = isMovie)

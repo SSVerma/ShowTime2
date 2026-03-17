@@ -18,4 +18,7 @@ dependencies {
     implementation(projects.featureFilter)
     implementation(projects.featureSearch)
     implementation(projects.featureAccount)
+
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
 }

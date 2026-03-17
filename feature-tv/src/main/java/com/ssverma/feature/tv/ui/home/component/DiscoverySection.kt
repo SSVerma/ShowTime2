@@ -54,7 +54,7 @@ fun DiscoverySection(
     onFetchPopular: () -> Unit,
     onFetchTopRated: () -> Unit,
     onFetchUpcoming: () -> Unit,
-    onTvShowClicked: (Int) -> Unit,
+    onTvShowClicked: (tvShow: TvShowPreview) -> Unit,
     onSeeAllClicked: (TvShowListingArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -150,7 +150,7 @@ fun DiscoverySection(
                         indicator = { preview ->
                             TvIndicator(type = category.type, tvShow = preview)
                         },
-                        onClick = { preview -> onTvShowClicked(preview.id) },
+                        onClick = { preview -> onTvShowClicked(preview) },
                     )
                 }
             }
