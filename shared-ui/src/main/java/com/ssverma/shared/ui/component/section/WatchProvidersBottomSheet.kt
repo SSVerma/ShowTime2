@@ -17,15 +17,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.UiState
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.WatchProvider
-import com.ssverma.shared.ui.component.MediaListItemShimmer
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.component.MediaListItemShimmer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WatchProvidersBottomSheet(
     watchProviderUiState: UiState<WatchProvider?, Any?>,
     onDismissRequest: () -> Unit,
+    onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
     ModalBottomSheet(
@@ -52,14 +54,18 @@ fun WatchProvidersBottomSheet(
                 is UiState.Loading -> {
                     MediaListItemShimmer(modifier = Modifier.padding(horizontal = 16.dp))
                 }
+
                 is UiState.Error<*> -> {
                     Text(
                         text = stringResource(id = R.string.na),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                     )
                 }
+
                 is UiState.Success<WatchProvider?> -> {
                     val watchProvider = watchProviderUiState.data
                     if (watchProvider == null || !watchProvider.hasProviders) {
@@ -67,18 +73,22 @@ fun WatchProvidersBottomSheet(
                             text = stringResource(id = R.string.na),
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
                         )
                     } else {
                         Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                             WatchProvidersSection(
                                 watchProvider = watchProvider,
                                 modifier = Modifier.fillMaxWidth(),
+                                onWatchProviderClick = onWatchProviderClick,
                                 showTitle = false
                             )
                         }
                     }
                 }
+
                 else -> {
                     /* No op for Idle or unexpected states */
                 }

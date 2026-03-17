@@ -32,9 +32,12 @@ import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
-import com.ssverma.shared.ui.component.MediaItemShimmer
-import com.ssverma.shared.ui.component.media.MovieGridItem
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.ui.component.MediaItemShimmer
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
+import com.ssverma.shared.ui.component.media.MovieGridItem
 
 data class DiscoveryCategory(
     @StringRes val titleRes: Int,
@@ -53,6 +56,7 @@ fun DiscoverySection(
     onFetchUpcoming: () -> Unit,
     onMovieClicked: (movie: MoviePreview) -> Unit,
     onSeeAllClicked: (MovieListingArgs) -> Unit,
+    onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -148,6 +152,15 @@ fun DiscoverySection(
                             MovieIndicator(type = category.type, movie = preview)
                         },
                         onClick = onMovieClicked,
+                        overlayContent = {
+                            WatchProviderTrigger(
+                                mediaId = it.id,
+                                isMovie = true,
+                                variant = WatchProviderTriggerVariant.Icon,
+                                modifier = Modifier.padding(MaterialTheme.spacing.small),
+                                onWatchProviderClick = onWatchProviderClick,
+                            )
+                        }
                     )
                 }
             }

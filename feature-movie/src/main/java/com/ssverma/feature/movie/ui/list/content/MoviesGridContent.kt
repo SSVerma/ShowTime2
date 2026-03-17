@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,7 +13,10 @@ import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.MovieGridItem
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -21,6 +25,7 @@ fun MoviesGridContent(
     moviePagingItems: LazyPagingItems<MoviePreview>,
     type: Int,
     openMovieDetails: (movie: MoviePreview) -> Unit,
+    onWatchProviderClick: (ProviderInfo) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PagedGrid(
@@ -35,6 +40,15 @@ fun MoviesGridContent(
             showRating = type != MovieListingAvailableTypes.Upcoming && type != MovieListingAvailableTypes.TopRated,
             indicator = { preview -> MovieIndicator(type = type, movie = preview) },
             onClick = { preview -> openMovieDetails(preview) },
+            overlayContent = {
+                WatchProviderTrigger(
+                    mediaId = it.id,
+                    isMovie = true,
+                    variant = WatchProviderTriggerVariant.Icon,
+                    onWatchProviderClick = onWatchProviderClick,
+                    modifier = Modifier.padding(MaterialTheme.spacing.small)
+                )
+            },
             posterModifier = Modifier.fillMaxWidth()
         )
     }

@@ -59,6 +59,7 @@ fun TvShowHomeContent(
                     )
                     openTvShowDetails(tvShow.id)
                 },
+                onWatchProviderClick = openWatchProviderHub,
                 onRetry = { viewModel.fetchTrendingTvShows() }
             )
         }
@@ -130,6 +131,7 @@ fun TvShowHomeContent(
                 onFetchPopular = { viewModel.fetchPopularTvShows() },
                 onFetchTopRated = { viewModel.fetchTopRatedTvShows() },
                 onFetchUpcoming = { viewModel.fetchUpcomingTvShows() },
+                onWatchProviderClick = openWatchProviderHub,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
@@ -160,6 +162,7 @@ fun TvShowHomeContent(
                 TvShowListItem(
                     tvShow = tvShowPreview,
                     showRating = true,
+                    onWatchProviderClick = openWatchProviderHub,
                     onClick = {
                         analytics.logEvent(
                             TvAnalyticsEvent.TvShowClicked(
@@ -206,6 +209,7 @@ fun TvShowHomeContent(
                 TvShowListItem(
                     tvShow = tvShowPreview,
                     showRating = true,
+                    onWatchProviderClick = openWatchProviderHub,
                     onClick = {
                         analytics.logEvent(
                             TvAnalyticsEvent.TvShowClicked(

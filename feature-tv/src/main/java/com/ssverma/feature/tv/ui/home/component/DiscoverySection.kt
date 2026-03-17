@@ -33,8 +33,11 @@ import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.MediaItemShimmer
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.TvShowGridItem
 
 private typealias TvPreviewUiState = UiState<List<TvShowPreview>, TvShowFailure>
@@ -56,6 +59,7 @@ fun DiscoverySection(
     onFetchUpcoming: () -> Unit,
     onTvShowClicked: (tvShow: TvShowPreview) -> Unit,
     onSeeAllClicked: (TvShowListingArgs) -> Unit,
+    onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -151,6 +155,15 @@ fun DiscoverySection(
                             TvIndicator(type = category.type, tvShow = preview)
                         },
                         onClick = { preview -> onTvShowClicked(preview) },
+                        overlayContent = {
+                            WatchProviderTrigger(
+                                mediaId = it.id,
+                                isMovie = false,
+                                variant = WatchProviderTriggerVariant.Icon,
+                                modifier = Modifier.padding(MaterialTheme.spacing.small),
+                                onWatchProviderClick = onWatchProviderClick,
+                            )
+                        }
                     )
                 }
             }

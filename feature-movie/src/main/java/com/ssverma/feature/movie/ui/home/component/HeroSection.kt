@@ -34,12 +34,13 @@ import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
 import com.ssverma.shared.ui.component.HomePageAppBar
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
-import com.ssverma.shared.ui.component.AppHeroCarousel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,7 @@ fun HeroSection(
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
     onMovieClicked: (movie: MoviePreview) -> Unit,
+    onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
@@ -57,7 +59,8 @@ fun HeroSection(
         WatchProviderTrigger(
             mediaId = it.id,
             isMovie = true,
-            variant = WatchProviderTriggerVariant.Icon
+            variant = WatchProviderTriggerVariant.Icon,
+            onWatchProviderClick = onWatchProviderClick,
         )
     }
 ) {

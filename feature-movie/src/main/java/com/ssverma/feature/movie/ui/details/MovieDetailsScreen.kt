@@ -44,6 +44,7 @@ import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.ShareMediaUtils
@@ -72,6 +73,7 @@ fun MovieDetailsScreen(
     openReviewsList: (movieId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
+    openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     viewModel: MovieDetailsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -95,7 +97,8 @@ fun MovieDetailsScreen(
                     viewModel.openYoutubeApp(videoId = videoId)
                 },
                 openPersonDetails = openPersonDetails,
-                openMovieList = openMovieList
+                openMovieList = openMovieList,
+                openWatchHub = openWatchHub,
             )
         }
     }
@@ -113,6 +116,7 @@ fun MovieContent(
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
+    openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val movie = data.movie
@@ -219,13 +223,14 @@ fun MovieContent(
             WatchProvidersSection(
                 watchProvider = movie.watchProviders[watchProviderRegion],
                 modifier = Modifier.padding(top = SectionVerticalSpacing),
-                onWatchProviderClick = {
+                onWatchProviderClick = { providerInfo ->
                     analytics.logEvent(
                         MovieAnalyticsEvent.WatchProviderClicked(
-                            providerInfo = it,
+                            providerInfo = providerInfo,
                             sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
                         )
                     )
+                    openWatchHub(providerInfo)
                 },
                 onJustWatchClick = {
                     analytics.logEvent(

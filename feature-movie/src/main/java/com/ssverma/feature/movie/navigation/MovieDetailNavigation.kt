@@ -1,11 +1,14 @@
 package com.ssverma.feature.movie.navigation
 
+import android.net.Uri
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
 import com.ssverma.feature.person.navigation.PersonDetailDestination
+import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubDestination
+import com.ssverma.showtime.feature.filter.navigation.WatchProviderNavArgs
 
 fun NavGraphBuilder.movieDetailGraph(
     navController: NavController
@@ -29,6 +32,18 @@ fun NavGraphBuilder.movieDetailGraph(
         },
         openMovieList = { listingArgs ->
             navController.navigateTo(MovieListDestination.actualRoute(listingArgs))
+        },
+        openWatchHub = { provider ->
+            navController.navigateTo(
+                WatchProviderHubDestination.actualRoute(
+                    WatchProviderNavArgs(
+                        providerId = provider.providerId,
+                        providerName = provider.providerName,
+                        logoPath = Uri.encode(provider.logoPath),
+                        isMovie = true
+                    )
+                )
+            )
         }
     )
 }

@@ -26,6 +26,7 @@ import com.ssverma.feature.tv.analytics.asAnalyticsListingType
 import com.ssverma.feature.tv.ui.filter.TvFiltersScreen
 import com.ssverma.feature.tv.ui.list.component.TvShowListTopBar
 import com.ssverma.feature.tv.ui.list.content.TvShowsGridContent
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.feature.tv.ui.list.content.TvShowsListContent
 import kotlinx.coroutines.launch
 
@@ -34,6 +35,7 @@ import kotlinx.coroutines.launch
 fun TvShowListScreen(
     onBackPressed: () -> Unit,
     openTvShowDetails: (Int) -> Unit,
+    openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     viewModel: TvShowListViewModel = hiltViewModel()
 ) {
     TrackScreenView(
@@ -88,6 +90,15 @@ fun TvShowListScreen(
                             )
                             openTvShowDetails(tvShow.id)
                         },
+                        onWatchProviderClick = { provider ->
+                            analytics.logEvent(
+                                TvAnalyticsEvent.WatchProviderClicked(
+                                    providerInfo = provider,
+                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING
+                                )
+                            )
+                            openWatchHub(provider)
+                        },
                         modifier = Modifier.padding(innerPadding),
                     )
                 } else {
@@ -103,6 +114,15 @@ fun TvShowListScreen(
                                 )
                             )
                             openTvShowDetails(tvShow.id)
+                        },
+                        onWatchProviderClick = { provider ->
+                            analytics.logEvent(
+                                TvAnalyticsEvent.WatchProviderClicked(
+                                    providerInfo = provider,
+                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING
+                                )
+                            )
+                            openWatchHub(provider)
                         },
                         modifier = Modifier.padding(innerPadding),
                     )

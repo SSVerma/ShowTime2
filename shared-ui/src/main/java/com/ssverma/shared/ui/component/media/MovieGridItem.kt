@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -24,8 +23,6 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
-import com.ssverma.shared.ui.component.WatchProviderTrigger
-import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 
 @Composable
 fun MovieGridItem(
@@ -34,14 +31,7 @@ fun MovieGridItem(
     posterModifier: Modifier = Modifier,
     showRating: Boolean = true,
     indicator: (@Composable (MoviePreview) -> Unit)? = null,
-    overlayContent: (@Composable (MoviePreview) -> Unit)? = {
-        WatchProviderTrigger(
-            mediaId = it.id,
-            isMovie = true,
-            variant = WatchProviderTriggerVariant.Icon,
-            modifier = Modifier.padding(MaterialTheme.spacing.small)
-        )
-    },
+    overlayContent: (@Composable (MoviePreview) -> Unit)?,
     onClick: (MoviePreview) -> Unit,
 ) {
     Column(modifier = modifier) {

@@ -34,6 +34,7 @@ import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.CarouselDefaults
 import com.ssverma.shared.ui.component.HomePageAppBar
@@ -48,6 +49,7 @@ fun HeroSection(
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
     onTvShowClicked: (TvShowPreview) -> Unit,
+    onWatchProviderClick: (ProviderInfo) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
@@ -57,7 +59,8 @@ fun HeroSection(
         WatchProviderTrigger(
             mediaId = it.id,
             isMovie = false,
-            variant = WatchProviderTriggerVariant.Icon
+            variant = WatchProviderTriggerVariant.Icon,
+            onWatchProviderClick = onWatchProviderClick
         )
     }
 ) {

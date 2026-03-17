@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
@@ -40,6 +41,7 @@ fun TvShowListItem(
     modifier: Modifier = Modifier,
     showRating: Boolean = true,
     indicator: (@Composable (TvShowPreview) -> Unit)? = null,
+    onWatchProviderClick: (ProviderInfo) -> Unit,
     onClick: (TvShowPreview) -> Unit,
 ) {
     OutlinedCard(
@@ -75,6 +77,7 @@ fun TvShowListItem(
                     mediaId = tvShow.id,
                     isMovie = false,
                     variant = WatchProviderTriggerVariant.Icon,
+                    onWatchProviderClick = onWatchProviderClick,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(MaterialTheme.spacing.small)

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.section.WatchProvidersBottomSheet
 import com.ssverma.shared.ui.viewmodel.WatchProviderViewModel
@@ -46,6 +47,7 @@ fun WatchProviderTrigger(
     isMovie: Boolean,
     modifier: Modifier = Modifier,
     variant: WatchProviderTriggerVariant = WatchProviderTriggerVariant.Icon,
+    onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     viewModel: WatchProviderViewModel = hiltViewModel()
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -118,7 +120,8 @@ fun WatchProviderTrigger(
             onDismissRequest = {
                 showBottomSheet = false
                 viewModel.resetState()
-            }
+            },
+            onWatchProviderClick = onWatchProviderClick,
         )
     }
 }

@@ -59,6 +59,7 @@ fun MovieHomeContent(
                     )
                     openMovieDetails(movie.id)
                 },
+                onWatchProviderClick = openWatchProviderHub,
                 onRetry = { viewModel.fetchTrendingMovies() }
             )
         }
@@ -130,6 +131,7 @@ fun MovieHomeContent(
                 onFetchPopular = { viewModel.fetchPopularMovies() },
                 onFetchTopRated = { viewModel.fetchTopRatedMovies() },
                 onFetchUpcoming = { viewModel.fetchUpcomingMovies() },
+                onWatchProviderClick = openWatchProviderHub,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
@@ -160,6 +162,7 @@ fun MovieHomeContent(
                 MovieListItem(
                     movie = moviePreview,
                     showRating = true,
+                    onWatchProviderClick = openWatchProviderHub,
                     onClick = {
                         analytics.logEvent(
                             MovieAnalyticsEvent.MovieClicked(
