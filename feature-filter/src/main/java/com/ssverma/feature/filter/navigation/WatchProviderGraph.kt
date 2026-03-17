@@ -35,7 +35,7 @@ fun NavGraphBuilder.watchProviderHubGraph(
                 navController.navigateTo(
                     MovieListDestination.actualRoute(
                         MovieListingArgs(
-                            listingType = MovieListingAvailableTypes.Discovery,
+                            listingType = MovieListingAvailableTypes.Genre,
                             genreId = genre.id,
                             title = genre.name
                         )
@@ -45,7 +45,7 @@ fun NavGraphBuilder.watchProviderHubGraph(
                 navController.navigateTo(
                     TvShowListDestination.actualRoute(
                         TvShowListingArgs(
-                            listingType = TvShowListingAvailableTypes.Discovery,
+                            listingType = TvShowListingAvailableTypes.Genre,
                             genreId = genre.id,
                             title = genre.name
                         )
