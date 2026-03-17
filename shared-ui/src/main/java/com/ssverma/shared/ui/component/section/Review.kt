@@ -2,10 +2,22 @@ package com.ssverma.shared.ui.component.section
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,7 +34,8 @@ import com.ssverma.shared.ui.component.Avatar
 fun ReviewsSection(
     reviews: List<Review>,
     onReviewsViewAllClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onReviewClick: (Review) -> Unit = {}
 ) {
     val reviewCount = if (reviews.size < MaxReviews) reviews.size else MaxReviews
 
@@ -31,7 +44,9 @@ fun ReviewsSection(
             SectionHeader(
                 title = stringResource(id = R.string.reviews),
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onTrailingActionClicked = onReviewsViewAllClick,
+                onTrailingActionClicked = {
+                    onReviewsViewAllClick()
+                },
                 hideTrailingAction = reviews.size <= MaxReviews
             )
         },
@@ -45,7 +60,8 @@ fun ReviewsSection(
         ) {
             for (i in 0 until reviewCount) {
                 ReviewItem(
-                    review = reviews[i]
+                    review = reviews[i],
+                    onClick = onReviewClick
                 )
             }
         }
@@ -55,7 +71,8 @@ fun ReviewsSection(
 @Composable
 fun ReviewItem(
     review: Review,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (Review) -> Unit = {}
 ) {
 
     var expanded by remember { mutableStateOf(false) }
@@ -75,6 +92,7 @@ fun ReviewItem(
         Surface(
             shape = MaterialTheme.shapes.medium.copy(topStart = CornerSize(0.dp)),
             onClick = {
+                onClick(review)
                 expanded = !expanded
             },
             tonalElevation = if (expanded) 2.dp else 0.dp

@@ -7,6 +7,8 @@ import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Keyword
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.Review
+import com.ssverma.shared.domain.model.Video
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShowPreview
@@ -81,9 +83,12 @@ sealed class TvAnalyticsEvent(
         )
     }
 
-    data class SeeAllClicked(val section: String) : TvAnalyticsEvent(
+    data class SeeAllClicked(val section: String, val sourceScreen: String) : TvAnalyticsEvent(
         eventName = TvAnalyticsEventName.SEE_ALL_CLICKED,
-        params = mapOf(TvAnalyticsKeys.SECTION to section)
+        params = mapOf(
+            TvAnalyticsKeys.SECTION to section,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen
+        )
     )
 
     data class WatchProviderClicked(
@@ -94,6 +99,7 @@ sealed class TvAnalyticsEvent(
         params = mapOf(
             TvAnalyticsKeys.WATCH_PROVIDER_ID to providerInfo.providerId,
             TvAnalyticsKeys.WATCH_PROVIDER_NAME to providerInfo.providerName,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen,
         )
     )
 
@@ -141,6 +147,78 @@ sealed class TvAnalyticsEvent(
             TvAnalyticsKeys.EPISODE_NUMBER to episode.episodeNumber,
             TvAnalyticsKeys.EPISODE_NAME to episode.title,
             SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen,
+        )
+    )
+
+    data class ImageShotClicked(
+        val index: Int,
+        val sourceScreen: String
+    ) : TvAnalyticsEvent(
+        eventName = TvAnalyticsEventName.IMAGE_SHOT_CLICKED,
+        params = mapOf(
+            TvAnalyticsKeys.IMAGE_INDEX to index,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen
+        )
+    )
+
+    data class JustWatchClicked(val sourceScreen: String) : TvAnalyticsEvent(
+        eventName = TvAnalyticsEventName.JUST_WATCH_CLICKED,
+        params = mapOf(SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen)
+    )
+
+    data class VideoClicked(
+        val video: Video,
+        val sourceScreen: String
+    ) : TvAnalyticsEvent(
+        eventName = TvAnalyticsEventName.VIDEO_CLICKED,
+        params = mapOf(
+            TvAnalyticsKeys.VIDEO_ID to video.id,
+            TvAnalyticsKeys.VIDEO_TITLE to video.type,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen
+        )
+    )
+
+    data class ReviewClicked(
+        val review: Review,
+        val sourceScreen: String
+    ) : TvAnalyticsEvent(
+        eventName = TvAnalyticsEventName.REVIEW_CLICKED,
+        params = mapOf(
+            TvAnalyticsKeys.REVIEW_ID to review.id,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen
+        )
+    )
+
+    data class TrailerClicked(
+        val tvShowId: Int,
+        val sourceScreen: String
+    ) : TvAnalyticsEvent(
+        eventName = TvAnalyticsEventName.TRAILER_CLICKED,
+        params = mapOf(
+            TvAnalyticsKeys.TV_SHOW_ID to tvShowId,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen
+        )
+    )
+
+    data class AddToStatsClicked(
+        val tvShowId: Int,
+        val sourceScreen: String
+    ) : TvAnalyticsEvent(
+        eventName = TvAnalyticsEventName.ADD_TO_STATS_CLICKED,
+        params = mapOf(
+            TvAnalyticsKeys.TV_SHOW_ID to tvShowId,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen
+        )
+    )
+
+    data class ShareClicked(
+        val tvShowId: Int,
+        val sourceScreen: String
+    ) : TvAnalyticsEvent(
+        eventName = TvAnalyticsEventName.SHARE_CLICKED,
+        params = mapOf(
+            TvAnalyticsKeys.TV_SHOW_ID to tvShowId,
+            SharedAnalyticsKeys.SOURCE_SCREEN to sourceScreen
         )
     )
 }

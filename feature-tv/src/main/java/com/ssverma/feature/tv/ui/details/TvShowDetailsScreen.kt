@@ -141,14 +141,37 @@ private fun TvShowContent(
             BackdropHeader(
                 backdropImageUrl = tvShow.backdropImageUrl,
                 onCloseIconClick = onBackPressed,
-                onTrailerFabClick = { viewModel.onPlayTrailerClicked(tvShow) },
+                onTrailerFabClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.TrailerClicked(
+                            tvShowId = tvShow.id,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    viewModel.onPlayTrailerClicked(tvShow)
+                },
                 secondaryActions = {
                     MediaStatsAction(
                         mediaType = MediaType.Tv,
-                        mediaId = tvShow.id
+                        mediaId = tvShow.id,
+                        modifier = Modifier.size(ActionSize),
+                        onClick = {
+                            analytics.logEvent(
+                                TvAnalyticsEvent.AddToStatsClicked(
+                                    tvShowId = tvShow.id,
+                                    sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                                )
+                            )
+                        }
                     )
                     FloatingActionButton(
                         onClick = {
+                            analytics.logEvent(
+                                TvAnalyticsEvent.ShareClicked(
+                                    tvShowId = tvShow.id,
+                                    sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                                )
+                            )
                             val shareableText = ShareMediaUtils.buildShareableMediaText(
                                 mediaTitle = tvShow.title,
                                 mediaTagline = tvShow.tagline,
@@ -211,7 +234,22 @@ private fun TvShowContent(
         item(key = "watch_providers") {
             WatchProvidersSection(
                 watchProvider = tvShow.watchProviders[watchProviderRegion],
-                modifier = Modifier.padding(top = SectionVerticalSpacing)
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
+                onWatchProviderClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.WatchProviderClicked(
+                            providerInfo = it,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                },
+                onJustWatchClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.JustWatchClicked(
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                }
             )
         }
 
@@ -298,8 +336,24 @@ private fun TvShowContent(
         item {
             ImageShotsSection(
                 imageShots = uiState.imageShots,
-                openImageShotsList = openImageShotsList,
-                openImageShot = openImageShot,
+                openImageShotsList = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeeAllClicked(
+                            section = TvAnalyticsValues.SECTION_SHOTS,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openImageShotsList()
+                },
+                openImageShot = { index ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.ImageShotClicked(
+                            index = index,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openImageShot(index)
+                },
                 maxImageShots = 6,
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )
@@ -309,8 +363,16 @@ private fun TvShowContent(
         item {
             VideoShotsSection(
                 videos = tvShow.videos,
-                onVideoClick = { openYoutube(it.key) },
-                modifier = Modifier.padding(top = SectionVerticalSpacing)
+                onVideoClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.VideoClicked(
+                            video = it,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openYoutube(it.key)
+                },
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
 
@@ -318,8 +380,24 @@ private fun TvShowContent(
         item {
             ReviewsSection(
                 reviews = tvShow.reviews,
-                onReviewsViewAllClick = openReviewsList,
-                modifier = Modifier.padding(top = SectionVerticalSpacing)
+                onReviewsViewAllClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeeAllClicked(
+                            section = TvAnalyticsValues.SECTION_REVIEWS,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openReviewsList()
+                },
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
+                onReviewClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.ReviewClicked(
+                            review = it,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                }
             )
         }
 

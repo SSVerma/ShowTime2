@@ -36,6 +36,7 @@ fun MediaStatsAction(
     mediaType: MediaType,
     mediaId: Int,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
     viewModel: MediaStatsViewModel = hiltViewModel()
 ) {
     val mediaStatsUiState by viewModel.mediaStats.collectAsState()
@@ -45,6 +46,7 @@ fun MediaStatsAction(
         anchorContent = {
             FloatingActionButton(
                 onClick = {
+                    onClick()
                     popupExpansionState.value = true
                     viewModel.fetchMediaStats(
                         mediaType = mediaType,

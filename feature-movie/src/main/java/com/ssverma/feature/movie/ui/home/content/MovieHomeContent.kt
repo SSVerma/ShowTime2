@@ -119,7 +119,12 @@ fun MovieHomeContent(
                     openMovieDetails(moviePreview.id)
                 },
                 onSeeAllClicked = { args ->
-                    analytics.logEvent(MovieAnalyticsEvent.SeeAllClicked(section = MovieAnalyticsValues.SECTION_DISCOVERY))
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.SeeAllClicked(
+                            section = MovieAnalyticsValues.SECTION_DISCOVERY,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_HOME
+                        )
+                    )
                     openMovieList(args)
                 },
                 onFetchPopular = { viewModel.fetchPopularMovies() },
@@ -135,6 +140,12 @@ fun MovieHomeContent(
                 uiState = uiState.inCinemasMovies,
                 isVertical = true,
                 onTrailingActionClicked = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.SeeAllClicked(
+                            section = MovieAnalyticsValues.SECTION_IN_CINEMAS,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_HOME
+                        )
+                    )
                     openMovieList(
                         MovieListingArgs(
                             listingType = MovieListingAvailableTypes.NowInCinemas,

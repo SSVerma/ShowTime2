@@ -43,7 +43,9 @@ import com.ssverma.shared.ui.R
 fun WatchProvidersSection(
     watchProvider: WatchProvider?,
     modifier: Modifier = Modifier,
-    showTitle: Boolean = true
+    showTitle: Boolean = true,
+    onWatchProviderClick: (ProviderInfo) -> Unit = {},
+    onJustWatchClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val hasProviders = watchProvider?.hasProviders == true
@@ -116,35 +118,40 @@ fun WatchProvidersSection(
                         if (watchProvider.flatrate.isNotEmpty()) {
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.stream),
-                                providers = watchProvider.flatrate
+                                providers = watchProvider.flatrate,
+                                onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.free.isNotEmpty()) {
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.free),
-                                providers = watchProvider.free
+                                providers = watchProvider.free,
+                                onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.rent.isNotEmpty()) {
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.rent),
-                                providers = watchProvider.rent
+                                providers = watchProvider.rent,
+                                onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.buy.isNotEmpty()) {
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.buy),
-                                providers = watchProvider.buy
+                                providers = watchProvider.buy,
+                                onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.ads.isNotEmpty()) {
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.ads),
-                                providers = watchProvider.ads
+                                providers = watchProvider.ads,
+                                onProviderClick = onWatchProviderClick
                             )
                         }
                     }
@@ -155,6 +162,7 @@ fun WatchProvidersSection(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
+                                onJustWatchClick()
                                 context.dispatchBrowserIntent("https://www.justwatch.com")
                             },
                         horizontalArrangement = Arrangement.End,
@@ -192,7 +200,8 @@ fun WatchProvidersSection(
 private fun ProviderCategoryRow(
     categoryName: String,
     providers: List<ProviderInfo>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onProviderClick: (ProviderInfo) -> Unit = {}
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -224,7 +233,9 @@ private fun ProviderCategoryRow(
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 2.dp,
-                    modifier = Modifier.size(44.dp)
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable { onProviderClick(provider) }
                 ) {
                     NetworkImage(
                         url = provider.logoPath,

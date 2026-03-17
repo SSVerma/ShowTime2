@@ -15,6 +15,13 @@ object MovieAnalyticsKeys {
     const val CAST_NAME = "cast_name"
 
     const val LISTING_TYPE = "listing_type"
+
+    const val IMAGE_INDEX = "image_index"
+    const val VIDEO_ID = "video_id"
+    const val VIDEO_TITLE = "video_title"
+    const val REVIEW_ID = "review_id"
+    const val KEYWORD_ID = "keyword_id"
+    const val KEYWORD_NAME = "keyword_name"
 }
 
 object MovieAnalyticsValues {
@@ -32,4 +39,10 @@ object MovieAnalyticsValues {
 
     const val SECTION_LISTING_LIST = "listing_list"
     const val SECTION_LISTING_GRID = "listing_grid"
+
+    const val SECTION_SHOTS = "shots"
+    const val SECTION_CAST = "cast"
+    const val SECTION_KEYWORDS = "keywords"
+    const val SECTION_VIDEOS = "videos"
+    const val SECTION_REVIEWS = "reviews"
 }

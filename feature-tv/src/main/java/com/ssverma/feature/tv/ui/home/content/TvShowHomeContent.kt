@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -120,7 +119,12 @@ fun TvShowHomeContent(
                     openTvShowDetails(tvShow.id)
                 },
                 onSeeAllClicked = { args ->
-                    analytics.logEvent(TvAnalyticsEvent.SeeAllClicked(section = TvAnalyticsValues.SECTION_DISCOVERY))
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeeAllClicked(
+                            section = TvAnalyticsValues.SECTION_DISCOVERY,
+                            sourceScreen = TvAnalyticsScreenName.TV_HOME
+                        )
+                    )
                     openTvShowList(args)
                 },
                 onFetchPopular = { viewModel.fetchPopularTvShows() },
@@ -136,7 +140,12 @@ fun TvShowHomeContent(
                 uiState = uiState.todayAiringTvShows,
                 isVertical = true,
                 onTrailingActionClicked = {
-                    analytics.logEvent(TvAnalyticsEvent.SeeAllClicked(section = TvAnalyticsValues.SECTION_ON_THE_AIR))
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeeAllClicked(
+                            section = TvAnalyticsValues.SECTION_ON_THE_AIR,
+                            sourceScreen = TvAnalyticsScreenName.TV_HOME
+                        )
+                    )
                     openTvShowList(
                         TvShowListingArgs(
                             listingType = TvShowListingAvailableTypes.TodayAiring,
@@ -177,7 +186,12 @@ fun TvShowHomeContent(
                 uiState = uiState.nowAiringTvShows,
                 isVertical = true,
                 onTrailingActionClicked = {
-                    analytics.logEvent(TvAnalyticsEvent.SeeAllClicked(section = TvAnalyticsValues.SECTION_ON_THE_AIR))
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeeAllClicked(
+                            section = TvAnalyticsValues.SECTION_ON_THE_AIR,
+                            sourceScreen = TvAnalyticsScreenName.TV_HOME
+                        )
+                    )
                     openTvShowList(
                         TvShowListingArgs(
                             listingType = TvShowListingAvailableTypes.NowAiring,

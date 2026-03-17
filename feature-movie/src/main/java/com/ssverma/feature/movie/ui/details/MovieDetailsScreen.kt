@@ -128,11 +128,37 @@ fun MovieContent(
             BackdropHeader(
                 backdropImageUrl = movie.backdropImageUrl,
                 onCloseIconClick = onBackPressed,
-                onTrailerFabClick = { viewModel.onPlayTrailerClicked(movie) },
+                onTrailerFabClick = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.TrailerClicked(
+                            movieId = movie.id,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                    viewModel.onPlayTrailerClicked(movie)
+                },
                 secondaryActions = {
-                    MediaStatsAction(mediaType = MediaType.Movie, mediaId = movie.id)
+                    MediaStatsAction(
+                        mediaType = MediaType.Movie,
+                        mediaId = movie.id,
+                        modifier = Modifier.size(ActionSize),
+                        onClick = {
+                            analytics.logEvent(
+                                MovieAnalyticsEvent.AddToStatsClicked(
+                                    movieId = movie.id,
+                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                                )
+                            )
+                        }
+                    )
                     FloatingActionButton(
                         onClick = {
+                            analytics.logEvent(
+                                MovieAnalyticsEvent.ShareClicked(
+                                    movieId = movie.id,
+                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                                )
+                            )
                             val shareableText = ShareMediaUtils.buildShareableMediaText(
                                 mediaTitle = movie.title,
                                 mediaTagline = movie.tagline,
@@ -192,7 +218,22 @@ fun MovieContent(
         item(key = "watch_providers") {
             WatchProvidersSection(
                 watchProvider = movie.watchProviders[watchProviderRegion],
-                modifier = Modifier.padding(top = SectionVerticalSpacing)
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
+                onWatchProviderClick = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.WatchProviderClicked(
+                            providerInfo = it,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                },
+                onJustWatchClick = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.JustWatchClicked(
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                }
             )
         }
 
@@ -251,26 +292,66 @@ fun MovieContent(
         item {
             ImageShotsSection(
                 imageShots = data.imageShots,
-                openImageShotsList = openImageShotsList,
-                openImageShot = openImageShot,
+                openImageShotsList = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.SeeAllClicked(
+                            section = MovieAnalyticsValues.SECTION_SHOTS,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                    openImageShotsList()
+                },
+                openImageShot = { index ->
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.ImageShotClicked(
+                            index = index,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                    openImageShot(index)
+                },
                 maxImageShots = 6,
-                modifier = Modifier.padding(top = SectionVerticalSpacing)
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
 
         item {
             VideoShotsSection(
                 videos = movie.videos,
-                onVideoClick = { openYoutube(it.key) },
-                modifier = Modifier.padding(top = SectionVerticalSpacing)
+                onVideoClick = { video ->
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.VideoClicked(
+                            video = video,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                    openYoutube(video.key)
+                },
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
             )
         }
 
         item {
             ReviewsSection(
                 reviews = movie.reviews,
-                onReviewsViewAllClick = openReviewsList,
-                modifier = Modifier.padding(top = SectionVerticalSpacing)
+                onReviewsViewAllClick = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.SeeAllClicked(
+                            section = MovieAnalyticsValues.SECTION_REVIEWS,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                    openReviewsList()
+                },
+                modifier = Modifier.padding(top = SectionVerticalSpacing),
+                onReviewClick = {
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.ReviewClicked(
+                            review = it,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
+                }
             )
         }
 
@@ -316,6 +397,12 @@ fun MovieContent(
             TagsSection(
                 keywords = movie.keywords,
                 onClick = { keyword ->
+                    analytics.logEvent(
+                        MovieAnalyticsEvent.KeywordClicked(
+                            keyword = keyword,
+                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        )
+                    )
                     openMovieList(
                         MovieListingArgs(
                             listingType = MovieListingAvailableTypes.Keyword,
