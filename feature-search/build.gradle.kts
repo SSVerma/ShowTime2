@@ -8,6 +8,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
     implementation(projects.coreStorage)
     implementation(projects.apiService.tmdb)
 

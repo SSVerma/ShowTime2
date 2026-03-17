@@ -1,13 +1,32 @@
 package com.ssverma.feature.search.ui.suggestion
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -17,15 +36,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.feature.search.R
-import com.ssverma.feature.search.ui.suggestion.component.*
+import com.ssverma.feature.search.analytics.SearchAnalyticsEvent
+import com.ssverma.feature.search.analytics.SearchAnalyticsScreenName
 import com.ssverma.feature.search.domain.model.SearchHistory
 import com.ssverma.feature.search.domain.model.SearchSuggestion
+import com.ssverma.feature.search.ui.suggestion.component.SearchHistoryItem
+import com.ssverma.feature.search.ui.suggestion.component.SearchMovieItem
+import com.ssverma.feature.search.ui.suggestion.component.SearchPersonItem
+import com.ssverma.feature.search.ui.suggestion.component.SearchTvShowItem
 import com.ssverma.shared.domain.model.MediaType
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 
 @Composable
 fun SearchSuggestionScreen(
@@ -36,6 +58,9 @@ fun SearchSuggestionScreen(
     onPersonClick: (personId: Int) -> Unit,
     onBackPressed: () -> Unit
 ) {
+    TrackScreenView(screenName = SearchAnalyticsScreenName.TYPEAHEAD)
+
+    val analytics = LocalAnalytics.current
 
     val query by viewModel.searchQuery.collectAsState()
     val searchSuggestions by viewModel.searchSuggestions.collectAsState()
@@ -61,22 +86,28 @@ fun SearchSuggestionScreen(
                 items = historyItems,
                 show = showHistory,
                 onHistoryItemClick = { history ->
+                    analytics.logEvent(SearchAnalyticsEvent.SearchHistoryClicked(history))
+
                     when (history.mediaType) {
                         MediaType.Movie -> {
                             onMovieClick(history.id)
                         }
+
                         MediaType.Person -> {
                             onPersonClick(history.id)
                         }
+
                         MediaType.Tv -> {
                             onTvShowClick(history.id)
                         }
+
                         MediaType.Unknown -> {
                             // No op
                         }
                     }
                 },
                 onHistoryClearIconClick = { history ->
+                    analytics.logEvent(SearchAnalyticsEvent.SearchHistoryCleared(history))
                     viewModel.clearHistoryItem(history)
                 }
             )
@@ -85,19 +116,23 @@ fun SearchSuggestionScreen(
                 items = searchSuggestions,
                 query = query,
                 onSuggestionClick = { suggestion ->
+                    analytics.logEvent(SearchAnalyticsEvent.SearchResultClicked(suggestion))
                     when (suggestion) {
                         is SearchSuggestion.Movie -> {
                             viewModel.saveSearchHistory(suggestion)
                             onMovieClick(suggestion.id)
                         }
+
                         is SearchSuggestion.Person -> {
                             viewModel.saveSearchHistory(suggestion)
                             onPersonClick(suggestion.id)
                         }
+
                         is SearchSuggestion.TvShow -> {
                             viewModel.saveSearchHistory(suggestion)
                             onTvShowClick(suggestion.id)
                         }
+
                         SearchSuggestion.None -> {
                             // No op
                         }
@@ -141,6 +176,7 @@ private fun LazyListScope.suggestions(
                     }
                 )
             }
+
             is SearchSuggestion.Person -> {
                 SearchPersonItem(
                     person = suggestion,
@@ -150,6 +186,7 @@ private fun LazyListScope.suggestions(
                     }
                 )
             }
+
             is SearchSuggestion.TvShow -> {
                 SearchTvShowItem(
                     tvShow = suggestion,
@@ -159,6 +196,7 @@ private fun LazyListScope.suggestions(
                     }
                 )
             }
+
             SearchSuggestion.None -> {
                 // No op
             }
