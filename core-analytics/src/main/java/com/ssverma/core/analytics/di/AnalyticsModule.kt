@@ -39,8 +39,7 @@ abstract class AnalyticsModule {
                 // We'll return a NoOp or just the debug provider.
                 // Let's return a special wrapper or just skip adding it to the set.
 //                NoOpAnalyticsProvider()
-//                DebugAnalyticsProvider()
-                firebaseAnalyticsProvider
+                DebugAnalyticsProvider()
             } else {
                 firebaseAnalyticsProvider
             }

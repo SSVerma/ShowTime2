@@ -9,12 +9,15 @@ android {
 
 dependencies {
     implementation(projects.sharedDomain)
+
     implementation(projects.coreNetworking)
     implementation(projects.coreStorage)
+    implementation(projects.corePaging)
+    implementation(projects.coreCcm)
+
     implementation(projects.apiService.tmdb)
 
     implementation(libs.core.ktx)
     implementation(libs.coroutines.core)
     implementation(libs.datastore.preferences)
-    implementation(projects.corePaging)
 }

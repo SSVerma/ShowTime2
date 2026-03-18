@@ -9,26 +9,31 @@ interface AppConfigRepository {
 
     val isDynamicColorEnabled: Flow<Boolean>
 
+    val isAppInfoBottomSheetDismissed: Flow<Boolean>
+
+    val watchProviderRegion: StateFlow<String>
+
+    val isTranslationEnabled: StateFlow<Boolean>
+
+    val contentLanguage: StateFlow<String>
+
+    val preferredOriginalLanguage: StateFlow<String>
+
+    val isAnalyticsEnabled: Flow<Boolean>
+
     suspend fun updateAppTheme(theme: AppTheme)
 
     suspend fun updateDynamicColor(enabled: Boolean)
 
-    val isAppInfoBottomSheetDismissed: Flow<Boolean>
-
     suspend fun dismissAppInfoBottomSheet()
 
-    val watchProviderRegion: StateFlow<String>
     suspend fun updateWatchProviderRegion(regionCode: String)
 
-    val isTranslationEnabled: StateFlow<Boolean>
     suspend fun updateTranslationEnabled(enabled: Boolean)
 
-    val contentLanguage: StateFlow<String>
     suspend fun updateContentLanguage(languageCode: String)
 
-    val preferredOriginalLanguage: StateFlow<String>
     suspend fun updatePreferredOriginalLanguage(languageCode: String)
 
-    val isAnalyticsEnabled: Flow<Boolean>
     suspend fun updateAnalyticsEnabled(enabled: Boolean)
 }

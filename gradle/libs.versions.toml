@@ -97,6 +97,7 @@ desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-remote-config = { group = "com.google.firebase", name = "firebase-config" }
 
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }

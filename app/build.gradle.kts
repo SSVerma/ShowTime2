@@ -129,11 +129,12 @@ dependencies {
     implementation(projects.coreUi)
     implementation(projects.coreNavigation)
     implementation(projects.coreNetworking)
+    implementation(projects.coreAnalytics)
+    implementation(projects.coreCcm)
 
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)
     implementation(projects.commonUi)
-    implementation(projects.coreAnalytics)
 
     implementation(projects.featureMovie)
     implementation(projects.featureTv)
