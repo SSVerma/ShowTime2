@@ -9,7 +9,4 @@ android {
 
 dependencies {
     implementation(projects.coreDi)
-    
-    implementation(libs.dagger.hilt.android)
-    kapt(libs.dagger.hilt.compiler)
 }

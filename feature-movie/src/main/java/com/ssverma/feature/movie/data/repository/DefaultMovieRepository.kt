@@ -11,6 +11,7 @@ import com.ssverma.api.service.tmdb.response.RemoteGenre
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.feature.movie.data.remote.MovieRemoteDataSource
+import com.ssverma.feature.movie.domain.defaults.MovieDefaults
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.repository.MovieRepository
@@ -20,7 +21,6 @@ import com.ssverma.shared.data.mapper.asDomainResult
 import com.ssverma.shared.data.mapper.asQueryMap
 import com.ssverma.shared.data.mapper.asTmdbQueryValue
 import com.ssverma.shared.data.mapper.asWatchProvidersMap
-import com.ssverma.feature.movie.domain.defaults.MovieDefaults
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
@@ -75,26 +75,14 @@ class DefaultMovieRepository @Inject constructor(
         ).flow
     }
 
-    override fun fetchTopRatedMoviesGradually(
-        region: String?,
-        originalLanguage: String?
-    ): Flow<PagingData<Movie>> {
-        val config = MovieDefaults.DiscoverDefaults.topRated(
-            region = region,
-            originalLanguage = originalLanguage
-        )
-        return discoverMoviesGradually(config)
+    override fun fetchTopRatedMoviesGradually(): Flow<PagingData<Movie>> {
+        val config = MovieDefaults.DiscoverDefaults.topRated()
+        return discoverMoviesGradually(discoverConfig = config)
     }
 
-    override suspend fun fetchTopRatedMovies(
-        region: String?,
-        originalLanguage: String?
-    ): Result<List<Movie>, Failure<MovieFailure>> {
-        val config = MovieDefaults.DiscoverDefaults.topRated(
-            region = region,
-            originalLanguage = originalLanguage
-        )
-        return discoverMovies(config)
+    override suspend fun fetchTopRatedMovies(): Result<List<Movie>, Failure<MovieFailure>> {
+        val config = MovieDefaults.DiscoverDefaults.topRated()
+        return discoverMovies(discoverConfig = config)
     }
 
     override suspend fun fetchTrendingMovies(timeWindow: TimeWindow): Result<List<Movie>, Failure<MovieFailure>> {

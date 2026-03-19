@@ -10,7 +10,7 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.domain.model.Video
 import com.ssverma.shared.domain.model.movie.MoviePreview
-import com.ssverma.showtime.shared.analytics.SharedAnalyticsKeys
+import com.ssverma.shared.analytics.SharedAnalyticsKeys
 
 sealed class MovieAnalyticsEvent(
     override val eventName: String,

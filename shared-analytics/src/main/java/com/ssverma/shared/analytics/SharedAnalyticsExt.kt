@@ -1,4 +1,4 @@
-package com.ssverma.showtime.shared.analytics
+package com.ssverma.shared.analytics
 
 import com.ssverma.shared.domain.model.MediaType
 

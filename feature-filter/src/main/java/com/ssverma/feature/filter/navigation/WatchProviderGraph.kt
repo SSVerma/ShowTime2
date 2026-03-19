@@ -5,11 +5,9 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.filter.ui.hub.WatchProviderHubScreen
-import com.ssverma.feature.filter.ui.hub.WatchProviderHubSeeAllType
 import com.ssverma.feature.movie.navigation.MovieDetailDestination
-import com.ssverma.feature.movie.navigation.MovieListDestination
+import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
-import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.feature.tv.navigation.TvShowDetailDestination
 import com.ssverma.feature.tv.navigation.TvShowListDestination
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
@@ -32,10 +30,9 @@ fun NavGraphBuilder.watchProviderHubGraph(
         },
         onGenreClick = { genre: Genre, isMovie: Boolean ->
             if (isMovie) {
-                navController.navigateTo(
-                    MovieListDestination.actualRoute(
-                        MovieListingArgs(
-                            listingType = MovieListingAvailableTypes.Genre,
+                navController.navigate(
+                    route = MovieListingRoute(
+                        MovieListingArgs.ByGenre(
                             genreId = genre.id,
                             title = genre.name
                         )
@@ -53,40 +50,18 @@ fun NavGraphBuilder.watchProviderHubGraph(
                 )
             }
         },
-        onSeeAllClick = { type: WatchProviderHubSeeAllType, isMovie: Boolean, providerId: Int, providerName: String ->
-            if (isMovie) {
-                val listingType = when (type) {
-                    WatchProviderHubSeeAllType.NewThisWeek -> MovieListingAvailableTypes.WatchProviderNew
-                    WatchProviderHubSeeAllType.Upcoming -> MovieListingAvailableTypes.WatchProviderUpcoming
-                    WatchProviderHubSeeAllType.TopRated -> MovieListingAvailableTypes.WatchProviderTopRated
-                }
-
-                navController.navigateTo(
-                    MovieListDestination.actualRoute(
-                        MovieListingArgs(
-                            listingType = listingType,
-                            watchProviderId = providerId,
-                            title = providerName
-                        )
+        onMovieSeeAllClick = { providerInfo, discoverConfig ->
+            navController.navigate(
+                route = MovieListingRoute(
+                    MovieListingArgs.Discovery(
+                        initialConfig = discoverConfig,
+                        title = providerInfo.providerName,
                     )
                 )
-            } else {
-                val listingType = when (type) {
-                    WatchProviderHubSeeAllType.NewThisWeek -> TvShowListingAvailableTypes.WatchProviderNew
-                    WatchProviderHubSeeAllType.Upcoming -> TvShowListingAvailableTypes.WatchProviderUpcoming
-                    WatchProviderHubSeeAllType.TopRated -> TvShowListingAvailableTypes.WatchProviderTopRated
-                }
-
-                navController.navigateTo(
-                    TvShowListDestination.actualRoute(
-                        TvShowListingArgs(
-                            listingType = listingType,
-                            watchProviderId = providerId,
-                            title = providerName
-                        )
-                    )
-                )
-            }
+            )
+        },
+        onTvSeeAllClick = { provider, discoverConfig ->
+            // TODO
         }
     )
 }

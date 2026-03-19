@@ -5,8 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiState
+import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
 import com.ssverma.shared.domain.DiscoverOption
-import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.Order
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.SortBy
@@ -74,47 +74,27 @@ class WatchProviderHubViewModel @Inject constructor(
     }
 
     private suspend fun fetchMovieHub() {
-        val watchProvider = DiscoverOption.WatchProvider(providerId)
-
         val heroDeferred = viewModelScope.async {
             discoveryRepository.discoverMovies(
-                discoverConfig = MovieDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .sortBy(SortBy.Popularity(Order.Descending))
-                    .build()
+                discoverConfig = MovieHubDiscoverConfig.heroItems(providerId = providerId)
             )
         }
 
-        val today = java.time.LocalDate.now()
-        val lastWeek = today.minusWeeks(1)
-
         val newDeferred = viewModelScope.async {
             discoveryRepository.discoverMovies(
-                discoverConfig = MovieDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .with(DiscoverOption.PrimaryReleaseDate.From(lastWeek))
-                    .with(DiscoverOption.PrimaryReleaseDate.To(today))
-                    .sortBy(SortBy.ReleaseDate(Order.Descending))
-                    .build()
+                discoverConfig = MovieHubDiscoverConfig.newReleases(providerId = providerId)
             )
         }
 
         val upcomingDeferred = viewModelScope.async {
             discoveryRepository.discoverMovies(
-                discoverConfig = MovieDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .with(DiscoverOption.PrimaryReleaseDate.From(today.plusDays(1)))
-                    .sortBy(SortBy.ReleaseDate(Order.Ascending))
-                    .build()
+                discoverConfig = MovieHubDiscoverConfig.upcoming(providerId = providerId)
             )
         }
 
-        val ratedDeferred = viewModelScope.async {
+        val topDeferred = viewModelScope.async {
             discoveryRepository.discoverMovies(
-                discoverConfig = MovieDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .sortBy(SortBy.Rating(Order.Descending))
-                    .build()
+                discoverConfig = MovieHubDiscoverConfig.topRated(providerId = providerId)
             )
         }
 
@@ -125,7 +105,7 @@ class WatchProviderHubViewModel @Inject constructor(
         val heroResult = heroDeferred.await()
         val newResult = newDeferred.await()
         val upcomingResult = upcomingDeferred.await()
-        val ratedResult = ratedDeferred.await()
+        val ratedResult = topDeferred.await()
         val genresResult = genresDeferred.await()
 
         val results = listOf(heroResult, newResult, upcomingResult, ratedResult, genresResult)

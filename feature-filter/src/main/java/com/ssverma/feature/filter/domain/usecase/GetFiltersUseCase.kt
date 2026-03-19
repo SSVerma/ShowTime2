@@ -2,21 +2,22 @@ package com.ssverma.feature.filter.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
 import com.ssverma.feature.filter.domain.FilterProvider
-import com.ssverma.feature.filter.domain.model.*
+import com.ssverma.feature.filter.domain.model.DynamicFilterItem
+import com.ssverma.feature.filter.domain.model.Filter
+import com.ssverma.feature.filter.domain.model.FilterId
+import com.ssverma.feature.filter.domain.model.FilterPayload
+import com.ssverma.feature.filter.domain.model.StaticFilterItem
 import com.ssverma.feature.filter.domain.repository.FilterRepository
-import com.ssverma.shared.domain.repository.WatchProviderRepository
 import com.ssverma.shared.domain.DiscoverOption
-import com.ssverma.shared.domain.Order
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.SortBy
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.repository.WatchProviderRepository
 import com.ssverma.shared.domain.usecase.NoParamFlowUseCase
 import com.ssverma.shared.domain.utils.DateUtils
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.time.LocalDate
-import java.util.Calendar
 import javax.inject.Inject
 
 enum class FilterType {
@@ -28,7 +29,8 @@ class GetFiltersUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val filterRepository: FilterRepository,
     private val watchProviderRepository: WatchProviderRepository
-) : NoParamFlowUseCase<Result<List<Filter>, Failure.CoreFailure>>(coroutineDispatcher), FilterProvider {
+) : NoParamFlowUseCase<Result<List<Filter>, Failure.CoreFailure>>(coroutineDispatcher),
+    FilterProvider {
 
     private var filterType: FilterType = FilterType.Movie
 
@@ -43,7 +45,7 @@ class GetFiltersUseCase @Inject constructor(
         filters.add(
             Filter.SelectionFilter.Single(
                 id = FilterId.SelectionTypeId.SortBy,
-                items = getSortByItems(filterType)
+                items = getSortByItems(type = filterType)
             )
         )
 
@@ -57,7 +59,7 @@ class GetFiltersUseCase @Inject constructor(
         )
 
         // Static filters
-        filters.addAll(getStaticFilters(filterType))
+        filters.addAll(getStaticFilters(type = filterType))
 
         // Genres
         filters.add(
@@ -88,11 +90,31 @@ class GetFiltersUseCase @Inject constructor(
             Filter.CollectionFilter.Static(
                 id = FilterId.CollectionTypeId.Static.VoteCount,
                 items = listOf(
-                    StaticFilterItem(option = DiscoverOption.Rating.VoteCount(0)),
-                    StaticFilterItem(option = DiscoverOption.Rating.VoteCount(100)),
-                    StaticFilterItem(option = DiscoverOption.Rating.VoteCount(500)),
-                    StaticFilterItem(option = DiscoverOption.Rating.VoteCount(1000)),
-                    StaticFilterItem(option = DiscoverOption.Rating.VoteCount(5000)),
+                    StaticFilterItem(
+                        payload = FilterPayload.Option(
+                            discoverOption = DiscoverOption.VoteCount.AtLeast(value = 0)
+                        )
+                    ),
+                    StaticFilterItem(
+                        payload = FilterPayload.Option(
+                            discoverOption = DiscoverOption.VoteCount.AtLeast(value = 100)
+                        )
+                    ),
+                    StaticFilterItem(
+                        payload = FilterPayload.Option(
+                            discoverOption = DiscoverOption.VoteCount.AtLeast(value = 500)
+                        )
+                    ),
+                    StaticFilterItem(
+                        payload = FilterPayload.Option(
+                            discoverOption = DiscoverOption.VoteCount.AtLeast(value = 1000)
+                        )
+                    ),
+                    StaticFilterItem(
+                        payload = FilterPayload.Option(
+                            discoverOption = DiscoverOption.VoteCount.AtLeast(value = 5000)
+                        )
+                    ),
                 )
             )
         )
@@ -102,7 +124,7 @@ class GetFiltersUseCase @Inject constructor(
             filters.add(
                 Filter.RangeFilter.DateRangeFilter(
                     id = FilterId.RangeTypeId.DateRange.ReleaseDate,
-                    from = DateUtils.currentDate().minusYears(0),
+                    from = DateUtils.currentDate(),
                     to = DateUtils.currentDate(),
                 )
             )
@@ -120,7 +142,7 @@ class GetFiltersUseCase @Inject constructor(
             filters.add(
                 Filter.RangeFilter.DateRangeFilter(
                     id = FilterId.RangeTypeId.DateRange.AirDate,
-                    from = DateUtils.currentDate().minusYears(0),
+                    from = DateUtils.currentDate(),
                     to = DateUtils.currentDate(),
                 )
             )
@@ -158,36 +180,36 @@ class GetFiltersUseCase @Inject constructor(
     private fun getSortByItems(type: FilterType): List<StaticFilterItem> {
         return if (type == FilterType.Movie) {
             listOf(
-                StaticFilterItem(option = SortBy.Popularity()),
-                StaticFilterItem(option = SortBy.ReleaseDate()),
-                StaticFilterItem(option = SortBy.Revenue()),
-                StaticFilterItem(option = SortBy.Title()),
-                StaticFilterItem(option = SortBy.Rating()),
-                StaticFilterItem(option = SortBy.Vote())
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Popularity())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.ReleaseDate())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Revenue())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Title())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Rating())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Vote()))
             )
         } else {
             listOf(
-                StaticFilterItem(option = SortBy.Popularity()),
-                StaticFilterItem(option = SortBy.AirDate()),
-                StaticFilterItem(option = SortBy.Rating()),
-                StaticFilterItem(option = SortBy.Vote())
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Popularity())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.AirDate())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Rating())),
+                StaticFilterItem(payload = FilterPayload.Sort(sortBy = SortBy.Vote()))
             )
         }
     }
 
     private fun getStaticFilters(type: FilterType): List<Filter.CollectionFilter.Static> {
         val common = mutableListOf<Filter.CollectionFilter.Static>()
-        
+
         common.add(
             Filter.CollectionFilter.Static(
                 id = FilterId.CollectionTypeId.Static.Availability,
                 singleSelectable = false,
                 items = listOf(
-                    StaticFilterItem(option = DiscoverOption.Monetization.Ads),
-                    StaticFilterItem(option = DiscoverOption.Monetization.Buy),
-                    StaticFilterItem(option = DiscoverOption.Monetization.Free),
-                    StaticFilterItem(option = DiscoverOption.Monetization.Flatrate),
-                    StaticFilterItem(option = DiscoverOption.Monetization.Rent)
+                    StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Monetization.Ads)),
+                    StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Monetization.Buy)),
+                    StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Monetization.Free)),
+                    StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Monetization.Flatrate)),
+                    StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Monetization.Rent))
                 )
             )
         )
@@ -198,9 +220,9 @@ class GetFiltersUseCase @Inject constructor(
                     id = FilterId.CollectionTypeId.Static.Certification,
                     singleSelectable = false,
                     items = listOf(
-                        StaticFilterItem(option = DiscoverOption.Certification.A),
-                        StaticFilterItem(option = DiscoverOption.Certification.U),
-                        StaticFilterItem(option = DiscoverOption.Certification.UA)
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Certification.A)),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Certification.U)),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.Certification.UA))
                     )
                 )
             )
@@ -209,12 +231,12 @@ class GetFiltersUseCase @Inject constructor(
                     id = FilterId.CollectionTypeId.Static.ReleaseType,
                     singleSelectable = false,
                     items = listOf(
-                        StaticFilterItem(option = DiscoverOption.ReleaseType.Premiere),
-                        StaticFilterItem(option = DiscoverOption.ReleaseType.Digital),
-                        StaticFilterItem(option = DiscoverOption.ReleaseType.Theatrical),
-                        StaticFilterItem(option = DiscoverOption.ReleaseType.TheatricalLimited),
-                        StaticFilterItem(option = DiscoverOption.ReleaseType.Tv),
-                        StaticFilterItem(option = DiscoverOption.ReleaseType.Physical),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.ReleaseType.Premiere)),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.ReleaseType.Digital)),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.ReleaseType.Theatrical)),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.ReleaseType.TheatricalLimited)),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.ReleaseType.Tv)),
+                        StaticFilterItem(payload = FilterPayload.Option(discoverOption = DiscoverOption.ReleaseType.Physical)),
                     )
                 )
             )
@@ -222,8 +244,20 @@ class GetFiltersUseCase @Inject constructor(
                 Filter.CollectionFilter.Static(
                     id = FilterId.CollectionTypeId.Static.IncludeVideo,
                     items = listOf(
-                        StaticFilterItem(option = DiscoverOption.IncludeVideo(include = true)),
-                        StaticFilterItem(option = DiscoverOption.IncludeVideo(include = false))
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.IncludeVideo(
+                                    include = true
+                                )
+                            )
+                        ),
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.IncludeVideo(
+                                    include = false
+                                )
+                            )
+                        )
                     )
                 )
             )
@@ -232,12 +266,48 @@ class GetFiltersUseCase @Inject constructor(
                 Filter.CollectionFilter.Static(
                     id = FilterId.CollectionTypeId.Static.Status,
                     items = listOf(
-                        StaticFilterItem(option = DiscoverOption.Status(0)), // Returning Series
-                        StaticFilterItem(option = DiscoverOption.Status(1)), // Planned
-                        StaticFilterItem(option = DiscoverOption.Status(2)), // In Production
-                        StaticFilterItem(option = DiscoverOption.Status(3)), // Ended
-                        StaticFilterItem(option = DiscoverOption.Status(4)), // Canceled
-                        StaticFilterItem(option = DiscoverOption.Status(5)), // Pilot
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.Status(
+                                    statusId = 0
+                                )
+                            )
+                        ), // Returning Series
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.Status(
+                                    statusId = 1
+                                )
+                            )
+                        ), // Planned
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.Status(
+                                    statusId = 2
+                                )
+                            )
+                        ), // In Production
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.Status(
+                                    statusId = 3
+                                )
+                            )
+                        ), // Ended
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.Status(
+                                    statusId = 4
+                                )
+                            )
+                        ), // Canceled
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.Status(
+                                    statusId = 5
+                                )
+                            )
+                        ), // Pilot
                     )
                 )
             )
@@ -245,13 +315,55 @@ class GetFiltersUseCase @Inject constructor(
                 Filter.CollectionFilter.Static(
                     id = FilterId.CollectionTypeId.Static.Type,
                     items = listOf(
-                        StaticFilterItem(option = DiscoverOption.TvType(0)), // Documentary
-                        StaticFilterItem(option = DiscoverOption.TvType(1)), // News
-                        StaticFilterItem(option = DiscoverOption.TvType(2)), // Miniseries
-                        StaticFilterItem(option = DiscoverOption.TvType(3)), // Reality
-                        StaticFilterItem(option = DiscoverOption.TvType(4)), // Scripted
-                        StaticFilterItem(option = DiscoverOption.TvType(5)), // Talk Show
-                        StaticFilterItem(option = DiscoverOption.TvType(6)), // Video
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.TvType(
+                                    typeId = 0
+                                )
+                            )
+                        ), // Documentary
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.TvType(
+                                    typeId = 1
+                                )
+                            )
+                        ), // News
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.TvType(
+                                    typeId = 2
+                                )
+                            )
+                        ), // Miniseries
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.TvType(
+                                    typeId = 3
+                                )
+                            )
+                        ), // Reality
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.TvType(
+                                    typeId = 4
+                                )
+                            )
+                        ), // Scripted
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.TvType(
+                                    typeId = 5
+                                )
+                            )
+                        ), // Talk Show
+                        StaticFilterItem(
+                            payload = FilterPayload.Option(
+                                discoverOption = DiscoverOption.TvType(
+                                    typeId = 6
+                                )
+                            )
+                        ), // Video
                     )
                 )
             )
@@ -261,8 +373,20 @@ class GetFiltersUseCase @Inject constructor(
             Filter.CollectionFilter.Static(
                 id = FilterId.CollectionTypeId.Static.IncludeAdult,
                 items = listOf(
-                    StaticFilterItem(option = DiscoverOption.IncludeAdult(include = true)),
-                    StaticFilterItem(option = DiscoverOption.IncludeAdult(include = false))
+                    StaticFilterItem(
+                        payload = FilterPayload.Option(
+                            discoverOption = DiscoverOption.IncludeAdult(
+                                include = true
+                            )
+                        )
+                    ),
+                    StaticFilterItem(
+                        payload = FilterPayload.Option(
+                            discoverOption = DiscoverOption.IncludeAdult(
+                                include = false
+                            )
+                        )
+                    )
                 )
             )
         )
@@ -282,20 +406,33 @@ class GetFiltersUseCase @Inject constructor(
             FilterId.CollectionTypeId.Dynamic.Keyword,
             FilterId.CollectionTypeId.Dynamic.WithoutKeyword -> {
                 filterRepository.searchKeywords(query = query).asSuccess { keywords ->
-                    keywords.map { DynamicFilterItem(id = it.id.toString(), displayText = it.name.orEmpty()) }
+                    keywords.map {
+                        DynamicFilterItem(
+                            id = it.id.toString(),
+                            displayText = it.name.orEmpty()
+                        )
+                    }
                 }
             }
+
             FilterId.CollectionTypeId.Dynamic.Company,
             FilterId.CollectionTypeId.Dynamic.WithoutCompany -> {
                 filterRepository.searchCompanies(query = query).asSuccess { companies ->
-                    companies.map { DynamicFilterItem(id = it.id.toString(), displayText = it.name) }
+                    companies.map {
+                        DynamicFilterItem(
+                            id = it.id.toString(),
+                            displayText = it.name
+                        )
+                    }
                 }
             }
+
             FilterId.CollectionTypeId.Dynamic.Network -> {
                 filterRepository.searchNetworks(query = query).asSuccess { networks ->
                     networks.map { DynamicFilterItem(id = it.id.toString(), displayText = it.name) }
                 }
             }
+
             else -> Result.Success(emptyList())
         }
     }
@@ -312,6 +449,7 @@ class GetFiltersUseCase @Inject constructor(
                     genres.map { DynamicFilterItem(id = it.id.toString(), displayText = it.name) }
                 }
             }
+
             FilterId.CollectionTypeId.Dynamic.Language -> {
                 filterRepository.fetchLanguages().asSuccess { languages ->
                     languages
@@ -319,6 +457,7 @@ class GetFiltersUseCase @Inject constructor(
                         .map { DynamicFilterItem(id = it.iso6391, displayText = it.englishName) }
                 }
             }
+
             FilterId.CollectionTypeId.Dynamic.Country -> {
                 filterRepository.fetchCountries().asSuccess { countries ->
                     countries
@@ -326,6 +465,7 @@ class GetFiltersUseCase @Inject constructor(
                         .map { DynamicFilterItem(id = it.iso31661, displayText = it.englishName) }
                 }
             }
+
             FilterId.CollectionTypeId.Dynamic.WatchProviders -> {
                 val result = if (filterType == FilterType.Movie) {
                     watchProviderRepository.fetchAllMovieWatchProviders()
@@ -342,6 +482,7 @@ class GetFiltersUseCase @Inject constructor(
                     }
                 }
             }
+
             else -> Result.Success(emptyList())
         }
     }

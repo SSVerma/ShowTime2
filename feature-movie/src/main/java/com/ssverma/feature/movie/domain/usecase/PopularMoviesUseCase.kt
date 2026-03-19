@@ -18,9 +18,7 @@ class PopularMoviesUseCase @Inject constructor(
 ) : UseCase<DiscoveryParams?, Result<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(params: DiscoveryParams?): Result<List<Movie>, Failure<MovieFailure>> {
-        val movieConfig = MovieDefaults.DiscoverDefaults.popular(
-            originalLanguage = params?.originalLanguage
-        )
-        return movieRepository.discoverMovies(movieConfig)
+        val movieConfig = MovieDefaults.DiscoverDefaults.popular()
+        return movieRepository.discoverMovies(discoverConfig = movieConfig)
     }
 }

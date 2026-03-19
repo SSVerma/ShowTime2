@@ -8,6 +8,7 @@ import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.account.navigation.ProfileDestination
 import com.ssverma.feature.movie.ui.home.MovieScreen
 import com.ssverma.feature.search.navigation.SearchDestination
+import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubDestination
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderNavArgs
 
@@ -16,7 +17,7 @@ fun NavGraphBuilder.movieHomeGraph(
 ) = composable(destination = MovieHomeDestination) {
     MovieScreen(
         openMovieList = { listingArgs ->
-            navController.navigateTo(MovieListDestination.actualRoute(listingArgs))
+            navController.navigate(MovieListingRoute(listingArgs))
         },
         openMovieDetails = { movieId ->
             navController.navigateTo(MovieDetailDestination.actualRoute(movieId))

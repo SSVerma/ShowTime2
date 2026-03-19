@@ -15,8 +15,8 @@ import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
 import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
 import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
+import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
-import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.feature.movie.ui.home.HomeMovieViewModel
 import com.ssverma.feature.movie.ui.home.component.DiscoverySection
 import com.ssverma.feature.movie.ui.home.component.HeroSection
@@ -75,8 +75,7 @@ fun MovieHomeContent(
                         )
                     )
                     openMovieList(
-                        MovieListingArgs(
-                            listingType = MovieListingAvailableTypes.Genre,
+                        MovieListingArgs.ByGenre(
                             title = genre.name,
                             genreId = genre.id
                         )
@@ -149,8 +148,7 @@ fun MovieHomeContent(
                         )
                     )
                     openMovieList(
-                        MovieListingArgs(
-                            listingType = MovieListingAvailableTypes.NowInCinemas,
+                        MovieListingArgs.NowInCinemas(
                             titleRes = R.string.now_in_cinemas
                         )
                     )
@@ -175,7 +173,7 @@ fun MovieHomeContent(
                     },
                     indicator = {
                         MovieIndicator(
-                            type = MovieListingAvailableTypes.NowInCinemas,
+                            config = MovieListingConfig.Filterable.NowInCinemas(),
                             movie = it
                         )
                     },

@@ -4,7 +4,7 @@ import com.ssverma.core.analytics.AnalyticsEvent
 import com.ssverma.core.analytics.AnalyticsParam
 import com.ssverma.core.analytics.to
 import com.ssverma.shared.domain.model.person.PersonMedia
-import com.ssverma.showtime.shared.analytics.SharedAnalyticsKeys
+import com.ssverma.shared.analytics.SharedAnalyticsKeys
 
 sealed class PersonAnalyticsEvent(
     override val eventName: String,

@@ -16,7 +16,6 @@ import com.ssverma.feature.tv.navigation.convertor.asTvShowListingConfigs
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
-import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -43,9 +42,7 @@ data class TvShowPaginatedListUiState(
 class TvShowListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val paginatedTvShowUseCase: PaginatedTvShowUseCase,
-    val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
-
 
     private val tvShowListingArgs = savedStateHandle.buildTvShowListingArgs()
     internal val tvShowListingConfig = tvShowListingArgs.asTvShowListingConfigs()

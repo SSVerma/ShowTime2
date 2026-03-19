@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.ssverma.feature.filter.ui.filter.FiltersScreen
+import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.TvDiscoverConfig
 
 @Composable
@@ -12,7 +13,6 @@ fun TvFiltersScreen(
     onFilterApplied: (filterConfig: TvDiscoverConfig) -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
-    watchRegion: String? = null,
     listState: LazyListState = rememberLazyListState(),
     initialConfig: TvDiscoverConfig? = null,
 ) {
@@ -20,21 +20,21 @@ fun TvFiltersScreen(
         isTv = true,
         modifier = modifier,
         listState = listState,
-        watchRegion = watchRegion,
-        initialOptions = initialConfig?.discoverOptions?.toList() ?: emptyList(),
-        initialSortBy = initialConfig?.sortBy,
-        initialOrder = initialConfig?.sortBy?.order,
+        initialConfig = initialConfig,
         onBackPressed = onBackPressed,
-        onFilterApplied = { appliedOptions, sortBy, order ->
+        onFilterApplied = { filterState ->
             val builder = TvDiscoverConfig.builder()
-            val finalSortBy = if (sortBy != null && order != null) {
-                sortBy.withOrder(order)
-            } else sortBy
 
-            finalSortBy?.let { builder.sortBy(it) }
-            val config = builder
-                .with(*appliedOptions.toTypedArray())
-                .build()
+            // Apply Sort (SortBy inherently knows its Order)
+            filterState.sortBy?.let { builder.sortBy(it) }
+
+            // Safely cast generic options to Tv Options
+            val tvOptions = filterState.options
+                .filterIsInstance<DiscoverOption.OptionScope.Tv>()
+                .toTypedArray()
+
+            // Build and send!
+            val config = builder.with(*tvOptions).build()
             onFilterApplied(config)
         }
     )

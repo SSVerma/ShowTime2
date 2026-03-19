@@ -53,6 +53,8 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.component.SliderScale
 import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.domain.model.FilterId
+import com.ssverma.feature.filter.domain.processor.DiscoverFilterState
+import com.ssverma.feature.filter.domain.processor.asDiscoverOptions
 import com.ssverma.feature.filter.ui.filter.component.FilterPickerChip
 import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterFlowRow
 import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterRow
@@ -60,43 +62,35 @@ import com.ssverma.feature.filter.ui.filter.component.NonSelectedFilterChip
 import com.ssverma.feature.filter.ui.filter.component.SelectedFilterChip
 import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterFlowRow
 import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterRow
-import com.ssverma.shared.domain.DiscoverOption
-import com.ssverma.shared.domain.Order
-import com.ssverma.shared.domain.SortBy
+import com.ssverma.shared.domain.DiscoverConfig
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.shared.ui.component.ClickThroughFilterChip
 import com.ssverma.shared.ui.component.WatchProviderLogo
-import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T : DiscoverOption.OptionScope> FiltersScreen(
+fun FiltersScreen(
     isTv: Boolean,
     onBackPressed: () -> Unit,
-    onFilterApplied: (discoverOptions: List<T>, sortBy: SortBy?, order: Order?) -> Unit,
+    onFilterApplied: (filterState: DiscoverFilterState) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FilterViewModel = hiltViewModel(),
     listState: LazyListState = rememberLazyListState(),
-    watchRegion: String? = null,
-    initialOptions: List<DiscoverOption> = emptyList(),
-    initialSortBy: SortBy? = null,
-    initialOrder: Order? = null
+    initialConfig: DiscoverConfig?,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(isTv) {
         viewModel.init(
             isTv = isTv,
-            initialOptions = initialOptions,
-            initialSortBy = initialSortBy,
-            initialOrder = initialOrder
+            initialConfig = initialConfig,
         )
     }
 
-    val selectedCountry = watchRegion ?: remember { Locale.getDefault().country }
+    val selectedCountry = remember { Locale.getDefault().country }
 
     val isAnyFilterSelected by remember(uiState.filters) {
         derivedStateOf {
@@ -123,12 +117,8 @@ fun <T : DiscoverOption.OptionScope> FiltersScreen(
             if (uiState.filters.isNotEmpty()) {
                 Button(
                     onClick = {
-                        val (options, sortParams) = uiState.filters.asDiscoverOptions(
-                            watchRegion = watchRegion
-                        )
-                        val (sortBy, order) = sortParams
-                        @Suppress("UNCHECKED_CAST")
-                        onFilterApplied(options as List<T>, sortBy, order)
+                        val finalState = uiState.filters.asDiscoverOptions()
+                        onFilterApplied(finalState)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -179,11 +169,6 @@ fun FilterContent(
     isSearching: Boolean,
     modifier: Modifier = Modifier
 ) {
-
-    LaunchedEffect(key1 = true) {
-        delay(1000)
-        lisState.scrollToItem(0)
-    }
 
     LazyColumn(state = lisState, modifier = modifier) {
         items(
@@ -604,151 +589,3 @@ private fun FilterGroupItem(
 
 private val ApplyButtonVerticalSpacing = 16.dp
 private val ApplyButtonHeight = 56.dp
-
-class RangeState<T>(
-    private val from: T? = null,
-    private val to: T? = null
-) {
-    private var _fromValue: T? by mutableStateOf(from)
-    private var _toValue: T? by mutableStateOf(to)
-
-    val fromValue get() = _fromValue
-    val toValue get() = _toValue
-
-    fun onFromValueSelected(value: T?) {
-        this._fromValue = value
-    }
-
-    fun onToValueSelected(value: T?) {
-        this._toValue = value
-    }
-
-    fun clear() {
-        _fromValue = from
-        _toValue = to
-    }
-
-    fun reset() {
-        _fromValue = null
-        _toValue = null
-    }
-
-    fun isDefault(): Boolean {
-        return _fromValue == from && _toValue == to
-    }
-}
-
-fun List<FilterGroup>.asDiscoverOptions(
-    watchRegion: String? = null
-): Pair<List<DiscoverOption>, Pair<SortBy?, Order?>> {
-    val options = mutableListOf<DiscoverOption>()
-    watchRegion?.let { options.add(DiscoverOption.WatchRegion(it)) }
-    var sortBy: SortBy? = null
-    var order: Order? = null
-
-    this.forEach { group ->
-        val content = group.groupContent
-        when (content) {
-            is FilterGroupContentType.ListType.SingleSelectableListType -> {
-                val selected = content.selectionState.selected()
-                if (selected is FilterItem.Static) {
-                    when (val option = selected.option) {
-                        is DiscoverOption -> options.add(option)
-                        is SortBy -> {
-                            sortBy = option
-                            order = option.order
-                        }
-                    }
-                } else if (selected is FilterItem.Dynamic) {
-                    options.add(mapDynamicOption(group.groupId, selected.id))
-                }
-            }
-
-            is FilterGroupContentType.ListType.MultiSelectableListType -> {
-                content.selectionState.selected().forEach { selected ->
-                    if (selected is FilterItem.Static) {
-                        if (selected.option is DiscoverOption) {
-                            options.add(selected.option)
-                        }
-                    } else if (selected is FilterItem.Dynamic) {
-                        options.add(mapDynamicOption(group.groupId, selected.id))
-                    }
-                }
-            }
-
-            is FilterGroupContentType.RangeType.ScaleRangeType.IntScaleRangeType -> {
-                val from = content.state.fromValue
-                val to = content.state.toValue
-                mapIntRange(group.groupId, from, to)?.let { options.addAll(it) }
-            }
-
-            is FilterGroupContentType.RangeType.PickerRangeType.DatePickerRangeType -> {
-                val from = content.state.fromValue
-                val to = content.state.toValue
-                mapDateRange(group.groupId, from, to)?.let { options.addAll(it) }
-            }
-        }
-    }
-
-    return options to (sortBy to order)
-}
-
-private fun mapDynamicOption(groupId: FilterId, id: String): DiscoverOption {
-    return when (groupId) {
-        FilterId.CollectionTypeId.Dynamic.Genre -> DiscoverOption.Genre(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.WithoutGenre -> DiscoverOption.WithoutGenre(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.Language -> DiscoverOption.Language(id)
-        FilterId.CollectionTypeId.Dynamic.Country -> DiscoverOption.Country(id)
-        FilterId.CollectionTypeId.Dynamic.Keyword -> DiscoverOption.Keyword(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.WithoutKeyword -> DiscoverOption.WithoutKeyword(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.Company -> DiscoverOption.Company(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.WithoutCompany -> DiscoverOption.WithoutCompany(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.Network -> DiscoverOption.Network(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.Person -> DiscoverOption.Person(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.Cast -> DiscoverOption.Cast(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.Crew -> DiscoverOption.Crew(id.toInt())
-        FilterId.CollectionTypeId.Dynamic.WatchProviders -> DiscoverOption.WatchProvider(id.toInt())
-        else -> throw IllegalArgumentException("Unknown dynamic filter group: $groupId")
-    }
-}
-
-private fun mapIntRange(groupId: FilterId, from: Int?, to: Int?): List<DiscoverOption>? {
-    val options = mutableListOf<DiscoverOption>()
-    when (groupId) {
-        FilterId.RangeTypeId.NumberRange.Rating,
-        FilterId.RangeTypeId.NumberRange.VoteAvg -> {
-            from?.let { options.add(DiscoverOption.Rating.From(it)) }
-            to?.let { options.add(DiscoverOption.Rating.To(it)) }
-        }
-
-        FilterId.RangeTypeId.NumberRange.Runtime -> {
-            from?.let { options.add(DiscoverOption.Runtime.From(it)) }
-            to?.let { options.add(DiscoverOption.Runtime.To(it)) }
-        }
-
-        else -> {}
-    }
-    return if (options.isEmpty()) null else options
-}
-
-private fun mapDateRange(
-    groupId: FilterId,
-    from: LocalDate?,
-    to: LocalDate?
-): List<DiscoverOption>? {
-    val options = mutableListOf<DiscoverOption>()
-    when (groupId) {
-        FilterId.RangeTypeId.DateRange.ReleaseDate -> {
-            from?.let { options.add(DiscoverOption.ReleaseDate.From(it)) }
-            to?.let { options.add(DiscoverOption.ReleaseDate.To(it)) }
-        }
-
-        FilterId.RangeTypeId.DateRange.AirDate -> {
-            from?.let { options.add(DiscoverOption.AirDate.From(it)) }
-            to?.let { options.add(DiscoverOption.AirDate.To(it)) }
-        }
-
-        else -> {}
-    }
-    return if (options.isEmpty()) null else options
-}

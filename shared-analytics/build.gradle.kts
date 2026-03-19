@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.ssverma.shared.data"
+    namespace = "com.ssverma.shared.analytics"
 }
 
 dependencies {

@@ -12,7 +12,6 @@ fun MovieListingConfig.asAnalyticsListingType(): String {
         is MovieListingConfig.Filterable.Popular -> "popular"
         is MovieListingConfig.Filterable.TopRated -> "top_rated"
         is MovieListingConfig.Filterable.Upcoming -> "upcoming"
-        is MovieListingConfig.Filterable.WatchProvider -> "watch_provider ${this.watchProviderId}"
         is MovieListingConfig.TrendingToday -> "trending_today"
     }
 }

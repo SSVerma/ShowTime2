@@ -15,6 +15,7 @@ class LanguageInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val isTranslationEnabled = runBlocking { appConfigRepository.isTranslationEnabled.first() }
         val contentLanguage = runBlocking { appConfigRepository.contentLanguage.first() }
+        val originalLanguage = runBlocking { appConfigRepository.preferredOriginalLanguage.first() }
 
         val languageCode = if (isTranslationEnabled) {
             contentLanguage
@@ -25,6 +26,7 @@ class LanguageInterceptor @Inject constructor(
         val original = chain.request()
         val url = original.url.newBuilder()
             .setQueryParameter("language", languageCode)
+            .setQueryParameter("with_original_language", originalLanguage)
             .build()
 
         val request = original.newBuilder()

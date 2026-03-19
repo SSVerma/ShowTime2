@@ -23,7 +23,6 @@ sealed interface MovieListingConfig {
         ) : Filterable {
             override val discoverConfig: MovieDiscoverConfig = MovieDiscoverConfig.builder()
                 .with(
-                    MovieDefaults.DefaultMovieReleaseType,
                     DiscoverOption.Genre(genreId = genreId)
                 )
                 .build()
@@ -39,7 +38,6 @@ sealed interface MovieListingConfig {
         ) : Filterable {
             override val discoverConfig: MovieDiscoverConfig = MovieDiscoverConfig.builder()
                 .with(
-                    MovieDefaults.DefaultMovieReleaseType,
                     DiscoverOption.Keyword(keywordId = keywordId)
                 )
                 .build()
@@ -89,18 +87,6 @@ sealed interface MovieListingConfig {
                 MovieDefaults.DiscoverDefaults.topRated()
 
             override fun withFilter(filter: MovieDiscoverConfig): TopRated {
-                return copy(filterConfig = filter)
-            }
-        }
-
-        data class WatchProvider(
-            val watchProviderId: Int,
-            override val filterConfig: MovieDiscoverConfig? = null
-        ) : Filterable {
-            override val discoverConfig: MovieDiscoverConfig =
-                MovieDefaults.DiscoverDefaults.discoveryBy(watchProviderId = watchProviderId)
-
-            override fun withFilter(filter: MovieDiscoverConfig): WatchProvider {
                 return copy(filterConfig = filter)
             }
         }

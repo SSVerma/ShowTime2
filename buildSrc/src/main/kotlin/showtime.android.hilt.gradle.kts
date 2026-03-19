@@ -1,6 +1,6 @@
 plugins {
     id("com.google.dagger.hilt.android")
-    id("org.jetbrains.kotlin.kapt")
+    id("com.android.legacy-kapt")
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")

@@ -1,7 +1,7 @@
 plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
-    id("org.jetbrains.kotlin.kapt")
+    id("com.google.devtools.ksp")
 }
 
 dependencies {
@@ -14,5 +14,5 @@ dependencies {
     implementation(libs.okhttpLoggingInterceptor)
 
     implementation(libs.dagger.hilt.core)
-    kapt(libs.dagger.hilt.compiler)
+    ksp(libs.dagger.hilt.compiler)
 }

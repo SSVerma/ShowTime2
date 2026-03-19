@@ -9,8 +9,8 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
-import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.WatchProvider
+import com.ssverma.shared.domain.model.movie.Movie
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
@@ -31,20 +31,14 @@ interface MovieRepository {
     /**
      * Fetch movies in order of given rating and in paginated form.
      */
-    fun fetchTopRatedMoviesGradually(
-        region: String? = null,
-        originalLanguage: String? = null
-    ): Flow<PagingData<Movie>>
+    fun fetchTopRatedMoviesGradually(): Flow<PagingData<Movie>>
 
     /**
      * Fetch top rated movies. It provides a limited collection of the top rated movies
      * wheres [fetchTopRatedMoviesGradually] can be used to fetch all available top rated movies
      * in paginated form.
      */
-    suspend fun fetchTopRatedMovies(
-        region: String? = null,
-        originalLanguage: String? = null
-    ): Result<List<Movie>, Failure<MovieFailure>>
+    suspend fun fetchTopRatedMovies(): Result<List<Movie>, Failure<MovieFailure>>
 
     /**
      * Fetch first collection of trending movies based on the given [TimeWindow].

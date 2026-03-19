@@ -29,7 +29,7 @@ import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
-import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
+import com.ssverma.feature.movie.navigation.convertor.asMovieListingConfig
 import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -40,8 +40,8 @@ import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.MovieGridItem
 
 data class DiscoveryCategory(
-    @StringRes val titleRes: Int,
-    val type: Int,
+    @param:StringRes val titleRes: Int,
+    val route: MovieListingArgs,
     val uiState: MoviePreviewUiState
 )
 
@@ -65,27 +65,28 @@ fun DiscoverySection(
         listOf(
             DiscoveryCategory(
                 titleRes = R.string.popuplar,
-                type = MovieListingAvailableTypes.Popular,
+                route = MovieListingArgs.Popular(titleRes = R.string.popuplar),
                 uiState = popularMoviesState
             ),
             DiscoveryCategory(
                 titleRes = R.string.top_rated,
-                type = MovieListingAvailableTypes.TopRated,
+                route = MovieListingArgs.TopRated(titleRes = R.string.top_rated),
                 uiState = topRatedMoviesState
             ),
             DiscoveryCategory(
                 titleRes = R.string.upcoming,
-                type = MovieListingAvailableTypes.Upcoming,
+                route = MovieListingArgs.Upcoming(titleRes = R.string.upcoming),
                 uiState = upcomingMoviesState
             )
         )
     }
 
     LaunchedEffect(selectedTabIndex) {
-        when (categories[selectedTabIndex].type) {
-            MovieListingAvailableTypes.Popular -> onFetchPopular()
-            MovieListingAvailableTypes.TopRated -> onFetchTopRated()
-            MovieListingAvailableTypes.Upcoming -> onFetchUpcoming()
+        when (categories[selectedTabIndex].route) {
+            is MovieListingArgs.Popular -> onFetchPopular()
+            is MovieListingArgs.TopRated -> onFetchTopRated()
+            is MovieListingArgs.Upcoming -> onFetchUpcoming()
+            else -> {}
         }
     }
 
@@ -95,12 +96,7 @@ fun DiscoverySection(
             title = stringResource(R.string.discover),
             onTrailingActionClicked = {
                 val category = categories[selectedTabIndex]
-                onSeeAllClicked(
-                    MovieListingArgs(
-                        listingType = category.type,
-                        titleRes = category.titleRes
-                    )
-                )
+                onSeeAllClicked(category.route)
             }
         )
 
@@ -133,10 +129,11 @@ fun DiscoverySection(
                 uiState = category.uiState,
                 loading = { DiscoveryLoadingPlaceholder() },
                 onRetry = {
-                    when (category.type) {
-                        MovieListingAvailableTypes.Popular -> onFetchPopular()
-                        MovieListingAvailableTypes.TopRated -> onFetchTopRated()
-                        MovieListingAvailableTypes.Upcoming -> onFetchUpcoming()
+                    when (category.route) {
+                        is MovieListingArgs.Popular -> onFetchPopular()
+                        is MovieListingArgs.TopRated -> onFetchTopRated()
+                        is MovieListingArgs.Upcoming -> onFetchUpcoming()
+                        else -> {}
                     }
                 }
             ) { movies ->
@@ -147,9 +144,12 @@ fun DiscoverySection(
                 ) { moviePreview ->
                     MovieGridItem(
                         movie = moviePreview,
-                        showRating = category.type != MovieListingAvailableTypes.Upcoming && category.type != MovieListingAvailableTypes.TopRated,
+                        showRating = category.route !is MovieListingArgs.Upcoming && category.route !is MovieListingArgs.TopRated,
                         indicator = { preview ->
-                            MovieIndicator(type = category.type, movie = preview)
+                            MovieIndicator(
+                                config = category.route.asMovieListingConfig(),
+                                movie = preview
+                            )
                         },
                         onClick = onMovieClicked,
                         overlayContent = {

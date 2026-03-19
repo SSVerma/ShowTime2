@@ -7,23 +7,17 @@ import com.ssverma.feature.filter.domain.FilterProvider
 import com.ssverma.feature.filter.domain.MovieFilter
 import com.ssverma.feature.filter.domain.TvFilter
 import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.DiscoverConfig
 import com.ssverma.shared.domain.DiscoverOption
-import com.ssverma.shared.domain.SortBy
-import com.ssverma.shared.domain.Order
+import com.ssverma.shared.domain.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -78,7 +72,7 @@ class FilterViewModel @Inject constructor(
                                 iconUrl = it.iconUrl
                             )
                         }
-                        updateFilterItems(groupId, dynamicItems)
+                        updateFilterItems(groupId = groupId, newItems = dynamicItems)
                         _uiState.update { it.copy(isSearching = false) }
                     }.onFailure {
                         _uiState.update { it.copy(isSearching = false) }
@@ -89,20 +83,21 @@ class FilterViewModel @Inject constructor(
 
     fun init(
         isTv: Boolean,
-        initialOptions: List<DiscoverOption> = emptyList(),
-        initialSortBy: SortBy? = null,
-        initialOrder: Order? = null
+        initialConfig: DiscoverConfig?,
     ) {
+        if (_uiState.value.filters.isNotEmpty()) return
+
         this.isTv = isTv
-        this.initialOptions = initialOptions
+        this.initialOptions = initialConfig?.discoverOptions?.toList() ?: emptyList()
+
+        val initialSortBy = initialConfig?.sortBy
+        val initialOrder = initialSortBy?.order
+
         if (_uiState.value.filters.isNotEmpty()) return
 
         viewModelScope.launch {
-            val flow = if (isTv) {
-                tvShowFilterProvider.provideFilters()
-            } else {
-                movieFilterProvider.provideFilters()
-            }
+            val flow =
+                if (isTv) tvShowFilterProvider.provideFilters() else movieFilterProvider.provideFilters()
 
             flow.collect { result ->
                 when (result) {
@@ -119,9 +114,7 @@ class FilterViewModel @Inject constructor(
                         }
                     }
 
-                    is Result.Error -> {
-                        _uiState.update { it.copy(isLoading = false) }
-                    }
+                    is Result.Error -> _uiState.update { it.copy(isLoading = false) }
                 }
             }
         }
@@ -131,10 +124,7 @@ class FilterViewModel @Inject constructor(
         _searchQuery.value = SearchQuery(groupId, query)
     }
 
-    private data class SearchQuery(
-        val groupId: FilterId,
-        val query: String
-    )
+    private data class SearchQuery(val groupId: FilterId, val query: String)
 
     private fun updateFilterItems(groupId: FilterId, newItems: List<FilterItem>) {
         _uiState.update { state ->
@@ -144,27 +134,27 @@ class FilterViewModel @Inject constructor(
                         when (val content = filterGroup.groupContent) {
                             is FilterGroupContentType.ListType.SingleSelectableListType -> {
                                 val selectedItem = newItems.find { item ->
-                                    val dynamicItem = item as? FilterItem.Dynamic ?: return@find false
+                                    val dynamicItem =
+                                        item as? FilterItem.Dynamic ?: return@find false
                                     initialOptions.any { option ->
                                         isDynamicOptionMatch(groupId, dynamicItem.id, option)
                                     }
                                 }
-                                if (selectedItem != null) {
-                                    content.selectionState.select(selectedItem)
-                                }
+                                if (selectedItem != null) content.selectionState.select(selectedItem)
                                 filterGroup.copy(groupContent = content.copy(items = newItems))
                             }
 
                             is FilterGroupContentType.ListType.MultiSelectableListType -> {
                                 val selectedItems = newItems.filter { item ->
-                                    val dynamicItem = item as? FilterItem.Dynamic ?: return@filter false
+                                    val dynamicItem =
+                                        item as? FilterItem.Dynamic ?: return@filter false
                                     initialOptions.any { option ->
                                         isDynamicOptionMatch(groupId, dynamicItem.id, option)
                                     }
                                 }
-                                if (selectedItems.isNotEmpty()) {
-                                    content.selectionState.select(selectedItems.toSet())
-                                }
+                                if (selectedItems.isNotEmpty()) content.selectionState.select(
+                                    selectedItems.toSet()
+                                )
                                 filterGroup.copy(groupContent = content.copy(items = newItems))
                             }
 
@@ -179,7 +169,6 @@ class FilterViewModel @Inject constructor(
     fun onFilterPickerOpened(groupId: FilterId) {
         val provider = if (isTv) tvShowFilterProvider else movieFilterProvider
 
-        // Only fetch if it's a dynamic picker and currently empty
         val group = _uiState.value.filters.find { it.groupId == groupId } ?: return
         val items = when (val content = group.groupContent) {
             is FilterGroupContentType.ListType.SingleSelectableListType -> content.items
@@ -188,9 +177,7 @@ class FilterViewModel @Inject constructor(
         } ?: return
 
         if (items.isNotEmpty()) {
-            if (cachedFilterItems[groupId] == null) {
-                cachedFilterItems[groupId] = items
-            }
+            if (cachedFilterItems[groupId] == null) cachedFilterItems[groupId] = items
             return
         }
 

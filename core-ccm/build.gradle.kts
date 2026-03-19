@@ -1,6 +1,7 @@
 plugins {
     id("showtime.android.library")
     id("showtime.android.hilt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -18,7 +19,4 @@ dependencies {
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.remote.config)
-
-    implementation(libs.dagger.hilt.android)
-    kapt(libs.dagger.hilt.compiler)
 }

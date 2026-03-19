@@ -3,6 +3,7 @@ plugins {
     id("showtime.android.compose")
     id("showtime.android.hilt")
     id("org.jetbrains.kotlin.plugin.parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")

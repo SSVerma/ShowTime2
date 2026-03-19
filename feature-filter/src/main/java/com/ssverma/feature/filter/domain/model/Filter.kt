@@ -1,6 +1,7 @@
 package com.ssverma.feature.filter.domain.model
 
 import com.ssverma.shared.domain.DiscoverOption
+import com.ssverma.shared.domain.SortBy
 import java.time.LocalDate
 
 sealed interface Filter {
@@ -52,8 +53,13 @@ data class DynamicFilterItem(
     val iconUrl: String? = null
 )
 
+sealed interface FilterPayload {
+    data class Option(val discoverOption: DiscoverOption) : FilterPayload
+    data class Sort(val sortBy: SortBy) : FilterPayload
+}
+
 data class StaticFilterItem(
-    val option: Any // Using Any temporarily to support both DiscoverOption and SortBy
+    val payload: FilterPayload
 )
 
 sealed interface FilterId {
@@ -75,37 +81,37 @@ sealed interface FilterId {
             object Language : Dynamic
             object Country : Dynamic
             object Person : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object Cast : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object Crew : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object Genre : Dynamic
             object WithoutGenre : Dynamic
             object Keyword : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object WithoutKeyword : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object Company : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object WithoutCompany : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object Network : Dynamic {
-                override val isRemoteSearchSupported: Boolean = true
+                override val isRemoteSearchSupported = true
             }
 
             object WatchProviders : Dynamic

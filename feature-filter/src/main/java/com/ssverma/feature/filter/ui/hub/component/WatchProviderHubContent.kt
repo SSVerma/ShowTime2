@@ -61,7 +61,9 @@ import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.filter.ui.hub.MediaPreview
-import com.ssverma.feature.filter.ui.hub.WatchProviderHubSeeAllType
+import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
+import com.ssverma.shared.domain.MovieDiscoverConfig
+import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.component.AppHeroCarousel
@@ -85,7 +87,8 @@ fun WatchProviderHubContent(
     onMediaClick: (Any) -> Unit,
     onGenreClick: (Genre) -> Unit,
     onBackClick: () -> Unit,
-    onSeeAllClick: (WatchProviderHubSeeAllType) -> Unit,
+    onMovieSeeAllClick: (MovieDiscoverConfig) -> Unit,
+    onTvSeeAllClick: (TvDiscoverConfig) -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false
 ) {
@@ -155,7 +158,15 @@ fun WatchProviderHubContent(
                         items = newItems,
                         isLoading = isLoading,
                         onItemClick = onMediaClick,
-                        onSeeAllClick = { onSeeAllClick(WatchProviderHubSeeAllType.NewThisWeek) },
+                        onSeeAllClick = {
+                            if (isMovieMode) {
+                                onMovieSeeAllClick(
+                                    MovieHubDiscoverConfig.newReleases(providerId = provider.providerId)
+                                )
+                            } else {
+                                // TODO
+                            }
+                        },
                     )
                 }
 
@@ -166,7 +177,15 @@ fun WatchProviderHubContent(
                         items = todayItems,
                         isLoading = isLoading,
                         onItemClick = onMediaClick,
-                        onSeeAllClick = { onSeeAllClick(WatchProviderHubSeeAllType.Upcoming) }
+                        onSeeAllClick = {
+                            if (isMovieMode) {
+                                onMovieSeeAllClick(
+                                    MovieHubDiscoverConfig.upcoming(providerId = provider.providerId)
+                                )
+                            } else {
+                                // TODO
+                            }
+                        },
                     )
                 }
 
@@ -177,7 +196,15 @@ fun WatchProviderHubContent(
                         items = topRatedItems,
                         isLoading = isLoading,
                         onItemClick = onMediaClick,
-                        onSeeAllClick = { onSeeAllClick(WatchProviderHubSeeAllType.TopRated) }
+                        onSeeAllClick = {
+                            if (isMovieMode) {
+                                onMovieSeeAllClick(
+                                    MovieHubDiscoverConfig.topRated(providerId = provider.providerId)
+                                )
+                            } else {
+                                // TODO
+                            }
+                        },
                     )
                 }
 

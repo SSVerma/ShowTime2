@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
+import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
 import com.ssverma.feature.person.navigation.PersonDetailDestination
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubDestination
@@ -31,7 +32,7 @@ fun NavGraphBuilder.movieDetailGraph(
             navController.navigateTo(PersonDetailDestination.actualRoute(personId))
         },
         openMovieList = { listingArgs ->
-            navController.navigateTo(MovieListDestination.actualRoute(listingArgs))
+            navController.navigate(MovieListingRoute(listingArgs))
         },
         openWatchHub = { provider ->
             navController.navigateTo(

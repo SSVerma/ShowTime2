@@ -8,6 +8,4 @@ android {
 }
 
 dependencies {
-    implementation(libs.dagger.hilt.android)
-    kapt(libs.dagger.hilt.compiler)
 }

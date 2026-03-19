@@ -5,12 +5,11 @@ import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.DiscoveryParams
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
-
-import com.ssverma.shared.domain.model.DiscoveryParams
 
 class TopRatedMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
@@ -20,9 +19,6 @@ class TopRatedMoviesUseCase @Inject constructor(
 ) {
 
     override suspend fun execute(params: DiscoveryParams?): Result<List<Movie>, Failure<MovieFailure>> {
-        return movieRepository.fetchTopRatedMovies(
-            region = params?.region,
-            originalLanguage = params?.originalLanguage
-        )
+        return movieRepository.fetchTopRatedMovies()
     }
 }

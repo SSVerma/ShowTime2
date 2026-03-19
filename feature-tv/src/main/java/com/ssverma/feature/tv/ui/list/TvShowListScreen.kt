@@ -26,8 +26,8 @@ import com.ssverma.feature.tv.analytics.asAnalyticsListingType
 import com.ssverma.feature.tv.ui.filter.TvFiltersScreen
 import com.ssverma.feature.tv.ui.list.component.TvShowListTopBar
 import com.ssverma.feature.tv.ui.list.content.TvShowsGridContent
-import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.feature.tv.ui.list.content.TvShowsListContent
+import com.ssverma.shared.domain.model.ProviderInfo
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -47,7 +47,6 @@ fun TvShowListScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val tvShowPagingItems = viewModel.pagedTvShows.collectAsLazyPagingItems()
-    val watchRegion by viewModel.appConfigRepository.watchProviderRegion.collectAsStateWithLifecycle()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
@@ -142,7 +141,6 @@ fun TvShowListScreen(
             containerColor = MaterialTheme.colorScheme.surface,
         ) {
             TvFiltersScreen(
-                watchRegion = watchRegion,
                 initialConfig = uiState.filterConfig,
                 onBackPressed = {
                     coroutineScope.launch { sheetState.hide() }

@@ -12,7 +12,7 @@ import com.ssverma.shared.domain.model.Video
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShowPreview
-import com.ssverma.showtime.shared.analytics.SharedAnalyticsKeys
+import com.ssverma.shared.analytics.SharedAnalyticsKeys
 
 sealed class TvAnalyticsEvent(
     override val eventName: String,

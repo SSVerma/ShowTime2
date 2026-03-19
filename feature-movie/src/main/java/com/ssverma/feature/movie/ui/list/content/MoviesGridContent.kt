@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
+import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
@@ -23,7 +23,7 @@ import com.ssverma.shared.ui.component.media.MovieGridItem
 @Composable
 fun MoviesGridContent(
     moviePagingItems: LazyPagingItems<MoviePreview>,
-    type: Int,
+    config: MovieListingConfig,
     openMovieDetails: (movie: MoviePreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     modifier: Modifier = Modifier,
@@ -35,10 +35,13 @@ fun MoviesGridContent(
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
         modifier = modifier
     ) { movie ->
+        val showRating = config !is MovieListingConfig.Filterable.Upcoming &&
+                config !is MovieListingConfig.Filterable.TopRated
+
         MovieGridItem(
             movie = movie,
-            showRating = type != MovieListingAvailableTypes.Upcoming && type != MovieListingAvailableTypes.TopRated,
-            indicator = { preview -> MovieIndicator(type = type, movie = preview) },
+            showRating = showRating,
+            indicator = { preview -> MovieIndicator(config = config, movie = preview) },
             onClick = { preview -> openMovieDetails(preview) },
             overlayContent = {
                 WatchProviderTrigger(

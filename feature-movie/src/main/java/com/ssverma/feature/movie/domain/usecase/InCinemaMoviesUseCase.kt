@@ -6,12 +6,11 @@ import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.DiscoveryParams
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
-
-import com.ssverma.shared.domain.model.DiscoveryParams
 
 class InCinemaMoviesUseCase @Inject constructor(
     @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
@@ -19,9 +18,7 @@ class InCinemaMoviesUseCase @Inject constructor(
 ) : UseCase<DiscoveryParams?, Result<List<Movie>, Failure<MovieFailure>>>(coroutineDispatcher) {
 
     override suspend fun execute(params: DiscoveryParams?): Result<List<Movie>, Failure<MovieFailure>> {
-        val movieConfig = MovieDefaults.DiscoverDefaults.inCinemas(
-            originalLanguage = params?.originalLanguage
-        )
-        return movieRepository.discoverMovies(movieConfig)
+        val movieConfig = MovieDefaults.DiscoverDefaults.inCinemas()
+        return movieRepository.discoverMovies(discoverConfig = movieConfig)
     }
 }

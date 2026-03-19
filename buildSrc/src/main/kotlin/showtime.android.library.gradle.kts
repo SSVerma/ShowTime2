@@ -1,24 +1,26 @@
-import org.gradle.api.artifacts.VersionCatalogsExtension
-import org.gradle.kotlin.dsl.getByType
+import com.android.build.api.dsl.LibraryExtension
 
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    id("com.android.built-in-kotlin")
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-android {
+extensions.configure<LibraryExtension> {
     compileSdk = libs.findVersion("compileSdk").get().requiredVersion.toInt()
 
     defaultConfig {
         minSdk = libs.findVersion("minSdk").get().requiredVersion.toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    kotlin {
+        jvmToolchain(21)
     }
 }

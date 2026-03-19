@@ -1,4 +1,4 @@
-package com.ssverma.showtime.shared.analytics
+package com.ssverma.shared.analytics
 
 object SharedAnalyticsValues {
     const val SECTION_TRENDING_CAROUSEL = "trending_carousel"

@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.ssverma.feature.filter.ui.filter.FiltersScreen
+import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.MovieDiscoverConfig
 
 @Composable
@@ -13,28 +14,27 @@ fun MovieFiltersScreen(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
-    watchRegion: String? = null,
     initialConfig: MovieDiscoverConfig? = null,
 ) {
     FiltersScreen(
         isTv = false,
         modifier = modifier,
         listState = listState,
-        watchRegion = watchRegion,
-        initialOptions = initialConfig?.discoverOptions?.toList() ?: emptyList(),
-        initialSortBy = initialConfig?.sortBy,
-        initialOrder = initialConfig?.sortBy?.order,
+        initialConfig = initialConfig,
         onBackPressed = onBackPressed,
-        onFilterApplied = { appliedOptions, sortBy, order ->
+        onFilterApplied = { filterState ->
             val builder = MovieDiscoverConfig.builder()
-            val finalSortBy = if (sortBy != null && order != null) {
-                sortBy.withOrder(order)
-            } else sortBy
 
-            finalSortBy?.let { builder.sortBy(it) }
-            val config = builder
-                .with(*appliedOptions.toTypedArray())
-                .build()
+            // Apply Sort (SortBy inherently knows its Order)
+            filterState.sortBy?.let { builder.sortBy(it) }
+
+            // Safely cast generic options to Movie Options
+            val movieOptions = filterState.options
+                .filterIsInstance<DiscoverOption.OptionScope.Movie>()
+                .toTypedArray()
+
+            // Build and send!
+            val config = builder.with(*movieOptions).build()
             onFilterApplied(config)
         }
     )

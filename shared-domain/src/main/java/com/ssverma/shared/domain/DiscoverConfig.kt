@@ -1,6 +1,9 @@
 package com.ssverma.shared.domain
 
-abstract class DiscoverConfig(
+import kotlinx.serialization.Serializable
+
+@Serializable
+sealed class DiscoverConfig(
     val discoverOptions: Set<DiscoverOption.OptionScope>,
     val sortBy: SortBy
 ) {
@@ -69,10 +72,11 @@ abstract class DiscoverConfig(
     }
 }
 
-class MovieDiscoverConfig(
+@Serializable
+data class MovieDiscoverConfig(
     val movieOptions: Set<DiscoverOption.OptionScope.Movie>,
-    sortBy: SortBy
-) : DiscoverConfig(movieOptions, sortBy) {
+    val sortByValue: SortBy
+) : DiscoverConfig(movieOptions, sortByValue) {
     companion object {
         fun builder(sortBy: SortBy = SortBy.None): MovieBuilder {
             return MovieBuilder().sortBy(sortBy)
@@ -80,10 +84,11 @@ class MovieDiscoverConfig(
     }
 }
 
-class TvDiscoverConfig(
+@Serializable
+data class TvDiscoverConfig(
     val tvOptions: Set<DiscoverOption.OptionScope.Tv>,
-    sortBy: SortBy
-) : DiscoverConfig(tvOptions, sortBy) {
+    val sortByValue: SortBy
+) : DiscoverConfig(tvOptions, sortByValue) {
     companion object {
         fun builder(sortBy: SortBy = SortBy.None): TvBuilder {
             return TvBuilder().sortBy(sortBy)

@@ -2,6 +2,7 @@ plugins {
     id("showtime.android.library")
     id("showtime.android.compose")
     id("org.jetbrains.kotlin.plugin.parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -10,4 +11,7 @@ android {
 
 dependencies {
     implementation(projects.coreNavigation)
+    implementation(projects.sharedDomain)
+
+    implementation(libs.kotlinx.serialization.json)
 }

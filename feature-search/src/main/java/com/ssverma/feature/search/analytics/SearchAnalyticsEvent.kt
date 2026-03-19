@@ -5,8 +5,8 @@ import com.ssverma.core.analytics.AnalyticsParam
 import com.ssverma.core.analytics.to
 import com.ssverma.feature.search.domain.model.SearchHistory
 import com.ssverma.feature.search.domain.model.SearchSuggestion
-import com.ssverma.showtime.shared.analytics.SharedAnalyticsValues
-import com.ssverma.showtime.shared.analytics.asAnalyticsValue
+import com.ssverma.shared.analytics.SharedAnalyticsValues
+import com.ssverma.shared.analytics.asAnalyticsValue
 
 sealed class SearchAnalyticsEvent(
     override val eventName: String,

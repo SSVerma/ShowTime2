@@ -22,6 +22,7 @@ class RegionInterceptor @Inject constructor(
         // Inject watch_region for discover APIs
         if (urlString.contains("discover/")) {
             newUrlBuilder.setQueryParameter("watch_region", region)
+            newUrlBuilder.setQueryParameter("region", region)
         } else {
             // Inject region for other APIs (movie, tv, search, etc.)
             newUrlBuilder.setQueryParameter("region", region)

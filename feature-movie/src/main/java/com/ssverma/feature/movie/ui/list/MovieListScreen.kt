@@ -26,8 +26,8 @@ import com.ssverma.feature.movie.analytics.asAnalyticsListingType
 import com.ssverma.feature.movie.ui.filter.MovieFiltersScreen
 import com.ssverma.feature.movie.ui.list.component.MovieListTopBar
 import com.ssverma.feature.movie.ui.list.content.MoviesGridContent
-import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.feature.movie.ui.list.content.MoviesListContent
+import com.ssverma.shared.domain.model.ProviderInfo
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -38,17 +38,16 @@ fun MovieListScreen(
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     viewModel: MovieListViewModel = hiltViewModel()
 ) {
-    TrackScreenView(
-        screenName = MovieAnalyticsScreenName.MOVIE_LISTING,
-        screenClass = viewModel.movieListingConfig.asAnalyticsListingType()
-    )
 
     val analytics = LocalAnalytics.current
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    TrackScreenView(
+        screenName = MovieAnalyticsScreenName.MOVIE_LISTING,
+        screenClass = uiState.config.asAnalyticsListingType()
+    )
+
     val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
-    val watchRegion by viewModel.appConfigRepository.watchProviderRegion.collectAsStateWithLifecycle()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
@@ -64,7 +63,7 @@ fun MovieListScreen(
                 onOpenFilters = {
                     analytics.logEvent(
                         MovieAnalyticsEvent.FilterClicked(
-                            listingType = viewModel.movieListingConfig.asAnalyticsListingType()
+                            listingType = uiState.config.asAnalyticsListingType()
                         )
                     )
                     coroutineScope.launch { sheetState.show() }
@@ -80,7 +79,7 @@ fun MovieListScreen(
                 if (isGrid) {
                     MoviesGridContent(
                         moviePagingItems = items,
-                        type = uiState.listingType,
+                        config = uiState.config,
                         openMovieDetails = { movie ->
                             analytics.logEvent(
                                 MovieAnalyticsEvent.MovieClicked(
@@ -105,7 +104,7 @@ fun MovieListScreen(
                 } else {
                     MoviesListContent(
                         moviePagingItems = items,
-                        type = uiState.listingType,
+                        config = uiState.config,
                         openMovieDetails = { movie ->
                             analytics.logEvent(
                                 MovieAnalyticsEvent.MovieClicked(
@@ -143,7 +142,6 @@ fun MovieListScreen(
             containerColor = MaterialTheme.colorScheme.surface,
         ) {
             MovieFiltersScreen(
-                watchRegion = watchRegion,
                 initialConfig = uiState.filterConfig,
                 onBackPressed = {
                     coroutineScope.launch { sheetState.hide() }

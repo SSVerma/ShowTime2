@@ -42,7 +42,6 @@ import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
 import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
 import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
-import com.ssverma.feature.movie.navigation.args.MovieListingAvailableTypes
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.Movie
@@ -268,8 +267,7 @@ fun MovieContent(
                         )
                     )
                     openMovieList(
-                        MovieListingArgs(
-                            listingType = MovieListingAvailableTypes.Genre,
+                        MovieListingArgs.ByGenre(
                             title = genre.name,
                             genreId = genre.id
                         )
@@ -409,8 +407,7 @@ fun MovieContent(
                         )
                     )
                     openMovieList(
-                        MovieListingArgs(
-                            listingType = MovieListingAvailableTypes.Keyword,
+                        MovieListingArgs.ByKeyword(
                             title = keyword.name,
                             keywordId = keyword.id
                         )
