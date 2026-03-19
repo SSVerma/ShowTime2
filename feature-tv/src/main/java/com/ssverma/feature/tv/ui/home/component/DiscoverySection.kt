@@ -30,8 +30,9 @@ import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
+import com.ssverma.feature.tv.domain.model.TvShowListingConfig
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
-import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
@@ -44,7 +45,7 @@ private typealias TvPreviewUiState = UiState<List<TvShowPreview>, TvShowFailure>
 
 data class DiscoveryCategory(
     @StringRes val titleRes: Int,
-    val type: Int,
+    val config: TvShowListingConfig,
     val uiState: TvPreviewUiState
 )
 
@@ -58,7 +59,7 @@ fun DiscoverySection(
     onFetchTopRated: () -> Unit,
     onFetchUpcoming: () -> Unit,
     onTvShowClicked: (tvShow: TvShowPreview) -> Unit,
-    onSeeAllClicked: (TvShowListingArgs) -> Unit,
+    onSeeAllClicked: (TvShowListingRoute) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -68,27 +69,28 @@ fun DiscoverySection(
         listOf(
             DiscoveryCategory(
                 titleRes = R.string.popular,
-                type = TvShowListingAvailableTypes.Popular,
+                config = TvShowListingConfig.Filterable.Popular(),
                 uiState = popularTvShowsState
             ),
             DiscoveryCategory(
                 titleRes = R.string.top_rated,
-                type = TvShowListingAvailableTypes.TopRated,
+                config = TvShowListingConfig.Filterable.TopRated(),
                 uiState = topRatedTvShowsState
             ),
             DiscoveryCategory(
                 titleRes = R.string.upcoming,
-                type = TvShowListingAvailableTypes.Upcoming,
+                config = TvShowListingConfig.Filterable.Upcoming(),
                 uiState = upcomingTvShowsState
             )
         )
     }
 
     LaunchedEffect(selectedTabIndex) {
-        when (categories[selectedTabIndex].type) {
-            TvShowListingAvailableTypes.Popular -> onFetchPopular()
-            TvShowListingAvailableTypes.TopRated -> onFetchTopRated()
-            TvShowListingAvailableTypes.Upcoming -> onFetchUpcoming()
+        when (categories[selectedTabIndex].config) {
+            is TvShowListingConfig.Filterable.Popular -> onFetchPopular()
+            is TvShowListingConfig.Filterable.TopRated -> onFetchTopRated()
+            is TvShowListingConfig.Filterable.Upcoming -> onFetchUpcoming()
+            else -> {}
         }
     }
 
@@ -98,12 +100,13 @@ fun DiscoverySection(
             title = stringResource(R.string.discover),
             onTrailingActionClicked = {
                 val category = categories[selectedTabIndex]
-                onSeeAllClicked(
-                    TvShowListingArgs(
-                        listingType = category.type,
-                        titleRes = category.titleRes
-                    )
-                )
+                val args = when (category.config) {
+                    is TvShowListingConfig.Filterable.Popular -> TvShowListingArgs.Popular(titleRes = category.titleRes)
+                    is TvShowListingConfig.Filterable.TopRated -> TvShowListingArgs.TopRated(titleRes = category.titleRes)
+                    is TvShowListingConfig.Filterable.Upcoming -> TvShowListingArgs.Upcoming(titleRes = category.titleRes)
+                    else -> TvShowListingArgs.Popular(titleRes = category.titleRes)
+                }
+                onSeeAllClicked(TvShowListingRoute(args = args))
             }
         )
 
@@ -136,10 +139,11 @@ fun DiscoverySection(
                 uiState = category.uiState,
                 loading = { DiscoveryLoadingPlaceholder() },
                 onRetry = {
-                    when (category.type) {
-                        TvShowListingAvailableTypes.Popular -> onFetchPopular()
-                        TvShowListingAvailableTypes.TopRated -> onFetchTopRated()
-                        TvShowListingAvailableTypes.Upcoming -> onFetchUpcoming()
+                    when (category.config) {
+                        is TvShowListingConfig.Filterable.Popular -> onFetchPopular()
+                        is TvShowListingConfig.Filterable.TopRated -> onFetchTopRated()
+                        is TvShowListingConfig.Filterable.Upcoming -> onFetchUpcoming()
+                        else -> {}
                     }
                 }
             ) { tvShows ->
@@ -150,9 +154,9 @@ fun DiscoverySection(
                 ) { tvShowPreview ->
                     TvShowGridItem(
                         tvShow = tvShowPreview,
-                        showRating = category.type != TvShowListingAvailableTypes.Upcoming && category.type != TvShowListingAvailableTypes.TopRated,
+                        showRating = category.config !is TvShowListingConfig.Filterable.Upcoming && category.config !is TvShowListingConfig.Filterable.TopRated,
                         indicator = { preview ->
-                            TvIndicator(type = category.type, tvShow = preview)
+                            TvIndicator(config = category.config, tvShow = preview)
                         },
                         onClick = { preview -> onTvShowClicked(preview) },
                         overlayContent = {

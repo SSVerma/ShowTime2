@@ -6,6 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.person.navigation.PersonDetailDestination
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.ui.details.TvShowDetailsScreen
 
 fun NavGraphBuilder.tvShowDetailGraph(
@@ -29,8 +30,8 @@ fun NavGraphBuilder.tvShowDetailGraph(
         openPersonDetails = { personId ->
             navController.navigateTo(PersonDetailDestination.actualRoute(personId))
         },
-        openTvShowList = { listingArgs ->
-            navController.navigateTo(TvShowListDestination.actualRoute(listingArgs))
+        openTvShowList = { listingRoute ->
+            navController.navigate(listingRoute)
         },
         openTvSeasonDetails = { seasonLaunchable ->
             navController.navigateTo(

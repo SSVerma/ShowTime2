@@ -11,4 +11,7 @@ android {
 
 dependencies {
     implementation(projects.coreNavigation)
+    implementation(projects.sharedDomain)
+
+    implementation(libs.kotlinx.serialization.json)
 }

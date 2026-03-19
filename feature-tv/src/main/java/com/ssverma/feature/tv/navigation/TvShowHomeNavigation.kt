@@ -7,6 +7,7 @@ import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.account.navigation.ProfileDestination
 import com.ssverma.feature.search.navigation.SearchDestination
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.ui.home.TvShowScreen
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubDestination
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderNavArgs
@@ -18,10 +19,8 @@ fun NavGraphBuilder.tvShowHomeGraph(
         openTvShowDetails = { tvShowId ->
             navController.navigateTo(TvShowDetailDestination.actualRoute(tvShowId))
         },
-        openTvShowList = { listingArgs ->
-            navController.navigateTo(
-                TvShowListDestination.actualRoute(listingArgs)
-            )
+        openTvShowList = { listingRoute ->
+            navController.navigate(listingRoute)
         },
         openSearchPage = {
             navController.navigateTo(SearchDestination.actualRoute)

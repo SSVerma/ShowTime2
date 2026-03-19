@@ -6,11 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
+import com.ssverma.feature.filter.ui.hub.config.TvHubDiscoverConfig
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.Order
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.SortBy
-import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.asMoviePreview
@@ -148,47 +148,27 @@ class WatchProviderHubViewModel @Inject constructor(
     }
 
     private suspend fun fetchTvHub() {
-        val watchProvider = DiscoverOption.WatchProvider(providerId)
-
         val heroDeferred = viewModelScope.async {
             discoveryRepository.discoverTvShows(
-                discoverConfig = TvDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .sortBy(SortBy.Popularity(Order.Descending))
-                    .build()
+                discoverConfig = TvHubDiscoverConfig.heroItems(providerId = providerId)
             )
         }
 
-        val today = java.time.LocalDate.now()
-        val lastWeek = today.minusWeeks(1)
-
         val newDeferred = viewModelScope.async {
             discoveryRepository.discoverTvShows(
-                discoverConfig = TvDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .with(DiscoverOption.AirDate.From(lastWeek))
-                    .with(DiscoverOption.AirDate.To(today))
-                    .sortBy(SortBy.AirDate(Order.Descending))
-                    .build()
+                discoverConfig = TvHubDiscoverConfig.newReleases(providerId = providerId)
             )
         }
 
         val upcomingDeferred = viewModelScope.async {
             discoveryRepository.discoverTvShows(
-                discoverConfig = TvDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .with(DiscoverOption.AirDate.From(today.plusDays(1)))
-                    .sortBy(SortBy.AirDate(Order.Ascending))
-                    .build()
+                discoverConfig = TvHubDiscoverConfig.upcoming(providerId = providerId)
             )
         }
 
         val ratedDeferred = viewModelScope.async {
             discoveryRepository.discoverTvShows(
-                discoverConfig = TvDiscoverConfig.builder()
-                    .with(watchProvider)
-                    .sortBy(SortBy.Rating(Order.Descending))
-                    .build()
+                discoverConfig = TvHubDiscoverConfig.topRated(providerId = providerId)
             )
         }
 

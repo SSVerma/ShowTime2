@@ -172,22 +172,15 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
     when (this) {
         is DiscoverOption.AirDate.From -> {
             return Pair(
-                first = TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateGte,
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.airDateGte,
                 second = date.formatAsIso().orEmpty()
             )
         }
 
         is DiscoverOption.AirDate.To -> {
             return Pair(
-                first = TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateLte,
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.airDateLte,
                 second = date.formatAsIso().orEmpty()
-            )
-        }
-
-        is DiscoverOption.AirDate.Year -> {
-            return Pair(
-                first = TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateYear,
-                second = year.toString()
             )
         }
 
@@ -517,6 +510,27 @@ private fun DiscoverOption.asQueryMapEntry(): Pair<String, String> {
             return Pair(
                 first = TmdbApiTiedConstants.AvailableDiscoverOptions.voteCountLte,
                 second = value.toString()
+            )
+        }
+
+        is DiscoverOption.FirstAirDate.From -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateGte,
+                second = date.formatAsIso().orEmpty()
+            )
+        }
+
+        is DiscoverOption.FirstAirDate.To -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateLte,
+                second = date.formatAsIso().orEmpty()
+            )
+        }
+
+        is DiscoverOption.FirstAirDate.Year -> {
+            return Pair(
+                first = TmdbApiTiedConstants.AvailableDiscoverOptions.firstAirDateYear,
+                second = year.toString()
             )
         }
     }

@@ -3,15 +3,15 @@ package com.ssverma.feature.tv.ui.list
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.domain.usecase.PaginatedTvShowUseCase
-import com.ssverma.feature.tv.navigation.TvShowListDestination
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
-import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.feature.tv.navigation.convertor.asTvShowListingConfigs
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.tv.TvShowPreview
@@ -32,7 +32,7 @@ data class TvShowPaginatedListUiState(
     val isGridView: Boolean = true,
     val titleRes: Int = R.string.tv_show,
     val title: String? = null,
-    val listingType: Int = 0,
+    val config: TvShowListingConfig,
     val isFilterApplicable: Boolean = false,
     val isFilterApplied: Boolean = false,
     val filterConfig: TvDiscoverConfig? = null
@@ -44,14 +44,15 @@ class TvShowListViewModel @Inject constructor(
     private val paginatedTvShowUseCase: PaginatedTvShowUseCase,
 ) : ViewModel() {
 
-    private val tvShowListingArgs = savedStateHandle.buildTvShowListingArgs()
+    private val routeWrapper = savedStateHandle.toRoute<TvShowListingRoute>(TvShowListingArgs.TypeMap)
+    private val tvShowListingArgs = routeWrapper.args
     internal val tvShowListingConfig = tvShowListingArgs.asTvShowListingConfigs()
 
     private val _uiState = MutableStateFlow(
         TvShowPaginatedListUiState(
-            titleRes = if (tvShowListingArgs.titleRes == 0) R.string.tv_show else tvShowListingArgs.titleRes,
+            titleRes = tvShowListingArgs.titleRes ?: R.string.tv_show,
             title = tvShowListingArgs.title,
-            listingType = tvShowListingArgs.listingType,
+            config = tvShowListingConfig,
             isFilterApplicable = tvShowListingConfig is TvShowListingConfig.Filterable,
             filterConfig = (tvShowListingConfig as? TvShowListingConfig.Filterable)?.discoverConfig
         )
@@ -91,18 +92,4 @@ class TvShowListViewModel @Inject constructor(
     fun toggleViewMode() {
         _uiState.update { it.copy(isGridView = !it.isGridView) }
     }
-
-}
-
-private fun SavedStateHandle.buildTvShowListingArgs(): TvShowListingArgs {
-    return TvShowListingArgs(
-        listingType = get<Int>(TvShowListDestination.ArgListingType)
-            ?: TvShowListingAvailableTypes.TrendingToday,
-        titleRes = get<Int>(TvShowListDestination.ArgTitleRes) ?: 0,
-        title = get<String>(TvShowListDestination.ArgTitle),
-        genreId = get<Int>(TvShowListDestination.ArgGenreId) ?: 0,
-        keywordId = get<Int>(TvShowListDestination.ArgKeywordId) ?: 0,
-        watchProviderId = get<Int>(TvShowListDestination.ArgWatchProviderId) ?: 0,
-        watchRegion = get<String>(TvShowListDestination.ArgWatchRegion)
-    )
 }

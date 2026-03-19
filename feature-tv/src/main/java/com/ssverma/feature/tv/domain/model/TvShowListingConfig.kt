@@ -98,22 +98,6 @@ sealed interface TvShowListingConfig {
             }
         }
 
-        data class WatchProvider(
-            val watchProviderId: Int,
-            val watchRegion: String,
-            override val filterConfig: TvDiscoverConfig? = null
-        ) : Filterable {
-            override val discoverConfig: TvDiscoverConfig =
-                TvShowDefaults.DiscoverDefaults.discoveryBy(
-                    watchProviderId = watchProviderId,
-                    watchRegion = watchRegion
-                )
-
-            override fun withFilter(filter: TvDiscoverConfig): WatchProvider {
-                return copy(filterConfig = filter)
-            }
-        }
-
         data class Discovery(
             override val discoverConfig: TvDiscoverConfig,
             override val filterConfig: TvDiscoverConfig? = null

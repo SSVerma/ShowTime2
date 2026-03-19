@@ -11,7 +11,6 @@ import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.UpcomingMoviesUseCase
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
-import com.ssverma.shared.domain.model.DiscoveryParams
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
@@ -57,13 +56,9 @@ class HomeMovieViewModel @Inject constructor(
     fun fetchAllHomeData() {
         movieGenreUseCase.invalidateCache()
         fetchAllWatchProvidersUseCase.invalidateCache()
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
         fetchMovieGenres()
         fetchTrendingMovies()
-        fetchInCinemaMovies(discoveryParams)
+        fetchInCinemaMovies()
         fetchWatchProviders()
     }
 
@@ -88,9 +83,9 @@ class HomeMovieViewModel @Inject constructor(
         }
     }
 
-    fun fetchInCinemaMovies(discoveryParams: DiscoveryParams? = null) = viewModelScope.launch {
+    fun fetchInCinemaMovies() = viewModelScope.launch {
         _uiState.update { it.copy(inCinemasMovies = UiState.Loading) }
-        when (val result = inCinemaMoviesUseCase(discoveryParams)) {
+        when (val result = inCinemaMoviesUseCase()) {
             is Result.Success -> {
                 _uiState.update {
                     it.copy(inCinemasMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
@@ -105,14 +100,9 @@ class HomeMovieViewModel @Inject constructor(
         val currentState = _uiState.value.popularMovies
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
-
         viewModelScope.launch {
             _uiState.update { it.copy(popularMovies = UiState.Loading) }
-            when (val result = popularMoviesUseCase(discoveryParams)) {
+            when (val result = popularMoviesUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(popularMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
@@ -128,14 +118,9 @@ class HomeMovieViewModel @Inject constructor(
         val currentState = _uiState.value.topRatedMovies
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
-
         viewModelScope.launch {
             _uiState.update { it.copy(topRatedMovies = UiState.Loading) }
-            when (val result = topRatedMoviesUseCase(discoveryParams)) {
+            when (val result = topRatedMoviesUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(topRatedMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
@@ -151,14 +136,9 @@ class HomeMovieViewModel @Inject constructor(
         val currentState = _uiState.value.upcomingMovies
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
-
         viewModelScope.launch {
             _uiState.update { it.copy(upcomingMovies = UiState.Loading) }
-            when (val result = upcomingMoviesUseCase(discoveryParams)) {
+            when (val result = upcomingMoviesUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(upcomingMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))

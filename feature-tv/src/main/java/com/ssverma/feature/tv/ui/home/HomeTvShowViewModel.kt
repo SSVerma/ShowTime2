@@ -10,13 +10,11 @@ import com.ssverma.feature.tv.domain.usecase.TopRatedTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.feature.tv.domain.usecase.UpcomingTvShowsUseCase
-import com.ssverma.shared.domain.model.ProviderInfo
-import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
-import com.ssverma.shared.domain.model.DiscoveryParams
-import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -60,14 +58,10 @@ class HomeTvShowViewModel @Inject constructor(
     fun fetchAllHomeData() {
         tvGenresUseCase.invalidateCache()
         fetchAllWatchProvidersUseCase.invalidateCache()
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
         fetchTvGenres()
         fetchTrendingTvShows()
-        fetchTodayAiringTvShows(discoveryParams)
-        fetchNowAiringTvShows(discoveryParams)
+        fetchTodayAiringTvShows()
+        fetchNowAiringTvShows()
         fetchWatchProviders()
     }
 
@@ -83,22 +77,24 @@ class HomeTvShowViewModel @Inject constructor(
         _uiState.update { it.copy(trendingTvShows = UiState.Loading) }
         when (val result = trendingTvShowsUseCase(TimeWindow.Daily)) {
             is Result.Success -> {
-                _uiState.update { 
+                _uiState.update {
                     it.copy(trendingTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
                 }
             }
+
             is Result.Error -> _uiState.update { it.copy(trendingTvShows = UiState.Error(result.error)) }
         }
     }
 
-    fun fetchTodayAiringTvShows(discoveryParams: DiscoveryParams? = null) = viewModelScope.launch {
+    fun fetchTodayAiringTvShows() = viewModelScope.launch {
         _uiState.update { it.copy(todayAiringTvShows = UiState.Loading) }
-        when (val result = todayAiringTvShowsUseCase(discoveryParams)) {
+        when (val result = todayAiringTvShowsUseCase()) {
             is Result.Success -> {
                 _uiState.update {
                     it.copy(todayAiringTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
                 }
             }
+
             is Result.Error -> _uiState.update { it.copy(todayAiringTvShows = UiState.Error(result.error)) }
         }
     }
@@ -107,19 +103,15 @@ class HomeTvShowViewModel @Inject constructor(
         val currentState = _uiState.value.popularTvShows
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
-
         viewModelScope.launch {
             _uiState.update { it.copy(popularTvShows = UiState.Loading) }
-            when (val result = popularTvShowsUseCase(discoveryParams)) {
+            when (val result = popularTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(popularTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
                     }
                 }
+
                 is Result.Error -> _uiState.update { it.copy(popularTvShows = UiState.Error(result.error)) }
             }
         }
@@ -129,19 +121,15 @@ class HomeTvShowViewModel @Inject constructor(
         val currentState = _uiState.value.topRatedTvShows
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
-
         viewModelScope.launch {
             _uiState.update { it.copy(topRatedTvShows = UiState.Loading) }
-            when (val result = topRatedTvShowsUseCase(discoveryParams)) {
+            when (val result = topRatedTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(topRatedTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
                     }
                 }
+
                 is Result.Error -> _uiState.update { it.copy(topRatedTvShows = UiState.Error(result.error)) }
             }
         }
@@ -151,41 +139,33 @@ class HomeTvShowViewModel @Inject constructor(
         val currentState = _uiState.value.upcomingTvShows
         if (currentState is UiState.Loading || currentState is UiState.Success) return
 
-        val discoveryParams = DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
-
         viewModelScope.launch {
             _uiState.update { it.copy(upcomingTvShows = UiState.Loading) }
-            when (val result = upcomingTvShowsUseCase(discoveryParams)) {
+            when (val result = upcomingTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(upcomingTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
                     }
                 }
+
                 is Result.Error -> _uiState.update { it.copy(upcomingTvShows = UiState.Error(result.error)) }
             }
         }
     }
 
-    fun fetchNowAiringTvShows(discoveryParams: DiscoveryParams? = null) {
+    fun fetchNowAiringTvShows() {
         val currentState = _uiState.value.nowAiringTvShows
         if (currentState is UiState.Loading || currentState is UiState.Success) return
-        
-        val actualParams = discoveryParams ?: DiscoveryParams(
-            region = appConfigRepository.watchProviderRegion.value,
-            originalLanguage = appConfigRepository.preferredOriginalLanguage.value
-        )
 
         viewModelScope.launch {
             _uiState.update { it.copy(nowAiringTvShows = UiState.Loading) }
-            when (val result = nowAiringTvShowsUseCase(actualParams)) {
+            when (val result = nowAiringTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
                         it.copy(nowAiringTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
                     }
                 }
+
                 is Result.Error -> _uiState.update { it.copy(nowAiringTvShows = UiState.Error(result.error)) }
             }
         }
@@ -198,5 +178,4 @@ class HomeTvShowViewModel @Inject constructor(
             is Result.Error -> _uiState.update { it.copy(watchProviders = UiState.Error(result.error)) }
         }
     }
-
 }

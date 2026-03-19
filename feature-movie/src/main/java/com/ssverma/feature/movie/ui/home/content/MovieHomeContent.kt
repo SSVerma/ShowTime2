@@ -160,7 +160,6 @@ fun MovieHomeContent(
                 MovieListItem(
                     movie = moviePreview,
                     showRating = true,
-                    onWatchProviderClick = openWatchProviderHub,
                     onClick = {
                         analytics.logEvent(
                             MovieAnalyticsEvent.MovieClicked(
@@ -171,6 +170,7 @@ fun MovieHomeContent(
                         )
                         openMovieDetails(it.id)
                     },
+                    overlayContent = null,
                     indicator = {
                         MovieIndicator(
                             config = MovieListingConfig.Filterable.NowInCinemas(),

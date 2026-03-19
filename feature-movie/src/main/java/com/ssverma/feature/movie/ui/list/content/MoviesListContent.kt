@@ -12,6 +12,8 @@ import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.ui.component.WatchProviderTrigger
+import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.MovieListItem
 
 @Composable
@@ -35,7 +37,14 @@ fun MoviesListContent(
             movie = movie,
             showRating = showRating,
             indicator = { preview -> MovieIndicator(config = config, movie = preview) },
-            onWatchProviderClick = onWatchProviderClick,
+            overlayContent = {
+                WatchProviderTrigger(
+                    mediaId = movie.id,
+                    isMovie = true,
+                    variant = WatchProviderTriggerVariant.Icon,
+                    onWatchProviderClick = onWatchProviderClick,
+                )
+            },
             onClick = { preview -> openMovieDetails(preview) },
         )
     }

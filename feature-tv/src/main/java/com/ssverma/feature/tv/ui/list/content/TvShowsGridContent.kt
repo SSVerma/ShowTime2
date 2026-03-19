@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
+import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
@@ -23,7 +23,7 @@ import com.ssverma.shared.ui.component.media.TvShowGridItem
 @Composable
 fun TvShowsGridContent(
     tvShowPagingItems: LazyPagingItems<TvShowPreview>,
-    type: Int,
+    config: TvShowListingConfig,
     openTvShowDetails: (TvShowPreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     modifier: Modifier = Modifier,
@@ -37,8 +37,8 @@ fun TvShowsGridContent(
     ) { tvShow ->
         TvShowGridItem(
             tvShow = tvShow,
-            showRating = type != TvShowListingAvailableTypes.Upcoming && type != TvShowListingAvailableTypes.TopRated,
-            indicator = { preview -> TvIndicator(type = type, tvShow = preview) },
+            showRating = config !is TvShowListingConfig.Filterable.Upcoming && config !is TvShowListingConfig.Filterable.TopRated,
+            indicator = { preview -> TvIndicator(config = config, tvShow = preview) },
             onClick = openTvShowDetails,
             overlayContent = {
                 WatchProviderTrigger(

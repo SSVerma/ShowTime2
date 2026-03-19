@@ -12,7 +12,6 @@ fun TvShowListingConfig.asAnalyticsListingType(): String {
         is TvShowListingConfig.Filterable.TodayAiring -> "today_airing"
         is TvShowListingConfig.Filterable.TopRated -> "top_rated"
         is TvShowListingConfig.Filterable.Upcoming -> "upcoming"
-        is TvShowListingConfig.Filterable.WatchProvider -> "watch_provider ${this.watchProviderId}"
         is TvShowListingConfig.TrendingToday -> "trending_today"
     }
 }

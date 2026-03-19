@@ -12,12 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.*
-import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,12 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
-import com.ssverma.shared.ui.component.WatchProviderTrigger
-import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 
 @Composable
 fun MovieListItem(
@@ -41,7 +39,7 @@ fun MovieListItem(
     modifier: Modifier = Modifier,
     showRating: Boolean = true,
     indicator: (@Composable (MoviePreview) -> Unit)? = null,
-    onWatchProviderClick: (ProviderInfo) -> Unit,
+    overlayContent: (@Composable () -> Unit)? = null,
     onClick: (MoviePreview) -> Unit,
 ) {
     OutlinedCard(
@@ -73,15 +71,15 @@ fun MovieListItem(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                WatchProviderTrigger(
-                    mediaId = movie.id,
-                    isMovie = true,
-                    variant = WatchProviderTriggerVariant.Icon,
-                    onWatchProviderClick = onWatchProviderClick,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(MaterialTheme.spacing.small)
-                )
+                overlayContent?.let {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(MaterialTheme.spacing.small)
+                    ) {
+                        overlayContent()
+                    }
+                }
             }
 
             Column(
@@ -139,7 +137,11 @@ fun MovieListItem(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "${FormatterUtils.formatRating(movie.voteAvgPercentage)} ${FormatterUtils.formatVoteCount(movie.voteCount)}",
+                            text = "${FormatterUtils.formatRating(movie.voteAvgPercentage)} ${
+                                FormatterUtils.formatVoteCount(
+                                    movie.voteCount
+                                )
+                            }",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

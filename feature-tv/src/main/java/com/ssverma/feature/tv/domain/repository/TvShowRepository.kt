@@ -13,10 +13,10 @@ import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
+import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
-import com.ssverma.shared.domain.model.WatchProvider
 import kotlinx.coroutines.flow.Flow
 
 interface TvShowRepository {
@@ -37,20 +37,14 @@ interface TvShowRepository {
     /**
      * Fetch tv shows in order of given rating and in paginated form.
      */
-    fun fetchTopRatedTvShowsGradually(
-        watchRegion: String? = null,
-        originalLanguage: String? = null
-    ): Flow<PagingData<TvShow>>
+    fun fetchTopRatedTvShowsGradually(): Flow<PagingData<TvShow>>
 
     /**
      * Fetch top rated tv shows. It provides a limited collection of the top rated tv shows.
      * wheres [fetchTopRatedTvShowsGradually] can be used to fetch all available top rated tv shows
      * in paginated form.
      */
-    suspend fun fetchTopRatedTvShows(
-        watchRegion: String? = null,
-        originalLanguage: String? = null
-    ): Result<List<TvShow>, Failure<TvShowFailure>>
+    suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>>
 
     /**
      * Fetch first collection of trending tv shows based on the given [TimeWindow].

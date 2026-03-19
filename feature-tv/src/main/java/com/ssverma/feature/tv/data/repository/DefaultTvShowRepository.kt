@@ -6,8 +6,13 @@ import androidx.paging.PagingData
 import com.ssverma.api.service.tmdb.TmdbDefaults
 import com.ssverma.api.service.tmdb.paging.ReviewsPagingSource
 import com.ssverma.api.service.tmdb.paging.TvShowsPagingSource
-import com.ssverma.api.service.tmdb.response.*
+import com.ssverma.api.service.tmdb.response.RemoteGenre
+import com.ssverma.api.service.tmdb.response.RemoteReview
+import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
+import com.ssverma.api.service.tmdb.response.RemoteTvSeason
+import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.feature.tv.data.remote.TvShowRemoteDataSource
+import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
 import com.ssverma.feature.tv.domain.failure.TvEpisodeFailure
 import com.ssverma.feature.tv.domain.failure.TvSeasonFailure
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
@@ -15,13 +20,19 @@ import com.ssverma.feature.tv.domain.model.TvEpisodeConfig
 import com.ssverma.feature.tv.domain.model.TvSeasonConfig
 import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.feature.tv.domain.repository.TvShowRepository
-import com.ssverma.shared.data.mapper.*
-import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
-import com.ssverma.shared.domain.*
-import com.ssverma.shared.domain.model.WatchProvider
+import com.ssverma.shared.data.mapper.ListMapper
+import com.ssverma.shared.data.mapper.Mapper
+import com.ssverma.shared.data.mapper.asDomainResult
+import com.ssverma.shared.data.mapper.asQueryMap
+import com.ssverma.shared.data.mapper.asTmdbQueryValue
+import com.ssverma.shared.data.mapper.asWatchProvidersMap
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
+import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
@@ -76,26 +87,14 @@ class DefaultTvShowRepository @Inject constructor(
         ).flow
     }
 
-    override fun fetchTopRatedTvShowsGradually(
-        watchRegion: String?,
-        originalLanguage: String?
-    ): Flow<PagingData<TvShow>> {
-        val config = TvShowDefaults.DiscoverDefaults.topRated(
-            watchRegion = watchRegion,
-            originalLanguage = originalLanguage
-        )
-        return discoverTvShowsGradually(config)
+    override fun fetchTopRatedTvShowsGradually(): Flow<PagingData<TvShow>> {
+        val config = TvShowDefaults.DiscoverDefaults.topRated()
+        return discoverTvShowsGradually(discoverConfig = config)
     }
 
-    override suspend fun fetchTopRatedTvShows(
-        watchRegion: String?,
-        originalLanguage: String?
-    ): Result<List<TvShow>, Failure<TvShowFailure>> {
-        val config = TvShowDefaults.DiscoverDefaults.topRated(
-            watchRegion = watchRegion,
-            originalLanguage = originalLanguage
-        )
-        return discoverTvShows(config)
+    override suspend fun fetchTopRatedTvShows(): Result<List<TvShow>, Failure<TvShowFailure>> {
+        val config = TvShowDefaults.DiscoverDefaults.topRated()
+        return discoverTvShows(discoverConfig = config)
     }
 
     override suspend fun fetchTrendingTvShows(

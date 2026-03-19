@@ -15,15 +15,15 @@ import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.analytics.TvAnalyticsValues
+import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
-import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.ui.home.HomeTvShowViewModel
 import com.ssverma.feature.tv.ui.home.component.DiscoverySection
 import com.ssverma.feature.tv.ui.home.component.HeroSection
 import com.ssverma.feature.tv.ui.home.component.TvGenres
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
-import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.AppSection
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
@@ -33,7 +33,7 @@ import com.ssverma.shared.ui.component.media.TvShowListItem
 @Composable
 fun TvShowHomeContent(
     viewModel: HomeTvShowViewModel,
-    openTvShowList: (TvShowListingArgs) -> Unit,
+    openTvShowList: (TvShowListingRoute) -> Unit,
     openTvShowDetails: (Int) -> Unit,
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
@@ -75,10 +75,11 @@ fun TvShowHomeContent(
                         )
                     )
                     openTvShowList(
-                        TvShowListingArgs(
-                            listingType = TvShowListingAvailableTypes.Genre,
-                            title = genre.name,
-                            genreId = genre.id
+                        TvShowListingRoute(
+                            args = TvShowListingArgs.ByGenre(
+                                genreId = genre.id,
+                                title = genre.name
+                            )
                         )
                     )
                 },
@@ -119,14 +120,14 @@ fun TvShowHomeContent(
                     )
                     openTvShowDetails(tvShow.id)
                 },
-                onSeeAllClicked = { args ->
+                onSeeAllClicked = { route ->
                     analytics.logEvent(
                         TvAnalyticsEvent.SeeAllClicked(
                             section = TvAnalyticsValues.SECTION_DISCOVERY,
                             sourceScreen = TvAnalyticsScreenName.TV_HOME
                         )
                     )
-                    openTvShowList(args)
+                    openTvShowList(route)
                 },
                 onFetchPopular = { viewModel.fetchPopularTvShows() },
                 onFetchTopRated = { viewModel.fetchTopRatedTvShows() },
@@ -149,9 +150,8 @@ fun TvShowHomeContent(
                         )
                     )
                     openTvShowList(
-                        TvShowListingArgs(
-                            listingType = TvShowListingAvailableTypes.TodayAiring,
-                            titleRes = R.string.airing_today
+                        TvShowListingRoute(
+                            args = TvShowListingArgs.TodayAiring(titleRes = R.string.airing_today)
                         )
                     )
                 },
@@ -175,7 +175,7 @@ fun TvShowHomeContent(
                     },
                     indicator = {
                         TvIndicator(
-                            type = TvShowListingAvailableTypes.TodayAiring,
+                            config = TvShowListingConfig.Filterable.TodayAiring(),
                             tvShow = it
                         )
                     },
@@ -196,9 +196,8 @@ fun TvShowHomeContent(
                         )
                     )
                     openTvShowList(
-                        TvShowListingArgs(
-                            listingType = TvShowListingAvailableTypes.NowAiring,
-                            titleRes = R.string.now_airing
+                        TvShowListingRoute(
+                            args = TvShowListingArgs.NowAiring(titleRes = R.string.now_airing)
                         )
                     )
                 },
@@ -222,7 +221,7 @@ fun TvShowHomeContent(
                     },
                     indicator = {
                         TvIndicator(
-                            type = TvShowListingAvailableTypes.NowAiring,
+                            config = TvShowListingConfig.Filterable.NowAiring(),
                             tvShow = it
                         )
                     },

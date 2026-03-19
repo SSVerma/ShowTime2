@@ -38,14 +38,15 @@ fun TvShowListScreen(
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     viewModel: TvShowListViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     TrackScreenView(
         screenName = TvAnalyticsScreenName.TV_LISTING,
-        screenClass = viewModel.tvShowListingConfig.asAnalyticsListingType()
+        screenClass = uiState.config.asAnalyticsListingType()
     )
 
     val analytics = LocalAnalytics.current
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val tvShowPagingItems = viewModel.pagedTvShows.collectAsLazyPagingItems()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -62,7 +63,7 @@ fun TvShowListScreen(
                 onOpenFilters = {
                     analytics.logEvent(
                         TvAnalyticsEvent.FilterClicked(
-                            listingType = viewModel.tvShowListingConfig.asAnalyticsListingType()
+                            listingType = uiState.config.asAnalyticsListingType()
                         )
                     )
                     coroutineScope.launch { sheetState.show() }
@@ -78,7 +79,7 @@ fun TvShowListScreen(
                 if (isGrid) {
                     TvShowsGridContent(
                         tvShowPagingItems = items,
-                        type = uiState.listingType,
+                        config = uiState.config,
                         openTvShowDetails = { tvShow ->
                             analytics.logEvent(
                                 TvAnalyticsEvent.TvShowClicked(
@@ -103,7 +104,7 @@ fun TvShowListScreen(
                 } else {
                     TvShowsListContent(
                         tvShowPagingItems = items,
-                        type = uiState.listingType,
+                        config = uiState.config,
                         openTvShowDetails = { tvShow ->
                             analytics.logEvent(
                                 TvAnalyticsEvent.TvShowClicked(

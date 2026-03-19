@@ -8,8 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedList
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
-import com.ssverma.feature.tv.navigation.args.TvShowListingType
+import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
@@ -18,7 +17,7 @@ import com.ssverma.shared.ui.component.media.TvShowListItem
 @Composable
 fun TvShowsListContent(
     tvShowPagingItems: LazyPagingItems<TvShowPreview>,
-    @TvShowListingType type: Int,
+    config: TvShowListingConfig,
     openTvShowDetails: (TvShowPreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
@@ -31,8 +30,8 @@ fun TvShowsListContent(
     ) { tvShow ->
         TvShowListItem(
             tvShow = tvShow,
-            showRating = type != TvShowListingAvailableTypes.Upcoming && type != TvShowListingAvailableTypes.TopRated,
-            indicator = { preview -> TvIndicator(type = type, tvShow = preview) },
+            showRating = config !is TvShowListingConfig.Filterable.Upcoming && config !is TvShowListingConfig.Filterable.TopRated,
+            indicator = { preview -> TvIndicator(config = config, tvShow = preview) },
             onWatchProviderClick = onWatchProviderClick,
             onClick = openTvShowDetails,
         )

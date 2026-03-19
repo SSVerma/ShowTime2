@@ -9,9 +9,8 @@ import com.ssverma.feature.movie.navigation.MovieDetailDestination
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.tv.navigation.TvShowDetailDestination
-import com.ssverma.feature.tv.navigation.TvShowListDestination
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
-import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubDestination
 
@@ -39,10 +38,9 @@ fun NavGraphBuilder.watchProviderHubGraph(
                     )
                 )
             } else {
-                navController.navigateTo(
-                    TvShowListDestination.actualRoute(
-                        TvShowListingArgs(
-                            listingType = TvShowListingAvailableTypes.Genre,
+                navController.navigate(
+                    route = TvShowListingRoute(
+                        args = TvShowListingArgs.ByGenre(
                             genreId = genre.id,
                             title = genre.name
                         )
@@ -61,7 +59,14 @@ fun NavGraphBuilder.watchProviderHubGraph(
             )
         },
         onTvSeeAllClick = { provider, discoverConfig ->
-            // TODO
+            navController.navigate(
+                route = TvShowListingRoute(
+                    args = TvShowListingArgs.Discovery(
+                        initialConfig = discoverConfig,
+                        title = provider.providerName
+                    )
+                )
+            )
         }
     )
 }

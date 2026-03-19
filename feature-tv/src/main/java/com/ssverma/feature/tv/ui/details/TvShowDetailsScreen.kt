@@ -51,8 +51,8 @@ import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.analytics.TvAnalyticsValues
 import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
-import com.ssverma.feature.tv.navigation.args.TvShowListingAvailableTypes
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
@@ -82,7 +82,7 @@ fun TvShowDetailsScreen(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (tvShowId: Int) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
+    openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     viewModel: TvShowDetailsViewModel = hiltViewModel()
 ) {
@@ -125,7 +125,7 @@ private fun TvShowContent(
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    openTvShowList: (listingArgs: TvShowListingArgs) -> Unit,
+    openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -281,10 +281,11 @@ private fun TvShowContent(
                         )
                     )
                     openTvShowList(
-                        TvShowListingArgs(
-                            listingType = TvShowListingAvailableTypes.Genre,
-                            title = genre.name,
-                            genreId = genre.id
+                        TvShowListingRoute(
+                            args = TvShowListingArgs.ByGenre(
+                                genreId = genre.id,
+                                title = genre.name
+                            )
                         )
                     )
                 }
@@ -453,10 +454,11 @@ private fun TvShowContent(
                         )
                     )
                     openTvShowList(
-                        TvShowListingArgs(
-                            listingType = TvShowListingAvailableTypes.Keyword,
-                            title = keyword.name,
-                            keywordId = keyword.id
+                        TvShowListingRoute(
+                            args = TvShowListingArgs.ByKeyword(
+                                keywordId = keyword.id,
+                                title = keyword.name
+                            )
                         )
                     )
                 },

@@ -232,6 +232,23 @@ sealed interface DiscoverOption {
             val date: LocalDate,
             override val mode: OptionMode = OptionMode.SingleValue
         ) : AirDate
+    }
+
+    @Serializable
+    sealed interface FirstAirDate : OptionScope.Tv {
+        @Serializable
+        data class From(
+            @Serializable(with = LocalDateSerializer::class)
+            val date: LocalDate,
+            override val mode: OptionMode = OptionMode.SingleValue
+        ) : AirDate
+
+        @Serializable
+        data class To(
+            @Serializable(with = LocalDateSerializer::class)
+            val date: LocalDate,
+            override val mode: OptionMode = OptionMode.SingleValue
+        ) : AirDate
 
         @Serializable
         data class Year(
