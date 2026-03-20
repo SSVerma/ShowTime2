@@ -1,6 +1,7 @@
 package com.ssverma.showtime
 
 import android.app.Application
+import com.ssverma.core.ads.initializer.AdInitializer
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.showtime.analytics.AnalyticsSyncManager
 import dagger.hilt.android.HiltAndroidApp
@@ -14,9 +15,13 @@ class ShowTimeApp : Application() {
     @Inject
     lateinit var analyticsSyncManager: AnalyticsSyncManager
 
+    @Inject
+    lateinit var adInitializer: AdInitializer
+
     override fun onCreate() {
         super.onCreate()
         appConfigProvider.fetchAndActivate()
         analyticsSyncManager.startSync()
+        adInitializer.initialize()
     }
 }

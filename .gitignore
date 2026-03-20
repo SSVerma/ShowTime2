@@ -25,6 +25,7 @@ feature-search-navigation/build
 /release
 /local.properties
 /core.properties
+/release-ads.properties
 **/.DS_Store
 buildSrc/build
 buildSrc/.gradle

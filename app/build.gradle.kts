@@ -1,5 +1,4 @@
 import java.util.Properties
-import com.android.build.api.dsl.ApplicationExtension
 
 plugins {
     id("com.android.application")
@@ -135,6 +134,7 @@ dependencies {
     implementation(projects.coreNetworking)
     implementation(projects.coreAnalytics)
     implementation(projects.coreCcm)
+    implementation(projects.coreAds)
 
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)

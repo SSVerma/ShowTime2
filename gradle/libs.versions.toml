@@ -48,6 +48,7 @@ javax-inject = "1"
 # Firebase
 firebase-bom = "34.10.0"
 google-services = "4.4.4"
+play-services = "25.1.0"
 
 kotlinx-serialization = "1.10.0"
 
@@ -101,6 +102,9 @@ desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebase-remote-config = { group = "com.google.firebase", name = "firebase-config" }
+
+# Play services
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services" }
 
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }

@@ -5,6 +5,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.CompositionLocalProvider
+import com.ssverma.core.ads.config.AdConfigProvider
+import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.shared.ui.AppStateHolder
@@ -20,6 +22,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var analytics: Analytics
 
+    @Inject
+    lateinit var adConfigProvider: AdConfigProvider
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -27,6 +32,7 @@ class MainActivity : AppCompatActivity() {
             CompositionLocalProvider(
                 LocalAppStateHolder provides appStateHolder,
                 LocalAnalytics provides analytics,
+                LocalAdConfigProvider provides adConfigProvider
             ) {
                 ShowTime()
             }
