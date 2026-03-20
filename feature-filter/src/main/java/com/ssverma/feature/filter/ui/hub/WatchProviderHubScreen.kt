@@ -66,7 +66,7 @@ fun WatchProviderHubScreen(
                 onMovieSeeAllClick(uiState.provider, discoverConfig)
             },
             onTvSeeAllClick = { discoverConfig ->
-                // TODO
+                onTvSeeAllClick(uiState.provider, discoverConfig)
             }
         )
     }

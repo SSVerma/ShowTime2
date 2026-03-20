@@ -62,6 +62,7 @@ import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.filter.ui.hub.MediaPreview
 import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
+import com.ssverma.feature.filter.ui.hub.config.TvHubDiscoverConfig
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.Genre
@@ -164,7 +165,9 @@ fun WatchProviderHubContent(
                                     MovieHubDiscoverConfig.newReleases(providerId = provider.providerId)
                                 )
                             } else {
-                                // TODO
+                                onTvSeeAllClick(
+                                    TvHubDiscoverConfig.newReleases(providerId = provider.providerId)
+                                )
                             }
                         },
                     )
@@ -183,7 +186,9 @@ fun WatchProviderHubContent(
                                     MovieHubDiscoverConfig.upcoming(providerId = provider.providerId)
                                 )
                             } else {
-                                // TODO
+                                onTvSeeAllClick(
+                                    TvHubDiscoverConfig.upcoming(providerId = provider.providerId)
+                                )
                             }
                         },
                     )
@@ -202,7 +207,9 @@ fun WatchProviderHubContent(
                                     MovieHubDiscoverConfig.topRated(providerId = provider.providerId)
                                 )
                             } else {
-                                // TODO
+                                onTvSeeAllClick(
+                                    TvHubDiscoverConfig.topRated(providerId = provider.providerId)
+                                )
                             }
                         },
                     )
