@@ -1,12 +1,13 @@
 package com.ssverma.core.ccm.firebase
 
-import com.google.firebase.remoteconfig.BuildConfig
 import com.google.firebase.remoteconfig.ConfigUpdate
 import com.google.firebase.remoteconfig.ConfigUpdateListener
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue
 import com.ssverma.core.ccm.AppConfigProvider
+import com.ssverma.core.ccm.BuildConfig
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -36,33 +37,37 @@ class FirebaseAppConfigProvider @Inject constructor() : AppConfigProvider {
 
     // --- One-Shot Reads ---
 
-    override fun getBoolean(key: String, defaultValue: Boolean): Boolean {
-        return try {
-            remoteConfig.getBoolean(key)
-        } catch (e: Exception) {
-            defaultValue
-        }
-    }
+    override fun getBoolean(key: String, defaultValue: Boolean): Boolean =
+        getRemoteValue(key = key, defaultValue = defaultValue) { it.asBoolean() }
 
-    override fun getString(key: String, defaultValue: String): String {
-        return try {
-            remoteConfig.getString(key).takeIf { it.isNotEmpty() } ?: defaultValue
-        } catch (e: Exception) {
-            defaultValue
-        }
-    }
+    override fun getString(key: String, defaultValue: String): String =
+        getRemoteValue(key = key, defaultValue = defaultValue) { it.asString() }
 
-    override fun getLong(key: String, defaultValue: Long): Long {
-        return try {
-            remoteConfig.getLong(key)
-        } catch (e: Exception) {
-            defaultValue
-        }
-    }
+    override fun getLong(key: String, defaultValue: Long): Long =
+        getRemoteValue(key = key, defaultValue = defaultValue) { it.asLong() }
 
-    override fun getDouble(key: String, defaultValue: Double): Double {
+    override fun getDouble(key: String, defaultValue: Double): Double =
+        getRemoteValue(key = key, defaultValue = defaultValue) { it.asDouble() }
+
+    /**
+     * Universal helper to safely extract Firebase values.
+     * Prevents Firebase from silently returning 0, false, or "" when a key is missing.
+     */
+    private inline fun <T> getRemoteValue(
+        key: String,
+        defaultValue: T,
+        extractor: (FirebaseRemoteConfigValue) -> T
+    ): T {
         return try {
-            remoteConfig.getDouble(key)
+            val remoteValue = remoteConfig.getValue(key)
+
+            // If the source is STATIC, Firebase has no record of this key on the server
+            // or in local XML defaults. We MUST use our Kotlin default.
+            if (remoteValue.source == FirebaseRemoteConfig.VALUE_SOURCE_STATIC) {
+                defaultValue
+            } else {
+                extractor(remoteValue)
+            }
         } catch (e: Exception) {
             defaultValue
         }

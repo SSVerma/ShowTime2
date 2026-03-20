@@ -25,3 +25,14 @@ fun <S, FeatureFailure> Result<S, Failure<FeatureFailure>>.asSuccessOrErrorUiSta
         }
     }
 }
+
+fun <S, FeatureFailure, R> UiState<S, FeatureFailure>.mapSuccess(
+    transform: (S) -> R
+): UiState<R, FeatureFailure> {
+    return when (this) {
+        is UiState.Success -> UiState.Success(transform(this.data))
+        is UiState.Error -> this
+        UiState.Idle -> UiState.Idle
+        UiState.Loading -> UiState.Loading
+    }
+}

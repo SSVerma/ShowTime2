@@ -1,6 +1,7 @@
 package com.ssverma.feature.movie.ui.home.content
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
@@ -9,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.R
@@ -22,6 +24,11 @@ import com.ssverma.feature.movie.ui.home.component.DiscoverySection
 import com.ssverma.feature.movie.ui.home.component.HeroSection
 import com.ssverma.feature.movie.ui.home.component.MovieGenres
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
+import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppSection
@@ -43,6 +50,10 @@ fun MovieHomeContent(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
 
+    val feedInlineAd = rememberNativeAd(
+        analyticsEventPrefix = "movie_home_feed_inline_native"
+    )
+
     LazyColumn(modifier = modifier.fillMaxSize()) {
         item {
             HeroSection(
@@ -60,7 +71,8 @@ fun MovieHomeContent(
                     openMovieDetails(movie.id)
                 },
                 onWatchProviderClick = openWatchProviderHub,
-                onRetry = { viewModel.fetchTrendingMovies() }
+                onRetry = { viewModel.fetchTrendingMovies() },
+                onAdLoaded = viewModel::onNativeAdLoaded
             )
         }
 
@@ -104,6 +116,18 @@ fun MovieHomeContent(
         }
 
         item {
+            ShowTimeNativeAd(
+                ad = feedInlineAd,
+                loadInternally = false, // Tell the UI NOT to fetch a new ad!
+                style = NativeAdStyle.List,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = MaterialTheme.spacing.medium)
+                    .padding(horizontal = MaterialTheme.spacing.medium)
+            )
+        }
+
+        item {
             DiscoverySection(
                 popularMoviesState = uiState.popularMovies,
                 topRatedMoviesState = uiState.topRatedMovies,
@@ -131,6 +155,7 @@ fun MovieHomeContent(
                 onFetchTopRated = { viewModel.fetchTopRatedMovies() },
                 onFetchUpcoming = { viewModel.fetchUpcomingMovies() },
                 onWatchProviderClick = openWatchProviderHub,
+                onAdLoaded = viewModel::onNativeAdLoaded,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
@@ -156,29 +181,49 @@ fun MovieHomeContent(
                 onRetry = { viewModel.fetchInCinemaMovies() },
                 loadingPlaceholder = { MediaListItemShimmer() },
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium),
-            ) { moviePreview ->
-                MovieListItem(
-                    movie = moviePreview,
-                    showRating = true,
-                    onClick = {
-                        analytics.logEvent(
-                            MovieAnalyticsEvent.MovieClicked(
-                                movie = it,
-                                section = MovieAnalyticsValues.SECTION_IN_CINEMAS,
-                                sourceScreen = MovieAnalyticsScreenName.MOVIE_HOME,
+                content = { injectableItem: AdInjectable<MoviePreview> ->
+                    when (injectableItem) {
+                        is InjectableAd -> {
+                            ShowTimeNativeAd(
+                                ad = injectableItem.ad,
+                                onAdLoaded = { ad ->
+                                    viewModel.onNativeAdLoaded(
+                                        injectableItem,
+                                        ad
+                                    )
+                                },
+                                style = injectableItem.style
                             )
-                        )
-                        openMovieDetails(it.id)
-                    },
-                    overlayContent = null,
-                    indicator = {
-                        MovieIndicator(
-                            config = MovieListingConfig.Filterable.NowInCinemas(),
-                            movie = it
-                        )
-                    },
-                )
-            }
+                        }
+
+                        is InjectableContent<*> -> {
+                            val moviePreview =
+                                (injectableItem as InjectableContent<MoviePreview>).item
+                            MovieListItem(
+                                movie = moviePreview,
+                                showRating = true,
+                                onClick = {
+                                    analytics.logEvent(
+                                        MovieAnalyticsEvent.MovieClicked(
+                                            movie = it,
+                                            section = MovieAnalyticsValues.SECTION_IN_CINEMAS,
+                                            sourceScreen = MovieAnalyticsScreenName.MOVIE_HOME,
+                                        )
+                                    )
+                                    openMovieDetails(it.id)
+                                },
+                                overlayContent = null,
+                                indicator = {
+                                    MovieIndicator(
+                                        config = MovieListingConfig.Filterable.NowInCinemas(),
+                                        movie = it
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+            )
         }
 
 

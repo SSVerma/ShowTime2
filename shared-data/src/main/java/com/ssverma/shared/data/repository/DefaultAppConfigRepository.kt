@@ -139,6 +139,6 @@ class DefaultAppConfigRepository @Inject constructor(
         private val AnalyticsEnabledKey = booleanPreferencesKey("analytics_enabled")
 
         // Define the remote key here since this domain owns the knowledge of what it's used for
-        private const val REMOTE_KEY_ANALYTICS_ENABLED = "is_analytics_enabled_globally"
+        private const val REMOTE_KEY_ANALYTICS_ENABLED = "remote_analytics_enabled"
     }
 }

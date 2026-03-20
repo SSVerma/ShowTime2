@@ -2,7 +2,9 @@ package com.ssverma.feature.tv.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ui.UiState
+import com.ssverma.core.ui.mapSuccess
 import com.ssverma.feature.tv.domain.usecase.NowAiringTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TodayAiringTvShowsUseCase
@@ -10,6 +12,12 @@ import com.ssverma.feature.tv.domain.usecase.TopRatedTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.feature.tv.domain.usecase.UpcomingTvShowsUseCase
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.AdInjectionConfig
+import com.ssverma.shared.ads.injection.AdPlacement
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.injectAds
+import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
@@ -36,7 +44,6 @@ class HomeTvShowViewModel @Inject constructor(
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
     private val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
-
 
     private val _uiState = MutableStateFlow(HomeTvUiState())
     val uiState: StateFlow<HomeTvUiState> = _uiState.asStateFlow()
@@ -65,6 +72,11 @@ class HomeTvShowViewModel @Inject constructor(
         fetchWatchProviders()
     }
 
+    private val homeAdConfig = AdInjectionConfig(
+        placement = AdPlacement.Fixed(positions = listOf(1)),
+        style = NativeAdStyle.Grid
+    )
+
     fun fetchTvGenres() = viewModelScope.launch {
         _uiState.update { it.copy(genres = UiState.Loading) }
         when (val result = tvGenresUseCase()) {
@@ -78,7 +90,14 @@ class HomeTvShowViewModel @Inject constructor(
         when (val result = trendingTvShowsUseCase(TimeWindow.Daily)) {
             is Result.Success -> {
                 _uiState.update {
-                    it.copy(trendingTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
+                    it.copy(
+                        trendingTvShows = UiState.Success(
+                            result.data
+                                .distinctBy { t -> t.id } // Safety Filter
+                                .map { t -> t.asTvShowPreview() }
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.Carousel))
+                        )
+                    )
                 }
             }
 
@@ -91,7 +110,15 @@ class HomeTvShowViewModel @Inject constructor(
         when (val result = todayAiringTvShowsUseCase()) {
             is Result.Success -> {
                 _uiState.update {
-                    it.copy(todayAiringTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
+                    it.copy(
+                        todayAiringTvShows = UiState.Success(
+                            result.data
+                                .distinctBy { t -> t.id }
+                                .map { t -> t.asTvShowPreview() }
+                                .take(5)
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.List))
+                        )
+                    )
                 }
             }
 
@@ -108,7 +135,14 @@ class HomeTvShowViewModel @Inject constructor(
             when (val result = popularTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(popularTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
+                        it.copy(
+                            popularTvShows = UiState.Success(
+                                result.data
+                                    .distinctBy { t -> t.id }
+                                    .map { t -> t.asTvShowPreview() }
+                                    .injectAds(homeAdConfig)
+                            )
+                        )
                     }
                 }
 
@@ -126,7 +160,14 @@ class HomeTvShowViewModel @Inject constructor(
             when (val result = topRatedTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(topRatedTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
+                        it.copy(
+                            topRatedTvShows = UiState.Success(
+                                result.data
+                                    .distinctBy { t -> t.id }
+                                    .map { t -> t.asTvShowPreview() }
+                                    .injectAds(homeAdConfig)
+                            )
+                        )
                     }
                 }
 
@@ -144,7 +185,14 @@ class HomeTvShowViewModel @Inject constructor(
             when (val result = upcomingTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(upcomingTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
+                        it.copy(
+                            upcomingTvShows = UiState.Success(
+                                result.data
+                                    .distinctBy { t -> t.id }
+                                    .map { t -> t.asTvShowPreview() }
+                                    .injectAds(homeAdConfig)
+                            )
+                        )
                     }
                 }
 
@@ -162,12 +210,56 @@ class HomeTvShowViewModel @Inject constructor(
             when (val result = nowAiringTvShowsUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(nowAiringTvShows = UiState.Success(result.data.map { t -> t.asTvShowPreview() }))
+                        it.copy(
+                            nowAiringTvShows = UiState.Success(
+                                result.data
+                                    .distinctBy { t -> t.id }
+                                    .map { t -> t.asTvShowPreview() }
+                                    .injectAds(homeAdConfig.copy(style = NativeAdStyle.List))
+                            )
+                        )
                     }
                 }
 
                 is Result.Error -> _uiState.update { it.copy(nowAiringTvShows = UiState.Error(result.error)) }
             }
+        }
+    }
+
+    fun onNativeAdLoaded(
+        injectableAd: InjectableAd,
+        nativeAd: NativeAd
+    ) {
+        // 1. Anti-Loop Shield: If this ad is already set, do absolutely nothing.
+        if (injectableAd.ad === nativeAd) return
+
+        _uiState.update { currentState ->
+
+            // 2. Smart Updater: Operates purely on the List to prevent full-screen recomposition
+            fun <T> List<AdInjectable<T>>.updateAdIfPresent(): List<AdInjectable<T>> {
+                var adFound = false
+
+                val updatedList = this.map { item ->
+                    if (item is InjectableAd && item.id == injectableAd.id) {
+                        adFound = true
+                        item.copy(ad = nativeAd)
+                    } else {
+                        item
+                    }
+                }
+
+                // If the ad wasn't in this list, return the EXACT original list reference.
+                return if (adFound) updatedList else this
+            }
+
+            currentState.copy(
+                trendingTvShows = currentState.trendingTvShows.mapSuccess { it.updateAdIfPresent() },
+                todayAiringTvShows = currentState.todayAiringTvShows.mapSuccess { it.updateAdIfPresent() },
+                popularTvShows = currentState.popularTvShows.mapSuccess { it.updateAdIfPresent() },
+                topRatedTvShows = currentState.topRatedTvShows.mapSuccess { it.updateAdIfPresent() },
+                upcomingTvShows = currentState.upcomingTvShows.mapSuccess { it.updateAdIfPresent() },
+                nowAiringTvShows = currentState.nowAiringTvShows.mapSuccess { it.updateAdIfPresent() }
+            )
         }
     }
 

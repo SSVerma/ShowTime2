@@ -20,5 +20,5 @@ dependencies {
 
     implementation(projects.coreAnalytics)
     implementation(projects.sharedAnalytics)
-    implementation(projects.coreAds)
+    implementation(projects.sharedAds)
 }

@@ -1,7 +1,7 @@
 package com.ssverma.showtime
 
 import android.app.Application
-import com.ssverma.core.ads.initializer.AdInitializer
+import com.ssverma.core.ads.AdInitializer
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.showtime.analytics.AnalyticsSyncManager
 import dagger.hilt.android.HiltAndroidApp

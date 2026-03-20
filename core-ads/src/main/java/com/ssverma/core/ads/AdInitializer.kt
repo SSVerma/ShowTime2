@@ -1,4 +1,4 @@
-package com.ssverma.core.ads.initializer
+package com.ssverma.core.ads
 
 import android.content.Context
 import com.google.android.gms.ads.MobileAds

@@ -366,5 +366,4 @@ object SectionDefaults {
     }
 }
 
-private val SectionListContentPadding = PaddingValues(start = 16.dp, end = 16.dp)
-private val SectionListHorizontalArrangement = Arrangement.spacedBy(16.dp)
+

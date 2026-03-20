@@ -1,6 +1,7 @@
 package com.ssverma.feature.tv.ui.home.content
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
@@ -9,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
@@ -23,7 +25,13 @@ import com.ssverma.feature.tv.ui.home.component.DiscoverySection
 import com.ssverma.feature.tv.ui.home.component.HeroSection
 import com.ssverma.feature.tv.ui.home.component.TvGenres
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
+import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.AppSection
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
@@ -42,6 +50,9 @@ fun TvShowHomeContent(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
+    val feedInlineAd = rememberNativeAd(
+        analyticsEventPrefix = "tv_home_feed_inline_native"
+    )
 
     LazyColumn(modifier = modifier.fillMaxSize()) {
         item {
@@ -60,7 +71,8 @@ fun TvShowHomeContent(
                     openTvShowDetails(tvShow.id)
                 },
                 onWatchProviderClick = openWatchProviderHub,
-                onRetry = { viewModel.fetchTrendingTvShows() }
+                onRetry = { viewModel.fetchTrendingTvShows() },
+                onAdLoaded = viewModel::onNativeAdLoaded
             )
         }
 
@@ -106,6 +118,18 @@ fun TvShowHomeContent(
         }
 
         item {
+            ShowTimeNativeAd(
+                ad = feedInlineAd,
+                loadInternally = false,
+                style = NativeAdStyle.List,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = MaterialTheme.spacing.medium)
+                    .padding(horizontal = MaterialTheme.spacing.medium)
+            )
+        }
+
+        item {
             DiscoverySection(
                 popularTvShowsState = uiState.popularTvShows,
                 topRatedTvShowsState = uiState.topRatedTvShows,
@@ -133,6 +157,7 @@ fun TvShowHomeContent(
                 onFetchTopRated = { viewModel.fetchTopRatedTvShows() },
                 onFetchUpcoming = { viewModel.fetchUpcomingTvShows() },
                 onWatchProviderClick = openWatchProviderHub,
+                onAdLoaded = viewModel::onNativeAdLoaded,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
@@ -158,29 +183,49 @@ fun TvShowHomeContent(
                 onRetry = { viewModel.fetchTodayAiringTvShows() },
                 loadingPlaceholder = { MediaListItemShimmer() },
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium),
-            ) { tvShowPreview ->
-                TvShowListItem(
-                    tvShow = tvShowPreview,
-                    showRating = true,
-                    onWatchProviderClick = openWatchProviderHub,
-                    onClick = {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.TvShowClicked(
-                                tvShow = it,
-                                section = TvAnalyticsValues.SECTION_ON_THE_AIR,
-                                sourceScreen = TvAnalyticsScreenName.TV_HOME
+                content = { injectableItem: AdInjectable<TvShowPreview> ->
+                    when (injectableItem) {
+                        is InjectableAd -> {
+                            ShowTimeNativeAd(
+                                ad = injectableItem.ad,
+                                onAdLoaded = { ad ->
+                                    viewModel.onNativeAdLoaded(
+                                        injectableItem,
+                                        ad
+                                    )
+                                },
+                                style = injectableItem.style
                             )
-                        )
-                        openTvShowDetails(it.id)
-                    },
-                    indicator = {
-                        TvIndicator(
-                            config = TvShowListingConfig.Filterable.TodayAiring(),
-                            tvShow = it
-                        )
-                    },
-                )
-            }
+                        }
+
+                        is InjectableContent<*> -> {
+                            val tvShowPreview =
+                                (injectableItem as InjectableContent<TvShowPreview>).item
+                            TvShowListItem(
+                                tvShow = tvShowPreview,
+                                showRating = true,
+                                onWatchProviderClick = openWatchProviderHub,
+                                onClick = {
+                                    analytics.logEvent(
+                                        TvAnalyticsEvent.TvShowClicked(
+                                            tvShow = it,
+                                            section = TvAnalyticsValues.SECTION_ON_THE_AIR,
+                                            sourceScreen = TvAnalyticsScreenName.TV_HOME
+                                        )
+                                    )
+                                    openTvShowDetails(it.id)
+                                },
+                                indicator = {
+                                    TvIndicator(
+                                        config = TvShowListingConfig.Filterable.TodayAiring(),
+                                        tvShow = it
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+            )
         }
 
         item {
@@ -204,29 +249,49 @@ fun TvShowHomeContent(
                 onRetry = { viewModel.fetchNowAiringTvShows() },
                 loadingPlaceholder = { MediaListItemShimmer() },
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium),
-            ) { tvShowPreview ->
-                TvShowListItem(
-                    tvShow = tvShowPreview,
-                    showRating = true,
-                    onWatchProviderClick = openWatchProviderHub,
-                    onClick = {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.TvShowClicked(
-                                tvShow = it,
-                                section = TvAnalyticsValues.SECTION_ON_THE_AIR,
-                                sourceScreen = TvAnalyticsScreenName.TV_HOME
+                content = { injectableItem: AdInjectable<TvShowPreview> ->
+                    when (injectableItem) {
+                        is InjectableAd -> {
+                            ShowTimeNativeAd(
+                                ad = injectableItem.ad,
+                                onAdLoaded = { ad ->
+                                    viewModel.onNativeAdLoaded(
+                                        injectableItem,
+                                        ad
+                                    )
+                                },
+                                style = injectableItem.style
                             )
-                        )
-                        openTvShowDetails(it.id)
-                    },
-                    indicator = {
-                        TvIndicator(
-                            config = TvShowListingConfig.Filterable.NowAiring(),
-                            tvShow = it
-                        )
-                    },
-                )
-            }
+                        }
+
+                        is InjectableContent<*> -> {
+                            val tvShowPreview =
+                                (injectableItem as InjectableContent<TvShowPreview>).item
+                            TvShowListItem(
+                                tvShow = tvShowPreview,
+                                showRating = true,
+                                onWatchProviderClick = openWatchProviderHub,
+                                onClick = {
+                                    analytics.logEvent(
+                                        TvAnalyticsEvent.TvShowClicked(
+                                            tvShow = it,
+                                            section = TvAnalyticsValues.SECTION_ON_THE_AIR,
+                                            sourceScreen = TvAnalyticsScreenName.TV_HOME
+                                        )
+                                    )
+                                    openTvShowDetails(it.id)
+                                },
+                                indicator = {
+                                    TvIndicator(
+                                        config = TvShowListingConfig.Filterable.NowAiring(),
+                                        tvShow = it
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+            )
         }
 
 

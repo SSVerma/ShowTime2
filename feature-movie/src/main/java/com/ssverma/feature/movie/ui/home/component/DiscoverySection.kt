@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -37,6 +38,13 @@ import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.MediaItemShimmer
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
+import com.google.android.gms.ads.nativead.NativeAd
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.ui.NativeAdStyle
+
 import com.ssverma.shared.ui.component.media.MovieGridItem
 
 data class DiscoveryCategory(
@@ -57,6 +65,7 @@ fun DiscoverySection(
     onMovieClicked: (movie: MoviePreview) -> Unit,
     onSeeAllClicked: (MovieListingArgs) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
+    onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -137,31 +146,44 @@ fun DiscoverySection(
                     }
                 }
             ) { movies ->
-                HorizontalLazyList(
-                    items = movies,
+                LazyRow(
                     contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.large),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
-                ) { moviePreview ->
-                    MovieGridItem(
-                        movie = moviePreview,
-                        showRating = category.route !is MovieListingArgs.Upcoming && category.route !is MovieListingArgs.TopRated,
-                        indicator = { preview ->
-                            MovieIndicator(
-                                config = category.route.asMovieListingConfig(),
-                                movie = preview
-                            )
-                        },
-                        onClick = onMovieClicked,
-                        overlayContent = {
-                            WatchProviderTrigger(
-                                mediaId = it.id,
-                                isMovie = true,
-                                variant = WatchProviderTriggerVariant.Icon,
-                                modifier = Modifier.padding(MaterialTheme.spacing.small),
-                                onWatchProviderClick = onWatchProviderClick,
-                            )
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                ) {
+                    items(movies) { injectableItem ->
+                        when (val element = injectableItem) {
+                            is InjectableAd -> {
+                                ShowTimeNativeAd(
+                                    ad = element.ad,
+                                    onAdLoaded = { ad -> onAdLoaded(element, ad) },
+                                    style = element.style
+                                )
+                            }
+
+                            is InjectableContent<*> -> {
+                                @Suppress("UNCHECKED_CAST")
+                                val moviePreview = (element as InjectableContent<MoviePreview>).item
+                                MovieGridItem(
+                                    movie = moviePreview,
+                                    onClick = onMovieClicked,
+                                    indicator = {
+                                        MovieIndicator(
+                                            config = category.route.asMovieListingConfig(),
+                                            movie = it
+                                        )
+                                    },
+                                    overlayContent = {
+                                        WatchProviderTrigger(
+                                            mediaId = moviePreview.id,
+                                            isMovie = true,
+                                            variant = WatchProviderTriggerVariant.Icon,
+                                            onWatchProviderClick = onWatchProviderClick,
+                                        )
+                                    }
+                                )
+                            }
                         }
-                    )
+                    }
                 }
             }
         }

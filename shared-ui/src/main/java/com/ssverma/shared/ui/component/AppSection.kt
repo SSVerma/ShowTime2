@@ -23,6 +23,7 @@ fun <T, FF> AppSection(
     onRetry: () -> Unit,
     loadingPlaceholder: @Composable () -> Unit,
     isVertical: Boolean = false,
+    maxVerticalItems: Int = 5,
     content: @Composable (T) -> Unit
 ) {
     Section(
@@ -60,7 +61,10 @@ fun <T, FF> AppSection(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items.take(5).forEach { content(it) }
+                        val limit = minOf(maxVerticalItems, items.size)
+                        for (i in 0 until limit) {
+                            content(items[i])
+                        }
                     }
                 } else {
                     HorizontalLazyList(items = items) { content(it) }

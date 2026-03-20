@@ -16,8 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,19 +23,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
+import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.StatefulContent
-import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.movie.domain.failure.MovieFailure
+import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
+import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.HomePageAppBar
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
@@ -45,12 +48,13 @@ import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeroSection(
-    trendingMoviesState: UiState<List<MoviePreview>, MovieFailure>,
+    trendingMoviesState: MoviePreviewUiState,
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
     onMovieClicked: (movie: MoviePreview) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     onRetry: () -> Unit,
+    onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     modifier: Modifier = Modifier,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
@@ -88,8 +92,13 @@ fun HeroSection(
     ) { movies ->
         val carouselState = rememberCarouselState { movies.size }
 
-        val currentBackdrop by remember {
-            derivedStateOf { movies.getOrNull(carouselState.currentItem)?.backdropImageUrl }
+        val currentBackdrop = remember(movies, carouselState.currentItem) {
+            val currentItem = movies.getOrNull(carouselState.currentItem)
+            if (currentItem is InjectableContent<*>) {
+                (currentItem as InjectableContent<MoviePreview>).item.backdropImageUrl
+            } else {
+                null
+            }
         }
 
         val scrimColor = MaterialTheme.colorScheme.background
@@ -130,11 +139,27 @@ fun HeroSection(
                     maxItemWidth = maxItemWidth,
                     itemHeight = itemHeight,
                     contentPadding = contentPadding,
-                    imageUrl = { it.posterImageUrl },
-                    title = { it.title },
-                    onItemClick = onMovieClicked,
-                    overlayContent = overlayContent
-                )
+                ) { injectableItem: AdInjectable<MoviePreview> ->
+                    when (injectableItem) {
+                        is InjectableAd -> {
+                            ShowTimeNativeAd(
+                                ad = injectableItem.ad,
+                                onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                                style = injectableItem.style
+                            )
+                        }
+
+                        is InjectableContent<*> -> {
+                            val movie = (injectableItem as InjectableContent<MoviePreview>).item
+                            HeroItem(
+                                title = movie.title,
+                                imageUrl = movie.posterImageUrl,
+                                onClick = { onMovieClicked(movie) },
+                                overlayContent = { overlayContent?.invoke(movie) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }

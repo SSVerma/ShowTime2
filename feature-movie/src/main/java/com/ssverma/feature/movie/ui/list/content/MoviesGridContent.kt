@@ -45,7 +45,7 @@ fun MoviesGridContent(
             onClick = { preview -> openMovieDetails(preview) },
             overlayContent = {
                 WatchProviderTrigger(
-                    mediaId = it.id,
+                    mediaId = movie.id,
                     isMovie = true,
                     variant = WatchProviderTriggerVariant.Icon,
                     onWatchProviderClick = onWatchProviderClick,

@@ -28,29 +28,33 @@ import androidx.compose.ui.unit.Dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.StatefulContent
-import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.tv.domain.failure.TvShowFailure
+import com.ssverma.feature.tv.ui.common.TvShowPreviewUiState
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
+import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
+import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.HomePageAppBar
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
-import com.ssverma.shared.ui.component.AppHeroCarousel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeroSection(
-    trendingTvShowsState: UiState<List<TvShowPreview>, TvShowFailure>,
+    trendingTvShowsState: TvShowPreviewUiState,
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
     onTvShowClicked: (TvShowPreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     onRetry: () -> Unit,
+    onAdLoaded: (InjectableAd, com.google.android.gms.ads.nativead.NativeAd) -> Unit,
     modifier: Modifier = Modifier,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
@@ -88,8 +92,16 @@ fun HeroSection(
     ) { tvShows ->
         val carouselState = rememberCarouselState { tvShows.size }
 
-        val currentBackdrop by remember {
-            derivedStateOf { tvShows.getOrNull(carouselState.currentItem)?.backdropImageUrl }
+        val currentBackdrop by remember(tvShows, carouselState.currentItem) {
+            derivedStateOf {
+                val currentItem = tvShows.getOrNull(carouselState.currentItem)
+                if (currentItem is InjectableContent<*>) {
+                    @Suppress("UNCHECKED_CAST")
+                    (currentItem as InjectableContent<TvShowPreview>).item.backdropImageUrl
+                } else {
+                    null
+                }
+            }
         }
 
         val scrimColor = MaterialTheme.colorScheme.background
@@ -124,17 +136,33 @@ fun HeroSection(
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-                AppHeroCarousel(
+                AppHeroCarousel<AdInjectable<TvShowPreview>>(
                     items = tvShows,
                     carouselState = carouselState,
                     maxItemWidth = maxItemWidth,
                     itemHeight = itemHeight,
                     contentPadding = contentPadding,
-                    imageUrl = { it.posterImageUrl },
-                    title = { it.title },
-                    onItemClick = onTvShowClicked,
-                    overlayContent = overlayContent
-                )
+                ) { injectableItem: AdInjectable<TvShowPreview> ->
+                    when (injectableItem) {
+                        is InjectableAd -> {
+                            com.ssverma.shared.ads.native.ShowTimeNativeAd(
+                                ad = injectableItem.ad,
+                                onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                                style = injectableItem.style
+                            )
+                        }
+
+                        is InjectableContent<*> -> {
+                            val tvShow = (injectableItem as InjectableContent<TvShowPreview>).item
+                            HeroItem(
+                                title = tvShow.title,
+                                imageUrl = tvShow.posterImageUrl,
+                                onClick = { onTvShowClicked(tvShow) },
+                                overlayContent = { overlayContent?.invoke(tvShow) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }

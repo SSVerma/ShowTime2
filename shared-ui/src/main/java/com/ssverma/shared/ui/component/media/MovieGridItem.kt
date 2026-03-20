@@ -31,16 +31,19 @@ fun MovieGridItem(
     posterModifier: Modifier = Modifier,
     showRating: Boolean = true,
     indicator: (@Composable (MoviePreview) -> Unit)? = null,
-    overlayContent: (@Composable (MoviePreview) -> Unit)?,
+    overlayContent: (@Composable () -> Unit)? = null,
     onClick: (MoviePreview) -> Unit,
 ) {
+
     Column(modifier = modifier) {
         MediaPoster(
             posterImageUrl = movie.posterImageUrl,
-            indicator = indicator?.let { { it(movie) } },
+            indicator = if (indicator != null) {
+                { indicator(movie) }
+            } else null,
             onClick = { onClick(movie) },
             overlayContent = {
-                overlayContent?.invoke(movie)
+                overlayContent?.invoke()
             },
             modifier = posterModifier
                 .width(MediaItemDefaults.PosterWidth)

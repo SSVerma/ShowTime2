@@ -8,12 +8,13 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
+import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 
 typealias TvShowListUiState = UiState<List<TvShow>, TvShowFailure>
 
-typealias TvShowPreviewUiState = UiState<List<TvShowPreview>, TvShowFailure>
+typealias TvShowPreviewUiState = UiState<List<AdInjectable<TvShowPreview>>, TvShowFailure>
 
 typealias TvShowDetailsUiState = UiState<TvShow, TvShowFailure>
 

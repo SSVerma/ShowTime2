@@ -43,6 +43,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import com.ssverma.shared.ui.component.HeroItem
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -81,7 +82,7 @@ fun WatchProviderHubContent(
     provider: ProviderInfo,
     heroItems: List<MediaPreview>,
     newItems: List<MediaPreview>,
-    todayItems: List<MediaPreview>,
+    upcomingItems: List<MediaPreview>,
     topRatedItems: List<MediaPreview>,
     genres: List<Genre>,
     isMovieMode: Boolean,
@@ -177,7 +178,7 @@ fun WatchProviderHubContent(
                 item {
                     HubSectionRow(
                         title = stringResource(SharedUiR.string.upcoming),
-                        items = todayItems,
+                        items = upcomingItems,
                         isLoading = isLoading,
                         onItemClick = onMediaClick,
                         onSeeAllClick = {
@@ -473,26 +474,27 @@ fun HeroPagerSection(
                     carouselState = carouselState,
                     itemHeight = 220.dp,
                     maxItemWidth = 340.dp,
-                    imageUrl = { item ->
-                        when (item) {
-                            is MediaPreview.Movie -> item.movie.backdropImageUrl
-                            is MediaPreview.TvShow -> item.tvShow.backdropImageUrl
-                        }
-                    },
-                    title = { item ->
-                        when (item) {
-                            is MediaPreview.Movie -> item.movie.title
-                            is MediaPreview.TvShow -> item.tvShow.title
-                        }
-                    },
-                    onItemClick = { item ->
-                        when (item) {
-                            is MediaPreview.Movie -> onItemClick(item.movie)
-                            is MediaPreview.TvShow -> onItemClick(item.tvShow)
-                        }
-                    },
-                    overlayContent = null // Hidden in Hub
-                )
+                ) { item ->
+                    val title = when (item) {
+                        is MediaPreview.Movie -> item.movie.title
+                        is MediaPreview.TvShow -> item.tvShow.title
+                    }
+                    val imageUrl = when (item) {
+                        is MediaPreview.Movie -> item.movie.backdropImageUrl
+                        is MediaPreview.TvShow -> item.tvShow.backdropImageUrl
+                    }
+                    HeroItem(
+                        title = title,
+                        imageUrl = imageUrl,
+                        onClick = {
+                            when (item) {
+                                is MediaPreview.Movie -> onItemClick(item.movie)
+                                is MediaPreview.TvShow -> onItemClick(item.tvShow)
+                            }
+                        },
+                        overlayContent = null
+                    )
+                }
             }
         }
     }

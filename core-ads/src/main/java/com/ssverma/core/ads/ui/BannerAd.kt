@@ -1,8 +1,11 @@
 package com.ssverma.core.ads.ui
 
+import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -21,8 +24,12 @@ import com.ssverma.core.analytics.ui.LocalAnalytics
 @Composable
 fun BannerAd(
     modifier: Modifier = Modifier,
+    adView: AdView? = null,
     adSize: BannerAdSize = BannerAdSize.Standard,
-    analyticsEventPrefix: String = "banner_ad"
+    analyticsEventPrefix: String = "banner_ad",
+    destroyOnDispose: Boolean = true,
+    onAdLoaded: (AdView) -> Unit = {},
+    onAdFailedToLoad: (LoadAdError) -> Unit = {}
 ) {
     val adConfigProvider = LocalAdConfigProvider.current
 
@@ -33,47 +40,70 @@ fun BannerAd(
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val analytics = LocalAnalytics.current
 
-    val adView = remember {
-        AdView(context).apply {
+    // Prevent Stale State memory leaks in LazyLists
+    val currentOnAdLoaded by rememberUpdatedState(onAdLoaded)
+    val currentOnAdFailed by rememberUpdatedState(onAdFailedToLoad)
+
+    val effectiveAdView = remember(adView) {
+        adView ?: AdView(context).apply {
             setAdSize(adSize.adMobSize)
             adUnitId = adConfigProvider.bannerAdId
             adListener = createTrackingAdListener(
                 analytics = analytics,
-                prefix = analyticsEventPrefix
+                prefix = analyticsEventPrefix,
+                onAdLoaded = { currentOnAdLoaded(this) },
+                onAdFailedToLoad = { currentOnAdFailed(it) }
             )
         }
     }
 
-    DisposableEffect(lifecycleOwner, adView) {
+    DisposableEffect(lifecycleOwner, effectiveAdView) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> adView.resume()
-                Lifecycle.Event.ON_PAUSE -> adView.pause()
-                Lifecycle.Event.ON_DESTROY -> adView.destroy()
+                Lifecycle.Event.ON_RESUME -> effectiveAdView.resume()
+                Lifecycle.Event.ON_PAUSE -> effectiveAdView.pause()
+                Lifecycle.Event.ON_DESTROY -> {
+                    if (destroyOnDispose) effectiveAdView.destroy()
+                }
+
                 else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        adView.loadAd(AdRequest.Builder().build())
+
+        // Only load if not already loading/loaded
+        if (effectiveAdView.responseInfo == null) {
+            effectiveAdView.loadAd(AdRequest.Builder().build())
+        }
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            adView.destroy()
+            if (destroyOnDispose) effectiveAdView.destroy()
         }
     }
 
     AndroidView(
         modifier = modifier,
-        factory = { adView }
+        factory = {
+            (effectiveAdView.parent as? ViewGroup)?.removeView(effectiveAdView)
+            effectiveAdView
+        }
     )
 }
 
-private fun createTrackingAdListener(analytics: Analytics, prefix: String) = object : AdListener() {
+private fun createTrackingAdListener(
+    analytics: Analytics,
+    prefix: String,
+    onAdLoaded: () -> Unit,
+    onAdFailedToLoad: (LoadAdError) -> Unit
+) = object : AdListener() {
     override fun onAdLoaded() {
+        onAdLoaded()
         analytics.logEvent(AdAnalyticsEvent("${prefix}_loaded"))
     }
 
     override fun onAdFailedToLoad(error: LoadAdError) {
+        onAdFailedToLoad(error)
         analytics.logEvent(
             AdAnalyticsEvent(
                 eventName = "${prefix}_failed",

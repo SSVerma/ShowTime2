@@ -2,13 +2,21 @@ package com.ssverma.feature.movie.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ui.UiState
+import com.ssverma.core.ui.mapSuccess
 import com.ssverma.feature.movie.domain.usecase.InCinemaMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase
 import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TopRatedMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.UpcomingMoviesUseCase
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.AdInjectionConfig
+import com.ssverma.shared.ads.injection.AdPlacement
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.injectAds
+import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.model.movie.asMoviePreview
@@ -62,6 +70,11 @@ class HomeMovieViewModel @Inject constructor(
         fetchWatchProviders()
     }
 
+    private val homeAdConfig = AdInjectionConfig(
+        placement = AdPlacement.Fixed(positions = listOf(1)),
+        style = NativeAdStyle.Grid
+    )
+
     fun fetchMovieGenres() = viewModelScope.launch {
         _uiState.update { it.copy(genres = UiState.Loading) }
         when (val result = movieGenreUseCase()) {
@@ -75,7 +88,12 @@ class HomeMovieViewModel @Inject constructor(
         when (val result = trendingMoviesUseCase(TimeWindow.Daily)) {
             is Result.Success -> {
                 _uiState.update {
-                    it.copy(trendingMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
+                    it.copy(
+                        trendingMovies = UiState.Success(
+                            data = result.data.map { m -> m.asMoviePreview() }
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.Carousel))
+                        )
+                    )
                 }
             }
 
@@ -88,7 +106,13 @@ class HomeMovieViewModel @Inject constructor(
         when (val result = inCinemaMoviesUseCase()) {
             is Result.Success -> {
                 _uiState.update {
-                    it.copy(inCinemasMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
+                    it.copy(
+                        inCinemasMovies = UiState.Success(
+                            data = result.data.map { m -> m.asMoviePreview() }
+                                .take(5)
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.List))
+                        )
+                    )
                 }
             }
 
@@ -105,7 +129,11 @@ class HomeMovieViewModel @Inject constructor(
             when (val result = popularMoviesUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(popularMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
+                        it.copy(
+                            popularMovies = UiState.Success(
+                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig)
+                            )
+                        )
                     }
                 }
 
@@ -123,7 +151,11 @@ class HomeMovieViewModel @Inject constructor(
             when (val result = topRatedMoviesUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(topRatedMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
+                        it.copy(
+                            topRatedMovies = UiState.Success(
+                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig)
+                            )
+                        )
                     }
                 }
 
@@ -141,7 +173,11 @@ class HomeMovieViewModel @Inject constructor(
             when (val result = upcomingMoviesUseCase()) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(upcomingMovies = UiState.Success(result.data.map { m -> m.asMoviePreview() }))
+                        it.copy(
+                            upcomingMovies = UiState.Success(
+                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig)
+                            )
+                        )
                     }
                 }
 
@@ -156,6 +192,40 @@ class HomeMovieViewModel @Inject constructor(
         when (val result = fetchAllWatchProvidersUseCase.fetchMovieWatchProviders()) {
             is Result.Success -> _uiState.update { it.copy(watchProviders = UiState.Success(result.data)) }
             is Result.Error -> _uiState.update { it.copy(watchProviders = UiState.Error(result.error)) }
+        }
+    }
+
+    fun onNativeAdLoaded(
+        injectableAd: InjectableAd,
+        nativeAd: NativeAd
+    ) {
+        // Anti-Loop Shield
+        if (injectableAd.ad === nativeAd) return
+
+        _uiState.update { currentState ->
+
+            fun <T> List<AdInjectable<T>>.updateAdIfPresent(): List<AdInjectable<T>> {
+                var adFound = false
+
+                val updatedList = this.map { item ->
+                    if (item is InjectableAd && item.id == injectableAd.id) {
+                        adFound = true
+                        item.copy(ad = nativeAd) // Update this specific ad!
+                    } else {
+                        item // Leave standard content (or other ads) completely alone
+                    }
+                }
+
+                return if (adFound) updatedList else this
+            }
+
+            currentState.copy(
+                trendingMovies = currentState.trendingMovies.mapSuccess { it.updateAdIfPresent() },
+                inCinemasMovies = currentState.inCinemasMovies.mapSuccess { it.updateAdIfPresent() },
+                popularMovies = currentState.popularMovies.mapSuccess { it.updateAdIfPresent() },
+                topRatedMovies = currentState.topRatedMovies.mapSuccess { it.updateAdIfPresent() },
+                upcomingMovies = currentState.upcomingMovies.mapSuccess { it.updateAdIfPresent() }
+            )
         }
     }
 }

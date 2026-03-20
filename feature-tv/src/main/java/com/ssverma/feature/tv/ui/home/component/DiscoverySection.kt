@@ -34,33 +34,37 @@ import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.MediaItemShimmer
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.TvShowGridItem
-
-private typealias TvPreviewUiState = UiState<List<TvShowPreview>, TvShowFailure>
+import com.ssverma.feature.tv.ui.common.TvShowPreviewUiState
 
 data class DiscoveryCategory(
     @StringRes val titleRes: Int,
     val config: TvShowListingConfig,
-    val uiState: TvPreviewUiState
+    val uiState: TvShowPreviewUiState
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscoverySection(
-    popularTvShowsState: TvPreviewUiState,
-    topRatedTvShowsState: TvPreviewUiState,
-    upcomingTvShowsState: TvPreviewUiState,
+    popularTvShowsState: TvShowPreviewUiState,
+    topRatedTvShowsState: TvShowPreviewUiState,
+    upcomingTvShowsState: TvShowPreviewUiState,
     onFetchPopular: () -> Unit,
     onFetchTopRated: () -> Unit,
     onFetchUpcoming: () -> Unit,
     onTvShowClicked: (tvShow: TvShowPreview) -> Unit,
     onSeeAllClicked: (TvShowListingRoute) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
+    onAdLoaded: (InjectableAd, com.google.android.gms.ads.nativead.NativeAd) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -151,24 +155,38 @@ fun DiscoverySection(
                     items = tvShows,
                     contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.large),
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
-                ) { tvShowPreview ->
-                    TvShowGridItem(
-                        tvShow = tvShowPreview,
-                        showRating = category.config !is TvShowListingConfig.Filterable.Upcoming && category.config !is TvShowListingConfig.Filterable.TopRated,
-                        indicator = { preview ->
-                            TvIndicator(config = category.config, tvShow = preview)
-                        },
-                        onClick = { preview -> onTvShowClicked(preview) },
-                        overlayContent = {
-                            WatchProviderTrigger(
-                                mediaId = it.id,
-                                isMovie = false,
-                                variant = WatchProviderTriggerVariant.Icon,
-                                modifier = Modifier.padding(MaterialTheme.spacing.small),
-                                onWatchProviderClick = onWatchProviderClick,
+                ) { injectableItem ->
+                    when (val element = injectableItem) {
+                        is InjectableAd -> {
+                            ShowTimeNativeAd(
+                                ad = element.ad,
+                                onAdLoaded = { ad -> onAdLoaded(element, ad) },
+                                style = element.style
                             )
                         }
-                    )
+
+                        is InjectableContent<*> -> {
+                            @Suppress("UNCHECKED_CAST")
+                            val tvShowPreview = (element as InjectableContent<TvShowPreview>).item
+                            TvShowGridItem(
+                                tvShow = tvShowPreview,
+                                showRating = category.config !is TvShowListingConfig.Filterable.Upcoming && category.config !is TvShowListingConfig.Filterable.TopRated,
+                                indicator = { preview ->
+                                    TvIndicator(config = category.config, tvShow = preview)
+                                },
+                                onClick = { preview -> onTvShowClicked(preview) },
+                                overlayContent = {
+                                    WatchProviderTrigger(
+                                        mediaId = tvShowPreview.id,
+                                        isMovie = false,
+                                        variant = WatchProviderTriggerVariant.Icon,
+                                        modifier = Modifier.padding(MaterialTheme.spacing.small),
+                                        onWatchProviderClick = onWatchProviderClick,
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

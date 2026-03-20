@@ -8,27 +8,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun <T> HorizontalLazyList(
+inline fun <T> HorizontalLazyList(
     items: List<T>,
     contentPadding: PaddingValues = SectionListContentPadding,
     horizontalArrangement: Arrangement.Horizontal = SectionListHorizontalArrangement,
-    itemContent: @Composable (item: T) -> Unit
+    crossinline itemContent: @Composable (item: T) -> Unit
 ) {
     HorizontalLazyListIndexed(
         items = items,
         contentPadding = contentPadding,
         horizontalArrangement = horizontalArrangement,
-    ) { _, item ->
+    ) { index, item ->
         itemContent(item)
     }
 }
 
 @Composable
-fun <T> HorizontalLazyListIndexed(
+inline fun <T> HorizontalLazyListIndexed(
     items: List<T>,
     contentPadding: PaddingValues = SectionListContentPadding,
     horizontalArrangement: Arrangement.Horizontal = SectionListHorizontalArrangement,
-    itemContent: @Composable (index: Int, item: T) -> Unit
+    crossinline itemContent: @Composable (index: Int, item: T) -> Unit
 ) {
     LazyRow(
         contentPadding = contentPadding,
@@ -41,5 +41,7 @@ fun <T> HorizontalLazyListIndexed(
     )
 }
 
-private val SectionListContentPadding = PaddingValues(start = 16.dp, end = 16.dp)
-private val SectionListHorizontalArrangement = Arrangement.spacedBy(16.dp)
+@PublishedApi
+internal val SectionListContentPadding = PaddingValues(start = 16.dp, end = 16.dp)
+@PublishedApi
+internal val SectionListHorizontalArrangement = Arrangement.spacedBy(16.dp)
