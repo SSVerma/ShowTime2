@@ -5,7 +5,9 @@ import com.ssverma.shared.domain.repository.AppConfigRepository
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
+import androidx.annotation.Keep
 
+@Keep
 class RegionInterceptor @Inject constructor(
     private val appConfigRepository: AppConfigRepository
 ) : ApplicationInterceptor {

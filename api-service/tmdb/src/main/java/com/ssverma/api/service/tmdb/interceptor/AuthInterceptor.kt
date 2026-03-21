@@ -6,11 +6,13 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
+import androidx.annotation.Keep
 
 interface TmdbReadWriteAccessTokenProvider {
     suspend fun provideWriteAccessToken(): String
 }
 
+@Keep
 internal class AuthInterceptor @Inject constructor(
     @param:TmdbServiceReadAccessToken private val tmdbApiReadAccessToken: String,
     private val readWriteAccessTokenProvider: TmdbReadWriteAccessTokenProvider

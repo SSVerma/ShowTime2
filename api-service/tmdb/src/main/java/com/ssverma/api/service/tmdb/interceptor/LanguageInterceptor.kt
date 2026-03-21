@@ -7,7 +7,9 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
+import androidx.annotation.Keep
 
+@Keep
 class LanguageInterceptor @Inject constructor(
     private val appConfigRepository: AppConfigRepository
 ) : ApplicationInterceptor {
