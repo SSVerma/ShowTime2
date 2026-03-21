@@ -24,8 +24,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ui.DriveCompose
-import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.R
@@ -33,18 +33,14 @@ import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.convertor.asMovieListingConfig
 import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.MediaItemShimmer
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
-import com.google.android.gms.ads.nativead.NativeAd
-import com.ssverma.shared.ads.native.ShowTimeNativeAd
-import com.ssverma.shared.ads.injection.AdInjectable
-import com.ssverma.shared.ads.injection.InjectableContent
-import com.ssverma.shared.ads.injection.InjectableAd
-import com.ssverma.shared.ads.ui.NativeAdStyle
-
 import com.ssverma.shared.ui.component.media.MovieGridItem
 
 data class DiscoveryCategory(
@@ -178,6 +174,7 @@ fun DiscoverySection(
                                             isMovie = true,
                                             variant = WatchProviderTriggerVariant.Icon,
                                             onWatchProviderClick = onWatchProviderClick,
+                                            modifier = Modifier.padding(MaterialTheme.spacing.small)
                                         )
                                     }
                                 )
