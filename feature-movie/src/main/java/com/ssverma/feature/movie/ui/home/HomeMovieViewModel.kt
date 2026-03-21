@@ -22,6 +22,7 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
+import com.ssverma.core.ads.config.AdConfigProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +41,8 @@ class HomeMovieViewModel @Inject constructor(
     private val popularMoviesUseCase: PopularMoviesUseCase,
     private val movieGenreUseCase: MovieGenresUseCase,
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
-    private val appConfigRepository: AppConfigRepository
+    private val appConfigRepository: AppConfigRepository,
+    private val adConfigProvider: AdConfigProvider
 ) : ViewModel() {
 
 
@@ -91,7 +93,7 @@ class HomeMovieViewModel @Inject constructor(
                     it.copy(
                         trendingMovies = UiState.Success(
                             data = result.data.map { m -> m.asMoviePreview() }
-                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.Carousel))
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.Carousel), isAdsEnabled = adConfigProvider.isAdsEnabled)
                         )
                     )
                 }
@@ -110,7 +112,7 @@ class HomeMovieViewModel @Inject constructor(
                         inCinemasMovies = UiState.Success(
                             data = result.data.map { m -> m.asMoviePreview() }
                                 .take(5)
-                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.List))
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.List), isAdsEnabled = adConfigProvider.isAdsEnabled)
                         )
                     )
                 }
@@ -131,7 +133,7 @@ class HomeMovieViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             popularMovies = UiState.Success(
-                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig)
+                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig, isAdsEnabled = adConfigProvider.isAdsEnabled)
                             )
                         )
                     }
@@ -153,7 +155,7 @@ class HomeMovieViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             topRatedMovies = UiState.Success(
-                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig)
+                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig, isAdsEnabled = adConfigProvider.isAdsEnabled)
                             )
                         )
                     }
@@ -175,7 +177,7 @@ class HomeMovieViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             upcomingMovies = UiState.Success(
-                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig)
+                                result.data.map { m -> m.asMoviePreview() }.injectAds(homeAdConfig, isAdsEnabled = adConfigProvider.isAdsEnabled)
                             )
                         )
                     }

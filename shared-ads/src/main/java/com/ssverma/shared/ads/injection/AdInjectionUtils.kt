@@ -4,9 +4,10 @@ package com.ssverma.shared.ads.injection
  * Injects ads into a regular list of items based on the provided configuration.
  */
 fun <T> List<T>.injectAds(
-    config: AdInjectionConfig
+    config: AdInjectionConfig,
+    isAdsEnabled: Boolean = true
 ): List<AdInjectable<T>> {
-    if (config.placement is AdPlacement.None || isEmpty()) {
+    if (!isAdsEnabled || config.placement is AdPlacement.None || isEmpty()) {
         return map { InjectableContent(it) }
     }
 

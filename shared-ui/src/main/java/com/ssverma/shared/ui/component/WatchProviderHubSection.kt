@@ -67,6 +67,10 @@ fun WatchProviderHubSection(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (providersUiState is UiState.Success && providersUiState.data.isEmpty()) {
+        return
+    }
+
     StatefulContent(
         state = providersUiState,
         onRetry = onRetry,

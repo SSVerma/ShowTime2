@@ -23,6 +23,7 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
+import com.ssverma.core.ads.config.AdConfigProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,7 +43,8 @@ class HomeTvShowViewModel @Inject constructor(
     private val popularTvShowsUseCase: PopularTvShowsUseCase,
     private val tvGenresUseCase: TvGenresUseCase,
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
-    private val appConfigRepository: AppConfigRepository
+    private val appConfigRepository: AppConfigRepository,
+    private val adConfigProvider: AdConfigProvider
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeTvUiState())
@@ -95,7 +97,7 @@ class HomeTvShowViewModel @Inject constructor(
                             result.data
                                 .distinctBy { t -> t.id } // Safety Filter
                                 .map { t -> t.asTvShowPreview() }
-                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.Carousel))
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.Carousel), isAdsEnabled = adConfigProvider.isAdsEnabled)
                         )
                     )
                 }
@@ -116,7 +118,7 @@ class HomeTvShowViewModel @Inject constructor(
                                 .distinctBy { t -> t.id }
                                 .map { t -> t.asTvShowPreview() }
                                 .take(5)
-                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.List))
+                                .injectAds(homeAdConfig.copy(style = NativeAdStyle.List), isAdsEnabled = adConfigProvider.isAdsEnabled)
                         )
                     )
                 }
@@ -215,7 +217,7 @@ class HomeTvShowViewModel @Inject constructor(
                                 result.data
                                     .distinctBy { t -> t.id }
                                     .map { t -> t.asTvShowPreview() }
-                                    .injectAds(homeAdConfig.copy(style = NativeAdStyle.List))
+                                    .injectAds(homeAdConfig.copy(style = NativeAdStyle.List), isAdsEnabled = adConfigProvider.isAdsEnabled)
                             )
                         )
                     }
