@@ -5,8 +5,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +22,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -152,11 +148,20 @@ private fun NativeAdContainer(
                 }
                 addView(composeView)
 
-                // THE MAGIC BULLET: Register the entire ComposeView for clicks!
-                this.callToActionView = composeView
-                this.headlineView = composeView
-                this.bodyView = composeView
-                this.iconView = composeView
+                // Transparent overlay to securely capture native touches for AdMob
+                val clickOverlay = android.view.View(ctx).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+                addView(clickOverlay)
+
+                // THE MAGIC BULLET: Register the transparent overlay for clicks!
+                this.callToActionView = clickOverlay
+                this.headlineView = clickOverlay
+                this.bodyView = clickOverlay
+                this.iconView = clickOverlay
                 // Note: AdMob automatically injects the "AdChoices" icon into the top-right corner.
             }
         },
@@ -222,18 +227,17 @@ private fun NativeAdListContent(
     nativeAd: NativeAd,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        ),
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .height(MediaItemDefaults.ListItemHeight)
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = MaterialTheme.shapes.large
+            )
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             AdPoster(
@@ -283,18 +287,17 @@ private fun NativeAdGridContent(
     Column(
         modifier = modifier.width(MediaItemDefaults.PosterWidth)
     ) {
-        OutlinedCard(
-            shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-            border = BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            ),
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(TmdbPosterAspectRatio)
+                .clip(MaterialTheme.shapes.large)
+                .background(MaterialTheme.colorScheme.surface)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = MaterialTheme.shapes.large
+                )
         ) {
             AdPoster(nativeAd, modifier = Modifier.fillMaxSize())
         }
@@ -328,16 +331,16 @@ private fun NativeAdCarouselContent(
     nativeAd: NativeAd,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        ),
-        modifier = modifier.fillMaxSize()
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clip(MaterialTheme.shapes.extraLarge)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = MaterialTheme.shapes.extraLarge
+            )
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             val imageUrl = nativeAd.images.firstOrNull()?.uri?.toString()
@@ -496,23 +499,21 @@ private fun AdStats(nativeAd: NativeAd) {
 private fun AdCTA(nativeAd: NativeAd, modifier: Modifier = Modifier) {
     val cta = nativeAd.callToAction
     if (cta != null) {
-        Button(
-            onClick = { /* Clicks are handled natively by AdMob mapping */ },
-            modifier = modifier,
-            shape = RoundedCornerShape(8.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                horizontal = 12.dp,
-                vertical = 4.dp
-            ),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                contentColor = MaterialTheme.colorScheme.primary
-            )
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                .padding(
+                    horizontal = 12.dp,
+                    vertical = 4.dp
+                ),
+            contentAlignment = Alignment.Center
         ) {
             Text(
                 text = cta,
                 style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
