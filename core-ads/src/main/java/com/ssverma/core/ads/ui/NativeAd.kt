@@ -5,6 +5,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
@@ -39,14 +40,33 @@ fun rememberNativeAd(
     val currentOnFailed by rememberUpdatedState(onAdFailedToLoad)
 
     var nativeAd by remember { mutableStateOf<NativeAd?>(null) }
+    var isDelegated by remember { mutableStateOf(false) }
+
+    // Clear internal ad reference if loading internally is disabled (e.g. handed over to caller)
+    SideEffect {
+        if (!loadAd && nativeAd != null) {
+            nativeAd = null
+        }
+    }
+
+    // Clean up when leaving the composition entirely
+    DisposableEffect(Unit) {
+        onDispose {
+            if (!isDelegated) {
+                nativeAd?.destroy()
+            }
+        }
+    }
 
     DisposableEffect(loadAd) {
         if (!loadAd) return@DisposableEffect onDispose {}
+        isDelegated = false
 
         val adLoader = AdLoader.Builder(context, adConfigProvider.nativeAdId)
             .forNativeAd { ad ->
                 nativeAd?.destroy() // Clean up old ad if reloading
                 nativeAd = ad
+                isDelegated = true
                 currentOnLoaded(ad)
                 analytics.logEvent(AdAnalyticsEvent("${analyticsEventPrefix}_loaded"))
             }
@@ -74,9 +94,7 @@ fun rememberNativeAd(
 
         adLoader.loadAd(AdRequest.Builder().build())
 
-        onDispose {
-            nativeAd?.destroy()
-        }
+        onDispose {}
     }
 
     return nativeAd

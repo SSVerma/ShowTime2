@@ -272,4 +272,8 @@ class HomeTvShowViewModel @Inject constructor(
             is Result.Error -> _uiState.update { it.copy(watchProviders = UiState.Error(result.error)) }
         }
     }
+
+    fun onFeedInlineAdLoaded(nativeAd: NativeAd) {
+        _uiState.update { it.copy(feedInlineAd = nativeAd) }
+    }
 }

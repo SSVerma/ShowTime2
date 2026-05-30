@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -146,6 +147,7 @@ fun HeroSection(
                     when (injectableItem) {
                         is InjectableAd -> {
                             com.ssverma.shared.ads.native.ShowTimeNativeAd(
+                                modifier = Modifier.fillMaxSize(),
                                 ad = injectableItem.ad,
                                 onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
                                 style = injectableItem.style

@@ -50,9 +50,6 @@ fun MovieHomeContent(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
 
-    val feedInlineAd = rememberNativeAd(
-        analyticsEventPrefix = "movie_home_feed_inline_native"
-    )
 
     LazyColumn(modifier = modifier.fillMaxSize()) {
         item {
@@ -117,9 +114,11 @@ fun MovieHomeContent(
 
         item {
             ShowTimeNativeAd(
-                ad = feedInlineAd,
-                loadInternally = false, // Tell the UI NOT to fetch a new ad!
+                ad = uiState.feedInlineAd,
+                loadInternally = uiState.feedInlineAd == null,
+                onAdLoaded = viewModel::onFeedInlineAdLoaded,
                 style = NativeAdStyle.List,
+                analyticsEventPrefix = "movie_home_feed_inline_native",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = MaterialTheme.spacing.medium)

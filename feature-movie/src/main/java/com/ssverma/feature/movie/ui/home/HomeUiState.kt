@@ -1,12 +1,13 @@
 package com.ssverma.feature.movie.ui.home
 
+import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.failure.MovieFailure
+import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
-import com.ssverma.shared.ads.injection.AdInjectable
 
 data class HomeUiState(
     val trendingMovies: UiState<List<AdInjectable<MoviePreview>>, MovieFailure> = UiState.Idle,
@@ -15,5 +16,6 @@ data class HomeUiState(
     val inCinemasMovies: UiState<List<AdInjectable<MoviePreview>>, MovieFailure> = UiState.Idle,
     val upcomingMovies: UiState<List<AdInjectable<MoviePreview>>, MovieFailure> = UiState.Idle,
     val genres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Idle,
-    val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle
+    val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle,
+    val feedInlineAd: NativeAd? = null
 )

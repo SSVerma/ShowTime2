@@ -230,4 +230,8 @@ class HomeMovieViewModel @Inject constructor(
             )
         }
     }
+
+    fun onFeedInlineAdLoaded(nativeAd: NativeAd) {
+        _uiState.update { it.copy(feedInlineAd = nativeAd) }
+    }
 }

@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -105,7 +106,13 @@ fun ShowTimeNativeAd(
     // Use whichever ad is available
     val activeAd = ad ?: internallyLoadedAd
 
-    Box(modifier = modifier.fillMaxWidth()) {
+    val rootModifier = if (style == NativeAdStyle.Carousel) {
+        modifier.fillMaxSize()
+    } else {
+        modifier.fillMaxWidth()
+    }
+
+    Box(modifier = rootModifier) {
         // The actual ad Container - Only renders when an ad payload is ready
         if (activeAd != null) {
             NativeAdContainer(
@@ -119,7 +126,8 @@ fun ShowTimeNativeAd(
         AnimatedVisibility(
             visible = !state.isLoaded,
             enter = fadeIn(tween(300)),
-            exit = fadeOut(tween(300))
+            exit = fadeOut(tween(300)),
+            modifier = if (style == NativeAdStyle.Carousel) Modifier.fillMaxSize() else Modifier.fillMaxWidth()
         ) {
             NativeAdPlaceholder(style = style)
         }
@@ -135,24 +143,37 @@ private fun NativeAdContainer(
     style: NativeAdStyle,
     analyticsEventPrefix: String
 ) {
+    val containerModifier = if (style == NativeAdStyle.Carousel) {
+        Modifier.fillMaxSize()
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
     AndroidView(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = containerModifier,
         factory = { ctx ->
             NativeAdView(ctx).apply {
                 // We create ONE ComposeView to hold all our beautiful UI
                 val composeView = ComposeView(ctx).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
+                    layoutParams = if (style == NativeAdStyle.Carousel) {
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    } else {
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                    }
                 }
                 addView(composeView)
 
                 // Transparent overlay to securely capture native touches for AdMob
                 val clickOverlay = android.view.View(ctx).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
+                    layoutParams = android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT
                     )
                 }
                 addView(clickOverlay)
@@ -174,7 +195,10 @@ private fun NativeAdContainer(
                 NativeAdViewContent(
                     nativeAd = ad,
                     style = style,
-                    analyticsEventPrefix = analyticsEventPrefix
+                    analyticsEventPrefix = analyticsEventPrefix,
+                    onAdClicked = {
+                        view.callToActionView?.performClick() ?: view.performClick()
+                    }
                 )
             }
         }
@@ -185,13 +209,14 @@ private fun NativeAdContainer(
 private fun NativeAdViewContent(
     nativeAd: NativeAd,
     style: NativeAdStyle,
-    analyticsEventPrefix: String
+    analyticsEventPrefix: String,
+    onAdClicked: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when (style) {
-            NativeAdStyle.List -> NativeAdListContent(nativeAd)
-            NativeAdStyle.Grid -> NativeAdGridContent(nativeAd)
-            NativeAdStyle.Carousel -> NativeAdCarouselContent(nativeAd)
+            NativeAdStyle.List -> NativeAdListContent(nativeAd, onAdClicked)
+            NativeAdStyle.Grid -> NativeAdGridContent(nativeAd, onAdClicked)
+            NativeAdStyle.Carousel -> NativeAdCarouselContent(nativeAd, onAdClicked)
         }
     }
 }
@@ -225,6 +250,7 @@ private fun NativeAdPlaceholder(
 @Composable
 private fun NativeAdListContent(
     nativeAd: NativeAd,
+    onAdClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -238,6 +264,7 @@ private fun NativeAdListContent(
                 color = MaterialTheme.colorScheme.outlineVariant,
                 shape = MaterialTheme.shapes.large
             )
+            .clickable(onClick = onAdClicked)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             AdPoster(
@@ -282,10 +309,13 @@ private fun NativeAdListContent(
 @Composable
 private fun NativeAdGridContent(
     nativeAd: NativeAd,
+    onAdClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.width(MediaItemDefaults.PosterWidth)
+        modifier = modifier
+            .width(MediaItemDefaults.PosterWidth)
+            .clickable(onClick = onAdClicked)
     ) {
         Box(
             modifier = Modifier
@@ -300,6 +330,17 @@ private fun NativeAdGridContent(
                 )
         ) {
             AdPoster(nativeAd, modifier = Modifier.fillMaxSize())
+
+            AdCTA(
+                nativeAd = nativeAd,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(MaterialTheme.spacing.small)
+                    .fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.spacing.small)
+            )
         }
 
         Column(
@@ -315,13 +356,6 @@ private fun NativeAdGridContent(
             )
 
             AdStats(nativeAd)
-
-            AdCTA(
-                nativeAd = nativeAd,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .fillMaxWidth()
-            )
         }
     }
 }
@@ -329,6 +363,7 @@ private fun NativeAdGridContent(
 @Composable
 private fun NativeAdCarouselContent(
     nativeAd: NativeAd,
+    onAdClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -341,6 +376,7 @@ private fun NativeAdCarouselContent(
                 color = MaterialTheme.colorScheme.outlineVariant,
                 shape = MaterialTheme.shapes.extraLarge
             )
+            .clickable(onClick = onAdClicked)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             val imageUrl = nativeAd.images.firstOrNull()?.uri?.toString()
@@ -428,7 +464,7 @@ private fun AdPoster(nativeAd: NativeAd, modifier: Modifier = Modifier) {
 
         AdAttribution(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.TopStart)
                 .padding(MaterialTheme.spacing.small)
         )
     }
@@ -496,13 +532,18 @@ private fun AdStats(nativeAd: NativeAd) {
 }
 
 @Composable
-private fun AdCTA(nativeAd: NativeAd, modifier: Modifier = Modifier) {
+private fun AdCTA(
+    nativeAd: NativeAd,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+    contentColor: Color = MaterialTheme.colorScheme.primary
+) {
     val cta = nativeAd.callToAction
     if (cta != null) {
         Box(
             modifier = modifier
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                .background(containerColor)
                 .padding(
                     horizontal = 12.dp,
                     vertical = 4.dp
@@ -513,7 +554,7 @@ private fun AdCTA(nativeAd: NativeAd, modifier: Modifier = Modifier) {
                 text = cta,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = contentColor
             )
         }
     }
