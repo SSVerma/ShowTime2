@@ -19,15 +19,16 @@ internal val DarkColorScheme = darkColorScheme(
     tertiary = Color(0xFFFFFFFF),
     onTertiary = Color(0xFF000000),
 
-    background = Color(0xFF121212),
+    background = Color(0xFF0D0E11),
     onBackground = Color(0xFFE8EAED),
 
-    surface = Color(0xFF121212),
+    surface = Color(0xFF15161A),
     onSurface = Color(0xFFE8EAED),
-    surfaceVariant = Color(0xFF202124),
+    surfaceVariant = Color(0xFF202226),
     onSurfaceVariant = Color(0xFF9AA0A6),
 
-    outline = Color(0xFF5F6368)
+    outline = Color(0xFF5F6368),
+    outlineVariant = Color(0xFF2B2C2F)
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -53,5 +54,6 @@ internal val LightColorScheme = expressiveLightColorScheme().copy(
     surfaceVariant = Color(0xFFF8F9FA),
     onSurfaceVariant = Color(0xFF5F6368),
 
-    outline = Color(0xFFDADCE0)
+    outline = Color(0xFFDADCE0),
+    outlineVariant = Color(0xFFF1F3F4)
 )

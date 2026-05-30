@@ -8,8 +8,16 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -151,23 +159,50 @@ fun ShowTimeBottomBar(
         return
     }
 
+    val outlineVariant = MaterialTheme.colorScheme.outlineVariant
     NavigationBar(
-        modifier = modifier,
+        modifier = modifier.drawBehind {
+            drawLine(
+                color = outlineVariant,
+                start = Offset(0f, 0f),
+                end = Offset(size.width, 0f),
+                strokeWidth = 1.dp.toPx()
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp
     ) {
         bottomNavItems.forEach { navItem ->
             val selected = currentNavDestination
                 ?.hierarchy
                 ?.any { it.route == navItem.destination.placeholderRoute.asNavRoute() } == true
 
+            val iconScale by animateFloatAsState(
+                targetValue = if (selected) 1.15f else 1.0f,
+                animationSpec = spring(
+                    dampingRatio = 0.5f,
+                    stiffness = 300f
+                ),
+                label = "BottomNavIconScale"
+            )
+
             NavigationBarItem(
                 icon = {
                     Icon(
                         painter = painterResource(id = navItem.iconResId),
-                        contentDescription = stringResource(id = navItem.titleResId)
+                        contentDescription = stringResource(id = navItem.titleResId),
+                        modifier = Modifier.scale(iconScale)
                     )
                 },
                 label = { Text(text = stringResource(id = navItem.titleResId)) },
                 selected = selected,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                ),
                 modifier = Modifier.navigationBarsPadding(),
                 onClick = {
                     onTopLevelNavItemSelected(navItem)
