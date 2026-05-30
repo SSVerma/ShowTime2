@@ -1,15 +1,41 @@
 package com.ssverma.core.navigation
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.*
-import androidx.compose.runtime.*
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.navigation.*
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.navigation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+
+val PeerEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+    fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+    scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90))
+}
+
+val PeerExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
+    fadeOut(animationSpec = tween(90))
+}
 
 @SuppressLint("UnrememberedGetBackStackEntry")
 @Composable
@@ -22,11 +48,19 @@ inline fun <reified VM : ViewModel> NavController.destinationViewModel(destinati
 
 fun NavGraphBuilder.composable(
     destination: Destination,
+    enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+    exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+    popEnterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = enterTransition,
+    popExitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = exitTransition,
     content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
 ) {
     this.composable(
         route = destination.placeholderRoute.asNavRoute(),
         arguments = destination.arguments,
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition,
         content = content
     )
 }

@@ -1,9 +1,11 @@
 package com.ssverma.feature.tv.ui.home.content
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,17 +48,22 @@ fun TvShowHomeContent(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
+    openLibraryPage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
 
-    LazyColumn(modifier = modifier.fillMaxSize()) {
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = 100.dp),
+        modifier = modifier.fillMaxSize()
+    ) {
         item {
             HeroSection(
                 trendingTvShowsState = uiState.trendingTvShows,
                 onSearchClicked = openSearchPage,
                 onAccountClicked = openAccountPage,
+                openLibraryPage = openLibraryPage,
                 onTvShowClicked = { tvShow ->
                     analytics.logEvent(
                         TvAnalyticsEvent.TvShowClicked(

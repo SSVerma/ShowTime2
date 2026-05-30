@@ -19,6 +19,7 @@ fun TvShowScreen(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
+    openLibraryPage: () -> Unit,
     viewModel: HomeTvShowViewModel = hiltViewModel()
 ) {
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_HOME)
@@ -33,6 +34,7 @@ fun TvShowScreen(
             openSearchPage = openSearchPage,
             openAccountPage = openAccountPage,
             openWatchProviderHub = openWatchProviderHub,
+            openLibraryPage = openLibraryPage
         )
     }
 }

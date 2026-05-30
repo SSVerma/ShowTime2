@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedListIndexed
 import com.ssverma.core.ui.theme.spacing
@@ -27,18 +28,20 @@ fun PersonHomeContent(
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
+    openLibraryPage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedPersonId by remember { mutableIntStateOf(-1) }
 
     PagedListIndexed(
         pagingItems = pagedPersons,
-        contentPadding = PaddingValues(bottom = MaterialTheme.spacing.medium),
+        contentPadding = PaddingValues(bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
         header = {
             HomePageAppBar(
                 onSearchIconPressed = openSearchPage,
                 onAccountIconPressed = openAccountPage,
+                onLibraryIconPressed = openLibraryPage,
                 modifier = Modifier.statusBarsPadding()
             )
         },

@@ -3,6 +3,8 @@ package com.ssverma.feature.tv.navigation
 import android.net.Uri
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import com.ssverma.core.navigation.PeerEnterTransition
+import com.ssverma.core.navigation.PeerExitTransition
 import com.ssverma.core.navigation.composable
 import com.ssverma.core.navigation.navigateTo
 import com.ssverma.feature.account.navigation.ProfileDestination
@@ -13,8 +15,13 @@ import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubDestinatio
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderNavArgs
 
 fun NavGraphBuilder.tvShowHomeGraph(
-    navController: NavController
-) = composable(destination = TvShowHomeDestination) {
+    navController: NavController,
+    openLibraryPage: () -> Unit
+) = composable(
+    destination = TvShowHomeDestination,
+    enterTransition = PeerEnterTransition,
+    exitTransition = PeerExitTransition
+) {
     TvShowScreen(
         openTvShowDetails = { tvShowId ->
             navController.navigateTo(TvShowDetailDestination.actualRoute(tvShowId))
@@ -39,6 +46,7 @@ fun NavGraphBuilder.tvShowHomeGraph(
                     )
                 )
             )
-        }
+        },
+        openLibraryPage = openLibraryPage
     )
 }

@@ -19,6 +19,7 @@ fun MovieScreen(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
+    openLibraryPage: () -> Unit,
     viewModel: HomeMovieViewModel = hiltViewModel()
 ) {
     TrackScreenView(screenName = MovieAnalyticsScreenName.MOVIE_HOME)
@@ -33,6 +34,7 @@ fun MovieScreen(
             openSearchPage = openSearchPage,
             openAccountPage = openAccountPage,
             openWatchProviderHub = openWatchProviderHub,
+            openLibraryPage = openLibraryPage
         )
     }
 }

@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.ssverma.core.navigation.Destination
 import com.ssverma.core.navigation.GraphDestination
+import com.ssverma.core.navigation.navigateTo
 import com.ssverma.core.navigation.navigation
 import com.ssverma.feature.filter.navigation.watchProviderHubGraph
 import com.ssverma.feature.library.navigation.LibraryHomeDestination
@@ -32,7 +33,7 @@ sealed class ShowTimeTopLevelNavItem(
 
     object Tv : ShowTimeTopLevelNavItem(
         destination = TvShowHomeDestination,
-        titleResId = R.string.tv_show,
+        titleResId = R.string.tv,
         iconResId = R.drawable.ic_tv
     )
 
@@ -53,7 +54,6 @@ val ShowTimeTopLevelNavItems = listOf(
     ShowTimeTopLevelNavItem.Movie,
     ShowTimeTopLevelNavItem.Tv,
     ShowTimeTopLevelNavItem.Person,
-    ShowTimeTopLevelNavItem.Library,
 )
 
 object ShowTimeTopLevelDestination : GraphDestination("home")
@@ -65,9 +65,24 @@ fun NavGraphBuilder.topLevelNavGraph(
     graphDestination = ShowTimeTopLevelDestination,
     startDestination = MovieHomeDestination
 ) {
-    movieHomeGraph(navController)
-    tvShowHomeGraph(navController)
-    personHomeGraph(navController)
+    movieHomeGraph(
+        navController = navController,
+        openLibraryPage = {
+            navController.navigateTo(LibraryHomeDestination.actualRoute)
+        }
+    )
+    tvShowHomeGraph(
+        navController = navController,
+        openLibraryPage = {
+            navController.navigateTo(LibraryHomeDestination.actualRoute)
+        }
+    )
+    personHomeGraph(
+        navController = navController,
+        openLibraryPage = {
+            navController.navigateTo(LibraryHomeDestination.actualRoute)
+        }
+    )
     libraryHomeGraph(navController)
     watchProviderHubGraph(navController)
 }

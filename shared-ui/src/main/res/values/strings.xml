@@ -69,4 +69,5 @@
     <string name="explore_by_genre">Explore by Genre</string>
     <string name="select_region">Select region</string>
     <string name="select_language">Select language</string>
+    <string name="library">Library</string>
 </resources>

@@ -17,7 +17,8 @@ fun PersonScreen(
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
-    openAccountPage: () -> Unit
+    openAccountPage: () -> Unit,
+    openLibraryPage: () -> Unit
 ) {
     TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_LISTING)
 
@@ -30,7 +31,8 @@ fun PersonScreen(
             openMovieDetailsScreen = openMovieDetailsScreen,
             openTvShowDetailsScreen = openTvShowDetailsScreen,
             openSearchPage = openSearchPage,
-            openAccountPage = openAccountPage
+            openAccountPage = openAccountPage,
+            openLibraryPage = openLibraryPage
         )
     }
 }

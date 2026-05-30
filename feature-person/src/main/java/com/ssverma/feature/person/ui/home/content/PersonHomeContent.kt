@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.ui.paging.PagedListIndexed
@@ -31,6 +32,7 @@ fun PersonHomeContent(
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
+    openLibraryPage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val analytics = LocalAnalytics.current
@@ -39,13 +41,14 @@ fun PersonHomeContent(
     PagedListIndexed(
         pagingItems = pagedPersons,
         contentPadding = PaddingValues(
-            bottom = MaterialTheme.spacing.medium
+            bottom = 100.dp
         ),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
         header = {
             HomePageAppBar(
                 onSearchIconPressed = openSearchPage,
                 onAccountIconPressed = openAccountPage,
+                onLibraryIconPressed = openLibraryPage,
                 modifier = Modifier.statusBarsPadding()
             )
         },

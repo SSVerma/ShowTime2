@@ -52,6 +52,7 @@ fun HeroSection(
     trendingTvShowsState: TvShowPreviewUiState,
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
+    openLibraryPage: () -> Unit,
     onTvShowClicked: (TvShowPreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     onRetry: () -> Unit,
@@ -132,7 +133,8 @@ fun HeroSection(
                 HomePageAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                     onSearchIconPressed = onSearchClicked,
-                    onAccountIconPressed = onAccountClicked
+                    onAccountIconPressed = onAccountClicked,
+                    onLibraryIconPressed = openLibraryPage
                 )
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))

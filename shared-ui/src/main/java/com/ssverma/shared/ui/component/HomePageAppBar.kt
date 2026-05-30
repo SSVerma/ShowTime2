@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -52,6 +52,7 @@ fun HomePageAppBar(
     onSearchIconPressed: () -> Unit,
     onAccountIconPressed: () -> Unit,
     modifier: Modifier = Modifier,
+    onLibraryIconPressed: (() -> Unit)? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors()
 ) {
     var extendedMenuExpanded by remember { mutableStateOf(false) }
@@ -77,13 +78,6 @@ fun HomePageAppBar(
         actions = {
             LocalizationSelector()
 
-            IconButton(onClick = onSearchIconPressed) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = stringResource(R.string.search)
-                )
-            }
-
             Box {
                 IconButton(onClick = { extendedMenuExpanded = true }) {
                     Icon(
@@ -97,6 +91,22 @@ fun HomePageAppBar(
                     onDismissRequest = { extendedMenuExpanded = false },
                     modifier = Modifier.width(200.dp)
                 ) {
+                    onLibraryIconPressed?.let { onLibraryClick ->
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.VideoLibrary,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+                            text = { Text(stringResource(R.string.library)) },
+                            onClick = {
+                                extendedMenuExpanded = false
+                                onLibraryClick()
+                            }
+                        )
+                    }
                     DropdownMenuItem(
                         leadingIcon = {
                             Icon(
