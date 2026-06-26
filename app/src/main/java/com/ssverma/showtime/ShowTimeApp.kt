@@ -4,6 +4,7 @@ import android.app.Application
 import com.ssverma.core.ads.AdInitializer
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.showtime.analytics.AnalyticsSyncManager
+import com.ssverma.showtime.notifications.NotificationSyncManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -18,10 +19,14 @@ class ShowTimeApp : Application() {
     @Inject
     lateinit var adInitializer: AdInitializer
 
+    @Inject
+    lateinit var notificationSyncManager: NotificationSyncManager
+
     override fun onCreate() {
         super.onCreate()
         appConfigProvider.fetchAndActivate()
         analyticsSyncManager.startSync()
         adInitializer.initialize()
+        notificationSyncManager.startSync()
     }
 }

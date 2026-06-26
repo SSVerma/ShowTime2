@@ -21,6 +21,8 @@ interface AppConfigRepository {
 
     val isAnalyticsEnabled: Flow<Boolean>
 
+    val isNotificationsEnabled: Flow<Boolean>
+
     suspend fun updateAppTheme(theme: AppTheme)
 
     suspend fun updateDynamicColor(enabled: Boolean)
@@ -36,4 +38,6 @@ interface AppConfigRepository {
     suspend fun updatePreferredOriginalLanguage(languageCode: String)
 
     suspend fun updateAnalyticsEnabled(enabled: Boolean)
+
+    suspend fun updateNotificationsEnabled(enabled: Boolean)
 }

@@ -62,6 +62,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
 import com.ssverma.core.navigation.navigateTo
+import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.feature.search.navigation.SearchDestination
 import com.ssverma.shared.domain.model.AppTheme
@@ -70,6 +71,7 @@ import com.ssverma.shared.ui.LocalAppStateHolder
 import com.ssverma.showtime.navigation.ShowTimeNavHost
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
+import com.ssverma.showtime.notifications.NotificationPermissionHandler
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -103,8 +105,10 @@ fun ShowTime() {
         val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
         var manuallyDismissedThisSession by remember { mutableStateOf(false) }
         var showManualAppInfoSheet by remember { mutableStateOf(false) }
+        val showAppInfoSheet =
+            (!isAppInfoDismissed && !manuallyDismissedThisSession) || showManualAppInfoSheet
 
-        if ((!isAppInfoDismissed && !manuallyDismissedThisSession) || showManualAppInfoSheet) {
+        if (showAppInfoSheet) {
             AppInfoBottomSheet(
                 showDontShowAgain = !showManualAppInfoSheet,
                 onDismissRequest = { dontShowAgain ->
@@ -123,6 +127,14 @@ fun ShowTime() {
         CompositionLocalProvider(
             LocalAppInfoTrigger provides { showManualAppInfoSheet = true }
         ) {
+            val notificationManager = LocalNotificationManager.current
+            val isHomePage = showBottomBar(currentDestination, ShowTimeTopLevelNavItems)
+
+            NotificationPermissionHandler(
+                notificationManager = notificationManager,
+                canRequest = isHomePage && !showAppInfoSheet
+            )
+
             Scaffold(
                 contentWindowInsets = WindowInsets(0, 0, 0, 0)
             ) { innerPaddingModifier ->

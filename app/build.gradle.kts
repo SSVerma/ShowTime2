@@ -133,6 +133,7 @@ dependencies {
     implementation(projects.coreNavigation)
     implementation(projects.coreNetworking)
     implementation(projects.coreAnalytics)
+    implementation(projects.coreNotifications)
     implementation(projects.coreCcm)
     implementation(projects.coreAds)
 

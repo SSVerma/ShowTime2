@@ -87,6 +87,14 @@ class DefaultAppConfigRepository @Inject constructor(
             isLocallyEnabled && isRemotelyEnabled
         }
 
+    override val isNotificationsEnabled: Flow<Boolean>
+        get() = combine(
+            keyValueStorage.observe(NotificationsEnabledKey, true),
+            appConfigProvider.observeBoolean(REMOTE_KEY_NOTIFICATIONS_ENABLED, true)
+        ) { isLocallyEnabled, isRemotelyEnabled ->
+            isLocallyEnabled && isRemotelyEnabled
+        }
+
     override suspend fun updateAppTheme(theme: AppTheme) {
         keyValueStorage.write(AppThemeKey, theme.name)
     }
@@ -119,6 +127,10 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(AnalyticsEnabledKey, enabled)
     }
 
+    override suspend fun updateNotificationsEnabled(enabled: Boolean) {
+        keyValueStorage.write(NotificationsEnabledKey, enabled)
+    }
+
     companion object {
         private val AppThemeKey = stringPreferencesKey("app_theme")
 
@@ -138,7 +150,11 @@ class DefaultAppConfigRepository @Inject constructor(
 
         private val AnalyticsEnabledKey = booleanPreferencesKey("analytics_enabled")
 
+        private val NotificationsEnabledKey = booleanPreferencesKey("notifications_enabled")
+
         // Define the remote key here since this domain owns the knowledge of what it's used for
         private const val REMOTE_KEY_ANALYTICS_ENABLED = "remote_analytics_enabled"
+
+        private const val REMOTE_KEY_NOTIFICATIONS_ENABLED = "remote_notifications_enabled"
     }
 }

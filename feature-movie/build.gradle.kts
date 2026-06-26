@@ -19,6 +19,7 @@ dependencies {
     implementation(projects.featureAccount)
 
     implementation(projects.coreAnalytics)
+    implementation(projects.coreNotifications)
     implementation(projects.sharedAnalytics)
     implementation(projects.sharedAds)
 }

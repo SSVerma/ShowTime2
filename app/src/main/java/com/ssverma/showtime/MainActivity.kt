@@ -9,6 +9,8 @@ import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.notifications.LocalNotificationManager
+import com.ssverma.core.notifications.ShowTimeNotificationManager
 import com.ssverma.shared.ui.AppStateHolder
 import com.ssverma.shared.ui.LocalAppStateHolder
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +27,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var adConfigProvider: AdConfigProvider
 
+    @Inject
+    lateinit var notificationManager: ShowTimeNotificationManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -32,7 +37,8 @@ class MainActivity : AppCompatActivity() {
             CompositionLocalProvider(
                 LocalAppStateHolder provides appStateHolder,
                 LocalAnalytics provides analytics,
-                LocalAdConfigProvider provides adConfigProvider
+                LocalAdConfigProvider provides adConfigProvider,
+                LocalNotificationManager provides notificationManager
             ) {
                 ShowTime()
             }
