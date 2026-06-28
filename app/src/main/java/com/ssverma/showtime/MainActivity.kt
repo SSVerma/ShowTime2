@@ -1,5 +1,6 @@
 package com.ssverma.showtime
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -61,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        deepLinkKey.value = intent.data?.let { ShowTimeDeepLinkHandler.parse(it) }
+        deepLinkKey.value = extractNavKey(intent)
 
         setContent {
             val backInput = remember { DirectNavigationEventInput() }
@@ -89,8 +90,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: android.content.Intent) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        deepLinkKey.value = intent.data?.let { ShowTimeDeepLinkHandler.parse(it) }
+        deepLinkKey.value = extractNavKey(intent)
+    }
+
+    private fun extractNavKey(intent: Intent): NavKey? {
+        // 1. Check data URI (from adb or PendingIntent)
+        intent.data?.let {
+            val navKey = ShowTimeDeepLinkHandler.parse(it)
+            if (navKey != null) return navKey
+        }
+
+        // 2. Check extras (from FCM background delivery)
+        intent.extras?.getString("deepLink")?.let {
+            val navKey = ShowTimeDeepLinkHandler.parse(it)
+            if (navKey != null) return navKey
+        }
+
+        return null
     }
 }

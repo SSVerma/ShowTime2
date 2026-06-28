@@ -4,12 +4,14 @@ import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import coil.imageLoader
 import coil.request.ImageRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -56,7 +58,8 @@ class ShowTimeNotificationManager @Inject constructor(
     fun showNotification(
         title: String?,
         message: String?,
-        imageUrl: String? = null
+        imageUrl: String? = null,
+        deepLink: String? = null
     ) {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID_GENERAL)
             .setSmallIcon(android.R.drawable.ic_dialog_info) // TODO: Use app icon
@@ -77,6 +80,47 @@ class ShowTimeNotificationManager @Inject constructor(
             }
         }
 
+        if (!deepLink.isNullOrBlank()) {
+            try {
+                val intent = Intent(
+                    Intent.ACTION_VIEW,
+                    deepLink.toUri()
+                ).apply {
+                    setPackage(context.packageName)
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+
+                val pendingIntent = android.app.PendingIntent.getActivity(
+                    context,
+                    0,
+                    intent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                )
+                builder.setContentIntent(pendingIntent)
+            } catch (e: Exception) {
+                // Fallback: Just open the app if deep link is malformed
+                val launchIntent =
+                    context.packageManager.getLaunchIntentForPackage(context.packageName)
+                val pendingIntent = android.app.PendingIntent.getActivity(
+                    context,
+                    0,
+                    launchIntent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                )
+                builder.setContentIntent(pendingIntent)
+            }
+        } else {
+            // Default: Launch app
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            val pendingIntent = android.app.PendingIntent.getActivity(
+                context,
+                0,
+                launchIntent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.setContentIntent(pendingIntent)
+        }
+
         notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 
@@ -92,15 +136,5 @@ class ShowTimeNotificationManager @Inject constructor(
         } catch (e: Exception) {
             null
         }
-    }
-
-    /**
-     * Call this for manual testing from a debug screen.
-     */
-    fun showTestNotification() {
-        showNotification(
-            title = "Test Notification",
-            message = "This is a manual test notification from ShowTime."
-        )
     }
 }

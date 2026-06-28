@@ -8,12 +8,12 @@
         android:name=".ShowTimeApp"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
-        tools:targetApi="33"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ShowTime">
+        android:theme="@style/Theme.ShowTime"
+        tools:targetApi="33">
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -21,6 +21,17 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.ssverma.in"
+                    android:scheme="showtime" />
             </intent-filter>
         </activity>
 

@@ -23,7 +23,8 @@ class ShowTimeMessagingService : FirebaseMessagingService() {
             notificationManager.showNotification(
                 title = it.title,
                 message = it.body,
-                imageUrl = it.imageUrl?.toString()
+                imageUrl = it.imageUrl?.toString(),
+                deepLink = it.link?.toString()
             )
         }
 
@@ -33,11 +34,14 @@ class ShowTimeMessagingService : FirebaseMessagingService() {
             val title = message.data["title"]
             val body = message.data["body"]
             val image = message.data["image"]
+            val deepLink = message.data["deepLink"]
+
             if (title != null || body != null) {
                 notificationManager.showNotification(
                     title = title,
                     message = body,
-                    imageUrl = image
+                    imageUrl = image,
+                    deepLink = deepLink
                 )
             }
         }
