@@ -10,10 +10,9 @@ import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
 
 @Composable
 fun TvShowImagePagerScreen(
-    navController: NavController,
     defaultPageIndex: Int,
     onBackPressed: () -> Unit,
-    viewModel: TvShowDetailsViewModel = navController.destinationViewModel(destination = TvShowDetailDestination)
+    viewModel: TvShowDetailsViewModel
 ) {
     val imageShots by viewModel.imageShots.collectAsStateWithLifecycle()
 

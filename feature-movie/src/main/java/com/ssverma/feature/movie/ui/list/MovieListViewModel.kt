@@ -1,21 +1,21 @@
 package com.ssverma.feature.movie.ui.list
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.domain.usecase.PaginatedMoviesUseCase
-import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.convertor.asMovieListingConfig
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.movie.asMoviePreview
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
 
 data class MoviePaginatedListUiState(
     val isGridView: Boolean = true,
@@ -38,17 +37,16 @@ data class MoviePaginatedListUiState(
     val filterConfig: MovieDiscoverConfig? = null,
 )
 
-@HiltViewModel
-class MovieListViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+@HiltViewModel(assistedFactory = MovieListViewModel.Factory::class)
+class MovieListViewModel @AssistedInject constructor(
+    @Assisted private val route: MovieListingArgs,
     private val paginatedMoviesUseCase: PaginatedMoviesUseCase,
 ) : ViewModel() {
 
-    private val routeWrapper = savedStateHandle.toRoute<MovieListingRoute>(
-        typeMap = MovieListingArgs.TypeMap
-    )
-
-    private val route = routeWrapper.args
+    @AssistedFactory
+    interface Factory {
+        fun create(route: MovieListingArgs): MovieListViewModel
+    }
 
     private val movieListingConfig = route.asMovieListingConfig()
 

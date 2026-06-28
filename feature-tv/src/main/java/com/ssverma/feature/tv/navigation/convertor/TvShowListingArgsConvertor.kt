@@ -1,6 +1,5 @@
 package com.ssverma.feature.tv.navigation.convertor
 
-import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 
@@ -18,11 +17,11 @@ fun TvShowListingArgs.asTvShowListingConfigs(): TvShowListingConfig {
             TvShowListingConfig.Filterable.TopRated()
         }
 
-        is TvShowListingArgs.NowAiring -> {
+        is TvShowListingArgs.OnTheAir -> {
             TvShowListingConfig.Filterable.NowAiring()
         }
 
-        is TvShowListingArgs.TodayAiring -> {
+        is TvShowListingArgs.AiringToday -> {
             TvShowListingConfig.Filterable.TodayAiring()
         }
 

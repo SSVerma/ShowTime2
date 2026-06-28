@@ -2,10 +2,12 @@ package com.ssverma.feature.tv.ui.list
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -36,7 +38,7 @@ fun TvShowListScreen(
     onBackPressed: () -> Unit,
     openTvShowDetails: (Int) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
-    viewModel: TvShowListViewModel = hiltViewModel()
+    viewModel: TvShowListViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -45,112 +47,117 @@ fun TvShowListScreen(
         screenClass = uiState.config.asAnalyticsListingType()
     )
 
-    val analytics = LocalAnalytics.current
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val analytics = LocalAnalytics.current
 
-    val tvShowPagingItems = viewModel.pagedTvShows.collectAsLazyPagingItems()
+        val tvShowPagingItems = viewModel.pagedTvShows.collectAsLazyPagingItems()
 
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val coroutineScope = rememberCoroutineScope()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val coroutineScope = rememberCoroutineScope()
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    AppPage(
-        scrollBehavior = scrollBehavior,
-        topBar = { behavior ->
-            TvShowListTopBar(
-                uiState = uiState,
-                onToggleViewMode = { viewModel.toggleViewMode() },
-                onOpenFilters = {
-                    analytics.logEvent(
-                        TvAnalyticsEvent.FilterClicked(
-                            listingType = uiState.config.asAnalyticsListingType()
+        AppPage(
+            scrollBehavior = scrollBehavior,
+            topBar = { behavior ->
+                TvShowListTopBar(
+                    uiState = uiState,
+                    onToggleViewMode = { viewModel.toggleViewMode() },
+                    onOpenFilters = {
+                        analytics.logEvent(
+                            TvAnalyticsEvent.FilterClicked(
+                                listingType = uiState.config.asAnalyticsListingType()
+                            )
                         )
-                    )
-                    coroutineScope.launch { sheetState.show() }
-                },
-                onBackPressed = onBackPressed,
-                scrollBehavior = behavior
-            )
-        }
-    ) { innerPadding ->
+                        coroutineScope.launch { sheetState.show() }
+                    },
+                    onBackPressed = onBackPressed,
+                    scrollBehavior = behavior
+                )
+            }
+        ) { innerPadding ->
 
-        PagedContent(pagingItems = tvShowPagingItems) { items ->
-            Crossfade(uiState.isGridView, label = "TvShowListViewModeTransition") { isGrid ->
-                if (isGrid) {
-                    TvShowsGridContent(
-                        tvShowPagingItems = items,
-                        config = uiState.config,
-                        openTvShowDetails = { tvShow ->
-                            analytics.logEvent(
-                                TvAnalyticsEvent.TvShowClicked(
-                                    tvShow = tvShow,
-                                    section = TvAnalyticsValues.SECTION_LISTING_GRID,
-                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING,
+            PagedContent(pagingItems = tvShowPagingItems) { items ->
+                Crossfade(uiState.isGridView, label = "TvShowListViewModeTransition") { isGrid ->
+                    if (isGrid) {
+                        TvShowsGridContent(
+                            tvShowPagingItems = items,
+                            config = uiState.config,
+                            openTvShowDetails = { tvShow ->
+                                analytics.logEvent(
+                                    TvAnalyticsEvent.TvShowClicked(
+                                        tvShow = tvShow,
+                                        section = TvAnalyticsValues.SECTION_LISTING_GRID,
+                                        sourceScreen = TvAnalyticsScreenName.TV_LISTING,
+                                    )
                                 )
-                            )
-                            openTvShowDetails(tvShow.id)
-                        },
-                        onWatchProviderClick = { provider ->
-                            analytics.logEvent(
-                                TvAnalyticsEvent.WatchProviderClicked(
-                                    providerInfo = provider,
-                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING
+                                openTvShowDetails(tvShow.id)
+                            },
+                            onWatchProviderClick = { provider ->
+                                analytics.logEvent(
+                                    TvAnalyticsEvent.WatchProviderClicked(
+                                        providerInfo = provider,
+                                        sourceScreen = TvAnalyticsScreenName.TV_LISTING
+                                    )
                                 )
-                            )
-                            openWatchHub(provider)
-                        },
-                        modifier = Modifier.padding(innerPadding),
-                    )
-                } else {
-                    TvShowsListContent(
-                        tvShowPagingItems = items,
-                        config = uiState.config,
-                        openTvShowDetails = { tvShow ->
-                            analytics.logEvent(
-                                TvAnalyticsEvent.TvShowClicked(
-                                    tvShow = tvShow,
-                                    section = TvAnalyticsValues.SECTION_LISTING_LIST,
-                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING,
+                                openWatchHub(provider)
+                            },
+                            modifier = Modifier.padding(innerPadding),
+                        )
+                    } else {
+                        TvShowsListContent(
+                            tvShowPagingItems = items,
+                            config = uiState.config,
+                            openTvShowDetails = { tvShow ->
+                                analytics.logEvent(
+                                    TvAnalyticsEvent.TvShowClicked(
+                                        tvShow = tvShow,
+                                        section = TvAnalyticsValues.SECTION_LISTING_LIST,
+                                        sourceScreen = TvAnalyticsScreenName.TV_LISTING,
+                                    )
                                 )
-                            )
-                            openTvShowDetails(tvShow.id)
-                        },
-                        onWatchProviderClick = { provider ->
-                            analytics.logEvent(
-                                TvAnalyticsEvent.WatchProviderClicked(
-                                    providerInfo = provider,
-                                    sourceScreen = TvAnalyticsScreenName.TV_LISTING
+                                openTvShowDetails(tvShow.id)
+                            },
+                            onWatchProviderClick = { provider ->
+                                analytics.logEvent(
+                                    TvAnalyticsEvent.WatchProviderClicked(
+                                        providerInfo = provider,
+                                        sourceScreen = TvAnalyticsScreenName.TV_LISTING
+                                    )
                                 )
-                            )
-                            openWatchHub(provider)
-                        },
-                        modifier = Modifier.padding(innerPadding),
-                    )
+                                openWatchHub(provider)
+                            },
+                            modifier = Modifier.padding(innerPadding),
+                        )
+                    }
                 }
             }
         }
-    }
 
-    if (sheetState.isVisible && uiState.isFilterApplicable) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                coroutineScope.launch { sheetState.hide() }
-            },
-            sheetState = sheetState,
-            dragHandle = null,
-            sheetGesturesEnabled = false,
-            containerColor = MaterialTheme.colorScheme.surface,
-        ) {
-            TvFiltersScreen(
-                initialConfig = uiState.filterConfig,
-                onBackPressed = {
+        if (sheetState.isVisible && uiState.isFilterApplicable) {
+            ModalBottomSheet(
+                onDismissRequest = {
                     coroutineScope.launch { sheetState.hide() }
                 },
-                onFilterApplied = { filterConfig ->
-                    coroutineScope.launch { sheetState.hide() }
-                    viewModel.onFiltersApplied(filterConfig)
-                }
-            )
+                sheetState = sheetState,
+                dragHandle = null,
+                sheetGesturesEnabled = false,
+                containerColor = MaterialTheme.colorScheme.surface,
+            ) {
+                TvFiltersScreen(
+                    initialConfig = uiState.filterConfig,
+                    onBackPressed = {
+                        coroutineScope.launch { sheetState.hide() }
+                    },
+                    onFilterApplied = { filterConfig ->
+                        coroutineScope.launch { sheetState.hide() }
+                        viewModel.onFiltersApplied(filterConfig)
+                    }
+                )
+            }
         }
     }
 }

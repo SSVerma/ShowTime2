@@ -1,8 +1,11 @@
 package com.ssverma.feature.filter.ui.hub
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.StatefulContent
 import com.ssverma.feature.filter.ui.hub.component.WatchProviderHubContent
@@ -21,53 +24,58 @@ fun WatchProviderHubScreen(
     onGenreClick: (Genre, Boolean) -> Unit,
     onMovieSeeAllClick: (providerInfo: ProviderInfo, discoverConfig: MovieDiscoverConfig) -> Unit,
     onTvSeeAllClick: (providerInfo: ProviderInfo, discoverConfig: TvDiscoverConfig) -> Unit,
-    viewModel: WatchProviderHubViewModel = hiltViewModel()
+    viewModel: WatchProviderHubViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    StatefulContent(
-        state = uiState.hubContentState,
-        onRetry = { viewModel.fetchHubContent() },
-        loading = {
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        StatefulContent(
+            state = uiState.hubContentState,
+            onRetry = { viewModel.fetchHubContent() },
+            loading = {
+                WatchProviderHubContent(
+                    provider = uiState.provider,
+                    heroItems = emptyList(),
+                    newItems = emptyList(),
+                    upcomingItems = emptyList(),
+                    topRatedItems = emptyList(),
+                    genres = emptyList(),
+                    isMovieMode = uiState.isMovieMode,
+                    onMediaClick = {},
+                    onGenreClick = {},
+                    onBackClick = onBackClick,
+                    onMovieSeeAllClick = {},
+                    onTvSeeAllClick = {},
+                    isLoading = true
+                )
+            }
+        ) { hubContent ->
             WatchProviderHubContent(
                 provider = uiState.provider,
-                heroItems = emptyList(),
-                newItems = emptyList(),
-                upcomingItems = emptyList(),
-                topRatedItems = emptyList(),
-                genres = emptyList(),
+                heroItems = hubContent.heroItems,
+                newItems = hubContent.newItems,
+                upcomingItems = hubContent.upcomingItems,
+                topRatedItems = hubContent.topRatedItems,
+                genres = hubContent.genres,
                 isMovieMode = uiState.isMovieMode,
-                onMediaClick = {},
-                onGenreClick = {},
+                onMediaClick = { media ->
+                    when (media) {
+                        is MoviePreview -> onMovieClick(media.id)
+                        is TvShowPreview -> onTvShowClick(media.id)
+                    }
+                },
+                onGenreClick = { genre -> onGenreClick(genre, uiState.isMovieMode) },
                 onBackClick = onBackClick,
-                onMovieSeeAllClick = {},
-                onTvSeeAllClick = {},
-                isLoading = true
+                onMovieSeeAllClick = { discoverConfig ->
+                    onMovieSeeAllClick(uiState.provider, discoverConfig)
+                },
+                onTvSeeAllClick = { discoverConfig ->
+                    onTvSeeAllClick(uiState.provider, discoverConfig)
+                }
             )
         }
-    ) { hubContent ->
-        WatchProviderHubContent(
-            provider = uiState.provider,
-            heroItems = hubContent.heroItems,
-            newItems = hubContent.newItems,
-            upcomingItems = hubContent.upcomingItems,
-            topRatedItems = hubContent.topRatedItems,
-            genres = hubContent.genres,
-            isMovieMode = uiState.isMovieMode,
-            onMediaClick = { media ->
-                when (media) {
-                    is MoviePreview -> onMovieClick(media.id)
-                    is TvShowPreview -> onTvShowClick(media.id)
-                }
-            },
-            onGenreClick = { genre -> onGenreClick(genre, uiState.isMovieMode) },
-            onBackClick = onBackClick,
-            onMovieSeeAllClick = { discoverConfig ->
-                onMovieSeeAllClick(uiState.provider, discoverConfig)
-            },
-            onTvSeeAllClick = { discoverConfig ->
-                onTvSeeAllClick(uiState.provider, discoverConfig)
-            }
-        )
     }
 }

@@ -3,28 +3,31 @@ package com.ssverma.feature.person.ui.details
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.person.domain.model.PersonDetailsConfig
 import com.ssverma.feature.person.domain.usecase.PersonDetailsUseCase
-import com.ssverma.feature.person.navigation.PersonDetailDestination
 import com.ssverma.feature.person.ui.common.PersonDetailUiState
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class PersonDetailsViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+@HiltViewModel(assistedFactory = PersonDetailsViewModel.Factory::class)
+class PersonDetailsViewModel @AssistedInject constructor(
+    @Assisted private val personId: Int,
     private val personDetailsUseCase: PersonDetailsUseCase
 ) : ViewModel() {
 
-    private val personId = savedStateHandle.get<Int>(PersonDetailDestination.PersonId) ?: 0
+    @AssistedFactory
+    interface Factory {
+        fun create(personId: Int): PersonDetailsViewModel
+    }
 
     var imageShots by mutableStateOf<List<ImageShot>>(emptyList())
 

@@ -81,5 +81,6 @@
     <string name="vote_count_500">500+</string>
     <string name="vote_count_1000">1000+</string>
     <string name="vote_count_5000">5000+</string>
+    <string name="no_items_found">No items found</string>
 
 </resources>

@@ -22,6 +22,8 @@ import com.ssverma.feature.person.ui.details.content.PersonDetailsContent
 import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
 import kotlinx.coroutines.launch
 
+import androidx.compose.material3.Surface
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonDetailsScreen(
@@ -29,7 +31,7 @@ fun PersonDetailsScreen(
     openMovieDetails: (movieId: Int) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openPersonAllImages: (personId: Int) -> Unit,
-    viewModel: PersonDetailsViewModel = hiltViewModel(),
+    viewModel: PersonDetailsViewModel
 ) {
     TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_DETAILS)
 
@@ -39,44 +41,49 @@ fun PersonDetailsScreen(
     var profileImagePageIndex by remember { mutableIntStateOf(0) }
     var showSheet by remember { mutableStateOf(false) }
 
-    DriveCompose(
-        uiState = viewModel.personDetailUiState,
-        onRetry = { viewModel.fetchPersonDetails() }
-    ) { person ->
-        PersonDetailsContent(
-            person = person,
-            onBackPress = onBackPress,
-            openImagePage = { pageIndex ->
-                profileImagePageIndex = pageIndex
-                showSheet = true
-            },
-            openMovieDetails = openMovieDetails,
-            openTvShowDetails = openTvShowDetails,
-            openPersonAllImages = openPersonAllImages,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        if (showSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showSheet = false },
-                sheetState = sheetState,
-                containerColor = MaterialTheme.colorScheme.background,
-                dragHandle = null,
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        DriveCompose(
+            uiState = viewModel.personDetailUiState,
+            onRetry = { viewModel.fetchPersonDetails() }
+        ) { person ->
+            PersonDetailsContent(
+                person = person,
+                onBackPress = onBackPress,
+                openImagePage = { pageIndex ->
+                    profileImagePageIndex = pageIndex
+                    showSheet = true
+                },
+                openMovieDetails = openMovieDetails,
+                openTvShowDetails = openTvShowDetails,
+                openPersonAllImages = openPersonAllImages,
                 modifier = Modifier.fillMaxSize()
-            ) {
-                ImagePagerContent(
-                    imageShots = viewModel.imageShots,
-                    defaultPageIndex = profileImagePageIndex,
-                    onBackPressed = {
-                        coroutineScope.launch {
-                            sheetState.hide()
-                        }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                showSheet = false
+            )
+
+            if (showSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showSheet = false },
+                    sheetState = sheetState,
+                    containerColor = MaterialTheme.colorScheme.background,
+                    dragHandle = null,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    ImagePagerContent(
+                        imageShots = viewModel.imageShots,
+                        defaultPageIndex = profileImagePageIndex,
+                        onBackPressed = {
+                            coroutineScope.launch {
+                                sheetState.hide()
+                            }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    showSheet = false
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }

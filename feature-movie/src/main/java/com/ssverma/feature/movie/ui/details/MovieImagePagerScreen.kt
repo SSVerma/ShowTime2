@@ -10,10 +10,9 @@ import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
 
 @Composable
 fun MovieImagePagerScreen(
-    navController: NavController,
     defaultPageIndex: Int,
     onBackPressed: () -> Unit,
-    viewModel: MovieDetailsViewModel = navController.destinationViewModel(destination = MovieDetailDestination)
+    viewModel: MovieDetailsViewModel
 ) {
     val imageShots by viewModel.imageShots.collectAsStateWithLifecycle()
 

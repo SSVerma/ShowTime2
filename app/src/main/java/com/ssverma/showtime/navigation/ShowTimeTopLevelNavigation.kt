@@ -2,49 +2,38 @@ package com.ssverma.showtime.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import com.ssverma.core.navigation.Destination
-import com.ssverma.core.navigation.GraphDestination
-import com.ssverma.core.navigation.navigateTo
-import com.ssverma.core.navigation.navigation
-import com.ssverma.feature.filter.navigation.watchProviderHubGraph
-import com.ssverma.feature.library.navigation.LibraryHomeDestination
-import com.ssverma.feature.library.navigation.libraryHomeGraph
-import com.ssverma.feature.movie.navigation.MovieHomeDestination
-import com.ssverma.feature.movie.navigation.movieHomeGraph
-import com.ssverma.feature.person.navigation.PersonHomeDestination
-import com.ssverma.feature.person.navigation.personHomeGraph
-import com.ssverma.feature.tv.navigation.TvShowHomeDestination
-import com.ssverma.feature.tv.navigation.tvShowHomeGraph
+import androidx.navigation3.runtime.NavKey
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.movie.navigation.MovieHomeNavKey
+import com.ssverma.feature.person.navigation.PersonHomeNavKey
+import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
 import com.ssverma.showtime.R
 
 sealed class ShowTimeTopLevelNavItem(
-    val destination: Destination,
+    val navKey: NavKey,
     @param:StringRes val titleResId: Int,
     @param:DrawableRes val iconResId: Int
 ) {
     object Movie : ShowTimeTopLevelNavItem(
-        destination = MovieHomeDestination,
+        navKey = MovieHomeNavKey,
         titleResId = R.string.movie,
         iconResId = R.drawable.ic_movie
     )
 
     object Tv : ShowTimeTopLevelNavItem(
-        destination = TvShowHomeDestination,
+        navKey = TvShowHomeNavKey,
         titleResId = R.string.tv,
         iconResId = R.drawable.ic_tv
     )
 
     object Person : ShowTimeTopLevelNavItem(
-        destination = PersonHomeDestination,
+        navKey = PersonHomeNavKey,
         titleResId = R.string.people,
         iconResId = R.drawable.ic_people
     )
 
     object Library : ShowTimeTopLevelNavItem(
-        destination = LibraryHomeDestination,
+        navKey = LibraryHomeNavKey,
         titleResId = R.string.library,
         iconResId = R.drawable.ic_library
     )
@@ -55,34 +44,3 @@ val ShowTimeTopLevelNavItems = listOf(
     ShowTimeTopLevelNavItem.Tv,
     ShowTimeTopLevelNavItem.Person,
 )
-
-object ShowTimeTopLevelDestination : GraphDestination("home")
-
-@OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.topLevelNavGraph(
-    navController: NavController
-) = navigation(
-    graphDestination = ShowTimeTopLevelDestination,
-    startDestination = MovieHomeDestination
-) {
-    movieHomeGraph(
-        navController = navController,
-        openLibraryPage = {
-            navController.navigateTo(LibraryHomeDestination.actualRoute)
-        }
-    )
-    tvShowHomeGraph(
-        navController = navController,
-        openLibraryPage = {
-            navController.navigateTo(LibraryHomeDestination.actualRoute)
-        }
-    )
-    personHomeGraph(
-        navController = navController,
-        openLibraryPage = {
-            navController.navigateTo(LibraryHomeDestination.actualRoute)
-        }
-    )
-    libraryHomeGraph(navController)
-    watchProviderHubGraph(navController)
-}

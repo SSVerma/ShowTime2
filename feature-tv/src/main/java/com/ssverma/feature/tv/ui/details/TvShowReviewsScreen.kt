@@ -12,21 +12,30 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.ui.component.ReviewsList
 
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.fillMaxSize
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TvShowReviewsScreen(
     onBackPress: () -> Unit,
-    viewModel: TvShowReviewsViewModel = hiltViewModel()
+    viewModel: TvShowReviewsViewModel
 ) {
     val reviewPagingItems = viewModel.pagedReviews.collectAsLazyPagingItems()
 
-    Column(
-        modifier = Modifier.systemBarsPadding()
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
     ) {
-        ShowTimeTopAppBar(
-            title = stringResource(id = R.string.reviews),
-            onBackPressed = onBackPress
-        )
-        ReviewsList(reviewItems = reviewPagingItems)
+        Column(
+            modifier = Modifier.systemBarsPadding()
+        ) {
+            ShowTimeTopAppBar(
+                title = stringResource(id = R.string.reviews),
+                onBackPressed = onBackPress
+            )
+            ReviewsList(reviewItems = reviewPagingItems)
+        }
     }
 }

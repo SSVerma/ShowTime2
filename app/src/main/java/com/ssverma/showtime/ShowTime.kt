@@ -1,6 +1,5 @@
 package com.ssverma.showtime
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -36,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,28 +54,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
-import com.ssverma.core.navigation.navigateTo
+import com.ssverma.core.navigation.nav3.Navigator
+import com.ssverma.core.navigation.nav3.rememberNavigationState
 import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.ui.theme.ShowTimeTheme
-import com.ssverma.feature.search.navigation.SearchDestination
+import com.ssverma.feature.movie.navigation.MovieHomeNavKey
+import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.ui.LocalAppInfoTrigger
 import com.ssverma.shared.ui.LocalAppStateHolder
-import com.ssverma.showtime.navigation.ShowTimeNavHost
+import com.ssverma.showtime.navigation.ShowTimeNavDisplay
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 import com.ssverma.showtime.notifications.NotificationPermissionHandler
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowTime() {
+fun ShowTime(
+    initialDeepLinkKey: NavKey? = null
+) {
     val appStateHolder = LocalAppStateHolder.current
     val appTheme by appStateHolder.appTheme.collectAsState(initial = AppTheme.System)
     val isDynamicColorEnabled by appStateHolder.isDynamicColorEnabled.collectAsState(initial = false)
@@ -100,7 +99,20 @@ fun ShowTime() {
             }
         }
 
-        val navController = rememberNavController()
+        val topLevelRoutes = remember {
+            ShowTimeTopLevelNavItems.map { it.navKey }.toSet()
+        }
+
+        val navigationState = rememberNavigationState(
+            startRoute = MovieHomeNavKey,
+            topLevelRoutes = topLevelRoutes
+        )
+
+        val navigator = remember { Navigator(navigationState) }
+
+        LaunchedEffect(initialDeepLinkKey) {
+            initialDeepLinkKey?.let { navigator.navigate(it) }
+        }
 
         val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
         var manuallyDismissedThisSession by remember { mutableStateOf(false) }
@@ -121,14 +133,17 @@ fun ShowTime() {
             )
         }
 
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
+        val currentDestination =
+            navigationState.backStacks[navigationState.topLevelRoute]?.lastOrNull()
 
         CompositionLocalProvider(
             LocalAppInfoTrigger provides { showManualAppInfoSheet = true }
         ) {
             val notificationManager = LocalNotificationManager.current
-            val isHomePage = showBottomBar(currentDestination, ShowTimeTopLevelNavItems)
+            val isHomePage = isHomePage(
+                currentNavKey = currentDestination,
+                bottomNavDestinations = ShowTimeTopLevelNavItems
+            )
 
             NotificationPermissionHandler(
                 notificationManager = notificationManager,
@@ -141,8 +156,12 @@ fun ShowTime() {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    ShowTimeNavHost(
-                        navController = navController,
+                    ShowTimeNavDisplay(
+                        navigationState = navigationState,
+                        navigator = navigator,
+                        openLibraryPage = {
+                            navigator.navigate(ShowTimeTopLevelNavItem.Library.navKey)
+                        },
                         modifier = Modifier.padding(
                             start = innerPaddingModifier.calculateStartPadding(LayoutDirection.Ltr),
                             end = innerPaddingModifier.calculateEndPadding(LayoutDirection.Ltr),
@@ -151,15 +170,13 @@ fun ShowTime() {
                     )
 
                     ShowTimeBottomBar(
-                        currentNavDestination = currentDestination,
+                        currentNavKey = currentDestination,
+                        topLevelNavKey = navigationState.topLevelRoute,
                         onTopLevelNavItemSelected = { navItem ->
-                            selectTopLevelNavItem(
-                                navItem = navItem,
-                                navController = navController
-                            )
+                            navigator.navigate(navItem.navKey)
                         },
                         onSearchPressed = {
-                            navController.navigateTo(SearchDestination.actualRoute)
+                            navigator.navigate(SearchNavKey)
                         },
                         modifier = Modifier.align(Alignment.BottomCenter)
                     )
@@ -167,27 +184,6 @@ fun ShowTime() {
             }
         }
     }
-}
-
-private fun selectTopLevelNavItem(
-    navItem: ShowTimeTopLevelNavItem,
-    navController: NavController
-) {
-    navController.navigate(navItem.destination.placeholderRoute.asNavRoute()) {
-        popUpTo(navController.graph.findStartDestination().id) {
-            saveState = true
-        }
-        launchSingleTop = true
-        restoreState = true
-    }
-}
-
-private fun showBottomBar(
-    currentNavDestination: NavDestination?,
-    bottomNavDestinations: List<ShowTimeTopLevelNavItem>
-): Boolean {
-    val routes = bottomNavDestinations.map { it.destination.placeholderRoute.asNavRoute() }
-    return routes.contains(currentNavDestination?.route)
 }
 
 @Composable
@@ -251,16 +247,24 @@ fun ShowTimeToolbarTab(
     }
 }
 
+private fun isHomePage(
+    currentNavKey: NavKey?,
+    bottomNavDestinations: List<ShowTimeTopLevelNavItem>
+): Boolean {
+    return bottomNavDestinations.any { it.navKey == currentNavKey }
+}
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ShowTimeBottomBar(
-    currentNavDestination: NavDestination?,
+    currentNavKey: NavKey?,
+    topLevelNavKey: NavKey,
     onTopLevelNavItemSelected: (ShowTimeTopLevelNavItem) -> Unit,
     onSearchPressed: () -> Unit,
     modifier: Modifier = Modifier,
     bottomNavItems: List<ShowTimeTopLevelNavItem> = ShowTimeTopLevelNavItems,
 ) {
-    if (!showBottomBar(currentNavDestination, bottomNavItems)) {
+    if (!isHomePage(currentNavKey, bottomNavItems)) {
         return
     }
 
@@ -292,44 +296,15 @@ fun ShowTimeBottomBar(
             ),
             contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
-            // Movie
-            val movieItem = bottomNavItems[0]
-            val movieSelected = currentNavDestination
-                ?.hierarchy
-                ?.any { it.route == movieItem.destination.placeholderRoute.asNavRoute() } == true
-            ShowTimeToolbarTab(
-                iconResId = movieItem.iconResId,
-                titleResId = movieItem.titleResId,
-                selected = movieSelected,
-                onClick = { onTopLevelNavItemSelected(movieItem) },
-                modifier = Modifier.weight(1f)
-            )
-
-            // Tv
-            val tvItem = bottomNavItems[1]
-            val tvSelected = currentNavDestination
-                ?.hierarchy
-                ?.any { it.route == tvItem.destination.placeholderRoute.asNavRoute() } == true
-            ShowTimeToolbarTab(
-                iconResId = tvItem.iconResId,
-                titleResId = tvItem.titleResId,
-                selected = tvSelected,
-                onClick = { onTopLevelNavItemSelected(tvItem) },
-                modifier = Modifier.weight(1f)
-            )
-
-            // Person
-            val personItem = bottomNavItems[2]
-            val personSelected = currentNavDestination
-                ?.hierarchy
-                ?.any { it.route == personItem.destination.placeholderRoute.asNavRoute() } == true
-            ShowTimeToolbarTab(
-                iconResId = personItem.iconResId,
-                titleResId = personItem.titleResId,
-                selected = personSelected,
-                onClick = { onTopLevelNavItemSelected(personItem) },
-                modifier = Modifier.weight(1f)
-            )
+            bottomNavItems.forEach { item ->
+                ShowTimeToolbarTab(
+                    iconResId = item.iconResId,
+                    titleResId = item.titleResId,
+                    selected = item.navKey == topLevelNavKey,
+                    onClick = { onTopLevelNavItemSelected(item) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(12.dp))

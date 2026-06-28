@@ -1,21 +1,21 @@
 package com.ssverma.feature.tv.ui.list
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.domain.usecase.PaginatedTvShowUseCase
-import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.convertor.asTvShowListingConfigs
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
 
 data class TvShowPaginatedListUiState(
     val isGridView: Boolean = true,
@@ -38,14 +37,17 @@ data class TvShowPaginatedListUiState(
     val filterConfig: TvDiscoverConfig? = null
 )
 
-@HiltViewModel
-class TvShowListViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+@HiltViewModel(assistedFactory = TvShowListViewModel.Factory::class)
+class TvShowListViewModel @AssistedInject constructor(
+    @Assisted private val tvShowListingArgs: TvShowListingArgs,
     private val paginatedTvShowUseCase: PaginatedTvShowUseCase,
 ) : ViewModel() {
 
-    private val routeWrapper = savedStateHandle.toRoute<TvShowListingRoute>(TvShowListingArgs.TypeMap)
-    private val tvShowListingArgs = routeWrapper.args
+    @AssistedFactory
+    interface Factory {
+        fun create(tvShowListingArgs: TvShowListingArgs): TvShowListViewModel
+    }
+
     internal val tvShowListingConfig = tvShowListingArgs.asTvShowListingConfigs()
 
     private val _uiState = MutableStateFlow(

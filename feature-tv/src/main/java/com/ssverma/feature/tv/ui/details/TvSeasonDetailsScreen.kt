@@ -61,13 +61,15 @@ import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import kotlinx.coroutines.launch
 
+import androidx.compose.material3.Surface
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TvSeasonDetailsScreen(
     onBackPress: () -> Unit,
     openEpisodeDetails: (episodeArgs: TvEpisodeArgs) -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    viewModel: TvSeasonDetailsViewModel = hiltViewModel()
+    viewModel: TvSeasonDetailsViewModel
 ) {
     val analytics = LocalAnalytics.current
     val imageSheetState = rememberImageShotBottomSheetState()
@@ -77,55 +79,60 @@ fun TvSeasonDetailsScreen(
 
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_SEASON)
 
-    DriveCompose(
-        uiState = uiState,
-        onRetry = { viewModel.fetchTvSeason() }
-    ) { tvSeason ->
-        ImageShotBottomSheet(
-            imageShots = tvSeason.posters,
-            sheetState = imageSheetState
-        ) {
-            TvSeasonContent(
-                tvSeason = tvSeason,
-                onBackPress = onBackPress,
-                onEpisodeClick = { episode ->
-                    analytics.logEvent(
-                        TvAnalyticsEvent.EpisodeClicked(
-                            episode = episode,
-                            tvShowId = viewModel.tvShowId,
-                            sourceScreen = TvAnalyticsScreenName.TV_SEASON
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        DriveCompose(
+            uiState = uiState,
+            onRetry = { viewModel.fetchTvSeason() }
+        ) { tvSeason ->
+            ImageShotBottomSheet(
+                imageShots = tvSeason.posters,
+                sheetState = imageSheetState
+            ) {
+                TvSeasonContent(
+                    tvSeason = tvSeason,
+                    onBackPress = onBackPress,
+                    onEpisodeClick = { episode ->
+                        analytics.logEvent(
+                            TvAnalyticsEvent.EpisodeClicked(
+                                episode = episode,
+                                tvShowId = viewModel.tvShowId,
+                                sourceScreen = TvAnalyticsScreenName.TV_SEASON
+                            )
                         )
-                    )
-                    openEpisodeDetails(
-                        TvEpisodeArgs(
-                            tvShowId = viewModel.tvShowId,
-                            seasonNumber = episode.seasonNumber,
-                            episodeNumber = episode.episodeNumber
+                        openEpisodeDetails(
+                            TvEpisodeArgs(
+                                tvShowId = viewModel.tvShowId,
+                                seasonNumber = episode.seasonNumber,
+                                episodeNumber = episode.episodeNumber
+                            )
                         )
-                    )
-                },
-                openPersonDetails = { cast ->
-                    analytics.logEvent(
-                        TvAnalyticsEvent.CastClicked(
-                            cast = cast,
-                            sourceScreen = TvAnalyticsScreenName.TV_SEASON
+                    },
+                    openPersonDetails = { cast ->
+                        analytics.logEvent(
+                            TvAnalyticsEvent.CastClicked(
+                                cast = cast,
+                                sourceScreen = TvAnalyticsScreenName.TV_SEASON
+                            )
                         )
-                    )
-                    openPersonDetails(cast.id)
-                },
-                openImageShotsList = {
-                    coroutineScope.launch {
-                        imageSheetState.show(SheetContentType.ImageList)
-                    }
-                },
-                openImageShot = { pageIndex ->
-                    coroutineScope.launch {
-                        imageSheetState.show(SheetContentType.ImagePager(pageIndex))
-                    }
-                },
-                modifier = Modifier
-                    .padding(it)
-            )
+                        openPersonDetails(cast.id)
+                    },
+                    openImageShotsList = {
+                        coroutineScope.launch {
+                            imageSheetState.show(SheetContentType.ImageList)
+                        }
+                    },
+                    openImageShot = { pageIndex ->
+                        coroutineScope.launch {
+                            imageSheetState.show(SheetContentType.ImagePager(pageIndex))
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(it)
+                )
+            }
         }
     }
 }

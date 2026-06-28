@@ -42,6 +42,8 @@ import com.ssverma.shared.ui.component.HomePageAppBar
 import com.ssverma.shared.ui.component.media.MediaItem
 import kotlinx.coroutines.launch
 
+import androidx.compose.material3.Surface
+
 @Composable
 fun LibraryScreen(
     viewModel: LibraryHomeViewModel = hiltViewModel(),
@@ -85,17 +87,22 @@ fun LibraryScreen(
         )
     }
 
-    Column {
-        Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
-        HomePageAppBar(
-            onSearchIconPressed = openSearchPage,
-            onAccountIconPressed = openAccountPage
-        )
-        LibraryContent(
-            tabs = tabs,
-            onMovieClicked = onMovieClicked,
-            onTvShowClicked = onTvShowClicked
-        )
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column {
+            Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+            HomePageAppBar(
+                onSearchIconPressed = openSearchPage,
+                onAccountIconPressed = openAccountPage
+            )
+            LibraryContent(
+                tabs = tabs,
+                onMovieClicked = onMovieClicked,
+                onTvShowClicked = onTvShowClicked
+            )
+        }
     }
 }
 

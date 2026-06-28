@@ -1,8 +1,7 @@
 package com.ssverma.core.ui
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -11,22 +10,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
-import com.ssverma.core.ui.theme.LocalImages
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,18 +32,46 @@ fun Screen(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(modifier = modifier) {
-        ShowTimeTopAppBar(title = title, onBackPressed = onBackPressed)
-        content()
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = modifier.fillMaxSize()
+    ) {
+        Column {
+            ShowTimeTopAppBar(title = title, onBackPressed = onBackPressed)
+            content()
+        }
     }
 }
-
 
 @Composable
 fun ScreenLoadingIndicator(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
         ShowTimeLoadingIndicator(modifier = Modifier.align(Alignment.Center))
     }
+}
+
+@Composable
+fun ScreenErrorIndicator(
+    modifier: Modifier = Modifier,
+    errorMessage: String = stringResource(id = R.string.something_went_wrong),
+    onRetryClick: () -> Unit
+) {
+    ScreenErrorIndicator(
+        modifier = modifier,
+        content = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(text = errorMessage)
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(onClick = onRetryClick) {
+                    Text(text = stringResource(R.string.retry))
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -60,52 +84,6 @@ fun ScreenErrorIndicator(
         modifier = modifier.fillMaxSize(),
     ) {
         content()
-    }
-}
-
-@Composable
-fun ScreenErrorIndicator(
-    errorMessage: String,
-    modifier: Modifier = Modifier,
-    @DrawableRes errorIllusRes: Int = LocalImages.current.errorIllustrationResId,
-    imageSize: Dp = 200.dp
-) {
-    ScreenErrorIndicator(modifier = modifier) {
-        Column {
-            Image(
-                painter = painterResource(id = errorIllusRes),
-                contentDescription = null,
-                modifier = Modifier.size(imageSize)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = errorMessage, style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-}
-
-
-@Composable
-fun ScreenErrorIndicator(
-    errorMessage: String,
-    modifier: Modifier = Modifier,
-    @DrawableRes errorIllusRes: Int = LocalImages.current.errorIllustrationResId,
-    onRetryClick: (() -> Unit),
-    imageSize: Dp = 200.dp
-) {
-    ScreenErrorIndicator(modifier = modifier) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = errorIllusRes),
-                contentDescription = null,
-                modifier = Modifier.size(imageSize)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = errorMessage, style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(onClick = onRetryClick) {
-                Text(text = stringResource(id = R.string.retry))
-            }
-        }
     }
 }
 
