@@ -1,8 +1,12 @@
 package com.ssverma.feature.tv.ui.home
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.layout.AppPage
@@ -24,17 +28,22 @@ fun TvShowScreen(
 ) {
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_HOME)
 
-    AppPage(
-        scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
     ) {
-        TvShowHomeContent(
-            viewModel = viewModel,
-            openTvShowList = openTvShowList,
-            openTvShowDetails = openTvShowDetails,
-            openSearchPage = openSearchPage,
-            openAccountPage = openAccountPage,
-            openWatchProviderHub = openWatchProviderHub,
-            openLibraryPage = openLibraryPage
-        )
+        AppPage(
+            scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+        ) {
+            TvShowHomeContent(
+                viewModel = viewModel,
+                openTvShowList = openTvShowList,
+                openTvShowDetails = openTvShowDetails,
+                openSearchPage = openSearchPage,
+                openAccountPage = openAccountPage,
+                openWatchProviderHub = openWatchProviderHub,
+                openLibraryPage = openLibraryPage
+            )
+        }
     }
 }

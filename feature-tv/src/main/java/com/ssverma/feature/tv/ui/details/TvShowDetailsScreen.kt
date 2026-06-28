@@ -74,6 +74,8 @@ import com.ssverma.shared.ui.component.section.VideoShotsSection
 import com.ssverma.shared.ui.component.section.WatchProvidersSection
 import com.ssverma.shared.ui.emptyIfAbsent
 
+import com.ssverma.shared.domain.model.ProviderInfo
+
 @Composable
 fun TvShowDetailsScreen(
     onBackPressed: () -> Unit,
@@ -84,7 +86,8 @@ fun TvShowDetailsScreen(
     openPersonDetails: (personId: Int) -> Unit,
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
-    viewModel: TvShowDetailsViewModel = hiltViewModel()
+    openWatchHub: (providerInfo: ProviderInfo) -> Unit,
+    viewModel: TvShowDetailsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -107,7 +110,8 @@ fun TvShowDetailsScreen(
                 openYoutube = { videoId -> viewModel.openYoutubeApp(videoId = videoId) },
                 openPersonDetails = openPersonDetails,
                 openTvShowList = openTvShowList,
-                openTvSeasonDetails = openTvSeasonDetails
+                openTvSeasonDetails = openTvSeasonDetails,
+                openWatchHub = openWatchHub
             )
         }
     }
@@ -127,6 +131,7 @@ private fun TvShowContent(
     openPersonDetails: (personId: Int) -> Unit,
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
+    openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -242,6 +247,7 @@ private fun TvShowContent(
                             sourceScreen = TvAnalyticsScreenName.TV_DETAILS
                         )
                     )
+                    openWatchHub(it)
                 },
                 onJustWatchClick = {
                     analytics.logEvent(

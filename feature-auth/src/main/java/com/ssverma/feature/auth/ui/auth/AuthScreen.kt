@@ -12,7 +12,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -50,99 +52,105 @@ internal fun AuthScreen(
 
     BackHandler { onBackPressed() }
 
-    Box(
-        modifier = modifier
-            .statusBarsPadding()
-            .fillMaxSize()
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = modifier.fillMaxSize()
     ) {
-        if (authUiState.authState is AuthState.Unauthorized) {
-            IconButton(onClick = onBackPressed) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+        Box(
+            modifier = Modifier
+                .statusBarsPadding()
+                .fillMaxSize()
+        ) {
+            if (authUiState.authState is AuthState.Unauthorized) {
+                IconButton(onClick = onBackPressed) {
+                    Icon(imageVector = Icons.Default.Close, contentDescription = null)
+                }
             }
-        }
 
-        if (authUiState.loading) {
-            ScreenLoadingIndicator()
-        }
+            if (authUiState.loading) {
+                ScreenLoadingIndicator()
+            }
 
-        if (authUiState.error != null) {
-            when (authUiState.error?.failure) {
-                Failure.CoreFailure.NetworkFailure -> {
-                    AuthErrorIndicator(
-                        message = stringResource(id = R.string.network_error),
-                        onRetry = {
-                            when (authUiState.error?.authState) {
-                                AuthState.Approval.Granted -> {
-                                    viewModel.startAuthorization()
-                                }
+            if (authUiState.error != null) {
+                when (authUiState.error?.failure) {
+                    Failure.CoreFailure.NetworkFailure -> {
+                        AuthErrorIndicator(
+                            message = stringResource(id = R.string.network_error),
+                            onRetry = {
+                                when (authUiState.error?.authState) {
+                                    AuthState.Approval.Granted -> {
+                                        viewModel.startAuthorization()
+                                    }
 
-                                AuthState.Unauthorized -> {
-                                    viewModel.startAuthentication()
-                                }
+                                    AuthState.Unauthorized -> {
+                                        viewModel.startAuthentication()
+                                    }
 
-                                is AuthState.Authorized.WithSession -> {
-                                    viewModel.logout()
-                                }
+                                    is AuthState.Authorized.WithSession -> {
+                                        viewModel.logout()
+                                    }
 
-                                AuthState.Authorized.WithoutSession -> {
-                                    viewModel.createSession()
-                                }
+                                    AuthState.Authorized.WithoutSession -> {
+                                        viewModel.createSession()
+                                    }
 
-                                else -> {
-                                    // No op
+                                    else -> {
+                                        // No op
+                                    }
                                 }
                             }
-                        }
-                    )
-                }
+                        )
+                    }
 
-                else -> {
-                    AuthErrorIndicator()
+                    else -> {
+                        AuthErrorIndicator()
+                    }
                 }
             }
-        }
 
-        if (authUiState.authState != null) {
-            val authState = authUiState.authState ?: return
-            when (authState) {
-                is AuthState.Authorized.WithSession -> {
-                    authorizedContent?.let { it(authState) } ?: currentOnAuthSessionEstablished()
-                }
+            if (authUiState.authState != null) {
+                val authState = authUiState.authState ?: return@Box
+                when (authState) {
+                    is AuthState.Authorized.WithSession -> {
+                        authorizedContent?.let { it(authState) }
+                            ?: currentOnAuthSessionEstablished()
+                    }
 
-                AuthState.Authorized.WithoutSession -> {
-                    NoSessionContent(
-                        onProceedClick = {
-                            viewModel.createSession()
-                        }
-                    )
-                }
+                    AuthState.Authorized.WithoutSession -> {
+                        NoSessionContent(
+                            onProceedClick = {
+                                viewModel.createSession()
+                            }
+                        )
+                    }
 
-                AuthState.Unauthorized -> {
-                    LoginContent(
-                        modifier = Modifier.fillMaxSize(),
-                        onTmdbConnectClick = {
-                            viewModel.startAuthentication()
-                        }
-                    )
-                }
+                    AuthState.Unauthorized -> {
+                        LoginContent(
+                            modifier = Modifier.fillMaxSize(),
+                            onTmdbConnectClick = {
+                                viewModel.startAuthentication()
+                            }
+                        )
+                    }
 
-                is AuthState.Approval.Needed -> {
-                    context.dispatchBrowserIntent(
-                        webUrl = authState.approvalUrl
-                    )
-                    viewModel.onApprovalAsked()
-                }
+                    is AuthState.Approval.Needed -> {
+                        context.dispatchBrowserIntent(
+                            webUrl = authState.approvalUrl
+                        )
+                        viewModel.onApprovalAsked()
+                    }
 
-                AuthState.Approval.Asked -> {
-                    ApprovalAskedContent()
-                }
+                    AuthState.Approval.Asked -> {
+                        ApprovalAskedContent()
+                    }
 
-                AuthState.Approval.Granted -> {
-                    ApprovalGrantedContent()
-                }
+                    AuthState.Approval.Granted -> {
+                        ApprovalGrantedContent()
+                    }
 
-                AuthState.Approval.Rejected -> {
-                    ApprovalRejectedContent()
+                    AuthState.Approval.Rejected -> {
+                        ApprovalRejectedContent()
+                    }
                 }
             }
         }

@@ -2,49 +2,65 @@ package com.ssverma.feature.tv.navigation.args
 
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.navigation.NavType
 import com.ssverma.shared.domain.TvDiscoverConfig
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import androidx.navigation3.runtime.NavKey
 import kotlin.reflect.typeOf
 
 @Serializable
-data class TvShowListingRoute(val args: TvShowListingArgs)
+@Parcelize
+data class TvShowListingRoute(val args: TvShowListingArgs) : NavKey, Parcelable
 
 @Serializable
-sealed interface TvShowListingArgs {
+sealed interface TvShowListingArgs : Parcelable {
     @get:StringRes
     val titleRes: Int? get() = null
     val title: String? get() = null
 
+    // Simple predefined lists
     @Serializable
-    data class TrendingToday(@get:StringRes override val titleRes: Int) : TvShowListingArgs
+    @Parcelize
+    data class TrendingToday(override val titleRes: Int) : TvShowListingArgs
 
     @Serializable
-    data class Popular(@get:StringRes override val titleRes: Int) : TvShowListingArgs
+    @Parcelize
+    data class Popular(override val titleRes: Int) : TvShowListingArgs
 
     @Serializable
-    data class TopRated(@get:StringRes override val titleRes: Int) : TvShowListingArgs
+    @Parcelize
+    data class TopRated(override val titleRes: Int) : TvShowListingArgs
 
     @Serializable
-    data class NowAiring(@get:StringRes override val titleRes: Int) : TvShowListingArgs
+    @Parcelize
+    data class AiringToday(override val titleRes: Int) : TvShowListingArgs
 
     @Serializable
-    data class TodayAiring(@get:StringRes override val titleRes: Int) : TvShowListingArgs
+    @Parcelize
+    data class OnTheAir(override val titleRes: Int) : TvShowListingArgs
 
     @Serializable
-    data class Upcoming(@get:StringRes override val titleRes: Int) : TvShowListingArgs
+    @Parcelize
+    data class Upcoming(override val titleRes: Int) : TvShowListingArgs
 
     @Serializable
+    @Parcelize
     data class ByGenre(val genreId: Int, override val title: String) : TvShowListingArgs
 
     @Serializable
+    @Parcelize
     data class ByKeyword(val keywordId: Int, override val title: String) : TvShowListingArgs
 
+    // THE POWERHOUSE: Full Discovery
     @Serializable
+    @Parcelize
     data class Discovery(
-        val initialConfig: TvDiscoverConfig,
+        val initialConfig: @RawValue TvDiscoverConfig,
         @get:StringRes
         override val titleRes: Int? = null,
         override val title: String? = null
@@ -53,7 +69,7 @@ sealed interface TvShowListingArgs {
     companion object {
         val NavType = object : NavType<TvShowListingArgs>(isNullableAllowed = false) {
             override fun get(bundle: Bundle, key: String): TvShowListingArgs? {
-                return bundle.getString(key)?.let { Json.decodeFromString(it) }
+                return bundle.getParcelable(key)
             }
 
             override fun parseValue(value: String): TvShowListingArgs {
@@ -65,7 +81,7 @@ sealed interface TvShowListingArgs {
             }
 
             override fun put(bundle: Bundle, key: String, value: TvShowListingArgs) {
-                bundle.putString(key, Json.encodeToString(value))
+                bundle.putParcelable(key, value)
             }
         }
 

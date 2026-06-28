@@ -1,31 +1,38 @@
 package com.ssverma.feature.tv.ui.details
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.tv.domain.model.TvEpisodeConfig
 import com.ssverma.feature.tv.domain.usecase.TvEpisodeUseCase
-import com.ssverma.feature.tv.navigation.TvEpisodeDetailDestination
 import com.ssverma.feature.tv.ui.common.TvEpisodeUiState
 import com.ssverma.shared.domain.Result
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class TvEpisodeDetailsViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+@HiltViewModel(assistedFactory = TvEpisodeDetailsViewModel.Factory::class)
+class TvEpisodeDetailsViewModel @AssistedInject constructor(
+    @Assisted("tvShowId") private val tvShowId: Int,
+    @Assisted("seasonNumber") private val seasonNumber: Int,
+    @Assisted("episodeNumber") private val episodeNumber: Int,
     private val tvEpisodeUseCase: TvEpisodeUseCase
 ) : ViewModel() {
 
-    private val tvShowId = savedStateHandle.get<Int>(TvEpisodeDetailDestination.ArgTvShowId) ?: 0
-    private val seasonNumber = savedStateHandle.get<Int>(TvEpisodeDetailDestination.ArgSeasonNumber) ?: 0
-    private val episodeNumber = savedStateHandle.get<Int>(TvEpisodeDetailDestination.ArgEpisodeNumber) ?: 0
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            @Assisted("tvShowId") tvShowId: Int,
+            @Assisted("seasonNumber") seasonNumber: Int,
+            @Assisted("episodeNumber") episodeNumber: Int
+        ): TvEpisodeDetailsViewModel
+    }
 
     private val _uiState = MutableStateFlow<TvEpisodeUiState>(UiState.Idle)
     val uiState: StateFlow<TvEpisodeUiState> = _uiState.asStateFlow()

@@ -261,7 +261,7 @@ fun TvShowHomeContent(
                     )
                     openTvShowList(
                         TvShowListingRoute(
-                            args = TvShowListingArgs.TodayAiring(titleRes = R.string.airing_today)
+                            args = TvShowListingArgs.AiringToday(titleRes = R.string.airing_today)
                         )
                     )
                 },
@@ -327,7 +327,7 @@ fun TvShowHomeContent(
                     )
                     openTvShowList(
                         TvShowListingRoute(
-                            args = TvShowListingArgs.NowAiring(titleRes = R.string.now_airing)
+                            args = TvShowListingArgs.OnTheAir(titleRes = R.string.now_airing)
                         )
                     )
                 },

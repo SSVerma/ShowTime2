@@ -2,10 +2,12 @@ package com.ssverma.feature.movie.ui.list
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -36,7 +38,7 @@ fun MovieListScreen(
     onBackPressed: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
-    viewModel: MovieListViewModel = hiltViewModel()
+    viewModel: MovieListViewModel
 ) {
 
     val analytics = LocalAnalytics.current
@@ -47,110 +49,115 @@ fun MovieListScreen(
         screenClass = uiState.config.asAnalyticsListingType()
     )
 
-    val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
 
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val coroutineScope = rememberCoroutineScope()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val coroutineScope = rememberCoroutineScope()
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    AppPage(
-        scrollBehavior = scrollBehavior,
-        topBar = { behavior ->
-            MovieListTopBar(
-                uiState = uiState,
-                onToggleViewMode = { viewModel.toggleViewMode() },
-                onOpenFilters = {
-                    analytics.logEvent(
-                        MovieAnalyticsEvent.FilterClicked(
-                            listingType = uiState.config.asAnalyticsListingType()
+        AppPage(
+            scrollBehavior = scrollBehavior,
+            topBar = { behavior ->
+                MovieListTopBar(
+                    uiState = uiState,
+                    onToggleViewMode = { viewModel.toggleViewMode() },
+                    onOpenFilters = {
+                        analytics.logEvent(
+                            MovieAnalyticsEvent.FilterClicked(
+                                listingType = uiState.config.asAnalyticsListingType()
+                            )
                         )
-                    )
-                    coroutineScope.launch { sheetState.show() }
-                },
-                onBackPressed = onBackPressed,
-                scrollBehavior = behavior
-            )
-        }
-    ) { innerPadding ->
+                        coroutineScope.launch { sheetState.show() }
+                    },
+                    onBackPressed = onBackPressed,
+                    scrollBehavior = behavior
+                )
+            }
+        ) { innerPadding ->
 
-        PagedContent(pagingItems = moviePagingItems) { items ->
-            Crossfade(uiState.isGridView, label = "MovieListViewModeTransition") { isGrid ->
-                if (isGrid) {
-                    MoviesGridContent(
-                        moviePagingItems = items,
-                        config = uiState.config,
-                        openMovieDetails = { movie ->
-                            analytics.logEvent(
-                                MovieAnalyticsEvent.MovieClicked(
-                                    movie = movie,
-                                    section = MovieAnalyticsValues.SECTION_LISTING_GRID,
-                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING,
+            PagedContent(pagingItems = moviePagingItems) { items ->
+                Crossfade(uiState.isGridView, label = "MovieListViewModeTransition") { isGrid ->
+                    if (isGrid) {
+                        MoviesGridContent(
+                            moviePagingItems = items,
+                            config = uiState.config,
+                            openMovieDetails = { movie ->
+                                analytics.logEvent(
+                                    MovieAnalyticsEvent.MovieClicked(
+                                        movie = movie,
+                                        section = MovieAnalyticsValues.SECTION_LISTING_GRID,
+                                        sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING,
+                                    )
                                 )
-                            )
-                            openMovieDetails(movie.id)
-                        },
-                        onWatchProviderClick = { provider ->
-                            analytics.logEvent(
-                                MovieAnalyticsEvent.WatchProviderClicked(
-                                    providerInfo = provider,
-                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING
+                                openMovieDetails(movie.id)
+                            },
+                            onWatchProviderClick = { provider ->
+                                analytics.logEvent(
+                                    MovieAnalyticsEvent.WatchProviderClicked(
+                                        providerInfo = provider,
+                                        sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING
+                                    )
                                 )
-                            )
-                            openWatchHub(provider)
-                        },
-                        modifier = Modifier.padding(innerPadding),
-                    )
-                } else {
-                    MoviesListContent(
-                        moviePagingItems = items,
-                        config = uiState.config,
-                        openMovieDetails = { movie ->
-                            analytics.logEvent(
-                                MovieAnalyticsEvent.MovieClicked(
-                                    movie = movie,
-                                    section = MovieAnalyticsValues.SECTION_LISTING_LIST,
-                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING,
+                                openWatchHub(provider)
+                            },
+                            modifier = Modifier.padding(innerPadding),
+                        )
+                    } else {
+                        MoviesListContent(
+                            moviePagingItems = items,
+                            config = uiState.config,
+                            openMovieDetails = { movie ->
+                                analytics.logEvent(
+                                    MovieAnalyticsEvent.MovieClicked(
+                                        movie = movie,
+                                        section = MovieAnalyticsValues.SECTION_LISTING_LIST,
+                                        sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING,
+                                    )
                                 )
-                            )
-                            openMovieDetails(movie.id)
-                        },
-                        onWatchProviderClick = { provider ->
-                            analytics.logEvent(
-                                MovieAnalyticsEvent.WatchProviderClicked(
-                                    providerInfo = provider,
-                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING
+                                openMovieDetails(movie.id)
+                            },
+                            onWatchProviderClick = { provider ->
+                                analytics.logEvent(
+                                    MovieAnalyticsEvent.WatchProviderClicked(
+                                        providerInfo = provider,
+                                        sourceScreen = MovieAnalyticsScreenName.MOVIE_LISTING
+                                    )
                                 )
-                            )
-                            openWatchHub(provider)
-                        },
-                        modifier = Modifier.padding(innerPadding),
-                    )
+                                openWatchHub(provider)
+                            },
+                            modifier = Modifier.padding(innerPadding),
+                        )
+                    }
                 }
             }
         }
-    }
 
-    if (sheetState.isVisible && uiState.isFilterApplicable) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                coroutineScope.launch { sheetState.hide() }
-            },
-            sheetState = sheetState,
-            dragHandle = null,
-            sheetGesturesEnabled = false,
-            containerColor = MaterialTheme.colorScheme.surface,
-        ) {
-            MovieFiltersScreen(
-                initialConfig = uiState.filterConfig,
-                onBackPressed = {
+        if (sheetState.isVisible && uiState.isFilterApplicable) {
+            ModalBottomSheet(
+                onDismissRequest = {
                     coroutineScope.launch { sheetState.hide() }
                 },
-                onFilterApplied = { filterConfig ->
-                    coroutineScope.launch { sheetState.hide() }
-                    viewModel.onFiltersApplied(filterConfig)
-                }
-            )
+                sheetState = sheetState,
+                dragHandle = null,
+                sheetGesturesEnabled = false,
+                containerColor = MaterialTheme.colorScheme.surface,
+            ) {
+                MovieFiltersScreen(
+                    initialConfig = uiState.filterConfig,
+                    onBackPressed = {
+                        coroutineScope.launch { sheetState.hide() }
+                    },
+                    onFilterApplied = { filterConfig ->
+                        coroutineScope.launch { sheetState.hide() }
+                        viewModel.onFiltersApplied(filterConfig)
+                    }
+                )
+            }
         }
     }
 }

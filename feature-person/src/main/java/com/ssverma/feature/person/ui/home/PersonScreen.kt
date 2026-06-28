@@ -1,7 +1,11 @@
 package com.ssverma.feature.person.ui.home
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.analytics.ui.TrackScreenView
@@ -22,17 +26,22 @@ fun PersonScreen(
 ) {
     TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_LISTING)
 
-    val pagedPersons = viewModel.popularPersons.collectAsLazyPagingItems()
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val pagedPersons = viewModel.popularPersons.collectAsLazyPagingItems()
 
-    PagedContent(pagedPersons) { persons ->
-        PersonHomeContent(
-            pagedPersons = persons,
-            openPersonDetailsScreen = openPersonDetailsScreen,
-            openMovieDetailsScreen = openMovieDetailsScreen,
-            openTvShowDetailsScreen = openTvShowDetailsScreen,
-            openSearchPage = openSearchPage,
-            openAccountPage = openAccountPage,
-            openLibraryPage = openLibraryPage
-        )
+        PagedContent(pagedPersons) { persons ->
+            PersonHomeContent(
+                pagedPersons = persons,
+                openPersonDetailsScreen = openPersonDetailsScreen,
+                openMovieDetailsScreen = openMovieDetailsScreen,
+                openTvShowDetailsScreen = openTvShowDetailsScreen,
+                openSearchPage = openSearchPage,
+                openAccountPage = openAccountPage,
+                openLibraryPage = openLibraryPage
+            )
+        }
     }
 }

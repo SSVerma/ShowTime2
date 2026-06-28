@@ -1,20 +1,21 @@
 package com.ssverma.feature.tv.ui.details
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.feature.tv.domain.usecase.TvShowDetailsUseCase
-import com.ssverma.feature.tv.navigation.TvShowDetailDestination
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.tv.imageShots
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,22 +25,24 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class TvShowDetailsData(
     val tvShow: TvShow,
     val imageShots: List<ImageShot>
 )
 
-@HiltViewModel
-class TvShowDetailsViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    application: Application,
+@HiltViewModel(assistedFactory = TvShowDetailsViewModel.Factory::class)
+class TvShowDetailsViewModel @AssistedInject constructor(
+    private val application: Application,
+    @Assisted val tvShowId: Int,
     private val tvShowDetailsUseCase: TvShowDetailsUseCase,
     val appConfigRepository: AppConfigRepository
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
-    val tvShowId = savedStateHandle.get<Int>(TvShowDetailDestination.ArgTvShowId) ?: 0
+    @AssistedFactory
+    interface Factory {
+        fun create(tvShowId: Int): TvShowDetailsViewModel
+    }
 
     private val _uiState = MutableStateFlow<UiState<TvShowDetailsData, TvShowFailure>>(UiState.Idle)
     val uiState: StateFlow<UiState<TvShowDetailsData, TvShowFailure>> = _uiState.asStateFlow()
@@ -79,8 +82,7 @@ class TvShowDetailsViewModel @Inject constructor(
     }
 
     fun openYoutubeApp(videoId: String) {
-        getApplication<Application>()
-            .dispatchYoutubeIntent(videoId = videoId)
+        application.dispatchYoutubeIntent(videoId = videoId)
     }
 
     fun onPlayTrailerClicked(tvShow: TvShow) {

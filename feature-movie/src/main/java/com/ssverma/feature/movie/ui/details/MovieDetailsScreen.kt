@@ -73,7 +73,7 @@ fun MovieDetailsScreen(
     openPersonDetails: (personId: Int) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
-    viewModel: MovieDetailsViewModel = hiltViewModel()
+    viewModel: MovieDetailsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

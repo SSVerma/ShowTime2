@@ -1,21 +1,24 @@
 package com.ssverma.feature.person.ui.shots
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.ssverma.feature.person.domain.usecase.PersonImagesPaginatedUseCase
-import com.ssverma.feature.person.navigation.PersonImageShotsDestination
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
-@HiltViewModel
-class PersonImagesViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    personImagesUseCase: PersonImagesPaginatedUseCase
+@HiltViewModel(assistedFactory = PersonImagesViewModel.Factory::class)
+class PersonImagesViewModel @AssistedInject constructor(
+    personImagesUseCase: PersonImagesPaginatedUseCase,
+    @Assisted private val personId: Int
 ) : ViewModel() {
 
-    private val personId = savedStateHandle.get<Int>(PersonImageShotsDestination.PersonId) ?: 0
+    @AssistedFactory
+    interface Factory {
+        fun create(personId: Int): PersonImagesViewModel
+    }
 
     val personImages = personImagesUseCase(personId)
         .cachedIn(viewModelScope)

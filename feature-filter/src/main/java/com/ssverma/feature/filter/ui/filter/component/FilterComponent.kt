@@ -362,7 +362,7 @@ fun FilterPickerBottomSheet(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No items found",
+                                text = stringResource(id = R.string.no_items_found),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

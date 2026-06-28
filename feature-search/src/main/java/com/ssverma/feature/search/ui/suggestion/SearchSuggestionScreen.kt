@@ -49,6 +49,8 @@ import com.ssverma.feature.search.ui.suggestion.component.SearchPersonItem
 import com.ssverma.feature.search.ui.suggestion.component.SearchTvShowItem
 import com.ssverma.shared.domain.model.MediaType
 
+import androidx.compose.material3.Surface
+
 @Composable
 fun SearchSuggestionScreen(
     modifier: Modifier = Modifier,
@@ -67,78 +69,83 @@ fun SearchSuggestionScreen(
     val historyItems by viewModel.searchHistory.collectAsState()
     val showHistory by remember { derivedStateOf { query.isBlank() } }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = modifier.fillMaxSize()
     ) {
-        SearchBar(
-            query = query,
-            onQueryChanged = { viewModel.onQueryUpdated(it) },
-            onBackPressed = onBackPressed
-        )
-
-        HorizontalDivider()
-
-        LazyColumn {
-            historyItems(
-                items = historyItems,
-                show = showHistory,
-                onHistoryItemClick = { history ->
-                    analytics.logEvent(SearchAnalyticsEvent.SearchHistoryClicked(history))
-
-                    when (history.mediaType) {
-                        MediaType.Movie -> {
-                            onMovieClick(history.id)
-                        }
-
-                        MediaType.Person -> {
-                            onPersonClick(history.id)
-                        }
-
-                        MediaType.Tv -> {
-                            onTvShowClick(history.id)
-                        }
-
-                        MediaType.Unknown -> {
-                            // No op
-                        }
-                    }
-                },
-                onHistoryClearIconClick = { history ->
-                    analytics.logEvent(SearchAnalyticsEvent.SearchHistoryCleared(history))
-                    viewModel.clearHistoryItem(history)
-                }
-            )
-
-            suggestions(
-                items = searchSuggestions,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+        ) {
+            SearchBar(
                 query = query,
-                onSuggestionClick = { suggestion ->
-                    analytics.logEvent(SearchAnalyticsEvent.SearchResultClicked(suggestion))
-                    when (suggestion) {
-                        is SearchSuggestion.Movie -> {
-                            viewModel.saveSearchHistory(suggestion)
-                            onMovieClick(suggestion.id)
-                        }
+                onQueryChanged = { viewModel.onQueryUpdated(it) },
+                onBackPressed = onBackPressed
+            )
 
-                        is SearchSuggestion.Person -> {
-                            viewModel.saveSearchHistory(suggestion)
-                            onPersonClick(suggestion.id)
-                        }
+            HorizontalDivider()
 
-                        is SearchSuggestion.TvShow -> {
-                            viewModel.saveSearchHistory(suggestion)
-                            onTvShowClick(suggestion.id)
-                        }
+            LazyColumn {
+                historyItems(
+                    items = historyItems,
+                    show = showHistory,
+                    onHistoryItemClick = { history ->
+                        analytics.logEvent(SearchAnalyticsEvent.SearchHistoryClicked(history))
 
-                        SearchSuggestion.None -> {
-                            // No op
+                        when (history.mediaType) {
+                            MediaType.Movie -> {
+                                onMovieClick(history.id)
+                            }
+
+                            MediaType.Person -> {
+                                onPersonClick(history.id)
+                            }
+
+                            MediaType.Tv -> {
+                                onTvShowClick(history.id)
+                            }
+
+                            MediaType.Unknown -> {
+                                // No op
+                            }
+                        }
+                    },
+                    onHistoryClearIconClick = { history ->
+                        analytics.logEvent(SearchAnalyticsEvent.SearchHistoryCleared(history))
+                        viewModel.clearHistoryItem(history)
+                    }
+                )
+
+                suggestions(
+                    items = searchSuggestions,
+                    query = query,
+                    onSuggestionClick = { suggestion ->
+                        analytics.logEvent(SearchAnalyticsEvent.SearchResultClicked(suggestion))
+                        when (suggestion) {
+                            is SearchSuggestion.Movie -> {
+                                viewModel.saveSearchHistory(suggestion)
+                                onMovieClick(suggestion.id)
+                            }
+
+                            is SearchSuggestion.Person -> {
+                                viewModel.saveSearchHistory(suggestion)
+                                onPersonClick(suggestion.id)
+                            }
+
+                            is SearchSuggestion.TvShow -> {
+                                viewModel.saveSearchHistory(suggestion)
+                                onTvShowClick(suggestion.id)
+                            }
+
+                            SearchSuggestion.None -> {
+                                // No op
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

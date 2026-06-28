@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 fun TvEpisodeDetailsScreen(
     onBackPress: () -> Unit,
     openPersonDetails: (personId: Int) -> Unit,
-    viewModel: TvEpisodeDetailsViewModel = hiltViewModel()
+    viewModel: TvEpisodeDetailsViewModel
 ) {
     val imageSheetState = rememberImageShotBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
