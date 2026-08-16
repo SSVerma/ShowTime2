@@ -63,7 +63,7 @@ fun ShowTimeNavDisplay(
                 sharedTransitionScope = this,
                 transitionSpec = { showTimeForwardTransition(topLevelOrder) },
                 popTransitionSpec = { showTimePopTransition(topLevelOrder) },
-                predictivePopTransitionSpec = { showTimePredictivePopTransition() },
+                predictivePopTransitionSpec = { showTimePredictivePopTransition(topLevelOrder) },
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -98,22 +98,32 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransi
     }
 }
 
-private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePredictivePopTransition(): ContentTransform {
-    return (slideIntoContainer(
-        towards = AnimatedContentTransitionScope.SlideDirection.End,
-        initialOffset = { it / 5 }
-    ) + fadeIn(
-        initialAlpha = 0.85f
-    ) + scaleIn(
-        initialScale = 0.92f
-    )).togetherWith(
-        slideOutOfContainer(
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePredictivePopTransition(
+    topLevelOrder: List<NavKey>
+): ContentTransform {
+    val initialTabKey = initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
+    val targetTabKey = targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
+    val isTabSwitch = initialTabKey != targetTabKey
+
+    return if (isTabSwitch) {
+        createTabSwitchTransition(initialTabKey, targetTabKey, topLevelOrder)
+    } else {
+        (slideIntoContainer(
             towards = AnimatedContentTransitionScope.SlideDirection.End,
-            targetOffset = { (it * 0.9f).toInt() }
-        ) + scaleOut(
-            targetScale = 0.90f
+            initialOffset = { it / 5 }
+        ) + fadeIn(
+            initialAlpha = 0.85f
+        ) + scaleIn(
+            initialScale = 0.92f
+        )).togetherWith(
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                targetOffset = { (it * 0.9f).toInt() }
+            ) + scaleOut(
+                targetScale = 0.90f
+            )
         )
-    )
+    }
 }
 
 private fun createTabSwitchTransition(

@@ -219,27 +219,30 @@ fun MovieContent(
             )
         }
 
-        item(key = "watch_providers") {
-            WatchProvidersSection(
-                watchProvider = movie.watchProviders[watchProviderRegion],
-                modifier = Modifier.padding(top = SectionVerticalSpacing),
-                onWatchProviderClick = { providerInfo ->
-                    analytics.logEvent(
-                        MovieAnalyticsEvent.WatchProviderClicked(
-                            providerInfo = providerInfo,
-                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+        val watchProvider = movie.watchProviders[watchProviderRegion]
+        if (watchProvider != null && watchProvider.hasProviders) {
+            item(key = "watch_providers") {
+                WatchProvidersSection(
+                    watchProvider = watchProvider,
+                    modifier = Modifier.padding(top = SectionVerticalSpacing),
+                    onWatchProviderClick = { providerInfo ->
+                        analytics.logEvent(
+                            MovieAnalyticsEvent.WatchProviderClicked(
+                                providerInfo = providerInfo,
+                                sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                            )
                         )
-                    )
-                    openWatchHub(providerInfo)
-                },
-                onJustWatchClick = {
-                    analytics.logEvent(
-                        MovieAnalyticsEvent.JustWatchClicked(
-                            sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                        openWatchHub(providerInfo)
+                    },
+                    onJustWatchClick = {
+                        analytics.logEvent(
+                            MovieAnalyticsEvent.JustWatchClicked(
+                                sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                            )
                         )
-                    )
-                }
-            )
+                    }
+                )
+            }
         }
 
         item {

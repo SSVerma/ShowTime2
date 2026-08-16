@@ -236,27 +236,30 @@ private fun TvShowContent(
             )
         }
 
-        item(key = "watch_providers") {
-            WatchProvidersSection(
-                watchProvider = tvShow.watchProviders[watchProviderRegion],
-                modifier = Modifier.padding(top = SectionVerticalSpacing),
-                onWatchProviderClick = {
-                    analytics.logEvent(
-                        TvAnalyticsEvent.WatchProviderClicked(
-                            providerInfo = it,
-                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+        val watchProvider = tvShow.watchProviders[watchProviderRegion]
+        if (watchProvider != null && watchProvider.hasProviders) {
+            item(key = "watch_providers") {
+                WatchProvidersSection(
+                    watchProvider = watchProvider,
+                    modifier = Modifier.padding(top = SectionVerticalSpacing),
+                    onWatchProviderClick = {
+                        analytics.logEvent(
+                            TvAnalyticsEvent.WatchProviderClicked(
+                                providerInfo = it,
+                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                            )
                         )
-                    )
-                    openWatchHub(it)
-                },
-                onJustWatchClick = {
-                    analytics.logEvent(
-                        TvAnalyticsEvent.JustWatchClicked(
-                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        openWatchHub(it)
+                    },
+                    onJustWatchClick = {
+                        analytics.logEvent(
+                            TvAnalyticsEvent.JustWatchClicked(
+                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                            )
                         )
-                    )
-                }
-            )
+                    }
+                )
+            }
         }
 
         /*Overview section title*/
