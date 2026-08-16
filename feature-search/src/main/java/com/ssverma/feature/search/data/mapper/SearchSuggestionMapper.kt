@@ -1,7 +1,9 @@
 package com.ssverma.feature.search.data.mapper
 
 import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
+import com.ssverma.api.service.tmdb.convertToTmdbProfileUrl
 import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
 import com.ssverma.feature.search.domain.model.SearchSuggestion
 import com.ssverma.shared.data.mapper.GenderMapper
@@ -36,12 +38,15 @@ private suspend fun RemoteMultiSearchSuggestion.asSearchSuggestion(
         TmdbApiTiedConstants.AvailableMediaTypes.Movie -> {
             asMovie()
         }
+
         TmdbApiTiedConstants.AvailableMediaTypes.Tv -> {
             asTvShow()
         }
+
         TmdbApiTiedConstants.AvailableMediaTypes.Person -> {
             asPerson(genderMapper)
         }
+
         else -> {
             SearchSuggestion.None
         }
@@ -53,8 +58,8 @@ private fun RemoteMultiSearchSuggestion.asMovie(): SearchSuggestion.Movie {
         id = id,
         title = name.orEmpty(),
         overview = overview.orEmpty(),
-        posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
-        backdropImageUrl = backdropPath.convertToFullTmdbImageUrl(),
+        posterImageUrl = posterPath.convertToTmdbPosterUrl(),
+        backdropImageUrl = backdropPath.convertToTmdbBackdropUrl(),
         voteAvg = voteAvg,
         voteAvgPercentage = voteAvg * 10f,
         voteCount = voteCount,
@@ -70,8 +75,8 @@ private fun RemoteMultiSearchSuggestion.asTvShow(): SearchSuggestion.TvShow {
         id = id,
         title = name.orEmpty(),
         overview = overview.orEmpty(),
-        posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
-        backdropImageUrl = backdropPath.convertToFullTmdbImageUrl(),
+        posterImageUrl = posterPath.convertToTmdbPosterUrl(),
+        backdropImageUrl = backdropPath.convertToTmdbBackdropUrl(),
         voteAvg = voteAvg,
         voteAvgPercentage = voteAvg * 10f,
         voteCount = voteCount,
@@ -88,7 +93,7 @@ private suspend fun RemoteMultiSearchSuggestion.asPerson(
     return SearchSuggestion.Person(
         id = id,
         name = name.orEmpty(),
-        imageUrl = profilePath.convertToFullTmdbImageUrl(),
+        imageUrl = profilePath.convertToTmdbProfileUrl(),
         department = department.orEmpty(),
         popularity = popularity,
         gender = genderMapper.map(gender),

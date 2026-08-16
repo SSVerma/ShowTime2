@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 
 fun personSharedContentKey(personId: Int): String = "person_avatar_$personId"
@@ -39,10 +39,10 @@ fun Avatar(
     sharedContentKey: Any? = null
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedVisibilityScope = LocalNavAnimatedContentScope.current
+    val animatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
 
     val sharedModifier =
-        if (enableSharedTransition && sharedTransitionScope != null && sharedContentKey != null) {
+        if (enableSharedTransition && sharedTransitionScope != null && animatedVisibilityScope != null && sharedContentKey != null) {
             with(sharedTransitionScope) {
                 Modifier.sharedElement(
                     sharedContentState = rememberSharedContentState(key = sharedContentKey),

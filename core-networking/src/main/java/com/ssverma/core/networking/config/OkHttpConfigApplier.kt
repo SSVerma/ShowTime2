@@ -10,7 +10,7 @@ internal fun OkHttpClient.Builder.applyConfig(
 ) = apply {
     this.applyAppInterceptors(config.applicationInterceptors)
     this.applyNetworkInterceptors(config.networkInterceptors)
-    this.cache(config.cache)
+    config.cache?.let { this.cache(it) }
 }
 
 private fun OkHttpClient.Builder.applyAppInterceptors(

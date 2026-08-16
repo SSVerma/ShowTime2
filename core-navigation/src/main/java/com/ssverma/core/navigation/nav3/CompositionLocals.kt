@@ -1,5 +1,6 @@
 package com.ssverma.core.navigation.nav3
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -21,5 +22,9 @@ val LocalNavEntries = staticCompositionLocalOf<List<NavEntry<NavKey>>> {
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope?> {
+    null
+}
+
+val LocalNavAnimatedVisibilityScope = staticCompositionLocalOf<AnimatedVisibilityScope?> {
     null
 }

@@ -1,6 +1,7 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.shared.domain.model.primaryTrailer
 import com.ssverma.shared.domain.model.tv.TvShow
@@ -29,8 +30,8 @@ private suspend fun RemoteTvShow.asTvShow(): TvShow {
         title = title.orEmpty(),
         tagline = if (tagline.isNullOrEmpty()) null else tagline,
         overview = overview.orEmpty(),
-        posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
-        backdropImageUrl = backdropPath.convertToFullTmdbImageUrl(),
+        posterImageUrl = posterPath.convertToTmdbPosterUrl(),
+        backdropImageUrl = backdropPath.convertToTmdbBackdropUrl(),
         status = status.orEmpty(),
         voteAvg = voteAvg,
         voteAvgPercentage = voteAvg * 10f,

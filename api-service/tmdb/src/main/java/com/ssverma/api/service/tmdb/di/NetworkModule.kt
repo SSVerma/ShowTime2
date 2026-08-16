@@ -12,6 +12,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Cache
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -37,11 +38,15 @@ class NetworkModule {
     internal fun provideServiceConfig(
         authInterceptor: AuthInterceptor,
         regionInterceptor: RegionInterceptor,
-        languageInterceptor: LanguageInterceptor
+        languageInterceptor: LanguageInterceptor,
+        @TmdbServiceCache cache: Cache?
     ): AdditionalServiceConfig {
         return object : AdditionalServiceConfig() {
             override val applicationInterceptors: List<ApplicationInterceptor>
                 get() = listOf(authInterceptor, regionInterceptor, languageInterceptor)
+
+            override val cache: Cache?
+                get() = cache
         }
     }
 

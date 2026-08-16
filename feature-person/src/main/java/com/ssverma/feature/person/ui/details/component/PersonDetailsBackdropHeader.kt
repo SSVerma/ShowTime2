@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.component.BackdropNavigationAction
@@ -37,30 +37,31 @@ fun PersonDetailsBackdropHeader(
     enableSharedTransition: Boolean = true
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedVisibilityScope = LocalNavAnimatedContentScope.current
+    val animatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
 
-    val sharedModifier = if (enableSharedTransition && sharedTransitionScope != null) {
-        with(sharedTransitionScope) {
-            Modifier.sharedElement(
-                sharedContentState = rememberSharedContentState(
-                    key = personSharedContentKey(
-                        personId
-                    )
-                ),
-                animatedVisibilityScope = animatedVisibilityScope,
-                boundsTransform = { _, _ ->
-                    spring(
-                        dampingRatio = 0.8f,
-                        stiffness = 380f
-                    )
-                },
-                clipInOverlayDuringTransition = OverlayClip(CircleShape),
-                zIndexInOverlay = 1f
-            )
+    val sharedModifier =
+        if (enableSharedTransition && sharedTransitionScope != null && animatedVisibilityScope != null) {
+            with(sharedTransitionScope) {
+                Modifier.sharedElement(
+                    sharedContentState = rememberSharedContentState(
+                        key = personSharedContentKey(
+                            personId
+                        )
+                    ),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    boundsTransform = { _, _ ->
+                        spring(
+                            dampingRatio = 0.8f,
+                            stiffness = 380f
+                        )
+                    },
+                    clipInOverlayDuringTransition = OverlayClip(CircleShape),
+                    zIndexInOverlay = 1f
+                )
+            }
+        } else {
+            Modifier
         }
-    } else {
-        Modifier
-    }
 
     ConstraintLayout(modifier) {
         val (refBackdrop, refProfile, refRoundedSurface) = createRefs()

@@ -5,9 +5,9 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.retrofit)
+    api(libs.retrofit)
     implementation(libs.retrofitConverterGson)
-    implementation(libs.okhttpLoggingInterceptor)
+    api(libs.okhttpLoggingInterceptor)
 
     implementation(libs.coroutines.core)
 

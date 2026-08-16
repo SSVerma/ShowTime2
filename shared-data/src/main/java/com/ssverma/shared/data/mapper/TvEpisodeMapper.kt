@@ -1,6 +1,6 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.utils.DateUtils
@@ -23,7 +23,7 @@ suspend fun RemoteTvEpisode.asTvEpisode(): TvEpisode {
     return TvEpisode(
         id = id,
         title = title.orEmpty(),
-        posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
+        posterImageUrl = posterPath.convertToTmdbBackdropUrl(),
         overview = overview.orEmpty(),
         displayAirDate = DateUtils.parseIsoDate(airDate)?.formatLocally(),
         episodeNumber = episodeNumber,

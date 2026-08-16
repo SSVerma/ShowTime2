@@ -11,6 +11,11 @@ object TmdbDefaults {
 
     object ImageDefaults {
         const val ImageBaseUrl = "https://image.tmdb.org/t/p/w500" //TODO: Fetch from configs
+        const val PosterBaseUrl = "https://image.tmdb.org/t/p/w342"
+        const val BackdropBaseUrl = "https://image.tmdb.org/t/p/w780"
+        const val ProfileBaseUrl = "https://image.tmdb.org/t/p/w185"
+        const val LogoBaseUrl = "https://image.tmdb.org/t/p/w154"
+        const val OriginalBaseUrl = "https://image.tmdb.org/t/p/original"
     }
 
     fun authApprovalRedirectUrl(requestToken: String): String {
@@ -32,6 +37,22 @@ object TmdbDefaults {
 
 fun String?.convertToFullTmdbImageUrl(): String {
     return buildImageUrl(TmdbDefaults.ImageDefaults.ImageBaseUrl, this)
+}
+
+fun String?.convertToTmdbPosterUrl(): String {
+    return buildImageUrl(TmdbDefaults.ImageDefaults.PosterBaseUrl, this)
+}
+
+fun String?.convertToTmdbBackdropUrl(): String {
+    return buildImageUrl(TmdbDefaults.ImageDefaults.BackdropBaseUrl, this)
+}
+
+fun String?.convertToTmdbProfileUrl(): String {
+    return buildImageUrl(TmdbDefaults.ImageDefaults.ProfileBaseUrl, this)
+}
+
+fun String?.convertToTmdbLogoUrl(): String {
+    return buildImageUrl(TmdbDefaults.ImageDefaults.LogoBaseUrl, this)
 }
 
 fun buildImageUrl(baseUrl: String, imagePath: String?): String {

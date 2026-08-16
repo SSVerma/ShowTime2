@@ -1,6 +1,6 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbLogoUrl
 import com.ssverma.api.service.tmdb.response.RemoteProviderInfo
 import com.ssverma.api.service.tmdb.response.RemoteWatchProvider
 import com.ssverma.api.service.tmdb.response.RemoteWatchProviderRegion
@@ -12,7 +12,7 @@ import com.ssverma.shared.domain.model.WatchProviderRegion
 
 fun RemoteProviderInfo.asProviderInfo(): ProviderInfo {
     return ProviderInfo(
-        logoPath = logoPath.convertToFullTmdbImageUrl(),
+        logoPath = logoPath.convertToTmdbLogoUrl(),
         providerId = providerId,
         providerName = providerName,
         displayPriority = displayPriority

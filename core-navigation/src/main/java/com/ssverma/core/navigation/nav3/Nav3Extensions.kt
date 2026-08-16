@@ -1,9 +1,11 @@
 package com.ssverma.core.navigation.nav3
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.get
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 
 @Composable
 inline fun <reified T : NavKey> rememberEntry(
@@ -25,6 +27,13 @@ inline fun <reified K : NavKey> EntryProviderScope<NavKey>.showTimeEntry(
             map[Nav3MetadataKeys.NavKey.toString()] = key
             map
         },
-        content = content
+        content = { key ->
+            val animatedScope = LocalNavAnimatedContentScope.current
+            CompositionLocalProvider(
+                LocalNavAnimatedVisibilityScope provides animatedScope
+            ) {
+                content(key)
+            }
+        }
     )
 }

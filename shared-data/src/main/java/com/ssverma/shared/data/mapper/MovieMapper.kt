@@ -1,6 +1,7 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.primaryTrailer
@@ -32,8 +33,8 @@ private suspend fun RemoteMovie.asMovie(): Movie {
         title = title.orEmpty(),
         tagline = if (tagline.isNullOrEmpty()) null else tagline,
         overview = overview ?: "",
-        posterImageUrl = posterPath.convertToFullTmdbImageUrl(),
-        backdropImageUrl = backdropPath.convertToFullTmdbImageUrl(),
+        posterImageUrl = posterPath.convertToTmdbPosterUrl(),
+        backdropImageUrl = backdropPath.convertToTmdbBackdropUrl(),
         budget = budget,
         status = status.orEmpty(),
         videoAvailable = videoAvailable,

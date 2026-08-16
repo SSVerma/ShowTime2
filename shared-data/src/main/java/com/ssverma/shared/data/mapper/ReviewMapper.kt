@@ -1,6 +1,6 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbProfileUrl
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.api.service.tmdb.response.RemoteReviewAuthor
 import com.ssverma.shared.domain.model.Review
@@ -21,7 +21,7 @@ fun RemoteReviewAuthor.asAuthor(): ReviewAuthor {
     return ReviewAuthor(
         name = name,
         userName = userName.orEmpty(),
-        avatarImageUrl = avatarPath.convertToFullTmdbImageUrl(),
+        avatarImageUrl = avatarPath.convertToTmdbProfileUrl(),
         rating = rating
     )
 }

@@ -1,6 +1,6 @@
 package com.ssverma.shared.data.mapper
 
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbProfileUrl
 import com.ssverma.api.service.tmdb.response.RemoteCast
 import com.ssverma.api.service.tmdb.response.RemoteCrew
 import com.ssverma.shared.domain.model.Cast
@@ -13,7 +13,7 @@ fun RemoteCast.asCast(): Cast {
         id = id,
         name = name.orEmpty(),
         character = character.orEmpty(),
-        avatarImageUrl = profilePath.convertToFullTmdbImageUrl(),
+        avatarImageUrl = profilePath.convertToTmdbProfileUrl(),
         creditId = creditId.orEmpty()
     )
 }
@@ -26,7 +26,7 @@ fun RemoteCrew.asCrew(): Crew {
     return Crew(
         id = id,
         name = name.orEmpty(),
-        avatarImageUrl = profilePath.convertToFullTmdbImageUrl(),
+        avatarImageUrl = profilePath.convertToTmdbProfileUrl(),
         creditId = creditId.orEmpty(),
         department = department.orEmpty(),
         job = job.orEmpty()

@@ -6,12 +6,12 @@ plugins {
 
 dependencies {
     implementation(projects.sharedDomain)
-    implementation(projects.coreNetworking)
+    api(projects.coreNetworking)
     implementation(projects.corePaging)
 
-    implementation(libs.retrofit)
+    api(libs.retrofit)
     implementation(libs.retrofitConverterGson)
-    implementation(libs.okhttpLoggingInterceptor)
+    api(libs.okhttpLoggingInterceptor)
 
     implementation(libs.dagger.hilt.core)
     ksp(libs.dagger.hilt.compiler)

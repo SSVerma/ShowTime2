@@ -65,11 +65,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.core.ui.StatefulContent
 import com.ssverma.core.ui.UiState
@@ -530,10 +530,10 @@ fun WatchProviderLogo(
     sharedContentKey: Any = "watch_provider_logo_${provider.providerId}"
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedVisibilityScope = LocalNavAnimatedContentScope.current
+    val animatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
 
     val sharedModifier =
-        if (enableSharedTransition && sharedTransitionScope != null) {
+        if (enableSharedTransition && sharedTransitionScope != null && animatedVisibilityScope != null) {
             with(sharedTransitionScope) {
                 Modifier.sharedElement(
                     sharedContentState = rememberSharedContentState(key = sharedContentKey),

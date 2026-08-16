@@ -1,9 +1,8 @@
 package com.ssverma.feature.account.data.mapper
 
-import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
+import com.ssverma.api.service.tmdb.convertToTmdbProfileUrl
 import com.ssverma.api.service.tmdb.response.AccountPayload
 import com.ssverma.feature.account.domain.model.Profile
-import com.ssverma.shared.data.mapper.Mapper
 import com.ssverma.shared.data.mapper.MultiMapper
 import com.ssverma.showtime.UserAccount
 import javax.inject.Inject
@@ -23,7 +22,7 @@ private fun AccountPayload.asProfile(): Profile {
         id = id,
         userName = userName.orEmpty(),
         displayName = displayName.orEmpty(),
-        imageUrl = avatar?.avatarPath.convertToFullTmdbImageUrl()
+        imageUrl = avatar?.avatarPath.convertToTmdbProfileUrl()
     )
 }
 
