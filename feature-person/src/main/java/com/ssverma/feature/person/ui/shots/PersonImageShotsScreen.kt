@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +53,12 @@ fun PersonImageShotsScreen(
 
     var clickedImageShot: ImageShot? by remember { mutableStateOf(null) }
 
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+        )
+    )
     val coroutineScope = rememberCoroutineScope()
 
     Surface(
@@ -67,7 +73,7 @@ fun PersonImageShotsScreen(
                 if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
                     BackHandler {
                         coroutineScope.launch {
-                            bottomSheetScaffoldState.bottomSheetState.partialExpand()
+                            bottomSheetScaffoldState.bottomSheetState.hide()
                         }
                     }
                 }
@@ -77,7 +83,7 @@ fun PersonImageShotsScreen(
                         title = "",
                         onBackPressed = {
                             coroutineScope.launch {
-                                bottomSheetScaffoldState.bottomSheetState.partialExpand()
+                                bottomSheetScaffoldState.bottomSheetState.hide()
                             }
                         },
                         navIcon = Icons.Default.KeyboardArrowDown
