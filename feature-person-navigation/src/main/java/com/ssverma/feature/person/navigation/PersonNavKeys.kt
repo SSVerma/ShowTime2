@@ -11,7 +11,11 @@ data object PersonHomeNavKey : NavKey, Parcelable
 
 @Serializable
 @Parcelize
-data class PersonDetailNavKey(val personId: Int) : NavKey, Parcelable
+data class PersonDetailNavKey(
+    val personId: Int,
+    val personName: String? = null,
+    val personImageUrl: String? = null
+) : NavKey, Parcelable
 
 @Serializable
 @Parcelize

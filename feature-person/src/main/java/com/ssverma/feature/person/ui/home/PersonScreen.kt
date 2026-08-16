@@ -13,11 +13,13 @@ import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
 import com.ssverma.feature.person.ui.home.content.PersonHomeContent
 
+import com.ssverma.shared.domain.model.person.Person
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
     viewModel: PersonHomeViewModel = hiltViewModel(),
-    openPersonDetailsScreen: (personId: Int) -> Unit,
+    openPersonDetailsScreen: (Person) -> Unit,
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,

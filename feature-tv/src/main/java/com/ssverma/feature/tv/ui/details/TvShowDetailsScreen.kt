@@ -34,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
@@ -51,9 +50,11 @@ import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.analytics.TvAnalyticsValues
 import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
-import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
+import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
@@ -74,8 +75,6 @@ import com.ssverma.shared.ui.component.section.VideoShotsSection
 import com.ssverma.shared.ui.component.section.WatchProvidersSection
 import com.ssverma.shared.ui.emptyIfAbsent
 
-import com.ssverma.shared.domain.model.ProviderInfo
-
 @Composable
 fun TvShowDetailsScreen(
     onBackPressed: () -> Unit,
@@ -83,7 +82,7 @@ fun TvShowDetailsScreen(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (tvShowId: Int) -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
@@ -128,7 +127,7 @@ private fun TvShowContent(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
@@ -333,7 +332,7 @@ private fun TvShowContent(
                             sourceScreen = TvAnalyticsScreenName.TV_DETAILS
                         )
                     )
-                    openPersonDetails(cast.id)
+                    openPersonDetails(cast)
                 },
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )

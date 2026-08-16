@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = PersonDetailsViewModel.Factory::class)
 class PersonDetailsViewModel @AssistedInject constructor(
-    @Assisted private val personId: Int,
+    @Assisted val personId: Int,
     private val personDetailsUseCase: PersonDetailsUseCase
 ) : ViewModel() {
 
@@ -49,6 +49,7 @@ class PersonDetailsViewModel @AssistedInject constructor(
                 is Result.Error -> {
                     UiState.Error(result.error)
                 }
+
                 is Result.Success -> {
                     imageShots = result.data.imageShots
                     UiState.Success(result.data)

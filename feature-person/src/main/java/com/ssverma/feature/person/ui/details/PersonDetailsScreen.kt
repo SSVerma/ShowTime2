@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,20 +14,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.analytics.ui.TrackScreenView
-import com.ssverma.core.ui.DriveCompose
 import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
-import com.ssverma.feature.person.ui.common.PersonDetailUiState
 import com.ssverma.feature.person.ui.details.content.PersonDetailsContent
 import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
 import kotlinx.coroutines.launch
 
-import androidx.compose.material3.Surface
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonDetailsScreen(
+    personId: Int,
+    initialName: String? = null,
+    initialImageUrl: String? = null,
     onBackPress: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
@@ -45,45 +44,44 @@ fun PersonDetailsScreen(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
     ) {
-        DriveCompose(
-            uiState = viewModel.personDetailUiState,
-            onRetry = { viewModel.fetchPersonDetails() }
-        ) { person ->
-            PersonDetailsContent(
-                person = person,
-                onBackPress = onBackPress,
-                openImagePage = { pageIndex ->
-                    profileImagePageIndex = pageIndex
-                    showSheet = true
-                },
-                openMovieDetails = openMovieDetails,
-                openTvShowDetails = openTvShowDetails,
-                openPersonAllImages = openPersonAllImages,
-                modifier = Modifier.fillMaxSize()
-            )
+        PersonDetailsContent(
+            personId = personId,
+            initialName = initialName,
+            initialImageUrl = initialImageUrl,
+            personState = viewModel.personDetailUiState,
+            onRetry = { viewModel.fetchPersonDetails() },
+            onBackPress = onBackPress,
+            openImagePage = { pageIndex ->
+                profileImagePageIndex = pageIndex
+                showSheet = true
+            },
+            openMovieDetails = openMovieDetails,
+            openTvShowDetails = openTvShowDetails,
+            openPersonAllImages = openPersonAllImages,
+            modifier = Modifier.fillMaxSize()
+        )
 
-            if (showSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showSheet = false },
-                    sheetState = sheetState,
-                    containerColor = MaterialTheme.colorScheme.background,
-                    dragHandle = null,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    ImagePagerContent(
-                        imageShots = viewModel.imageShots,
-                        defaultPageIndex = profileImagePageIndex,
-                        onBackPressed = {
-                            coroutineScope.launch {
-                                sheetState.hide()
-                            }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    showSheet = false
-                                }
+        if (showSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showSheet = false },
+                sheetState = sheetState,
+                containerColor = MaterialTheme.colorScheme.background,
+                dragHandle = null,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                ImagePagerContent(
+                    imageShots = viewModel.imageShots,
+                    defaultPageIndex = profileImagePageIndex,
+                    onBackPressed = {
+                        coroutineScope.launch {
+                            sheetState.hide()
+                        }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showSheet = false
                             }
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     }

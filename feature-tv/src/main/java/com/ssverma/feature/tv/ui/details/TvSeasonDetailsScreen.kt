@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,7 +34,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
@@ -61,14 +61,12 @@ import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import kotlinx.coroutines.launch
 
-import androidx.compose.material3.Surface
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TvSeasonDetailsScreen(
     onBackPress: () -> Unit,
     openEpisodeDetails: (episodeArgs: TvEpisodeArgs) -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     viewModel: TvSeasonDetailsViewModel
 ) {
     val analytics = LocalAnalytics.current
@@ -117,7 +115,7 @@ fun TvSeasonDetailsScreen(
                                 sourceScreen = TvAnalyticsScreenName.TV_SEASON
                             )
                         )
-                        openPersonDetails(cast.id)
+                        openPersonDetails(cast)
                     },
                     openImageShotsList = {
                         coroutineScope.launch {

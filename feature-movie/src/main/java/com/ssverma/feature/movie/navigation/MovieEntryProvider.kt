@@ -93,8 +93,14 @@ fun EntryProviderScope<NavKey>.movieEntries(
             openReviewsList = { movieId ->
                 navigator.navigate(MovieReviewsNavKey(movieId))
             },
-            openPersonDetails = { personId ->
-                navigator.navigate(PersonDetailNavKey(personId))
+            openPersonDetails = { cast ->
+                navigator.navigate(
+                    PersonDetailNavKey(
+                        personId = cast.id,
+                        personName = cast.name,
+                        personImageUrl = cast.avatarImageUrl
+                    )
+                )
             },
             openMovieList = { listingArgs ->
                 navigator.navigate(MovieListingRoute(listingArgs))

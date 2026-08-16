@@ -3,7 +3,6 @@ package com.ssverma.feature.person.ui.home.component
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,10 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Star
@@ -37,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -55,6 +51,7 @@ import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.shared.ui.component.personSharedContentKey
 
 @Composable
 fun PersonListItem(
@@ -82,6 +79,7 @@ fun PersonListItem(
                 ) {
                     // Avatar with rank badge
                     GradientAvatar(
+                        personId = person.id,
                         imageUrl = person.imageUrl,
                         rank = index + 1,
                         onClick = onClick
@@ -197,11 +195,17 @@ fun PersonListItem(
                                         if (media.voteAverage > 0) {
                                             Surface(
                                                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-                                                shape = RoundedCornerShape(topStart = 4.dp, bottomEnd = 4.dp)
+                                                shape = RoundedCornerShape(
+                                                    topStart = 4.dp,
+                                                    bottomEnd = 4.dp
+                                                )
                                             ) {
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically,
-                                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                    modifier = Modifier.padding(
+                                                        horizontal = 4.dp,
+                                                        vertical = 2.dp
+                                                    )
                                                 ) {
                                                     Icon(
                                                         imageVector = Icons.Rounded.Star,
@@ -221,7 +225,7 @@ fun PersonListItem(
                                     },
                                     onClick = { onMediaClick(media) }
                                 )
-                                
+
                                 val releaseDate = media.displayReleaseDate
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -236,7 +240,7 @@ fun PersonListItem(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                     }
-                                    
+
                                     if (media.character.isNotBlank()) {
                                         Text(
                                             text = media.character,
@@ -253,7 +257,7 @@ fun PersonListItem(
                     }
                 }
             }
-            
+
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                 thickness = 0.5.dp
@@ -327,6 +331,7 @@ private fun DescriptiveLabel(
 
 @Composable
 private fun GradientAvatar(
+    personId: Int,
     imageUrl: String,
     rank: Int,
     onClick: () -> Unit,
@@ -339,7 +344,9 @@ private fun GradientAvatar(
             modifier = Modifier.size(AvatarSize),
             borderWidth = 2.dp,
             borderColor = MaterialTheme.colorScheme.outlineVariant,
-            borderSpacing = 2.dp
+            borderSpacing = 2.dp,
+            enableSharedTransition = true,
+            sharedContentKey = personSharedContentKey(personId)
         )
 
         // Rank badge - simple circle

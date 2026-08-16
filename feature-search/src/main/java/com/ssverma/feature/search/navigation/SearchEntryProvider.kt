@@ -20,8 +20,14 @@ fun EntryProviderScope<NavKey>.searchEntries(
             onTvShowClick = { tvShowId ->
                 navigator.navigate(TvShowDetailNavKey(tvShowId))
             },
-            onPersonClick = { personId ->
-                navigator.navigate(PersonDetailNavKey(personId))
+            onPersonClick = { personId, personName, personImageUrl ->
+                navigator.navigate(
+                    PersonDetailNavKey(
+                        personId = personId,
+                        personName = personName,
+                        personImageUrl = personImageUrl
+                    )
+                )
             },
             onBackPressed = {
                 navigator.goBack()

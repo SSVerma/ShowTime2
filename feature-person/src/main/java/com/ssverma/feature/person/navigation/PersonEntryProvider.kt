@@ -21,8 +21,14 @@ fun EntryProviderScope<NavKey>.personEntries(
 ) {
     showTimeEntry<PersonHomeNavKey> {
         PersonScreen(
-            openPersonDetailsScreen = { personId ->
-                navigator.navigate(PersonDetailNavKey(personId))
+            openPersonDetailsScreen = { person ->
+                navigator.navigate(
+                    PersonDetailNavKey(
+                        personId = person.id,
+                        personName = person.name,
+                        personImageUrl = person.imageUrl
+                    )
+                )
             },
             openMovieDetailsScreen = { movieId ->
                 navigator.navigate(MovieDetailNavKey(movieId))
@@ -42,6 +48,9 @@ fun EntryProviderScope<NavKey>.personEntries(
 
     showTimeEntry<PersonDetailNavKey> { key ->
         PersonDetailsScreen(
+            personId = key.personId,
+            initialName = key.personName,
+            initialImageUrl = key.personImageUrl,
             viewModel = hiltViewModel<PersonDetailsViewModel, PersonDetailsViewModel.Factory> { factory ->
                 factory.create(key.personId)
             },

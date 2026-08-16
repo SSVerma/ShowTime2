@@ -26,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
@@ -42,6 +41,7 @@ import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
 import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
 import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
+import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.Movie
@@ -70,7 +70,7 @@ fun MovieDetailsScreen(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (movieId: Int) -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     viewModel: MovieDetailsViewModel
@@ -113,7 +113,7 @@ fun MovieContent(
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     modifier: Modifier = Modifier
@@ -286,7 +286,7 @@ fun MovieContent(
                             sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
                         )
                     )
-                    openPersonDetails(cast.id)
+                    openPersonDetails(cast)
                 },
                 modifier = Modifier.padding(top = SectionVerticalSpacing)
             )

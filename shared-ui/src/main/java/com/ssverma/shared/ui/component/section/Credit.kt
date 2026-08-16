@@ -1,7 +1,12 @@
 package com.ssverma.shared.ui.component.section
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +21,7 @@ import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.Avatar
+import com.ssverma.shared.ui.component.personSharedContentKey
 
 @Composable
 fun CreditSection(
@@ -52,7 +58,8 @@ fun CreditSection(
 fun CastItem(
     cast: Cast,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enableSharedTransition: Boolean = true
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -61,7 +68,9 @@ fun CastItem(
         Avatar(
             imageUrl = cast.avatarImageUrl,
             onClick = onClick,
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(80.dp),
+            enableSharedTransition = enableSharedTransition,
+            sharedContentKey = personSharedContentKey(cast.id)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(

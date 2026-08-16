@@ -97,8 +97,14 @@ fun EntryProviderScope<NavKey>.tvEntries(
             openReviewsList = { tvShowId ->
                 navigator.navigate(TvShowReviewsNavKey(tvShowId))
             },
-            openPersonDetails = { personId ->
-                navigator.navigate(PersonDetailNavKey(personId))
+            openPersonDetails = { cast ->
+                navigator.navigate(
+                    PersonDetailNavKey(
+                        personId = cast.id,
+                        personName = cast.name,
+                        personImageUrl = cast.avatarImageUrl
+                    )
+                )
             },
             openTvShowList = { listingRoute ->
                 navigator.navigate(listingRoute)
@@ -170,8 +176,14 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     )
                 )
             },
-            openPersonDetails = { personId ->
-                navigator.navigate(PersonDetailNavKey(personId))
+            openPersonDetails = { cast ->
+                navigator.navigate(
+                    PersonDetailNavKey(
+                        personId = cast.id,
+                        personName = cast.name,
+                        personImageUrl = cast.avatarImageUrl
+                    )
+                )
             }
         )
     }
@@ -186,8 +198,14 @@ fun EntryProviderScope<NavKey>.tvEntries(
                 )
             },
             onBackPress = { navigator.goBack() },
-            openPersonDetails = { personId ->
-                navigator.navigate(PersonDetailNavKey(personId))
+            openPersonDetails = { cast ->
+                navigator.navigate(
+                    PersonDetailNavKey(
+                        personId = cast.id,
+                        personName = cast.name,
+                        personImageUrl = cast.avatarImageUrl
+                    )
+                )
             }
         )
     }

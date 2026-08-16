@@ -20,6 +20,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,15 +50,13 @@ import com.ssverma.feature.search.ui.suggestion.component.SearchPersonItem
 import com.ssverma.feature.search.ui.suggestion.component.SearchTvShowItem
 import com.ssverma.shared.domain.model.MediaType
 
-import androidx.compose.material3.Surface
-
 @Composable
 fun SearchSuggestionScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchSuggestionViewModel = hiltViewModel(),
     onMovieClick: (movieId: Int) -> Unit,
     onTvShowClick: (tvShowId: Int) -> Unit,
-    onPersonClick: (personId: Int) -> Unit,
+    onPersonClick: (personId: Int, personName: String?, personImageUrl: String?) -> Unit,
     onBackPressed: () -> Unit
 ) {
     TrackScreenView(screenName = SearchAnalyticsScreenName.TYPEAHEAD)
@@ -100,7 +99,7 @@ fun SearchSuggestionScreen(
                             }
 
                             MediaType.Person -> {
-                                onPersonClick(history.id)
+                                onPersonClick(history.id, history.name, null)
                             }
 
                             MediaType.Tv -> {
@@ -131,7 +130,7 @@ fun SearchSuggestionScreen(
 
                             is SearchSuggestion.Person -> {
                                 viewModel.saveSearchHistory(suggestion)
-                                onPersonClick(suggestion.id)
+                                onPersonClick(suggestion.id, suggestion.name, suggestion.imageUrl)
                             }
 
                             is SearchSuggestion.TvShow -> {

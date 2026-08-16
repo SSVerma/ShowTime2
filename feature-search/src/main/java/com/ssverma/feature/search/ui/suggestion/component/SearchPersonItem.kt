@@ -16,6 +16,7 @@ import com.ssverma.feature.search.ui.common.SearchSuggestionDefaults
 import com.ssverma.feature.search.ui.common.SuggestionText
 import com.ssverma.shared.domain.model.Gender
 import com.ssverma.shared.ui.component.Avatar
+import com.ssverma.shared.ui.component.personSharedContentKey
 
 @Composable
 fun SearchPersonItem(
@@ -42,7 +43,9 @@ fun SearchPersonItem(
                 onClick = {},
                 borderWidth = 1.dp,
                 borderSpacing = 2.dp,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp),
+                enableSharedTransition = true,
+                sharedContentKey = personSharedContentKey(person.id)
             )
 
             SuggestionText(

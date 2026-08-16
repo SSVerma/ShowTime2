@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
@@ -32,6 +31,7 @@ import com.ssverma.core.ui.DriveCompose
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
+import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TvEpisodeDetailsScreen(
     onBackPress: () -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     viewModel: TvEpisodeDetailsViewModel
 ) {
     val imageSheetState = rememberImageShotBottomSheetState()
@@ -94,7 +94,7 @@ fun TvEpisodeDetailsScreen(
 private fun TvEpisodeContent(
     episode: TvEpisode,
     onBackPress: () -> Unit,
-    openPersonDetails: (personId: Int) -> Unit,
+    openPersonDetails: (Cast) -> Unit,
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier
@@ -158,7 +158,7 @@ private fun TvEpisodeContent(
                             sourceScreen = TvAnalyticsScreenName.TV_EPISODE
                         )
                     )
-                    openPersonDetails(cast.id)
+                    openPersonDetails(cast)
                 },
                 modifier = Modifier.padding(top = SectionSpacing)
             )
@@ -175,7 +175,7 @@ private fun TvEpisodeContent(
                             sourceScreen = TvAnalyticsScreenName.TV_EPISODE
                         )
                     )
-                    openPersonDetails(cast.id)
+                    openPersonDetails(cast)
                 },
                 modifier = Modifier.padding(top = SectionSpacing)
             )

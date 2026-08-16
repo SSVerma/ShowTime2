@@ -27,7 +27,7 @@ import com.ssverma.shared.ui.component.HomePageAppBar
 @Composable
 fun PersonHomeContent(
     pagedPersons: LazyPagingItems<Person>,
-    openPersonDetailsScreen: (personId: Int) -> Unit,
+    openPersonDetailsScreen: (Person) -> Unit,
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
@@ -66,7 +66,7 @@ fun PersonHomeContent(
                         sourceScreen = PersonAnalyticsScreenName.PERSON_LISTING
                     )
                 )
-                openPersonDetailsScreen(person.id)
+                openPersonDetailsScreen(person)
             },
             onPopularMediaBtnClick = { personId ->
                 PersonAnalyticsEvent.ExpandMediaClicked(
