@@ -2,17 +2,33 @@ package com.ssverma.feature.tv.ui.home.component
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,20 +37,22 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.DriveCompose
-import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.layout.HorizontalLazyList
-import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
-import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
-import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
+import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
+import com.ssverma.feature.tv.ui.common.TvShowPreviewUiState
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
-import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
@@ -44,15 +62,13 @@ import com.ssverma.shared.ui.component.MediaItemShimmer
 import com.ssverma.shared.ui.component.WatchProviderTrigger
 import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.TvShowGridItem
-import com.ssverma.feature.tv.ui.common.TvShowPreviewUiState
 
 data class DiscoveryCategory(
-    @StringRes val titleRes: Int,
+    @param:StringRes val titleRes: Int,
     val config: TvShowListingConfig,
     val uiState: TvShowPreviewUiState
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscoverySection(
     popularTvShowsState: TvShowPreviewUiState,
@@ -99,43 +115,152 @@ fun DiscoverySection(
     }
 
     Column(modifier = modifier) {
-        SectionHeader(
-            modifier = Modifier.padding(start = MaterialTheme.spacing.large),
-            title = stringResource(R.string.discover),
-            onTrailingActionClicked = {
-                val category = categories[selectedTabIndex]
-                val args = when (category.config) {
-                    is TvShowListingConfig.Filterable.Popular -> TvShowListingArgs.Popular(titleRes = category.titleRes)
-                    is TvShowListingConfig.Filterable.TopRated -> TvShowListingArgs.TopRated(titleRes = category.titleRes)
-                    is TvShowListingConfig.Filterable.Upcoming -> TvShowListingArgs.Upcoming(titleRes = category.titleRes)
-                    else -> TvShowListingArgs.Popular(titleRes = category.titleRes)
-                }
-                onSeeAllClicked(TvShowListingRoute(args = args))
-            }
-        )
-
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.large),
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-            modifier = Modifier.padding(vertical = MaterialTheme.spacing.smallMedium)
+        // 1. Header with "Discover" title on the left and animated tinted "See All" pill on the right
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = MaterialTheme.spacing.large)
         ) {
-            itemsIndexed(categories) { index, category ->
-                FilterChip(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    label = {
+            Text(
+                text = stringResource(R.string.discover),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            )
+
+            AnimatedContent(
+                targetState = selectedTabIndex,
+                transitionSpec = {
+                    (fadeIn(tween(200)) + slideInHorizontally { it / 4 })
+                        .togetherWith(fadeOut(tween(150)) + slideOutHorizontally { -it / 4 })
+                },
+                label = "DiscoverTvSeeAllAction"
+            ) { tabIndex ->
+                val currentCategory = categories[tabIndex]
+
+                Surface(
+                    onClick = {
+                        val args = when (currentCategory.config) {
+                            is TvShowListingConfig.Filterable.Popular -> TvShowListingArgs.Popular(
+                                titleRes = currentCategory.titleRes
+                            )
+
+                            is TvShowListingConfig.Filterable.TopRated -> TvShowListingArgs.TopRated(
+                                titleRes = currentCategory.titleRes
+                            )
+
+                            is TvShowListingConfig.Filterable.Upcoming -> TvShowListingArgs.Upcoming(
+                                titleRes = currentCategory.titleRes
+                            )
+
+                            else -> TvShowListingArgs.Popular(titleRes = currentCategory.titleRes)
+                        }
+                        onSeeAllClicked(TvShowListingRoute(args = args))
+                    },
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                    contentColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(
+                            start = 12.dp,
+                            end = 8.dp,
+                            top = 6.dp,
+                            bottom = 6.dp
+                        )
+                    ) {
                         Text(
-                            text = stringResource(category.titleRes),
-                            style = MaterialTheme.typography.labelLarge
+                            text = stringResource(com.ssverma.core.ui.R.string.see_all),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(13.dp)
                         )
                     }
-                )
+                }
             }
         }
 
+        // 2. Segmented Capsule Pill Selector
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f),
+            modifier = Modifier
+                .padding(horizontal = MaterialTheme.spacing.large)
+                .padding(top = MaterialTheme.spacing.small, bottom = MaterialTheme.spacing.medium)
+        ) {
+            Row(
+                modifier = Modifier.padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                categories.forEachIndexed { index, category ->
+                    val isSelected = selectedTabIndex == index
+                    val backgroundColor by animateColorAsState(
+                        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
+                        label = "PillBg"
+                    )
+                    val contentColor by animateColorAsState(
+                        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
+                        label = "PillText"
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(backgroundColor, CircleShape)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                selectedTabIndex = index
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(category.titleRes),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            ),
+                            color = contentColor
+                        )
+                    }
+                }
+            }
+        }
+
+        // 3. Smooth Directional Content Transitions
         AnimatedContent(
             targetState = selectedTabIndex,
-            label = "DiscoveryContentTransition"
+            transitionSpec = {
+                if (targetState > initialState) {
+                    (slideInHorizontally { width -> width / 4 } + fadeIn(tween(220)))
+                        .togetherWith(slideOutHorizontally { width -> -width / 4 } + fadeOut(
+                            tween(
+                                180
+                            )
+                        ))
+                } else {
+                    (slideInHorizontally { width -> -width / 4 } + fadeIn(tween(220)))
+                        .togetherWith(slideOutHorizontally { width -> width / 4 } + fadeOut(
+                            tween(
+                                180
+                            )
+                        ))
+                }
+            },
+            label = "DiscoveryTvContentTransition"
         ) { index ->
             val category = categories[index]
 

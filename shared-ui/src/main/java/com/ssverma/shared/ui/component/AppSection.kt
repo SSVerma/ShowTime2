@@ -30,7 +30,7 @@ fun <T, FF> AppSection(
         modifier = modifier,
         sectionHeader = {
             SectionHeader(
-                modifier = Modifier.padding(start = 16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
                 title = title,
                 subtitle = subtitle,
                 onTrailingActionClicked = onTrailingActionClicked

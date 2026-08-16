@@ -13,10 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -341,8 +345,29 @@ private fun SectionTrailingAction(
     actionLabel: String,
     onTrailingActionClicked: () -> Unit
 ) {
-    TextButton(onClick = onTrailingActionClicked) {
-        Text(text = actionLabel)
+    Surface(
+        onClick = onTrailingActionClicked,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+        contentColor = MaterialTheme.colorScheme.primary
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp)
+        ) {
+            Text(
+                text = actionLabel,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                contentDescription = null,
+                modifier = Modifier.size(12.dp)
+            )
+        }
     }
 }
 
@@ -365,5 +390,3 @@ object SectionDefaults {
         )
     }
 }
-
-

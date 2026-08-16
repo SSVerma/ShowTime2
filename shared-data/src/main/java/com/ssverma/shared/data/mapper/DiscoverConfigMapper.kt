@@ -84,11 +84,11 @@ private fun SortBy.asQueryMapEntry(): Pair<String, String> {
             is SortBy.ReleaseDate -> {
                 when (order) {
                     Order.Ascending -> {
-                        TmdbApiTiedConstants.AvailableSortingOptions.ReleaseDateAsc
+                        TmdbApiTiedConstants.AvailableSortingOptions.PrimaryReleaseDateAsc
                     }
 
                     Order.Descending -> {
-                        TmdbApiTiedConstants.AvailableSortingOptions.ReleaseDateDesc
+                        TmdbApiTiedConstants.AvailableSortingOptions.PrimaryReleaseDateDesc
                     }
                 }
             }

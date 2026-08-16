@@ -4,6 +4,7 @@
     <string name="retry">Retry</string>
     <string name="no_data">No data!</string>
     <string name="see_all">See All</string>
+    <string name="see_all_format">See all %1$s</string>
     <string name="something_went_wrong">Oops! We hit a snag. Let\'s try that again.</string>
     <string name="network_error">It looks like you\'re offline. Please check your connection.</string>
     <string name="service_error">Our servers are taking a quick break. We\'ll be right back!</string>

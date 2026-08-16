@@ -39,7 +39,7 @@ object TvShowDefaults {
             return TvDiscoverConfig
                 .builder(sortBy = SortBy.AirDate(order = Order.Ascending))
                 .with(
-                    DiscoverOption.AirDate.From(date = tomorrow),
+                    DiscoverOption.FirstAirDate.From(date = tomorrow),
                 )
                 .build()
         }
