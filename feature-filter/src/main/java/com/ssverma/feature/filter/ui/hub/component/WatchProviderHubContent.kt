@@ -73,6 +73,7 @@ import com.ssverma.shared.ui.component.WatchProviderHubBranding
 import com.ssverma.shared.ui.component.WatchProviderLogo
 import com.ssverma.shared.ui.component.media.MovieGridItem
 import com.ssverma.shared.ui.component.media.TvShowGridItem
+import com.ssverma.shared.ui.component.watchProviderSharedContentKey
 import com.ssverma.shared.ui.R as SharedUiR
 
 @Composable
@@ -125,7 +126,8 @@ fun WatchProviderHubContent(
                 BrandIdentitySection(
                     provider = provider,
                     brandingColor = brandingColor,
-                    isLoading = isLoading
+                    isLoading = isLoading,
+                    isMovieMode = isMovieMode
                 )
             }
 
@@ -430,7 +432,8 @@ fun ParallaxHeader(
 fun BrandIdentitySection(
     provider: ProviderInfo,
     brandingColor: Color,
-    isLoading: Boolean
+    isLoading: Boolean,
+    isMovieMode: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -444,6 +447,10 @@ fun BrandIdentitySection(
             onClick = { /* Identity Logo Not Usually Clickable */ },
             size = 100.dp,
             enableSharedTransition = true,
+            sharedContentKey = watchProviderSharedContentKey(
+                provider.providerId,
+                isMovie = isMovieMode
+            ),
             modifier = Modifier
                 .graphicsLayer {
                     shadowElevation = 24.dp.toPx()

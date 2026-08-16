@@ -78,12 +78,16 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.R as SharedUiR
 
+fun watchProviderSharedContentKey(providerId: Int, isMovie: Boolean): String =
+    "watch_provider_logo_${providerId}_${if (isMovie) "movie" else "tv"}"
+
 @Composable
 fun WatchProviderHubSection(
     providersUiState: UiState<List<ProviderInfo>, Failure.CoreFailure>,
     onProviderClick: (ProviderInfo) -> Unit,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isMovie: Boolean = true
 ) {
     if (providersUiState is UiState.Success && providersUiState.data.isEmpty()) {
         return
@@ -99,6 +103,7 @@ fun WatchProviderHubSection(
         WatchProviderEntryCard(
             providers = providers,
             onProviderClick = onProviderClick,
+            isMovie = isMovie,
             modifier = modifier
         )
     }
@@ -109,6 +114,7 @@ fun WatchProviderHubSection(
 private fun WatchProviderEntryCard(
     providers: List<ProviderInfo>,
     onProviderClick: (ProviderInfo) -> Unit,
+    isMovie: Boolean,
     modifier: Modifier = Modifier
 ) {
     var showAllSheet by remember { mutableStateOf(false) }
@@ -223,6 +229,10 @@ private fun WatchProviderEntryCard(
                                 onClick = { onProviderClick(provider) },
                                 size = 56.dp,
                                 enableSharedTransition = true,
+                                sharedContentKey = watchProviderSharedContentKey(
+                                    provider.providerId,
+                                    isMovie
+                                ),
                                 modifier = Modifier
                                     .graphicsLayer {
                                         shadowElevation = 4.dp.toPx()

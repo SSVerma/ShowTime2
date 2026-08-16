@@ -195,6 +195,7 @@ fun TvShowHomeContent(
                     openWatchProviderHub(provider)
                 },
                 onRetry = { viewModel.fetchWatchProviders() },
+                isMovie = false,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }

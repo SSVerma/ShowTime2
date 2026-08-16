@@ -198,6 +198,7 @@ fun MovieHomeContent(
                     openWatchProviderHub(provider)
                 },
                 onRetry = { viewModel.fetchWatchProviders() },
+                isMovie = true,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
@@ -314,7 +315,6 @@ fun MovieHomeContent(
                 }
             )
         }
-
 
         item { AttributionFooter(modifier = Modifier.padding(top = MaterialTheme.spacing.large)) }
     }
