@@ -1,7 +1,9 @@
 package com.ssverma.showtime
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -53,10 +55,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                lightScrim = android.graphics.Color.TRANSPARENT,
+                darkScrim = android.graphics.Color.TRANSPARENT
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                lightScrim = android.graphics.Color.TRANSPARENT,
+                darkScrim = android.graphics.Color.TRANSPARENT
+            )
+        )
+
         super.onCreate(savedInstanceState)
 
-        if (android.os.Build.VERSION.SDK_INT >= 33) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             navigationEventDispatcherOwner.navigationEventDispatcher.addInput(
                 OnBackInvokedDefaultInput(onBackInvokedDispatcher)
             )
@@ -66,14 +82,14 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val backInput = remember { DirectNavigationEventInput() }
-            if (android.os.Build.VERSION.SDK_INT < 33) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 BackHandler {
                     backInput.backCompleted()
                 }
             }
 
             LaunchedEffect(backInput) {
-                if (android.os.Build.VERSION.SDK_INT < 33) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     navigationEventDispatcherOwner.navigationEventDispatcher.addInput(backInput)
                 }
             }

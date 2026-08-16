@@ -1,10 +1,12 @@
 package com.ssverma.showtime
 
+import android.os.Build
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +51,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -96,6 +102,9 @@ fun ShowTime(
                 val insetsController = WindowCompat.getInsetsController(window, view)
                 insetsController.isAppearanceLightStatusBars = !darkTheme
                 insetsController.isAppearanceLightNavigationBars = !darkTheme
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    window.isNavigationBarContrastEnforced = false
+                }
             }
         }
 
@@ -194,55 +203,56 @@ fun ShowTimeToolbarTab(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val activeColor = MaterialTheme.colorScheme.primary
-    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+    val haptic = LocalHapticFeedback.current
+    val activeContentColor = MaterialTheme.colorScheme.primary
+    val inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
 
     val animatedColor by animateColorAsState(
-        targetValue = if (selected) activeColor else inactiveColor,
+        targetValue = if (selected) activeContentColor else inactiveContentColor,
+        animationSpec = tween(durationMillis = 200),
         label = "TabColor"
     )
 
     val capsuleColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent,
+        animationSpec = tween(durationMillis = 200),
         label = "CapsuleColor"
     )
 
     Box(
         modifier = modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(horizontal = 2.dp, vertical = 2.dp)
+            .clip(CircleShape)
+            .background(capsuleColor)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(bounded = true)
+            ) {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onClick()
+            },
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(capsuleColor)
-                .clickable { onClick() }
-                .padding(horizontal = 10.dp, vertical = 8.dp)
-                .animateContentSize(),
-            contentAlignment = Alignment.Center
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(horizontal = 8.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                if (selected) {
-                    Icon(
-                        painter = painterResource(id = iconResId),
-                        contentDescription = stringResource(id = titleResId),
-                        tint = animatedColor,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
-
-                Text(
-                    text = stringResource(id = titleResId),
-                    color = animatedColor,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                    maxLines = 1
-                )
-            }
+            Icon(
+                painter = painterResource(id = iconResId),
+                contentDescription = stringResource(id = titleResId),
+                tint = animatedColor,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = stringResource(id = titleResId),
+                color = animatedColor,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 1
+            )
         }
     }
 }
@@ -268,6 +278,8 @@ fun ShowTimeBottomBar(
         return
     }
 
+    val haptic = LocalHapticFeedback.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -279,22 +291,22 @@ fun ShowTimeBottomBar(
         HorizontalFloatingToolbar(
             expanded = true,
             modifier = Modifier
-                .width(276.dp)
+                .weight(1f, fill = false)
                 .height(56.dp)
                 .shadow(
-                    elevation = 8.dp,
+                    elevation = 6.dp,
                     shape = CircleShape,
                     clip = false
                 )
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
                     shape = CircleShape
                 ),
             colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
-                toolbarContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f)
+                toolbarContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
             ),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
         ) {
             bottomNavItems.forEach { item ->
                 ShowTimeToolbarTab(
@@ -302,29 +314,34 @@ fun ShowTimeBottomBar(
                     titleResId = item.titleResId,
                     selected = item.navKey == topLevelNavKey,
                     onClick = { onTopLevelNavItemSelected(item) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
                 )
             }
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         // Search Icon FAB (Outside the toolbar, matching Photos app style)
         Surface(
-            onClick = onSearchPressed,
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onSearchPressed()
+            },
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
             contentColor = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .size(56.dp)
                 .shadow(
-                    elevation = 8.dp,
+                    elevation = 6.dp,
                     shape = CircleShape,
                     clip = false
                 )
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
                     shape = CircleShape
                 )
         ) {
@@ -334,8 +351,8 @@ fun ShowTimeBottomBar(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Search,
-                    contentDescription = "Search",
-                    modifier = Modifier.size(24.dp)
+                    contentDescription = stringResource(id = R.string.search),
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }

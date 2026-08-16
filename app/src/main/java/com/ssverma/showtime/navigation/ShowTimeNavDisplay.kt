@@ -1,18 +1,22 @@
 package com.ssverma.showtime.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.get
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import com.ssverma.core.navigation.nav3.LocalNavEntries
 import com.ssverma.core.navigation.nav3.LocalNavigationState
@@ -36,8 +40,9 @@ fun ShowTimeNavDisplay(
 
     val entries = navigationState.toEntries(entryProvider)
 
-    val tabStiffness = 500f // Balanced, snappy but smooth for tab switches
-    val stackStiffness = 800f // Snappy and polished for stack navigation
+    val topLevelOrder = remember {
+        ShowTimeTopLevelNavItems.map { it.navKey }
+    }
 
     CompositionLocalProvider(
         LocalNavigator provides navigator,
@@ -47,84 +52,114 @@ fun ShowTimeNavDisplay(
         NavDisplay(
             entries = entries,
             onBack = { navigator.goBack() },
-            transitionSpec = {
-                val initialTabKey =
-                    initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
-                val targetTabKey =
-                    targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
-                val isTabSwitch = initialTabKey != targetTabKey
-
-                if (isTabSwitch) {
-                    // Soft vertical slide for tab switches
-                    (slideInVertically(
-                        initialOffsetY = { it },
-                        animationSpec = spring(
-                            stiffness = tabStiffness,
-                            dampingRatio = Spring.DampingRatioLowBouncy
-                        )
-                    ) + fadeIn(animationSpec = spring(stiffness = tabStiffness))).togetherWith(
-                        slideOutVertically(
-                            targetOffsetY = { -it },
-                            animationSpec = spring(stiffness = tabStiffness)
-                        ) + fadeOut(animationSpec = spring(stiffness = tabStiffness))
-                    )
-                } else {
-                    // Solid horizontal parallax for stack navigation
-                    slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                        animationSpec = spring(stiffness = stackStiffness)
-                    ) togetherWith slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                        targetOffset = { it / 4 },
-                        animationSpec = spring(stiffness = stackStiffness)
-                    )
-                }
-            },
-            popTransitionSpec = {
-                val initialTabKey =
-                    initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
-                val targetTabKey =
-                    targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
-                val isTabSwitch = initialTabKey != targetTabKey
-
-                if (isTabSwitch) {
-                    // Soft vertical slide for tab switches
-                    (slideInVertically(
-                        initialOffsetY = { -it },
-                        animationSpec = spring(
-                            stiffness = tabStiffness,
-                            dampingRatio = Spring.DampingRatioLowBouncy
-                        )
-                    ) + fadeIn(animationSpec = spring(stiffness = tabStiffness))).togetherWith(
-                        slideOutVertically(
-                            targetOffsetY = { it },
-                            animationSpec = spring(stiffness = tabStiffness)
-                        ) + fadeOut(animationSpec = spring(stiffness = tabStiffness))
-                    )
-                } else {
-                    // Solid horizontal parallax for stack navigation
-                    slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.End,
-                        initialOffset = { it / 4 },
-                        animationSpec = spring(stiffness = stackStiffness)
-                    ) togetherWith slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.End,
-                        animationSpec = spring(stiffness = stackStiffness)
-                    )
-                }
-            },
-            predictivePopTransitionSpec = {
-                // Predictive back remains horizontal
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.End,
-                    initialOffset = { it / 4 },
-                    animationSpec = spring(stiffness = stackStiffness)
-                ) togetherWith slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = spring(stiffness = stackStiffness)
-                )
-            },
+            transitionSpec = { showTimeForwardTransition(topLevelOrder) },
+            popTransitionSpec = { showTimePopTransition(topLevelOrder) },
+            predictivePopTransitionSpec = { showTimePredictivePopTransition() },
             modifier = modifier.fillMaxSize()
         )
     }
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimeForwardTransition(
+    topLevelOrder: List<NavKey>
+): ContentTransform {
+    val initialTabKey = initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
+    val targetTabKey = targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
+    val isTabSwitch = initialTabKey != targetTabKey
+
+    return if (isTabSwitch) {
+        createTabSwitchTransition(initialTabKey, targetTabKey, topLevelOrder)
+    } else {
+        createStackPushTransition()
+    }
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransition(
+    topLevelOrder: List<NavKey>
+): ContentTransform {
+    val initialTabKey = initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
+    val targetTabKey = targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
+    val isTabSwitch = initialTabKey != targetTabKey
+
+    return if (isTabSwitch) {
+        createTabSwitchTransition(initialTabKey, targetTabKey, topLevelOrder)
+    } else {
+        createStackPopTransition()
+    }
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePredictivePopTransition(): ContentTransform {
+    return (slideIntoContainer(
+        towards = AnimatedContentTransitionScope.SlideDirection.End,
+        initialOffset = { it / 4 }
+    ) + fadeIn(
+        initialAlpha = 0.85f
+    )).togetherWith(
+        slideOutOfContainer(
+            towards = AnimatedContentTransitionScope.SlideDirection.End
+        )
+    )
+}
+
+private fun createTabSwitchTransition(
+    initialTabKey: Any?,
+    targetTabKey: Any?,
+    topLevelOrder: List<NavKey>
+): ContentTransform {
+    val initialIdx = topLevelOrder.indexOf(initialTabKey as? NavKey)
+    val targetIdx = topLevelOrder.indexOf(targetTabKey as? NavKey)
+    val isForward = if (initialIdx != -1 && targetIdx != -1) targetIdx > initialIdx else true
+    val directionMultiplier = if (isForward) 1 else -1
+
+    return (slideInHorizontally(
+        initialOffsetX = { (it * 0.12f * directionMultiplier).toInt() },
+        animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing)
+    ) + fadeIn(
+        animationSpec = tween(durationMillis = 240)
+    )).togetherWith(
+        slideOutHorizontally(
+            targetOffsetX = { (-it * 0.12f * directionMultiplier).toInt() },
+            animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing)
+        ) + fadeOut(
+            animationSpec = tween(durationMillis = 180)
+        )
+    )
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createStackPushTransition(): ContentTransform {
+    return slideIntoContainer(
+        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+    ).togetherWith(
+        slideOutOfContainer(
+            towards = AnimatedContentTransitionScope.SlideDirection.Start,
+            targetOffset = { it / 4 },
+            animationSpec = tween(
+                durationMillis = 320,
+                easing = FastOutSlowInEasing
+            )
+        ) + fadeOut(
+            targetAlpha = 0.85f,
+            animationSpec = tween(durationMillis = 320)
+        )
+    )
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createStackPopTransition(): ContentTransform {
+    return (slideIntoContainer(
+        towards = AnimatedContentTransitionScope.SlideDirection.End,
+        initialOffset = { it / 4 },
+        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+    ) + fadeIn(
+        initialAlpha = 0.85f,
+        animationSpec = tween(durationMillis = 280)
+    )).togetherWith(
+        slideOutOfContainer(
+            towards = AnimatedContentTransitionScope.SlideDirection.End,
+            animationSpec = tween(
+                durationMillis = 280,
+                easing = FastOutSlowInEasing
+            )
+        )
+    )
 }

@@ -27,6 +27,14 @@ internal val DarkColorScheme = darkColorScheme(
     surfaceVariant = Color(0xFF202226),
     onSurfaceVariant = Color(0xFF9AA0A6),
 
+    surfaceContainerLowest = Color(0xFF0D0E11),
+    surfaceContainerLow = Color(0xFF191A1F),
+    surfaceContainer = Color(0xFF1F2026),
+    surfaceContainerHigh = Color(0xFF272930),
+    surfaceContainerHighest = Color(0xFF32343C),
+    surfaceDim = Color(0xFF111215),
+    surfaceBright = Color(0xFF3B3D46),
+
     outline = Color(0xFF5F6368),
     outlineVariant = Color(0xFF2B2C2F)
 )
@@ -53,6 +61,14 @@ internal val LightColorScheme = expressiveLightColorScheme().copy(
     onSurface = Color(0xFF202124),
     surfaceVariant = Color(0xFFF8F9FA),
     onSurfaceVariant = Color(0xFF5F6368),
+
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFF6F8FB),
+    surfaceContainer = Color(0xFFEFF2F7),
+    surfaceContainerHigh = Color(0xFFE7EBF2),
+    surfaceContainerHighest = Color(0xFFDEE3EC),
+    surfaceDim = Color(0xFFD8DCE4),
+    surfaceBright = Color(0xFFFAFBFD),
 
     outline = Color(0xFFDADCE0),
     outlineVariant = Color(0xFFF1F3F4)

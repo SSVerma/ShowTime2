@@ -5,7 +5,6 @@ import android.app.Activity
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,13 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.notifications.LocalNotificationManager
+import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.openAppSettings
 import com.ssverma.feature.tv.R
@@ -110,7 +109,7 @@ fun TvShowHomeContent(
     }
 
     LazyColumn(
-        contentPadding = PaddingValues(bottom = 100.dp),
+        contentPadding = rememberFloatingBottomBarPadding(),
         modifier = modifier.fillMaxSize()
     ) {
         item {

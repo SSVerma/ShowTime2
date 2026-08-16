@@ -3,7 +3,6 @@ package com.ssverma.feature.library.ui.home
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -19,30 +18,34 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.asString
+import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.feature.library.R
-import com.ssverma.feature.library.ui.home.component.*
+import com.ssverma.feature.library.ui.home.component.LibraryTab
+import com.ssverma.feature.library.ui.home.component.LibraryTabType
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.ui.component.HomePageAppBar
 import com.ssverma.shared.ui.component.media.MediaItem
 import kotlinx.coroutines.launch
-
-import androidx.compose.material3.Surface
 
 @Composable
 fun LibraryScreen(
@@ -119,14 +122,33 @@ private fun LibraryContent(
     ScrollableTabRow(
         selectedTabIndex = pagerState.currentPage,
         containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.primary,
+        edgePadding = 16.dp,
+        indicator = { tabPositions ->
+            if (pagerState.currentPage < tabPositions.size) {
+                TabRowDefaults.SecondaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                    height = 3.dp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        divider = {},
         modifier = modifier
     ) {
         tabs.forEachIndexed { index, tab ->
+            val selected = pagerState.currentPage == index
             Tab(
                 text = {
-                    Text(text = tab.title.asString(), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        text = tab.title.asString(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                    )
                 },
-                selected = pagerState.currentPage == index,
+                selected = selected,
+                selectedContentColor = MaterialTheme.colorScheme.primary,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
             )
         }
@@ -188,9 +210,11 @@ private fun TvShowsGrid(
     tvShowPagingItems: LazyPagingItems<TvShow>,
     onTvShowClicked: (movieId: Int) -> Unit
 ) {
+    val contentPadding = rememberFloatingBottomBarPadding(start = 12.dp, top = 12.dp)
+
     PagedGrid(
         pagingItems = tvShowPagingItems,
-        contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp)
+        contentPadding = contentPadding
     ) {
         MediaItem(
             title = it.title,
@@ -212,9 +236,11 @@ private fun MoviesGrid(
     moviePagingItems: LazyPagingItems<Movie>,
     onMovieClicked: (movieId: Int) -> Unit
 ) {
+    val contentPadding = rememberFloatingBottomBarPadding(start = 12.dp, top = 12.dp)
+
     PagedGrid(
         pagingItems = moviePagingItems,
-        contentPadding = PaddingValues(start = 12.dp, top = 12.dp, bottom = 56.dp)
+        contentPadding = contentPadding
     ) {
         MediaItem(
             title = it.title,

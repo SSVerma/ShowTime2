@@ -1,7 +1,6 @@
 package com.ssverma.feature.person.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -12,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.paging.PagedListIndexed
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.ui.home.component.PersonListItem
@@ -35,7 +35,7 @@ fun PersonHomeContent(
 
     PagedListIndexed(
         pagingItems = pagedPersons,
-        contentPadding = PaddingValues(bottom = 100.dp),
+        contentPadding = rememberFloatingBottomBarPadding(),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
         header = {
             HomePageAppBar(
