@@ -1,6 +1,13 @@
 package com.ssverma.shared.domain.model.movie
 
-import com.ssverma.shared.domain.model.*
+import com.ssverma.shared.domain.model.Cast
+import com.ssverma.shared.domain.model.Crew
+import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.ImageShot
+import com.ssverma.shared.domain.model.Keyword
+import com.ssverma.shared.domain.model.Review
+import com.ssverma.shared.domain.model.Video
+import com.ssverma.shared.domain.model.WatchProvider
 import java.time.LocalDate
 
 class Movie(
@@ -31,6 +38,7 @@ class Movie(
     val posters: List<ImageShot>,
     val backdrops: List<ImageShot>,
     val videos: List<Video>,
+    val primaryTrailer: Video? = null,
     val generes: List<Genre>,
     val reviews: List<Review>,
     val similarMovies: List<Movie>,

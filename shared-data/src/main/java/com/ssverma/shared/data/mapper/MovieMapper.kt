@@ -3,6 +3,7 @@ package com.ssverma.shared.data.mapper
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.primaryTrailer
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.domain.utils.formatLocally
@@ -23,6 +24,8 @@ class MoviesMapper @Inject constructor() : ListMapper<RemoteMovie, Movie>() {
 }
 
 private suspend fun RemoteMovie.asMovie(): Movie {
+    val youtubeVideos = videoPayload?.videos?.filterYoutubeVideos() ?: emptyList()
+
     return Movie(
         id = id,
         imdbId = imdbId,
@@ -49,7 +52,8 @@ private suspend fun RemoteMovie.asMovie(): Movie {
         keywords = keywordPayload?.keywords?.asKeywords() ?: emptyList(),
         posters = imagePayload?.posters?.asImagesShots() ?: emptyList(),
         backdrops = imagePayload?.backdrops?.asImagesShots() ?: emptyList(),
-        videos = videoPayload?.videos?.filterYoutubeVideos() ?: emptyList(),
+        videos = youtubeVideos,
+        primaryTrailer = youtubeVideos.primaryTrailer(),
         generes = genres?.asGenres() ?: emptyList(),
         movieCollection = collection?.asMovieCollection(),
         reviews = reviews?.results?.asReviews()?.asReversed() ?: emptyList(),

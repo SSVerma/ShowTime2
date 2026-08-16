@@ -10,9 +10,12 @@ fun RemoteVideo.asVideo(): Video {
     return Video(
         id = id.orEmpty(),
         key = key.orEmpty(),
-        iso6391 = iso6391,
+        name = name.orEmpty(),
         site = site.orEmpty(),
-        type = type.orEmpty()
+        type = type.orEmpty(),
+        official = official ?: false,
+        publishedAt = publishedAt,
+        iso6391 = iso6391
     )
 }
 

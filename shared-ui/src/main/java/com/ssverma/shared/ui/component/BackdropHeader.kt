@@ -1,20 +1,34 @@
 package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 
 @Composable
@@ -23,6 +37,7 @@ fun BackdropHeader(
     backdropImageUrl: String,
     onCloseIconClick: () -> Unit,
     onTrailerFabClick: () -> Unit,
+    showTrailerFab: Boolean = true,
     secondaryActions: @Composable RowScope.() -> Unit = {}
 ) {
     ConstraintLayout(modifier) {
@@ -73,17 +88,38 @@ fun BackdropHeader(
         )
 
         /*Trailer Action*/
-        FloatingActionButton(
-            onClick = onTrailerFabClick,
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .constrainAs(refTrailerFab) {
-                    top.linkTo(refRoundedSurface.top)
-                    bottom.linkTo(refRoundedSurface.top)
-                    start.linkTo(refRoundedSurface.start)
+        if (showTrailerFab) {
+            FloatingActionButton(
+                onClick = onTrailerFabClick,
+                shape = CircleShape,
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .height(ActionSize)
+                    .constrainAs(refTrailerFab) {
+                        top.linkTo(refRoundedSurface.top)
+                        bottom.linkTo(refRoundedSurface.top)
+                        start.linkTo(refRoundedSurface.start)
+                        end.linkTo(refSecondaryActions.start, margin = 8.dp)
+                        width = Dimension.preferredWrapContent
+                        horizontalBias = 0f
+                    }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = AppIcons.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.trailer),
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
-        ) {
-            Icon(imageVector = AppIcons.PlayArrow, contentDescription = null)
+            }
         }
 
         /*Secondary actions*/

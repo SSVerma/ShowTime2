@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 
 fun Context.dispatchImplicitIntent(
     intent: Intent,
@@ -62,13 +63,13 @@ object CommonIntent {
     }
 
     fun youtubeWebIntent(youtubeVideoId: String): Intent {
-        return browserIntent(webUrl = "http://www.youtube.com/watch?v=$youtubeVideoId")
+        return browserIntent(webUrl = "https://www.youtube.com/watch?v=$youtubeVideoId")
     }
 
     fun browserIntent(webUrl: String): Intent {
         return Intent(
             Intent.ACTION_VIEW,
-            Uri.parse(webUrl)
+            webUrl.toUri()
         ).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }

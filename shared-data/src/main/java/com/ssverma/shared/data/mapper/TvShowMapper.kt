@@ -2,6 +2,7 @@ package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToFullTmdbImageUrl
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
+import com.ssverma.shared.domain.model.primaryTrailer
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
@@ -21,6 +22,8 @@ class TvShowsMapper @Inject constructor() : ListMapper<RemoteTvShow, TvShow>() {
 }
 
 private suspend fun RemoteTvShow.asTvShow(): TvShow {
+    val youtubeVideos = videoPayload?.videos?.filterYoutubeVideos() ?: emptyList()
+
     return TvShow(
         id = id,
         title = title.orEmpty(),
@@ -46,7 +49,8 @@ private suspend fun RemoteTvShow.asTvShow(): TvShow {
         posters = imagePayload?.posters?.asImagesShots() ?: emptyList(),
         backdrops = imagePayload?.backdrops?.asImagesShots() ?: emptyList(),
         stills = imagePayload?.stills?.asImagesShots() ?: emptyList(),
-        videos = videoPayload?.videos?.filterYoutubeVideos() ?: emptyList(),
+        videos = youtubeVideos,
+        primaryTrailer = youtubeVideos.primaryTrailer(),
         generes = genres?.asGenres() ?: emptyList(),
         reviews = reviews?.results?.asReviews()?.asReversed() ?: emptyList(),
         similarTvShows = similarTvShows?.results?.asTvShows() ?: emptyList(),

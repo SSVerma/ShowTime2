@@ -131,6 +131,7 @@ fun MovieContent(
             BackdropHeader(
                 backdropImageUrl = movie.backdropImageUrl,
                 onCloseIconClick = onBackPressed,
+                showTrailerFab = movie.primaryTrailer != null,
                 onTrailerFabClick = {
                     analytics.logEvent(
                         MovieAnalyticsEvent.TrailerClicked(

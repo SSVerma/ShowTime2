@@ -145,6 +145,7 @@ private fun TvShowContent(
             BackdropHeader(
                 backdropImageUrl = tvShow.backdropImageUrl,
                 onCloseIconClick = onBackPressed,
+                showTrailerFab = tvShow.primaryTrailer != null,
                 onTrailerFabClick = {
                     analytics.logEvent(
                         TvAnalyticsEvent.TrailerClicked(

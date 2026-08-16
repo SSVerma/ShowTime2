@@ -86,7 +86,7 @@ class MovieDetailsViewModel @AssistedInject constructor(
     }
 
     fun onPlayTrailerClicked(movie: Movie) {
-        movie.videos.firstOrNull()?.let {
+        movie.primaryTrailer?.let {
             openYoutubeApp(it.key)
         }
     }

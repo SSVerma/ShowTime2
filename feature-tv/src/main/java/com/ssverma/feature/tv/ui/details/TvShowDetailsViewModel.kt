@@ -86,7 +86,7 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     }
 
     fun onPlayTrailerClicked(tvShow: TvShow) {
-        tvShow.videos.firstOrNull()?.let {
+        tvShow.primaryTrailer?.let {
             openYoutubeApp(it.key)
         }
     }
