@@ -62,7 +62,7 @@ class ShowTimeNotificationManager @Inject constructor(
         deepLink: String? = null
     ) {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID_GENERAL)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // TODO: Use app icon
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

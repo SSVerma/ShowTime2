@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
@@ -125,6 +125,7 @@ fun <T : Any> PagedGrid(
     pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
     pagingErrorIndicator: @Composable (pagingItems: LazyPagingItems<T>) -> Unit = { DefaultPagingErrorIndicator { it.retry() } },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
+    header: (@Composable () -> Unit)? = null,
     itemContent: @Composable (item: T) -> Unit
 ) {
     PagedGridIndexed(
@@ -132,11 +133,13 @@ fun <T : Any> PagedGrid(
         modifier = modifier,
         cells = cells,
         contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
         verticalArrangement = verticalArrangement,
         horizontalArrangement = horizontalArrangement,
         pagingLoadingIndicator = pagingLoadingIndicator,
         pagingErrorIndicator = pagingErrorIndicator,
-        placeholderItemContent = placeholderItemContent
+        placeholderItemContent = placeholderItemContent,
+        header = header
     ) { _, item ->
         itemContent(item)
     }
@@ -156,6 +159,7 @@ fun <T : Any> PagedGridIndexed(
     pagingLoadingIndicator: @Composable () -> Unit = { DefaultPagingLoadingIndicator() },
     pagingErrorIndicator: @Composable (pagingItems: LazyPagingItems<T>) -> Unit = { DefaultPagingErrorIndicator { it.retry() } },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
+    header: (@Composable () -> Unit)? = null,
     itemContent: @Composable (index: Int, item: T) -> Unit
 ) {
     LazyVerticalGrid(
@@ -165,6 +169,10 @@ fun <T : Any> PagedGridIndexed(
         horizontalArrangement = horizontalArrangement,
         modifier = modifier
     ) {
+        header?.let {
+            item(span = { GridItemSpan(maxLineSpan) }) { it() }
+        }
+
         items(pagingItems.itemCount) { index ->
             val pagingItem = pagingItems[index]
             if (pagingItem == null) {
@@ -174,18 +182,17 @@ fun <T : Any> PagedGridIndexed(
             }
         }
 
-        //TODO: update span-count to 1 for paging indicators
         when (pagingItems.loadState.append) {
             is LoadState.NotLoading -> {
                 /*Need not to show anything*/
             }
 
             is LoadState.Loading -> {
-                item { pagingLoadingIndicator() }
+                item(span = { GridItemSpan(maxLineSpan) }) { pagingLoadingIndicator() }
             }
 
             is LoadState.Error -> {
-                item { pagingErrorIndicator(pagingItems) }
+                item(span = { GridItemSpan(maxLineSpan) }) { pagingErrorIndicator(pagingItems) }
             }
         }
     }
@@ -226,7 +233,7 @@ private fun DefaultPagingLoadingIndicator() {
     Box(
         Modifier
             .fillMaxWidth()
-            .height(32.dp)
+            .padding(16.dp)
     ) {
         ShowTimeLoadingIndicator(modifier = Modifier.align(Alignment.Center))
     }
