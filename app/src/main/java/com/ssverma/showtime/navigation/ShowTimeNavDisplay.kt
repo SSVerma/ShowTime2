@@ -6,6 +6,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -91,12 +93,17 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransi
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePredictivePopTransition(): ContentTransform {
     return (slideIntoContainer(
         towards = AnimatedContentTransitionScope.SlideDirection.End,
-        initialOffset = { it / 4 }
+        initialOffset = { it / 5 }
     ) + fadeIn(
         initialAlpha = 0.85f
+    ) + scaleIn(
+        initialScale = 0.92f
     )).togetherWith(
         slideOutOfContainer(
-            towards = AnimatedContentTransitionScope.SlideDirection.End
+            towards = AnimatedContentTransitionScope.SlideDirection.End,
+            targetOffset = { (it * 0.9f).toInt() }
+        ) + scaleOut(
+            targetScale = 0.90f
         )
     )
 }
