@@ -6,7 +6,7 @@ import com.ssverma.api.service.tmdb.response.RemoteReviewAuthor
 import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.domain.model.ReviewAuthor
 import com.ssverma.shared.domain.utils.DateUtils
-import com.ssverma.shared.domain.utils.formatLocally
+import com.ssverma.shared.domain.utils.formatDateLocally
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -34,10 +34,8 @@ fun RemoteReview.asReview(): Review {
         id = id.orEmpty(),
         author = author?.asAuthor() ?: absentAuthor(),
         content = content.orEmpty(),
-        displayCreatedAt = DateUtils.parseIsoOffsetDateTime(createdAt)?.toLocalDate()
-            ?.formatLocally(),
-        displayUpdatedAt = DateUtils.parseIsoOffsetDateTime(updatedAt)?.toLocalDate()
-            ?.formatLocally(),
+        displayCreatedAt = DateUtils.parseIsoOffsetDateTime(createdAt)?.formatDateLocally(),
+        displayUpdatedAt = DateUtils.parseIsoOffsetDateTime(updatedAt)?.formatDateLocally(),
         isEdited = createdAt != updatedAt
     )
 }

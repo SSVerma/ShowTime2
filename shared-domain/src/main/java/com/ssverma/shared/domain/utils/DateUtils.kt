@@ -116,3 +116,7 @@ fun LocalDateTime.formatLocally(formatStyle: FormatStyle = FormatStyle.MEDIUM): 
 fun OffsetDateTime.formatLocally(formatStyle: FormatStyle = FormatStyle.MEDIUM): String? {
     return DateUtils.formatDateTime(this, DateTimeFormatter.ofLocalizedDateTime(formatStyle))
 }
+
+fun OffsetDateTime.formatDateLocally(formatStyle: FormatStyle = FormatStyle.MEDIUM): String? {
+    return DateUtils.formatDateTime(this, DateTimeFormatter.ofLocalizedDate(formatStyle))
+}
