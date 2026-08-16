@@ -1,7 +1,9 @@
 package com.ssverma.shared.ui.component
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -63,10 +65,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.core.ui.StatefulContent
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShimmerPlaceholder
@@ -204,7 +208,7 @@ private fun WatchProviderEntryCard(
 
                 if (providers.isNotEmpty()) {
                     val displayProviders = remember(providers) {
-                        providers.take(10)
+                        providers.distinctBy { it.providerId }.take(10)
                     }
 
                     FlowRow(
@@ -218,6 +222,7 @@ private fun WatchProviderEntryCard(
                                 provider = provider,
                                 onClick = { onProviderClick(provider) },
                                 size = 56.dp,
+                                enableSharedTransition = true,
                                 modifier = Modifier
                                     .graphicsLayer {
                                         shadowElevation = 4.dp.toPx()
@@ -253,6 +258,9 @@ private fun StreamingUniverseSheet(
     onProviderClick: (ProviderInfo) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val uniqueProviders = remember(providers) {
+        providers.distinctBy { it.providerId }
+    }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val gridState = rememberLazyGridState()
 
@@ -306,7 +314,7 @@ private fun StreamingUniverseSheet(
                     bottom = 32.dp + bottomPadding
                 )
             ) {
-                items(providers, key = { it.providerId }) { provider ->
+                items(uniqueProviders, key = { it.providerId }) { provider ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -324,6 +332,7 @@ private fun StreamingUniverseSheet(
                                 onDismiss()
                             },
                             size = 64.dp,
+                            enableSharedTransition = false,
                             modifier = Modifier
                                 .graphicsLayer {
                                     shadowElevation = 2.dp.toPx()
@@ -500,15 +509,42 @@ private fun WatchProviderShimmer(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun WatchProviderLogo(
     provider: ProviderInfo,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.Dp = 64.dp
+    size: androidx.compose.ui.unit.Dp = 64.dp,
+    enableSharedTransition: Boolean = false,
+    sharedContentKey: Any = "watch_provider_logo_${provider.providerId}"
 ) {
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    val animatedVisibilityScope = LocalNavAnimatedContentScope.current
+
+    val sharedModifier =
+        if (enableSharedTransition && sharedTransitionScope != null) {
+            with(sharedTransitionScope) {
+                Modifier.sharedElement(
+                    sharedContentState = rememberSharedContentState(key = sharedContentKey),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    boundsTransform = { _, _ ->
+                        spring(
+                            dampingRatio = 0.8f,
+                            stiffness = 380f
+                        )
+                    },
+                    clipInOverlayDuringTransition = OverlayClip(CircleShape),
+                    zIndexInOverlay = 1f
+                )
+            }
+        } else {
+            Modifier
+        }
+
     Surface(
         modifier = modifier
+            .then(sharedModifier)
             .size(size)
             .clip(CircleShape)
             .clickable(onClick = onClick),

@@ -2,6 +2,8 @@ package com.ssverma.showtime.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -23,11 +25,13 @@ import androidx.navigation3.ui.NavDisplay
 import com.ssverma.core.navigation.nav3.LocalNavEntries
 import com.ssverma.core.navigation.nav3.LocalNavigationState
 import com.ssverma.core.navigation.nav3.LocalNavigator
+import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.core.navigation.nav3.Nav3MetadataKeys
 import com.ssverma.core.navigation.nav3.NavigationState
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.toEntries
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ShowTimeNavDisplay(
     navigationState: NavigationState,
@@ -46,19 +50,23 @@ fun ShowTimeNavDisplay(
         ShowTimeTopLevelNavItems.map { it.navKey }
     }
 
-    CompositionLocalProvider(
-        LocalNavigator provides navigator,
-        LocalNavigationState provides navigationState,
-        LocalNavEntries provides entries
-    ) {
-        NavDisplay(
-            entries = entries,
-            onBack = { navigator.goBack() },
-            transitionSpec = { showTimeForwardTransition(topLevelOrder) },
-            popTransitionSpec = { showTimePopTransition(topLevelOrder) },
-            predictivePopTransitionSpec = { showTimePredictivePopTransition() },
-            modifier = modifier.fillMaxSize()
-        )
+    SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
+        CompositionLocalProvider(
+            LocalNavigator provides navigator,
+            LocalNavigationState provides navigationState,
+            LocalNavEntries provides entries,
+            LocalSharedTransitionScope provides this
+        ) {
+            NavDisplay(
+                entries = entries,
+                onBack = { navigator.goBack() },
+                sharedTransitionScope = this,
+                transitionSpec = { showTimeForwardTransition(topLevelOrder) },
+                popTransitionSpec = { showTimePopTransition(topLevelOrder) },
+                predictivePopTransitionSpec = { showTimePredictivePopTransition() },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 

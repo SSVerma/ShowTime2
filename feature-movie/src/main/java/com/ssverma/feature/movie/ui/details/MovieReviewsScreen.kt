@@ -1,20 +1,18 @@
 package com.ssverma.feature.movie.ui.details
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.feature.movie.R
 import com.ssverma.shared.ui.component.ReviewsList
-
-import androidx.compose.material3.Surface
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.layout.fillMaxSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,14 +26,19 @@ fun MovieReviewsScreen(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier.systemBarsPadding()
-        ) {
-            ShowTimeTopAppBar(
-                title = stringResource(id = R.string.reviews),
-                onBackPressed = onBackPress
+        AppPage(
+            topBar = { scrollBehavior ->
+                ShowTimeTopAppBar(
+                    title = stringResource(id = R.string.reviews),
+                    onBackPressed = onBackPress,
+                    scrollBehavior = scrollBehavior
+                )
+            }
+        ) { innerPadding ->
+            ReviewsList(
+                reviewItems = reviewPagingItems,
+                modifier = Modifier.padding(innerPadding)
             )
-            ReviewsList(reviewItems = reviewPagingItems)
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.ssverma.feature.filter.ui.hub.component
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -34,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.rememberCarouselState
@@ -43,7 +41,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import com.ssverma.shared.ui.component.HeroItem
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -70,6 +67,7 @@ import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.GenreItem
+import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.MediaItemRowShimmer
 import com.ssverma.shared.ui.component.WatchProviderHubBranding
 import com.ssverma.shared.ui.component.WatchProviderLogo
@@ -109,124 +107,119 @@ fun WatchProviderHubContent(
             isLoading = isLoading
         )
 
-        // 2. Main Content
-        Scaffold(
-            topBar = {
-                StickyGlassBar(
+        // 2. Main Scrollable Content
+        LazyColumn(
+            state = scrollState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                bottom = 80.dp
+            )
+        ) {
+            // Parallax Spacing
+            item {
+                Spacer(modifier = Modifier.height(280.dp))
+            }
+
+            // Brand Identity Section
+            item {
+                BrandIdentitySection(
                     provider = provider,
-                    scrollState = scrollState,
-                    onBackClick = onBackClick
+                    brandingColor = brandingColor,
+                    isLoading = isLoading
                 )
-            },
-            containerColor = Color.Transparent
-        ) { paddingValues ->
-            LazyColumn(
-                state = scrollState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(
-                    bottom = 80.dp
+            }
+
+            // Hero Pager Section
+            item {
+                HeroPagerSection(
+                    items = heroItems,
+                    isLoading = isLoading,
+                    onItemClick = onMediaClick,
+                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.large)
                 )
-            ) {
-                // Parallax Spacing
-                item {
-                    Spacer(modifier = Modifier.height(280.dp))
-                }
+            }
 
-                // Brand Identity Section
+            // Curated Row: New This Week
+            item {
+                HubSectionRow(
+                    title = stringResource(SharedUiR.string.new_this_week),
+                    items = newItems,
+                    isLoading = isLoading,
+                    onItemClick = onMediaClick,
+                    onSeeAllClick = {
+                        if (isMovieMode) {
+                            onMovieSeeAllClick(
+                                MovieHubDiscoverConfig.newReleases(providerId = provider.providerId)
+                            )
+                        } else {
+                            onTvSeeAllClick(
+                                TvHubDiscoverConfig.newReleases(providerId = provider.providerId)
+                            )
+                        }
+                    },
+                )
+            }
+
+            // Curated Row: Upcoming
+            item {
+                HubSectionRow(
+                    title = stringResource(SharedUiR.string.upcoming),
+                    items = upcomingItems,
+                    isLoading = isLoading,
+                    onItemClick = onMediaClick,
+                    onSeeAllClick = {
+                        if (isMovieMode) {
+                            onMovieSeeAllClick(
+                                MovieHubDiscoverConfig.upcoming(providerId = provider.providerId)
+                            )
+                        } else {
+                            onTvSeeAllClick(
+                                TvHubDiscoverConfig.upcoming(providerId = provider.providerId)
+                            )
+                        }
+                    },
+                )
+            }
+
+            // Curated Row: Top Rated (Hidden Gems)
+            item {
+                HubSectionRow(
+                    title = stringResource(SharedUiR.string.top_rated_gems),
+                    items = topRatedItems,
+                    isLoading = isLoading,
+                    onItemClick = onMediaClick,
+                    onSeeAllClick = {
+                        if (isMovieMode) {
+                            onMovieSeeAllClick(
+                                MovieHubDiscoverConfig.topRated(providerId = provider.providerId)
+                            )
+                        } else {
+                            onTvSeeAllClick(
+                                TvHubDiscoverConfig.topRated(providerId = provider.providerId)
+                            )
+                        }
+                    },
+                )
+            }
+
+            if (!isLoading) {
                 item {
-                    BrandIdentitySection(
-                        provider = provider,
-                        brandingColor = brandingColor,
-                        isLoading = isLoading
+                    EndOfContentSection(
+                        providerName = provider.providerName,
+                        genres = genres,
+                        onGenreClick = onGenreClick
                     )
-                }
-
-                // Hero Pager Section
-                item {
-                    HeroPagerSection(
-                        items = heroItems,
-                        isLoading = isLoading,
-                        onItemClick = onMediaClick,
-                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.large)
-                    )
-                }
-
-                // Curated Row: New This Week
-                item {
-                    HubSectionRow(
-                        title = stringResource(SharedUiR.string.new_this_week),
-                        items = newItems,
-                        isLoading = isLoading,
-                        onItemClick = onMediaClick,
-                        onSeeAllClick = {
-                            if (isMovieMode) {
-                                onMovieSeeAllClick(
-                                    MovieHubDiscoverConfig.newReleases(providerId = provider.providerId)
-                                )
-                            } else {
-                                onTvSeeAllClick(
-                                    TvHubDiscoverConfig.newReleases(providerId = provider.providerId)
-                                )
-                            }
-                        },
-                    )
-                }
-
-                // Curated Row: Upcoming
-                item {
-                    HubSectionRow(
-                        title = stringResource(SharedUiR.string.upcoming),
-                        items = upcomingItems,
-                        isLoading = isLoading,
-                        onItemClick = onMediaClick,
-                        onSeeAllClick = {
-                            if (isMovieMode) {
-                                onMovieSeeAllClick(
-                                    MovieHubDiscoverConfig.upcoming(providerId = provider.providerId)
-                                )
-                            } else {
-                                onTvSeeAllClick(
-                                    TvHubDiscoverConfig.upcoming(providerId = provider.providerId)
-                                )
-                            }
-                        },
-                    )
-                }
-
-                // Curated Row: Top Rated (Hidden Gems)
-                item {
-                    HubSectionRow(
-                        title = stringResource(SharedUiR.string.top_rated_gems),
-                        items = topRatedItems,
-                        isLoading = isLoading,
-                        onItemClick = onMediaClick,
-                        onSeeAllClick = {
-                            if (isMovieMode) {
-                                onMovieSeeAllClick(
-                                    MovieHubDiscoverConfig.topRated(providerId = provider.providerId)
-                                )
-                            } else {
-                                onTvSeeAllClick(
-                                    TvHubDiscoverConfig.topRated(providerId = provider.providerId)
-                                )
-                            }
-                        },
-                    )
-                }
-
-                if (!isLoading) {
-                    item {
-                        EndOfContentSection(
-                            providerName = provider.providerName,
-                            genres = genres,
-                            onGenreClick = onGenreClick
-                        )
-                    }
                 }
             }
         }
+
+        // 3. Sticky Elevated Top Bar
+        StickyGlassBar(
+            provider = provider,
+            scrollState = scrollState,
+            onBackClick = onBackClick,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 
@@ -235,70 +228,130 @@ fun WatchProviderHubContent(
 fun StickyGlassBar(
     provider: ProviderInfo,
     scrollState: LazyListState,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val isScrolled by remember {
-        derivedStateOf { scrollState.firstVisibleItemIndex > 0 || (scrollState.firstVisibleItemIndex == 0 && scrollState.firstVisibleItemScrollOffset > 200) }
+        derivedStateOf {
+            scrollState.firstVisibleItemIndex > 0 || (scrollState.firstVisibleItemIndex == 0 && scrollState.firstVisibleItemScrollOffset > 300)
+        }
     }
 
-    val alpha by animateFloatAsState(
-        targetValue = if (isScrolled) 0.95f else 0f,
-        label = "GlassAlpha"
+    val elevation by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (isScrolled) 8.dp else 0.dp,
+        animationSpec = androidx.compose.animation.core.tween(
+            durationMillis = 280,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing
+        ),
+        label = "TopBarElevation"
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                if (isScrolled) MaterialTheme.colorScheme.surface.copy(alpha = alpha)
-                else Color.Transparent
-            )
-            .statusBarsPadding()
+    val surfaceAlpha by animateFloatAsState(
+        targetValue = if (isScrolled) 1f else 0f,
+        animationSpec = androidx.compose.animation.core.tween(
+            durationMillis = 280,
+            easing = androidx.compose.animation.core.FastOutSlowInEasing
+        ),
+        label = "SurfaceAlpha"
+    )
+
+    val backButtonContainerColor by androidx.compose.animation.animateColorAsState(
+        targetValue = if (isScrolled) Color.Transparent else Color.Black.copy(alpha = 0.35f),
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 250),
+        label = "BackButtonContainerColor"
+    )
+
+    val backButtonContentColor by androidx.compose.animation.animateColorAsState(
+        targetValue = if (isScrolled) MaterialTheme.colorScheme.onSurface else Color.White,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 250),
+        label = "BackButtonContentColor"
+    )
+
+    Column(
+        modifier = modifier.fillMaxWidth()
     ) {
-        CenterAlignedTopAppBar(
-            title = {
-                AnimatedVisibility(
-                    visible = isScrolled,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        WatchProviderLogo(
-                            provider = provider,
-                            onClick = { /* Already on Hub */ },
-                            size = 32.dp,
-                            modifier = Modifier.clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = provider.providerName,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            },
-            navigationIcon = {
-                IconButton(
-                    onClick = onBackClick,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = if (isScrolled) Color.Transparent else Color.Black.copy(
-                            alpha = 0.3f
-                        ),
-                        contentColor = if (isScrolled) MaterialTheme.colorScheme.onSurface else Color.White
-                    ),
-                    modifier = Modifier.padding(start = 8.dp)
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(SharedUiR.string.close)
+        androidx.compose.material3.Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = surfaceAlpha),
+            shadowElevation = elevation,
+            tonalElevation = if (isScrolled) 2.dp else 0.dp
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+            ) {
+                CenterAlignedTopAppBar(
+                    title = {
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = isScrolled,
+                            enter = fadeIn(animationSpec = androidx.compose.animation.core.tween(220)) + androidx.compose.animation.slideInVertically(
+                                initialOffsetY = { it / 3 },
+                                animationSpec = androidx.compose.animation.core.tween(220)
+                            ),
+                            exit = fadeOut(animationSpec = androidx.compose.animation.core.tween(180)) + androidx.compose.animation.slideOutVertically(
+                                targetOffsetY = { it / 3 },
+                                animationSpec = androidx.compose.animation.core.tween(180)
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                WatchProviderLogo(
+                                    provider = provider,
+                                    onClick = { /* Already on Hub */ },
+                                    size = 32.dp,
+                                    enableSharedTransition = false,
+                                    modifier = Modifier.clip(CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = provider.providerName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = onBackClick,
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = backButtonContainerColor,
+                                contentColor = backButtonContentColor
+                            ),
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(SharedUiR.string.close)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent
                     )
-                }
-            },
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = Color.Transparent,
-                scrolledContainerColor = Color.Transparent
-            )
+                )
+            }
+        }
+
+        // Soft ambient drop-shadow gradient directly below the surface
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .graphicsLayer { alpha = surfaceAlpha }
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.12f),
+                            Color.Transparent
+                        )
+                    )
+                )
         )
     }
 }
@@ -390,6 +443,7 @@ fun BrandIdentitySection(
             provider = provider,
             onClick = { /* Identity Logo Not Usually Clickable */ },
             size = 100.dp,
+            enableSharedTransition = true,
             modifier = Modifier
                 .graphicsLayer {
                     shadowElevation = 24.dp.toPx()

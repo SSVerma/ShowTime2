@@ -5,7 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,10 +30,10 @@ import com.ssverma.core.ui.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowTimeTopAppBar(
-    title: String,
+    title: @Composable () -> Unit,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
-    navIcon: ImageVector = Icons.Rounded.ArrowBack,
+    navIcon: ImageVector = Icons.AutoMirrored.Rounded.ArrowBack,
     actions: @Composable RowScope.() -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
@@ -52,15 +52,7 @@ fun ShowTimeTopAppBar(
     )
 
     CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
+        title = title,
         navigationIcon = {
             IconButton(onClick = onBackPressed) {
                 Icon(
@@ -78,5 +70,38 @@ fun ShowTimeTopAppBar(
             ambientColor = MaterialTheme.colorScheme.primary,
             spotColor = MaterialTheme.colorScheme.primary
         )
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShowTimeTopAppBar(
+    title: String,
+    onBackPressed: () -> Unit,
+    modifier: Modifier = Modifier,
+    navIcon: ImageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+    actions: @Composable RowScope.() -> Unit = {},
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
+        containerColor = MaterialTheme.colorScheme.background,
+        scrolledContainerColor = MaterialTheme.colorScheme.surface,
+    )
+) {
+    ShowTimeTopAppBar(
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        onBackPressed = onBackPressed,
+        modifier = modifier,
+        navIcon = navIcon,
+        actions = actions,
+        scrollBehavior = scrollBehavior,
+        colors = colors
     )
 }

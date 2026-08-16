@@ -11,11 +11,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -26,13 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchBrowserIntent
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.WatchProvider
@@ -230,21 +228,24 @@ private fun ProviderCategoryRow(
             modifier = Modifier.weight(1f)
         ) {
             providers.forEach { provider ->
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    shadowElevation = 2.dp,
+                com.ssverma.shared.ui.component.WatchProviderLogo(
+                    provider = provider,
+                    onClick = { onProviderClick(provider) },
+                    size = 44.dp,
                     modifier = Modifier
-                        .size(44.dp)
-                        .clickable { onProviderClick(provider) }
-                ) {
-                    NetworkImage(
-                        url = provider.logoPath,
-                        contentDescription = provider.providerName,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                        .graphicsLayer {
+                            shadowElevation = 2.dp.toPx()
+                            shape = androidx.compose.foundation.shape.CircleShape
+                            clip = true
+                        }
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant,
+                            androidx.compose.foundation.shape.CircleShape
+                        )
+                )
             }
         }
     }
 }
+

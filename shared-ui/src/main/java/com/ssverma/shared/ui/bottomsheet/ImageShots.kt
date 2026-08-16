@@ -1,11 +1,9 @@
 package com.ssverma.shared.ui.bottomsheet
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -16,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.TmdbPersonAspectRatio
@@ -29,15 +28,21 @@ fun ImageShotsListScreen(
     imageShots: List<ImageShot>,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.statusBarsPadding()) {
-        ShowTimeTopAppBar(
-            title = stringResource(id = R.string.shots),
-            onBackPressed = onBackPressed
-        )
+    AppPage(
+        modifier = modifier,
+        topBar = { scrollBehavior ->
+            ShowTimeTopAppBar(
+                title = stringResource(id = R.string.shots),
+                onBackPressed = onBackPressed,
+                scrollBehavior = scrollBehavior
+            )
+        }
+    ) { innerPadding ->
         ImageShotsContent(
             imageShots = imageShots,
             openImagePager = openImagePager,
             modifier = Modifier
+                .padding(innerPadding)
                 .navigationBarsPadding()
         )
     }
