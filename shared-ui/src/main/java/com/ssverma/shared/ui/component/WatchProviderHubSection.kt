@@ -87,7 +87,9 @@ fun WatchProviderHubSection(
     onProviderClick: (ProviderInfo) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    isMovie: Boolean = true
+    isMovie: Boolean = true,
+    adSlotIndex: Int? = 2,
+    adContent: (@Composable () -> Unit)? = null
 ) {
     if (providersUiState is UiState.Success && providersUiState.data.isEmpty()) {
         return
@@ -104,6 +106,8 @@ fun WatchProviderHubSection(
             providers = providers,
             onProviderClick = onProviderClick,
             isMovie = isMovie,
+            adSlotIndex = adSlotIndex,
+            adContent = adContent,
             modifier = modifier
         )
     }
@@ -115,6 +119,8 @@ private fun WatchProviderEntryCard(
     providers: List<ProviderInfo>,
     onProviderClick: (ProviderInfo) -> Unit,
     isMovie: Boolean,
+    adSlotIndex: Int? = null,
+    adContent: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var showAllSheet by remember { mutableStateOf(false) }
@@ -213,8 +219,9 @@ private fun WatchProviderEntryCard(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 if (providers.isNotEmpty()) {
-                    val displayProviders = remember(providers) {
-                        providers.distinctBy { it.providerId }.take(10)
+                    val displayProviders = remember(providers, adContent != null) {
+                        val maxCount = if (adContent != null) 9 else 10
+                        providers.distinctBy { it.providerId }.take(maxCount)
                     }
 
                     FlowRow(
@@ -223,7 +230,11 @@ private fun WatchProviderEntryCard(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         maxItemsInEachRow = 5
                     ) {
-                        displayProviders.forEach { provider ->
+                        displayProviders.forEachIndexed { index, provider ->
+                            if (adSlotIndex != null && index == adSlotIndex && adContent != null) {
+                                adContent()
+                            }
+
                             WatchProviderLogo(
                                 provider = provider,
                                 onClick = { onProviderClick(provider) },
@@ -245,6 +256,10 @@ private fun WatchProviderEntryCard(
                                         CircleShape
                                     )
                             )
+                        }
+
+                        if (adSlotIndex != null && displayProviders.size <= adSlotIndex && adContent != null && displayProviders.isNotEmpty()) {
+                            adContent()
                         }
                     }
                 }

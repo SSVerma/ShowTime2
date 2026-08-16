@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
@@ -41,6 +42,8 @@ import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
 import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
 import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
+import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -122,6 +125,7 @@ fun MovieContent(
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
+    val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "movie_details_watch_provider")
 
     LazyColumn(
         modifier = modifier
@@ -225,6 +229,15 @@ fun MovieContent(
                 WatchProvidersSection(
                     watchProvider = watchProvider,
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
+                    adContent = {
+                        ShowTimeNativeAd(
+                            ad = watchProviderAd,
+                            loadInternally = false,
+                            style = NativeAdStyle.CircularLogo,
+                            modifier = Modifier.size(44.dp),
+                            analyticsEventPrefix = "movie_details_watch_provider"
+                        )
+                    },
                     onWatchProviderClick = { providerInfo ->
                         analytics.logEvent(
                             MovieAnalyticsEvent.WatchProviderClicked(

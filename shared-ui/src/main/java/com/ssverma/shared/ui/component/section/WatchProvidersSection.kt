@@ -42,6 +42,8 @@ fun WatchProvidersSection(
     watchProvider: WatchProvider?,
     modifier: Modifier = Modifier,
     showTitle: Boolean = true,
+    adSlotIndex: Int? = 2,
+    adContent: (@Composable () -> Unit)? = null,
     onWatchProviderClick: (ProviderInfo) -> Unit = {},
     onJustWatchClick: () -> Unit = {}
 ) {
@@ -112,43 +114,67 @@ fun WatchProvidersSection(
                 }
 
                 if (watchProvider != null && hasProviders) {
+                    val primaryAdCategory = when {
+                        watchProvider.flatrate.isNotEmpty() -> stringResource(R.string.stream)
+                        watchProvider.free.isNotEmpty() -> stringResource(R.string.free)
+                        watchProvider.rent.isNotEmpty() -> stringResource(R.string.rent)
+                        watchProvider.buy.isNotEmpty() -> stringResource(R.string.buy)
+                        watchProvider.ads.isNotEmpty() -> stringResource(R.string.ads)
+                        else -> null
+                    }
+
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         if (watchProvider.flatrate.isNotEmpty()) {
+                            val isAdTarget = primaryAdCategory == stringResource(R.string.stream)
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.stream),
                                 providers = watchProvider.flatrate,
+                                adSlotIndex = if (isAdTarget) adSlotIndex else null,
+                                adContent = if (isAdTarget) adContent else null,
                                 onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.free.isNotEmpty()) {
+                            val isAdTarget = primaryAdCategory == stringResource(R.string.free)
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.free),
                                 providers = watchProvider.free,
+                                adSlotIndex = if (isAdTarget) adSlotIndex else null,
+                                adContent = if (isAdTarget) adContent else null,
                                 onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.rent.isNotEmpty()) {
+                            val isAdTarget = primaryAdCategory == stringResource(R.string.rent)
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.rent),
                                 providers = watchProvider.rent,
+                                adSlotIndex = if (isAdTarget) adSlotIndex else null,
+                                adContent = if (isAdTarget) adContent else null,
                                 onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.buy.isNotEmpty()) {
+                            val isAdTarget = primaryAdCategory == stringResource(R.string.buy)
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.buy),
                                 providers = watchProvider.buy,
+                                adSlotIndex = if (isAdTarget) adSlotIndex else null,
+                                adContent = if (isAdTarget) adContent else null,
                                 onProviderClick = onWatchProviderClick
                             )
                         }
 
                         if (watchProvider.ads.isNotEmpty()) {
+                            val isAdTarget = primaryAdCategory == stringResource(R.string.ads)
                             ProviderCategoryRow(
                                 categoryName = stringResource(R.string.ads),
                                 providers = watchProvider.ads,
+                                adSlotIndex = if (isAdTarget) adSlotIndex else null,
+                                adContent = if (isAdTarget) adContent else null,
                                 onProviderClick = onWatchProviderClick
                             )
                         }
@@ -199,6 +225,8 @@ private fun ProviderCategoryRow(
     categoryName: String,
     providers: List<ProviderInfo>,
     modifier: Modifier = Modifier,
+    adSlotIndex: Int? = null,
+    adContent: (@Composable () -> Unit)? = null,
     onProviderClick: (ProviderInfo) -> Unit = {}
 ) {
     Row(
@@ -227,7 +255,11 @@ private fun ProviderCategoryRow(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.weight(1f)
         ) {
-            providers.forEach { provider ->
+            providers.forEachIndexed { index, provider ->
+                if (adSlotIndex != null && index == adSlotIndex && adContent != null) {
+                    adContent()
+                }
+
                 com.ssverma.shared.ui.component.WatchProviderLogo(
                     provider = provider,
                     onClick = { onProviderClick(provider) },
@@ -244,6 +276,10 @@ private fun ProviderCategoryRow(
                             androidx.compose.foundation.shape.CircleShape
                         )
                 )
+            }
+
+            if (adSlotIndex != null && providers.size <= adSlotIndex && adContent != null && providers.isNotEmpty()) {
+                adContent()
             }
         }
     }

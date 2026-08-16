@@ -17,5 +17,6 @@ data class HomeUiState(
     val upcomingMovies: UiState<List<AdInjectable<MoviePreview>>, MovieFailure> = UiState.Idle,
     val genres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Idle,
     val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle,
-    val feedInlineAd: NativeAd? = null
+    val watchProviderAd: NativeAd? = null,
+    val feedInlineAd: NativeAd? = null,
 )

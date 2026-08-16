@@ -254,4 +254,8 @@ class HomeMovieViewModel @Inject constructor(
     fun onFeedInlineAdLoaded(nativeAd: NativeAd) {
         _uiState.update { it.copy(feedInlineAd = nativeAd) }
     }
+
+    fun onWatchProviderAdLoaded(nativeAd: NativeAd) {
+        _uiState.update { it.copy(watchProviderAd = nativeAd) }
+    }
 }

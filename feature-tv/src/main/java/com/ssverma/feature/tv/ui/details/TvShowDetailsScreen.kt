@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
@@ -52,6 +53,8 @@ import com.ssverma.feature.tv.analytics.TvAnalyticsValues
 import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
+import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -136,6 +139,7 @@ private fun TvShowContent(
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
+    val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "tv_details_watch_provider")
 
     LazyColumn(
         modifier = modifier
@@ -242,6 +246,15 @@ private fun TvShowContent(
                 WatchProvidersSection(
                     watchProvider = watchProvider,
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
+                    adContent = {
+                        ShowTimeNativeAd(
+                            ad = watchProviderAd,
+                            loadInternally = false,
+                            style = NativeAdStyle.CircularLogo,
+                            modifier = Modifier.size(44.dp),
+                            analyticsEventPrefix = "tv_details_watch_provider"
+                        )
+                    },
                     onWatchProviderClick = {
                         analytics.logEvent(
                             TvAnalyticsEvent.WatchProviderClicked(

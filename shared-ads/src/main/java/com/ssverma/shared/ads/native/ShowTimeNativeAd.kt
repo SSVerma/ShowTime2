@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -38,17 +40,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.ads.ui.rememberNativeAd
+import com.ssverma.core.image.DefaultImagePlaceHolder
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.theme.spacing
@@ -64,6 +71,7 @@ import com.ssverma.shared.ui.component.media.MediaItemDefaults
 @Stable
 class NativeAdState(initialLoaded: Boolean = false) {
     var isLoaded by mutableStateOf(initialLoaded)
+    var isFailed by mutableStateOf(false)
 }
 
 @Composable
@@ -98,18 +106,22 @@ fun ShowTimeNativeAd(
         analyticsEventPrefix = analyticsEventPrefix,
         onAdLoaded = {
             state.isLoaded = true
+            state.isFailed = false
             onAdLoaded(it)
         },
-        onAdFailedToLoad = { state.isLoaded = false }
+        onAdFailedToLoad = {
+            state.isLoaded = false
+            state.isFailed = true
+        }
     )
 
     // Use whichever ad is available
     val activeAd = ad ?: internallyLoadedAd
 
-    val rootModifier = if (style == NativeAdStyle.Carousel) {
-        modifier.fillMaxSize()
-    } else {
-        modifier.fillMaxWidth()
+    val rootModifier = when (style) {
+        NativeAdStyle.Carousel -> modifier.fillMaxSize()
+        NativeAdStyle.CircularLogo -> modifier
+        else -> modifier.fillMaxWidth()
     }
 
     Box(modifier = rootModifier) {
@@ -122,12 +134,16 @@ fun ShowTimeNativeAd(
             )
         }
 
-        // Shimmer overlay - fades out smoothly once ad is loaded
+        // Shimmer overlay - fades out smoothly once ad is loaded, or disappears if ad loading failed
         AnimatedVisibility(
-            visible = !state.isLoaded,
+            visible = !state.isLoaded && !state.isFailed,
             enter = fadeIn(tween(300)),
             exit = fadeOut(tween(300)),
-            modifier = if (style == NativeAdStyle.Carousel) Modifier.fillMaxSize() else Modifier.fillMaxWidth()
+            modifier = when (style) {
+                NativeAdStyle.Carousel -> Modifier.fillMaxSize()
+                NativeAdStyle.CircularLogo -> Modifier.fillMaxSize()
+                else -> Modifier.fillMaxWidth()
+            }
         ) {
             NativeAdPlaceholder(style = style)
         }
@@ -143,10 +159,10 @@ private fun NativeAdContainer(
     style: NativeAdStyle,
     analyticsEventPrefix: String
 ) {
-    val containerModifier = if (style == NativeAdStyle.Carousel) {
-        Modifier.fillMaxSize()
-    } else {
-        Modifier.fillMaxWidth()
+    val containerModifier = when (style) {
+        NativeAdStyle.Carousel -> Modifier.fillMaxSize()
+        NativeAdStyle.CircularLogo -> Modifier.fillMaxSize()
+        else -> Modifier.fillMaxWidth()
     }
 
     AndroidView(
@@ -155,13 +171,14 @@ private fun NativeAdContainer(
             NativeAdView(ctx).apply {
                 // We create ONE ComposeView to hold all our beautiful UI
                 val composeView = ComposeView(ctx).apply {
-                    layoutParams = if (style == NativeAdStyle.Carousel) {
-                        ViewGroup.LayoutParams(
+                    layoutParams = when (style) {
+                        NativeAdStyle.Carousel,
+                        NativeAdStyle.CircularLogo -> ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
-                    } else {
-                        ViewGroup.LayoutParams(
+
+                        else -> ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
                         )
@@ -217,6 +234,7 @@ private fun NativeAdViewContent(
             NativeAdStyle.List -> NativeAdListContent(nativeAd, onAdClicked)
             NativeAdStyle.Grid -> NativeAdGridContent(nativeAd, onAdClicked)
             NativeAdStyle.Carousel -> NativeAdCarouselContent(nativeAd, onAdClicked)
+            NativeAdStyle.CircularLogo -> NativeAdCircularLogoContent(nativeAd, onAdClicked)
         }
     }
 }
@@ -240,6 +258,16 @@ private fun NativeAdPlaceholder(
                 modifier = modifier
                     .fillMaxSize()
                     .clip(MaterialTheme.shapes.extraLarge)
+            ) {
+                ShimmerPlaceholder(modifier = Modifier.fillMaxSize())
+            }
+        }
+
+        NativeAdStyle.CircularLogo -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
             ) {
                 ShimmerPlaceholder(modifier = Modifier.fillMaxSize())
             }
@@ -556,6 +584,103 @@ private fun AdCTA(
                 fontWeight = FontWeight.Bold,
                 color = contentColor
             )
+        }
+    }
+}
+
+@Composable
+private fun NativeAdCircularLogoContent(
+    nativeAd: NativeAd,
+    onAdClicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxSize()
+            .graphicsLayer {
+                shadowElevation = 2.dp.toPx()
+                shape = CircleShape
+                clip = true
+            }
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = CircleShape
+            )
+            .clickable(onClick = onAdClicked),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            val adImageData = nativeAd.icon?.drawable
+                ?: nativeAd.icon?.uri
+                ?: nativeAd.images.firstOrNull()?.drawable
+                ?: nativeAd.images.firstOrNull()?.uri
+
+            if (adImageData != null) {
+                SubcomposeAsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(adImageData)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = nativeAd.headline ?: "Ad",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    loading = { DefaultImagePlaceHolder() },
+                    error = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (nativeAd.headline ?: nativeAd.advertiser ?: "AD").take(2)
+                                    .uppercase(),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = (nativeAd.headline ?: nativeAd.advertiser ?: "AD").take(2)
+                            .uppercase(),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            // Google AdMob Policy: Clear "Ad" badge overlay
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 1.dp)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .padding(horizontal = 3.dp, vertical = 0.5.dp)
+            ) {
+                Text(
+                    text = "Ad",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 7.5.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.sp
+                    ),
+                    color = Color.White
+                )
+            }
         }
     }
 }

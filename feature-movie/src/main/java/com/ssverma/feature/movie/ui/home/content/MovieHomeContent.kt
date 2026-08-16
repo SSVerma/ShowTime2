@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -199,6 +201,16 @@ fun MovieHomeContent(
                 },
                 onRetry = { viewModel.fetchWatchProviders() },
                 isMovie = true,
+                adContent = {
+                    ShowTimeNativeAd(
+                        ad = uiState.watchProviderAd,
+                        loadInternally = uiState.watchProviderAd == null,
+                        onAdLoaded = viewModel::onWatchProviderAdLoaded,
+                        style = NativeAdStyle.CircularLogo,
+                        modifier = Modifier.size(56.dp),
+                        analyticsEventPrefix = "movie_home_watch_provider"
+                    )
+                },
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
