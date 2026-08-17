@@ -41,3 +41,5 @@ bin/
 # Firebase
 **/google-services.json
 .artifacts/
+
+docs/
