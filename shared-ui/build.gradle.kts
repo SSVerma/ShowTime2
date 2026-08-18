@@ -27,5 +27,6 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(projects.coreTesting)
+    testImplementation(projects.sharedTesting)
     androidTestImplementation(libs.androidx.junit)
 }

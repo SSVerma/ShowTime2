@@ -44,4 +44,18 @@
     <string name="icon_cyberpunk">Cyberpunk</string>
     <string name="connect_tmdb">Connect to TMDB</string>
     <string name="guest">Guest User</string>
+    <string name="google_account">Google Account</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_out_google">Sign out Google</string>
+    <string name="cloud_backup">Cloud Backup</string>
+    <string name="cloud_backup_desc">Private backup to Google Drive AppData folder</string>
+    <string name="last_backup">Last Backup: %1$s</string>
+    <string name="backup_size">Size: %1$s</string>
+    <string name="back_up_now">Back Up Now</string>
+    <string name="restore_backup">Restore Backup</string>
+    <string name="backing_up">Backing up...</string>
+    <string name="restoring">Restoring...</string>
+    <string name="backup_success">Backup created successfully!</string>
+    <string name="restore_success_msg">Backup restored successfully!</string>
+    <string name="no_backup_found">No backup found in Google Drive.</string>
 </resources>

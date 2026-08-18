@@ -1,4 +1,4 @@
-package com.ssverma.core.testing.fakes
+package com.ssverma.shared.testing.fakes
 
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -8,24 +8,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class FakeAppConfigRepository(
-    initialTheme: AppTheme = AppTheme.System,
-    initialDynamicColor: Boolean = false,
-    initialAppInfoDismissed: Boolean = false
+    initialTheme: AppTheme = AppTheme.System
 ) : AppConfigRepository {
 
     private val _appTheme = MutableStateFlow(initialTheme)
     override val appTheme: Flow<AppTheme> = _appTheme.asStateFlow()
 
-    private val _isDynamicColorEnabled = MutableStateFlow(initialDynamicColor)
+    private val _isDynamicColorEnabled = MutableStateFlow(false)
     override val isDynamicColorEnabled: Flow<Boolean> = _isDynamicColorEnabled.asStateFlow()
 
-    private val _isAppInfoBottomSheetDismissed = MutableStateFlow(initialAppInfoDismissed)
+    private val _isAppInfoBottomSheetDismissed = MutableStateFlow(false)
     override val isAppInfoBottomSheetDismissed: Flow<Boolean> = _isAppInfoBottomSheetDismissed.asStateFlow()
 
     private val _watchProviderRegion = MutableStateFlow("US")
     override val watchProviderRegion: StateFlow<String> = _watchProviderRegion.asStateFlow()
 
-    private val _isTranslationEnabled = MutableStateFlow(true)
+    private val _isTranslationEnabled = MutableStateFlow(false)
     override val isTranslationEnabled: StateFlow<Boolean> = _isTranslationEnabled.asStateFlow()
 
     private val _contentLanguage = MutableStateFlow("en")
@@ -74,5 +72,9 @@ class FakeAppConfigRepository(
 
     override suspend fun updateNotificationsEnabled(enabled: Boolean) {
         _isNotificationsEnabled.value = enabled
+    }
+
+    fun setAppTheme(theme: AppTheme) {
+        _appTheme.value = theme
     }
 }

@@ -1,4 +1,4 @@
-package com.ssverma.core.testing.compose
+package com.ssverma.shared.testing.compose
 
 import androidx.compose.runtime.Composable
 import com.ssverma.core.ui.theme.ShowTimeTheme

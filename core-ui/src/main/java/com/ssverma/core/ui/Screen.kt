@@ -11,17 +11,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
+import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,16 +38,29 @@ fun Screen(
     title: String,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
+    scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
+    snackbarHostState: SnackbarHostState? = null,
+    content: @Composable (PaddingValues) -> Unit
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        modifier = modifier.fillMaxSize()
-    ) {
-        Column {
-            ShowTimeTopAppBar(title = title, onBackPressed = onBackPressed)
-            content()
-        }
+    Scaffold(
+        modifier = modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            ShowTimeTopAppBar(
+                title = title,
+                onBackPressed = onBackPressed,
+                scrollBehavior = scrollBehavior
+            )
+        },
+        snackbarHost = {
+            snackbarHostState?.let {
+                ShowTimeSnackbarHost(hostState = it)
+            }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { innerPadding ->
+        content(innerPadding)
     }
 }
 

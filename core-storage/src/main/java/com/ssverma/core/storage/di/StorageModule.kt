@@ -41,4 +41,10 @@ abstract class StorageModule {
     internal abstract fun bindStorageClient(
         storageClientImpl: StorageClientImpl
     ): StorageClient
+
+    @Singleton
+    @Binds
+    internal abstract fun bindFileStorageClient(
+        fileStorageClientImpl: com.ssverma.core.storage.file.FileStorageClientImpl
+    ): com.ssverma.core.storage.file.FileStorageClient
 }

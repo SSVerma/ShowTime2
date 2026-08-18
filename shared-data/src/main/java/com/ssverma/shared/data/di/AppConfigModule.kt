@@ -31,6 +31,18 @@ abstract class AppConfigBindingModule {
     abstract fun bindAffiliateRepository(
         repository: AffiliateRepositoryImpl
     ): AffiliateRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindLibraryRepository(
+        repository: com.ssverma.shared.data.repository.LibraryRepositoryImpl
+    ): com.ssverma.shared.domain.repository.LibraryRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindBackupRepository(
+        repository: com.ssverma.shared.data.repository.BackupRepositoryImpl
+    ): com.ssverma.shared.data.repository.BackupRepository
 }
 
 @Module

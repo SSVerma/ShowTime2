@@ -59,6 +59,10 @@ turbine = "1.2.0"
 truth = "1.4.4"
 mockk = "1.13.16"
 robolectric = "4.14.1"
+credentials = "1.5.0-rc01"
+googleid = "1.1.1"
+workmanager = "2.10.0"
+gson = "2.11.0"
 
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core" }
@@ -136,6 +140,17 @@ androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", vers
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle-navigation3" }
 androidx-navigationevent-android = { module = "androidx.navigationevent:navigationevent-android", version.ref = "navigationevent" }
 androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
+
+# Google Credentials & Auth
+credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
+
+# WorkManager
+workmanager-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workmanager" }
+
+# Gson
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 [plugins]
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }

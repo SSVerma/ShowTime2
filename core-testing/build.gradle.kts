@@ -9,8 +9,8 @@ android {
 
 dependencies {
     api(projects.coreUi)
-    api(projects.sharedDomain)
     api(projects.coreBilling)
+    api(projects.coreBackup)
     api(projects.coreAds)
     api(projects.coreNetworking)
     api(projects.coreCcm)

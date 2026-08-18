@@ -20,23 +20,28 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -61,6 +66,12 @@ import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.ui.component.Avatar
 
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.remember
+import com.ssverma.core.ui.asString
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -72,10 +83,15 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val activity = context as? Activity
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let { msg ->
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            snackbarHostState.showSnackbar(
+                message = msg.asString(context),
+                duration = SnackbarDuration.Short
+            )
             viewModel.clearMessage()
         }
     }
@@ -83,8 +99,10 @@ fun ProfileScreen(
     Screen(
         title = stringResource(R.string.profile),
         onBackPressed = onBackPressed,
+        scrollBehavior = scrollBehavior,
+        snackbarHostState = snackbarHostState,
         modifier = modifier
-    ) {
+    ) { innerPadding ->
         when (val content = uiState.profileContent) {
             is ProfileContentState.Success -> {
                 ProfileMainContent(
@@ -92,22 +110,33 @@ fun ProfileScreen(
                     isProActive = uiState.isProActive,
                     isPaywallRemoteEnabled = uiState.isPaywallRemoteEnabled,
                     currentTheme = uiState.currentTheme,
+                    googleUser = uiState.googleUser,
+                    backupStatus = uiState.backupStatus,
+                    lastBackupMetadata = uiState.lastBackupMetadata,
                     onUpgradeClick = { viewModel.openPaywall() },
                     onThemeSelected = { viewModel.updateTheme(it) },
+                    onSignInGoogleClick = {
+                        activity?.let { viewModel.signInWithGoogle(it) }
+                    },
+                    onSignOutGoogleClick = { viewModel.signOutGoogle() },
+                    onBackupNowClick = { viewModel.backupNow() },
+                    onRestoreBackupClick = { viewModel.restoreBackup() },
                     onLoginClick = onLoginClick,
-                    onLogoutClick = { viewModel.logout() }
+                    onLogoutClick = { viewModel.logout() },
+                    modifier = Modifier.padding(innerPadding)
                 )
             }
 
             is ProfileContentState.Error -> {
                 DefaultCoreErrorIndicator(
                     failure = content.failure,
-                    onRetry = { viewModel.fetchProfile() }
+                    onRetry = { viewModel.fetchProfile() },
+                    modifier = Modifier.padding(innerPadding)
                 )
             }
 
             ProfileContentState.Loading -> {
-                ScreenLoadingIndicator()
+                ScreenLoadingIndicator(modifier = Modifier.padding(innerPadding))
             }
         }
 
@@ -133,8 +162,15 @@ private fun ProfileMainContent(
     isProActive: Boolean,
     isPaywallRemoteEnabled: Boolean,
     currentTheme: AppTheme,
+    googleUser: com.ssverma.core.backup.model.GoogleUser?,
+    backupStatus: com.ssverma.core.backup.model.BackupStatus,
+    lastBackupMetadata: com.ssverma.core.backup.model.BackupMetadata?,
     onUpgradeClick: () -> Unit,
     onThemeSelected: (AppTheme) -> Unit,
+    onSignInGoogleClick: () -> Unit,
+    onSignOutGoogleClick: () -> Unit,
+    onBackupNowClick: () -> Unit,
+    onRestoreBackupClick: () -> Unit,
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -179,6 +215,19 @@ private fun ProfileMainContent(
         } else if (isPaywallRemoteEnabled) {
             ProUpgradeBanner(onUpgradeClick = onUpgradeClick)
         }
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+        // Cloud Backup Section
+        CloudBackupCard(
+            googleUser = googleUser,
+            backupStatus = backupStatus,
+            lastBackupMetadata = lastBackupMetadata,
+            onSignInGoogleClick = onSignInGoogleClick,
+            onSignOutGoogleClick = onSignOutGoogleClick,
+            onBackupNowClick = onBackupNowClick,
+            onRestoreBackupClick = onRestoreBackupClick
+        )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
@@ -508,3 +557,209 @@ private fun ThemeOptionButton(
         }
     }
 }
+
+@Composable
+private fun CloudBackupCard(
+    googleUser: com.ssverma.core.backup.model.GoogleUser?,
+    backupStatus: com.ssverma.core.backup.model.BackupStatus,
+    lastBackupMetadata: com.ssverma.core.backup.model.BackupMetadata?,
+    onSignInGoogleClick: () -> Unit,
+    onSignOutGoogleClick: () -> Unit,
+    onBackupNowClick: () -> Unit,
+    onRestoreBackupClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedCard(
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spacing.medium)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(38.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.CloudSync,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.cloud_backup),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.cloud_backup_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            if (googleUser == null) {
+                Button(
+                    onClick = onSignInGoogleClick,
+                    shape = MaterialTheme.shapes.medium,
+                    colors = ButtonDefaults.filledTonalButtonColors(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    Text(
+                        text = stringResource(R.string.sign_in_with_google),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = MaterialTheme.spacing.extraSmall)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = googleUser.displayName.take(1).uppercase(),
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = googleUser.displayName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = googleUser.email,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    TextButton(onClick = onSignOutGoogleClick) {
+                        Text(
+                            text = "Sign out",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+
+                val isBackingUp = backupStatus is com.ssverma.core.backup.model.BackupStatus.InProgress && backupStatus.operation == com.ssverma.core.backup.model.BackupOperation.BACKUP
+                val isRestoring = backupStatus is com.ssverma.core.backup.model.BackupStatus.InProgress && backupStatus.operation == com.ssverma.core.backup.model.BackupOperation.RESTORE
+
+                if (lastBackupMetadata != null) {
+                    Text(
+                        text = stringResource(R.string.last_backup, lastBackupMetadata.formattedDate),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "${stringResource(R.string.backup_size, lastBackupMetadata.formattedSize)} • ${lastBackupMetadata.favoritesCount} Favorites • ${lastBackupMetadata.watchlistCount} Watchlist",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.last_backup, "Never"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = onBackupNowClick,
+                        enabled = !isBackingUp && !isRestoring,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        if (isBackingUp) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                            Text(text = stringResource(R.string.backing_up))
+                        } else {
+                            Text(
+                                text = stringResource(R.string.back_up_now),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    OutlinedButton(
+                        onClick = onRestoreBackupClick,
+                        enabled = !isBackingUp && !isRestoring && lastBackupMetadata != null,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        if (isRestoring) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                            Text(text = stringResource(R.string.restoring))
+                        } else {
+                            Text(
+                                text = stringResource(R.string.restore_backup),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
