@@ -12,6 +12,7 @@ interface AdConfigProvider {
     val bannerAdId: String
     val interstitialAdId: String
     val nativeAdId: String
+    val appOpenAdId: String
 }
 
 /**

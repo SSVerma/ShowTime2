@@ -9,6 +9,8 @@ android {
 
 dependencies {
     implementation(projects.coreStorage)
+    implementation(projects.coreBilling)
+    implementation(projects.coreCcm)
     implementation(projects.apiService.tmdb)
     implementation(projects.featureAuth)
     api(projects.featureAccountNavigation)

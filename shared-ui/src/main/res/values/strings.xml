@@ -22,6 +22,10 @@
     <string name="more_options_cd">More Options</string>
     <string name="popularity_icon_cd">Popular</string>
     <string name="theme">Theme</string>
+    <string name="theme_system">System Default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_oled_midnight">OLED Midnight</string>
     <string name="dynamic_color">Dynamic Color</string>
     <string name="dynamic_color_desc">Matches wallpaper colors</string>
     <string name="app_info">App Info</string>

@@ -136,6 +136,7 @@ dependencies {
     implementation(projects.coreNotifications)
     implementation(projects.coreCcm)
     implementation(projects.coreAds)
+    implementation(projects.coreBilling)
 
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)

@@ -92,7 +92,8 @@ fun ShowTime(
         val darkTheme = when (appTheme) {
             AppTheme.System -> isSystemInDarkTheme()
             AppTheme.Light -> false
-            AppTheme.Dark -> true
+            AppTheme.Dark,
+            AppTheme.OledMidnight -> true
         }
 
         val view = LocalView.current

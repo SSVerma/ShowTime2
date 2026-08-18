@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,6 +35,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -154,7 +157,11 @@ fun HomePageAppBar(
 
             if (showThemeMenu) {
                 AppThemeDialog(
-                    onDismiss = { showThemeMenu = false }
+                    onDismiss = { showThemeMenu = false },
+                    onProRequired = {
+                        showThemeMenu = false
+                        onAccountIconPressed()
+                    }
                 )
             }
         },
@@ -165,11 +172,22 @@ fun HomePageAppBar(
 
 @Composable
 fun AppThemeDialog(
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onProRequired: () -> Unit = {}
 ) {
     val appStateHolder = LocalAppStateHolder.current
     val appTheme by appStateHolder.appTheme.collectAsState(initial = AppTheme.System)
+    val isProActive by appStateHolder.isProActive.collectAsState(initial = false)
     val isDynamicColorEnabled by appStateHolder.isDynamicColorEnabled.collectAsState(initial = false)
+
+    val handleThemeSelection: (AppTheme) -> Unit = { theme ->
+        if (theme == AppTheme.OledMidnight && !isProActive) {
+            onDismiss()
+            onProRequired()
+        } else {
+            appStateHolder.updateAppTheme(theme)
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -179,24 +197,47 @@ fun AppThemeDialog(
         text = {
             Column {
                 AppTheme.entries.forEach { theme ->
+                    val themeTitle = when (theme) {
+                        AppTheme.System -> stringResource(R.string.theme_system)
+                        AppTheme.Light -> stringResource(R.string.theme_light)
+                        AppTheme.Dark -> stringResource(R.string.theme_dark)
+                        AppTheme.OledMidnight -> stringResource(R.string.theme_oled_midnight)
+                    }
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .selectable(
                                 selected = (theme == appTheme),
-                                onClick = { appStateHolder.updateAppTheme(theme) }
+                                onClick = { handleThemeSelection(theme) }
                             )
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
                             selected = (theme == appTheme),
-                            onClick = { appStateHolder.updateAppTheme(theme) }
+                            onClick = { handleThemeSelection(theme) }
                         )
+                        Spacer(modifier = Modifier.width(16.dp))
                         Text(
-                            text = theme.name,
-                            modifier = Modifier.padding(start = 16.dp)
+                            text = themeTitle,
+                            style = MaterialTheme.typography.bodyLarge
                         )
+                        if (theme == AppTheme.OledMidnight) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                shape = MaterialTheme.shapes.extraSmall,
+                                color = Color(0xFFFF9800)
+                            ) {
+                                Text(
+                                    text = "PRO",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                     }
                 }
 

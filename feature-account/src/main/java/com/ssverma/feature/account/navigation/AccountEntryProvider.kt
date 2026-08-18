@@ -5,22 +5,19 @@ import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.ui.profile.ProfileScreen
-import com.ssverma.feature.auth.ui.auth.AuthScreenContainer
+import com.ssverma.feature.auth.navigation.AuthNavKey
 
 fun EntryProviderScope<NavKey>.accountEntries(
     navigator: Navigator
 ) {
     showTimeEntry<ProfileNavKey> {
-        AuthScreenContainer(
+        ProfileScreen(
             onBackPressed = {
                 navigator.goBack()
+            },
+            onLoginClick = {
+                navigator.navigate(AuthNavKey)
             }
-        ) {
-            ProfileScreen(
-                onBackPressed = {
-                    navigator.goBack()
-                }
-            )
-        }
+        )
     }
 }

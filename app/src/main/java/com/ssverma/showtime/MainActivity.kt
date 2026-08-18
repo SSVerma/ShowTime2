@@ -19,6 +19,7 @@ import androidx.navigationevent.NavigationEventDispatcherOwner
 import androidx.navigationevent.OnBackInvokedDefaultInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.ssverma.core.ads.config.AdConfigProvider
+import com.ssverma.core.ads.manager.AppOpenAdManager
 import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.analytics.ui.LocalAnalytics
@@ -40,6 +41,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var adConfigProvider: AdConfigProvider
+
+    @Inject
+    lateinit var appOpenAdManager: AppOpenAdManager
 
     @Inject
     lateinit var notificationManager: ShowTimeNotificationManager
@@ -104,6 +108,11 @@ class MainActivity : AppCompatActivity() {
                 ShowTime(initialDeepLinkKey = deepLinkKey.value)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        appOpenAdManager.showAdIfAvailable(this)
     }
 
     override fun onNewIntent(intent: Intent) {

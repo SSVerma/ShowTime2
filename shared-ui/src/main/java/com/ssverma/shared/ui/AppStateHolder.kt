@@ -1,6 +1,7 @@
 package com.ssverma.shared.ui
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.di.AppScoped
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -15,8 +16,11 @@ import javax.inject.Singleton
 @Singleton
 class AppStateHolder @Inject constructor(
     private val appConfigRepository: AppConfigRepository,
+    private val billingRepository: BillingRepository,
     @AppScoped private val coroutineScope: CoroutineScope
 ) {
+    val isProActive: StateFlow<Boolean> = billingRepository.isProActive
+
     val appTheme: StateFlow<AppTheme> = appConfigRepository.appTheme
         .stateIn(
             scope = coroutineScope,
@@ -39,6 +43,9 @@ class AppStateHolder @Inject constructor(
         )
 
     fun updateAppTheme(theme: AppTheme) {
+        if (theme == AppTheme.OledMidnight && !isProActive.value) {
+            return
+        }
         coroutineScope.launch {
             appConfigRepository.updateAppTheme(theme)
         }

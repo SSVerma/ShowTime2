@@ -1,6 +1,7 @@
 plugins {
     id("showtime.android.library")
     id("showtime.android.hilt")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -20,4 +21,5 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.coroutines.core)
     implementation(libs.datastore.preferences)
+    implementation(libs.kotlinx.serialization.json)
 }

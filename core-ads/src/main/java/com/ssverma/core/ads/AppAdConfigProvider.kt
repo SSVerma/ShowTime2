@@ -1,6 +1,7 @@
 package com.ssverma.core.ads
 
 import com.ssverma.core.ads.config.AdConfigProvider
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ccm.AppConfigProvider
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -8,6 +9,7 @@ import javax.inject.Singleton
 @Singleton
 class AppAdConfigProvider @Inject constructor(
     private val appConfigProvider: AppConfigProvider,
+    private val billingRepository: BillingRepository,
 ) : AdConfigProvider {
 
     companion object {
@@ -21,8 +23,10 @@ class AppAdConfigProvider @Inject constructor(
                 defaultValue = true
             )
 
-            // Show ads only if the remote kill-switch is ON, // premium case handle later
-            return isRemotelyEnabled // && !isPremiumUser
+            val isProUser = billingRepository.isProActive.value
+
+            // Show ads only if remotely enabled AND user is NOT a Pro subscriber
+            return isRemotelyEnabled && !isProUser
         }
 
     override val bannerAdId: String
@@ -33,4 +37,7 @@ class AppAdConfigProvider @Inject constructor(
 
     override val nativeAdId: String
         get() = BuildConfig.ADMOB_NATIVE_ID
+
+    override val appOpenAdId: String
+        get() = BuildConfig.ADMOB_APP_OPEN_ID
 }

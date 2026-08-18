@@ -39,6 +39,40 @@ internal val DarkColorScheme = darkColorScheme(
     outlineVariant = Color(0xFF2B2C2F)
 )
 
+internal val OledMidnightColorScheme = darkColorScheme(
+    primary = Color(0xFFFF7A00),
+    onPrimary = Color(0xFF000000),
+    primaryContainer = Color(0xFF331500),
+    onPrimaryContainer = Color(0xFFFFDBC7),
+
+    secondary = Color(0xFF8E9196),
+    onSecondary = Color(0xFF000000),
+    secondaryContainer = Color(0xFF141416),
+    onSecondaryContainer = Color(0xFFE8EAED),
+
+    tertiary = Color(0xFFFFFFFF),
+    onTertiary = Color(0xFF000000),
+
+    background = Color(0xFF000000),
+    onBackground = Color(0xFFFFFFFF),
+
+    surface = Color(0xFF000000),
+    onSurface = Color(0xFFFFFFFF),
+    surfaceVariant = Color(0xFF0D0E10),
+    onSurfaceVariant = Color(0xFF8E9196),
+
+    surfaceContainerLowest = Color(0xFF000000),
+    surfaceContainerLow = Color(0xFF050507),
+    surfaceContainer = Color(0xFF0A0B0E),
+    surfaceContainerHigh = Color(0xFF121317),
+    surfaceContainerHighest = Color(0xFF1B1C22),
+    surfaceDim = Color(0xFF000000),
+    surfaceBright = Color(0xFF22242B),
+
+    outline = Color(0xFF3C3E44),
+    outlineVariant = Color(0xFF1A1B20)
+)
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 internal val LightColorScheme = expressiveLightColorScheme().copy(
     primary = Color(0xFF1A73E8),
@@ -54,22 +88,22 @@ internal val LightColorScheme = expressiveLightColorScheme().copy(
     tertiary = Color(0xFF202124),
     onTertiary = Color(0xFFFFFFFF),
 
-    background = Color(0xFFFFFFFF),
+    background = Color(0xFFF6F8FA),
     onBackground = Color(0xFF202124),
 
     surface = Color(0xFFFFFFFF),
     onSurface = Color(0xFF202124),
-    surfaceVariant = Color(0xFFF8F9FA),
+    surfaceVariant = Color(0xFFEFF2F6),
     onSurfaceVariant = Color(0xFF5F6368),
 
     surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFF6F8FB),
-    surfaceContainer = Color(0xFFEFF2F7),
-    surfaceContainerHigh = Color(0xFFE7EBF2),
-    surfaceContainerHighest = Color(0xFFDEE3EC),
-    surfaceDim = Color(0xFFD8DCE4),
+    surfaceContainerLow = Color(0xFFF2F4F7),
+    surfaceContainer = Color(0xFFEBEFF4),
+    surfaceContainerHigh = Color(0xFFE2E7ED),
+    surfaceContainerHighest = Color(0xFFD8DFE7),
+    surfaceDim = Color(0xFFD5DCE5),
     surfaceBright = Color(0xFFFAFBFD),
 
-    outline = Color(0xFFDADCE0),
-    outlineVariant = Color(0xFFF1F3F4)
+    outline = Color(0xFFC4C8D0),
+    outlineVariant = Color(0xFFDCE0E6)
 )

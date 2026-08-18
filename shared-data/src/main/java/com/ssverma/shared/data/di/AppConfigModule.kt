@@ -4,7 +4,9 @@ import android.content.Context
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.shared.data.repository.AffiliateRepositoryImpl
 import com.ssverma.shared.data.repository.DefaultAppConfigRepository
+import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.Binds
 import dagger.Module
@@ -23,6 +25,12 @@ abstract class AppConfigBindingModule {
     abstract fun bindAppConfigRepository(
         repository: DefaultAppConfigRepository
     ): AppConfigRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindAffiliateRepository(
+        repository: AffiliateRepositoryImpl
+    ): AffiliateRepository
 }
 
 @Module

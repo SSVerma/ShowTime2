@@ -21,10 +21,12 @@ fun ShowTimeTheme(
     val darkTheme = when (appTheme) {
         AppTheme.System -> isSystemInDarkTheme()
         AppTheme.Light -> false
-        AppTheme.Dark -> true
+        AppTheme.Dark,
+        AppTheme.OledMidnight -> true
     }
 
     val colorScheme = when {
+        appTheme == AppTheme.OledMidnight -> OledMidnightColorScheme
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
