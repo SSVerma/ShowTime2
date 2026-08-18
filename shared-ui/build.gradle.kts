@@ -26,5 +26,6 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     testImplementation(libs.junit)
+    testImplementation(projects.coreTesting)
     androidTestImplementation(libs.androidx.junit)
 }

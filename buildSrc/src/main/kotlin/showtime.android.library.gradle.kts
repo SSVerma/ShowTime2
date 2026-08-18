@@ -28,4 +28,5 @@ extensions.configure<LibraryExtension> {
 
 dependencies {
     add("coreLibraryDesugaring", libs.findLibrary("desugar-jdk-libs").get())
+    add("testImplementation", libs.findLibrary("junit").get())
 }

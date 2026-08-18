@@ -17,6 +17,8 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.protobuf.javalite)
+
+    testImplementation(projects.coreTesting)
 }
 
 protobuf {

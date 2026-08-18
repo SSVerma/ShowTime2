@@ -62,4 +62,6 @@ dependencies {
 
     api(libs.play.services.ads)
     implementation(libs.compose.activity)
+
+    testImplementation(projects.coreTesting)
 }

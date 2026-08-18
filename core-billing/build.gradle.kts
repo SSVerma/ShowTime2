@@ -19,4 +19,6 @@ dependencies {
 
     api(libs.play.billing)
     implementation(libs.coroutines.core)
+
+    testImplementation(projects.coreTesting)
 }
