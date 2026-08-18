@@ -79,4 +79,7 @@
     <string name="rating_n">%1s rating</string>
     <string name="air_date">Air Date</string>
     <string name="guest_appearance">Guest Appearance</string>
+
+    <!-- Google Sign-In Web Client ID (from Google Cloud Console / Firebase Console) -->
+    <string name="google_server_client_id" translatable="false"></string>
 </resources>

@@ -23,23 +23,28 @@ feature-search-navigation/build
 /.gradle
 /.idea
 /release
+# Secrets and Properties
 /local.properties
 /core.properties
+/debug.properties
 /release-ads.properties
+**/secrets*.properties
+**/*.keystore
+**/*.jks
+**/*.p12
+
+# Firebase & Cloud Credentials
+**/google-services.json
+**/credentials*.json
+**/service-account*.json
+
 **/.DS_Store
+build/
+app/release
+.kotlin
 buildSrc/build
 buildSrc/.gradle
-.kotlin
-app/release
-build/
 buildSrc/.kotlin
-gradlew.bat
-gradlew
-bin/
-*/bin/
 
-# Firebase
-**/google-services.json
 .artifacts/
-
 docs/

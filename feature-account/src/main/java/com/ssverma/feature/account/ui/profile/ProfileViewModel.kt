@@ -12,6 +12,8 @@ import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.feature.auth.domain.sessionIdOrNull
 import com.ssverma.core.ui.UiText
+import android.util.Log
+import com.ssverma.feature.account.R
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -157,9 +159,9 @@ class ProfileViewModel @Inject constructor(
                 it.copy(
                     isRestoringPurchases = false,
                     message = if (success) {
-                        UiText.DynamicText("Pro purchase successfully restored!")
+                        UiText.StaticText(R.string.restore_success)
                     } else {
-                        UiText.DynamicText("No active Pro purchase found.")
+                        UiText.StaticText(R.string.restore_not_found)
                     }
                 )
             }
@@ -176,9 +178,17 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result = backupRepository.signInWithGoogle(activity)
             result.onSuccess { user ->
-                _uiState.update { it.copy(message = UiText.DynamicText("Signed in as ${user.displayName}")) }
-            }.onFailure {
-                _uiState.update { it.copy(message = UiText.DynamicText("Google Sign-In cancelled or failed.")) }
+                _uiState.update {
+                    it.copy(message = UiText.StaticText(R.string.google_sign_in_success, user.displayName))
+                }
+            }.onFailure { e ->
+                Log.e("ProfileViewModel", "Google Sign-In failed", e)
+                val message = if (e.javaClass.simpleName.contains("Cancel", ignoreCase = true)) {
+                    UiText.StaticText(R.string.google_sign_in_cancelled)
+                } else {
+                    UiText.StaticText(R.string.google_sign_in_failed)
+                }
+                _uiState.update { it.copy(message = message) }
             }
         }
     }
@@ -186,7 +196,7 @@ class ProfileViewModel @Inject constructor(
     fun signOutGoogle() {
         viewModelScope.launch {
             backupRepository.signOutGoogle()
-            _uiState.update { it.copy(message = UiText.DynamicText("Signed out of Google.")) }
+            _uiState.update { it.copy(message = UiText.StaticText(R.string.google_signed_out)) }
         }
     }
 
@@ -194,9 +204,10 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result = backupRepository.backupNow()
             result.onSuccess {
-                _uiState.update { it.copy(message = UiText.DynamicText("Backup created successfully!")) }
+                _uiState.update { it.copy(message = UiText.StaticText(R.string.backup_success)) }
             }.onFailure { e ->
-                _uiState.update { it.copy(message = UiText.DynamicText("Backup failed: ${e.localizedMessage}")) }
+                Log.e("ProfileViewModel", "Backup failed", e)
+                _uiState.update { it.copy(message = UiText.StaticText(R.string.backup_failed)) }
             }
         }
     }
@@ -205,9 +216,10 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result = backupRepository.restoreBackup()
             result.onSuccess {
-                _uiState.update { it.copy(message = UiText.DynamicText("Backup restored successfully!")) }
+                _uiState.update { it.copy(message = UiText.StaticText(R.string.restore_success_msg)) }
             }.onFailure { e ->
-                _uiState.update { it.copy(message = UiText.DynamicText("Restore failed: ${e.localizedMessage}")) }
+                Log.e("ProfileViewModel", "Restore failed", e)
+                _uiState.update { it.copy(message = UiText.StaticText(R.string.restore_failed)) }
             }
         }
     }

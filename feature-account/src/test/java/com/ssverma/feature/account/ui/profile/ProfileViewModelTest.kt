@@ -14,6 +14,7 @@ import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.core.ui.UiText
+import com.ssverma.feature.account.R
 import com.ssverma.shared.domain.model.AppTheme
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -133,7 +134,7 @@ class ProfileViewModelTest {
 
             val successState = awaitItem()
             assertThat(successState.isRestoringPurchases).isFalse()
-            assertThat(successState.message).isEqualTo(UiText.DynamicText("Pro purchase successfully restored!"))
+            assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.restore_success))
             assertThat(successState.isProActive).isTrue()
         }
     }
@@ -150,7 +151,7 @@ class ProfileViewModelTest {
             val updatedState = awaitItem()
             assertThat(updatedState.googleUser).isNotNull()
             assertThat(updatedState.googleUser?.displayName).isEqualTo("Test User")
-            assertThat(updatedState.message).isEqualTo(UiText.DynamicText("Signed in as Test User"))
+            assertThat(updatedState.message).isEqualTo(UiText.StaticText(R.string.google_sign_in_success, "Test User"))
         }
     }
 
@@ -166,7 +167,7 @@ class ProfileViewModelTest {
 
             val updatedState = awaitItem()
             assertThat(updatedState.googleUser).isNull()
-            assertThat(updatedState.message).isEqualTo(UiText.DynamicText("Signed out of Google."))
+            assertThat(updatedState.message).isEqualTo(UiText.StaticText(R.string.google_signed_out))
         }
     }
 
@@ -181,7 +182,7 @@ class ProfileViewModelTest {
             assertThat(successState.backupStatus).isInstanceOf(BackupStatus.Success::class.java)
             assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(BackupOperation.BACKUP)
             assertThat(successState.lastBackupMetadata).isNotNull()
-            assertThat(successState.message).isEqualTo(UiText.DynamicText("Backup created successfully!"))
+            assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.backup_success))
         }
     }
 
@@ -197,7 +198,7 @@ class ProfileViewModelTest {
             val successState = awaitItem()
             assertThat(successState.backupStatus).isInstanceOf(BackupStatus.Success::class.java)
             assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(BackupOperation.RESTORE)
-            assertThat(successState.message).isEqualTo(UiText.DynamicText("Backup restored successfully!"))
+            assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.restore_success_msg))
         }
     }
 }

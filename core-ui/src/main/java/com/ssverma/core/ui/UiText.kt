@@ -9,7 +9,21 @@ sealed interface UiText {
     class StaticText(
         @param:StringRes val resId: Int,
         vararg val formatArgs: Any
-    ) : UiText
+    ) : UiText {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            other as StaticText
+            if (resId != other.resId) return false
+            return formatArgs.contentEquals(other.formatArgs)
+        }
+
+        override fun hashCode(): Int {
+            var result = resId
+            result = 31 * result + formatArgs.contentHashCode()
+            return result
+        }
+    }
 
     data class DynamicText(
         val text: String

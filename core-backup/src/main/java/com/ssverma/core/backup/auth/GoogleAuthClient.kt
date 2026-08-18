@@ -31,7 +31,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GoogleAuthClient @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     keyValueStorageClient: KeyValueStorageClient
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -89,11 +89,18 @@ class GoogleAuthClient @Inject constructor(
     }
 
     suspend fun signIn(activity: Activity): Result<GoogleUser> {
+        val serverClientId = getServerClientId()
+        if (serverClientId.isBlank()) {
+            return Result.failure(
+                exception = IllegalStateException("Google Web Client ID not configured. Please add your OAuth 2.0 Web Client ID in strings.xml (google_server_client_id) or google-services.json.")
+            )
+        }
+
         return try {
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
                 .setAutoSelectEnabled(false)
-                .setServerClientId("624515598179-showtime-mock.apps.googleusercontent.com")
+                .setServerClientId(serverClientId)
                 .build()
 
             val request = GetCredentialRequest.Builder()
@@ -110,7 +117,8 @@ class GoogleAuthClient @Inject constructor(
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                 val user = GoogleUser(
                     email = googleIdTokenCredential.id,
-                    displayName = googleIdTokenCredential.displayName ?: googleIdTokenCredential.id.substringBefore("@"),
+                    displayName = googleIdTokenCredential.displayName
+                        ?: googleIdTokenCredential.id.substringBefore("@"),
                     photoUrl = googleIdTokenCredential.profilePictureUri?.toString(),
                     idToken = googleIdTokenCredential.idToken
                 )
@@ -134,6 +142,27 @@ class GoogleAuthClient @Inject constructor(
         } finally {
             saveUser(null)
         }
+    }
+
+    private fun getServerClientId(): String {
+        val defaultWebClientIdRes =
+            context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+        if (defaultWebClientIdRes != 0) {
+            val id = context.getString(defaultWebClientIdRes)
+            if (id.isNotBlank()) return id
+        }
+
+        val customClientIdRes = context.resources.getIdentifier(
+            "google_server_client_id",
+            "string",
+            context.packageName
+        )
+        if (customClientIdRes != 0) {
+            val id = context.getString(customClientIdRes)
+            if (id.isNotBlank()) return id
+        }
+
+        return ""
     }
 
     companion object {
