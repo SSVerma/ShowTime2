@@ -37,6 +37,7 @@ class PaginatedMoviesUseCase @Inject constructor(
             is MovieListingConfig.TrendingToday -> {
                 trendingPaginatedMoviesUseCase(params.timeWindow)
             }
+
             is MovieListingConfig.Filterable -> {
                 var allOptions = params.filterConfig?.movieOptions?.let { filterOptions ->
                     params.discoverConfig.movieOptions + filterOptions

@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.paging.PagedListIndexed
@@ -17,7 +16,6 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.ui.home.component.PersonListItem
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.person.Person
-import com.ssverma.shared.domain.model.person.PersonMedia
 import com.ssverma.shared.ui.component.HomePageAppBar
 
 @Composable
@@ -59,7 +57,8 @@ fun PersonHomeContent(
                 when (media.mediaType) {
                     MediaType.Movie -> openMovieDetailsScreen(media.id)
                     MediaType.Tv -> openTvShowDetailsScreen(media.id)
-                    else -> { /* no-op */ }
+                    else -> { /* no-op */
+                    }
                 }
             }
         )

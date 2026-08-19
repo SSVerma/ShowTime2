@@ -3,6 +3,7 @@ package com.ssverma.feature.tv.analytics
 import com.ssverma.core.analytics.AnalyticsEvent
 import com.ssverma.core.analytics.AnalyticsParam
 import com.ssverma.core.analytics.to
+import com.ssverma.shared.analytics.SharedAnalyticsKeys
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Keyword
@@ -12,7 +13,6 @@ import com.ssverma.shared.domain.model.Video
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShowPreview
-import com.ssverma.shared.analytics.SharedAnalyticsKeys
 
 sealed class TvAnalyticsEvent(
     override val eventName: String,

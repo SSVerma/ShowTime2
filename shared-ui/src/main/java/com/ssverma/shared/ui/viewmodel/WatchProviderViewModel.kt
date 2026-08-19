@@ -17,7 +17,8 @@ class WatchProviderViewModel @Inject constructor(
     private val getWatchProvidersUseCase: GetWatchProvidersUseCase
 ) : ViewModel() {
 
-    private val _watchProviderState = MutableStateFlow<UiState<WatchProvider?, Nothing>>(UiState.Idle)
+    private val _watchProviderState =
+        MutableStateFlow<UiState<WatchProvider?, Nothing>>(UiState.Idle)
     val watchProviderState = _watchProviderState.asStateFlow()
 
     fun fetchWatchProviders(mediaId: Int, isMovie: Boolean) {

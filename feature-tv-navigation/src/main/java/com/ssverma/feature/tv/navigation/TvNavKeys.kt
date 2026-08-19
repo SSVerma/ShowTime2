@@ -23,7 +23,8 @@ data class TvSeasonDetailNavKey(val tvShowId: Int, val seasonNumber: Int) : NavK
 
 @Serializable
 @Parcelize
-data class TvEpisodeDetailNavKey(val tvShowId: Int, val seasonNumber: Int, val episodeNumber: Int) : NavKey, Parcelable
+data class TvEpisodeDetailNavKey(val tvShowId: Int, val seasonNumber: Int, val episodeNumber: Int) :
+    NavKey, Parcelable
 
 @Serializable
 @Parcelize

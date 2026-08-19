@@ -43,5 +43,6 @@ inline fun <T> HorizontalLazyListIndexed(
 
 @PublishedApi
 internal val SectionListContentPadding = PaddingValues(start = 16.dp, end = 16.dp)
+
 @PublishedApi
 internal val SectionListHorizontalArrangement = Arrangement.spacedBy(16.dp)

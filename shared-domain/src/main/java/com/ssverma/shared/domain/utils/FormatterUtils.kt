@@ -14,6 +14,7 @@ object FormatterUtils {
                 val result = roundOffDecimal((value / 1000).toDouble())
                 "${result}K+"
             }
+
             else -> value.toInt().toString()
         }
     }

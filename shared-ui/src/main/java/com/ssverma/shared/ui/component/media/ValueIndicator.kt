@@ -1,7 +1,6 @@
 package com.ssverma.shared.ui.component.media
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -11,9 +10,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ValueIndicator(value: String, modifier: Modifier = Modifier) {
+fun ValueIndicator(
+    value: String,
+    modifier: Modifier = Modifier,
+    shape: androidx.compose.ui.graphics.Shape = MaterialTheme.shapes.large
+) {
     Surface(
-        shape = RoundedCornerShape(8.dp),
+        shape = shape,
         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
         modifier = modifier
     ) {

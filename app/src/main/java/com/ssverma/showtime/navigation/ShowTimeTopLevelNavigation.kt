@@ -33,7 +33,7 @@ sealed class ShowTimeTopLevelNavItem(
     )
 
     object Library : ShowTimeTopLevelNavItem(
-        navKey = LibraryHomeNavKey,
+        navKey = LibraryHomeNavKey(),
         titleResId = R.string.library,
         iconResId = R.drawable.ic_library
     )

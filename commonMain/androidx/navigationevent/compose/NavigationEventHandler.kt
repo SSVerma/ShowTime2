@@ -80,8 +80,8 @@ public fun NavigationEventHandler(
 ) {
     val dispatcher =
         checkNotNull(LocalNavigationEventDispatcherOwner.current) {
-                "No NavigationEventDispatcher was provided via LocalNavigationEventDispatcherOwner"
-            }
+            "No NavigationEventDispatcher was provided via LocalNavigationEventDispatcherOwner"
+        }
             .navigationEventDispatcher
 
     val sourceHandler =

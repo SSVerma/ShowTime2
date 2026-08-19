@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
@@ -31,20 +33,21 @@ import com.ssverma.core.ui.StatefulContent
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
 import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
 import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.HomePageAppBar
-import com.ssverma.shared.ui.component.WatchProviderTrigger
-import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,21 +55,28 @@ fun HeroSection(
     trendingMoviesState: MoviePreviewUiState,
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
-    openLibraryPage: () -> Unit,
+    openLibraryPage: (LibraryHomeNavKey) -> Unit,
     onMovieClicked: (movie: MoviePreview) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     onRetry: () -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     modifier: Modifier = Modifier,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
     contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
-    overlayContent: (@Composable (MoviePreview) -> Unit)? = {
-        WatchProviderTrigger(
-            mediaId = it.id,
-            isMovie = true,
-            variant = WatchProviderTriggerVariant.Icon,
-            onWatchProviderClick = onWatchProviderClick,
+    overlayContent: (@Composable (MoviePreview) -> Unit)? = { movie ->
+        MediaStatsAction(
+            mediaType = MediaType.Movie,
+            mediaId = movie.id,
+            title = movie.title,
+            posterImageUrl = movie.posterImageUrl,
+            backdropImageUrl = movie.backdropImageUrl,
+            voteAvg = movie.voteAvg,
+            releaseDate = movie.displayReleaseDate.orEmpty(),
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+            onShowFeedback = onShowFeedback,
+            modifier = Modifier.size(32.dp)
         )
     }
 ) {
@@ -131,7 +141,7 @@ fun HeroSection(
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                     onSearchIconPressed = onSearchClicked,
                     onAccountIconPressed = onAccountClicked,
-                    onLibraryIconPressed = openLibraryPage
+                    onLibraryIconPressed = { openLibraryPage(LibraryHomeNavKey.Default) }
                 )
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))

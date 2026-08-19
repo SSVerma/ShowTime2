@@ -1,11 +1,11 @@
 package com.ssverma.feature.movie.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
+import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.usecase.NoParamUseCase
-import com.ssverma.feature.movie.domain.repository.MovieRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 import javax.inject.Singleton

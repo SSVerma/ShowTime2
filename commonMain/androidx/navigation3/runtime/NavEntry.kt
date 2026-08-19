@@ -72,16 +72,16 @@ public class NavEntry<T : Any>(
         other as NavEntry<*>
 
         return key == other.key &&
-            contentKey == other.contentKey &&
-            metadata == other.metadata &&
-            content === other.content
+                contentKey == other.contentKey &&
+                metadata == other.metadata &&
+                content === other.content
     }
 
     override fun hashCode(): Int {
         return key.hashCode() * 31 +
-            contentKey.hashCode() * 31 +
-            metadata.hashCode() * 31 +
-            content.hashCode() * 31
+                contentKey.hashCode() * 31 +
+                metadata.hashCode() * 31 +
+                content.hashCode() * 31
     }
 
     override fun toString(): String {
@@ -89,4 +89,5 @@ public class NavEntry<T : Any>(
     }
 }
 
-@PublishedApi internal fun defaultContentKey(key: Any): Any = key.toString()
+@PublishedApi
+internal fun defaultContentKey(key: Any): Any = key.toString()

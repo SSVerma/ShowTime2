@@ -32,10 +32,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Singleton
 class BillingClientWrapper @Inject constructor(
@@ -210,6 +210,7 @@ class BillingClientWrapper @Inject constructor(
                     rawProductDetails = details
                 )
             }
+
             BillingClient.ProductType.SUBS -> {
                 val offer = details.subscriptionOfferDetails?.firstOrNull() ?: return null
                 val pricingPhase = offer.pricingPhases.pricingPhaseList.firstOrNull() ?: return null
@@ -225,6 +226,7 @@ class BillingClientWrapper @Inject constructor(
                     rawProductDetails = details
                 )
             }
+
             else -> null
         }
     }
@@ -263,6 +265,7 @@ class BillingClientWrapper @Inject constructor(
                         .build()
                 )
             }
+
             ProductType.SUBS -> {
                 val selectedOfferToken = rawDetails.subscriptionOfferDetails
                     ?.firstOrNull()?.offerToken ?: ""
@@ -291,11 +294,13 @@ class BillingClientWrapper @Inject constructor(
                     }
                 }
             }
+
             BillingClient.BillingResponseCode.USER_CANCELED -> {
                 scope.launch {
                     _purchaseEvents.emit(PurchaseResult.UserCancelled)
                 }
             }
+
             else -> {
                 scope.launch {
                     _purchaseEvents.emit(

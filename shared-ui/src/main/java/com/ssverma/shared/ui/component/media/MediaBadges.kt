@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Star
@@ -14,12 +13,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.R
@@ -44,8 +45,17 @@ fun DateBadge(
     dateText: String,
     modifier: Modifier = Modifier
 ) {
+    val compactDateText = remember(dateText) {
+        val parts = dateText.trim().split(" ")
+        if (parts.size == 3 && parts[2].all { it.isDigit() }) {
+            "${parts[0]} ${parts[1]}"
+        } else {
+            dateText
+        }
+    }
+
     MediaBadge(
-        text = dateText,
+        text = compactDateText,
         icon = Icons.Rounded.CalendarToday,
         iconContentDescription = stringResource(id = R.string.date_icon_cd),
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -58,19 +68,22 @@ fun DateBadge(
 fun TextBadge(
     text: String,
     modifier: Modifier = Modifier,
+    shape: androidx.compose.ui.graphics.Shape = MaterialTheme.shapes.large,
     containerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
     contentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer
 ) {
     Surface(
-        shape = RoundedCornerShape(6.dp),
+        shape = shape,
         color = containerColor,
         modifier = modifier
     ) {
         Text(
             text = text,
             color = contentColor,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
         )
     }
 }
@@ -97,28 +110,31 @@ private fun MediaBadge(
     iconContentDescription: String?,
     containerColor: Color,
     contentColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shape: androidx.compose.ui.graphics.Shape = MaterialTheme.shapes.large
 ) {
     Surface(
-        shape = RoundedCornerShape(6.dp),
+        shape = shape,
         color = containerColor.copy(alpha = 0.9f),
         modifier = modifier
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = iconContentDescription,
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(12.dp),
                 tint = contentColor
             )
             Text(
                 text = text,
                 color = contentColor,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
             )
         }
     }

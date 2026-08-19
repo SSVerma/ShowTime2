@@ -23,8 +23,10 @@ class WatchRegionViewModel @Inject constructor(
     private val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
-    private val _regionsState = MutableStateFlow<UiState<List<WatchProviderRegion>, Nothing>>(UiState.Idle)
-    val regionsState: StateFlow<UiState<List<WatchProviderRegion>, Nothing>> = _regionsState.asStateFlow()
+    private val _regionsState =
+        MutableStateFlow<UiState<List<WatchProviderRegion>, Nothing>>(UiState.Idle)
+    val regionsState: StateFlow<UiState<List<WatchProviderRegion>, Nothing>> =
+        _regionsState.asStateFlow()
 
     private val _languagesState = MutableStateFlow<UiState<List<Language>, Nothing>>(UiState.Idle)
     val languagesState: StateFlow<UiState<List<Language>, Nothing>> = _languagesState.asStateFlow()

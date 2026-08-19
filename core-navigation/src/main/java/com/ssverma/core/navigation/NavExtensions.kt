@@ -28,10 +28,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-val PeerEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
-    fadeIn(animationSpec = tween(220, delayMillis = 90)) +
-    scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90))
-}
+val PeerEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? =
+    {
+        fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                scaleIn(initialScale = 0.92f, animationSpec = tween(220, delayMillis = 90))
+    }
 
 val PeerExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
     fadeOut(animationSpec = tween(90))

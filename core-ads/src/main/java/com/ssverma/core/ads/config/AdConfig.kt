@@ -1,7 +1,6 @@
 package com.ssverma.core.ads.config
 
 import com.google.android.gms.ads.AdSize
-import kotlinx.coroutines.flow.Flow
 
 /**
  * The contract that the app module must fulfill.

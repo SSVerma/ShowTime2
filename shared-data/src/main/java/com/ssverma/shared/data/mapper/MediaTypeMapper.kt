@@ -10,12 +10,15 @@ class TmdbMediaTypeMapper @Inject constructor() : Mapper<String, MediaType>() {
             TmdbApiTiedConstants.AvailableMediaTypes.Movie -> {
                 MediaType.Movie
             }
+
             TmdbApiTiedConstants.AvailableMediaTypes.Tv -> {
                 MediaType.Tv
             }
+
             TmdbApiTiedConstants.AvailableMediaTypes.Person -> {
                 MediaType.Person
             }
+
             else -> {
                 MediaType.Unknown
             }

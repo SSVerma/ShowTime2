@@ -1,7 +1,12 @@
 package com.ssverma.core.networking.service
 
 import com.ssverma.core.networking.adapter.ApiResponse
-import com.ssverma.core.networking.convertor.*
+import com.ssverma.core.networking.convertor.FakeFooEnvelopConvertor
+import com.ssverma.core.networking.convertor.FakeMoshiConvertor
+import com.ssverma.core.networking.convertor.FakeMoshiUser
+import com.ssverma.core.networking.convertor.FakeUser
+import com.ssverma.core.networking.convertor.FakeUserEnvelopConvertor
+import com.ssverma.core.networking.convertor.Foo
 import retrofit2.http.GET
 
 internal interface FakeUserApiService {

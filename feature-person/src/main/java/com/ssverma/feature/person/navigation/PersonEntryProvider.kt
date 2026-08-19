@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.ProfileNavKey
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.person.ui.details.PersonDetailsScreen
 import com.ssverma.feature.person.ui.details.PersonDetailsViewModel
@@ -17,7 +18,7 @@ import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 
 fun EntryProviderScope<NavKey>.personEntries(
     navigator: Navigator,
-    openLibraryPage: () -> Unit
+    openLibraryPage: (LibraryHomeNavKey) -> Unit
 ) {
     showTimeEntry<PersonHomeNavKey> {
         PersonScreen(
@@ -42,7 +43,7 @@ fun EntryProviderScope<NavKey>.personEntries(
             openAccountPage = {
                 navigator.navigate(ProfileNavKey)
             },
-            openLibraryPage = openLibraryPage
+            openLibraryPage = { openLibraryPage(LibraryHomeNavKey.Default) }
         )
     }
 

@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.ProfileNavKey
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
 import com.ssverma.feature.movie.ui.details.MovieDetailsViewModel
@@ -23,7 +24,7 @@ import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 
 fun EntryProviderScope<NavKey>.movieEntries(
     navigator: Navigator,
-    openLibraryPage: () -> Unit
+    openLibraryPage: (LibraryHomeNavKey) -> Unit
 ) {
     showTimeEntry<MovieListingRoute> { key ->
         MovieListScreen(
@@ -43,7 +44,8 @@ fun EntryProviderScope<NavKey>.movieEntries(
                         isMovie = true
                     )
                 )
-            }
+            },
+            openLibraryPage = openLibraryPage
         )
     }
 
@@ -114,7 +116,8 @@ fun EntryProviderScope<NavKey>.movieEntries(
                         isMovie = true
                     )
                 )
-            }
+            },
+            openLibraryPage = openLibraryPage
         )
     }
 

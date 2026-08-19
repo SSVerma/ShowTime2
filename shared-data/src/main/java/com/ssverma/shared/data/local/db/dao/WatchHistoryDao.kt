@@ -15,6 +15,12 @@ interface WatchHistoryDao {
     @Query("SELECT * FROM watch_history ORDER BY watchedAt DESC")
     suspend fun getAllHistory(): List<WatchHistoryEntity>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM watch_history WHERE mediaId = :mediaId)")
+    suspend fun isWatched(mediaId: Int): Boolean
+
+    @Query("SELECT EXISTS(SELECT 1 FROM watch_history WHERE mediaId = :mediaId)")
+    fun isWatchedFlow(mediaId: Int): Flow<Boolean>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(item: WatchHistoryEntity)
 

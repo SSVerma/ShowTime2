@@ -1,12 +1,10 @@
 package com.ssverma.shared.data.repository
 
 import com.google.common.truth.Truth.assertThat
+import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
 import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
-import com.ssverma.shared.data.local.db.entity.FavoriteEntity
-import com.ssverma.shared.data.local.db.entity.WatchHistoryEntity
-import com.ssverma.shared.data.local.db.entity.WatchlistEntity
 import com.ssverma.shared.domain.model.MediaType
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -20,6 +18,7 @@ class LibraryRepositoryTest {
     private val mockFavoriteDao: FavoriteDao = mockk(relaxed = true)
     private val mockWatchlistDao: WatchlistDao = mockk(relaxed = true)
     private val mockWatchHistoryDao: WatchHistoryDao = mockk(relaxed = true)
+    private val mockCustomListDao: CustomListDao = mockk(relaxed = true)
 
     private lateinit var repository: LibraryRepositoryImpl
 
@@ -28,7 +27,8 @@ class LibraryRepositoryTest {
         repository = LibraryRepositoryImpl(
             favoriteDao = mockFavoriteDao,
             watchlistDao = mockWatchlistDao,
-            watchHistoryDao = mockWatchHistoryDao
+            watchHistoryDao = mockWatchHistoryDao,
+            customListDao = mockCustomListDao
         )
     }
 
@@ -107,6 +107,44 @@ class LibraryRepositoryTest {
         coVerify {
             mockWatchHistoryDao.insertHistory(
                 match { it.mediaId == 303 && it.title == "Oppenheimer" }
+            )
+        }
+    }
+
+    @Test
+    fun `createCustomList inserts list into database`() = runTest {
+        val listId = repository.createCustomList(
+            title = "Mind-Bending Movies",
+            description = "Complex plotlines"
+        )
+
+        assertThat(listId).isNotEmpty()
+        coVerify {
+            mockCustomListDao.insertList(
+                match { it.title == "Mind-Bending Movies" && it.description == "Complex plotlines" }
+            )
+        }
+    }
+
+    @Test
+    fun `deleteCustomList deletes list from database`() = runTest {
+        repository.deleteCustomList("list-123")
+        coVerify { mockCustomListDao.deleteListById("list-123") }
+    }
+
+    @Test
+    fun `addMediaToCustomList inserts custom list item`() = runTest {
+        repository.addMediaToCustomList(
+            listId = "list-123",
+            mediaId = 555,
+            mediaType = MediaType.Movie,
+            title = "Memento",
+            posterImageUrl = "/memento.jpg"
+        )
+
+        coVerify {
+            mockCustomListDao.insertListItem(
+                match { it.listId == "list-123" && it.mediaId == 555 && it.title == "Memento" }
             )
         }
     }

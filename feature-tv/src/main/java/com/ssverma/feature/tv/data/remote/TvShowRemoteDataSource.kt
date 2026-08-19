@@ -1,7 +1,12 @@
 package com.ssverma.feature.tv.data.remote
 
 import com.ssverma.api.service.tmdb.TmdbApiResponse
-import com.ssverma.api.service.tmdb.response.*
+import com.ssverma.api.service.tmdb.response.GenrePayload
+import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteReview
+import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
+import com.ssverma.api.service.tmdb.response.RemoteTvSeason
+import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
 
 interface TvShowRemoteDataSource {

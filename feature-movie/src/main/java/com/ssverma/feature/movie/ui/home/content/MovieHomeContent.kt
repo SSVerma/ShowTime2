@@ -31,6 +31,8 @@ import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.openAppSettings
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
 import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
@@ -47,6 +49,7 @@ import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.ads.ui.NativeAdStyle
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppSection
@@ -64,8 +67,9 @@ fun MovieHomeContent(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
-    openLibraryPage: () -> Unit,
-    modifier: Modifier = Modifier
+    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    modifier: Modifier = Modifier,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
@@ -133,7 +137,8 @@ fun MovieHomeContent(
                 },
                 onWatchProviderClick = openWatchProviderHub,
                 onRetry = { viewModel.fetchTrendingMovies() },
-                onAdLoaded = viewModel::onNativeAdLoaded
+                onAdLoaded = viewModel::onNativeAdLoaded,
+                onShowFeedback = onShowFeedback
             )
         }
 
@@ -258,6 +263,7 @@ fun MovieHomeContent(
                 onFetchUpcoming = { viewModel.fetchUpcomingMovies() },
                 onWatchProviderClick = openWatchProviderHub,
                 onAdLoaded = viewModel::onNativeAdLoaded,
+                onShowFeedback = onShowFeedback,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
@@ -314,7 +320,22 @@ fun MovieHomeContent(
                                     )
                                     openMovieDetails(it.id)
                                 },
-                                overlayContent = null,
+                                overlayContent = {
+                                    MediaStatsAction(
+                                        mediaType = MediaType.Movie,
+                                        mediaId = moviePreview.id,
+                                        title = moviePreview.title,
+                                        posterImageUrl = moviePreview.posterImageUrl,
+                                        backdropImageUrl = moviePreview.backdropImageUrl,
+                                        voteAvg = moviePreview.voteAvg,
+                                        releaseDate = moviePreview.displayReleaseDate.orEmpty(),
+                                        containerColor = MaterialTheme.colorScheme.surface.copy(
+                                            alpha = 0.85f
+                                        ),
+                                        onShowFeedback = onShowFeedback,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                },
                                 indicator = {
                                     MovieIndicator(
                                         config = MovieListingConfig.Filterable.NowInCinemas(),

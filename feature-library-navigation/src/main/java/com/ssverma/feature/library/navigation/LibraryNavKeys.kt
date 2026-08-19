@@ -7,4 +7,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
-data object LibraryHomeNavKey : NavKey, Parcelable
+data class LibraryHomeNavKey(
+    val initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
+    val initialMediaType: String? = null,
+    val targetCustomListId: String? = null
+) : NavKey, Parcelable {
+    companion object {
+        val Default = LibraryHomeNavKey()
+    }
+}
+
+@Serializable
+enum class LibraryTabDestination {
+    Watchlist,
+    Favorites,
+    History,
+    CustomLists
+}

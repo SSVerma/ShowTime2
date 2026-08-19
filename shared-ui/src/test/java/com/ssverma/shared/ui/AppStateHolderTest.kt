@@ -3,9 +3,9 @@ package com.ssverma.shared.ui
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
-import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest

@@ -12,12 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.Icons
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.*
-import androidx.compose.ui.res.stringResource
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +28,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.utils.FormatterUtils
@@ -41,7 +41,8 @@ fun TvShowListItem(
     modifier: Modifier = Modifier,
     showRating: Boolean = true,
     indicator: (@Composable (TvShowPreview) -> Unit)? = null,
-    onWatchProviderClick: (ProviderInfo) -> Unit,
+    overlayContent: (@Composable () -> Unit)? = null,
+    onWatchProviderClick: ((ProviderInfo) -> Unit)? = null,
     onClick: (TvShowPreview) -> Unit,
 ) {
     OutlinedCard(
@@ -73,24 +74,24 @@ fun TvShowListItem(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                WatchProviderTrigger(
-                    mediaId = tvShow.id,
-                    isMovie = false,
-                    variant = WatchProviderTriggerVariant.Icon,
-                    onWatchProviderClick = onWatchProviderClick,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(MaterialTheme.spacing.small)
-                )
+                indicator?.let { customIndicator ->
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp)
+                    ) {
+                        customIndicator(tvShow)
+                    }
+                }
             }
 
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(start = 12.dp, top = 8.dp, end = 6.dp, bottom = 10.dp)
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Top Row: Title & Indicator Badge
+                // Top Row: Title & Actions
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top,
@@ -102,12 +103,23 @@ fun TvShowListItem(
                         fontWeight = FontWeight.ExtraBold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(top = 2.dp)
                     )
 
-                    indicator?.let { customIndicator ->
-                        Box(modifier = Modifier.padding(start = 12.dp)) {
-                            customIndicator(tvShow)
+                    if (overlayContent != null) {
+                        Box(modifier = Modifier.padding(start = 6.dp)) {
+                            overlayContent()
+                        }
+                    } else if (onWatchProviderClick != null) {
+                        Box(modifier = Modifier.padding(start = 6.dp)) {
+                            WatchProviderTrigger(
+                                mediaId = tvShow.id,
+                                isMovie = false,
+                                variant = WatchProviderTriggerVariant.Icon,
+                                onWatchProviderClick = onWatchProviderClick
+                            )
                         }
                     }
                 }
@@ -139,7 +151,11 @@ fun TvShowListItem(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "${FormatterUtils.formatRating(tvShow.voteAvgPercentage)} ${FormatterUtils.formatVoteCount(tvShow.voteCount)}",
+                            text = "${FormatterUtils.formatRating(tvShow.voteAvgPercentage)} ${
+                                FormatterUtils.formatVoteCount(
+                                    tvShow.voteCount
+                                )
+                            }",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

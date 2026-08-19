@@ -496,13 +496,14 @@ fun List<FilterGroup>.asDiscoverOptions(
             is FilterGroupContentType.ListType.SingleSelectableListType -> {
                 val selected = content.selectionState.selected() ?: return@forEach
 
-                when(selected) {
+                when (selected) {
                     is FilterItem.Dynamic -> {
                         mapDynamicOption(
                             groupId = group.groupId,
                             id = selected.id
                         )?.let { options.add(it) }
                     }
+
                     is FilterItem.Static -> {
                         when (val payload = selected.payload) {
                             is FilterPayload.Option -> options.add(payload.discoverOption)
@@ -517,13 +518,14 @@ fun List<FilterGroup>.asDiscoverOptions(
 
             is FilterGroupContentType.ListType.MultiSelectableListType -> {
                 content.selectionState.selected().forEach { selected ->
-                    when(selected) {
+                    when (selected) {
                         is FilterItem.Dynamic -> {
                             mapDynamicOption(
                                 groupId = group.groupId,
                                 id = selected.id
                             )?.let { options.add(it) }
                         }
+
                         is FilterItem.Static -> {
                             if (selected.payload is FilterPayload.Option) {
                                 options.add(selected.payload.discoverOption)

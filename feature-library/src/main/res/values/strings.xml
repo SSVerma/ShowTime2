@@ -1,7 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="library">Library</string>
+    <string name="watchlist">Watchlist</string>
+    <string name="favorites">Favorites</string>
+    <string name="custom_lists">Custom Lists</string>
     <string name="favorite_movies">Favorite Movies</string>
     <string name="watchlist_movies">Watchlist Movies</string>
     <string name="favorite_tv_shows">Favorite TV Shows</string>
     <string name="watchlist_tv_shows">Watchlist TV Shows</string>
+    <string name="watch_history">History</string>
+
+    <string name="watchlist_movies_short">Movies</string>
+    <string name="watchlist_tv_shows_short">TV Shows</string>
+    <string name="favorite_movies_short">Fav Movies</string>
+    <string name="favorite_tv_shows_short">Fav TV</string>
+
+    <string name="filter_all">All</string>
+    <string name="filter_movies">Movies</string>
+    <string name="filter_tv_shows">TV Shows</string>
+
+    <string name="search_cd">Search</string>
+    <string name="account_cd">Account</string>
+
+    <string name="empty_watchlist_title">Your Watchlist is Empty</string>
+    <string name="empty_watchlist_subtitle">Bookmark movies and TV shows to keep track of what to watch next.</string>
+    <string name="empty_favorites_title">No Favorites Yet</string>
+    <string name="empty_favorites_subtitle">Heart your all-time favorite movies and TV shows to save them here.</string>
+    <string name="empty_history_title">No Watch History</string>
+    <string name="empty_history_subtitle">Titles you explore and mark as watched will appear here.</string>
+    <string name="empty_custom_lists_title">No Custom Lists</string>
+    <string name="empty_custom_lists_subtitle">Create themed collections like \"Mind-Bending Sci-Fi\" or \"Weekend Marathon\".</string>
+
+    <string name="explore_movies">Explore Movies</string>
+    <string name="explore_tv_shows">Explore TV Shows</string>
+    <string name="explore_titles">Explore Titles</string>
+    <string name="clear_history">Clear History</string>
+    <string name="clear_history_confirm">Are you sure you want to clear your entire watch history?</string>
+    <string name="remove_from_library">Remove</string>
+    <string name="remove_dialog_title">Remove from Library?</string>
+    <string name="remove_dialog_msg">Are you sure you want to remove \"%1$s\"?</string>
+    <string name="remove_from_list">Remove from List</string>
+    <string name="remove_from_list_confirm">Are you sure you want to remove \"%1$s\" from this collection?</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove_item">Remove</string>
+    <string name="more_options">More options</string>
+
+    <string name="create_custom_list">Create New List</string>
+    <string name="list_title_hint">List Title (e.g. Mind-Bending Sci-Fi)</string>
+    <string name="list_desc_hint">Description (optional)</string>
+    <string name="create_list_action">Create</string>
+    <string name="delete_list">Delete List</string>
+    <string name="delete_list_confirm">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="empty_list_items_title">This collection is empty</string>
+    <string name="empty_list_items_subtitle">Add titles from movie and TV details pages, home feeds, or search.</string>
+    <string name="items_count">%1$d items</string>
+    <string name="one_item_count">1 item</string>
+    <string name="edit_custom_list">Edit List</string>
+    <string name="edit_list_action">Save Changes</string>
+    <string name="edit_list">Edit</string>
+    <string name="explore_and_add_titles">Explore &amp; Add Titles</string>
+    <string name="clear_filter">Show All</string>
+    <string name="empty_filter_movies_title">No Movies Found</string>
+    <string name="empty_filter_movies_subtitle">You have no movies in this collection yet.</string>
+    <string name="empty_filter_tv_title">No TV Shows Found</string>
+    <string name="empty_filter_tv_subtitle">You have no TV shows in this collection yet.</string>
 </resources>

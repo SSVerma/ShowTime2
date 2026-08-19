@@ -8,10 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.layout.VerticalGrid
+import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.TmdbPersonAspectRatio
 import com.ssverma.shared.ui.component.ImageShotItem

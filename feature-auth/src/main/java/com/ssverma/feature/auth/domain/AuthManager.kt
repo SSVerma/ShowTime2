@@ -46,6 +46,7 @@ class AuthManager @Inject constructor(
                     is Result.Error -> {
                         AuthState.Authorized.WithoutSession
                     }
+
                     is Result.Success -> {
                         AuthState.Authorized.WithSession(sessionId = sessionIdResult.data)
                     }
@@ -72,6 +73,7 @@ class AuthManager @Inject constructor(
                         )
                     )
                 }
+
                 is Result.Success -> {
                     val authApprovalUrl = TmdbDefaults.authApprovalRedirectUrl(
                         requestToken = requestTokenResult.data
@@ -102,6 +104,7 @@ class AuthManager @Inject constructor(
                                 )
                             )
                         }
+
                         Failure.CoreFailure.ServiceFailure,
                         Failure.CoreFailure.UnexpectedFailure -> {
                             _authProcessFlow.tryEmit(Result.Success(data = AuthState.Unauthorized))
@@ -109,6 +112,7 @@ class AuthManager @Inject constructor(
                         }
                     }
                 }
+
                 is Result.Success -> {
                     createSession()
                 }
@@ -130,6 +134,7 @@ class AuthManager @Inject constructor(
                     )
                     _authFlow.tryEmit(AuthState.Authorized.WithoutSession)
                 }
+
                 is Result.Success -> {
                     _authProcessFlow.tryEmit(
                         Result.Success(
@@ -153,12 +158,15 @@ class AuthManager @Inject constructor(
             AuthState.Approval.Asked -> {
                 // no op
             }
+
             AuthState.Approval.Granted -> {
                 authorize()
             }
+
             is AuthState.Approval.Needed -> {
                 // no op
             }
+
             AuthState.Approval.Rejected -> {
                 _authProcessFlow.tryEmit(Result.Success(data = AuthState.Unauthorized))
                 _authFlow.tryEmit(AuthState.Unauthorized)
@@ -174,6 +182,7 @@ class AuthManager @Inject constructor(
                         is Result.Error -> {
                             AuthState.Authorized.WithoutSession
                         }
+
                         is Result.Success -> {
                             AuthState.Authorized.WithSession(sessionId = sessionIdResult.data)
                         }
@@ -187,6 +196,7 @@ class AuthManager @Inject constructor(
                         )
                     )
                 }
+
                 is Result.Success -> {
                     _authProcessFlow.tryEmit(Result.Success(data = AuthState.Unauthorized))
                     _authFlow.tryEmit(AuthState.Unauthorized)

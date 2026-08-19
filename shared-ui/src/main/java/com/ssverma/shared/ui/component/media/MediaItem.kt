@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +23,7 @@ fun MediaItem(
     modifier: Modifier = Modifier,
     posterModifier: Modifier = Modifier,
     indicator: (@Composable () -> Unit)? = null,
+    actionIcon: (@Composable () -> Unit)? = null,
     onOverflowIconClick: (() -> Unit)? = null,
     titleMaxLines: Int = 1,
     titleTextStyle: TextStyle = MaterialTheme.typography.titleMedium,
@@ -33,6 +33,7 @@ fun MediaItem(
         MediaPoster(
             posterImageUrl = posterImageUrl,
             indicator = indicator,
+            actionIcon = actionIcon,
             onOverflowIconClick = onOverflowIconClick,
             onClick = onClick,
             modifier = posterModifier

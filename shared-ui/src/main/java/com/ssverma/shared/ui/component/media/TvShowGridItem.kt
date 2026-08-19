@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -24,8 +23,6 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
-import com.ssverma.shared.ui.component.WatchProviderTrigger
-import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 
 @Composable
 fun TvShowGridItem(

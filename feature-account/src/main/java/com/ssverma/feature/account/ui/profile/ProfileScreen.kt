@@ -1,10 +1,7 @@
 package com.ssverma.feature.account.ui.profile
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,37 +15,39 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.CloudSync
-import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -56,21 +55,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssverma.core.backup.model.BackupMetadata
+import com.ssverma.core.backup.model.BackupOperation
+import com.ssverma.core.backup.model.BackupStatus
+import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.ScreenLoadingIndicator
+import com.ssverma.core.ui.asString
+import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.ui.component.Avatar
-
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.remember
-import com.ssverma.core.ui.asString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,10 +84,12 @@ fun ProfileScreen(
     val activity = context as? Activity
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var showRestoreConfirmDialog by remember { mutableStateOf(false) }
+    var showSignOutConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let { msg ->
-            snackbarHostState.showSnackbar(
+            snackbarHostState.showImmediateSnackbar(
                 message = msg.asString(context),
                 duration = SnackbarDuration.Short
             )
@@ -118,9 +119,9 @@ fun ProfileScreen(
                     onSignInGoogleClick = {
                         activity?.let { viewModel.signInWithGoogle(it) }
                     },
-                    onSignOutGoogleClick = { viewModel.signOutGoogle() },
+                    onSignOutGoogleClick = { showSignOutConfirmDialog = true },
                     onBackupNowClick = { viewModel.backupNow() },
-                    onRestoreBackupClick = { viewModel.restoreBackup() },
+                    onRestoreBackupClick = { showRestoreConfirmDialog = true },
                     onLoginClick = onLoginClick,
                     onLogoutClick = { viewModel.logout() },
                     modifier = Modifier.padding(innerPadding)
@@ -138,6 +139,88 @@ fun ProfileScreen(
             ProfileContentState.Loading -> {
                 ScreenLoadingIndicator(modifier = Modifier.padding(innerPadding))
             }
+        }
+
+        // Restore Backup Confirmation Dialog
+        if (showRestoreConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showRestoreConfirmDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.CloudSync,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.restore_backup_confirm_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(text = stringResource(R.string.restore_backup_confirm_msg))
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showRestoreConfirmDialog = false
+                            viewModel.restoreBackup()
+                        }
+                    ) {
+                        Text(text = stringResource(R.string.restore_backup))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showRestoreConfirmDialog = false }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
+
+        // Sign Out Confirmation Dialog
+        if (showSignOutConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showSignOutConfirmDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.sign_out_confirm_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(text = stringResource(R.string.sign_out_confirm_msg))
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showSignOutConfirmDialog = false
+                            viewModel.signOutGoogle()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(text = stringResource(R.string.sign_out_google))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showSignOutConfirmDialog = false }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
+            )
         }
 
         // Pro Paywall Bottom Sheet
@@ -162,9 +245,9 @@ private fun ProfileMainContent(
     isProActive: Boolean,
     isPaywallRemoteEnabled: Boolean,
     currentTheme: AppTheme,
-    googleUser: com.ssverma.core.backup.model.GoogleUser?,
-    backupStatus: com.ssverma.core.backup.model.BackupStatus,
-    lastBackupMetadata: com.ssverma.core.backup.model.BackupMetadata?,
+    googleUser: GoogleUser?,
+    backupStatus: BackupStatus,
+    lastBackupMetadata: BackupMetadata?,
     onUpgradeClick: () -> Unit,
     onThemeSelected: (AppTheme) -> Unit,
     onSignInGoogleClick: () -> Unit,
@@ -202,7 +285,10 @@ private fun ProfileMainContent(
         )
 
         Text(
-            text = if (isGuest) stringResource(R.string.guest) else stringResource(id = R.string.username_n, profile.userName),
+            text = if (isGuest) stringResource(R.string.guest) else stringResource(
+                id = R.string.username_n,
+                profile.userName
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -560,9 +646,9 @@ private fun ThemeOptionButton(
 
 @Composable
 private fun CloudBackupCard(
-    googleUser: com.ssverma.core.backup.model.GoogleUser?,
-    backupStatus: com.ssverma.core.backup.model.BackupStatus,
-    lastBackupMetadata: com.ssverma.core.backup.model.BackupMetadata?,
+    googleUser: GoogleUser?,
+    backupStatus: BackupStatus,
+    lastBackupMetadata: BackupMetadata?,
     onSignInGoogleClick: () -> Unit,
     onSignOutGoogleClick: () -> Unit,
     onBackupNowClick: () -> Unit,
@@ -684,18 +770,28 @@ private fun CloudBackupCard(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
 
-                val isBackingUp = backupStatus is com.ssverma.core.backup.model.BackupStatus.InProgress && backupStatus.operation == com.ssverma.core.backup.model.BackupOperation.BACKUP
-                val isRestoring = backupStatus is com.ssverma.core.backup.model.BackupStatus.InProgress && backupStatus.operation == com.ssverma.core.backup.model.BackupOperation.RESTORE
+                val isBackingUp =
+                    backupStatus is BackupStatus.InProgress && backupStatus.operation == BackupOperation.BACKUP
+                val isRestoring =
+                    backupStatus is BackupStatus.InProgress && backupStatus.operation == BackupOperation.RESTORE
 
                 if (lastBackupMetadata != null) {
                     Text(
-                        text = stringResource(R.string.last_backup, lastBackupMetadata.formattedDate),
+                        text = stringResource(
+                            R.string.last_backup,
+                            lastBackupMetadata.formattedDate
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${stringResource(R.string.backup_size, lastBackupMetadata.formattedSize)} • ${lastBackupMetadata.favoritesCount} Favorites • ${lastBackupMetadata.watchlistCount} Watchlist",
+                        text = "${
+                            stringResource(
+                                R.string.backup_size,
+                                lastBackupMetadata.formattedSize
+                            )
+                        } • ${lastBackupMetadata.favoritesCount} Favorites • ${lastBackupMetadata.watchlistCount} Watchlist",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 2.dp)

@@ -24,6 +24,7 @@ class UpdateSearchHistoryUseCase @Inject constructor(
                     mediaType = MediaType.Movie
                 )
             }
+
             is SearchSuggestion.Person -> {
                 SearchHistory(
                     id = params.id,
@@ -31,6 +32,7 @@ class UpdateSearchHistoryUseCase @Inject constructor(
                     mediaType = MediaType.Person
                 )
             }
+
             is SearchSuggestion.TvShow -> {
                 SearchHistory(
                     id = params.id,
@@ -38,6 +40,7 @@ class UpdateSearchHistoryUseCase @Inject constructor(
                     mediaType = MediaType.Tv
                 )
             }
+
             SearchSuggestion.None -> {
                 throw IllegalArgumentException("Invalid suggestion type")
             }

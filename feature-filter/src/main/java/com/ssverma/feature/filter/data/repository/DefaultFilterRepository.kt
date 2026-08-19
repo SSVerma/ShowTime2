@@ -68,19 +68,19 @@ class DefaultFilterRepository @Inject constructor(
     }
 
     override suspend fun searchKeywords(query: String): Result<List<RemoteKeyword>, Failure.CoreFailure> {
-        return tmdbApiService.searchKeywords(query).asDomainResult { 
+        return tmdbApiService.searchKeywords(query).asDomainResult {
             it.body.results ?: emptyList<RemoteKeyword>()
         }
     }
 
     override suspend fun searchCompanies(query: String): Result<List<RemoteCompany>, Failure.CoreFailure> {
-        return tmdbApiService.searchCompanies(query).asDomainResult { 
+        return tmdbApiService.searchCompanies(query).asDomainResult {
             it.body.results ?: emptyList()
         }
     }
 
     override suspend fun searchNetworks(query: String): Result<List<RemoteNetwork>, Failure.CoreFailure> {
-        return tmdbApiService.searchNetworks(query).asDomainResult { 
+        return tmdbApiService.searchNetworks(query).asDomainResult {
             it.body.results ?: emptyList()
         }
     }

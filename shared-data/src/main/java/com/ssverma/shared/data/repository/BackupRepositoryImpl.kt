@@ -51,7 +51,8 @@ class BackupRepositoryImpl @Inject constructor(
     }
 
     private suspend fun loadExistingBackupMetadata() = withContext(Dispatchers.IO) {
-        val json = googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME) ?: return@withContext
+        val json =
+            googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME) ?: return@withContext
         try {
             val snapshot = gson.fromJson(json, BackupSnapshot::class.java)
             val file = googleDriveBackupClient.getBackupFile(BACKUP_FILE_NAME)

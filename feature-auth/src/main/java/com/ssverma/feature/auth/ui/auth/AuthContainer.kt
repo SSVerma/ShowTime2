@@ -44,6 +44,7 @@ private fun AuthContainerInternal(
         is AuthState.Authorized.WithSession -> {
             authorizedContent(authState as AuthState.Authorized.WithSession)
         }
+
         else -> {
             unAuthorizedContent()
         }

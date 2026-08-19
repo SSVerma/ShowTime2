@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
@@ -71,24 +70,24 @@ fun MovieListItem(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                overlayContent?.let {
+                indicator?.let { customIndicator ->
                     Box(
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(MaterialTheme.spacing.small)
+                            .align(Alignment.TopStart)
+                            .padding(6.dp)
                     ) {
-                        overlayContent()
+                        customIndicator(movie)
                     }
                 }
             }
 
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(start = 12.dp, top = 8.dp, end = 6.dp, bottom = 10.dp)
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Top Row: Title & Indicator Badge
+                // Top Row: Title & Action Menu
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top,
@@ -100,12 +99,14 @@ fun MovieListItem(
                         fontWeight = FontWeight.ExtraBold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(top = 2.dp)
                     )
 
-                    indicator?.let { customIndicator ->
-                        Box(modifier = Modifier.padding(start = 12.dp)) {
-                            customIndicator(movie)
+                    overlayContent?.let { customAction ->
+                        Box(modifier = Modifier.padding(start = 6.dp)) {
+                            customAction()
                         }
                     }
                 }

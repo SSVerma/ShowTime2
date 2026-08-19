@@ -317,9 +317,11 @@ fun PersonDetailsContent(
         }
 
         item {
-            Spacer(modifier = Modifier
-                .navigationBarsPadding()
-                .height(48.dp))
+            Spacer(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .height(48.dp)
+            )
         }
     }
 }

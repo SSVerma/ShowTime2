@@ -39,6 +39,7 @@ class AuthViewModel @Inject constructor(
                             )
                         )
                     }
+
                     is Result.Success -> {
                         authState.update { result.data }
                         AuthUiState(authState = result.data)

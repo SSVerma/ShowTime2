@@ -1,9 +1,6 @@
 package com.ssverma.core.networking.adapter
 
-import com.ssverma.core.networking.adapter.ApiResponse.Error
-import com.ssverma.core.networking.adapter.ApiResponse.Success
 import okhttp3.Headers
-import java.net.ConnectException
 
 /**
  * Generic api response holder class.

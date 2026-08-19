@@ -128,6 +128,7 @@ fun <T> rememberSelectableState(initialSelected: Set<T> = emptySet()): MultiSele
         MultiSelectableState(initialValue = initialSelected)
     }
 }
+
 @Stable
 interface SelectableState<T> {
     fun onSelectionChanged(item: T)

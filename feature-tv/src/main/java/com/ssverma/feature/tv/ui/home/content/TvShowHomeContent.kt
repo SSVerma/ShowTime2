@@ -31,6 +31,8 @@ import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.openAppSettings
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
@@ -48,6 +50,7 @@ import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.ads.ui.NativeAdStyle
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.AppSection
@@ -65,8 +68,9 @@ fun TvShowHomeContent(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
-    openLibraryPage: () -> Unit,
-    modifier: Modifier = Modifier
+    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    modifier: Modifier = Modifier,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
@@ -132,7 +136,8 @@ fun TvShowHomeContent(
                 },
                 onWatchProviderClick = openWatchProviderHub,
                 onRetry = { viewModel.fetchTrendingTvShows() },
-                onAdLoaded = viewModel::onNativeAdLoaded
+                onAdLoaded = viewModel::onNativeAdLoaded,
+                onShowFeedback = onShowFeedback
             )
         }
 
@@ -255,6 +260,7 @@ fun TvShowHomeContent(
                 onFetchUpcoming = { viewModel.fetchUpcomingTvShows() },
                 onWatchProviderClick = openWatchProviderHub,
                 onAdLoaded = viewModel::onNativeAdLoaded,
+                onShowFeedback = onShowFeedback,
                 modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
             )
         }
@@ -301,7 +307,22 @@ fun TvShowHomeContent(
                             TvShowListItem(
                                 tvShow = tvShowPreview,
                                 showRating = true,
-                                onWatchProviderClick = openWatchProviderHub,
+                                overlayContent = {
+                                    MediaStatsAction(
+                                        mediaType = MediaType.Tv,
+                                        mediaId = tvShowPreview.id,
+                                        title = tvShowPreview.title,
+                                        posterImageUrl = tvShowPreview.posterImageUrl,
+                                        backdropImageUrl = tvShowPreview.backdropImageUrl,
+                                        voteAvg = tvShowPreview.voteAvg,
+                                        releaseDate = tvShowPreview.displayFirstAirDate.orEmpty(),
+                                        containerColor = MaterialTheme.colorScheme.surface.copy(
+                                            alpha = 0.85f
+                                        ),
+                                        onShowFeedback = onShowFeedback,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                },
                                 onClick = {
                                     analytics.logEvent(
                                         TvAnalyticsEvent.TvShowClicked(
@@ -367,7 +388,22 @@ fun TvShowHomeContent(
                             TvShowListItem(
                                 tvShow = tvShowPreview,
                                 showRating = true,
-                                onWatchProviderClick = openWatchProviderHub,
+                                overlayContent = {
+                                    MediaStatsAction(
+                                        mediaType = MediaType.Tv,
+                                        mediaId = tvShowPreview.id,
+                                        title = tvShowPreview.title,
+                                        posterImageUrl = tvShowPreview.posterImageUrl,
+                                        backdropImageUrl = tvShowPreview.backdropImageUrl,
+                                        voteAvg = tvShowPreview.voteAvg,
+                                        releaseDate = tvShowPreview.displayFirstAirDate.orEmpty(),
+                                        containerColor = MaterialTheme.colorScheme.surface.copy(
+                                            alpha = 0.85f
+                                        ),
+                                        onShowFeedback = onShowFeedback,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                },
                                 onClick = {
                                     analytics.logEvent(
                                         TvAnalyticsEvent.TvShowClicked(

@@ -1,5 +1,6 @@
 package com.ssverma.api.service.tmdb.interceptor
 
+import androidx.annotation.Keep
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import kotlinx.coroutines.flow.first
@@ -7,7 +8,6 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
-import androidx.annotation.Keep
 
 @Keep
 class LanguageInterceptor @Inject constructor(

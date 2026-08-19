@@ -2,12 +2,12 @@ package com.ssverma.feature.account.ui.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.feature.account.domain.repository.AccountRepository
-import com.ssverma.feature.auth.domain.AuthManager
-import com.ssverma.feature.auth.domain.sessionIdOrNull
-import com.ssverma.shared.domain.Result
+import com.ssverma.feature.account.domain.model.MediaStats
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.library.CustomList
+import com.ssverma.shared.domain.repository.LibraryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -15,99 +15,152 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MediaStatsViewModel @Inject constructor(
-    private val accountRepository: AccountRepository,
-    private val authManager: AuthManager
+    private val libraryRepository: LibraryRepository
 ) : ViewModel() {
+
     private val _mediaStats: MutableStateFlow<MediaStatsUiState> =
         MutableStateFlow(MediaStatsUiState.Loading)
 
     val mediaStats = _mediaStats.asStateFlow()
 
-    fun fetchMediaStats(mediaType: MediaType, mediaId: Int, forceRefresh: Boolean = false) {
-        val mediaStats = (_mediaStats.value as? MediaStatsUiState.Success)?.mediaStats
-
-        if (!forceRefresh && mediaStats?.mediaId == mediaId) {
-            return
-        }
-
-        _mediaStats.value = MediaStatsUiState.Loading
-
+    fun fetchMediaStats(mediaType: MediaType, mediaId: Int) {
         viewModelScope.launch {
-            val sessionId: String = authManager.sessionIdOrNull() ?: kotlin.run {
-                _mediaStats.value = MediaStatsUiState.Unauthorized
-                return@launch
-            }
+            val isFavorite = libraryRepository.isFavorite(mediaId)
+            val isInWatchlist = libraryRepository.isInWatchlist(mediaId)
+            val isWatched = libraryRepository.isWatched(mediaId)
 
-            val result = accountRepository.fetchAccountStats(
-                sessionId = sessionId,
-                mediaType = mediaType,
-                mediaId = mediaId
+            _mediaStats.value = MediaStatsUiState.Success(
+                MediaStats(
+                    mediaId = mediaId,
+                    favorite = isFavorite,
+                    inWatchlist = isInWatchlist,
+                    isWatched = isWatched,
+                    rating = null
+                )
             )
-
-            _mediaStats.value = when (result) {
-                is Result.Error -> MediaStatsUiState.Error(result.error)
-                is Result.Success -> MediaStatsUiState.Success(result.data)
-            }
         }
     }
 
     fun toggleMediaFavoriteStatus(
         mediaType: MediaType,
         mediaId: Int,
-        isCurrentFavorite: Boolean
+        title: String = "",
+        posterImageUrl: String = "",
+        backdropImageUrl: String = "",
+        voteAvg: Float = 0f,
+        releaseDate: String = ""
     ) {
-        _mediaStats.value = MediaStatsUiState.Loading
-
         viewModelScope.launch {
-            val sessionId: String = authManager.sessionIdOrNull() ?: kotlin.run {
-                _mediaStats.value = MediaStatsUiState.Unauthorized
-                return@launch
-            }
-
-            val result = accountRepository.toggleMediaFavoriteStatus(
-                sessionId = sessionId,
-                mediaType = mediaType,
+            val newStatus = libraryRepository.toggleFavorite(
                 mediaId = mediaId,
-                favorite = !isCurrentFavorite
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                backdropImageUrl = backdropImageUrl,
+                voteAvg = voteAvg,
+                releaseDate = releaseDate
             )
-
-            when (result) {
-                is Result.Error -> {
-                    _mediaStats.value = MediaStatsUiState.Error(result.error)
-                }
-                is Result.Success -> {
-                    // refresh
-                    fetchMediaStats(mediaType = mediaType, mediaId = mediaId, forceRefresh = true)
-                }
-            }
+            val currentStats = (_mediaStats.value as? MediaStatsUiState.Success)?.mediaStats
+            _mediaStats.value = MediaStatsUiState.Success(
+                currentStats?.copy(favorite = newStatus) ?: MediaStats(
+                    mediaId = mediaId,
+                    favorite = newStatus,
+                    inWatchlist = false,
+                    isWatched = false,
+                    rating = null
+                )
+            )
         }
     }
 
     fun toggleMediaWatchlistStatus(
         mediaType: MediaType,
         mediaId: Int,
-        isCurrentInWatchlist: Boolean
+        title: String = "",
+        posterImageUrl: String = "",
+        backdropImageUrl: String = "",
+        voteAvg: Float = 0f,
+        releaseDate: String = ""
     ) {
-        _mediaStats.value = MediaStatsUiState.Loading
-
         viewModelScope.launch {
-            val sessionId: String = authManager.sessionIdOrNull() ?: return@launch
-
-            val result = accountRepository.toggleMediaWatchlistStatus(
-                sessionId = sessionId,
-                mediaType = mediaType,
+            val newStatus = libraryRepository.toggleWatchlist(
                 mediaId = mediaId,
-                inWatchlist = !isCurrentInWatchlist
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                backdropImageUrl = backdropImageUrl,
+                voteAvg = voteAvg,
+                releaseDate = releaseDate
             )
+            val currentStats = (_mediaStats.value as? MediaStatsUiState.Success)?.mediaStats
+            _mediaStats.value = MediaStatsUiState.Success(
+                currentStats?.copy(inWatchlist = newStatus) ?: MediaStats(
+                    mediaId = mediaId,
+                    favorite = false,
+                    inWatchlist = newStatus,
+                    isWatched = false,
+                    rating = null
+                )
+            )
+        }
+    }
 
-            when (result) {
-                is Result.Error -> {
-                    _mediaStats.value = MediaStatsUiState.Error(result.error)
-                }
-                is Result.Success -> {
-                    // refresh
-                    fetchMediaStats(mediaType = mediaType, mediaId = mediaId, forceRefresh = true)
-                }
+    fun toggleWatchHistoryStatus(
+        mediaType: MediaType,
+        mediaId: Int,
+        title: String = "",
+        posterImageUrl: String = "",
+        voteAvg: Float = 0f
+    ) {
+        viewModelScope.launch {
+            val newStatus = libraryRepository.toggleWatchHistory(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                voteAvg = voteAvg
+            )
+            val currentStats = (_mediaStats.value as? MediaStatsUiState.Success)?.mediaStats
+            _mediaStats.value = MediaStatsUiState.Success(
+                currentStats?.copy(isWatched = newStatus) ?: MediaStats(
+                    mediaId = mediaId,
+                    favorite = false,
+                    inWatchlist = false,
+                    isWatched = newStatus,
+                    rating = null
+                )
+            )
+        }
+    }
+
+    val customLists: Flow<List<CustomList>> = libraryRepository.getCustomListsFlow()
+
+    fun getCustomListIdsForMedia(mediaId: Int): Flow<List<String>> =
+        libraryRepository.getCustomListIdsForMediaFlow(mediaId)
+
+    fun toggleMediaCustomList(
+        listId: String,
+        mediaId: Int,
+        mediaType: MediaType,
+        title: String = "",
+        posterImageUrl: String = "",
+        backdropImageUrl: String = "",
+        voteAvg: Float = 0f,
+        isCurrentlyInList: Boolean
+    ) {
+        viewModelScope.launch {
+            if (isCurrentlyInList) {
+                libraryRepository.removeMediaFromCustomList(listId, mediaId)
+            } else {
+                libraryRepository.addMediaToCustomList(
+                    listId = listId,
+                    mediaId = mediaId,
+                    mediaType = mediaType,
+                    title = title,
+                    posterImageUrl = posterImageUrl,
+                    backdropImageUrl = backdropImageUrl,
+                    voteAvg = voteAvg
+                )
             }
         }
     }

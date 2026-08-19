@@ -51,10 +51,10 @@ import kotlin.jvm.JvmName
 @Deprecated(
     message =
         "This parameter was a workaround for detecting configuration changes and was never " +
-            "intended for conditional popping. Configuration changes are now handled internally. " +
-            "All decorator state must clear at the same time on pop. To keep decorator state " +
-            "around outside of when a back stack is passed to a NavDisplay, use the " +
-            "rememberDecoratedNavEntries API.",
+                "intended for conditional popping. Configuration changes are now handled internally. " +
+                "All decorator state must clear at the same time on pop. To keep decorator state " +
+                "around outside of when a back stack is passed to a NavDisplay, use the " +
+                "rememberDecoratedNavEntries API.",
     replaceWith = ReplaceWith("rememberViewModelStoreNavEntryDecorator(viewModelStoreOwner)"),
 )
 public fun <T : Any> rememberViewModelStoreNavEntryDecorator(
@@ -135,10 +135,10 @@ public constructor(viewModelStoreProvider: ViewModelStoreProvider) :
     @Deprecated(
         message =
             "This parameter was a workaround for detecting configuration changes and was never " +
-                "intended for conditional popping. Configuration changes are now handled " +
-                "internally. All decorator state must clear at the same time on pop. To keep " +
-                "decorator state around outside of when a back stack is passed to a NavDisplay, " +
-                "use the rememberDecoratedNavEntries API.",
+                    "intended for conditional popping. Configuration changes are now handled " +
+                    "internally. All decorator state must clear at the same time on pop. To keep " +
+                    "decorator state around outside of when a back stack is passed to a NavDisplay, " +
+                    "use the rememberDecoratedNavEntries API.",
         replaceWith = ReplaceWith("ViewModelStoreNavEntryDecorator(viewModelStore)"),
     )
     public constructor(
@@ -156,8 +156,8 @@ public constructor(viewModelStoreProvider: ViewModelStoreProvider) :
 @Deprecated(
     message =
         "This object is obsolete. The removeViewModelStoreOnPop parameter was a workaround for " +
-            "detecting configuration changes, which are now handled internally. To preserve " +
-            "decorator state outside of a NavDisplay, use the rememberDecoratedNavEntries API."
+                "detecting configuration changes, which are now handled internally. To preserve " +
+                "decorator state outside of a NavDisplay, use the rememberDecoratedNavEntries API."
 )
 public object ViewModelStoreNavEntryDecoratorDefaults {
     /**

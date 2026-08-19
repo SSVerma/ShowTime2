@@ -169,8 +169,8 @@ fun ShowTime(
                     ShowTimeNavDisplay(
                         navigationState = navigationState,
                         navigator = navigator,
-                        openLibraryPage = {
-                            navigator.navigate(ShowTimeTopLevelNavItem.Library.navKey)
+                        openLibraryPage = { navKey ->
+                            navigator.navigate(navKey)
                         },
                         modifier = Modifier.padding(
                             start = innerPaddingModifier.calculateStartPadding(LayoutDirection.Ltr),

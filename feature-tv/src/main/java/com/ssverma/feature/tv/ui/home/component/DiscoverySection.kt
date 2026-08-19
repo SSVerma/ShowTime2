@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
@@ -56,12 +58,12 @@ import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.MediaItemShimmer
-import com.ssverma.shared.ui.component.WatchProviderTrigger
-import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.TvShowGridItem
+import com.ssverma.core.ui.R as CoreUiR
 
 data class DiscoveryCategory(
     @param:StringRes val titleRes: Int,
@@ -81,7 +83,8 @@ fun DiscoverySection(
     onSeeAllClicked: (TvShowListingRoute) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     onAdLoaded: (InjectableAd, com.google.android.gms.ads.nativead.NativeAd) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
@@ -174,7 +177,7 @@ fun DiscoverySection(
                         )
                     ) {
                         Text(
-                            text = stringResource(com.ssverma.core.ui.R.string.see_all),
+                            text = stringResource(CoreUiR.string.see_all),
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -301,12 +304,19 @@ fun DiscoverySection(
                                 },
                                 onClick = { preview -> onTvShowClicked(preview) },
                                 overlayContent = {
-                                    WatchProviderTrigger(
+                                    MediaStatsAction(
+                                        mediaType = MediaType.Tv,
                                         mediaId = tvShowPreview.id,
-                                        isMovie = false,
-                                        variant = WatchProviderTriggerVariant.Icon,
-                                        modifier = Modifier.padding(MaterialTheme.spacing.small),
-                                        onWatchProviderClick = onWatchProviderClick,
+                                        title = tvShowPreview.title,
+                                        posterImageUrl = tvShowPreview.posterImageUrl,
+                                        backdropImageUrl = tvShowPreview.backdropImageUrl,
+                                        voteAvg = tvShowPreview.voteAvg,
+                                        releaseDate = tvShowPreview.displayFirstAirDate.orEmpty(),
+                                        containerColor = MaterialTheme.colorScheme.surface.copy(
+                                            alpha = 0.85f
+                                        ),
+                                        onShowFeedback = onShowFeedback,
+                                        modifier = Modifier.size(32.dp)
                                     )
                                 }
                             )

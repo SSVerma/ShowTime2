@@ -10,7 +10,6 @@ import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
 import com.ssverma.feature.person.data.remote.PersonRemoteDataSource
 import com.ssverma.feature.person.domain.failure.PersonFailure
-import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.model.PersonDetailsConfig
 import com.ssverma.feature.person.domain.repository.PersonRepository
 import com.ssverma.shared.data.mapper.ListMapper
@@ -20,6 +19,7 @@ import com.ssverma.shared.data.mapper.asQueryMap
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ImageShot
+import com.ssverma.shared.domain.model.person.Person
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

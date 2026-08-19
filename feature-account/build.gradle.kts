@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.apiService.tmdb)
     implementation(projects.featureAuth)
     api(projects.featureAccountNavigation)
+    api(projects.featureLibraryNavigation)
 
     implementation(libs.datastore.preferences)
     implementation(libs.protobuf.javalite)

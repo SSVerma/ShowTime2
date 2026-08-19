@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.ProfileNavKey
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.person.navigation.PersonDetailNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
@@ -27,7 +28,7 @@ import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 
 fun EntryProviderScope<NavKey>.tvEntries(
     navigator: Navigator,
-    openLibraryPage: () -> Unit
+    openLibraryPage: (LibraryHomeNavKey) -> Unit
 ) {
     showTimeEntry<TvShowListingRoute> { key ->
         TvShowListScreen(
@@ -47,7 +48,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                         isMovie = false
                     )
                 )
-            }
+            },
+            openLibraryPage = openLibraryPage
         )
     }
 
@@ -126,7 +128,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                         isMovie = false
                     )
                 )
-            }
+            },
+            openLibraryPage = openLibraryPage
         )
     }
 

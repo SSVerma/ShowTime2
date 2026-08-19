@@ -37,6 +37,7 @@ internal class ApiResponseCall<S, E>(
                     is ConnectException, is UnknownHostException -> {
                         ApiResponse.Error.NetworkError(throwable)
                     }
+
                     else -> {
                         ApiResponse.Error.UnexpectedError(throwable)
                     }

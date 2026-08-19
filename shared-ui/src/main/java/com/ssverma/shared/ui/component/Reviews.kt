@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
-import com.ssverma.shared.domain.model.Review
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.core.ui.paging.PagedList
+import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.ui.component.section.ReviewItem
 
 @Composable

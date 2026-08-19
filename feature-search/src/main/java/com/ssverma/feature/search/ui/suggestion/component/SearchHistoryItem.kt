@@ -2,18 +2,21 @@ package com.ssverma.feature.search.ui.suggestion.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.feature.search.domain.model.SearchHistory
 import com.ssverma.feature.search.ui.common.SearchSuggestionDefaults
 import com.ssverma.shared.domain.model.MediaType
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Refresh
 
 @Composable
 fun SearchHistoryItem(

@@ -2,9 +2,9 @@ package com.ssverma.feature.person.domain.usecase
 
 import androidx.paging.PagingData
 import com.ssverma.core.di.DefaultDispatcher
+import com.ssverma.feature.person.domain.repository.PersonRepository
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.domain.usecase.FlowUseCase
-import com.ssverma.feature.person.domain.repository.PersonRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

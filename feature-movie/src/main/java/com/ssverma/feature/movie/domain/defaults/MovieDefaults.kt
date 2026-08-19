@@ -20,7 +20,7 @@ object MovieDefaults {
                 DiscoverOption.ReleaseType.Theatrical,
                 DiscoverOption.ReleaseType.TheatricalLimited,
 
-            )
+                )
             .sortBy(sortBy = SortBy.ReleaseDate(order = Order.Descending))
             .build()
 

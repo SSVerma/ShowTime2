@@ -1,7 +1,7 @@
 package com.ssverma.feature.person.domain.model
 
-import com.ssverma.shared.domain.model.PersonDetailAppendable
 import com.ssverma.feature.person.domain.defaults.PersonDefaults
+import com.ssverma.shared.domain.model.PersonDetailAppendable
 
 data class PersonDetailsConfig(
     val personId: Int,

@@ -16,7 +16,7 @@ internal class DatabaseClientImpl @Inject constructor() : DatabaseClient {
             context.applicationContext,
             config.databaseClass,
             config.databaseName
-        ).fallbackToDestructiveMigration(false)
+        ).fallbackToDestructiveMigration(true)
             .build()
     }
 }

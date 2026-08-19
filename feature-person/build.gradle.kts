@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.featureTvNavigation)
     implementation(projects.featureSearchNavigation)
     implementation(projects.featureAccountNavigation)
+    implementation(projects.featureLibraryNavigation)
 
     implementation(libs.compose.constraintlayout)
 }

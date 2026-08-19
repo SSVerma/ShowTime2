@@ -16,5 +16,8 @@ dependencies {
     implementation(projects.featureTvNavigation)
 
     implementation(projects.featureAccount)
-    implementation(projects.featureAuth)
+
+    testImplementation(libs.junit)
+    testImplementation(projects.coreTesting)
+    testImplementation(projects.sharedTesting)
 }

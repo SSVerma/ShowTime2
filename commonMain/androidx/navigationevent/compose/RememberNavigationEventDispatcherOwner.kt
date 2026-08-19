@@ -61,7 +61,7 @@ public fun rememberNavigationEventDispatcherOwner(
     parent: NavigationEventDispatcherOwner? =
         checkNotNull(LocalNavigationEventDispatcherOwner.current) {
             "No NavigationEventDispatcherOwner provided in LocalNavigationEventDispatcherOwner. " +
-                "If you intended to create a root dispatcher, explicitly pass null as the parent."
+                    "If you intended to create a root dispatcher, explicitly pass null as the parent."
         },
 ): NavigationEventDispatcherOwner {
     val localDispatcher =

@@ -31,13 +31,15 @@ import com.ssverma.core.navigation.nav3.NavigationState
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.toEntries
 
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ShowTimeNavDisplay(
     navigationState: NavigationState,
     navigator: Navigator,
     modifier: Modifier = Modifier,
-    openLibraryPage: () -> Unit,
+    openLibraryPage: (LibraryHomeNavKey) -> Unit,
 ) {
     val entryProvider = rememberShowTimeEntryProvider(
         navigator = navigator,

@@ -30,6 +30,7 @@ internal class AnnotatedConvertorFactory private constructor(
                             annotations.filterNot { it == annotation }.toTypedArray()
                         factory.responseBodyConverter(type, remainingAnnotations, retrofit)
                     }
+
                     else -> {
                         factory.responseBodyConverter(type, annotations, retrofit)
                     }

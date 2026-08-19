@@ -1,13 +1,13 @@
 package com.ssverma.feature.person.domain.usecase
 
 import com.ssverma.core.di.DefaultDispatcher
-import com.ssverma.shared.domain.Result
-import com.ssverma.shared.domain.failure.Failure
-import com.ssverma.shared.domain.usecase.UseCase
 import com.ssverma.feature.person.domain.failure.PersonFailure
-import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.model.PersonDetailsConfig
 import com.ssverma.feature.person.domain.repository.PersonRepository
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.person.Person
+import com.ssverma.shared.domain.usecase.UseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 

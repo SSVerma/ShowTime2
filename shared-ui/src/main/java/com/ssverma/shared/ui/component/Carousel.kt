@@ -243,7 +243,7 @@ fun HeroItem(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(MaterialTheme.spacing.medium)
+                    .padding(8.dp)
             ) {
                 it()
             }

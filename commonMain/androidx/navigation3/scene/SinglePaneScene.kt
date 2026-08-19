@@ -35,16 +35,16 @@ internal data class SinglePaneScene<T : Any>(
         other as SinglePaneScene<*>
 
         return key == other.key &&
-            entry == other.entry &&
-            previousEntries == other.previousEntries &&
-            entries == other.entries
+                entry == other.entry &&
+                previousEntries == other.previousEntries &&
+                entries == other.entries
     }
 
     override fun hashCode(): Int {
         return key.hashCode() * 31 +
-            entry.hashCode() * 31 +
-            previousEntries.hashCode() * 31 +
-            entries.hashCode() * 31
+                entry.hashCode() * 31 +
+                previousEntries.hashCode() * 31 +
+                entries.hashCode() * 31
     }
 
     override fun toString(): String {

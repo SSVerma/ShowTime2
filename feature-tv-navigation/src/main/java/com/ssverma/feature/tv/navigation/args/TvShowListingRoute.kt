@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.navigation.NavType
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.shared.domain.TvDiscoverConfig
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import androidx.navigation3.runtime.NavKey
 import kotlin.reflect.typeOf
 
 @Serializable

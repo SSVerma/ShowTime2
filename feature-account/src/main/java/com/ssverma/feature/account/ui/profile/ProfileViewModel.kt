@@ -1,19 +1,19 @@
 package com.ssverma.feature.account.ui.profile
 
 import android.app.Activity
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ccm.AppConfigProvider
+import com.ssverma.core.ui.UiText
+import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.feature.auth.domain.sessionIdOrNull
-import com.ssverma.core.ui.UiText
-import android.util.Log
-import com.ssverma.feature.account.R
+import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -127,6 +127,7 @@ class ProfileViewModel @Inject constructor(
                         imageUrl = ""
                     )
                 )
+
                 is Result.Success -> ProfileContentState.Success(profile = profileResult.data)
             }
             _uiState.update { it.copy(profileContent = newContentState) }
@@ -179,7 +180,12 @@ class ProfileViewModel @Inject constructor(
             val result = backupRepository.signInWithGoogle(activity)
             result.onSuccess { user ->
                 _uiState.update {
-                    it.copy(message = UiText.StaticText(R.string.google_sign_in_success, user.displayName))
+                    it.copy(
+                        message = UiText.StaticText(
+                            R.string.google_sign_in_success,
+                            user.displayName
+                        )
+                    )
                 }
             }.onFailure { e ->
                 Log.e("ProfileViewModel", "Google Sign-In failed", e)

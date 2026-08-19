@@ -2,17 +2,17 @@ package com.ssverma.feature.person.di
 
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemotePerson
-import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.feature.person.data.mapper.PersonMapper
 import com.ssverma.feature.person.data.mapper.PersonsMapper
 import com.ssverma.feature.person.data.remote.DefaultPersonRemoteDataSource
 import com.ssverma.feature.person.data.remote.PersonRemoteDataSource
 import com.ssverma.feature.person.data.repository.DefaultPersonRepository
-import com.ssverma.shared.domain.model.person.Person
 import com.ssverma.feature.person.domain.repository.PersonRepository
 import com.ssverma.shared.data.mapper.ImageShotsMapper
 import com.ssverma.shared.data.mapper.ListMapper
 import com.ssverma.shared.data.mapper.Mapper
+import com.ssverma.shared.domain.model.ImageShot
+import com.ssverma.shared.domain.model.person.Person
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

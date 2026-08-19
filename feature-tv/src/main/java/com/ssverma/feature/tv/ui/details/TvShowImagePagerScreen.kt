@@ -3,9 +3,6 @@ package com.ssverma.feature.tv.ui.details
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.ssverma.core.navigation.destinationViewModel
-import com.ssverma.feature.tv.navigation.TvShowDetailDestination
 import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
 
 @Composable

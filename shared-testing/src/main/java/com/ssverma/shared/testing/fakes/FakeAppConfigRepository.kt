@@ -18,7 +18,8 @@ class FakeAppConfigRepository(
     override val isDynamicColorEnabled: Flow<Boolean> = _isDynamicColorEnabled.asStateFlow()
 
     private val _isAppInfoBottomSheetDismissed = MutableStateFlow(false)
-    override val isAppInfoBottomSheetDismissed: Flow<Boolean> = _isAppInfoBottomSheetDismissed.asStateFlow()
+    override val isAppInfoBottomSheetDismissed: Flow<Boolean> =
+        _isAppInfoBottomSheetDismissed.asStateFlow()
 
     private val _watchProviderRegion = MutableStateFlow("US")
     override val watchProviderRegion: StateFlow<String> = _watchProviderRegion.asStateFlow()
@@ -30,7 +31,8 @@ class FakeAppConfigRepository(
     override val contentLanguage: StateFlow<String> = _contentLanguage.asStateFlow()
 
     private val _preferredOriginalLanguage = MutableStateFlow("en")
-    override val preferredOriginalLanguage: StateFlow<String> = _preferredOriginalLanguage.asStateFlow()
+    override val preferredOriginalLanguage: StateFlow<String> =
+        _preferredOriginalLanguage.asStateFlow()
 
     private val _isAnalyticsEnabled = MutableStateFlow(true)
     override val isAnalyticsEnabled: Flow<Boolean> = _isAnalyticsEnabled.asStateFlow()

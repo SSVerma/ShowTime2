@@ -4,6 +4,7 @@ import android.content.Context
 import com.ssverma.core.storage.StorageClient
 import com.ssverma.core.storage.db.DatabaseConfig
 import com.ssverma.shared.data.local.db.ShowTimeDatabase
+import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
 import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
@@ -49,5 +50,11 @@ object DatabaseModule {
     @Singleton
     fun provideWatchHistoryDao(database: ShowTimeDatabase): WatchHistoryDao {
         return database.watchHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCustomListDao(database: ShowTimeDatabase): CustomListDao {
+        return database.customListDao()
     }
 }

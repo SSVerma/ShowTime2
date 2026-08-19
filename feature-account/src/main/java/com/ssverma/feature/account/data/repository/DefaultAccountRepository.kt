@@ -74,12 +74,14 @@ internal class DefaultAccountRepository @Inject constructor(
                     sessionId = sessionId
                 ).asDomainResult { mediaStatsMapper.map(it.body) }
             }
+
             MediaType.Tv -> {
                 accountRemoteDataSource.fetchTvShowAccountStats(
                     tvShowId = mediaId,
                     sessionId = sessionId
                 ).asDomainResult { mediaStatsMapper.map(it.body) }
             }
+
             else -> {
                 Result.Error(Failure.CoreFailure.UnexpectedFailure)
             }
@@ -98,9 +100,11 @@ internal class DefaultAccountRepository @Inject constructor(
             MediaType.Movie -> {
                 TmdbApiTiedConstants.AvailableMediaTypes.Movie
             }
+
             MediaType.Tv -> {
                 TmdbApiTiedConstants.AvailableMediaTypes.Tv
             }
+
             MediaType.Person,
             MediaType.Unknown -> {
                 return Result.Error(Failure.CoreFailure.UnexpectedFailure)
@@ -132,9 +136,11 @@ internal class DefaultAccountRepository @Inject constructor(
             MediaType.Movie -> {
                 TmdbApiTiedConstants.AvailableMediaTypes.Movie
             }
+
             MediaType.Tv -> {
                 TmdbApiTiedConstants.AvailableMediaTypes.Tv
             }
+
             MediaType.Person,
             MediaType.Unknown -> {
                 return Result.Error(Failure.CoreFailure.UnexpectedFailure)

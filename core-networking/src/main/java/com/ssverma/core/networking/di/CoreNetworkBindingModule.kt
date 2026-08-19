@@ -1,7 +1,7 @@
 package com.ssverma.core.networking.di
 
-import com.ssverma.core.networking.RestClientImpl
 import com.ssverma.core.networking.RestClient
+import com.ssverma.core.networking.RestClientImpl
 import com.ssverma.core.networking.config.DefaultOkHttpConfig
 import com.ssverma.core.networking.config.DefaultRetrofitConfig
 import com.ssverma.core.networking.config.OkHttpConfig

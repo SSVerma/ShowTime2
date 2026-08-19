@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.feature.filter.ui.filter.FilterActionIcon
-import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.ui.list.TvShowPaginatedListUiState
 
 @OptIn(ExperimentalMaterial3Api::class)

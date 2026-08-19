@@ -39,6 +39,7 @@ class PaginatedTvShowUseCase @Inject constructor(
             is TvShowListingConfig.TrendingToday -> {
                 trendingTvShowsUseCase(params.timeWindow)
             }
+
             is TvShowListingConfig.Filterable -> {
                 var allOptions = params.filterConfig?.tvOptions?.let { filterOptions ->
                     params.discoverConfig.tvOptions + filterOptions

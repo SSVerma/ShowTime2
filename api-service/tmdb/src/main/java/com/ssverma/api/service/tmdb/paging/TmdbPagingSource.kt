@@ -35,15 +35,19 @@ open class TmdbPagingSource<R, D : Any> constructor(
                     nextKey = nextPageKey
                 )
             }
+
             is ApiResponse.Error.ClientError -> {
                 LoadResult.Error(PagingFailure.ClientFailure)
             }
+
             is ApiResponse.Error.NetworkError -> {
                 LoadResult.Error(PagingFailure.NetworkFailure)
             }
+
             is ApiResponse.Error.ServerError -> {
                 LoadResult.Error(PagingFailure.ServiceFailure)
             }
+
             is ApiResponse.Error.UnexpectedError -> {
                 LoadResult.Error(PagingFailure.UnexpectedFailure)
             }

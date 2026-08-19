@@ -3,7 +3,11 @@ package com.ssverma.feature.account.data.remote
 import com.ssverma.api.service.tmdb.TmdbApiResponse
 import com.ssverma.api.service.tmdb.request.FavoriteMediaBody
 import com.ssverma.api.service.tmdb.request.WatchlistMediaBody
-import com.ssverma.api.service.tmdb.response.*
+import com.ssverma.api.service.tmdb.response.AccountPayload
+import com.ssverma.api.service.tmdb.response.MediaStatsPayload
+import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteMovie
+import com.ssverma.api.service.tmdb.response.RemoteTvShow
 
 interface AccountRemoteDataSource {
     suspend fun fetchAccountDetails(

@@ -1,7 +1,7 @@
 package com.ssverma.feature.tv.domain.model
 
-import com.ssverma.shared.domain.model.MediaDetailsAppendable
 import com.ssverma.feature.tv.domain.defaults.TvShowDefaults
+import com.ssverma.shared.domain.model.MediaDetailsAppendable
 
 data class TvShowDetailsConfig(
     val tvShowId: Int,

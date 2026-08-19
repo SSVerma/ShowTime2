@@ -137,10 +137,10 @@ public object NavDisplay {
      */
     public object PredictivePopTransitionKey :
         NavMetadataKey<
-            AnimatedContentTransitionScope<Scene<*>>.(
-                @NavigationEvent.SwipeEdge Int
-            ) -> ContentTransform?
-        >
+                AnimatedContentTransitionScope<Scene<*>>.(
+                    @NavigationEvent.SwipeEdge Int
+                ) -> ContentTransform?
+                >
 
     /**
      * Function to be called on the [NavEntry.metadata] or [Scene.metadata] to notify the
@@ -190,9 +190,9 @@ public object NavDisplay {
      */
     public fun predictivePopTransitionSpec(
         predictivePopTransitionSpec:
-            AnimatedContentTransitionScope<Scene<*>>.(
-                @NavigationEvent.SwipeEdge Int
-            ) -> ContentTransform?
+        AnimatedContentTransitionScope<Scene<*>>.(
+            @NavigationEvent.SwipeEdge Int
+        ) -> ContentTransform?
     ): Map<String, Any> =
         mapOf(PREDICTIVE_POP_TRANSITION_SPEC.toString() to predictivePopTransitionSpec)
 
@@ -244,7 +244,7 @@ public object NavDisplay {
 @Deprecated(
     message =
         "Deprecated in favor of NavDisplay that supports sharedTransitionScope and takes " +
-            "a List<SceneStrategy>",
+                "a List<SceneStrategy>",
     level = DeprecationLevel.HIDDEN,
 )
 @Composable
@@ -266,9 +266,9 @@ public fun <T : Any> NavDisplay(
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
     predictivePopTransitionSpec:
-        AnimatedContentTransitionScope<Scene<T>>.(
-            @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform =
+    AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int
+    ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
     entryProvider: (key: T) -> NavEntry<T>,
 ) {
@@ -352,9 +352,9 @@ public fun <T : Any> NavDisplay(
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
     predictivePopTransitionSpec:
-        AnimatedContentTransitionScope<Scene<T>>.(
-            @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform =
+    AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int
+    ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
     entryProvider: (key: T) -> NavEntry<T>,
 ) {
@@ -431,7 +431,7 @@ public fun <T : Any> NavDisplay(
 @Deprecated(
     message =
         "Deprecated in favor of NavDisplay that supports sharedTransitionScope and takes " +
-            "a List<SceneStrategy>",
+                "a List<SceneStrategy>",
     level = DeprecationLevel.HIDDEN,
 )
 @Composable
@@ -446,9 +446,9 @@ public fun <T : Any> NavDisplay(
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
     predictivePopTransitionSpec:
-        AnimatedContentTransitionScope<Scene<T>>.(
-            @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform =
+    AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int
+    ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
     onBack: () -> Unit,
 ) {
@@ -529,9 +529,9 @@ public fun <T : Any> NavDisplay(
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
     predictivePopTransitionSpec:
-        AnimatedContentTransitionScope<Scene<T>>.(
-            @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform =
+    AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int
+    ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
     onBack: () -> Unit,
 ) {
@@ -613,9 +613,9 @@ public fun <T : Any> NavDisplay(
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
     predictivePopTransitionSpec:
-        AnimatedContentTransitionScope<Scene<T>>.(
-            @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform =
+    AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int
+    ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
 ) {
     // Calculate current Scene and set up transitions
@@ -669,6 +669,7 @@ public fun <T : Any> NavDisplay(
         when {
             !inPredictiveBack && transition.targetState != scene && zIndices.contains(targetKey) ->
                 zIndices[targetKey]
+
             initialKey == targetKey -> initialZIndex
             isPop || inPredictiveBack -> initialZIndex - 1f
             else -> initialZIndex + 1f
@@ -821,10 +822,12 @@ public fun <T : Any> NavDisplay(
                 transitionScene.predictivePopSpec()?.invoke(this, swipeEdge)
                     ?: predictivePopTransitionSpec(swipeEdge)
             }
+
             isPop -> {
                 transitionScene.contentTransform(NavDisplay.PopTransitionKey)?.invoke(this)
                     ?: popTransitionSpec(this)
             }
+
             else -> {
                 transitionScene.contentTransform(NavDisplay.TransitionKey)?.invoke(this)
                     ?: transitionSpec(this)
@@ -866,7 +869,7 @@ public fun <T : Any> NavDisplay(
             LocalNavAnimatedContentScope provides animatedContentScope,
             LocalCurrentScene provides targetScene,
             LocalEntriesToExcludeFromCurrentScene provides
-                sceneToExcludedEntryMap.getValue(AnimatedSceneKey(targetScene)),
+                    sceneToExcludedEntryMap.getValue(AnimatedSceneKey(targetScene)),
         ) {
             targetScene.content()
         }
@@ -903,7 +906,7 @@ public fun <T : Any> NavDisplay(
             CompositionLocalProvider(
                 LocalLifecycleOwner provides overlaySceneLifecycleOwner,
                 LocalEntriesToExcludeFromCurrentScene provides
-                    sceneToExcludedEntryMap.getValue(AnimatedSceneKey(overlayScene)),
+                        sceneToExcludedEntryMap.getValue(AnimatedSceneKey(overlayScene)),
                 LocalCurrentScene provides overlayScene,
                 LocalNavAnimatedContentScope provides animatedContentScope,
             ) {
@@ -943,27 +946,27 @@ private fun <T : Any> Scene<T>.contentTransform(
 
 @Suppress("UNCHECKED_CAST")
 private fun <T : Any> Scene<T>.predictivePopSpec():
-    (AnimatedContentTransitionScope<Scene<T>>.(
-        @NavigationEvent.SwipeEdge Int
-    ) -> ContentTransform)? {
-    return metadata[NavDisplay.PredictivePopTransitionKey]
-        as?
-        AnimatedContentTransitionScope<Scene<T>>.(
+        (AnimatedContentTransitionScope<Scene<T>>.(
             @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform
+        ) -> ContentTransform)? {
+    return metadata[NavDisplay.PredictivePopTransitionKey]
+            as?
+            AnimatedContentTransitionScope<Scene<T>>.(
+                @NavigationEvent.SwipeEdge Int
+            ) -> ContentTransform
 }
 
 /** Default [transitionSpec] for forward navigation to be used by [NavDisplay]. */
 public expect fun <T : Any> defaultTransitionSpec():
-    AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform
+        AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform
 
 /** Default [transitionSpec] for pop navigation to be used by [NavDisplay]. */
 public expect fun <T : Any> defaultPopTransitionSpec():
-    AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform
+        AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform
 
 /** Default [transitionSpec] for predictive pop navigation to be used by [NavDisplay]. */
 public expect fun <T : Any> defaultPredictivePopTransitionSpec():
-    AnimatedContentTransitionScope<Scene<T>>.(@NavigationEvent.SwipeEdge Int) -> ContentTransform
+        AnimatedContentTransitionScope<Scene<T>>.(@NavigationEvent.SwipeEdge Int) -> ContentTransform
 
 internal data class AnimatedSceneKey(val clazz: KClass<*>, val key: Any) {
     constructor(scene: Scene<*>) : this(scene::class, scene.key)

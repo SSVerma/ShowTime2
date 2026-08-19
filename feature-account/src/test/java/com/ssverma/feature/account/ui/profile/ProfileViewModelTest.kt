@@ -8,14 +8,14 @@ import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.core.testing.fakes.FakeBillingRepository
-import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
-import com.ssverma.shared.testing.fakes.FakeBackupRepository
+import com.ssverma.core.ui.UiText
+import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
-import com.ssverma.core.ui.UiText
-import com.ssverma.feature.account.R
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
+import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -151,7 +151,12 @@ class ProfileViewModelTest {
             val updatedState = awaitItem()
             assertThat(updatedState.googleUser).isNotNull()
             assertThat(updatedState.googleUser?.displayName).isEqualTo("Test User")
-            assertThat(updatedState.message).isEqualTo(UiText.StaticText(R.string.google_sign_in_success, "Test User"))
+            assertThat(updatedState.message).isEqualTo(
+                UiText.StaticText(
+                    R.string.google_sign_in_success,
+                    "Test User"
+                )
+            )
         }
     }
 
@@ -180,7 +185,9 @@ class ProfileViewModelTest {
 
             val successState = awaitItem()
             assertThat(successState.backupStatus).isInstanceOf(BackupStatus.Success::class.java)
-            assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(BackupOperation.BACKUP)
+            assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(
+                BackupOperation.BACKUP
+            )
             assertThat(successState.lastBackupMetadata).isNotNull()
             assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.backup_success))
         }
@@ -197,7 +204,9 @@ class ProfileViewModelTest {
 
             val successState = awaitItem()
             assertThat(successState.backupStatus).isInstanceOf(BackupStatus.Success::class.java)
-            assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(BackupOperation.RESTORE)
+            assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(
+                BackupOperation.RESTORE
+            )
             assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.restore_success_msg))
         }
     }

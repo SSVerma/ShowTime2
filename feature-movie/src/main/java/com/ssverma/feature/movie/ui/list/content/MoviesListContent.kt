@@ -2,18 +2,21 @@ package com.ssverma.feature.movie.ui.list.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedList
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
-import com.ssverma.shared.ui.component.WatchProviderTrigger
-import com.ssverma.shared.ui.component.WatchProviderTriggerVariant
 import com.ssverma.shared.ui.component.media.MovieListItem
 
 @Composable
@@ -22,7 +25,8 @@ fun MoviesListContent(
     config: MovieListingConfig,
     openMovieDetails: (movie: MoviePreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
     PagedList(
         pagingItems = moviePagingItems,
@@ -38,11 +42,17 @@ fun MoviesListContent(
             showRating = showRating,
             indicator = { preview -> MovieIndicator(config = config, movie = preview) },
             overlayContent = {
-                WatchProviderTrigger(
+                MediaStatsAction(
+                    mediaType = MediaType.Movie,
                     mediaId = movie.id,
-                    isMovie = true,
-                    variant = WatchProviderTriggerVariant.Icon,
-                    onWatchProviderClick = onWatchProviderClick,
+                    title = movie.title,
+                    posterImageUrl = movie.posterImageUrl,
+                    backdropImageUrl = movie.backdropImageUrl,
+                    voteAvg = movie.voteAvg,
+                    releaseDate = movie.displayReleaseDate.orEmpty(),
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    onShowFeedback = onShowFeedback,
+                    modifier = Modifier.size(32.dp)
                 )
             },
             onClick = { preview -> openMovieDetails(preview) },

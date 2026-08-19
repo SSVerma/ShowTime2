@@ -64,4 +64,19 @@
     <string name="google_signed_out">Signed out of Google.</string>
     <string name="backup_failed">Backup failed. Please try again.</string>
     <string name="restore_failed">Restore failed. Please try again.</string>
+    <string name="mark_as_watched">Mark as Watched</string>
+    <string name="remove_from_watched">Remove from Watched</string>
+    <string name="added_to_favorites">Added to Favorites</string>
+    <string name="removed_from_favorites">Removed from Favorites</string>
+    <string name="added_to_watchlist">Added to Watchlist</string>
+    <string name="removed_from_watchlist">Removed from Watchlist</string>
+    <string name="marked_as_watched">Marked as Watched</string>
+    <string name="removed_from_watched">Removed from Watched History</string>
+    <string name="view_in_library">View in Library</string>
+    <string name="restore_backup_confirm_title">Restore from Backup?</string>
+    <string name="restore_backup_confirm_msg">This will replace your current local library and watchlist with the snapshot stored in Google Drive.</string>
+    <string name="sign_out_confirm_title">Sign Out of Google?</string>
+    <string name="sign_out_confirm_msg">Are you sure you want to sign out of your Google Drive backup account?</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
 </resources>

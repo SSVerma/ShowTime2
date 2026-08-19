@@ -17,6 +17,7 @@ fun AppPage(
     modifier: Modifier = Modifier,
     topBar: @Composable (TopAppBarScrollBehavior) -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -26,6 +27,7 @@ fun AppPage(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { topBar(scrollBehavior) },
         floatingActionButton = floatingActionButton,
+        snackbarHost = snackbarHost,
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
         content(innerPadding)

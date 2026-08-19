@@ -59,7 +59,7 @@ fun MediaListItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 metadata?.let { it() }
 
                 Text(

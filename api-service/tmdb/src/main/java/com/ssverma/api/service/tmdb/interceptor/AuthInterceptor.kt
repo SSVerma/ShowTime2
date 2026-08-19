@@ -1,12 +1,12 @@
 package com.ssverma.api.service.tmdb.interceptor
 
+import androidx.annotation.Keep
 import com.ssverma.api.service.tmdb.di.TmdbServiceReadAccessToken
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
-import androidx.annotation.Keep
 
 interface TmdbReadWriteAccessTokenProvider {
     suspend fun provideWriteAccessToken(): String
