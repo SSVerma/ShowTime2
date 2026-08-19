@@ -20,7 +20,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -192,9 +194,9 @@ private fun TvShowContent(
                                     val result = snackbarHostState.showImmediateSnackbar(
                                         message = message,
                                         actionLabel = actionLabel,
-                                        duration = androidx.compose.material3.SnackbarDuration.Short
+                                        duration = SnackbarDuration.Short
                                     )
-                                    if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                                    if (result == SnackbarResult.ActionPerformed) {
                                         openLibraryPage(destination ?: LibraryHomeNavKey.Default)
                                     }
                                 }

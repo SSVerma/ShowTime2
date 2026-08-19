@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -95,9 +97,9 @@ fun TvShowListScreen(
                                 val result = snackbarHostState.showImmediateSnackbar(
                                     message = message,
                                     actionLabel = actionLabel,
-                                    duration = androidx.compose.material3.SnackbarDuration.Short
+                                    duration = SnackbarDuration.Short
                                 )
-                                if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                                if (result == SnackbarResult.ActionPerformed) {
                                     openLibraryPage(destination ?: LibraryHomeNavKey.Default)
                                 }
                             }
