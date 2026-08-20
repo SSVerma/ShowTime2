@@ -27,4 +27,12 @@
     <string name="tv_show">TV Show</string>
     <string name="reviews">Reviews</string>
     <string name="discover">Discover</string>
+    <string name="up_next_to_watch">Up Next to Watch</string>
+    <string name="episode_code">S%1$02dE%2$02d</string>
+    <string name="episodes_watched_progress">%1$d / %2$d episodes</string>
+    <string name="mark_watched">Mark Watched</string>
+    <string name="mark_watched_done">Watched ✓</string>
+    <string name="caught_up">Caught Up 🎉</string>
+    <string name="season_completed">Season Complete! 🎉</string>
+    <string name="all_caught_up_msg">🎉 All caught up with %1$s!</string>
 </resources>

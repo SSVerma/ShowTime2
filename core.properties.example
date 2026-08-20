@@ -1,0 +1,4 @@
+# ShowTime Core Configuration Template
+# Copy/rename this file to `core.properties` in project root (this file is gitignored)
+tmdbApiReadAccessToken="YOUR_TMDB_READ_ACCESS_TOKEN_HERE"
+traktClientId="YOUR_TRAKT_CLIENT_ID_HERE"

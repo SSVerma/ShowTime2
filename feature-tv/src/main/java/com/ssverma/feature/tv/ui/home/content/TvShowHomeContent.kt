@@ -44,6 +44,7 @@ import com.ssverma.feature.tv.ui.home.HomeTvShowViewModel
 import com.ssverma.feature.tv.ui.home.component.DiscoverySection
 import com.ssverma.feature.tv.ui.home.component.HeroSection
 import com.ssverma.feature.tv.ui.home.component.TvGenres
+import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.ads.injection.InjectableAd
@@ -141,6 +142,22 @@ fun TvShowHomeContent(
             )
         }
 
+        if (uiState.upNextQueue.isNotEmpty()) {
+            item(key = "up_next_section") {
+                UpNextSection(
+                    upNextEpisodes = uiState.upNextQueue,
+                    onTvShowClick = openTvShowDetails,
+                    onMarkWatchedClick = { showTmdbId, season, episode ->
+                        viewModel.markEpisodeWatched(showTmdbId, season, episode)
+                    },
+                    modifier = Modifier.padding(
+                        top = MaterialTheme.spacing.medium,
+                        bottom = MaterialTheme.spacing.medium
+                    )
+                )
+            }
+        }
+
         if (!hasNotificationPermission && !isPermissionBannerDismissed) {
             item {
                 NotificationPermissionBanner(
@@ -184,8 +201,7 @@ fun TvShowHomeContent(
                         )
                     )
                 },
-                onRetry = { viewModel.fetchTvGenres() },
-                modifier = Modifier.padding(top = MaterialTheme.spacing.large)
+                onRetry = { viewModel.fetchTvGenres() }
             )
         }
 

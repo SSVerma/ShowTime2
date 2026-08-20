@@ -19,11 +19,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.AlertDialog
+import com.ssverma.feature.account.BuildConfig
+import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -51,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +63,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupOperation
@@ -72,6 +78,8 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
+import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.ui.component.Avatar
 
@@ -90,6 +98,7 @@ fun ProfileScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var showRestoreConfirmDialog by remember { mutableStateOf(false) }
     var showSignOutConfirmDialog by remember { mutableStateOf(false) }
+    var showTraktDisconnectConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let { msg ->
@@ -120,6 +129,8 @@ fun ProfileScreen(
                     lastBackupMetadata = uiState.lastBackupMetadata,
                     backupFrequency = uiState.backupFrequency,
                     backupOverWifiOnly = uiState.backupOverWifiOnly,
+                    traktAuthState = uiState.traktAuthState,
+                    isTraktSyncing = uiState.isTraktSyncing,
                     onUpgradeClick = { viewModel.openPaywall() },
                     onThemeSelected = { viewModel.updateTheme(it) },
                     onSignInGoogleClick = {
@@ -130,8 +141,12 @@ fun ProfileScreen(
                     onRestoreBackupClick = { showRestoreConfirmDialog = true },
                     onBackupFrequencySelected = { viewModel.onBackupFrequencySelected(it) },
                     onBackupOverWifiOnlyChanged = { viewModel.onBackupOverWifiOnlyChanged(it) },
+                    onConnectTraktClick = { viewModel.openTraktConnect() },
+                    onSyncTraktNowClick = { viewModel.syncTraktNow() },
+                    onDisconnectTraktClick = { showTraktDisconnectConfirmDialog = true },
                     onLoginClick = onLoginClick,
                     onLogoutClick = { viewModel.logout() },
+                    onOpenDeveloperPanelClick = { viewModel.openDeveloperPanel() },
                     modifier = Modifier.padding(innerPadding)
                 )
             }
@@ -231,6 +246,61 @@ fun ProfileScreen(
             )
         }
 
+        // Disconnect Trakt Confirmation Dialog
+        if (showTraktDisconnectConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showTraktDisconnectConfirmDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Tv,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.disconnect_trakt_confirm_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(text = stringResource(R.string.disconnect_trakt_confirm_msg))
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showTraktDisconnectConfirmDialog = false
+                            viewModel.disconnectTrakt()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(text = stringResource(R.string.disconnect))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTraktDisconnectConfirmDialog = false }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
+
+        // Trakt Connect Bottom Sheet
+        if (uiState.isTraktConnectSheetVisible) {
+            TraktConnectBottomSheet(
+                traktAuthManager = viewModel.traktAuthManager,
+                onDismiss = { viewModel.closeTraktConnect() },
+                onConnected = {
+                    viewModel.closeTraktConnect()
+                    viewModel.syncTraktNow()
+                }
+            )
+        }
+
         // Pro Paywall Bottom Sheet
         if (uiState.isPaywallVisible) {
             ProPaywallBottomSheet(
@@ -242,6 +312,29 @@ fun ProfileScreen(
                 },
                 onRestoreClick = { viewModel.restorePurchases() },
                 onDismissRequest = { viewModel.dismissPaywall() }
+            )
+        }
+
+        // Developer / Debug Panel Bottom Sheet (Debug-Only)
+        if (BuildConfig.DEBUG && uiState.isDeveloperPanelVisible) {
+            DeveloperPanelBottomSheet(
+                proOverride = uiState.proOverride,
+                isMockTraktEnabled = uiState.isMockTraktEnabled,
+                customTraktClientId = uiState.customTraktClientId,
+                isAdsDisabled = uiState.isAdsDisabled,
+                isTraktConnected = uiState.traktAuthState is TraktAuthState.Connected,
+                onProOverrideSelected = { viewModel.setDebugProOverride(it) },
+                onMockTraktToggled = { viewModel.setDebugMockTraktEnabled(it) },
+                onSaveCustomTraktClientId = { viewModel.saveDebugCustomTraktClientId(it) },
+                onAdsDisabledToggled = { viewModel.setDebugAdsDisabled(it) },
+                onInstantMockConnectTrakt = { viewModel.instantMockConnectTrakt() },
+                onDisconnectTrakt = { viewModel.disconnectTrakt() },
+                onSeedFavorites = { viewModel.seedSampleFavorites() },
+                onSeedWatchlist = { viewModel.seedSampleWatchlist() },
+                onSeedHistory = { viewModel.seedSampleHistory() },
+                onClearDatabase = { viewModel.clearLocalDatabase() },
+                onResetAll = { viewModel.resetAllDebugOverrides() },
+                onDismissRequest = { viewModel.dismissDeveloperPanel() }
             )
         }
     }
@@ -258,6 +351,8 @@ private fun ProfileMainContent(
     lastBackupMetadata: BackupMetadata?,
     backupFrequency: BackupFrequency,
     backupOverWifiOnly: Boolean,
+    traktAuthState: TraktAuthState,
+    isTraktSyncing: Boolean,
     onUpgradeClick: () -> Unit,
     onThemeSelected: (AppTheme) -> Unit,
     onSignInGoogleClick: () -> Unit,
@@ -266,8 +361,12 @@ private fun ProfileMainContent(
     onRestoreBackupClick: () -> Unit,
     onBackupFrequencySelected: (BackupFrequency) -> Unit,
     onBackupOverWifiOnlyChanged: (Boolean) -> Unit,
+    onConnectTraktClick: () -> Unit,
+    onSyncTraktNowClick: () -> Unit,
+    onDisconnectTraktClick: () -> Unit,
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
+    onOpenDeveloperPanelClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val isGuest = profile.userName.equals("guest", ignoreCase = true)
@@ -316,7 +415,7 @@ private fun ProfileMainContent(
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-        // Cloud Backup Section
+        // Google Drive Cloud Backup Section
         CloudBackupCard(
             googleUser = googleUser,
             backupStatus = backupStatus,
@@ -330,6 +429,19 @@ private fun ProfileMainContent(
             onRestoreBackupClick = onRestoreBackupClick,
             onBackupFrequencySelected = onBackupFrequencySelected,
             onBackupOverWifiOnlyChanged = onBackupOverWifiOnlyChanged
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+        // Trakt.tv Cloud Sync Section (Pro)
+        TraktCloudSyncCard(
+            traktAuthState = traktAuthState,
+            isTraktSyncing = isTraktSyncing,
+            isProActive = isProActive,
+            onConnectTraktClick = onConnectTraktClick,
+            onSyncNowClick = onSyncTraktNowClick,
+            onDisconnectClick = onDisconnectTraktClick,
+            onUpgradeClick = onUpgradeClick
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
@@ -379,7 +491,68 @@ private fun ProfileMainContent(
             }
         }
 
+        // Developer Controls Card (Debug Builds Only)
+        if (BuildConfig.DEBUG) {
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+            DeveloperControlsCard(onClick = onOpenDeveloperPanelClick)
+        }
+
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+    }
+}
+
+@Composable
+private fun DeveloperControlsCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedCard(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f)
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spacing.medium)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.BugReport,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.developer_controls),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.developer_controls_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 
@@ -1044,4 +1217,220 @@ private fun BackupFrequencyOption(
         }
     }
 }
+
+@Composable
+private fun ProBadge(
+    modifier: Modifier = Modifier,
+    isProActive: Boolean = false
+) {
+    Surface(
+        shape = RoundedCornerShape(6.dp),
+        color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(0xFFFF9800).copy(alpha = 0.14f),
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Star,
+                contentDescription = null,
+                tint = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800),
+                modifier = Modifier.size(12.dp)
+            )
+            Spacer(modifier = Modifier.width(2.dp))
+            Text(
+                text = stringResource(R.string.pro_badge),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800)
+            )
+        }
+    }
+}
+
+@Composable
+private fun TraktCloudSyncCard(
+    traktAuthState: TraktAuthState,
+    isTraktSyncing: Boolean,
+    isProActive: Boolean,
+    onConnectTraktClick: () -> Unit,
+    onSyncNowClick: () -> Unit,
+    onDisconnectClick: () -> Unit,
+    onUpgradeClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spacing.medium)
+        ) {
+            // Header: Icon + Title + PRO Badge
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFED1C24).copy(alpha = 0.15f),
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.Tv,
+                            contentDescription = null,
+                            tint = Color(0xFFED1C24),
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.trakt_cloud_sync),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        ProBadge(isProActive = isProActive)
+                    }
+                    Text(
+                        text = stringResource(R.string.trakt_cloud_sync_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            when (traktAuthState) {
+                is TraktAuthState.Connected -> {
+                    // Connected User Details Row
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = MaterialTheme.spacing.extraSmall)
+                    ) {
+                        if (!traktAuthState.user.avatarUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = traktAuthState.user.avatarUrl,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                            )
+                        } else {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFED1C24),
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = traktAuthState.user.displayName.take(1).uppercase(),
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = traktAuthState.user.displayName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.trakt_connected_as, traktAuthState.user.username),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        TextButton(onClick = onDisconnectClick) {
+                            Text(
+                                text = stringResource(R.string.disconnect),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                    Button(
+                        onClick = onSyncNowClick,
+                        enabled = !isTraktSyncing,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (isTraktSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                            Text(text = stringResource(R.string.trakt_syncing))
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.CloudSync,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                            Text(text = stringResource(R.string.trakt_sync_now))
+                        }
+                    }
+                }
+
+                else -> {
+                    Button(
+                        onClick = {
+                            if (!isProActive) {
+                                onUpgradeClick()
+                            } else {
+                                onConnectTraktClick()
+                            }
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Tv,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(text = stringResource(R.string.connect_trakt))
+                    }
+                }
+            }
+        }
+    }
+}
+
 

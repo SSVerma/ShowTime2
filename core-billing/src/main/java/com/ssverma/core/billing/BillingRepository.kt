@@ -6,13 +6,15 @@ import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.BillingState
 import com.ssverma.core.billing.model.ProStatus
 import com.ssverma.core.billing.model.PurchaseResult
+import com.ssverma.core.storage.debug.DebugConfigManager
+import com.ssverma.core.storage.debug.DebugProOverride
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,20 +32,28 @@ interface BillingRepository {
 
 @Singleton
 class BillingRepositoryImpl @Inject constructor(
-    private val billingClientWrapper: BillingClientWrapper
+    private val billingClientWrapper: BillingClientWrapper,
+    private val debugConfigManager: DebugConfigManager
 ) : BillingRepository {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override val proStatus: StateFlow<ProStatus> = billingClientWrapper.proStatus
 
-    override val isProActive: StateFlow<Boolean> = proStatus
-        .map { it is ProStatus.Active }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.Eagerly,
-            initialValue = false
-        )
+    override val isProActive: StateFlow<Boolean> = combine(
+        proStatus,
+        debugConfigManager.proOverride
+    ) { status, override ->
+        when (override) {
+            DebugProOverride.FORCE_ACTIVE -> true
+            DebugProOverride.FORCE_INACTIVE -> false
+            DebugProOverride.AUTO -> status is ProStatus.Active
+        }
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.Eagerly,
+        initialValue = false
+    )
 
     override val billingState: StateFlow<BillingState> = billingClientWrapper.billingState
 

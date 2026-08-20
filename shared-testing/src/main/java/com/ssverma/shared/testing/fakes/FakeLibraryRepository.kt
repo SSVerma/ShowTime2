@@ -161,6 +161,21 @@ class FakeLibraryRepository : LibraryRepository {
         history.value = emptyList()
     }
 
+    override suspend fun clearFavorites() {
+        favorites.value = emptyMap()
+    }
+
+    override suspend fun clearWatchlist() {
+        watchlist.value = emptyMap()
+    }
+
+    override suspend fun clearAllLibrary() {
+        favorites.value = emptyMap()
+        watchlist.value = emptyMap()
+        history.value = emptyList()
+        customLists.value = emptyList()
+    }
+
     override fun getAllFavorites(): Flow<List<SavedMediaItem>> {
         return favorites.map { it.values.toList() }
     }

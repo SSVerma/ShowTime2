@@ -174,6 +174,22 @@ class LibraryRepositoryImpl @Inject constructor(
         watchHistoryDao.clearHistory()
     }
 
+    override suspend fun clearFavorites() {
+        favoriteDao.clearFavorites()
+    }
+
+    override suspend fun clearWatchlist() {
+        watchlistDao.clearWatchlist()
+    }
+
+    override suspend fun clearAllLibrary() {
+        favoriteDao.clearFavorites()
+        watchlistDao.clearWatchlist()
+        watchHistoryDao.clearHistory()
+        customListDao.clearAllListItems()
+        customListDao.clearAllLists()
+    }
+
     override fun getAllFavorites(): Flow<List<SavedMediaItem>> {
         return favoriteDao.getAllFavoritesFlow().map { list ->
             list.map { it.toSavedMediaItem() }

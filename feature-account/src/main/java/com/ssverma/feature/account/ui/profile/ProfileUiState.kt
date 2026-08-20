@@ -23,6 +23,14 @@ data class ProfileScreenState(
     val lastBackupMetadata: BackupMetadata? = null,
     val backupFrequency: BackupFrequency = BackupFrequency.OFF,
     val backupOverWifiOnly: Boolean = true,
+    val traktAuthState: com.ssverma.feature.auth.domain.model.TraktAuthState = com.ssverma.feature.auth.domain.model.TraktAuthState.Disconnected,
+    val isTraktConnectSheetVisible: Boolean = false,
+    val isTraktSyncing: Boolean = false,
+    val isDeveloperPanelVisible: Boolean = false,
+    val proOverride: com.ssverma.core.storage.debug.DebugProOverride = com.ssverma.core.storage.debug.DebugProOverride.AUTO,
+    val isMockTraktEnabled: Boolean = true,
+    val customTraktClientId: String = "",
+    val isAdsDisabled: Boolean = false,
     val message: UiText? = null
 )
 

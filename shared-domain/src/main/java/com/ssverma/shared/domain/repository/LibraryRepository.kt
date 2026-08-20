@@ -54,6 +54,9 @@ interface LibraryRepository {
 
     suspend fun deleteWatchHistory(mediaId: Int)
     suspend fun clearWatchHistory()
+    suspend fun clearFavorites()
+    suspend fun clearWatchlist()
+    suspend fun clearAllLibrary()
 
     fun getAllFavorites(): Flow<List<SavedMediaItem>>
     fun getAllWatchlist(): Flow<List<SavedMediaItem>>

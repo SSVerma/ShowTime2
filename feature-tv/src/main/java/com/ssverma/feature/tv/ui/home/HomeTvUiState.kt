@@ -20,4 +20,6 @@ data class HomeTvUiState(
     val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle,
     val watchProviderAd: NativeAd? = null,
     val feedInlineAd: NativeAd? = null,
+    val upNextQueue: List<com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode> = emptyList(),
+    val isTraktConnected: Boolean = false
 )

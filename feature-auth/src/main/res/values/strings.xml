@@ -19,4 +19,21 @@
         issue. Please complete login process now.</string>
     <string name="proceed">Proceed</string>
     <string name="username_n">\@%1s</string>
+
+    <!-- Trakt.tv Integration -->
+    <string name="connect_trakt">Connect Trakt.tv</string>
+    <string name="connect_trakt_subtitle">Sync your watchlist, history, and TV show progress across all your devices.</string>
+    <string name="trakt_activation_code">ACTIVATION CODE</string>
+    <string name="trakt_copy_code">Copy Code</string>
+    <string name="trakt_code_copied">Code copied to clipboard</string>
+    <string name="trakt_open_browser">Open trakt.tv/activate</string>
+    <string name="trakt_waiting_approval">Waiting for approval on trakt.tv…</string>
+    <string name="trakt_expires_in">Code expires in %1$02d:%2$02d</string>
+    <string name="trakt_connected_success">Trakt Connected Successfully!</string>
+    <string name="trakt_syncing">Syncing your cinema library…</string>
+    <string name="trakt_disconnect">Disconnect Trakt</string>
+    <string name="trakt_disconnect_confirm">Are you sure you want to disconnect your Trakt.tv account?</string>
+    <string name="close">Close</string>
+    <string name="try_again">Try Again</string>
+    <string name="cancel">Cancel</string>
 </resources>

@@ -12,13 +12,19 @@ import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.auth.domain.AuthManager
+import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.repository.TraktSyncRepository
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -36,7 +42,13 @@ class ProfileViewModelTest {
 
     private val mockAccountRepository: AccountRepository = mockk(relaxed = true)
     private val mockAuthManager: AuthManager = mockk(relaxed = true)
+    private val mockTraktAuthManager: TraktAuthManager = mockk(relaxed = true)
+    private val mockTraktSyncRepository: TraktSyncRepository = mockk(relaxed = true)
+    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager = mockk(relaxed = true)
+    private val mockLibraryRepository: com.ssverma.shared.domain.repository.LibraryRepository = mockk(relaxed = true)
+
     private val authFlow = MutableSharedFlow<AuthState>(replay = 1)
+    private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
 
     private lateinit var viewModel: ProfileViewModel
 
@@ -44,6 +56,11 @@ class ProfileViewModelTest {
     fun setUp() {
         coEvery { mockAuthManager.authFlow } returns authFlow
         authFlow.tryEmit(AuthState.Unauthorized)
+        every { mockTraktAuthManager.authState } returns traktAuthFlow
+        every { mockDebugConfigManager.proOverride } returns MutableStateFlow(com.ssverma.core.storage.debug.DebugProOverride.AUTO)
+        every { mockDebugConfigManager.isMockTraktEnabled } returns MutableStateFlow(true)
+        every { mockDebugConfigManager.customTraktClientId } returns MutableStateFlow("")
+        every { mockDebugConfigManager.isAdsDisabled } returns MutableStateFlow(false)
 
         viewModel = ProfileViewModel(
             accountRepository = mockAccountRepository,
@@ -51,7 +68,11 @@ class ProfileViewModelTest {
             billingRepository = fakeBillingRepository,
             backupRepository = fakeBackupRepository,
             appConfigRepository = fakeAppConfigRepository,
-            appConfigProvider = fakeAppConfigProvider
+            appConfigProvider = fakeAppConfigProvider,
+            traktAuthManager = mockTraktAuthManager,
+            traktSyncRepository = mockTraktSyncRepository,
+            debugConfigManager = mockDebugConfigManager,
+            libraryRepository = mockLibraryRepository
         )
     }
 
@@ -209,5 +230,24 @@ class ProfileViewModelTest {
             )
             assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.restore_success_msg))
         }
+    }
+
+    @Test
+    fun `openDeveloperPanel and dismissDeveloperPanel toggle visibility correctly`() = runTest {
+        viewModel.uiState.test {
+            assertThat(awaitItem().isDeveloperPanelVisible).isFalse()
+
+            viewModel.openDeveloperPanel()
+            assertThat(awaitItem().isDeveloperPanelVisible).isTrue()
+
+            viewModel.dismissDeveloperPanel()
+            assertThat(awaitItem().isDeveloperPanelVisible).isFalse()
+        }
+    }
+
+    @Test
+    fun `clearLocalDatabase calls libraryRepository clearAllLibrary`() = runTest {
+        viewModel.clearLocalDatabase()
+        coVerify { mockLibraryRepository.clearAllLibrary() }
     }
 }

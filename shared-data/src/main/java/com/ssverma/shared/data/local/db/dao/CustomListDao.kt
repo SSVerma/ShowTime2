@@ -68,4 +68,10 @@ interface CustomListDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllListItems(items: List<CustomListItemEntity>)
+
+    @Query("DELETE FROM custom_lists")
+    suspend fun clearAllLists()
+
+    @Query("DELETE FROM custom_list_items")
+    suspend fun clearAllListItems()
 }

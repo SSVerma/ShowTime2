@@ -8,16 +8,23 @@ import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ccm.AppConfigProvider
+import com.ssverma.core.storage.debug.DebugConfigManager
+import com.ssverma.core.storage.debug.DebugProOverride
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.auth.domain.AuthManager
+import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.auth.domain.sessionIdOrNull
 import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.repository.LibraryRepository
+import com.ssverma.shared.domain.repository.TraktSyncRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +41,10 @@ class ProfileViewModel @Inject constructor(
     private val backupRepository: BackupRepository,
     private val appConfigRepository: AppConfigRepository,
     private val appConfigProvider: AppConfigProvider,
+    val traktAuthManager: TraktAuthManager,
+    private val traktSyncRepository: TraktSyncRepository,
+    private val debugConfigManager: DebugConfigManager,
+    private val libraryRepository: LibraryRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileScreenState())
@@ -46,6 +57,35 @@ class ProfileViewModel @Inject constructor(
             defaultValue = true // Enabled in dev by default
         )
         _uiState.update { it.copy(isPaywallRemoteEnabled = isPaywallEnabledRemotely) }
+
+        // Observe Debug Configurations
+        viewModelScope.launch {
+            debugConfigManager.proOverride.collectLatest { override ->
+                _uiState.update { it.copy(proOverride = override) }
+            }
+        }
+        viewModelScope.launch {
+            debugConfigManager.isMockTraktEnabled.collectLatest { isMock ->
+                _uiState.update { it.copy(isMockTraktEnabled = isMock) }
+            }
+        }
+        viewModelScope.launch {
+            debugConfigManager.customTraktClientId.collectLatest { clientId ->
+                _uiState.update { it.copy(customTraktClientId = clientId) }
+            }
+        }
+        viewModelScope.launch {
+            debugConfigManager.isAdsDisabled.collectLatest { disabled ->
+                _uiState.update { it.copy(isAdsDisabled = disabled) }
+            }
+        }
+
+        // Observe Trakt Auth State
+        viewModelScope.launch {
+            traktAuthManager.authState.collectLatest { traktState ->
+                _uiState.update { it.copy(traktAuthState = traktState) }
+            }
+        }
 
         // Observe Pro Subscription Status
         viewModelScope.launch {
@@ -261,6 +301,53 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun openTraktConnect() {
+        if (!_uiState.value.isProActive) {
+            openPaywall()
+        } else {
+            _uiState.update { it.copy(isTraktConnectSheetVisible = true) }
+        }
+    }
+
+    fun closeTraktConnect() {
+        _uiState.update { it.copy(isTraktConnectSheetVisible = false) }
+    }
+
+    fun syncTraktNow() {
+        val traktState = _uiState.value.traktAuthState
+        if (traktState !is TraktAuthState.Connected) {
+            openTraktConnect()
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isTraktSyncing = true) }
+            val result = traktSyncRepository.syncLibrary(traktState.accessToken)
+            _uiState.update { it.copy(isTraktSyncing = false) }
+
+            result.onSuccess { syncResult ->
+                val totalSynced = syncResult.itemsImportedToWatchlist + syncResult.itemsImportedToHistory + syncResult.itemsExportedToTrakt
+                _uiState.update {
+                    it.copy(
+                        message = UiText.StaticText(
+                            R.string.trakt_sync_success,
+                            totalSynced
+                        )
+                    )
+                }
+            }.onFailure { e ->
+                Log.e("ProfileViewModel", "Trakt sync failed", e)
+                _uiState.update { it.copy(message = UiText.StaticText(R.string.trakt_sync_failed)) }
+            }
+        }
+    }
+
+    fun disconnectTrakt() {
+        viewModelScope.launch {
+            traktAuthManager.disconnect()
+        }
+    }
+
     fun logout() {
         _uiState.update { it.copy(profileContent = ProfileContentState.Loading) }
         authManager.logout()
@@ -268,5 +355,119 @@ class ProfileViewModel @Inject constructor(
 
     fun clearMessage() {
         _uiState.update { it.copy(message = null) }
+    }
+
+    // --- Developer / Debug Panel Methods ---
+
+    fun openDeveloperPanel() {
+        _uiState.update { it.copy(isDeveloperPanelVisible = true) }
+    }
+
+    fun dismissDeveloperPanel() {
+        _uiState.update { it.copy(isDeveloperPanelVisible = false) }
+    }
+
+    fun setDebugProOverride(override: DebugProOverride) {
+        debugConfigManager.setProOverride(override)
+    }
+
+    fun setDebugMockTraktEnabled(enabled: Boolean) {
+        debugConfigManager.setMockTraktEnabled(enabled)
+    }
+
+    fun saveDebugCustomTraktClientId(clientId: String) {
+        debugConfigManager.setCustomTraktClientId(clientId)
+        _uiState.update { it.copy(message = UiText.DynamicText("Custom Client ID saved")) }
+    }
+
+    fun setDebugAdsDisabled(disabled: Boolean) {
+        debugConfigManager.setAdsDisabled(disabled)
+    }
+
+    fun instantMockConnectTrakt() {
+        traktAuthManager.instantMockConnect()
+        _uiState.update { it.copy(message = UiText.DynamicText("Mock Trakt connected as @cinephile_dev")) }
+    }
+
+    fun seedSampleFavorites() {
+        viewModelScope.launch {
+            val samples = listOf(
+                Pair(157336, "Interstellar"),
+                Pair(438631, "Dune"),
+                Pair(27205, "Inception"),
+                Pair(93405, "Severance"),
+                Pair(94997, "House of the Dragon")
+            )
+            samples.forEach { (id, title) ->
+                libraryRepository.toggleFavorite(
+                    mediaId = id,
+                    mediaType = if (id > 50000) MediaType.Tv else MediaType.Movie,
+                    title = title,
+                    posterImageUrl = "",
+                    backdropImageUrl = "",
+                    voteAvg = 8.5f,
+                    releaseDate = "2024-01-01"
+                )
+            }
+            _uiState.update { it.copy(message = UiText.DynamicText("Seeded 5 favorites!")) }
+        }
+    }
+
+    fun seedSampleWatchlist() {
+        viewModelScope.launch {
+            val samples = listOf(
+                Pair(693134, "Dune: Part Two"),
+                Pair(872585, "Oppenheimer"),
+                Pair(136315, "The Bear"),
+                Pair(76331, "Succession"),
+                Pair(119051, "Wednesday")
+            )
+            samples.forEach { (id, title) ->
+                libraryRepository.toggleWatchlist(
+                    mediaId = id,
+                    mediaType = if (id > 50000) MediaType.Tv else MediaType.Movie,
+                    title = title,
+                    posterImageUrl = "",
+                    backdropImageUrl = "",
+                    voteAvg = 8.5f,
+                    releaseDate = "2024-01-01"
+                )
+            }
+            _uiState.update { it.copy(message = UiText.DynamicText("Seeded 5 watchlist items!")) }
+        }
+    }
+
+    fun seedSampleHistory() {
+        viewModelScope.launch {
+            val samples = listOf(
+                Pair(550, "Fight Club"),
+                Pair(680, "Pulp Fiction"),
+                Pair(1396, "Breaking Bad"),
+                Pair(60059, "Better Call Saul"),
+                Pair(155, "The Dark Knight")
+            )
+            samples.forEach { (id, title) ->
+                libraryRepository.logWatchHistory(
+                    mediaId = id,
+                    mediaType = if (id > 50000) MediaType.Tv else MediaType.Movie,
+                    title = title,
+                    posterImageUrl = "",
+                    voteAvg = 8.8f
+                )
+            }
+            _uiState.update { it.copy(message = UiText.DynamicText("Seeded 5 watch history items!")) }
+        }
+    }
+
+    fun clearLocalDatabase() {
+        viewModelScope.launch {
+            libraryRepository.clearAllLibrary()
+            _uiState.update { it.copy(message = UiText.DynamicText("All local data wiped (Favorites, Watchlist, History)!")) }
+        }
+    }
+
+    fun resetAllDebugOverrides() {
+        debugConfigManager.resetAll()
+        _uiState.update { it.copy(message = UiText.DynamicText("Debug overrides reset.")) }
     }
 }

@@ -5,6 +5,10 @@ plugins {
 
 android {
     namespace = "com.ssverma.feature.account"
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {

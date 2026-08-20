@@ -24,10 +24,14 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
+import com.ssverma.feature.auth.domain.TraktAuthManager
+import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.repository.TraktSyncRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,7 +48,9 @@ class HomeTvShowViewModel @Inject constructor(
     private val tvGenresUseCase: TvGenresUseCase,
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
     private val appConfigRepository: AppConfigRepository,
-    private val adConfigProvider: AdConfigProvider
+    private val adConfigProvider: AdConfigProvider,
+    private val traktAuthManager: TraktAuthManager,
+    private val traktSyncRepository: TraktSyncRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeTvUiState())
@@ -60,6 +66,21 @@ class HomeTvShowViewModel @Inject constructor(
             ) { _, _, _, _ -> }.collect {
                 _uiState.update { HomeTvUiState() } // Reset state to trigger re-fetch of all sections
                 fetchAllHomeData()
+            }
+        }
+
+        // Observe Trakt State & Up Next queue
+        viewModelScope.launch {
+            traktAuthManager.authState.collectLatest { traktState ->
+                when (traktState) {
+                    is TraktAuthState.Connected -> {
+                        _uiState.update { it.copy(isTraktConnected = true) }
+                        fetchUpNextQueue(traktState.accessToken)
+                    }
+                    else -> {
+                        _uiState.update { it.copy(isTraktConnected = false, upNextQueue = emptyList()) }
+                    }
+                }
             }
         }
     }
@@ -291,5 +312,49 @@ class HomeTvShowViewModel @Inject constructor(
 
     fun onWatchProviderAdLoaded(nativeAd: NativeAd) {
         _uiState.update { it.copy(watchProviderAd = nativeAd) }
+    }
+
+    fun fetchUpNextQueue(accessToken: String) = viewModelScope.launch {
+        val result = traktSyncRepository.getUpNextQueue(accessToken)
+        result.onSuccess { queue ->
+            _uiState.update { it.copy(upNextQueue = queue) }
+        }
+    }
+
+    fun markEpisodeWatched(showTmdbId: Int, season: Int, episode: Int) = viewModelScope.launch {
+        val traktState = traktAuthManager.authState.value
+        if (traktState is TraktAuthState.Connected) {
+            // 1. Optimistically update local upNextQueue in UI state so the user immediately sees progress & celebration!
+            val currentQueue = _uiState.value.upNextQueue
+            var wasFinalEpisode = false
+            val updatedQueue = currentQueue.map { item ->
+                if (item.showTmdbId == showTmdbId) {
+                    val nextCompleted = item.totalCompleted + 1
+                    if (nextCompleted >= item.totalAired) {
+                        wasFinalEpisode = true
+                    }
+                    item.copy(
+                        totalCompleted = nextCompleted.coerceAtMost(item.totalAired),
+                        episodeNumber = item.episodeNumber + 1
+                    )
+                } else item
+            }
+            _uiState.update { it.copy(upNextQueue = updatedQueue) }
+
+            // 2. Perform backend Trakt sync
+            traktSyncRepository.markEpisodeWatched(
+                accessToken = traktState.accessToken,
+                showTmdbId = showTmdbId,
+                season = season,
+                episode = episode
+            )
+
+            // 3. If it was the final episode, keep the triumphant "Caught Up 🎉" card visible for 2 seconds
+            // so the user can enjoy the fireworks particle burst and golden glow celebration!
+            if (wasFinalEpisode) {
+                kotlinx.coroutines.delay(2000)
+            }
+            fetchUpNextQueue(traktState.accessToken)
+        }
     }
 }
