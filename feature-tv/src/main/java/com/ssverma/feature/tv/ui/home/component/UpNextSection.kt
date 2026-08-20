@@ -69,8 +69,6 @@ fun UpNextSection(
     onMarkWatchedClick: (showTmdbId: Int, seasonNumber: Int, episodeNumber: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (upNextEpisodes.isEmpty()) return
-
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -359,13 +357,76 @@ private fun CelebrationBurst(trigger: Int) {
 
     val particles = remember(trigger) {
         listOf(
-            CelebrationParticle(-30f, -60f, -80f, 14.dp, Color(0xFFFFD700), 0, -25f, Icons.Rounded.Star),
-            CelebrationParticle(0f, 10f, -110f, 16.dp, Color(0xFF4CAF50), 40, 15f, Icons.Rounded.Check),
-            CelebrationParticle(25f, 55f, -85f, 13.dp, Color(0xFFED1C24), 80, 30f, Icons.Rounded.Favorite),
-            CelebrationParticle(-15f, -40f, -100f, 12.dp, Color(0xFF2196F3), 20, -15f, Icons.Rounded.Star),
-            CelebrationParticle(15f, 40f, -95f, 15.dp, Color(0xFFFF9800), 60, 20f, Icons.Rounded.Star),
-            CelebrationParticle(-40f, -75f, -70f, 11.dp, Color(0xFFE91E63), 100, -35f, Icons.Rounded.Check),
-            CelebrationParticle(35f, 70f, -75f, 12.dp, Color(0xFF9C27B0), 70, 40f, Icons.Rounded.Star)
+            CelebrationParticle(
+                -30f,
+                -60f,
+                -80f,
+                14.dp,
+                Color(0xFFFFD700),
+                0,
+                -25f,
+                Icons.Rounded.Star
+            ),
+            CelebrationParticle(
+                0f,
+                10f,
+                -110f,
+                16.dp,
+                Color(0xFF4CAF50),
+                40,
+                15f,
+                Icons.Rounded.Check
+            ),
+            CelebrationParticle(
+                25f,
+                55f,
+                -85f,
+                13.dp,
+                Color(0xFFED1C24),
+                80,
+                30f,
+                Icons.Rounded.Favorite
+            ),
+            CelebrationParticle(
+                -15f,
+                -40f,
+                -100f,
+                12.dp,
+                Color(0xFF2196F3),
+                20,
+                -15f,
+                Icons.Rounded.Star
+            ),
+            CelebrationParticle(
+                15f,
+                40f,
+                -95f,
+                15.dp,
+                Color(0xFFFF9800),
+                60,
+                20f,
+                Icons.Rounded.Star
+            ),
+            CelebrationParticle(
+                -40f,
+                -75f,
+                -70f,
+                11.dp,
+                Color(0xFFE91E63),
+                100,
+                -35f,
+                Icons.Rounded.Check
+            ),
+            CelebrationParticle(
+                35f,
+                70f,
+                -75f,
+                12.dp,
+                Color(0xFF9C27B0),
+                70,
+                40f,
+                Icons.Rounded.Star
+            )
         )
     }
 
@@ -412,7 +473,8 @@ private fun CelebrationBurst(trigger: Int) {
                         1.25f - (adjustedProgress - 0.2f) * 0.35f
                     }
 
-                    val currentX = particle.offsetX + (particle.driftX - particle.offsetX) * adjustedProgress
+                    val currentX =
+                        particle.offsetX + (particle.driftX - particle.offsetX) * adjustedProgress
                     val currentY = particle.targetY * adjustedProgress
 
                     Icon(

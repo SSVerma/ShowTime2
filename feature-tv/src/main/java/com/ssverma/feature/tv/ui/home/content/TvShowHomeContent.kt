@@ -5,6 +5,15 @@ import android.app.Activity
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -142,18 +151,26 @@ fun TvShowHomeContent(
             )
         }
 
-        if (uiState.upNextQueue.isNotEmpty()) {
-            item(key = "up_next_section") {
+        item(key = "up_next_section") {
+            AnimatedVisibility(
+                visible = uiState.upNextQueue.isNotEmpty(),
+                enter = fadeIn(animationSpec = tween(350)) + expandVertically(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                ),
+                exit = fadeOut(animationSpec = tween(350)) + shrinkVertically(
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                )
+            ) {
                 UpNextSection(
                     upNextEpisodes = uiState.upNextQueue,
                     onTvShowClick = openTvShowDetails,
                     onMarkWatchedClick = { showTmdbId, season, episode ->
                         viewModel.markEpisodeWatched(showTmdbId, season, episode)
                     },
-                    modifier = Modifier.padding(
-                        top = MaterialTheme.spacing.medium,
-                        bottom = MaterialTheme.spacing.medium
-                    )
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
             }
         }
@@ -177,7 +194,7 @@ fun TvShowHomeContent(
                         }
                     },
                     onDismissClicked = { isPermissionBannerDismissed = true },
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.medium)
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
             }
         }
@@ -185,6 +202,7 @@ fun TvShowHomeContent(
         item {
             TvGenres(
                 genresUiState = uiState.genres,
+                modifier = Modifier.padding(top = MaterialTheme.spacing.medium),
                 onGenreClicked = { genre ->
                     analytics.logEvent(
                         TvAnalyticsEvent.GenreClicked(
