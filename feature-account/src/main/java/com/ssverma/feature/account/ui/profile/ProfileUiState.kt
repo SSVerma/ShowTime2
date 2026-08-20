@@ -1,5 +1,6 @@
 package com.ssverma.feature.account.ui.profile
 
+import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleUser
@@ -20,6 +21,8 @@ data class ProfileScreenState(
     val googleUser: GoogleUser? = null,
     val backupStatus: BackupStatus = BackupStatus.Idle,
     val lastBackupMetadata: BackupMetadata? = null,
+    val backupFrequency: BackupFrequency = BackupFrequency.OFF,
+    val backupOverWifiOnly: Boolean = true,
     val message: UiText? = null
 )
 

@@ -1,6 +1,7 @@
 package com.ssverma.shared.testing.fakes
 
 import android.app.Activity
+import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupOperation
 import com.ssverma.core.backup.model.BackupStatus
@@ -20,6 +21,12 @@ class FakeBackupRepository : BackupRepository {
 
     private val _lastBackupMetadata = MutableStateFlow<BackupMetadata?>(null)
     override val lastBackupMetadata: StateFlow<BackupMetadata?> = _lastBackupMetadata.asStateFlow()
+
+    private val _backupFrequency = MutableStateFlow(BackupFrequency.OFF)
+    override val backupFrequency: StateFlow<BackupFrequency> = _backupFrequency.asStateFlow()
+
+    private val _backupOverWifiOnly = MutableStateFlow(true)
+    override val backupOverWifiOnly: StateFlow<Boolean> = _backupOverWifiOnly.asStateFlow()
 
     var shouldFailBackup: Boolean = false
     var shouldFailRestore: Boolean = false
@@ -69,7 +76,9 @@ class FakeBackupRepository : BackupRepository {
             deviceName = "Fake Test Device",
             favoritesCount = 10,
             watchlistCount = 5,
-            historyCount = 20
+            historyCount = 20,
+            customListsCount = 2,
+            customListItemsCount = 8
         )
         _lastBackupMetadata.value = metadata
         _backupStatus.value = BackupStatus.Success(
@@ -97,13 +106,23 @@ class FakeBackupRepository : BackupRepository {
             deviceName = "Cloud Backup Device",
             favoritesCount = 10,
             watchlistCount = 5,
-            historyCount = 20
+            historyCount = 20,
+            customListsCount = 2,
+            customListItemsCount = 8
         )
         _backupStatus.value = BackupStatus.Success(
             operation = BackupOperation.RESTORE,
             metadata = metadata
         )
         return Result.success(metadata)
+    }
+
+    override suspend fun setBackupFrequency(frequency: BackupFrequency) {
+        _backupFrequency.value = frequency
+    }
+
+    override suspend fun setBackupOverWifiOnly(wifiOnly: Boolean) {
+        _backupOverWifiOnly.value = wifiOnly
     }
 
     override fun resetStatus() {

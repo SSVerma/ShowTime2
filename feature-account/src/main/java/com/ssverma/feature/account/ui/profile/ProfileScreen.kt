@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -33,9 +34,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -55,6 +58,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupOperation
 import com.ssverma.core.backup.model.BackupStatus
@@ -114,6 +118,8 @@ fun ProfileScreen(
                     googleUser = uiState.googleUser,
                     backupStatus = uiState.backupStatus,
                     lastBackupMetadata = uiState.lastBackupMetadata,
+                    backupFrequency = uiState.backupFrequency,
+                    backupOverWifiOnly = uiState.backupOverWifiOnly,
                     onUpgradeClick = { viewModel.openPaywall() },
                     onThemeSelected = { viewModel.updateTheme(it) },
                     onSignInGoogleClick = {
@@ -122,6 +128,8 @@ fun ProfileScreen(
                     onSignOutGoogleClick = { showSignOutConfirmDialog = true },
                     onBackupNowClick = { viewModel.backupNow() },
                     onRestoreBackupClick = { showRestoreConfirmDialog = true },
+                    onBackupFrequencySelected = { viewModel.onBackupFrequencySelected(it) },
+                    onBackupOverWifiOnlyChanged = { viewModel.onBackupOverWifiOnlyChanged(it) },
                     onLoginClick = onLoginClick,
                     onLogoutClick = { viewModel.logout() },
                     modifier = Modifier.padding(innerPadding)
@@ -248,12 +256,16 @@ private fun ProfileMainContent(
     googleUser: GoogleUser?,
     backupStatus: BackupStatus,
     lastBackupMetadata: BackupMetadata?,
+    backupFrequency: BackupFrequency,
+    backupOverWifiOnly: Boolean,
     onUpgradeClick: () -> Unit,
     onThemeSelected: (AppTheme) -> Unit,
     onSignInGoogleClick: () -> Unit,
     onSignOutGoogleClick: () -> Unit,
     onBackupNowClick: () -> Unit,
     onRestoreBackupClick: () -> Unit,
+    onBackupFrequencySelected: (BackupFrequency) -> Unit,
+    onBackupOverWifiOnlyChanged: (Boolean) -> Unit,
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -309,10 +321,15 @@ private fun ProfileMainContent(
             googleUser = googleUser,
             backupStatus = backupStatus,
             lastBackupMetadata = lastBackupMetadata,
+            backupFrequency = backupFrequency,
+            backupOverWifiOnly = backupOverWifiOnly,
+            isProActive = isProActive,
             onSignInGoogleClick = onSignInGoogleClick,
             onSignOutGoogleClick = onSignOutGoogleClick,
             onBackupNowClick = onBackupNowClick,
-            onRestoreBackupClick = onRestoreBackupClick
+            onRestoreBackupClick = onRestoreBackupClick,
+            onBackupFrequencySelected = onBackupFrequencySelected,
+            onBackupOverWifiOnlyChanged = onBackupOverWifiOnlyChanged
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
@@ -649,10 +666,15 @@ private fun CloudBackupCard(
     googleUser: GoogleUser?,
     backupStatus: BackupStatus,
     lastBackupMetadata: BackupMetadata?,
+    backupFrequency: BackupFrequency,
+    backupOverWifiOnly: Boolean,
+    isProActive: Boolean,
     onSignInGoogleClick: () -> Unit,
     onSignOutGoogleClick: () -> Unit,
     onBackupNowClick: () -> Unit,
     onRestoreBackupClick: () -> Unit,
+    onBackupFrequencySelected: (BackupFrequency) -> Unit,
+    onBackupOverWifiOnlyChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     OutlinedCard(
@@ -758,7 +780,7 @@ private fun CloudBackupCard(
                     }
                     TextButton(onClick = onSignOutGoogleClick) {
                         Text(
-                            text = "Sign out",
+                            text = stringResource(R.string.sign_out),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -786,19 +808,21 @@ private fun CloudBackupCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${
+                        text = "${stringResource(R.string.backup_size, lastBackupMetadata.formattedSize)} • ${
                             stringResource(
-                                R.string.backup_size,
-                                lastBackupMetadata.formattedSize
+                                R.string.backup_includes_summary,
+                                lastBackupMetadata.favoritesCount,
+                                lastBackupMetadata.watchlistCount,
+                                lastBackupMetadata.customListsCount
                             )
-                        } • ${lastBackupMetadata.favoritesCount} Favorites • ${lastBackupMetadata.watchlistCount} Watchlist",
+                        }",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 } else {
                     Text(
-                        text = stringResource(R.string.last_backup, "Never"),
+                        text = stringResource(R.string.last_backup, stringResource(R.string.never)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -853,6 +877,168 @@ private fun CloudBackupCard(
                             )
                         }
                     }
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.medium),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+
+                // WhatsApp-Style Auto-Backup Settings Section
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    Text(
+                        text = stringResource(R.string.auto_backup_settings),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                // Frequency Options
+                BackupFrequencyOption(
+                    title = stringResource(R.string.frequency_off),
+                    selected = backupFrequency == BackupFrequency.OFF,
+                    isPro = false,
+                    isProActive = isProActive,
+                    onClick = { onBackupFrequencySelected(BackupFrequency.OFF) }
+                )
+                BackupFrequencyOption(
+                    title = stringResource(R.string.frequency_daily),
+                    selected = backupFrequency == BackupFrequency.DAILY,
+                    isPro = true,
+                    isProActive = isProActive,
+                    onClick = { onBackupFrequencySelected(BackupFrequency.DAILY) }
+                )
+                BackupFrequencyOption(
+                    title = stringResource(R.string.frequency_weekly),
+                    selected = backupFrequency == BackupFrequency.WEEKLY,
+                    isPro = true,
+                    isProActive = isProActive,
+                    onClick = { onBackupFrequencySelected(BackupFrequency.WEEKLY) }
+                )
+                BackupFrequencyOption(
+                    title = stringResource(R.string.frequency_monthly),
+                    selected = backupFrequency == BackupFrequency.MONTHLY,
+                    isPro = true,
+                    isProActive = isProActive,
+                    onClick = { onBackupFrequencySelected(BackupFrequency.MONTHLY) }
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                // Wi-Fi Only Switch
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = MaterialTheme.spacing.extraSmall)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.backup_over_wifi),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.backup_over_wifi_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = backupOverWifiOnly,
+                        onCheckedChange = onBackupOverWifiOnlyChanged
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BackupFrequencyOption(
+    title: String,
+    selected: Boolean,
+    isPro: Boolean,
+    isProActive: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f) else Color.Transparent,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = MaterialTheme.spacing.extraSmall, vertical = 6.dp)
+        ) {
+            RadioButton(
+                selected = selected,
+                onClick = onClick
+            )
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            if (isPro) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(0xFFFF9800).copy(alpha = 0.14f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = "Pro",
+                            tint = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = stringResource(R.string.pro_badge),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800)
+                        )
+                    }
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Text(
+                        text = stringResource(R.string.free_badge),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
                 }
             }
         }

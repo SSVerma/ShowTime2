@@ -21,7 +21,9 @@ class GoogleDriveBackupClient @Inject constructor(
         deviceName: String = "",
         favoritesCount: Int = 0,
         watchlistCount: Int = 0,
-        historyCount: Int = 0
+        historyCount: Int = 0,
+        customListsCount: Int = 0,
+        customListItemsCount: Int = 0
     ): Pair<File, BackupMetadata> {
         val file = fileStorageClient.writeCompressedString(fileName, jsonPayload)
         val sizeBytes = file.length()
@@ -40,7 +42,9 @@ class GoogleDriveBackupClient @Inject constructor(
             deviceName = resolvedDeviceName,
             favoritesCount = favoritesCount,
             watchlistCount = watchlistCount,
-            historyCount = historyCount
+            historyCount = historyCount,
+            customListsCount = customListsCount,
+            customListItemsCount = customListItemsCount
         )
         return Pair(file, metadata)
     }

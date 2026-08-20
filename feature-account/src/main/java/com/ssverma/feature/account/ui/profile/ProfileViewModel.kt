@@ -4,6 +4,7 @@ import android.app.Activity
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ccm.AppConfigProvider
@@ -71,6 +72,20 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             backupRepository.lastBackupMetadata.collectLatest { metadata ->
                 _uiState.update { it.copy(lastBackupMetadata = metadata) }
+            }
+        }
+
+        // Observe Backup Frequency
+        viewModelScope.launch {
+            backupRepository.backupFrequency.collectLatest { frequency ->
+                _uiState.update { it.copy(backupFrequency = frequency) }
+            }
+        }
+
+        // Observe Backup Over Wi-Fi Only
+        viewModelScope.launch {
+            backupRepository.backupOverWifiOnly.collectLatest { wifiOnly ->
+                _uiState.update { it.copy(backupOverWifiOnly = wifiOnly) }
             }
         }
 
@@ -227,6 +242,22 @@ class ProfileViewModel @Inject constructor(
                 Log.e("ProfileViewModel", "Restore failed", e)
                 _uiState.update { it.copy(message = UiText.StaticText(R.string.restore_failed)) }
             }
+        }
+    }
+
+    fun onBackupFrequencySelected(frequency: BackupFrequency) {
+        if (frequency.isAutomated && !_uiState.value.isProActive) {
+            openPaywall()
+        } else {
+            viewModelScope.launch {
+                backupRepository.setBackupFrequency(frequency)
+            }
+        }
+    }
+
+    fun onBackupOverWifiOnlyChanged(wifiOnly: Boolean) {
+        viewModelScope.launch {
+            backupRepository.setBackupOverWifiOnly(wifiOnly)
         }
     }
 

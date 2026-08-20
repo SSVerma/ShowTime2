@@ -79,4 +79,17 @@
     <string name="sign_out_confirm_msg">Are you sure you want to sign out of your Google Drive backup account?</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="auto_backup_settings">Auto-Backup Settings</string>
+    <string name="auto_backup_frequency">Auto-Backup Frequency</string>
+    <string name="frequency_off">Off (Manual only)</string>
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_weekly">Weekly</string>
+    <string name="frequency_monthly">Monthly</string>
+    <string name="backup_over_wifi">Back up over Wi-Fi only</string>
+    <string name="backup_over_wifi_desc">Backs up silently only when connected to Wi-Fi</string>
+    <string name="backup_includes_summary">%1$d Favorites • %2$d Watchlist • %3$d Custom Lists</string>
+    <string name="pro_badge">PRO</string>
+    <string name="free_badge">FREE</string>
+    <string name="never">Never</string>
+    <string name="sign_out">Sign out</string>
 </resources>

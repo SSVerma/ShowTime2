@@ -33,6 +33,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
+import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
@@ -105,6 +107,11 @@ import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.domain.ReceiptGeneratorHelper
+import com.ssverma.feature.library.domain.model.ReceiptItem
+import com.ssverma.feature.library.domain.model.ReceiptSource
+import com.ssverma.feature.library.domain.model.ReceiptStyle
+import com.ssverma.feature.library.ui.receipt.CinemaReceiptBottomSheet
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.ui.home.component.LibraryTab
 import com.ssverma.feature.library.ui.home.component.LibraryTabType
@@ -149,6 +156,67 @@ fun LibraryScreen(
     var listPendingDeletion by remember { mutableStateOf<CustomList?>(null) }
     var listPendingEdit by remember { mutableStateOf<CustomList?>(null) }
     var topMenuExpanded by remember { mutableStateOf(false) }
+
+    var showReceiptSheet by remember { mutableStateOf(false) }
+    var receiptStyle by remember { mutableStateOf(ReceiptStyle.THERMAL) }
+    var receiptSource by remember { mutableStateOf(ReceiptSource.HISTORY) }
+    var customListForReceipt by remember { mutableStateOf<CustomList?>(null) }
+
+    val activeReceiptSnapshot = remember(
+        receiptSource,
+        historyItems,
+        favoriteItems,
+        watchlistItems,
+        customListForReceipt
+    ) {
+        val custom = customListForReceipt
+        if (custom != null) {
+            val mappedItems = custom.items.map { item ->
+                ReceiptItem(
+                    id = item.mediaId,
+                    title = item.title,
+                    year = "",
+                    runtimeMinutes = if (item.mediaType == MediaType.Tv) 45 else 115,
+                    rating = item.voteAvg
+                )
+            }
+            ReceiptGeneratorHelper.generateSnapshot(
+                title = custom.title,
+                collectorName = "ShowTime Cinephile",
+                items = mappedItems
+            )
+        } else {
+            val itemsToMap = when (receiptSource) {
+                ReceiptSource.HISTORY -> historyItems
+                ReceiptSource.FAVORITES -> favoriteItems
+                ReceiptSource.WATCHLIST -> watchlistItems
+                ReceiptSource.THIS_MONTH -> {
+                    val oneMonthAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
+                    historyItems.filter { it.addedAt >= oneMonthAgo }
+                }
+            }
+            val title = when (receiptSource) {
+                ReceiptSource.HISTORY -> "Watch History"
+                ReceiptSource.FAVORITES -> "Favorites"
+                ReceiptSource.WATCHLIST -> "Watchlist"
+                ReceiptSource.THIS_MONTH -> "This Month"
+            }
+            val mappedItems = itemsToMap.map { item ->
+                ReceiptItem(
+                    id = item.mediaId,
+                    title = item.title,
+                    year = item.releaseDate.take(4),
+                    runtimeMinutes = if (item.mediaType == MediaType.Tv) 45 else 115,
+                    rating = item.voteAvg
+                )
+            }
+            ReceiptGeneratorHelper.generateSnapshot(
+                title = title,
+                collectorName = "ShowTime Cinephile",
+                items = mappedItems
+            )
+        }
+    }
 
     val tabs = remember(watchlistItems, favoriteItems, historyItems, customLists) {
         listOf(
@@ -272,14 +340,28 @@ fun LibraryScreen(
                                         }
                                     )
                                 }
-                            } else if (pagerState.currentPage == 3) {
-                                IconButton(onClick = { showCreateListDialog = true }) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Add,
-                                        contentDescription = stringResource(R.string.create_custom_list),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
+                            }
+
+                            IconButton(onClick = {
+                                customListForReceipt = null
+                                receiptSource = when (pagerState.currentPage) {
+                                    0 -> ReceiptSource.WATCHLIST
+                                    1 -> ReceiptSource.FAVORITES
+                                    else -> ReceiptSource.HISTORY
                                 }
+                                showReceiptSheet = true
+                            }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+                                    contentDescription = stringResource(R.string.cinema_receipt)
+                                )
+                            }
+
+                            IconButton(onClick = openAccountPage) {
+                                Icon(
+                                    imageVector = Icons.Rounded.AccountCircle,
+                                    contentDescription = stringResource(R.string.account_cd)
+                                )
                             }
                         },
                         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -581,7 +663,23 @@ fun LibraryScreen(
             },
             onEditList = { listPendingEdit = selectedCustomList },
             onDeleteList = { listPendingDeletion = selectedCustomList },
-            onExploreClick = openSearchPage
+            onExploreClick = openSearchPage,
+            onShareReceipt = {
+                customListForReceipt = selectedCustomList
+                showReceiptSheet = true
+            }
+        )
+    }
+
+    if (showReceiptSheet) {
+        CinemaReceiptBottomSheet(
+            snapshot = activeReceiptSnapshot,
+            selectedStyle = receiptStyle,
+            onStyleSelected = { receiptStyle = it },
+            selectedSource = receiptSource,
+            onSourceSelected = { receiptSource = it },
+            onDismiss = { showReceiptSheet = false },
+            isCustomCollection = customListForReceipt != null
         )
     }
 }
@@ -1236,7 +1334,8 @@ private fun CustomListDetailSheet(
     onRemoveItem: (CustomListItem) -> Unit,
     onEditList: () -> Unit,
     onDeleteList: () -> Unit,
-    onExploreClick: () -> Unit
+    onExploreClick: () -> Unit,
+    onShareReceipt: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -1328,6 +1427,15 @@ private fun CustomListDetailSheet(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (customList.items.isNotEmpty()) {
+                        IconButton(onClick = onShareReceipt) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+                                contentDescription = stringResource(R.string.cinema_receipt),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                     IconButton(onClick = onEditList) {
                         Icon(
                             imageVector = Icons.Rounded.Edit,

@@ -33,9 +33,10 @@ class PeriodicBackupWorker(
     companion object {
         private const val WORK_NAME = "periodic_showtime_drive_backup"
 
-        fun schedule(context: Context, intervalDays: Long = 1) {
+        fun schedule(context: Context, intervalDays: Long = 1, wifiOnly: Boolean = true) {
+            val networkType = if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED
             val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.UNMETERED) // Wi-Fi only
+                .setRequiredNetworkType(networkType)
                 .setRequiresBatteryNotLow(true)
                 .build()
 
@@ -47,7 +48,7 @@ class PeriodicBackupWorker(
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 workRequest
             )
         }

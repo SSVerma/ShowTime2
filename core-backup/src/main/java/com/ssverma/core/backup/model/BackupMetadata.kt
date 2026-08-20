@@ -8,5 +8,7 @@ data class BackupMetadata(
     val deviceName: String,
     val favoritesCount: Int,
     val watchlistCount: Int,
-    val historyCount: Int
+    val historyCount: Int,
+    val customListsCount: Int = 0,
+    val customListItemsCount: Int = 0
 )

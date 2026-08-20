@@ -64,4 +64,35 @@
     <string name="empty_filter_movies_subtitle">You have no movies in this collection yet.</string>
     <string name="empty_filter_tv_title">No TV Shows Found</string>
     <string name="empty_filter_tv_subtitle">You have no TV shows in this collection yet.</string>
+
+    <!-- Cinema Receipt Generator -->
+    <string name="cinema_receipt">Cinema Receipt</string>
+    <string name="generate_receipt">Generate Receipt</string>
+    <string name="receipt_subtitle">Share your cinematic journey as a vintage receipt or VIP pass</string>
+    <string name="receipt_style">Style</string>
+    <string name="receipt_style_thermal">Thermal Receipt</string>
+    <string name="receipt_style_gold">Golden VIP Pass</string>
+    <string name="receipt_style_cyberpunk">Cyberpunk Neon</string>
+    <string name="receipt_source">Source</string>
+    <string name="receipt_period_history">Watch History</string>
+    <string name="receipt_period_favorites">Favorites</string>
+    <string name="receipt_period_watchlist">Watchlist</string>
+    <string name="receipt_period_this_month">This Month</string>
+    <string name="receipt_share">Share</string>
+    <string name="receipt_save">Save Image</string>
+    <string name="receipt_total_movies">TOTAL TITLES</string>
+    <string name="receipt_total_time">TOTAL TIME</string>
+    <string name="receipt_top_genre">TOP GENRE</string>
+    <string name="receipt_total_bill">TOTAL BILL</string>
+    <string name="receipt_priceless">$0.00 (PRICELESS MEMORIES)</string>
+    <string name="receipt_thank_you">THANK YOU FOR LOVING CINEMA!</string>
+    <string name="receipt_showtime_cinema">SHOWTIME CINEMA</string>
+    <string name="receipt_collector">COLLECTOR</string>
+    <string name="receipt_admit_one">ADMIT ONE</string>
+    <string name="receipt_vip_pass">SHOWTIME VIP PASS</string>
+    <string name="receipt_no_items">No items available to generate a receipt</string>
+    <string name="receipt_share_chooser_title">Share Cinema Receipt</string>
+    <string name="close">Close</string>
+    <string name="receipt_saved_success">Receipt image saved successfully</string>
+    <string name="receipt_save_failed">Failed to save receipt image</string>
 </resources>
