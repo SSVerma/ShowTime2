@@ -151,6 +151,7 @@ private fun TvShowContent(
 ) {
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
+    val seasonWatchCounts by viewModel.seasonWatchCounts.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "tv_details_watch_provider")
     val snackbarHostState = remember { SnackbarHostState() }
@@ -356,6 +357,7 @@ private fun TvShowContent(
             item {
                 SeasonsSection(
                     seasons = tvShow.seasons,
+                    seasonWatchCounts = seasonWatchCounts,
                     onSeasonClick = { season ->
                         analytics.logEvent(
                             TvAnalyticsEvent.SeasonClicked(
@@ -367,9 +369,14 @@ private fun TvShowContent(
                         openTvSeasonDetails(
                             TvSeasonArgs(
                                 tvShowId = viewModel.tvShowId,
-                                seasonNumber = season.seasonNumber
+                                seasonNumber = season.seasonNumber,
+                                tvShowTitle = tvShow.title,
+                                tvShowPosterPath = tvShow.posterImageUrl
                             )
                         )
+                    },
+                    onToggleSeasonWatched = { season ->
+                        viewModel.toggleSeasonWatched(season)
                     },
                     modifier = Modifier
                         .padding(top = SectionVerticalSpacing)
@@ -568,7 +575,9 @@ private fun SimilarTvShowsSection(
 @Composable
 private fun SeasonsSection(
     seasons: List<TvSeason>,
+    seasonWatchCounts: Map<Int, Int>,
     onSeasonClick: (season: TvSeason) -> Unit,
+    onToggleSeasonWatched: (season: TvSeason) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var seasonCount by rememberSaveable {
@@ -596,10 +605,16 @@ private fun SeasonsSection(
                 .animateContentSize()
         ) {
             for (i in 0 until seasonCount) {
+                val season = seasons[i]
+                val watchedCount = seasonWatchCounts[season.seasonNumber] ?: 0
                 TvSeasonItem(
-                    tvSeason = seasons[i],
+                    tvSeason = season,
+                    watchedEpisodeCount = watchedCount,
                     onClick = {
-                        onSeasonClick(seasons[i])
+                        onSeasonClick(season)
+                    },
+                    onToggleWatched = {
+                        onToggleSeasonWatched(season)
                     }
                 )
             }

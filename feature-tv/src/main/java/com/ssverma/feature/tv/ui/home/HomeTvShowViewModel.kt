@@ -69,17 +69,15 @@ class HomeTvShowViewModel @Inject constructor(
             }
         }
 
-        // Observe Trakt State & Up Next queue
+        // Observe Trakt State & Up Next queue reactively
         viewModelScope.launch {
             traktAuthManager.authState.collectLatest { traktState ->
-                when (traktState) {
-                    is TraktAuthState.Connected -> {
-                        _uiState.update { it.copy(isTraktConnected = true) }
-                        fetchUpNextQueue(traktState.accessToken)
-                    }
-                    else -> {
-                        _uiState.update { it.copy(isTraktConnected = false, upNextQueue = emptyList()) }
-                    }
+                val isConnected = traktState is TraktAuthState.Connected
+                val token = (traktState as? TraktAuthState.Connected)?.accessToken.orEmpty()
+                _uiState.update { it.copy(isTraktConnected = isConnected) }
+
+                traktSyncRepository.getUpNextQueueFlow(token).collectLatest { queue ->
+                    _uiState.update { it.copy(upNextQueue = queue) }
                 }
             }
         }
@@ -93,6 +91,8 @@ class HomeTvShowViewModel @Inject constructor(
         fetchTodayAiringTvShows()
         fetchNowAiringTvShows()
         fetchWatchProviders()
+        val token = (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken.orEmpty()
+        fetchUpNextQueue(token)
     }
 
     private val homeAdConfig = AdInjectionConfig(
@@ -323,38 +323,38 @@ class HomeTvShowViewModel @Inject constructor(
 
     fun markEpisodeWatched(showTmdbId: Int, season: Int, episode: Int) = viewModelScope.launch {
         val traktState = traktAuthManager.authState.value
-        if (traktState is TraktAuthState.Connected) {
-            // 1. Optimistically update local upNextQueue in UI state so the user immediately sees progress & celebration!
-            val currentQueue = _uiState.value.upNextQueue
-            var wasFinalEpisode = false
-            val updatedQueue = currentQueue.map { item ->
-                if (item.showTmdbId == showTmdbId) {
-                    val nextCompleted = item.totalCompleted + 1
-                    if (nextCompleted >= item.totalAired) {
-                        wasFinalEpisode = true
-                    }
-                    item.copy(
-                        totalCompleted = nextCompleted.coerceAtMost(item.totalAired),
-                        episodeNumber = item.episodeNumber + 1
-                    )
-                } else item
-            }
-            _uiState.update { it.copy(upNextQueue = updatedQueue) }
+        val token = (traktState as? TraktAuthState.Connected)?.accessToken
 
-            // 2. Perform backend Trakt sync
-            traktSyncRepository.markEpisodeWatched(
-                accessToken = traktState.accessToken,
-                showTmdbId = showTmdbId,
-                season = season,
-                episode = episode
-            )
-
-            // 3. If it was the final episode, keep the triumphant "Caught Up 🎉" card visible for 2 seconds
-            // so the user can enjoy the fireworks particle burst and golden glow celebration!
-            if (wasFinalEpisode) {
-                kotlinx.coroutines.delay(2000)
-            }
-            fetchUpNextQueue(traktState.accessToken)
+        // 1. Optimistically update local upNextQueue in UI state so the user immediately sees progress & celebration!
+        val currentQueue = _uiState.value.upNextQueue
+        var wasFinalEpisode = false
+        val updatedQueue = currentQueue.map { item ->
+            if (item.showTmdbId == showTmdbId) {
+                val nextCompleted = item.totalCompleted + 1
+                if (nextCompleted >= item.totalAired) {
+                    wasFinalEpisode = true
+                }
+                item.copy(
+                    totalCompleted = nextCompleted.coerceAtMost(item.totalAired),
+                    episodeNumber = item.episodeNumber + 1
+                )
+            } else item
         }
+        _uiState.update { it.copy(upNextQueue = updatedQueue) }
+
+        // 2. Perform backend Trakt sync / Room DB update
+        traktSyncRepository.markEpisodeWatched(
+            accessToken = token,
+            showTmdbId = showTmdbId,
+            season = season,
+            episode = episode
+        )
+
+        // 3. If it was the final episode, keep the triumphant "Caught Up 🎉" card visible for 2 seconds
+        // so the user can enjoy the fireworks particle burst and golden glow celebration!
+        if (wasFinalEpisode) {
+            kotlinx.coroutines.delay(2000)
+        }
+        fetchUpNextQueue(token.orEmpty())
     }
 }

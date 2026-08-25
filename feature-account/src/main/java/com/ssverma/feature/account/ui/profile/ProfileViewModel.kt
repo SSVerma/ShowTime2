@@ -392,18 +392,18 @@ class ProfileViewModel @Inject constructor(
     fun seedSampleFavorites() {
         viewModelScope.launch {
             val samples = listOf(
-                Pair(157336, "Interstellar"),
-                Pair(438631, "Dune"),
-                Pair(27205, "Inception"),
-                Pair(93405, "Severance"),
-                Pair(94997, "House of the Dragon")
+                Triple(157336, "Interstellar", "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"),
+                Triple(438631, "Dune", "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"),
+                Triple(27205, "Inception", "https://image.tmdb.org/t/p/w500/ljsZTbVsrQSqZgWeep2P1QiDKuh.jpg"),
+                Triple(93405, "Severance", "https://image.tmdb.org/t/p/w500/abfJnkhz4c24t1GqSgq2J61z4e2.jpg"),
+                Triple(94997, "House of the Dragon", "https://image.tmdb.org/t/p/w500/7QMsOTMUswlwxJP0rTTZfmz2tX2.jpg")
             )
-            samples.forEach { (id, title) ->
+            samples.forEach { (id, title, poster) ->
                 libraryRepository.toggleFavorite(
                     mediaId = id,
                     mediaType = if (id > 50000) MediaType.Tv else MediaType.Movie,
                     title = title,
-                    posterImageUrl = "",
+                    posterImageUrl = poster,
                     backdropImageUrl = "",
                     voteAvg = 8.5f,
                     releaseDate = "2024-01-01"
@@ -416,18 +416,18 @@ class ProfileViewModel @Inject constructor(
     fun seedSampleWatchlist() {
         viewModelScope.launch {
             val samples = listOf(
-                Pair(693134, "Dune: Part Two"),
-                Pair(872585, "Oppenheimer"),
-                Pair(136315, "The Bear"),
-                Pair(76331, "Succession"),
-                Pair(119051, "Wednesday")
+                Triple(693134, "Dune: Part Two", "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
+                Triple(872585, "Oppenheimer", "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg"),
+                Triple(136315, "The Bear", "https://image.tmdb.org/t/p/w500/rE4663pT2Gk62h1P9iQ8h5l7e7k.jpg"),
+                Triple(76331, "Succession", "https://image.tmdb.org/t/p/w500/7TafgV4rYpZp3B2E9V5bY5q4N.jpg"),
+                Triple(119051, "Wednesday", "https://image.tmdb.org/t/p/w500/9PFonQ921cwhEj6TaScOMqBh498.jpg")
             )
-            samples.forEach { (id, title) ->
+            samples.forEach { (id, title, poster) ->
                 libraryRepository.toggleWatchlist(
                     mediaId = id,
                     mediaType = if (id > 50000) MediaType.Tv else MediaType.Movie,
                     title = title,
-                    posterImageUrl = "",
+                    posterImageUrl = poster,
                     backdropImageUrl = "",
                     voteAvg = 8.5f,
                     releaseDate = "2024-01-01"
@@ -440,18 +440,18 @@ class ProfileViewModel @Inject constructor(
     fun seedSampleHistory() {
         viewModelScope.launch {
             val samples = listOf(
-                Pair(550, "Fight Club"),
-                Pair(680, "Pulp Fiction"),
-                Pair(1396, "Breaking Bad"),
-                Pair(60059, "Better Call Saul"),
-                Pair(155, "The Dark Knight")
+                Triple(550, "Fight Club", "https://image.tmdb.org/t/p/w500/bptfVGEQuv6vDTIMVCHjJ9Dz8PX.jpg"),
+                Triple(680, "Pulp Fiction", "https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg"),
+                Triple(1396, "Breaking Bad", "https://image.tmdb.org/t/p/w500/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg"),
+                Triple(60059, "Better Call Saul", "https://image.tmdb.org/t/p/w500/fC2HDm5t0kHsf793TmYRtkGIw73.jpg"),
+                Triple(155, "The Dark Knight", "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg")
             )
-            samples.forEach { (id, title) ->
+            samples.forEach { (id, title, poster) ->
                 libraryRepository.logWatchHistory(
                     mediaId = id,
                     mediaType = if (id > 50000) MediaType.Tv else MediaType.Movie,
                     title = title,
-                    posterImageUrl = "",
+                    posterImageUrl = poster,
                     voteAvg = 8.8f
                 )
             }
@@ -462,7 +462,7 @@ class ProfileViewModel @Inject constructor(
     fun clearLocalDatabase() {
         viewModelScope.launch {
             libraryRepository.clearAllLibrary()
-            _uiState.update { it.copy(message = UiText.DynamicText("All local data wiped (Favorites, Watchlist, History)!")) }
+            _uiState.update { it.copy(message = UiText.DynamicText("All local data wiped (Favorites, Watchlist, History, Episodes, Up Next)!")) }
         }
     }
 

@@ -60,6 +60,7 @@ interface LibraryRepository {
 
     fun getAllFavorites(): Flow<List<SavedMediaItem>>
     fun getAllWatchlist(): Flow<List<SavedMediaItem>>
+    suspend fun getWatchlistSnapshot(): List<SavedMediaItem>
     fun getAllWatchHistory(): Flow<List<SavedMediaItem>>
 
     fun getFavoriteMovies(): Flow<List<SavedMediaItem>>

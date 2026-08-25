@@ -1,0 +1,69 @@
+package com.ssverma.showtime.navigation
+
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.movie.navigation.MovieDetailNavKey
+import com.ssverma.feature.movie.navigation.MovieHomeNavKey
+import com.ssverma.feature.person.navigation.PersonDetailNavKey
+import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
+import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+
+class ShowTimeDeepLinkHandlerTest {
+
+    @Test
+    fun parse_libraryWatchlistDeepLink_returnsLibraryHomeNavKeyWithWatchlist() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/library/watchlist")
+        assertEquals(LibraryHomeNavKey(initialTab = LibraryTabDestination.Watchlist), navKey)
+    }
+
+    @Test
+    fun parse_libraryFavoritesDeepLink_returnsLibraryHomeNavKeyWithFavorites() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/library/favorites")
+        assertEquals(LibraryHomeNavKey(initialTab = LibraryTabDestination.Favorites), navKey)
+    }
+
+    @Test
+    fun parse_libraryRootDeepLink_returnsLibraryHomeNavKeyWithDefaultWatchlist() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/library")
+        assertEquals(LibraryHomeNavKey(initialTab = LibraryTabDestination.Watchlist), navKey)
+    }
+
+    @Test
+    fun parse_tvHomeDeepLink_returnsTvShowHomeNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/tv")
+        assertEquals(TvShowHomeNavKey, navKey)
+    }
+
+    @Test
+    fun parse_tvShowDetailDeepLink_returnsTvShowDetailNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/tv/1399")
+        assertEquals(TvShowDetailNavKey(1399), navKey)
+    }
+
+    @Test
+    fun parse_movieHomeDeepLink_returnsMovieHomeNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/movie")
+        assertEquals(MovieHomeNavKey, navKey)
+    }
+
+    @Test
+    fun parse_movieDetailDeepLink_returnsMovieDetailNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/movie/550")
+        assertEquals(MovieDetailNavKey(550), navKey)
+    }
+
+    @Test
+    fun parse_personDetailDeepLink_returnsPersonDetailNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/person/287")
+        assertEquals(PersonDetailNavKey(287), navKey)
+    }
+
+    @Test
+    fun parse_invalidScheme_returnsNull() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://www.google.com/tv/1399")
+        assertNull(navKey)
+    }
+}

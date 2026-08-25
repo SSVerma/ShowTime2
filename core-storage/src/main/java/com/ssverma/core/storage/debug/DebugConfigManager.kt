@@ -60,11 +60,11 @@ class DebugConfigManager @Inject constructor(
 
     val isMockTraktEnabled: StateFlow<Boolean> = storage.data
         .map { prefs ->
-            prefs[KEY_MOCK_TRAKT] ?: true // Default to true in debug builds for instant testing
+            prefs[KEY_MOCK_TRAKT] ?: false // Default to false so real user data is always used
         }.stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
-            initialValue = true
+            initialValue = false
         )
 
     val customTraktClientId: StateFlow<String> = storage.data

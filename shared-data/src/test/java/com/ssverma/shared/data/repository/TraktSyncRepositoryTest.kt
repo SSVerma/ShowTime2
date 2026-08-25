@@ -25,6 +25,8 @@ class TraktSyncRepositoryTest {
     private val mockWatchlistDao: WatchlistDao = mockk(relaxed = true)
     private val mockWatchHistoryDao: WatchHistoryDao = mockk(relaxed = true)
     private val mockFavoriteDao: FavoriteDao = mockk(relaxed = true)
+    private val mockEpisodeWatchHistoryDao: com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao = mockk(relaxed = true)
+    private val mockShowWatchProgressDao: com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao = mockk(relaxed = true)
     private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager = mockk(relaxed = true)
 
     private val isMockTraktFlow = kotlinx.coroutines.flow.MutableStateFlow(false)
@@ -42,6 +44,8 @@ class TraktSyncRepositoryTest {
             watchlistDao = mockWatchlistDao,
             watchHistoryDao = mockWatchHistoryDao,
             favoriteDao = mockFavoriteDao,
+            episodeWatchHistoryDao = mockEpisodeWatchHistoryDao,
+            showWatchProgressDao = mockShowWatchProgressDao,
             debugConfigManager = mockDebugConfigManager
         )
     }
@@ -189,5 +193,68 @@ class TraktSyncRepositoryTest {
         assertThat(hotdUpdated.episodeNumber).isEqualTo(6)
         assertThat(hotdUpdated.episodeTitle).isEqualTo("Smallfolk")
         assertThat(hotdUpdated.totalCompleted).isEqualTo(5)
+    }
+
+    @Test
+    fun `markEpisodeWatched non-linear resolves first unwatched episode in sequence`() = runTest {
+        isMockTraktFlow.value = false
+
+        // Given show with S1E1 and S1E3 watched (skipped S1E2)
+        coEvery { mockEpisodeWatchHistoryDao.isEpisodeWatched(500, 1, 3) } returns false
+        coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(500) } returns listOf(
+            com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(500, 1, 1, 1000L),
+            com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(500, 1, 3, 2000L)
+        )
+
+        val progressSlot = io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+        coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
+
+        repository.markEpisodeWatched(
+            accessToken = null,
+            showTmdbId = 500,
+            season = 1,
+            episode = 3,
+            showTitle = "The Mentalist",
+            totalAired = 151
+        )
+
+        // Then Up Next resolves to S1E2 (the first unwatched episode)
+        assertThat(progressSlot.isCaptured).isTrue()
+        val captured = progressSlot.captured
+        assertThat(captured.seasonNumber).isEqualTo(1)
+        assertThat(captured.episodeNumber).isEqualTo(2)
+        assertThat(captured.totalCompleted).isEqualTo(2)
+        assertThat(captured.totalAired).isEqualTo(151)
+    }
+
+    @Test
+    fun `markSeasonWatched advances to next season without deleting multi-season show`() = runTest {
+        isMockTraktFlow.value = false
+
+        // Given Season 5 (22 episodes) marked watched out of a 151-episode show
+        val season5Episodes = (1..22).map {
+            com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(500, 5, it, 1000L)
+        }
+        coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(500) } returns season5Episodes
+
+        val progressSlot = io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+        coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
+
+        repository.markSeasonWatched(
+            accessToken = null,
+            showTmdbId = 500,
+            season = 5,
+            episodeNumbers = (1..22).toList(),
+            showTitle = "The Mentalist",
+            totalAired = 151
+        )
+
+        // Then Up Next points to Season 6, Episode 1
+        assertThat(progressSlot.isCaptured).isTrue()
+        val captured = progressSlot.captured
+        assertThat(captured.seasonNumber).isEqualTo(6)
+        assertThat(captured.episodeNumber).isEqualTo(1)
+        assertThat(captured.totalCompleted).isEqualTo(22)
+        assertThat(captured.totalAired).isEqualTo(151)
     }
 }

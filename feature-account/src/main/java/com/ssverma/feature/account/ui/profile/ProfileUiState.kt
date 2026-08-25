@@ -28,7 +28,7 @@ data class ProfileScreenState(
     val isTraktSyncing: Boolean = false,
     val isDeveloperPanelVisible: Boolean = false,
     val proOverride: com.ssverma.core.storage.debug.DebugProOverride = com.ssverma.core.storage.debug.DebugProOverride.AUTO,
-    val isMockTraktEnabled: Boolean = true,
+    val isMockTraktEnabled: Boolean = false,
     val customTraktClientId: String = "",
     val isAdsDisabled: Boolean = false,
     val message: UiText? = null

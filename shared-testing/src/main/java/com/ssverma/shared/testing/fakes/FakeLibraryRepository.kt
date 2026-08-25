@@ -184,6 +184,10 @@ class FakeLibraryRepository : LibraryRepository {
         return watchlist.map { it.values.toList() }
     }
 
+    override suspend fun getWatchlistSnapshot(): List<SavedMediaItem> {
+        return watchlist.value.values.toList()
+    }
+
     override fun getAllWatchHistory(): Flow<List<SavedMediaItem>> {
         return history
     }

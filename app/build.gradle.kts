@@ -129,6 +129,7 @@ android {
 
 dependencies {
     implementation(projects.apiService.tmdb)
+    implementation(projects.coreDi)
     implementation(projects.coreUi)
     implementation(projects.coreNavigation)
     implementation(projects.coreNetworking)
@@ -153,6 +154,12 @@ dependencies {
 
     implementation(libs.material)
     implementation(libs.compose.activity)
+    implementation(projects.coreImage)
+    implementation(libs.coil)
+
+    // Glance Widgets
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
 
     implementation(libs.dagger.hilt.android)
     kapt(libs.dagger.hilt.compiler)

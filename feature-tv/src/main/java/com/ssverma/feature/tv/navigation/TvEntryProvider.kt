@@ -77,7 +77,10 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     )
                 )
             },
-            openLibraryPage = openLibraryPage
+            openLibraryPage = openLibraryPage,
+            openTvSeasonDetails = { showTmdbId, seasonNumber ->
+                navigator.navigate(TvSeasonDetailNavKey(showTmdbId, seasonNumber))
+            }
         )
     }
 
@@ -115,7 +118,9 @@ fun EntryProviderScope<NavKey>.tvEntries(
                 navigator.navigate(
                     TvSeasonDetailNavKey(
                         tvShowId = seasonLaunchable.tvShowId,
-                        seasonNumber = seasonLaunchable.seasonNumber
+                        seasonNumber = seasonLaunchable.seasonNumber,
+                        tvShowTitle = seasonLaunchable.tvShowTitle,
+                        tvShowPosterPath = seasonLaunchable.tvShowPosterPath
                     )
                 )
             },
@@ -167,7 +172,12 @@ fun EntryProviderScope<NavKey>.tvEntries(
     showTimeEntry<TvSeasonDetailNavKey> { key ->
         TvSeasonDetailsScreen(
             viewModel = hiltViewModel<TvSeasonDetailsViewModel, TvSeasonDetailsViewModel.Factory> { factory ->
-                factory.create(tvShowId = key.tvShowId, seasonNumber = key.seasonNumber)
+                factory.create(
+                    tvShowId = key.tvShowId,
+                    seasonNumber = key.seasonNumber,
+                    tvShowTitle = key.tvShowTitle,
+                    tvShowPosterPath = key.tvShowPosterPath
+                )
             },
             onBackPress = { navigator.goBack() },
             openEpisodeDetails = { episodeLaunchable ->
@@ -175,7 +185,9 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     TvEpisodeDetailNavKey(
                         tvShowId = episodeLaunchable.tvShowId,
                         seasonNumber = episodeLaunchable.seasonNumber,
-                        episodeNumber = episodeLaunchable.episodeNumber
+                        episodeNumber = episodeLaunchable.episodeNumber,
+                        tvShowTitle = episodeLaunchable.tvShowTitle,
+                        tvShowPosterPath = episodeLaunchable.tvShowPosterPath
                     )
                 )
             },
@@ -197,7 +209,9 @@ fun EntryProviderScope<NavKey>.tvEntries(
                 factory.create(
                     tvShowId = key.tvShowId,
                     seasonNumber = key.seasonNumber,
-                    episodeNumber = key.episodeNumber
+                    episodeNumber = key.episodeNumber,
+                    tvShowTitle = key.tvShowTitle,
+                    tvShowPosterPath = key.tvShowPosterPath
                 )
             },
             onBackPress = { navigator.goBack() },

@@ -27,12 +27,19 @@ import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.notifications.ShowTimeNotificationManager
 import com.ssverma.shared.ui.AppStateHolder
 import com.ssverma.shared.ui.LocalAppStateHolder
+import com.ssverma.core.di.AppScoped
 import com.ssverma.showtime.navigation.ShowTimeDeepLinkHandler
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    @Inject
+    @AppScoped
+    lateinit var appScope: CoroutineScope
+
     @Inject
     lateinit var appStateHolder: AppStateHolder
 
@@ -113,6 +120,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         appOpenAdManager.showAdIfAvailable(this)
+        appScope.launch {
+            com.ssverma.showtime.widget.WidgetUpdateHelper.updateAllWidgets(this@MainActivity)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

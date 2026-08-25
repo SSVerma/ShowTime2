@@ -1,16 +1,27 @@
 package com.ssverma.feature.tv.ui.details
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -20,7 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,6 +69,7 @@ fun TvEpisodeDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val tvEpisodeUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isWatched by viewModel.isWatched.collectAsStateWithLifecycle()
 
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_EPISODE)
 
@@ -70,6 +84,8 @@ fun TvEpisodeDetailsScreen(
             ) {
                 TvEpisodeContent(
                     episode = episode,
+                    isWatched = isWatched,
+                    onToggleWatched = { viewModel.toggleWatched() },
                     onBackPress = onBackPress,
                     openPersonDetails = openPersonDetails,
                     openImageShotsList = {
@@ -93,6 +109,8 @@ fun TvEpisodeDetailsScreen(
 @Composable
 private fun TvEpisodeContent(
     episode: TvEpisode,
+    isWatched: Boolean,
+    onToggleWatched: () -> Unit,
     onBackPress: () -> Unit,
     openPersonDetails: (Cast) -> Unit,
     openImageShotsList: () -> Unit,
@@ -118,6 +136,55 @@ private fun TvEpisodeContent(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
+        }
+
+        item {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                FilledTonalButton(
+                    onClick = onToggleWatched,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (isWatched) {
+                            Color(0xFF4CAF50).copy(alpha = 0.2f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                        }
+                    ),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isWatched) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = null,
+                                    tint = if (isWatched) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = if (isWatched) "Watched" else "Mark as Watched",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isWatched) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
         }
 
         item {
@@ -182,7 +249,7 @@ private fun TvEpisodeContent(
         }
 
         item {
-            Spacer(modifier = Modifier.padding(vertical = SectionSpacing))
+            Spacer(modifier = Modifier.height(SectionSpacing))
         }
     }
 }
@@ -193,20 +260,19 @@ private fun BackdropHeader(
     onBackPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(TmdbBackdropAspectRatio)
-    ) {
+    Box(modifier = modifier) {
         NetworkImage(
             url = backdropImageUrl,
             contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(TmdbBackdropAspectRatio)
         )
 
+        /*Navigation*/
         BackdropNavigationAction(onIconClick = onBackPress)
 
+        /*Rounded surface*/
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -232,8 +298,8 @@ private fun TvEpisode.highlightedItems(): List<Highlight> {
             value = seasonNumber.toString()
         ),
         Highlight(
-            labelRes = R.string.rating,
-            value = voteAvg.toString()
+            labelRes = R.string.episode_number,
+            value = episodeNumber.toString()
         ),
         Highlight(
             labelRes = R.string.air_date,
@@ -242,6 +308,6 @@ private fun TvEpisode.highlightedItems(): List<Highlight> {
     )
 }
 
-private val SectionSpacing = 24.dp
+private val SectionSpacing = 20.dp
 private val SurfaceCornerRoundSize = 12.dp
-private const val MaxImageShots = 6
+private const val MaxImageShots = 3

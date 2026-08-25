@@ -33,6 +33,7 @@ fun TvShowScreen(
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { id, _ -> openTvShowDetails(id) },
     viewModel: HomeTvShowViewModel = hiltViewModel()
 ) {
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_HOME)
@@ -61,6 +62,7 @@ fun TvShowScreen(
                 openAccountPage = openAccountPage,
                 openWatchProviderHub = openWatchProviderHub,
                 openLibraryPage = openLibraryPage,
+                openTvSeasonDetails = openTvSeasonDetails,
                 onShowFeedback = { message, actionLabel, destination ->
                     coroutineScope.launch {
                         val result = snackbarHostState.showImmediateSnackbar(

@@ -79,6 +79,7 @@ fun TvShowHomeContent(
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { id, _ -> openTvShowDetails(id) },
     modifier: Modifier = Modifier,
     onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
@@ -166,7 +167,7 @@ fun TvShowHomeContent(
             ) {
                 UpNextSection(
                     upNextEpisodes = uiState.upNextQueue,
-                    onTvShowClick = openTvShowDetails,
+                    onUpNextEpisodeClick = openTvSeasonDetails,
                     onMarkWatchedClick = { showTmdbId, season, episode ->
                         viewModel.markEpisodeWatched(showTmdbId, season, episode)
                     },

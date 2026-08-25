@@ -5,7 +5,9 @@ import com.ssverma.core.storage.StorageClient
 import com.ssverma.core.storage.db.DatabaseConfig
 import com.ssverma.shared.data.local.db.ShowTimeDatabase
 import com.ssverma.shared.data.local.db.dao.CustomListDao
+import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
+import com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao
 import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
 import dagger.Module
@@ -56,5 +58,17 @@ object DatabaseModule {
     @Singleton
     fun provideCustomListDao(database: ShowTimeDatabase): CustomListDao {
         return database.customListDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideEpisodeWatchHistoryDao(database: ShowTimeDatabase): EpisodeWatchHistoryDao {
+        return database.episodeWatchHistoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideShowWatchProgressDao(database: ShowTimeDatabase): ShowWatchProgressDao {
+        return database.showWatchProgressDao()
     }
 }

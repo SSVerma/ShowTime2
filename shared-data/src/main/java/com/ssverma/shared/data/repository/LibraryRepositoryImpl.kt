@@ -2,7 +2,9 @@ package com.ssverma.shared.data.repository
 
 import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.CustomListWithItems
+import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
+import com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao
 import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
 import com.ssverma.shared.data.local.db.entity.CustomListEntity
@@ -14,6 +16,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
+import com.ssverma.shared.domain.notifier.WidgetSyncNotifier
 import com.ssverma.shared.domain.repository.LibraryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,7 +29,10 @@ class LibraryRepositoryImpl @Inject constructor(
     private val favoriteDao: FavoriteDao,
     private val watchlistDao: WatchlistDao,
     private val watchHistoryDao: WatchHistoryDao,
-    private val customListDao: CustomListDao
+    private val customListDao: CustomListDao,
+    private val episodeWatchHistoryDao: EpisodeWatchHistoryDao,
+    private val showWatchProgressDao: ShowWatchProgressDao,
+    private val widgetSyncNotifier: WidgetSyncNotifier? = null
 ) : LibraryRepository {
 
     override fun isFavoriteFlow(mediaId: Int): Flow<Boolean> {
@@ -47,9 +53,9 @@ class LibraryRepositoryImpl @Inject constructor(
         releaseDate: String
     ): Boolean {
         val currentlyFavorite = favoriteDao.isFavorite(mediaId)
-        if (currentlyFavorite) {
+        val result = if (currentlyFavorite) {
             favoriteDao.deleteFavoriteById(mediaId)
-            return false
+            false
         } else {
             favoriteDao.insertFavorite(
                 FavoriteEntity(
@@ -63,12 +69,15 @@ class LibraryRepositoryImpl @Inject constructor(
                     addedAt = System.currentTimeMillis()
                 )
             )
-            return true
+            true
         }
+        widgetSyncNotifier?.notifyWidgetDataChanged()
+        return result
     }
 
     override suspend fun deleteFavorite(mediaId: Int) {
         favoriteDao.deleteFavoriteById(mediaId)
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override fun isInWatchlistFlow(mediaId: Int): Flow<Boolean> {
@@ -89,9 +98,9 @@ class LibraryRepositoryImpl @Inject constructor(
         releaseDate: String
     ): Boolean {
         val currentlyInWatchlist = watchlistDao.isInWatchlist(mediaId)
-        if (currentlyInWatchlist) {
+        val result = if (currentlyInWatchlist) {
             watchlistDao.deleteWatchlistById(mediaId)
-            return false
+            false
         } else {
             watchlistDao.insertWatchlist(
                 WatchlistEntity(
@@ -105,12 +114,15 @@ class LibraryRepositoryImpl @Inject constructor(
                     addedAt = System.currentTimeMillis()
                 )
             )
-            return true
+            true
         }
+        widgetSyncNotifier?.notifyWidgetDataChanged()
+        return result
     }
 
     override suspend fun deleteWatchlist(mediaId: Int) {
         watchlistDao.deleteWatchlistById(mediaId)
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override fun isWatchedFlow(mediaId: Int): Flow<Boolean> {
@@ -129,9 +141,9 @@ class LibraryRepositoryImpl @Inject constructor(
         voteAvg: Float
     ): Boolean {
         val currentlyWatched = watchHistoryDao.isWatched(mediaId)
-        if (currentlyWatched) {
+        val result = if (currentlyWatched) {
             watchHistoryDao.deleteHistoryById(mediaId)
-            return false
+            false
         } else {
             watchHistoryDao.insertHistory(
                 WatchHistoryEntity(
@@ -143,8 +155,10 @@ class LibraryRepositoryImpl @Inject constructor(
                     watchedAt = System.currentTimeMillis()
                 )
             )
-            return true
+            true
         }
+        widgetSyncNotifier?.notifyWidgetDataChanged()
+        return result
     }
 
     override suspend fun logWatchHistory(
@@ -164,22 +178,27 @@ class LibraryRepositoryImpl @Inject constructor(
                 watchedAt = System.currentTimeMillis()
             )
         )
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override suspend fun deleteWatchHistory(mediaId: Int) {
         watchHistoryDao.deleteHistoryById(mediaId)
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override suspend fun clearWatchHistory() {
         watchHistoryDao.clearHistory()
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override suspend fun clearFavorites() {
         favoriteDao.clearFavorites()
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override suspend fun clearWatchlist() {
         watchlistDao.clearWatchlist()
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override suspend fun clearAllLibrary() {
@@ -188,6 +207,9 @@ class LibraryRepositoryImpl @Inject constructor(
         watchHistoryDao.clearHistory()
         customListDao.clearAllListItems()
         customListDao.clearAllLists()
+        episodeWatchHistoryDao.clearAll()
+        showWatchProgressDao.clearAll()
+        widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 
     override fun getAllFavorites(): Flow<List<SavedMediaItem>> {
@@ -200,6 +222,10 @@ class LibraryRepositoryImpl @Inject constructor(
         return watchlistDao.getAllWatchlistFlow().map { list ->
             list.map { it.toSavedMediaItem() }
         }
+    }
+
+    override suspend fun getWatchlistSnapshot(): List<SavedMediaItem> {
+        return watchlistDao.getAllWatchlist().map { it.toSavedMediaItem() }
     }
 
     override fun getAllWatchHistory(): Flow<List<SavedMediaItem>> {

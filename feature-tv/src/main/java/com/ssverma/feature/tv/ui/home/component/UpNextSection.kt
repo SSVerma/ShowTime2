@@ -57,15 +57,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.foundation.layout.aspectRatio
+import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
+import com.ssverma.shared.ui.TmdbPosterAspectRatio
+import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.launch
 
 @Composable
 fun UpNextSection(
     upNextEpisodes: List<TraktUpNextEpisode>,
-    onTvShowClick: (showTmdbId: Int) -> Unit,
+    onUpNextEpisodeClick: (showTmdbId: Int, seasonNumber: Int) -> Unit,
     onMarkWatchedClick: (showTmdbId: Int, seasonNumber: Int, episodeNumber: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -129,7 +133,7 @@ fun UpNextSection(
                             stiffness = Spring.StiffnessLow
                         )
                     ),
-                    onClick = { onTvShowClick(episode.showTmdbId) },
+                    onClick = { onUpNextEpisodeClick(episode.showTmdbId, episode.seasonNumber) },
                     onMarkWatched = {
                         onMarkWatchedClick(
                             episode.showTmdbId,
@@ -183,7 +187,7 @@ private fun UpNextCard(
     ) {
         OutlinedCard(
             modifier = Modifier
-                .width(260.dp)
+                .width(300.dp)
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.outlinedCardColors(
@@ -191,66 +195,92 @@ private fun UpNextCard(
             ),
             border = BorderStroke(width = 1.dp, color = borderColor)
         ) {
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Show Title & Episode Code Badge
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = episode.showTitle,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                // Mini Artwork / Poster Thumbnail
+                val posterUrl = episode.showPosterPath
+                if (!posterUrl.isNullOrBlank()) {
+                    NetworkImage(
+                        url = posterUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .width(62.dp)
+                            .aspectRatio(TmdbPosterAspectRatio)
+                            .clip(RoundedCornerShape(10.dp))
                     )
-
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = if (isCompleted) {
-                            Color(0xFFFFD700).copy(alpha = 0.2f)
-                        } else {
-                            MaterialTheme.colorScheme.primaryContainer
-                        }
-                    ) {
-                        Text(
-                            text = if (isCompleted) {
-                                stringResource(R.string.caught_up)
-                            } else {
-                                stringResource(
-                                    R.string.episode_code,
-                                    episode.seasonNumber,
-                                    episode.episodeNumber
-                                )
-                            },
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isCompleted) {
-                                Color(0xFFD48800)
-                            } else {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            },
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
+                    Spacer(modifier = Modifier.width(10.dp))
                 }
 
-                // Episode Title
-                val episodeTitle = episode.episodeTitle
-                if (!episodeTitle.isNullOrBlank()) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    // Show Title & Episode Code Badge
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = episode.showTitle,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (isCompleted) {
+                                Color(0xFFFFD700).copy(alpha = 0.2f)
+                            } else {
+                                MaterialTheme.colorScheme.primaryContainer
+                            }
+                        ) {
+                            Text(
+                                text = if (isCompleted) {
+                                    stringResource(R.string.caught_up)
+                                } else {
+                                    stringResource(
+                                        R.string.episode_code,
+                                        episode.seasonNumber,
+                                        episode.episodeNumber
+                                    )
+                                },
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isCompleted) {
+                                    Color(0xFFD48800)
+                                } else {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                },
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.5.dp)
+                            )
+                        }
+                    }
+
+                    // Episode Title
+                    val rawTitle = episode.episodeTitle
+                    val displayEpisodeTitle = if (isCompleted) {
+                        stringResource(R.string.season_completed)
+                    } else if (!rawTitle.isNullOrBlank()) {
+                        rawTitle
+                    } else {
+                        "Episode ${episode.episodeNumber}"
+                    }
+
                     Text(
-                        text = if (isCompleted) {
-                            stringResource(R.string.season_completed)
-                        } else {
-                            episodeTitle
-                        },
+                        text = displayEpisodeTitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = if (isCompleted) {
                             MaterialTheme.colorScheme.primary
@@ -260,87 +290,83 @@ private fun UpNextCard(
                         fontWeight = if (isCompleted) FontWeight.SemiBold else FontWeight.Normal,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-                // Progress Bar
-                LinearProgressIndicator(
-                    progress = { animatedProgress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp)),
-                    color = if (isCompleted) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-                // Progress Count & 1-Tap Watched Action
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(
-                            R.string.episodes_watched_progress,
-                            episode.totalCompleted,
-                            episode.totalAired
-                        ),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        modifier = Modifier.padding(top = 1.dp)
                     )
 
-                    FilledTonalButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                buttonScale.animateTo(0.85f, animationSpec = tween(50))
-                                buttonScale.animateTo(1f, animationSpec = spring())
-                            }
-                            burstTrigger++
-                            onMarkWatched()
-                        },
-                        enabled = !isCompleted,
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Progress Bar
+                    LinearProgressIndicator(
+                        progress = { animatedProgress },
                         modifier = Modifier
-                            .height(28.dp)
-                            .graphicsLayer {
-                                scaleX = buttonScale.value
-                                scaleY = buttonScale.value
-                            },
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = if (isCompleted) {
-                                Color(0xFFFFD700).copy(alpha = 0.15f)
-                            } else {
-                                MaterialTheme.colorScheme.primaryContainer
-                            },
-                            contentColor = if (isCompleted) {
-                                Color(0xFFD48800)
-                            } else {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            }
-                        )
+                            .fillMaxWidth()
+                            .height(3.5.dp)
+                            .clip(RoundedCornerShape(2.dp)),
+                        color = if (isCompleted) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Progress Count & 1-Tap Watched Action
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (isCompleted) {
-                                stringResource(R.string.mark_watched_done)
-                            } else {
-                                stringResource(R.string.mark_watched)
-                            },
+                            text = "${episode.totalCompleted}/${episode.totalAired} eps",
                             style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+
+                        FilledTonalButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    buttonScale.animateTo(0.85f, animationSpec = tween(50))
+                                    buttonScale.animateTo(1f, animationSpec = spring())
+                                }
+                                burstTrigger++
+                                onMarkWatched()
+                            },
+                            enabled = !isCompleted,
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                            modifier = Modifier
+                                .height(26.dp)
+                                .graphicsLayer {
+                                    scaleX = buttonScale.value
+                                    scaleY = buttonScale.value
+                                },
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = if (isCompleted) {
+                                    Color(0xFFFFD700).copy(alpha = 0.15f)
+                                } else {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                },
+                                contentColor = if (isCompleted) {
+                                    Color(0xFFD48800)
+                                } else {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                }
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = if (isCompleted) {
+                                    stringResource(R.string.mark_watched_done)
+                                } else {
+                                    stringResource(R.string.mark_watched)
+                                },
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
