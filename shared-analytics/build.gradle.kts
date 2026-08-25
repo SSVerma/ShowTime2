@@ -9,4 +9,6 @@ android {
 
 dependencies {
     implementation(projects.sharedDomain)
+    implementation(projects.coreAnalytics)
+    implementation(projects.coreNetworking)
 }
