@@ -65,7 +65,11 @@ class EnvelopeConvertorFactory<R, E : Envelope<R>> private constructor(
         annotations: Array<out Annotation>,
         retrofit: Retrofit
     ): Converter<ResponseBody, *> {
-        val envelopeType = TypeToken.getParameterized(clazz, type).type
+        val envelopeType = if (clazz.typeParameters.isEmpty()) {
+            clazz
+        } else {
+            TypeToken.getParameterized(clazz, type).type
+        }
         val delegate =
             retrofit.nextResponseBodyConverter<E>(this, envelopeType, annotations)
 

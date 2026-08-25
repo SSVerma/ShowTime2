@@ -120,7 +120,20 @@ class ApiResponseCallAdaptorFactoryTest {
         assertThat(response).isInstanceOf(ApiResponse.Error.NetworkError::class.java)
 
         val errorResponse = response as ApiResponse.Error.NetworkError
-        assertThat(errorResponse.throwable).hasCauseThat()
+        assertThat(errorResponse.throwable).isInstanceOf(java.io.IOException::class.java)
+    }
+
+    @Test
+    fun `verify api response timeout failure returns network error`() = runTest {
+        mockWebServer.enqueue(
+            MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE)
+        )
+
+        val response = fakeService.getFakeUser()
+        assertThat(response).isInstanceOf(ApiResponse.Error.NetworkError::class.java)
+
+        val errorResponse = response as ApiResponse.Error.NetworkError
+        assertThat(errorResponse.throwable).isInstanceOf(java.net.SocketTimeoutException::class.java)
     }
 
     @Test
