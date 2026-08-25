@@ -33,6 +33,8 @@ desugar = "2.1.5"
 
 junit = "4.13.2"
 androidx-junit = "1.3.0"
+truth = "1.4.4"
+mockk = "1.13.16"
 
 agp = "9.3.1"
 kotlin = "2.4.10"
@@ -56,8 +58,6 @@ navigation3 = "1.1.6"
 lifecycle-navigation3 = "2.11.0"
 navigationevent = "1.1.2"
 turbine = "1.2.0"
-truth = "1.4.4"
-mockk = "1.13.16"
 robolectric = "4.14.1"
 credentials = "1.5.0-rc01"
 googleid = "1.1.1"
@@ -72,6 +72,7 @@ coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", ve
 # Networking
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 okhttpLoggingInterceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttpLogging" }
+okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpLogging" }
 retrofitConverterGson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 
 # Compose
@@ -132,6 +133,8 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
 compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttpLogging" }
+retrofitConverterMoshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inject" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
