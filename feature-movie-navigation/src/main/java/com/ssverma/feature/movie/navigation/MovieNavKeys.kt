@@ -24,3 +24,8 @@ data class MovieImageShotsNavKey(val movieId: Int) : NavKey, Parcelable
 @Serializable
 @Parcelize
 data class MovieImagePagerNavKey(val movieId: Int, val initialPageIndex: Int) : NavKey, Parcelable
+
+@Serializable
+@Parcelize
+data object CinemaGameNavKey : NavKey, Parcelable
+

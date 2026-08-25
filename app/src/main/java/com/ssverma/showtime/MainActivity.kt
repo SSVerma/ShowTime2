@@ -23,11 +23,11 @@ import com.ssverma.core.ads.manager.AppOpenAdManager
 import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.di.AppScoped
 import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.notifications.ShowTimeNotificationManager
 import com.ssverma.shared.ui.AppStateHolder
 import com.ssverma.shared.ui.LocalAppStateHolder
-import com.ssverma.core.di.AppScoped
 import com.ssverma.showtime.navigation.ShowTimeDeepLinkHandler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -119,7 +119,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        appOpenAdManager.showAdIfAvailable(this)
         appScope.launch {
             com.ssverma.showtime.widget.WidgetUpdateHelper.updateAllWidgets(this@MainActivity)
         }

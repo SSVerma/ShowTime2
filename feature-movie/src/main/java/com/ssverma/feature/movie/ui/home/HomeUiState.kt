@@ -7,6 +7,7 @@ import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.game.CinemaGameStats
 import com.ssverma.shared.domain.model.movie.MoviePreview
 
 data class HomeUiState(
@@ -19,4 +20,6 @@ data class HomeUiState(
     val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle,
     val watchProviderAd: NativeAd? = null,
     val feedInlineAd: NativeAd? = null,
+    val gameStats: CinemaGameStats = CinemaGameStats(),
+    val isTodayGameCompleted: Boolean = false,
 )

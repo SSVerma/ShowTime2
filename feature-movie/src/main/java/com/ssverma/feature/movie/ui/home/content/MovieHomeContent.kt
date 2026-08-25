@@ -40,6 +40,7 @@ import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
 import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.ui.home.HomeMovieViewModel
+import com.ssverma.feature.movie.ui.home.component.DailyGameBanner
 import com.ssverma.feature.movie.ui.home.component.DiscoverySection
 import com.ssverma.feature.movie.ui.home.component.HeroSection
 import com.ssverma.feature.movie.ui.home.component.MovieGenres
@@ -68,6 +69,7 @@ fun MovieHomeContent(
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openCinemaGame: () -> Unit,
     modifier: Modifier = Modifier,
     onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
@@ -142,6 +144,19 @@ fun MovieHomeContent(
             )
         }
 
+        item {
+            DailyGameBanner(
+                gameStats = uiState.gameStats,
+                isTodayCompleted = uiState.isTodayGameCompleted,
+                onOpenGame = openCinemaGame,
+                modifier = Modifier.padding(
+                    top = MaterialTheme.spacing.medium,
+                    start = MaterialTheme.spacing.medium,
+                    end = MaterialTheme.spacing.medium
+                )
+            )
+        }
+
         if (!hasNotificationPermission && !isPermissionBannerDismissed) {
             item {
                 NotificationPermissionBanner(
@@ -165,7 +180,11 @@ fun MovieHomeContent(
                         }
                     },
                     onDismissClicked = { isPermissionBannerDismissed = true },
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.medium)
+                    modifier = Modifier.padding(
+                        top = MaterialTheme.spacing.medium,
+                        start = MaterialTheme.spacing.medium,
+                        end = MaterialTheme.spacing.medium
+                    )
                 )
             }
         }

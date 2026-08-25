@@ -73,7 +73,17 @@ fun EntryProviderScope<NavKey>.movieEntries(
                     )
                 )
             },
-            openLibraryPage = openLibraryPage
+            openLibraryPage = openLibraryPage,
+            openCinemaGame = {
+                navigator.navigate(CinemaGameNavKey)
+            }
+        )
+    }
+
+    showTimeEntry<CinemaGameNavKey> {
+        com.ssverma.feature.movie.ui.game.CinemaGameScreen(
+            viewModel = hiltViewModel(),
+            onBackPress = { navigator.goBack() }
         )
     }
 

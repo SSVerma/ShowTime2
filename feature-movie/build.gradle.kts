@@ -20,6 +20,9 @@ dependencies {
 
     implementation(projects.coreAnalytics)
     implementation(projects.coreNotifications)
+    implementation(projects.coreAds)
     implementation(projects.sharedAnalytics)
     implementation(projects.sharedAds)
+
+    testImplementation(projects.sharedTesting)
 }

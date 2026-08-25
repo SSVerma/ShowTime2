@@ -27,7 +27,9 @@ fun NetworkImage(
     errorPlaceholder: @Composable () -> Unit = { ErrorImagePlaceHolder() },
     enableCrossFade: Boolean = true,
     crossFadeDurationMillis: Int = NetworkImageDefaults.CrossFadeDurationMs,
-    diskCachePolicy: CachePolicy = CachePolicy.ENABLED
+    diskCachePolicy: CachePolicy = CachePolicy.ENABLED,
+    onSuccess: (() -> Unit)? = null,
+    onError: (() -> Unit)? = null
 ) {
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
@@ -40,7 +42,9 @@ fun NetworkImage(
         contentScale = contentScale,
         modifier = modifier,
         loading = { loadingPlaceholder() },
-        error = { errorPlaceholder() }
+        error = { errorPlaceholder() },
+        onSuccess = { onSuccess?.invoke() },
+        onError = { onError?.invoke() }
     )
 }
 

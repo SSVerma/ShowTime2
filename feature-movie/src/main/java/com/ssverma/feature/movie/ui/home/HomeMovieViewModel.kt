@@ -42,7 +42,8 @@ class HomeMovieViewModel @Inject constructor(
     private val movieGenreUseCase: MovieGenresUseCase,
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
     private val appConfigRepository: AppConfigRepository,
-    private val adConfigProvider: AdConfigProvider
+    private val adConfigProvider: AdConfigProvider,
+    private val cinemaGameRepository: com.ssverma.shared.domain.repository.CinemaGameRepository
 ) : ViewModel() {
 
 
@@ -59,6 +60,13 @@ class HomeMovieViewModel @Inject constructor(
             ) { _, _, _, _ -> }.collect {
                 _uiState.update { HomeUiState() } // Reset state to trigger re-fetch of all sections
                 fetchAllHomeData()
+            }
+        }
+
+        viewModelScope.launch {
+            cinemaGameRepository.gameStatsFlow.collect { stats ->
+                val isCompleted = cinemaGameRepository.isTodayPuzzleCompleted()
+                _uiState.update { it.copy(gameStats = stats, isTodayGameCompleted = isCompleted) }
             }
         }
     }

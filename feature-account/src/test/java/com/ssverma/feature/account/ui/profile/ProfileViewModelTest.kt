@@ -44,8 +44,12 @@ class ProfileViewModelTest {
     private val mockAuthManager: AuthManager = mockk(relaxed = true)
     private val mockTraktAuthManager: TraktAuthManager = mockk(relaxed = true)
     private val mockTraktSyncRepository: TraktSyncRepository = mockk(relaxed = true)
-    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager = mockk(relaxed = true)
-    private val mockLibraryRepository: com.ssverma.shared.domain.repository.LibraryRepository = mockk(relaxed = true)
+    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager =
+        mockk(relaxed = true)
+    private val mockLibraryRepository: com.ssverma.shared.domain.repository.LibraryRepository =
+        mockk(relaxed = true)
+    private val mockCinemaGameRepository: com.ssverma.shared.domain.repository.CinemaGameRepository =
+        mockk(relaxed = true)
 
     private val authFlow = MutableSharedFlow<AuthState>(replay = 1)
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
@@ -72,7 +76,8 @@ class ProfileViewModelTest {
             traktAuthManager = mockTraktAuthManager,
             traktSyncRepository = mockTraktSyncRepository,
             debugConfigManager = mockDebugConfigManager,
-            libraryRepository = mockLibraryRepository
+            libraryRepository = mockLibraryRepository,
+            cinemaGameRepository = mockCinemaGameRepository
         )
     }
 

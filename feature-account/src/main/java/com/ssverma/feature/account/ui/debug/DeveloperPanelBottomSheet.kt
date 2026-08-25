@@ -78,6 +78,7 @@ fun DeveloperPanelBottomSheet(
     onSeedWatchlist: () -> Unit,
     onSeedHistory: () -> Unit,
     onClearDatabase: () -> Unit,
+    onResetCinemaGame: () -> Unit,
     onResetAll: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
@@ -221,7 +222,10 @@ fun DeveloperPanelBottomSheet(
                         colors = CardDefaults.outlinedCardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                         ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(MaterialTheme.spacing.medium)) {
@@ -429,6 +433,29 @@ fun DeveloperPanelBottomSheet(
                         )
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                         Text(text = stringResource(R.string.dev_clear_database))
+                    }
+
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                    OutlinedButton(
+                        onClick = {
+                            onResetCinemaGame()
+                            Toast.makeText(
+                                context,
+                                "Reset Cinema Challenge state & stats",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(text = "Reset Daily Cinema Game")
                     }
 
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))

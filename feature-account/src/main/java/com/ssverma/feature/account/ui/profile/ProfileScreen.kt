@@ -26,8 +26,6 @@ import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.AlertDialog
-import com.ssverma.feature.account.BuildConfig
-import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -75,8 +73,10 @@ import com.ssverma.core.ui.ScreenLoadingIndicator
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.account.BuildConfig
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
+import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
 import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
@@ -333,6 +333,7 @@ fun ProfileScreen(
                 onSeedWatchlist = { viewModel.seedSampleWatchlist() },
                 onSeedHistory = { viewModel.seedSampleHistory() },
                 onClearDatabase = { viewModel.clearLocalDatabase() },
+                onResetCinemaGame = { viewModel.resetCinemaGame() },
                 onResetAll = { viewModel.resetAllDebugOverrides() },
                 onDismissRequest = { viewModel.dismissDeveloperPanel() }
             )
@@ -981,7 +982,12 @@ private fun CloudBackupCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${stringResource(R.string.backup_size, lastBackupMetadata.formattedSize)} • ${
+                        text = "${
+                            stringResource(
+                                R.string.backup_size,
+                                lastBackupMetadata.formattedSize
+                            )
+                        } • ${
                             stringResource(
                                 R.string.backup_includes_summary,
                                 lastBackupMetadata.favoritesCount,
@@ -1179,7 +1185,9 @@ private fun BackupFrequencyOption(
             if (isPro) {
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(0xFFFF9800).copy(alpha = 0.14f)
+                    color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(
+                        0xFFFF9800
+                    ).copy(alpha = 0.14f)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -1188,7 +1196,9 @@ private fun BackupFrequencyOption(
                         Icon(
                             imageVector = Icons.Rounded.Star,
                             contentDescription = "Pro",
-                            tint = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800),
+                            tint = if (isProActive) MaterialTheme.colorScheme.primary else Color(
+                                0xFFFF9800
+                            ),
                             modifier = Modifier.size(12.dp)
                         )
                         Spacer(modifier = Modifier.width(2.dp))
@@ -1196,7 +1206,9 @@ private fun BackupFrequencyOption(
                             text = stringResource(R.string.pro_badge),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800)
+                            color = if (isProActive) MaterialTheme.colorScheme.primary else Color(
+                                0xFFFF9800
+                            )
                         )
                     }
                 }
@@ -1225,7 +1237,9 @@ private fun ProBadge(
 ) {
     Surface(
         shape = RoundedCornerShape(6.dp),
-        color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(0xFFFF9800).copy(alpha = 0.14f),
+        color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(0xFFFF9800).copy(
+            alpha = 0.14f
+        ),
         modifier = modifier
     ) {
         Row(
@@ -1364,7 +1378,10 @@ private fun TraktCloudSyncCard(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = stringResource(R.string.trakt_connected_as, traktAuthState.user.username),
+                                text = stringResource(
+                                    R.string.trakt_connected_as,
+                                    traktAuthState.user.username
+                                ),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -33,6 +33,7 @@ fun MovieScreen(
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openCinemaGame: () -> Unit,
     viewModel: HomeMovieViewModel = hiltViewModel()
 ) {
     TrackScreenView(screenName = MovieAnalyticsScreenName.MOVIE_HOME)
@@ -61,6 +62,7 @@ fun MovieScreen(
                 openAccountPage = openAccountPage,
                 openWatchProviderHub = openWatchProviderHub,
                 openLibraryPage = openLibraryPage,
+                openCinemaGame = openCinemaGame,
                 onShowFeedback = { message, actionLabel, destination ->
                     coroutineScope.launch {
                         val result = snackbarHostState.showImmediateSnackbar(

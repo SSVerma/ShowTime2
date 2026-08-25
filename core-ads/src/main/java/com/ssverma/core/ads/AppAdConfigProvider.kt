@@ -40,4 +40,7 @@ class AppAdConfigProvider @Inject constructor(
 
     override val appOpenAdId: String
         get() = BuildConfig.ADMOB_APP_OPEN_ID
+
+    override val rewardedAdId: String
+        get() = BuildConfig.ADMOB_REWARDED_ID
 }

@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(projects.coreImage)
     implementation(projects.sharedDomain)
+    implementation(libs.core.ktx)
 
     api(libs.compose.ui)
     api(libs.compose.foundation)

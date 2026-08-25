@@ -1,0 +1,27 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Rounded Icon Container -->
+    <path
+        android:fillColor="#FF6D00"
+        android:pathData="M10,0 L38,0 A10,10 0 0,1 48,10 L48,38 A10,10 0 0,1 38,48 L10,48 A10,10 0 0,1 0,38 L0,10 A10,10 0 0,1 10,0 Z" />
+
+    <!-- Clapperboard / Film Reel Shape -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,14 L33,20 L30,20 L33,14 L27,14 L24,20 L21,20 L24,14 L18,14 L15,20 L12,20 L12,14 C12,12.9 12.9,12 14,12 L34,12 C35.1,12 36,12.9 36,14 Z" />
+
+    <!-- Lower Body -->
+    <path
+        android:fillAlpha="0.9"
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,22 L36,22 L36,34 C36,35.1 35.1,36 34,36 L14,36 C12.9,36 12,35.1 12,34 L12,22 Z" />
+
+    <!-- Play Symbol in center -->
+    <path
+        android:fillColor="#FF6D00"
+        android:pathData="M21,25 L29,29 L21,33 Z" />
+</vector>
