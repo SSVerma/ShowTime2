@@ -96,7 +96,7 @@ data class TraktUser(
  */
 sealed interface TraktAuthState {
     data object Disconnected : TraktAuthState
-    
+
     data class Authorizing(
         val userCode: String,
         val verificationUrl: String,

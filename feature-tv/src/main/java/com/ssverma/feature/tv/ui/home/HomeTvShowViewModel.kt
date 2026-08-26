@@ -6,6 +6,8 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.mapSuccess
+import com.ssverma.feature.auth.domain.TraktAuthManager
+import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.tv.domain.usecase.NowAiringTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TodayAiringTvShowsUseCase
@@ -23,10 +25,8 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
-import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.repository.TraktSyncRepository
+import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -91,7 +91,8 @@ class HomeTvShowViewModel @Inject constructor(
         fetchTodayAiringTvShows()
         fetchNowAiringTvShows()
         fetchWatchProviders()
-        val token = (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken.orEmpty()
+        val token =
+            (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken.orEmpty()
         fetchUpNextQueue(token)
     }
 

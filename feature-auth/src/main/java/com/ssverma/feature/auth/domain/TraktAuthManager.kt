@@ -92,7 +92,8 @@ class TraktAuthManager @Inject constructor(
                 is ApiResponse.Success -> {
                     val codeResponse = result.body
                     var remainingSeconds = codeResponse.expiresInSeconds
-                    val interval = (if (codeResponse.intervalSeconds > 0) codeResponse.intervalSeconds else 5)
+                    val interval =
+                        (if (codeResponse.intervalSeconds > 0) codeResponse.intervalSeconds else 5)
 
                     _authState.value = TraktAuthState.Authorizing(
                         userCode = codeResponse.userCode,
@@ -137,7 +138,8 @@ class TraktAuthManager @Inject constructor(
                                         val payload = userProfileResult.body
                                         TraktUser(
                                             username = payload.username,
-                                            displayName = payload.name?.ifBlank { payload.username } ?: payload.username,
+                                            displayName = payload.name?.ifBlank { payload.username }
+                                                ?: payload.username,
                                             isVip = payload.isVip,
                                             avatarUrl = payload.images?.avatar?.fullUrl
                                         )
@@ -164,22 +166,30 @@ class TraktAuthManager @Inject constructor(
                                         400 -> {
                                             // Pending - user has not approved yet, continue loop
                                         }
+
                                         404 -> {
-                                            _authState.value = TraktAuthState.Error("Invalid device code.")
+                                            _authState.value =
+                                                TraktAuthState.Error("Invalid device code.")
                                             return@launch
                                         }
+
                                         409 -> {
-                                            _authState.value = TraktAuthState.Error("Code already approved.")
+                                            _authState.value =
+                                                TraktAuthState.Error("Code already approved.")
                                             return@launch
                                         }
+
                                         410 -> {
-                                            _authState.value = TraktAuthState.Error("Device code expired.")
+                                            _authState.value =
+                                                TraktAuthState.Error("Device code expired.")
                                             return@launch
                                         }
+
                                         429 -> {
                                             // Slow down by increasing poll interval
                                             pollCounter = -5
                                         }
+
                                         else -> {
                                             // Keep waiting for transient client errors
                                         }
@@ -193,11 +203,13 @@ class TraktAuthManager @Inject constructor(
                         }
                     }
 
-                    _authState.value = TraktAuthState.Error("Authorization timed out. Please try again.")
+                    _authState.value =
+                        TraktAuthState.Error("Authorization timed out. Please try again.")
                 }
 
                 is ApiResponse.Error -> {
-                    _authState.value = TraktAuthState.Error("Unable to reach Trakt.tv. Please check your connection.")
+                    _authState.value =
+                        TraktAuthState.Error("Unable to reach Trakt.tv. Please check your connection.")
                 }
             }
         }
@@ -244,7 +256,8 @@ class TraktAuthManager @Inject constructor(
             )
             traktAuthStorage.saveTokens(mockToken)
             traktAuthStorage.saveUserProfile(mockUser)
-            _authState.value = TraktAuthState.Connected(user = mockUser, accessToken = mockToken.accessToken)
+            _authState.value =
+                TraktAuthState.Connected(user = mockUser, accessToken = mockToken.accessToken)
         }
     }
 }

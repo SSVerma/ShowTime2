@@ -16,23 +16,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.shared.ui.R
 
 @Composable
 fun AttributionFooter(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    bottomPadding: Dp = 0.dp
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f))
-            .padding(horizontal = 16.dp, vertical = 32.dp)
+            .background(color = MaterialTheme.colorScheme.surfaceContainer)
+            .padding(horizontal = 24.dp)
+            .padding(top = 28.dp, bottom = 28.dp + bottomPadding)
     ) {
         Text(
             text = stringResource(id = R.string.tmdb_attribution),
             style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(16.dp))

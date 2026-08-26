@@ -41,12 +41,10 @@ import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -55,7 +53,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,7 +64,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -75,7 +71,6 @@ import coil.compose.AsyncImage
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.auth.R
 import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.defaults.TraktDefaults
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -175,7 +170,11 @@ fun TraktConnectBottomSheet(
             AnimatedContent(
                 targetState = authState,
                 transitionSpec = {
-                    fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(220))
+                    fadeIn(animationSpec = tween(220)) togetherWith fadeOut(
+                        animationSpec = tween(
+                            220
+                        )
+                    )
                 },
                 label = "TraktAuthStateAnimation"
             ) { state ->
@@ -186,17 +185,19 @@ fun TraktConnectBottomSheet(
                             verificationUrl = state.verificationUrl,
                             secondsRemaining = state.secondsRemaining,
                             onCopyCode = {
-                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                val clipboard =
+                                    context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 val clip = ClipData.newPlainText("Trakt Code", state.userCode)
                                 clipboard.setPrimaryClip(clip)
                                 Toast.makeText(
                                     context,
-                                    context.getString(R.string.trakt_code_copied),
+                                    R.string.trakt_code_copied,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             },
                             onOpenBrowser = {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(state.verificationUrl))
+                                val intent =
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(state.verificationUrl))
                                 context.startActivity(intent)
                             }
                         )

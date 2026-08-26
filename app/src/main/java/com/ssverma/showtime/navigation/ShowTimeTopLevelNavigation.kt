@@ -14,9 +14,15 @@ sealed class ShowTimeTopLevelNavItem(
     @param:StringRes val titleResId: Int,
     @param:DrawableRes val iconResId: Int
 ) {
+    object Home : ShowTimeTopLevelNavItem(
+        navKey = DashboardHomeNavKey,
+        titleResId = R.string.home,
+        iconResId = R.drawable.ic_home
+    )
+
     object Movie : ShowTimeTopLevelNavItem(
         navKey = MovieHomeNavKey,
-        titleResId = R.string.movie,
+        titleResId = R.string.movies,
         iconResId = R.drawable.ic_movie
     )
 
@@ -26,21 +32,30 @@ sealed class ShowTimeTopLevelNavItem(
         iconResId = R.drawable.ic_tv
     )
 
-    object Person : ShowTimeTopLevelNavItem(
-        navKey = PersonHomeNavKey,
-        titleResId = R.string.people,
-        iconResId = R.drawable.ic_people
-    )
-
     object Library : ShowTimeTopLevelNavItem(
         navKey = LibraryHomeNavKey(),
         titleResId = R.string.library,
         iconResId = R.drawable.ic_library
     )
+
+    object Person : ShowTimeTopLevelNavItem(
+        navKey = PersonHomeNavKey,
+        titleResId = R.string.people,
+        iconResId = R.drawable.ic_people
+    )
 }
 
 val ShowTimeTopLevelNavItems = listOf(
+    ShowTimeTopLevelNavItem.Home,
     ShowTimeTopLevelNavItem.Movie,
     ShowTimeTopLevelNavItem.Tv,
+    ShowTimeTopLevelNavItem.Library,
+)
+
+val ShowTimeRailNavItems = listOf(
+    ShowTimeTopLevelNavItem.Home,
+    ShowTimeTopLevelNavItem.Movie,
+    ShowTimeTopLevelNavItem.Tv,
+    ShowTimeTopLevelNavItem.Library,
     ShowTimeTopLevelNavItem.Person,
 )

@@ -114,7 +114,8 @@ class TvShowDetailsViewModel @AssistedInject constructor(
                 (1..tvSeason.episodeCount).toList()
             }
             val show = (_uiState.value as? UiState.Success)?.data?.tvShow
-            val totalEpisodes = show?.seasons?.sumOf { it.episodeCount } ?: (tvSeason.episodeCount * 2)
+            val totalEpisodes =
+                show?.seasons?.sumOf { it.episodeCount } ?: (tvSeason.episodeCount * 2)
 
             traktSyncRepository.markSeasonWatched(
                 accessToken = token,

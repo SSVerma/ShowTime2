@@ -11,7 +11,7 @@
     <string name="unlock_showtime_pro">Unlock ShowTime Pro</string>
     <string name="pro_active">Pro Active</string>
     <string name="pro_subtitle">Enjoy pure cinema with zero distractions</string>
-    <string name="pro_feature_no_ads">100% Ad-Free Experience</string>
+    <string name="pro_feature_no_ads">100%% Ad-Free Experience</string>
     <string name="pro_feature_no_ads_desc">No banner, native, or video ads anywhere</string>
     <string name="pro_feature_oled">OLED Midnight Theme</string>
     <string name="pro_feature_oled_desc">Pitch-black true AMOLED theme for maximum battery saving</string>
@@ -133,4 +133,15 @@
     <string name="dev_key_saved_msg">Custom Trakt Client ID saved</string>
     <string name="dev_mock_connected_msg">Mock Trakt connected as @cinephile_dev</string>
     <string name="dev_overrides_reset_msg">Debug overrides reset to defaults</string>
+    <string name="about_showtime">About ShowTime</string>
+    <string name="about_showtime_desc">Version, TMDB attribution &amp; open source licenses</string>
+    <string name="content_region">Content Region</string>
+    <string name="content_region_desc">Set default country for streaming services &amp; releases</string>
+    <string name="content_language">Content Language</string>
+    <string name="content_language_desc">Default language for movie &amp; TV show metadata</string>
+    <string name="localization_settings">Region &amp; Language</string>
+    <string name="localization_settings_desc">Content country, translation and preferred language</string>
+    <string name="sync_section">Sync &amp; Storage</string>
+    <string name="preferences_section">Preferences &amp; Customization</string>
+    <string name="about_section">About &amp; Developer</string>
 </resources>

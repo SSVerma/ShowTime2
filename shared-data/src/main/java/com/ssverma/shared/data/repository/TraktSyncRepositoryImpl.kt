@@ -661,7 +661,8 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 mockShows.values
                     .filter { it.totalCompleted < it.totalAired }
                     .mapNotNull { show ->
-                        val epTitle = show.episodeTitles[Pair(show.seasonNumber, show.episodeNumber)]
+                        val epTitle =
+                            show.episodeTitles[Pair(show.seasonNumber, show.episodeNumber)]
                         TraktUpNextEpisode(
                             showTmdbId = show.showTmdbId,
                             showTitle = show.showTitle,
@@ -706,211 +707,274 @@ class TraktSyncRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun isEpisodeWatchedFlow(showId: Int, seasonNumber: Int, episodeNumber: Int): Flow<Boolean> {
+    override fun isEpisodeWatchedFlow(
+        showId: Int,
+        seasonNumber: Int,
+        episodeNumber: Int
+    ): Flow<Boolean> {
         return episodeWatchHistoryDao.isEpisodeWatchedFlow(showId, seasonNumber, episodeNumber)
     }
 
-    override suspend fun syncLibrary(accessToken: String): Result<TraktSyncResult> = withContext(Dispatchers.IO) {
-        try {
-            if (debugConfigManager.isMockTraktEnabled.value) {
-                // Mock Sync: Add 3 mock watchlist items and 2 history items to Room DB
-                val mockWatchlist = listOf(
-                    WatchlistEntity(mediaId = 93405, mediaType = "Tv", title = "Severance", posterImageUrl = "https://image.tmdb.org/t/p/w500/abfJnkhz4c24t1GqSgq2J61z4e2.jpg", backdropImageUrl = "", voteAvg = 8.4f, releaseDate = "2022-02-18"),
-                    WatchlistEntity(mediaId = 157336, mediaType = "Movie", title = "Interstellar", posterImageUrl = "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", backdropImageUrl = "", voteAvg = 8.6f, releaseDate = "2014-11-05"),
-                    WatchlistEntity(mediaId = 94997, mediaType = "Tv", title = "House of the Dragon", posterImageUrl = "https://image.tmdb.org/t/p/w500/7QMsOTMUswlwxJP0rTTZfmz2tX2.jpg", backdropImageUrl = "", voteAvg = 8.4f, releaseDate = "2022-08-21")
-                )
-                val mockHistory = listOf(
-                    WatchHistoryEntity(mediaId = 550, mediaType = "Movie", title = "Fight Club", posterImageUrl = "", voteAvg = 8.4f),
-                    WatchHistoryEntity(mediaId = 1396, mediaType = "Tv", title = "Breaking Bad", posterImageUrl = "", voteAvg = 8.9f)
-                )
-                watchlistDao.insertAll(mockWatchlist)
-                watchHistoryDao.insertAll(mockHistory)
+    override suspend fun syncLibrary(accessToken: String): Result<TraktSyncResult> =
+        withContext(Dispatchers.IO) {
+            try {
+                if (debugConfigManager.isMockTraktEnabled.value) {
+                    // Mock Sync: Add 3 mock watchlist items and 2 history items to Room DB
+                    val mockWatchlist = listOf(
+                        WatchlistEntity(
+                            mediaId = 93405,
+                            mediaType = "Tv",
+                            title = "Severance",
+                            posterImageUrl = "https://image.tmdb.org/t/p/w500/abfJnkhz4c24t1GqSgq2J61z4e2.jpg",
+                            backdropImageUrl = "",
+                            voteAvg = 8.4f,
+                            releaseDate = "2022-02-18"
+                        ),
+                        WatchlistEntity(
+                            mediaId = 157336,
+                            mediaType = "Movie",
+                            title = "Interstellar",
+                            posterImageUrl = "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+                            backdropImageUrl = "",
+                            voteAvg = 8.6f,
+                            releaseDate = "2014-11-05"
+                        ),
+                        WatchlistEntity(
+                            mediaId = 94997,
+                            mediaType = "Tv",
+                            title = "House of the Dragon",
+                            posterImageUrl = "https://image.tmdb.org/t/p/w500/7QMsOTMUswlwxJP0rTTZfmz2tX2.jpg",
+                            backdropImageUrl = "",
+                            voteAvg = 8.4f,
+                            releaseDate = "2022-08-21"
+                        )
+                    )
+                    val mockHistory = listOf(
+                        WatchHistoryEntity(
+                            mediaId = 550,
+                            mediaType = "Movie",
+                            title = "Fight Club",
+                            posterImageUrl = "",
+                            voteAvg = 8.4f
+                        ),
+                        WatchHistoryEntity(
+                            mediaId = 1396,
+                            mediaType = "Tv",
+                            title = "Breaking Bad",
+                            posterImageUrl = "",
+                            voteAvg = 8.9f
+                        )
+                    )
+                    watchlistDao.insertAll(mockWatchlist)
+                    watchHistoryDao.insertAll(mockHistory)
+
+                    widgetSyncNotifier?.notifyWidgetDataChanged()
+
+                    return@withContext Result.success(
+                        TraktSyncResult(
+                            itemsImportedToWatchlist = mockWatchlist.size,
+                            itemsImportedToHistory = mockHistory.size,
+                            itemsExportedToTrakt = 2
+                        )
+                    )
+                }
+
+                val clientId = getActiveClientId()
+                val bearer = "Bearer $accessToken"
+                var importedWatchlist = 0
+                var importedHistory = 0
+                var exportedItems = 0
+
+                // 1. Sync Watchlist (Trakt -> Room DB)
+                when (val watchlistRes = traktSyncService.getWatchlist(bearer, clientId)) {
+                    is ApiResponse.Success -> {
+                        val traktWatchlist = watchlistRes.body
+                        val entitiesToInsert = mutableListOf<WatchlistEntity>()
+
+                        traktWatchlist.forEach { item ->
+                            val tmdbId = item.movie?.ids?.tmdb ?: item.show?.ids?.tmdb
+                            val title = item.movie?.title ?: item.show?.title ?: ""
+                            val mediaType = if (item.movie != null) "Movie" else "Tv"
+
+                            if (tmdbId != null && tmdbId > 0) {
+                                entitiesToInsert.add(
+                                    WatchlistEntity(
+                                        mediaId = tmdbId,
+                                        mediaType = mediaType,
+                                        title = title,
+                                        posterImageUrl = "",
+                                        backdropImageUrl = "",
+                                        voteAvg = 0f,
+                                        releaseDate = "",
+                                        addedAt = System.currentTimeMillis()
+                                    )
+                                )
+                            }
+                        }
+
+                        if (entitiesToInsert.isNotEmpty()) {
+                            watchlistDao.insertAll(entitiesToInsert)
+                            importedWatchlist = entitiesToInsert.size
+                        }
+
+                        // Export local watchlist items not yet in Trakt
+                        val localWatchlist = watchlistDao.getAllWatchlist()
+                        val remoteIds =
+                            traktWatchlist.mapNotNull { it.movie?.ids?.tmdb ?: it.show?.ids?.tmdb }
+                                .toSet()
+                        val missingMovies =
+                            localWatchlist.filter { it.mediaType == "Movie" && it.mediaId !in remoteIds }
+                                .map {
+                                    TraktMediaItemIdentifier(
+                                        ids = TraktIds(tmdb = it.mediaId),
+                                        title = it.title
+                                    )
+                                }
+                        val missingShows =
+                            localWatchlist.filter { it.mediaType == "Tv" && it.mediaId !in remoteIds }
+                                .map {
+                                    TraktMediaItemIdentifier(
+                                        ids = TraktIds(tmdb = it.mediaId),
+                                        title = it.title
+                                    )
+                                }
+
+                        if (missingMovies.isNotEmpty() || missingShows.isNotEmpty()) {
+                            traktSyncService.addToWatchlist(
+                                bearerToken = bearer,
+                                clientId = clientId,
+                                payload = TraktSyncBody(
+                                    movies = missingMovies,
+                                    shows = missingShows
+                                )
+                            )
+                            exportedItems += (missingMovies.size + missingShows.size)
+                        }
+                    }
+
+                    else -> {}
+                }
+
+                // 2. Sync History (Trakt -> Room DB)
+                when (val historyRes = traktSyncService.getHistory(bearer, clientId, limit = 100)) {
+                    is ApiResponse.Success -> {
+                        val traktHistory = historyRes.body
+                        val historyToInsert = mutableListOf<WatchHistoryEntity>()
+
+                        traktHistory.forEach { item ->
+                            val tmdbId = item.movie?.ids?.tmdb ?: item.show?.ids?.tmdb
+                            val title = item.movie?.title ?: item.show?.title ?: ""
+                            val mediaType = if (item.movie != null) "Movie" else "Tv"
+
+                            if (tmdbId != null && tmdbId > 0) {
+                                historyToInsert.add(
+                                    WatchHistoryEntity(
+                                        mediaId = tmdbId,
+                                        mediaType = mediaType,
+                                        title = title,
+                                        posterImageUrl = "",
+                                        voteAvg = 0f,
+                                        watchedAt = System.currentTimeMillis()
+                                    )
+                                )
+                            }
+                        }
+
+                        if (historyToInsert.isNotEmpty()) {
+                            watchHistoryDao.insertAll(historyToInsert)
+                            importedHistory = historyToInsert.size
+                        }
+                    }
+
+                    else -> {}
+                }
 
                 widgetSyncNotifier?.notifyWidgetDataChanged()
 
-                return@withContext Result.success(
+                Result.success(
                     TraktSyncResult(
-                        itemsImportedToWatchlist = mockWatchlist.size,
-                        itemsImportedToHistory = mockHistory.size,
-                        itemsExportedToTrakt = 2
+                        itemsImportedToWatchlist = importedWatchlist,
+                        itemsImportedToHistory = importedHistory,
+                        itemsExportedToTrakt = exportedItems
                     )
                 )
+            } catch (e: Exception) {
+                Result.failure(e)
             }
+        }
 
-            val clientId = getActiveClientId()
-            val bearer = "Bearer $accessToken"
-            var importedWatchlist = 0
-            var importedHistory = 0
-            var exportedItems = 0
-
-            // 1. Sync Watchlist (Trakt -> Room DB)
-            when (val watchlistRes = traktSyncService.getWatchlist(bearer, clientId)) {
-                is ApiResponse.Success -> {
-                    val traktWatchlist = watchlistRes.body
-                    val entitiesToInsert = mutableListOf<WatchlistEntity>()
-
-                    traktWatchlist.forEach { item ->
-                        val tmdbId = item.movie?.ids?.tmdb ?: item.show?.ids?.tmdb
-                        val title = item.movie?.title ?: item.show?.title ?: ""
-                        val mediaType = if (item.movie != null) "Movie" else "Tv"
-
-                        if (tmdbId != null && tmdbId > 0) {
-                            entitiesToInsert.add(
-                                WatchlistEntity(
-                                    mediaId = tmdbId,
-                                    mediaType = mediaType,
-                                    title = title,
-                                    posterImageUrl = "",
-                                    backdropImageUrl = "",
-                                    voteAvg = 0f,
-                                    releaseDate = "",
-                                    addedAt = System.currentTimeMillis()
-                                )
+    override suspend fun getUpNextQueue(accessToken: String): Result<List<TraktUpNextEpisode>> =
+        withContext(Dispatchers.IO) {
+            try {
+                if (debugConfigManager.isMockTraktEnabled.value) {
+                    val mockQueue = mockShows.values
+                        .filter { it.totalCompleted < it.totalAired }
+                        .mapNotNull { show ->
+                            val epTitle =
+                                show.episodeTitles[Pair(show.seasonNumber, show.episodeNumber)]
+                            TraktUpNextEpisode(
+                                showTmdbId = show.showTmdbId,
+                                showTitle = show.showTitle,
+                                showPosterPath = show.showPosterPath,
+                                seasonNumber = show.seasonNumber,
+                                episodeNumber = show.episodeNumber,
+                                episodeTitle = epTitle,
+                                totalCompleted = show.totalCompleted,
+                                totalAired = show.totalAired
                             )
                         }
-                    }
-
-                    if (entitiesToInsert.isNotEmpty()) {
-                        watchlistDao.insertAll(entitiesToInsert)
-                        importedWatchlist = entitiesToInsert.size
-                    }
-
-                    // Export local watchlist items not yet in Trakt
-                    val localWatchlist = watchlistDao.getAllWatchlist()
-                    val remoteIds = traktWatchlist.mapNotNull { it.movie?.ids?.tmdb ?: it.show?.ids?.tmdb }.toSet()
-                    val missingMovies = localWatchlist.filter { it.mediaType == "Movie" && it.mediaId !in remoteIds }
-                        .map { TraktMediaItemIdentifier(ids = TraktIds(tmdb = it.mediaId), title = it.title) }
-                    val missingShows = localWatchlist.filter { it.mediaType == "Tv" && it.mediaId !in remoteIds }
-                        .map { TraktMediaItemIdentifier(ids = TraktIds(tmdb = it.mediaId), title = it.title) }
-
-                    if (missingMovies.isNotEmpty() || missingShows.isNotEmpty()) {
-                        traktSyncService.addToWatchlist(
-                            bearerToken = bearer,
-                            clientId = clientId,
-                            payload = TraktSyncBody(movies = missingMovies, shows = missingShows)
-                        )
-                        exportedItems += (missingMovies.size + missingShows.size)
-                    }
+                    return@withContext Result.success(mockQueue)
                 }
-                else -> {}
-            }
 
-            // 2. Sync History (Trakt -> Room DB)
-            when (val historyRes = traktSyncService.getHistory(bearer, clientId, limit = 100)) {
-                is ApiResponse.Success -> {
-                    val traktHistory = historyRes.body
-                    val historyToInsert = mutableListOf<WatchHistoryEntity>()
+                if (accessToken.isNotBlank()) {
+                    val clientId = getActiveClientId()
+                    val bearer = "Bearer $accessToken"
+                    when (val res = traktSyncService.getWatchedShowProgress(bearer, clientId)) {
+                        is ApiResponse.Success -> {
+                            val upNextList = res.body.mapNotNull { showProgress ->
+                                val showTmdbId = showProgress.show.ids.tmdb
+                                val nextEp = showProgress.nextEpisode
 
-                    traktHistory.forEach { item ->
-                        val tmdbId = item.movie?.ids?.tmdb ?: item.show?.ids?.tmdb
-                        val title = item.movie?.title ?: item.show?.title ?: ""
-                        val mediaType = if (item.movie != null) "Movie" else "Tv"
+                                if (showTmdbId != null && nextEp != null) {
+                                    TraktUpNextEpisode(
+                                        showTmdbId = showTmdbId,
+                                        showTitle = showProgress.show.title,
+                                        showPosterPath = null,
+                                        seasonNumber = nextEp.season,
+                                        episodeNumber = nextEp.number,
+                                        episodeTitle = nextEp.title,
+                                        totalAired = showProgress.aired,
+                                        totalCompleted = showProgress.completed
+                                    )
+                                } else null
+                            }
+                            return@withContext Result.success(upNextList)
+                        }
 
-                        if (tmdbId != null && tmdbId > 0) {
-                            historyToInsert.add(
-                                WatchHistoryEntity(
-                                    mediaId = tmdbId,
-                                    mediaType = mediaType,
-                                    title = title,
-                                    posterImageUrl = "",
-                                    voteAvg = 0f,
-                                    watchedAt = System.currentTimeMillis()
-                                )
-                            )
+                        is ApiResponse.Error -> {
+                            // Fall back to local DB if Trakt network error
                         }
                     }
-
-                    if (historyToInsert.isNotEmpty()) {
-                        watchHistoryDao.insertAll(historyToInsert)
-                        importedHistory = historyToInsert.size
-                    }
                 }
-                else -> {}
-            }
 
-            widgetSyncNotifier?.notifyWidgetDataChanged()
-
-            Result.success(
-                TraktSyncResult(
-                    itemsImportedToWatchlist = importedWatchlist,
-                    itemsImportedToHistory = importedHistory,
-                    itemsExportedToTrakt = exportedItems
-                )
-            )
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    override suspend fun getUpNextQueue(accessToken: String): Result<List<TraktUpNextEpisode>> = withContext(Dispatchers.IO) {
-        try {
-            if (debugConfigManager.isMockTraktEnabled.value) {
-                val mockQueue = mockShows.values
-                    .filter { it.totalCompleted < it.totalAired }
-                    .mapNotNull { show ->
-                        val epTitle = show.episodeTitles[Pair(show.seasonNumber, show.episodeNumber)]
-                        TraktUpNextEpisode(
-                            showTmdbId = show.showTmdbId,
-                            showTitle = show.showTitle,
-                            showPosterPath = show.showPosterPath,
-                            seasonNumber = show.seasonNumber,
-                            episodeNumber = show.episodeNumber,
-                            episodeTitle = epTitle,
-                            totalCompleted = show.totalCompleted,
-                            totalAired = show.totalAired
-                        )
-                    }
-                return@withContext Result.success(mockQueue)
-            }
-
-            if (accessToken.isNotBlank()) {
-                val clientId = getActiveClientId()
-                val bearer = "Bearer $accessToken"
-                when (val res = traktSyncService.getWatchedShowProgress(bearer, clientId)) {
-                    is ApiResponse.Success -> {
-                        val upNextList = res.body.mapNotNull { showProgress ->
-                            val showTmdbId = showProgress.show.ids.tmdb
-                            val nextEp = showProgress.nextEpisode
-
-                            if (showTmdbId != null && nextEp != null) {
-                                TraktUpNextEpisode(
-                                    showTmdbId = showTmdbId,
-                                    showTitle = showProgress.show.title,
-                                    showPosterPath = null,
-                                    seasonNumber = nextEp.season,
-                                    episodeNumber = nextEp.number,
-                                    episodeTitle = nextEp.title,
-                                    totalAired = showProgress.aired,
-                                    totalCompleted = showProgress.completed
-                                )
-                            } else null
-                        }
-                        return@withContext Result.success(upNextList)
-                    }
-                    is ApiResponse.Error -> {
-                        // Fall back to local DB if Trakt network error
-                    }
+                // Production: 100% dynamic Up Next queue from SQLite Room DB
+                val localQueue = showWatchProgressDao.getUpNextQueue().map { progress ->
+                    TraktUpNextEpisode(
+                        showTmdbId = progress.showId,
+                        showTitle = progress.showTitle,
+                        showPosterPath = progress.showPosterPath,
+                        seasonNumber = progress.seasonNumber,
+                        episodeNumber = progress.episodeNumber,
+                        episodeTitle = progress.episodeTitle,
+                        totalCompleted = progress.totalCompleted,
+                        totalAired = progress.totalAired
+                    )
                 }
+                Result.success(localQueue)
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-
-            // Production: 100% dynamic Up Next queue from SQLite Room DB
-            val localQueue = showWatchProgressDao.getUpNextQueue().map { progress ->
-                TraktUpNextEpisode(
-                    showTmdbId = progress.showId,
-                    showTitle = progress.showTitle,
-                    showPosterPath = progress.showPosterPath,
-                    seasonNumber = progress.seasonNumber,
-                    episodeNumber = progress.episodeNumber,
-                    episodeTitle = progress.episodeTitle,
-                    totalCompleted = progress.totalCompleted,
-                    totalAired = progress.totalAired
-                )
-            }
-            Result.success(localQueue)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
-    }
 
     override suspend fun markEpisodeWatched(
         accessToken: String?,
@@ -923,7 +987,8 @@ class TraktSyncRepositoryImpl @Inject constructor(
         totalAired: Int
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val isCurrentlyWatched = episodeWatchHistoryDao.isEpisodeWatched(showTmdbId, season, episode)
+            val isCurrentlyWatched =
+                episodeWatchHistoryDao.isEpisodeWatched(showTmdbId, season, episode)
             if (isCurrentlyWatched) {
                 episodeWatchHistoryDao.deleteEpisode(showTmdbId, season, episode)
             } else {
@@ -941,7 +1006,8 @@ class TraktSyncRepositoryImpl @Inject constructor(
             val watchedEpisodes = episodeWatchHistoryDao.getAllWatchedEpisodes(showTmdbId)
             val watchedSet = watchedEpisodes.map { Pair(it.seasonNumber, it.episodeNumber) }.toSet()
             val actualCompleted = watchedSet.size
-            val actualAired = maxOf(totalAired, currentProgress?.totalAired ?: 0, actualCompleted + 1)
+            val actualAired =
+                maxOf(totalAired, currentProgress?.totalAired ?: 0, actualCompleted + 1)
             val actualTitle = if (showTitle.isNotBlank()) {
                 if (showTitle.matches(Regex("Season \\d+.*", RegexOption.IGNORE_CASE))) {
                     currentProgress?.showTitle.orEmpty().ifBlank { showTitle }
@@ -970,10 +1036,11 @@ class TraktSyncRepositoryImpl @Inject constructor(
                         showPosterPath = actualPoster,
                         seasonNumber = nextEpisodePair.first,
                         episodeNumber = nextEpisodePair.second,
-                        episodeTitle = episodeTitle ?: currentProgress?.episodeTitle ?: "Episode ${nextEpisodePair.second}",
+                        episodeTitle = episodeTitle ?: currentProgress?.episodeTitle
+                        ?: "Episode ${nextEpisodePair.second}",
                         totalCompleted = actualCompleted,
                         totalAired = actualAired,
-                        lastWatchedAt = System.currentTimeMillis()
+                        lastWatchedAt = currentProgress?.lastWatchedAt ?: System.currentTimeMillis()
                     )
                 )
             }
@@ -985,7 +1052,8 @@ class TraktSyncRepositoryImpl @Inject constructor(
                         show.totalCompleted = (show.totalCompleted - 1).coerceAtLeast(0)
                         show.episodeNumber = (show.episodeNumber - 1).coerceAtLeast(1)
                     } else {
-                        show.totalCompleted = (show.totalCompleted + 1).coerceAtMost(show.totalAired)
+                        show.totalCompleted =
+                            (show.totalCompleted + 1).coerceAtMost(show.totalAired)
                         show.episodeNumber += 1
                     }
                 }
@@ -1038,9 +1106,11 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 if (remainingWatched.isEmpty()) {
                     showWatchProgressDao.deleteByShowId(showTmdbId)
                 } else {
-                    val watchedSet = remainingWatched.map { Pair(it.seasonNumber, it.episodeNumber) }.toSet()
+                    val watchedSet =
+                        remainingWatched.map { Pair(it.seasonNumber, it.episodeNumber) }.toSet()
                     val actualCompleted = watchedSet.size
-                    val actualAired = maxOf(totalAired, currentProgress?.totalAired ?: 0, actualCompleted + 1)
+                    val actualAired =
+                        maxOf(totalAired, currentProgress?.totalAired ?: 0, actualCompleted + 1)
                     val nextEpisodePair = resolveNextEpisodeForWatchSet(
                         watchedSet = watchedSet,
                         lastActionSeason = season,
@@ -1074,9 +1144,11 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 episodeWatchHistoryDao.insertAll(entities)
 
                 val watchedEpisodes = episodeWatchHistoryDao.getAllWatchedEpisodes(showTmdbId)
-                val watchedSet = watchedEpisodes.map { Pair(it.seasonNumber, it.episodeNumber) }.toSet()
+                val watchedSet =
+                    watchedEpisodes.map { Pair(it.seasonNumber, it.episodeNumber) }.toSet()
                 val actualCompleted = watchedEpisodes.size
-                val actualAired = maxOf(totalAired, currentProgress?.totalAired ?: 0, actualCompleted + 1)
+                val actualAired =
+                    maxOf(totalAired, currentProgress?.totalAired ?: 0, actualCompleted + 1)
                 val nextEpisodePair = resolveNextEpisodeForWatchSet(
                     watchedSet = watchedSet,
                     lastActionSeason = season,
@@ -1105,7 +1177,8 @@ class TraktSyncRepositoryImpl @Inject constructor(
                         show.totalCompleted = (show.totalCompleted - 10).coerceAtLeast(0)
                         show.episodeNumber = 1
                     } else {
-                        show.totalCompleted = (show.totalCompleted + episodeNumbers.size).coerceAtMost(show.totalAired)
+                        show.totalCompleted =
+                            (show.totalCompleted + episodeNumbers.size).coerceAtMost(show.totalAired)
                         show.seasonNumber += 1
                         show.episodeNumber = 1
                     }
@@ -1181,7 +1254,9 @@ class TraktSyncRepositoryImpl @Inject constructor(
             Pair(lastActionSeason + 1, 1)
         } else {
             // Episode was marked -> advance to next episode in current season
-            val maxEpInLastSeason = watchedSet.filter { it.first == lastActionSeason }.maxOfOrNull { it.second } ?: (lastActionEpisode ?: 1)
+            val maxEpInLastSeason =
+                watchedSet.filter { it.first == lastActionSeason }.maxOfOrNull { it.second }
+                    ?: (lastActionEpisode ?: 1)
             Pair(lastActionSeason, maxEpInLastSeason + 1)
         }
     }

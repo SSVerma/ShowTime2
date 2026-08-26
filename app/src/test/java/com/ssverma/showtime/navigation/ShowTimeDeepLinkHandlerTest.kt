@@ -2,9 +2,12 @@ package com.ssverma.showtime.navigation
 
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieHomeNavKey
 import com.ssverma.feature.person.navigation.PersonDetailNavKey
+import com.ssverma.feature.person.navigation.PersonHomeNavKey
+import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
 import org.junit.Assert.assertEquals
@@ -12,6 +15,36 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class ShowTimeDeepLinkHandlerTest {
+
+    @Test
+    fun parse_rootDeepLink_returnsDashboardHomeNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in")
+        assertEquals(DashboardHomeNavKey, navKey)
+    }
+
+    @Test
+    fun parse_homeDeepLink_returnsDashboardHomeNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/home")
+        assertEquals(DashboardHomeNavKey, navKey)
+    }
+
+    @Test
+    fun parse_gameDeepLink_returnsCinemaGameNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/game")
+        assertEquals(CinemaGameNavKey, navKey)
+    }
+
+    @Test
+    fun parse_searchDeepLink_returnsSearchNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/search")
+        assertEquals(SearchNavKey, navKey)
+    }
+
+    @Test
+    fun parse_peopleDeepLink_returnsPersonHomeNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/people")
+        assertEquals(PersonHomeNavKey, navKey)
+    }
 
     @Test
     fun parse_libraryWatchlistDeepLink_returnsLibraryHomeNavKeyWithWatchlist() {

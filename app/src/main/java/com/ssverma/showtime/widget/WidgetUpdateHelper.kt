@@ -68,12 +68,13 @@ object WidgetUpdateHelper {
                 val accessToken = entryPoint.traktAuthStorage().getAccessToken()
                 val isConnected = !accessToken.isNullOrBlank()
 
-                val upNextList: List<TraktUpNextEpisode> = if (isConnected && !accessToken.isNullOrBlank()) {
-                    val result = entryPoint.traktSyncRepository().getUpNextQueue(accessToken)
-                    result.getOrDefault(emptyList())
-                } else {
-                    emptyList()
-                }
+                val upNextList: List<TraktUpNextEpisode> =
+                    if (isConnected && !accessToken.isNullOrBlank()) {
+                        val result = entryPoint.traktSyncRepository().getUpNextQueue(accessToken)
+                        result.getOrDefault(emptyList())
+                    } else {
+                        emptyList()
+                    }
 
                 val entries = upNextList.map { episode ->
                     val localPath = episode.showPosterPath?.let { url ->
@@ -99,7 +100,10 @@ object WidgetUpdateHelper {
                     }
                     UpNextGlanceWidget().update(context, glanceId)
                 }
-                Log.d(TAG, "UpNextGlanceWidget updated with ${entries.size} items for ${glanceIds.size} widgets")
+                Log.d(
+                    TAG,
+                    "UpNextGlanceWidget updated with ${entries.size} items for ${glanceIds.size} widgets"
+                )
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to update UpNextGlanceWidget", e)
             }
@@ -117,12 +121,18 @@ object WidgetUpdateHelper {
                     context.applicationContext,
                     WidgetEntryPoint::class.java
                 )
-                val watchlistItems: List<SavedMediaItem> = entryPoint.libraryRepository().getWatchlistSnapshot()
+                val watchlistItems: List<SavedMediaItem> =
+                    entryPoint.libraryRepository().getWatchlistSnapshot()
 
                 val entries = watchlistItems.map { item ->
-                    val typeStr = if (item.mediaType == com.ssverma.shared.domain.model.MediaType.Tv) "Tv" else "Movie"
+                    val typeStr =
+                        if (item.mediaType == com.ssverma.shared.domain.model.MediaType.Tv) "Tv" else "Movie"
                     val localPath = if (item.posterImageUrl.isNotBlank()) {
-                        downloadAndCachePoster(context, "${typeStr}_${item.mediaId}", item.posterImageUrl)
+                        downloadAndCachePoster(
+                            context,
+                            "${typeStr}_${item.mediaId}",
+                            item.posterImageUrl
+                        )
                     } else null
 
                     WatchlistWidgetEntry(
@@ -144,14 +154,21 @@ object WidgetUpdateHelper {
                     }
                     WatchlistGlanceWidget().update(context, glanceId)
                 }
-                Log.d(TAG, "WatchlistGlanceWidget updated with ${entries.size} items for ${glanceIds.size} widgets")
+                Log.d(
+                    TAG,
+                    "WatchlistGlanceWidget updated with ${entries.size} items for ${glanceIds.size} widgets"
+                )
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to update WatchlistGlanceWidget", e)
             }
         }
     }
 
-    private suspend fun downloadAndCachePoster(context: Context, idPrefix: String, url: String): String? {
+    private suspend fun downloadAndCachePoster(
+        context: Context,
+        idPrefix: String,
+        url: String
+    ): String? {
         return try {
             val cacheDir = File(context.cacheDir, "widget_posters").apply { mkdirs() }
             val file = File(cacheDir, "${idPrefix}.jpg")
@@ -210,7 +227,8 @@ object WidgetUpdateHelper {
                     )
                 )
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
         return list
     }
 
@@ -248,7 +266,8 @@ object WidgetUpdateHelper {
                     )
                 )
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
         return list
     }
 }

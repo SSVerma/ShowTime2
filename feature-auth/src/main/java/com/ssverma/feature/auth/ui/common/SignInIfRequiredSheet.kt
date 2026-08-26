@@ -4,17 +4,14 @@ import android.app.Activity
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.backup.auth.GoogleAuthClient
 import com.ssverma.feature.auth.domain.AuthSessionManager
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthProvider
 import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
-import kotlinx.coroutines.launch
 
 /**
  * Plug-and-Play Authentication Sheet.

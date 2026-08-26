@@ -1,7 +1,6 @@
 package com.ssverma.feature.library.ui.receipt
 
 import android.widget.Toast
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -41,7 +40,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -328,91 +326,98 @@ fun CinemaReceiptBottomSheet(
                                 ),
                             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
                         ) {
-                        Button(
-                            onClick = {
-                                if (snapshot == null || snapshot.items.isEmpty()) return@Button
-                                isExporting = true
-                                coroutineScope.launch {
-                                    try {
-                                        val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                        ShareImageHelper.shareBitmap(
-                                            context = context,
-                                            bitmap = bitmap,
-                                            chooserTitle = shareTitle
-                                        )
-                                    } finally {
-                                        isExporting = false
+                            Button(
+                                onClick = {
+                                    if (snapshot == null || snapshot.items.isEmpty()) return@Button
+                                    isExporting = true
+                                    coroutineScope.launch {
+                                        try {
+                                            val bitmap =
+                                                graphicsLayer.toImageBitmap().asAndroidBitmap()
+                                            ShareImageHelper.shareBitmap(
+                                                context = context,
+                                                bitmap = bitmap,
+                                                chooserTitle = shareTitle
+                                            )
+                                        } finally {
+                                            isExporting = false
+                                        }
                                     }
+                                },
+                                enabled = !isExporting && snapshot != null && snapshot.items.isNotEmpty(),
+                                shape = MaterialTheme.shapes.medium,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                if (isExporting) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Share,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                                 }
-                            },
-                            enabled = !isExporting && snapshot != null && snapshot.items.isNotEmpty(),
-                            shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            if (isExporting) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                Text(
+                                    text = stringResource(R.string.receipt_share),
+                                    fontWeight = FontWeight.Bold
                                 )
-                                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                            } else {
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    if (snapshot == null || snapshot.items.isEmpty()) return@OutlinedButton
+                                    isExporting = true
+                                    coroutineScope.launch {
+                                        try {
+                                            val bitmap =
+                                                graphicsLayer.toImageBitmap().asAndroidBitmap()
+                                            val success = ShareImageHelper.saveBitmapToGallery(
+                                                context = context,
+                                                bitmap = bitmap,
+                                                title = "ShowTime_Receipt_${
+                                                    snapshot.title.replace(
+                                                        " ",
+                                                        "_"
+                                                    )
+                                                }"
+                                            )
+                                            Toast.makeText(
+                                                context,
+                                                if (success) saveSuccess else saveFailed,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } finally {
+                                            isExporting = false
+                                        }
+                                    }
+                                },
+                                enabled = !isExporting && snapshot != null && snapshot.items.isNotEmpty(),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = ButtonDefaults.outlinedButtonColors(),
+                                modifier = Modifier.weight(1f)
+                            ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Share,
+                                    imageVector = Icons.Rounded.Download,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                                Text(
+                                    text = stringResource(R.string.receipt_save),
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
-                            Text(
-                                text = stringResource(R.string.receipt_share),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        OutlinedButton(
-                            onClick = {
-                                if (snapshot == null || snapshot.items.isEmpty()) return@OutlinedButton
-                                isExporting = true
-                                coroutineScope.launch {
-                                    try {
-                                        val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                        val success = ShareImageHelper.saveBitmapToGallery(
-                                            context = context,
-                                            bitmap = bitmap,
-                                            title = "ShowTime_Receipt_${snapshot.title.replace(" ", "_")}"
-                                        )
-                                        Toast.makeText(
-                                            context,
-                                            if (success) saveSuccess else saveFailed,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } finally {
-                                        isExporting = false
-                                    }
-                                }
-                            },
-                            enabled = !isExporting && snapshot != null && snapshot.items.isNotEmpty(),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = ButtonDefaults.outlinedButtonColors(),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Download,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                            Text(
-                                text = stringResource(R.string.receipt_save),
-                                fontWeight = FontWeight.Bold
-                            )
                         }
                     }
                 }
             }
         }
     }
-}
 }
 

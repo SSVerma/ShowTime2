@@ -25,9 +25,12 @@ class TraktSyncRepositoryTest {
     private val mockWatchlistDao: WatchlistDao = mockk(relaxed = true)
     private val mockWatchHistoryDao: WatchHistoryDao = mockk(relaxed = true)
     private val mockFavoriteDao: FavoriteDao = mockk(relaxed = true)
-    private val mockEpisodeWatchHistoryDao: com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao = mockk(relaxed = true)
-    private val mockShowWatchProgressDao: com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao = mockk(relaxed = true)
-    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager = mockk(relaxed = true)
+    private val mockEpisodeWatchHistoryDao: com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao =
+        mockk(relaxed = true)
+    private val mockShowWatchProgressDao: com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao =
+        mockk(relaxed = true)
+    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager =
+        mockk(relaxed = true)
 
     private val isMockTraktFlow = kotlinx.coroutines.flow.MutableStateFlow(false)
     private val customClientIdFlow = kotlinx.coroutines.flow.MutableStateFlow("")
@@ -206,7 +209,8 @@ class TraktSyncRepositoryTest {
             com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(500, 1, 3, 2000L)
         )
 
-        val progressSlot = io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+        val progressSlot =
+            io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
         coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
 
         repository.markEpisodeWatched(
@@ -237,7 +241,8 @@ class TraktSyncRepositoryTest {
         }
         coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(500) } returns season5Episodes
 
-        val progressSlot = io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+        val progressSlot =
+            io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
         coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
 
         repository.markSeasonWatched(

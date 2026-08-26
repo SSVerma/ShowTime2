@@ -271,7 +271,9 @@ private fun TvSeasonContent(
                     },
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = if (isAllWatched) Color(0xFF4CAF50).copy(alpha = 0.2f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                        containerColor = if (isAllWatched) Color(0xFF4CAF50).copy(alpha = 0.2f) else MaterialTheme.colorScheme.primaryContainer.copy(
+                            alpha = 0.6f
+                        )
                     ),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                     modifier = Modifier.height(32.dp)
@@ -429,14 +431,18 @@ fun TvEpisodeItem(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = if (isWatched) Color(0xFF4CAF50) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                    color = if (isWatched) Color(0xFF4CAF50) else MaterialTheme.colorScheme.surfaceVariant.copy(
+                        alpha = 0.6f
+                    ),
                     modifier = Modifier.size(30.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = if (isWatched) "Watched" else "Mark Watched",
-                            tint = if (isWatched) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            tint = if (isWatched) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.6f
+                            ),
                             modifier = Modifier.size(16.dp)
                         )
                     }

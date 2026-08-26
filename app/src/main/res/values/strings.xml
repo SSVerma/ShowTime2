@@ -80,6 +80,35 @@
     <string name="air_date">Air Date</string>
     <string name="guest_appearance">Guest Appearance</string>
 
+    <string name="home">Home</string>
+    <string name="search_hint">Search movies, TV shows, people…</string>
+    <string name="navigation_drawer">Navigation drawer</string>
+    <string name="open_navigation_drawer">Open navigation drawer</string>
+    <string name="explore_section">Explore &amp; Discovery</string>
+    <string name="sync_section">Sync &amp; Storage</string>
+    <string name="preferences_section">Preferences &amp; Membership</string>
+    <string name="legal_section">About &amp; Legal</string>
+    <string name="pro_membership">ShowTime Pro</string>
+    <string name="pro_badge">PRO</string>
+    <string name="appearance_theme">Appearance &amp; Themes</string>
+    <string name="content_region">Content Region</string>
+    <string name="google_drive_backup">Cloud Backup &amp; Restore</string>
+    <string name="trakt_sync">Trakt.tv Sync</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="open_source_licenses">Open Source Licenses</string>
+    <string name="about_showtime">About ShowTime</string>
+    <string name="daily_cinema_challenge">Daily Cinema Challenge</string>
+    <string name="studio_portals">Studio &amp; Network Hubs</string>
+    <string name="streaming_universe">Streaming Universe</string>
+    <string name="trending_spotlight">Trending Today</string>
+    <string name="streak_days_n">%1$d Day Streak</string>
+    <string name="play_challenge">Play Challenge</string>
+    <string name="solved_puzzle">Solved</string>
+    <string name="movie_streaming">Movies</string>
+    <string name="tv_streaming">TV Shows</string>
+    <string name="attribution_footer">Powered by TMDB and JustWatch</string>
+
     <!-- Google Sign-In Web Client ID (from Google Cloud Console / Firebase Console) -->
     <string name="google_server_client_id" translatable="false"></string>
 
@@ -88,7 +117,15 @@
     <string name="widget_up_next_desc">Shows your active TV shows queue and next episodes</string>
     <string name="widget_watchlist_title">My Watchlist</string>
     <string name="widget_watchlist_desc">Quick access to your saved movies and TV shows</string>
-    <string name="widget_all_caught_up">All caught up! 🎉</string>
+    <string name="widget_all_caught_up">All caught up!</string>
     <string name="widget_no_watchlist">Your watchlist is empty</string>
     <string name="widget_open_app">Open ShowTime</string>
+    <string name="movie_badge">Movie</string>
+    <string name="tv_badge">TV Series</string>
+    <string name="cinema_receipt">Cinema Receipt</string>
+    <string name="content_language">Content Language</string>
+    <string name="content_language_desc">Default language for movie &amp; TV show metadata</string>
+    <string name="localization_settings">Region &amp; Language</string>
+    <string name="localization_settings_desc">Content country, translation and preferred language</string>
+    <string name="popular_section">Popular Worldwide</string>
 </resources>

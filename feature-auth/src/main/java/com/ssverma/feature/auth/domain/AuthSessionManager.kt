@@ -6,7 +6,6 @@ import com.ssverma.feature.auth.domain.model.AuthAccount
 import com.ssverma.feature.auth.domain.model.AuthProvider
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine

@@ -1,6 +1,7 @@
 package com.ssverma.feature.tv.ui.home.component
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
@@ -8,6 +9,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,13 +62,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import androidx.compose.foundation.layout.aspectRatio
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
-import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.launch
 
 @Composable
@@ -90,14 +93,14 @@ fun UpNextSection(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFFED1C24).copy(alpha = 0.15f),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
                     modifier = Modifier.size(28.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Rounded.Tv,
                             contentDescription = null,
-                            tint = Color(0xFFED1C24),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -173,7 +176,7 @@ private fun UpNextCard(
 
     val borderColor by animateColorAsState(
         targetValue = if (isCompleted) {
-            Color(0xFFFFD700).copy(alpha = 0.8f) // Gold celebration border
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f) // Celebration border
         } else {
             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         },
@@ -201,20 +204,33 @@ private fun UpNextCard(
                     .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Mini Artwork / Poster Thumbnail
-                val posterUrl = episode.showPosterPath
-                if (!posterUrl.isNullOrBlank()) {
-                    NetworkImage(
-                        url = posterUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .width(62.dp)
-                            .aspectRatio(TmdbPosterAspectRatio)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
+                // Mini Artwork / Poster Thumbnail (Fixed container prevents height fluctuation)
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .width(62.dp)
+                        .aspectRatio(TmdbPosterAspectRatio)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                ) {
+                    val posterUrl = episode.showPosterPath
+                    if (!posterUrl.isNullOrBlank()) {
+                        NetworkImage(
+                            url = posterUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Tv,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.width(10.dp))
 
                 Column(
                     modifier = Modifier
@@ -242,7 +258,7 @@ private fun UpNextCard(
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = if (isCompleted) {
-                                Color(0xFFFFD700).copy(alpha = 0.2f)
+                                MaterialTheme.colorScheme.tertiaryContainer
                             } else {
                                 MaterialTheme.colorScheme.primaryContainer
                             }
@@ -260,7 +276,7 @@ private fun UpNextCard(
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isCompleted) {
-                                    Color(0xFFD48800)
+                                    MaterialTheme.colorScheme.onTertiaryContainer
                                 } else {
                                     MaterialTheme.colorScheme.onPrimaryContainer
                                 },
@@ -293,7 +309,7 @@ private fun UpNextCard(
                         modifier = Modifier.padding(top = 1.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     // Progress Bar
                     LinearProgressIndicator(
@@ -302,7 +318,7 @@ private fun UpNextCard(
                             .fillMaxWidth()
                             .height(3.5.dp)
                             .clip(RoundedCornerShape(2.dp)),
-                        color = if (isCompleted) Color(0xFFFFD700) else MaterialTheme.colorScheme.primary,
+                        color = if (isCompleted) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
 
@@ -337,15 +353,16 @@ private fun UpNextCard(
                                 .graphicsLayer {
                                     scaleX = buttonScale.value
                                     scaleY = buttonScale.value
-                                },
+                                }
+                                .animateContentSize(),
                             colors = ButtonDefaults.filledTonalButtonColors(
                                 containerColor = if (isCompleted) {
-                                    Color(0xFFFFD700).copy(alpha = 0.15f)
+                                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
                                 } else {
                                     MaterialTheme.colorScheme.primaryContainer
                                 },
                                 contentColor = if (isCompleted) {
-                                    Color(0xFFD48800)
+                                    MaterialTheme.colorScheme.onTertiaryContainer
                                 } else {
                                     MaterialTheme.colorScheme.onPrimaryContainer
                                 }

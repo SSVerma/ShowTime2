@@ -75,4 +75,13 @@
     <string name="select_language">Select language</string>
     <string name="library">Library</string>
     <string name="trailer">Trailer</string>
+
+    <!-- Cinema Daily Challenge Game Banner -->
+    <string name="cinema_challenge_title">Cinema Challenge</string>
+    <string name="cinema_challenge_daily_banner_tag">DAILY CHALLENGE</string>
+    <string name="cinema_challenge_banner_title_unsolved">Guess Today\'s Film Mystery</string>
+    <string name="cinema_challenge_banner_desc_unsolved">Identify the movie from 5 progressive visual clues</string>
+    <string name="cinema_challenge_banner_title_solved">Today\'s Puzzle Solved!</string>
+    <string name="cinema_challenge_banner_desc_solved">View stats and share your score grid</string>
+    <string name="cinema_stats_streak">Streak</string>
 </resources>

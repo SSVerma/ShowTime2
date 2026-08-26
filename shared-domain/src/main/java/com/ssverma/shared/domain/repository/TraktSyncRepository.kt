@@ -22,6 +22,7 @@ interface TraktSyncRepository {
         episodeTitle: String? = null,
         totalAired: Int = 10
     ): Result<Unit>
+
     suspend fun markSeasonWatched(
         accessToken: String?,
         showTmdbId: Int,
@@ -31,5 +32,6 @@ interface TraktSyncRepository {
         showPosterPath: String? = null,
         totalAired: Int = 10
     ): Result<Unit>
+
     suspend fun markMovieWatched(accessToken: String?, movieTmdbId: Int): Result<Unit>
 }

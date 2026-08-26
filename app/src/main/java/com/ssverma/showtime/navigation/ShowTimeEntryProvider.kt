@@ -23,6 +23,7 @@ fun rememberShowTimeEntryProvider(
 ): (NavKey) -> NavEntry<NavKey> {
     return remember(navigator, openLibraryPage) {
         entryProvider {
+            dashboardEntries(navigator, openLibraryPage)
             movieEntries(navigator, openLibraryPage)
             tvEntries(navigator, openLibraryPage)
             personEntries(navigator, openLibraryPage)

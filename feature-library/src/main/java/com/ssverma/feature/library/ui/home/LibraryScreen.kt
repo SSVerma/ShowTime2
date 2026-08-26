@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -111,11 +112,11 @@ import com.ssverma.feature.library.domain.ReceiptGeneratorHelper
 import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
-import com.ssverma.feature.library.ui.receipt.CinemaReceiptBottomSheet
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.ui.home.component.LibraryTab
 import com.ssverma.feature.library.ui.home.component.LibraryTabType
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
+import com.ssverma.feature.library.ui.receipt.CinemaReceiptBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
@@ -130,7 +131,8 @@ import com.ssverma.core.ui.R as CoreUiR
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
-    onBackPressed: () -> Unit,
+    onBackPressed: (() -> Unit)? = null,
+    isTopLevel: Boolean = onBackPressed == null,
     onMovieClicked: (movieId: Int) -> Unit,
     onTvShowClicked: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
@@ -245,7 +247,11 @@ fun LibraryScreen(
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = if (isTopLevel) {
+        TopAppBarDefaults.pinnedScrollBehavior()
+    } else {
+        TopAppBarDefaults.enterAlwaysScrollBehavior()
+    }
 
     LaunchedEffect(initialTab, initialMediaType, targetCustomListId) {
         val targetPage = when (initialTab) {
@@ -291,29 +297,181 @@ fun LibraryScreen(
                 color = headerColor,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                text = stringResource(R.string.library),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = onBackPressed) {
-                                Icon(
-                                    painter = rememberVectorPainter(image = Icons.AutoMirrored.Rounded.ArrowBack),
-                                    contentDescription = stringResource(id = CoreUiR.string.back)
+                Column(
+                    modifier = if (isTopLevel) {
+                        Modifier
+                            .statusBarsPadding()
+                            .padding(top = 64.dp)
+                    } else {
+                        Modifier
+                    }
+                ) {
+                    if (!isTopLevel) {
+                        CenterAlignedTopAppBar(
+                            title = {
+                                Text(
+                                    text = stringResource(R.string.library),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            navigationIcon = {
+                                if (onBackPressed != null) {
+                                    IconButton(onClick = onBackPressed) {
+                                        Icon(
+                                            painter = rememberVectorPainter(image = Icons.AutoMirrored.Rounded.ArrowBack),
+                                            contentDescription = stringResource(id = CoreUiR.string.back)
+                                        )
+                                    }
+                                }
+                            },
+                            actions = {
+                                if (pagerState.currentPage == 2 && historyItems.isNotEmpty()) {
+                                    IconButton(onClick = { topMenuExpanded = true }) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.MoreVert,
+                                            contentDescription = stringResource(R.string.more_options)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = topMenuExpanded,
+                                        onDismissRequest = { topMenuExpanded = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = stringResource(R.string.clear_history),
+                                                    color = MaterialTheme.colorScheme.error
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.DeleteOutline,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.error
+                                                )
+                                            },
+                                            onClick = {
+                                                topMenuExpanded = false
+                                                showClearHistoryDialog = true
+                                            }
+                                        )
+                                    }
+                                }
+
+                                IconButton(onClick = {
+                                    customListForReceipt = null
+                                    receiptSource = when (pagerState.currentPage) {
+                                        0 -> ReceiptSource.WATCHLIST
+                                        1 -> ReceiptSource.FAVORITES
+                                        else -> ReceiptSource.HISTORY
+                                    }
+                                    showReceiptSheet = true
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+                                        contentDescription = stringResource(R.string.cinema_receipt)
+                                    )
+                                }
+
+                                IconButton(onClick = openAccountPage) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.AccountCircle,
+                                        contentDescription = stringResource(R.string.account_cd)
+                                    )
+                                }
+                            },
+                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                containerColor = Color.Transparent,
+                                scrolledContainerColor = Color.Transparent
+                            ),
+                            scrollBehavior = scrollBehavior
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ScrollableTabRow(
+                            selectedTabIndex = pagerState.currentPage,
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            edgePadding = MaterialTheme.spacing.medium,
+                            modifier = Modifier.weight(1f),
+                            indicator = { tabPositions ->
+                                if (pagerState.currentPage < tabPositions.size) {
+                                    Box(
+                                        modifier = Modifier
+                                            .tabIndicatorOffset(tabPositions[pagerState.currentPage])
+                                            .height(3.5.dp)
+                                            .padding(horizontal = 8.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.primary,
+                                                shape = RoundedCornerShape(
+                                                    topStart = 4.dp,
+                                                    topEnd = 4.dp
+                                                )
+                                            )
+                                    )
+                                }
+                            },
+                            divider = {}
+                        ) {
+                            tabs.forEachIndexed { index, tab ->
+                                val selected = pagerState.currentPage == index
+                                Tab(
+                                    selected = selected,
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            pagerState.animateScrollToPage(index)
+                                        }
+                                    },
+                                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                                    unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                        alpha = 0.7f
+                                    ),
+                                    icon = {
+                                        BadgedBox(
+                                            badge = {
+                                                val itemCount = tab.itemCount
+                                                if (itemCount > 0) {
+                                                    Badge(
+                                                        containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
+                                                        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                                    ) {
+                                                        Text(
+                                                            text = itemCount.toString(),
+                                                            style = MaterialTheme.typography.labelSmall
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = tab.icon,
+                                                contentDescription = tab.title.asString()
+                                            )
+                                        }
+                                    },
+                                    text = {
+                                        Text(
+                                            text = tab.title.asString(),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                                        )
+                                    }
                                 )
                             }
-                        },
-                        actions = {
+                        }
+
+                        if (isTopLevel) {
                             if (pagerState.currentPage == 2 && historyItems.isNotEmpty()) {
                                 IconButton(onClick = { topMenuExpanded = true }) {
                                     Icon(
                                         imageVector = Icons.Rounded.MoreVert,
-                                        contentDescription = stringResource(R.string.more_options)
+                                        contentDescription = stringResource(R.string.more_options),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                                 DropdownMenu(
@@ -341,99 +499,6 @@ fun LibraryScreen(
                                     )
                                 }
                             }
-
-                            IconButton(onClick = {
-                                customListForReceipt = null
-                                receiptSource = when (pagerState.currentPage) {
-                                    0 -> ReceiptSource.WATCHLIST
-                                    1 -> ReceiptSource.FAVORITES
-                                    else -> ReceiptSource.HISTORY
-                                }
-                                showReceiptSheet = true
-                            }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
-                                    contentDescription = stringResource(R.string.cinema_receipt)
-                                )
-                            }
-
-                            IconButton(onClick = openAccountPage) {
-                                Icon(
-                                    imageVector = Icons.Rounded.AccountCircle,
-                                    contentDescription = stringResource(R.string.account_cd)
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                            containerColor = Color.Transparent,
-                            scrolledContainerColor = Color.Transparent
-                        ),
-                        scrollBehavior = scrollBehavior
-                    )
-
-                    ScrollableTabRow(
-                        selectedTabIndex = pagerState.currentPage,
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                        edgePadding = MaterialTheme.spacing.medium,
-                        indicator = { tabPositions ->
-                            if (pagerState.currentPage < tabPositions.size) {
-                                Box(
-                                    modifier = Modifier
-                                        .tabIndicatorOffset(tabPositions[pagerState.currentPage])
-                                        .height(3.5.dp)
-                                        .padding(horizontal = 8.dp)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.primary,
-                                            shape = RoundedCornerShape(
-                                                topStart = 4.dp,
-                                                topEnd = 4.dp
-                                            )
-                                        )
-                                )
-                            }
-                        },
-                        divider = {}
-                    ) {
-                        tabs.forEachIndexed { index, tab ->
-                            val selected = pagerState.currentPage == index
-                            Tab(
-                                selected = selected,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(
-                                            index
-                                        )
-                                    }
-                                },
-                                selectedContentColor = MaterialTheme.colorScheme.primary,
-                                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                    alpha = 0.7f
-                                ),
-                                icon = {
-                                    BadgedBox(
-                                        badge = {
-                                            val itemCount = tab.itemCount
-                                            if (itemCount > 0) {
-                                                Badge(
-                                                    containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
-                                                    contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                                                ) {
-                                                    Text(text = if (itemCount > 99) "99+" else itemCount.toString())
-                                                }
-                                            }
-                                        }
-                                    ) {
-                                        Icon(imageVector = tab.icon, contentDescription = null)
-                                    }
-                                },
-                                text = {
-                                    Text(
-                                        text = tab.title.asString(),
-                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                }
-                            )
                         }
                     }
                 }

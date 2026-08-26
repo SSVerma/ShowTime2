@@ -14,10 +14,12 @@ fun EntryProviderScope<NavKey>.libraryEntries(
     navigator: Navigator
 ) {
     showTimeEntry<LibraryHomeNavKey> { navKey ->
+        val isTopLevel = navKey == LibraryHomeNavKey.Default
         LibraryScreen(
-            onBackPressed = {
-                navigator.goBack()
+            onBackPressed = if (isTopLevel) null else {
+                { navigator.goBack() }
             },
+            isTopLevel = isTopLevel,
             onMovieClicked = { movieId ->
                 navigator.navigate(MovieDetailNavKey(movieId))
             },
@@ -33,6 +35,14 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             initialTab = navKey.initialTab,
             initialMediaType = navKey.initialMediaType,
             targetCustomListId = navKey.targetCustomListId
+        )
+    }
+
+    showTimeEntry<CinemaReceiptNavKey> {
+        com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen(
+            onBackPressed = {
+                navigator.goBack()
+            }
         )
     }
 }

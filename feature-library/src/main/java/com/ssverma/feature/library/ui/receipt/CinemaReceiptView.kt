@@ -4,7 +4,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -98,7 +97,11 @@ private fun ThermalReceiptCard(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        ReceiptMetaRow(label = stringResource(R.string.receipt_collector), value = snapshot.collectorName, color = inkColor)
+        ReceiptMetaRow(
+            label = stringResource(R.string.receipt_collector),
+            value = snapshot.collectorName,
+            color = inkColor
+        )
         ReceiptMetaRow(label = "DATE", value = snapshot.formattedDate, color = inkColor)
         ReceiptMetaRow(label = "REC #", value = snapshot.receiptNumber, color = inkColor)
         ReceiptMetaRow(label = "SECTION", value = snapshot.title.uppercase(), color = inkColor)
@@ -191,10 +194,26 @@ private fun ThermalReceiptCard(
         )
 
         // Summary Stats
-        ReceiptSummaryRow(label = stringResource(R.string.receipt_total_movies), value = "${snapshot.totalItems}", color = inkColor)
-        ReceiptSummaryRow(label = stringResource(R.string.receipt_total_time), value = snapshot.formattedTotalTime, color = inkColor)
-        ReceiptSummaryRow(label = stringResource(R.string.receipt_top_genre), value = snapshot.topGenre, color = inkColor)
-        ReceiptSummaryRow(label = stringResource(R.string.receipt_total_bill), value = stringResource(R.string.receipt_priceless), color = inkColor)
+        ReceiptSummaryRow(
+            label = stringResource(R.string.receipt_total_movies),
+            value = "${snapshot.totalItems}",
+            color = inkColor
+        )
+        ReceiptSummaryRow(
+            label = stringResource(R.string.receipt_total_time),
+            value = snapshot.formattedTotalTime,
+            color = inkColor
+        )
+        ReceiptSummaryRow(
+            label = stringResource(R.string.receipt_top_genre),
+            value = snapshot.topGenre,
+            color = inkColor
+        )
+        ReceiptSummaryRow(
+            label = stringResource(R.string.receipt_total_bill),
+            value = stringResource(R.string.receipt_priceless),
+            color = inkColor
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -341,9 +360,24 @@ private fun GoldenVipPassCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TicketStatBox(label = "TITLES", value = "${snapshot.totalItems}", accentColor = goldAccent, textColor = goldLight)
-            TicketStatBox(label = "RUNTIME", value = snapshot.formattedTotalTime.substringBefore(" ("), accentColor = goldAccent, textColor = goldLight)
-            TicketStatBox(label = "GENRE", value = snapshot.topGenre.take(10), accentColor = goldAccent, textColor = goldLight)
+            TicketStatBox(
+                label = "TITLES",
+                value = "${snapshot.totalItems}",
+                accentColor = goldAccent,
+                textColor = goldLight
+            )
+            TicketStatBox(
+                label = "RUNTIME",
+                value = snapshot.formattedTotalTime.substringBefore(" ("),
+                accentColor = goldAccent,
+                textColor = goldLight
+            )
+            TicketStatBox(
+                label = "GENRE",
+                value = snapshot.topGenre.take(10),
+                accentColor = goldAccent,
+                textColor = goldLight
+            )
         }
 
         Spacer(modifier = Modifier.height(14.dp))
@@ -528,8 +562,16 @@ private fun CyberpunkNeonCard(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        ReceiptSummaryRow(label = "DATABASE RECORDS", value = "${snapshot.totalItems} TITLES", color = textWhite)
-        ReceiptSummaryRow(label = "CHRONO RUNTIME", value = snapshot.formattedTotalTime, color = textWhite)
+        ReceiptSummaryRow(
+            label = "DATABASE RECORDS",
+            value = "${snapshot.totalItems} TITLES",
+            color = textWhite
+        )
+        ReceiptSummaryRow(
+            label = "CHRONO RUNTIME",
+            value = snapshot.formattedTotalTime,
+            color = textWhite
+        )
         ReceiptSummaryRow(label = "AFFINITY INDEX", value = snapshot.topGenre, color = neonAmber)
 
         Spacer(modifier = Modifier.height(14.dp))

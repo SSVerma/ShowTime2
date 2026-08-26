@@ -7,9 +7,9 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-fun Modifier.edgeToEdgeSpacing() = this
-    .then(statusBarsPadding())
-    .then(navigationBarsPadding())
+fun Modifier.edgeToEdgeSpacing(): Modifier = this
+    .statusBarsPadding()
+    .navigationBarsPadding()
 
 fun Modifier.scrim(
     colors: List<Color>

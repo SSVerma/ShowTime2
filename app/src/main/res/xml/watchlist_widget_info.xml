@@ -3,6 +3,8 @@
     android:description="@string/widget_watchlist_desc"
     android:initialKeyguardLayout="@layout/glance_default_loading_layout"
     android:initialLayout="@layout/glance_default_loading_layout"
+    android:maxResizeWidth="500dp"
+    android:maxResizeHeight="400dp"
     android:minWidth="240dp"
     android:minHeight="140dp"
     android:minResizeWidth="180dp"
@@ -10,7 +12,5 @@
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="3"
     android:targetCellHeight="2"
-    android:maxResizeWidth="500dp"
-    android:maxResizeHeight="400dp"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen" />

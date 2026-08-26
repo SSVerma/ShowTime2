@@ -158,7 +158,11 @@ fun TvSeasonItem(
                     Box(contentAlignment = Alignment.Center) {
                         if (isInProgress) {
                             CircularProgressIndicator(
-                                progress = { (watchedEpisodeCount.toFloat() / totalEpisodes.coerceAtLeast(1)).coerceIn(0f, 1f) },
+                                progress = {
+                                    (watchedEpisodeCount.toFloat() / totalEpisodes.coerceAtLeast(
+                                        1
+                                    )).coerceIn(0f, 1f)
+                                },
                                 color = Color.White,
                                 trackColor = Color.White.copy(alpha = 0.25f),
                                 strokeWidth = 2.5.dp,

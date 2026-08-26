@@ -40,7 +40,6 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.ssverma.showtime.MainActivity
 import com.ssverma.showtime.R
 import com.ssverma.showtime.widget.UpNextWidgetEntry
 import com.ssverma.showtime.widget.WidgetUpdateHelper
@@ -266,7 +265,11 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                                 .cornerRadius(4.dp)
                                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                                         ) {
-                                            val episodeCode = String.format("S%02dE%02d", episode.seasonNumber, episode.episodeNumber)
+                                            val episodeCode = String.format(
+                                                "S%02dE%02d",
+                                                episode.seasonNumber,
+                                                episode.episodeNumber
+                                            )
                                             Text(
                                                 text = episodeCode,
                                                 style = TextStyle(

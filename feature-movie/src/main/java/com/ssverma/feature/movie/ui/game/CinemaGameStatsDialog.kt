@@ -171,6 +171,12 @@ fun CinemaGameStatsDialog(
                     tonalElevation = 6.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    val shareFailedMsg = stringResource(id = R.string.cinema_stats_share_failed)
+                    val savedToGalleryMsg =
+                        stringResource(id = R.string.cinema_stats_saved_to_gallery)
+                    val saveFailedMsg = stringResource(id = R.string.cinema_stats_save_failed)
+                    val textCopiedMsg = stringResource(id = R.string.cinema_stats_text_copied)
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -193,14 +199,14 @@ fun CinemaGameStatsDialog(
                                         if (!success) {
                                             Toast.makeText(
                                                 context,
-                                                context.getString(R.string.cinema_stats_share_failed),
+                                                shareFailedMsg,
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
                                     } catch (e: Exception) {
                                         Toast.makeText(
                                             context,
-                                            context.getString(R.string.cinema_stats_share_failed),
+                                            shareFailedMsg,
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     } finally {
@@ -258,13 +264,13 @@ fun CinemaGameStatsDialog(
                                             if (success) {
                                                 Toast.makeText(
                                                     context,
-                                                    context.getString(R.string.cinema_stats_saved_to_gallery),
+                                                    savedToGalleryMsg,
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                             } else {
                                                 Toast.makeText(
                                                     context,
-                                                    context.getString(R.string.cinema_stats_save_failed),
+                                                    saveFailedMsg,
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                             }
@@ -297,7 +303,7 @@ fun CinemaGameStatsDialog(
                                         clipboard?.setPrimaryClip(clip)
                                         Toast.makeText(
                                             context,
-                                            context.getString(R.string.cinema_stats_text_copied),
+                                            textCopiedMsg,
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     },

@@ -23,12 +23,14 @@ class BillingRepositoryTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val mockBillingClientWrapper: BillingClientWrapper = mockk(relaxed = true)
-    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager = mockk(relaxed = true)
+    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager =
+        mockk(relaxed = true)
 
     private val proStatusFlow = MutableStateFlow<ProStatus>(ProStatus.Inactive)
     private val billingStateFlow = MutableStateFlow<BillingState>(BillingState.Connected)
     private val purchaseEventsFlow = MutableSharedFlow<PurchaseResult>()
-    private val debugProOverrideFlow = MutableStateFlow(com.ssverma.core.storage.debug.DebugProOverride.AUTO)
+    private val debugProOverrideFlow =
+        MutableStateFlow(com.ssverma.core.storage.debug.DebugProOverride.AUTO)
 
     private lateinit var repository: BillingRepository
 
@@ -97,12 +99,14 @@ class BillingRepositoryTest {
     }
 
     @Test
-    fun `isProActive emits true when proOverride is FORCE_ACTIVE even if proStatus is Inactive`() = runTest {
-        repository.isProActive.test {
-            assertThat(awaitItem()).isFalse()
+    fun `isProActive emits true when proOverride is FORCE_ACTIVE even if proStatus is Inactive`() =
+        runTest {
+            repository.isProActive.test {
+                assertThat(awaitItem()).isFalse()
 
-            debugProOverrideFlow.value = com.ssverma.core.storage.debug.DebugProOverride.FORCE_ACTIVE
-            assertThat(awaitItem()).isTrue()
+                debugProOverrideFlow.value =
+                    com.ssverma.core.storage.debug.DebugProOverride.FORCE_ACTIVE
+                assertThat(awaitItem()).isTrue()
+            }
         }
-    }
 }

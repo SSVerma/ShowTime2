@@ -4,7 +4,12 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.networking.adapter.ApiResponseCallAdaptorFactory
 import com.ssverma.core.networking.adapter.FakeCallAdapterFactoryOne
 import com.ssverma.core.networking.adapter.FakeCallAdapterFactoryTwo
-import com.ssverma.core.networking.convertor.*
+import com.ssverma.core.networking.convertor.AnnotatedConvertorFactory
+import com.ssverma.core.networking.convertor.BarEnvelop
+import com.ssverma.core.networking.convertor.BarFactory
+import com.ssverma.core.networking.convertor.EnvelopeConvertorFactory
+import com.ssverma.core.networking.convertor.FooEnvelop
+import com.ssverma.core.networking.convertor.FooFactory
 import org.junit.Before
 import org.junit.Test
 import retrofit2.CallAdapter

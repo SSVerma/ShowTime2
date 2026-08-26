@@ -17,6 +17,7 @@ dependencies {
     implementation(projects.coreDi)
     implementation(projects.coreNavigation)
     implementation(projects.coreBilling)
+    implementation(projects.coreBackup)
 
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)

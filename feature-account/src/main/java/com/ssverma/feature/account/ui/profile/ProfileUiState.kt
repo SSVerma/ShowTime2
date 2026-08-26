@@ -5,10 +5,13 @@ import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.billing.model.BillingProduct
+import com.ssverma.core.storage.debug.DebugProOverride
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.domain.model.Profile
+import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.WatchProviderRegion
 
 data class ProfileScreenState(
     val profileContent: ProfileContentState = ProfileContentState.Loading,
@@ -18,16 +21,20 @@ data class ProfileScreenState(
     val availableProducts: List<BillingProduct> = emptyList(),
     val isRestoringPurchases: Boolean = false,
     val currentTheme: AppTheme = AppTheme.System,
+    val isDynamicColorEnabled: Boolean = true,
+    val isThemeSheetVisible: Boolean = false,
+    val watchProviderRegion: String = "US",
+    val availableRegions: List<WatchProviderRegion> = emptyList(),
+    val contentLanguage: String = "en",
+    val availableLanguages: List<com.ssverma.shared.domain.model.Language> = emptyList(),
+    val isLocalizationSheetVisible: Boolean = false,
     val googleUser: GoogleUser? = null,
     val backupStatus: BackupStatus = BackupStatus.Idle,
     val lastBackupMetadata: BackupMetadata? = null,
     val backupFrequency: BackupFrequency = BackupFrequency.OFF,
-    val backupOverWifiOnly: Boolean = true,
-    val traktAuthState: com.ssverma.feature.auth.domain.model.TraktAuthState = com.ssverma.feature.auth.domain.model.TraktAuthState.Disconnected,
-    val isTraktConnectSheetVisible: Boolean = false,
-    val isTraktSyncing: Boolean = false,
+    val traktAuthState: TraktAuthState = TraktAuthState.Disconnected,
     val isDeveloperPanelVisible: Boolean = false,
-    val proOverride: com.ssverma.core.storage.debug.DebugProOverride = com.ssverma.core.storage.debug.DebugProOverride.AUTO,
+    val proOverride: DebugProOverride = DebugProOverride.AUTO,
     val isMockTraktEnabled: Boolean = false,
     val customTraktClientId: String = "",
     val isAdsDisabled: Boolean = false,

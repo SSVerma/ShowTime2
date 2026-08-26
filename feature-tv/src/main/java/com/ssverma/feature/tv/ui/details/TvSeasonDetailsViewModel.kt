@@ -84,8 +84,9 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
             val seasonData = (_uiState.value as? UiState.Success)?.data
             val isCurrentlyWatched = episodeNumber in watchedEpisodes.value
             val targetEpNumber = if (isCurrentlyWatched) episodeNumber else episodeNumber + 1
-            val targetEpTitle = seasonData?.episodes?.firstOrNull { it.episodeNumber == targetEpNumber }?.title
-                ?: seasonData?.episodes?.firstOrNull { it.episodeNumber == episodeNumber }?.title
+            val targetEpTitle =
+                seasonData?.episodes?.firstOrNull { it.episodeNumber == targetEpNumber }?.title
+                    ?: seasonData?.episodes?.firstOrNull { it.episodeNumber == episodeNumber }?.title
             val totalAired = seasonData?.episodes?.size ?: 10
             val effectiveShowTitle = if (!tvShowTitle.isNullOrBlank()) {
                 tvShowTitle

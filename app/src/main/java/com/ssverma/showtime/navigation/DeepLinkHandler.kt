@@ -6,9 +6,12 @@ import androidx.core.net.toUri
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieHomeNavKey
 import com.ssverma.feature.person.navigation.PersonDetailNavKey
+import com.ssverma.feature.person.navigation.PersonHomeNavKey
+import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
 
@@ -20,13 +23,15 @@ object ShowTimeDeepLinkHandler {
     private fun logWarn(message: String) {
         try {
             Log.w(TAG, message)
-        } catch (_: Throwable) {}
+        } catch (_: Throwable) {
+        }
     }
 
     private fun logError(message: String, throwable: Throwable? = null) {
         try {
             Log.e(TAG, message, throwable)
-        } catch (_: Throwable) {}
+        } catch (_: Throwable) {
+        }
     }
 
     fun parse(uri: Uri): NavKey? {
@@ -56,15 +61,22 @@ object ShowTimeDeepLinkHandler {
         }
 
         if (pathSegments.isEmpty()) {
-            return MovieHomeNavKey
+            return DashboardHomeNavKey
         }
 
         val type = pathSegments[0].lowercase()
 
         return try {
             when (type) {
+                "home", "dashboard" -> DashboardHomeNavKey
+
+                "game", "challenge" -> CinemaGameNavKey
+
+                "search" -> SearchNavKey
+
                 "library" -> {
-                    val subTab = if (pathSegments.size > 1) pathSegments[1].lowercase() else "watchlist"
+                    val subTab =
+                        if (pathSegments.size > 1) pathSegments[1].lowercase() else "watchlist"
                     when (subTab) {
                         "favorites", "favorite" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Favorites)
                         "history" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
@@ -91,12 +103,12 @@ object ShowTimeDeepLinkHandler {
                     }
                 }
 
-                "person" -> {
+                "person", "people" -> {
                     if (pathSegments.size >= 2) {
                         val id = pathSegments[1].toIntOrNull()
-                        if (id != null) PersonDetailNavKey(id) else null
+                        if (id != null) PersonDetailNavKey(id) else PersonHomeNavKey
                     } else {
-                        null
+                        PersonHomeNavKey
                     }
                 }
 

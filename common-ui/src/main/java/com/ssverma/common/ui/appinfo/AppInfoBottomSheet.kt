@@ -1,6 +1,5 @@
 package com.ssverma.common.ui.appinfo
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,15 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.common.ui.R
+import com.ssverma.core.ui.component.ShowTimeLogo
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.ui.component.Avatar
-import com.ssverma.shared.ui.R as SharedUiR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,19 +81,9 @@ fun AppInfoBottomSheet(
                     .verticalScroll(rememberScrollState())
                     .padding(vertical = MaterialTheme.spacing.large)
             ) {
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.extraLarge,
-                    modifier = Modifier.size(100.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Image(
-                            painter = painterResource(id = SharedUiR.drawable.ic_launcher),
-                            contentDescription = stringResource(R.string.app_logo_desc),
-                            modifier = Modifier.size(80.dp)
-                        )
-                    }
-                }
+                ShowTimeLogo(
+                    modifier = Modifier.size(72.dp)
+                )
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 

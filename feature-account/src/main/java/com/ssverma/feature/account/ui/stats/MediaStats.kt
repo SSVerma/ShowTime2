@@ -179,6 +179,14 @@ fun MediaStatsAction(
                     else -> null
                 }
 
+                val removedFromFavoritesText = stringResource(R.string.removed_from_favorites)
+                val addedToFavoritesText = stringResource(R.string.added_to_favorites)
+                val removedFromWatchlistText = stringResource(R.string.removed_from_watchlist)
+                val addedToWatchlistText = stringResource(R.string.added_to_watchlist)
+                val removedFromWatchedText = stringResource(R.string.removed_from_watched)
+                val markedAsWatchedText = stringResource(R.string.marked_as_watched)
+                val viewInLibraryText = stringResource(R.string.view_in_library)
+
                 // Favorite Action Item
                 ExpressiveMenuItem(
                     title = if (mediaStats.favorite) stringResource(R.string.remove_from_favorite) else stringResource(
@@ -192,15 +200,15 @@ fun MediaStatsAction(
                         val wasFavorite = mediaStats.favorite
                         if (wasFavorite) {
                             onShowFeedback?.invoke(
-                                context.getString(R.string.removed_from_favorites),
+                                removedFromFavoritesText,
                                 null,
                                 null
                             )
                         } else {
                             burstTrigger++
                             onShowFeedback?.invoke(
-                                context.getString(R.string.added_to_favorites),
-                                context.getString(R.string.view_in_library),
+                                addedToFavoritesText,
+                                viewInLibraryText,
                                 LibraryHomeNavKey(
                                     initialTab = LibraryTabDestination.Favorites,
                                     initialMediaType = mediaTypeStr
@@ -232,15 +240,15 @@ fun MediaStatsAction(
                         val wasInWatchlist = mediaStats.inWatchlist
                         if (wasInWatchlist) {
                             onShowFeedback?.invoke(
-                                context.getString(R.string.removed_from_watchlist),
+                                removedFromWatchlistText,
                                 null,
                                 null
                             )
                         } else {
                             burstTrigger++
                             onShowFeedback?.invoke(
-                                context.getString(R.string.added_to_watchlist),
-                                context.getString(R.string.view_in_library),
+                                addedToWatchlistText,
+                                viewInLibraryText,
                                 LibraryHomeNavKey(
                                     initialTab = LibraryTabDestination.Watchlist,
                                     initialMediaType = mediaTypeStr
@@ -277,15 +285,15 @@ fun MediaStatsAction(
                         val wasWatched = mediaStats.isWatched
                         if (wasWatched) {
                             onShowFeedback?.invoke(
-                                context.getString(R.string.removed_from_watched),
+                                removedFromWatchedText,
                                 null,
                                 null
                             )
                         } else {
                             burstTrigger++
                             onShowFeedback?.invoke(
-                                context.getString(R.string.marked_as_watched),
-                                context.getString(R.string.view_in_library),
+                                markedAsWatchedText,
+                                viewInLibraryText,
                                 LibraryHomeNavKey(
                                     initialTab = LibraryTabDestination.History,
                                     initialMediaType = mediaTypeStr
@@ -332,7 +340,7 @@ fun MediaStatsAction(
                                 )
                                 onShowFeedback?.invoke(
                                     if (isContained) "Removed from ${customList.title}" else "Added to ${customList.title}",
-                                    if (isContained) null else context.getString(R.string.view_in_library),
+                                    if (isContained) null else viewInLibraryText,
                                     if (isContained) null else LibraryHomeNavKey(
                                         initialTab = LibraryTabDestination.CustomLists,
                                         targetCustomListId = customList.listId

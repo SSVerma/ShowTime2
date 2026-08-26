@@ -221,6 +221,35 @@ fun SectionHeader(
 }
 
 @Composable
+fun SectionHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    titleTextStyle: TextStyle = SectionDefaults.titleTextStyle(),
+    subtitle: String? = null,
+    subtitleTextStyle: TextStyle = SectionDefaults.subtitleTextStyle(),
+    leadingContent: (@Composable RowScope.() -> Unit)? = null,
+    trailingContent: (@Composable RowScope.() -> Unit)? = null
+) {
+    SectionHeader(
+        modifier = modifier,
+        titleContent = {
+            SectionTitle(
+                title = title,
+                textStyle = titleTextStyle,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        subtitleContent = subtitle?.let { sub ->
+            {
+                SectionSubtitle(subtitle = sub, textStyle = subtitleTextStyle)
+            }
+        },
+        leadingContent = leadingContent,
+        trailingContent = trailingContent
+    )
+}
+
+@Composable
 fun Section(
     modifier: Modifier = Modifier,
     hideIf: Boolean = false,
@@ -341,15 +370,17 @@ private fun SectionLeadingIcon(
 }
 
 @Composable
-private fun SectionTrailingAction(
+fun SectionTrailingAction(
     actionLabel: String,
-    onTrailingActionClicked: () -> Unit
+    onTrailingActionClicked: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
         onClick = onTrailingActionClicked,
         shape = CircleShape,
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-        contentColor = MaterialTheme.colorScheme.primary
+        contentColor = MaterialTheme.colorScheme.primary,
+        modifier = modifier
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -1,0 +1,270 @@
+package com.ssverma.showtime.ui.dashboard.shelves
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.StatefulContent
+import com.ssverma.core.ui.UiState
+import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.feature.movie.domain.failure.MovieFailure
+import com.ssverma.feature.tv.domain.failure.TvShowFailure
+import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.domain.model.tv.TvShowPreview
+import com.ssverma.shared.ui.component.MediaItemShimmer
+import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.showtime.R
+
+fun LazyListScope.trendingWorldwideShelf(
+    isMoviePopularSelected: Boolean,
+    popularMoviesState: UiState<List<MoviePreview>, MovieFailure>,
+    popularTvShowsState: UiState<List<TvShowPreview>, TvShowFailure>,
+    onTogglePopularType: (isMovie: Boolean) -> Unit,
+    onMovieClick: (MoviePreview) -> Unit,
+    onTvShowClick: (TvShowPreview) -> Unit,
+    onSeeAllClick: () -> Unit,
+    onRetry: () -> Unit
+) {
+    item(key = "trending_worldwide_shelf") {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+        ) {
+            // 1. Standard Section Header with Title and Capsule See All
+            SectionHeader(
+                title = stringResource(id = R.string.popular_section),
+                titleTextStyle = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                onTrailingActionClicked = onSeeAllClick
+            )
+
+            // 2. Segmented Pill Switcher [ Movie | TV Series ]
+            PopularSegmentedSwitcher(
+                isMovieSelected = isMoviePopularSelected,
+                onToggle = onTogglePopularType,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 8.dp, bottom = 8.dp)
+            )
+
+            // 3. Animated Media Carousel
+            AnimatedContent(
+                targetState = isMoviePopularSelected,
+                transitionSpec = {
+                    if (targetState) {
+                        (slideInHorizontally(
+                            animationSpec = tween(
+                                320,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) { -it / 4 } +
+                                fadeIn(animationSpec = tween(320, easing = FastOutSlowInEasing)))
+                            .togetherWith(
+                                slideOutHorizontally(
+                                    animationSpec = tween(
+                                        260,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                ) { it / 4 } +
+                                        fadeOut(animationSpec = tween(200))
+                            )
+                    } else {
+                        (slideInHorizontally(
+                            animationSpec = tween(
+                                320,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) { it / 4 } +
+                                fadeIn(animationSpec = tween(320, easing = FastOutSlowInEasing)))
+                            .togetherWith(
+                                slideOutHorizontally(
+                                    animationSpec = tween(
+                                        260,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                ) { -it / 4 } +
+                                        fadeOut(animationSpec = tween(200))
+                            )
+                    }
+                },
+                label = "PopularWorldwideCarouselAnimation",
+                modifier = Modifier.fillMaxWidth()
+            ) { isMovie ->
+                if (isMovie) {
+                    StatefulContent(
+                        state = popularMoviesState,
+                        onRetry = onRetry,
+                        loading = {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(5) {
+                                    MediaItemShimmer()
+                                }
+                            }
+                        }
+                    ) { movies ->
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(movies, key = { it.id }) { movie ->
+                                MediaItem(
+                                    title = movie.title,
+                                    posterImageUrl = movie.posterImageUrl,
+                                    onClick = { onMovieClick(movie) }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    StatefulContent(
+                        state = popularTvShowsState,
+                        onRetry = onRetry,
+                        loading = {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(5) {
+                                    MediaItemShimmer()
+                                }
+                            }
+                        }
+                    ) { tvShows ->
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(tvShows, key = { it.id }) { tvShow ->
+                                MediaItem(
+                                    title = tvShow.title,
+                                    posterImageUrl = tvShow.posterImageUrl,
+                                    onClick = { onTvShowClick(tvShow) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PopularSegmentedSwitcher(
+    isMovieSelected: Boolean,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                shape = CircleShape
+            )
+    ) {
+        Row(
+            modifier = Modifier.padding(2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            PopularSegmentItem(
+                title = stringResource(id = R.string.movie_badge),
+                selected = isMovieSelected,
+                onClick = { onToggle(true) }
+            )
+
+            PopularSegmentItem(
+                title = stringResource(id = R.string.tv_badge),
+                selected = !isMovieSelected,
+                onClick = { onToggle(false) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun PopularSegmentItem(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        animationSpec = tween(200),
+        label = "popular_segment_bg"
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(200),
+        label = "popular_segment_text"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(bounded = true),
+                onClick = onClick
+            )
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+            color = textColor
+        )
+    }
+}
+

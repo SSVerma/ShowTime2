@@ -24,7 +24,8 @@ class TraktAuthManagerTest {
 
     private val mockTraktAuthService: TraktAuthService = mockk(relaxed = true)
     private val mockTraktAuthStorage: TraktAuthStorage = mockk(relaxed = true)
-    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager = mockk(relaxed = true)
+    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager =
+        mockk(relaxed = true)
 
     private val storedTokenFlow = MutableStateFlow<String?>(null)
     private val storedUserFlow = MutableStateFlow<TraktUser?>(null)
@@ -55,7 +56,12 @@ class TraktAuthManagerTest {
 
     @Test
     fun `initial state is Connected when token and user profile exist in storage`() = runTest {
-        val user = TraktUser(username = "walter_white", displayName = "Walter White", isVip = false, avatarUrl = null)
+        val user = TraktUser(
+            username = "walter_white",
+            displayName = "Walter White",
+            isVip = false,
+            avatarUrl = null
+        )
         storedTokenFlow.value = "mock_access_token"
         storedUserFlow.value = user
 
@@ -74,27 +80,28 @@ class TraktAuthManagerTest {
     }
 
     @Test
-    fun `startDeviceAuthorization generates device code and transitions to Authorizing`() = runTest {
-        val response = TraktDeviceCodeResponse(
-            deviceCode = "dev_123456",
-            userCode = "ABCD1234",
-            verificationUrl = "https://trakt.tv/activate",
-            expiresInSeconds = 600,
-            intervalSeconds = 5
-        )
+    fun `startDeviceAuthorization generates device code and transitions to Authorizing`() =
+        runTest {
+            val response = TraktDeviceCodeResponse(
+                deviceCode = "dev_123456",
+                userCode = "ABCD1234",
+                verificationUrl = "https://trakt.tv/activate",
+                expiresInSeconds = 600,
+                intervalSeconds = 5
+            )
 
-        coEvery {
-            mockTraktAuthService.generateDeviceCode(any())
-        } returns ApiResponse.Success(body = response, payload = mockk(relaxed = true))
+            coEvery {
+                mockTraktAuthService.generateDeviceCode(any())
+            } returns ApiResponse.Success(body = response, payload = mockk(relaxed = true))
 
-        traktAuthManager.startDeviceAuthorization()
+            traktAuthManager.startDeviceAuthorization()
 
-        val state = traktAuthManager.authState.value
-        assertThat(state).isInstanceOf(TraktAuthState.Authorizing::class.java)
-        val authorizingState = state as TraktAuthState.Authorizing
-        assertThat(authorizingState.userCode).isEqualTo("ABCD1234")
-        assertThat(authorizingState.verificationUrl).isEqualTo("https://trakt.tv/activate")
-    }
+            val state = traktAuthManager.authState.value
+            assertThat(state).isInstanceOf(TraktAuthState.Authorizing::class.java)
+            val authorizingState = state as TraktAuthState.Authorizing
+            assertThat(authorizingState.userCode).isEqualTo("ABCD1234")
+            assertThat(authorizingState.verificationUrl).isEqualTo("https://trakt.tv/activate")
+        }
 
     @Test
     fun `disconnect clears local tokens and updates state to Disconnected`() = runTest {

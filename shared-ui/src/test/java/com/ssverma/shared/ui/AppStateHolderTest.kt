@@ -6,6 +6,7 @@ import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
+import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -21,6 +22,9 @@ class AppStateHolderTest {
 
     private val fakeAppConfigRepository = FakeAppConfigRepository()
     private val fakeBillingRepository = FakeBillingRepository(initialProActive = false)
+    private val fakeBackupRepository = FakeBackupRepository()
+    private val fakeConfigurationRepository =
+        com.ssverma.shared.testing.fakes.FakeConfigurationRepository()
 
     private lateinit var appStateHolder: AppStateHolder
     private lateinit var testScope: TestScope
@@ -30,7 +34,9 @@ class AppStateHolderTest {
         testScope = TestScope(mainDispatcherRule.testDispatcher)
         appStateHolder = AppStateHolder(
             appConfigRepository = fakeAppConfigRepository,
+            configurationRepository = fakeConfigurationRepository,
             billingRepository = fakeBillingRepository,
+            backupRepository = fakeBackupRepository,
             coroutineScope = testScope
         )
     }

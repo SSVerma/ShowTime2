@@ -32,6 +32,7 @@ import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.toEntries
 
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.search.navigation.SearchNavKey
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -75,6 +76,11 @@ fun ShowTimeNavDisplay(
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimeForwardTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    val targetKey = targetState.key
+    if (targetKey is SearchNavKey) {
+        return createSearchPushTransition()
+    }
+
     val initialTabKey = initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
     val targetTabKey = targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
     val isTabSwitch = initialTabKey != targetTabKey
@@ -89,6 +95,11 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimeForwardTr
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    val initialKey = initialState.key
+    if (initialKey is SearchNavKey) {
+        return createSearchPopTransition()
+    }
+
     val initialTabKey = initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
     val targetTabKey = targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
     val isTabSwitch = initialTabKey != targetTabKey
@@ -189,4 +200,28 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createStackPopTra
             )
         )
     )
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createSearchPushTransition(): ContentTransform {
+    return (fadeIn(animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)) +
+            scaleIn(
+                initialScale = 0.92f,
+                animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+            ))
+        .togetherWith(
+            fadeOut(animationSpec = tween(durationMillis = 200)) +
+                    scaleOut(targetScale = 1.05f, animationSpec = tween(durationMillis = 200))
+        )
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createSearchPopTransition(): ContentTransform {
+    return (fadeIn(animationSpec = tween(durationMillis = 200)) +
+            scaleIn(initialScale = 1.05f, animationSpec = tween(durationMillis = 200)))
+        .togetherWith(
+            fadeOut(animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing)) +
+                    scaleOut(
+                        targetScale = 0.92f,
+                        animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing)
+                    )
+        )
 }

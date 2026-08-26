@@ -54,14 +54,21 @@ object ShareImageHelper {
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/ShowTime")
+                    put(
+                        MediaStore.MediaColumns.RELATIVE_PATH,
+                        "${Environment.DIRECTORY_PICTURES}/ShowTime"
+                    )
                 }
-                val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                val uri = context.contentResolver.insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    contentValues
+                )
                 if (uri != null) {
                     outputStream = context.contentResolver.openOutputStream(uri)
                 }
             } else {
-                val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                val picturesDir =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
                 val showTimeDir = File(picturesDir, "ShowTime").apply { if (!exists()) mkdirs() }
                 val imageFile = File(showTimeDir, fileName)
                 outputStream = FileOutputStream(imageFile)
@@ -78,7 +85,8 @@ object ShareImageHelper {
         } finally {
             try {
                 outputStream?.close()
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
     }
 

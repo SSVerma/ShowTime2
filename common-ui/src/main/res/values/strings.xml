@@ -13,4 +13,12 @@
     <string name="app_info_dont_show_again">Don\'t show again</string>
     <string name="app_info_got_it">Got it!</string>
     <string name="app_logo_desc">App Logo</string>
+    <string name="content_region">Content Region</string>
+    <string name="content_region_desc">Set default country for streaming services &amp; releases</string>
+    <string name="search_regions">Search country or region…</string>
+    <string name="no_regions_found">No countries found</string>
+    <string name="content_language">Content Language</string>
+    <string name="content_language_desc">Default language for movie &amp; TV show metadata</string>
+    <string name="search_languages">Search language…</string>
+    <string name="no_languages_found">No languages found</string>
 </resources>

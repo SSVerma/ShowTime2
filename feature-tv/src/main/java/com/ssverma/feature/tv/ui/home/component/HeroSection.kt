@@ -60,7 +60,10 @@ fun HeroSection(
     onRetry: () -> Unit,
     onAdLoaded: (InjectableAd, com.google.android.gms.ads.nativead.NativeAd) -> Unit,
     modifier: Modifier = Modifier,
+    carouselState: androidx.compose.material3.carousel.CarouselState? = null,
+    showBackdrop: Boolean = false,
     onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
+    showAppBar: Boolean = false,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
     contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
@@ -84,6 +87,7 @@ fun HeroSection(
         modifier = modifier,
         loading = {
             HeroShimmerPlaceholder(
+                showAppBar = showAppBar,
                 maxItemWidth = maxItemWidth,
                 itemHeight = itemHeight,
                 contentPadding = contentPadding,
@@ -93,6 +97,7 @@ fun HeroSection(
         },
         coreErrorContent = { failure ->
             HeroErrorPlaceholder(
+                showAppBar = showAppBar,
                 failure = failure,
                 onRetry = onRetry,
                 itemHeight = itemHeight,
@@ -101,10 +106,11 @@ fun HeroSection(
             )
         }
     ) { tvShows ->
-        val carouselState = rememberCarouselState { tvShows.size }
+        val internalCarouselState = rememberCarouselState { tvShows.size }
+        val effectiveCarouselState = carouselState ?: internalCarouselState
 
-        val currentBackdrop = remember(tvShows, carouselState.currentItem) {
-            val currentItem = tvShows.getOrNull(carouselState.currentItem)
+        val currentBackdrop = remember(tvShows, effectiveCarouselState.currentItem) {
+            val currentItem = tvShows.getOrNull(effectiveCarouselState.currentItem)
             if (currentItem is InjectableContent<*>) {
                 (currentItem as InjectableContent<TvShowPreview>).item.backdropImageUrl
             } else {
@@ -115,39 +121,45 @@ fun HeroSection(
         val scrimColor = MaterialTheme.colorScheme.background
 
         Box(modifier = modifier.fillMaxWidth()) {
-            // Background Backdrop
-            currentBackdrop?.let { url ->
-                NetworkImage(
-                    url = url,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .matchParentSize()
-                        .scrim(
-                            colors = listOf(
-                                scrimColor.copy(alpha = 0.4f),
-                                scrimColor.copy(alpha = 1f)
+            // Background Backdrop (if enabled locally)
+            if (showBackdrop) {
+                currentBackdrop?.let { url ->
+                    NetworkImage(
+                        url = url,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .matchParentSize()
+                            .scrim(
+                                colors = listOf(
+                                    scrimColor.copy(alpha = 0.4f),
+                                    scrimColor.copy(alpha = 1f)
+                                )
                             )
-                        )
-                )
+                    )
+                }
             }
 
             // Foreground Content
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                HomePageAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                    onSearchIconPressed = onSearchClicked,
-                    onAccountIconPressed = onAccountClicked,
-                    onLibraryIconPressed = { openLibraryPage(LibraryHomeNavKey.Default) }
-                )
+                if (showAppBar) {
+                    HomePageAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                        onSearchIconPressed = onSearchClicked,
+                        onAccountIconPressed = onAccountClicked,
+                        onLibraryIconPressed = { openLibraryPage(LibraryHomeNavKey.Default) }
+                    )
 
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                } else {
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+                }
 
                 AppHeroCarousel<AdInjectable<TvShowPreview>>(
                     items = tvShows,
-                    carouselState = carouselState,
+                    carouselState = effectiveCarouselState,
                     maxItemWidth = maxItemWidth,
                     itemHeight = itemHeight,
                     contentPadding = contentPadding,
@@ -181,6 +193,7 @@ fun HeroSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HeroShimmerPlaceholder(
+    showAppBar: Boolean,
     maxItemWidth: Dp,
     itemHeight: Dp,
     contentPadding: PaddingValues,
@@ -197,13 +210,17 @@ private fun HeroShimmerPlaceholder(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            HomePageAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                onSearchIconPressed = onSearchClicked,
-                onAccountIconPressed = onAccountClicked
-            )
+            if (showAppBar) {
+                HomePageAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    onSearchIconPressed = onSearchClicked,
+                    onAccountIconPressed = onAccountClicked
+                )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            } else {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+            }
 
             Row(
                 modifier = Modifier
@@ -250,6 +267,7 @@ private fun HeroShimmerPlaceholder(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HeroErrorPlaceholder(
+    showAppBar: Boolean,
     failure: Failure.CoreFailure,
     onRetry: () -> Unit,
     itemHeight: Dp,
@@ -261,17 +279,21 @@ private fun HeroErrorPlaceholder(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            HomePageAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                onSearchIconPressed = onSearchClicked,
-                onAccountIconPressed = onAccountClicked
-            )
+            if (showAppBar) {
+                HomePageAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    onSearchIconPressed = onSearchClicked,
+                    onAccountIconPressed = onAccountClicked
+                )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+            } else {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+            }
 
             DefaultCoreErrorIndicator(
                 failure = failure,

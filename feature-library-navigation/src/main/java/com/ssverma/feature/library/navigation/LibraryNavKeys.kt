@@ -24,3 +24,7 @@ enum class LibraryTabDestination {
     History,
     CustomLists
 }
+
+@Serializable
+@Parcelize
+data object CinemaReceiptNavKey : NavKey, Parcelable

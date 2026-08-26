@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Language
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -40,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,8 +50,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.UiState
@@ -104,6 +109,27 @@ fun LocalizationSelector(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocalizationSettingsBottomSheet(
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: WatchRegionViewModel = hiltViewModel()
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(Unit) {
+        viewModel.loadAvailableRegions()
+        viewModel.loadAvailableLanguages()
+    }
+
+    LocalizationSettingsBottomSheet(
+        viewModel = viewModel,
+        sheetState = sheetState,
+        onDismiss = onDismissRequest
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LocalizationSettingsBottomSheet(
     viewModel: WatchRegionViewModel,
     sheetState: SheetState,
     onDismiss: () -> Unit
@@ -120,9 +146,7 @@ fun LocalizationSettingsBottomSheet(
     var translationEnabled by remember(isTranslationEnabled) { mutableStateOf(isTranslationEnabled) }
     var selectedLanguageIso by remember(contentLanguage) { mutableStateOf(contentLanguage) }
     var selectedOriginalLanguageIso by remember(preferredOriginalLanguage) {
-        mutableStateOf(
-            preferredOriginalLanguage
-        )
+        mutableStateOf(preferredOriginalLanguage)
     }
 
     val regionPickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -130,12 +154,22 @@ fun LocalizationSettingsBottomSheet(
     val scope = rememberCoroutineScope()
 
     val selectedRegionName = remember(selectedRegionIso, regionsState) {
-        (regionsState as? UiState.Success)?.data?.find { it.iso31661 == selectedRegionIso }?.englishName
+        (regionsState as? UiState.Success)?.data?.find {
+            it.iso31661.equals(
+                selectedRegionIso,
+                ignoreCase = true
+            )
+        }?.englishName
             ?: selectedRegionIso
     }
 
     val selectedLanguageName = remember(selectedLanguageIso, languagesState) {
-        (languagesState as? UiState.Success)?.data?.find { it.iso6391 == selectedLanguageIso }?.englishName
+        (languagesState as? UiState.Success)?.data?.find {
+            it.iso6391.equals(
+                selectedLanguageIso,
+                ignoreCase = true
+            )
+        }?.englishName
             ?: selectedLanguageIso
     }
 
@@ -148,7 +182,7 @@ fun LocalizationSettingsBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.9f) // Allow near-full expansion
+                .fillMaxHeight(0.92f)
         ) {
             Box(modifier = Modifier.weight(1f)) {
                 LazyColumn(
@@ -160,29 +194,43 @@ fun LocalizationSettingsBottomSheet(
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.padding(horizontal = MaterialTheme.spacing.large)
                         )
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
                     }
 
                     // Region Selection Hub Row
                     item {
                         Surface(
                             onClick = { scope.launch { regionPickerSheetState.show() } },
-                            shape = MaterialTheme.shapes.medium,
+                            shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = MaterialTheme.spacing.large)
-                                .padding(top = MaterialTheme.spacing.medium)
+                                .padding(top = MaterialTheme.spacing.small)
                         ) {
                             ListItem(
-                                headlineContent = { Text("Select region") },
-                                supportingContent = { Text(selectedRegionName) },
-                                trailingContent = {
-                                    Icon(
-                                        Icons.Default.Search,
-                                        contentDescription = null
+                                headlineContent = {
+                                    Text(
+                                        text = stringResource(R.string.select_region),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 },
-                                colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                                supportingContent = {
+                                    Text(
+                                        text = selectedRegionName,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
+                                trailingContent = {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
                         }
                     }
@@ -194,27 +242,39 @@ fun LocalizationSettingsBottomSheet(
                     // Translation Toggle
                     item {
                         Surface(
-                            shape = MaterialTheme.shapes.medium,
+                            shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = MaterialTheme.spacing.large)
                         ) {
                             ListItem(
-                                headlineContent = { Text(stringResource(R.string.translate_app_content)) },
-                                supportingContent = { Text(stringResource(R.string.translate_app_desc)) },
+                                headlineContent = {
+                                    Text(
+                                        text = stringResource(R.string.translate_app_content),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                },
+                                supportingContent = {
+                                    Text(
+                                        text = stringResource(R.string.translate_app_desc),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
                                 trailingContent = {
                                     Switch(
                                         checked = translationEnabled,
                                         onCheckedChange = { translationEnabled = it }
                                     )
                                 },
-                                colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             )
                         }
                     }
 
-                    // Metadata Language Selection (only if translation is enabled)
+                    // Metadata Language Selection (when translation is enabled)
                     if (translationEnabled) {
                         item {
                             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
@@ -222,22 +282,35 @@ fun LocalizationSettingsBottomSheet(
                         item {
                             Surface(
                                 onClick = { scope.launch { languagePickerSheetState.show() } },
-                                shape = MaterialTheme.shapes.medium,
+                                shape = RoundedCornerShape(16.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = MaterialTheme.spacing.large)
                             ) {
                                 ListItem(
-                                    headlineContent = { Text("Select language") },
-                                    supportingContent = { Text(selectedLanguageName) },
-                                    trailingContent = {
-                                        Icon(
-                                            Icons.Default.Language,
-                                            contentDescription = null
+                                    headlineContent = {
+                                        Text(
+                                            text = stringResource(R.string.select_language),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold
                                         )
                                     },
-                                    colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
+                                    supportingContent = {
+                                        Text(
+                                            text = selectedLanguageName,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    trailingContent = {
+                                        Icon(
+                                            imageVector = Icons.Default.Language,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                                 )
                             }
                         }
@@ -271,12 +344,23 @@ fun LocalizationSettingsBottomSheet(
                     viewModel.updatePreferredOriginalLanguage(selectedOriginalLanguageIso)
                     onDismiss()
                 },
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(MaterialTheme.spacing.large)
+                    .height(52.dp)
+                    .padding(horizontal = MaterialTheme.spacing.large)
             ) {
-                Text(text = stringResource(id = R.string.done))
+                Text(
+                    text = stringResource(id = R.string.done),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
             }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
         }
     }
 
@@ -323,11 +407,12 @@ fun RegionPickerBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
                 .padding(bottom = MaterialTheme.spacing.medium)
         ) {
             Text(
@@ -360,11 +445,12 @@ fun LanguagePickerBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
                 .padding(bottom = MaterialTheme.spacing.medium)
         ) {
             Text(
@@ -387,7 +473,8 @@ fun LanguagePickerBottomSheet(
 fun SettingsSectionHeader(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(
             horizontal = MaterialTheme.spacing.large,
@@ -428,7 +515,7 @@ fun RegionPicker(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // Take remaining height in the picker sheet
+                .weight(1f)
         ) {
             when (regionsState) {
                 is UiState.Loading -> {
@@ -450,12 +537,19 @@ fun RegionPicker(
                                 headlineContent = { Text(region.englishName) },
                                 leadingContent = {
                                     RadioButton(
-                                        selected = region.iso31661 == selectedRegionIso,
+                                        selected = region.iso31661.equals(
+                                            selectedRegionIso,
+                                            ignoreCase = true
+                                        ),
                                         onClick = null
                                     )
                                 },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                                 modifier = Modifier.selectable(
-                                    selected = region.iso31661 == selectedRegionIso,
+                                    selected = region.iso31661.equals(
+                                        selectedRegionIso,
+                                        ignoreCase = true
+                                    ),
                                     onClick = { onRegionSelected(region.iso31661) }
                                 )
                             )
@@ -507,7 +601,7 @@ fun LanguagePicker(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // Take remaining height in the picker sheet
+                .weight(1f)
         ) {
             when (languagesState) {
                 is UiState.Loading -> {
@@ -529,12 +623,19 @@ fun LanguagePicker(
                                 headlineContent = { Text(language.englishName) },
                                 leadingContent = {
                                     RadioButton(
-                                        selected = language.iso6391 == selectedLanguageIso,
+                                        selected = language.iso6391.equals(
+                                            selectedLanguageIso,
+                                            ignoreCase = true
+                                        ),
                                         onClick = null
                                     )
                                 },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                                 modifier = Modifier.selectable(
-                                    selected = language.iso6391 == selectedLanguageIso,
+                                    selected = language.iso6391.equals(
+                                        selectedLanguageIso,
+                                        ignoreCase = true
+                                    ),
                                     onClick = { onLanguageSelected(language.iso6391) }
                                 )
                             )
@@ -563,7 +664,7 @@ fun OriginalLanguageQuickSelect(
     onLanguageSelected: (String) -> Unit
 ) {
     val languages = remember(regionIso) {
-        RegionToOriginalLanguages[regionIso] ?: listOf("en")
+        RegionToOriginalLanguages[regionIso.uppercase()] ?: listOf("en")
     }
 
     FlowRow(
@@ -581,20 +682,20 @@ fun OriginalLanguageQuickSelect(
         )
 
         languages.forEach { lang ->
-            val label = allLanguages.find { it.iso6391 == lang }?.englishName ?: lang.uppercase()
+            val label =
+                allLanguages.find { it.iso6391.equals(lang, ignoreCase = true) }?.englishName
+                    ?: lang.uppercase()
             FilterChip(
-                selected = selectedLanguageIso == lang,
+                selected = selectedLanguageIso.equals(lang, ignoreCase = true),
                 onClick = { onLanguageSelected(lang) },
                 label = { Text(label) }
             )
         }
-
-        // Custom search option could be added here if needed
     }
 }
 
 val RegionToOriginalLanguages = mapOf(
-    "IN" to listOf("hi", "ta", "te", "kn", "ml", "bn", "pa"),
+    "IN" to listOf("hi", "ta", "te", "kn", "ml", "bn", "pa", "en"),
     "US" to listOf("en", "es", "fr", "zh"),
     "GB" to listOf("en"),
     "TR" to listOf("tr"),

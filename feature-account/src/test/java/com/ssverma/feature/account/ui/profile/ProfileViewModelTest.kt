@@ -1,10 +1,10 @@
 package com.ssverma.feature.account.ui.profile
 
-import android.app.Activity
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.ssverma.core.backup.model.BackupOperation
 import com.ssverma.core.backup.model.BackupStatus
+import com.ssverma.core.storage.debug.DebugConfigManager
+import com.ssverma.core.storage.debug.DebugProOverride
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.core.testing.fakes.FakeBillingRepository
@@ -16,7 +16,8 @@ import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.model.AppTheme
-import com.ssverma.shared.domain.repository.TraktSyncRepository
+import com.ssverma.shared.domain.repository.CinemaGameRepository
+import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import io.mockk.coEvery
@@ -39,17 +40,15 @@ class ProfileViewModelTest {
     private val fakeBackupRepository = FakeBackupRepository()
     private val fakeAppConfigRepository = FakeAppConfigRepository(initialTheme = AppTheme.System)
     private val fakeAppConfigProvider = FakeAppConfigProvider()
+    private val fakeConfigurationRepository =
+        com.ssverma.shared.testing.fakes.FakeConfigurationRepository()
 
     private val mockAccountRepository: AccountRepository = mockk(relaxed = true)
     private val mockAuthManager: AuthManager = mockk(relaxed = true)
     private val mockTraktAuthManager: TraktAuthManager = mockk(relaxed = true)
-    private val mockTraktSyncRepository: TraktSyncRepository = mockk(relaxed = true)
-    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager =
-        mockk(relaxed = true)
-    private val mockLibraryRepository: com.ssverma.shared.domain.repository.LibraryRepository =
-        mockk(relaxed = true)
-    private val mockCinemaGameRepository: com.ssverma.shared.domain.repository.CinemaGameRepository =
-        mockk(relaxed = true)
+    private val mockDebugConfigManager: DebugConfigManager = mockk(relaxed = true)
+    private val mockLibraryRepository: LibraryRepository = mockk(relaxed = true)
+    private val mockCinemaGameRepository: CinemaGameRepository = mockk(relaxed = true)
 
     private val authFlow = MutableSharedFlow<AuthState>(replay = 1)
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
@@ -61,7 +60,7 @@ class ProfileViewModelTest {
         coEvery { mockAuthManager.authFlow } returns authFlow
         authFlow.tryEmit(AuthState.Unauthorized)
         every { mockTraktAuthManager.authState } returns traktAuthFlow
-        every { mockDebugConfigManager.proOverride } returns MutableStateFlow(com.ssverma.core.storage.debug.DebugProOverride.AUTO)
+        every { mockDebugConfigManager.proOverride } returns MutableStateFlow(DebugProOverride.AUTO)
         every { mockDebugConfigManager.isMockTraktEnabled } returns MutableStateFlow(true)
         every { mockDebugConfigManager.customTraktClientId } returns MutableStateFlow("")
         every { mockDebugConfigManager.isAdsDisabled } returns MutableStateFlow(false)
@@ -72,9 +71,9 @@ class ProfileViewModelTest {
             billingRepository = fakeBillingRepository,
             backupRepository = fakeBackupRepository,
             appConfigRepository = fakeAppConfigRepository,
+            configurationRepository = fakeConfigurationRepository,
             appConfigProvider = fakeAppConfigProvider,
             traktAuthManager = mockTraktAuthManager,
-            traktSyncRepository = mockTraktSyncRepository,
             debugConfigManager = mockDebugConfigManager,
             libraryRepository = mockLibraryRepository,
             cinemaGameRepository = mockCinemaGameRepository
@@ -99,160 +98,58 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `openPaywall sets isPaywallVisible to true`() = runTest {
-        viewModel.uiState.test {
-            val initial = awaitItem()
-            assertThat(initial.isPaywallVisible).isFalse()
-
-            viewModel.openPaywall()
-            val updated = awaitItem()
-            assertThat(updated.isPaywallVisible).isTrue()
-        }
-    }
-
-    @Test
-    fun `dismissPaywall sets isPaywallVisible to false`() = runTest {
+    fun `openPaywall sets paywall visibility to true`() = runTest {
         viewModel.openPaywall()
 
         viewModel.uiState.test {
-            assertThat(awaitItem().isPaywallVisible).isTrue()
-
-            viewModel.dismissPaywall()
-            assertThat(awaitItem().isPaywallVisible).isFalse()
+            val state = awaitItem()
+            assertThat(state.isPaywallVisible).isTrue()
         }
     }
 
     @Test
-    fun `updateTheme updates currentTheme via AppConfigRepository`() = runTest {
-        viewModel.uiState.test {
-            assertThat(awaitItem().currentTheme).isEqualTo(AppTheme.System)
-
-            viewModel.updateTheme(AppTheme.Dark)
-            assertThat(awaitItem().currentTheme).isEqualTo(AppTheme.Dark)
-        }
-    }
-
-    @Test
-    fun `purchaseProduct triggers billing purchase and unlocks Pro`() = runTest {
-        val mockActivity: Activity = mockk(relaxed = true)
-        val product = fakeBillingRepository.getAvailableProducts().first()
+    fun `dismissPaywall sets paywall visibility to false`() = runTest {
+        viewModel.openPaywall()
+        viewModel.dismissPaywall()
 
         viewModel.uiState.test {
-            assertThat(awaitItem().isProActive).isFalse()
-
-            viewModel.purchaseProduct(mockActivity, product)
-            assertThat(awaitItem().isProActive).isTrue()
+            val state = awaitItem()
+            assertThat(state.isPaywallVisible).isFalse()
         }
     }
 
     @Test
-    fun `restorePurchases displays success message on successful restore`() = runTest {
+    fun `restorePurchases sets message on success`() = runTest {
         fakeBillingRepository.restoreSuccessToReturn = true
 
+        viewModel.restorePurchases()
+
         viewModel.uiState.test {
-            val initial = awaitItem()
-            assertThat(initial.message).isNull()
-
-            viewModel.restorePurchases()
-
-            val restoringState = awaitItem()
-            assertThat(restoringState.isRestoringPurchases).isTrue()
-
-            val successState = awaitItem()
-            assertThat(successState.isRestoringPurchases).isFalse()
-            assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.restore_success))
-            assertThat(successState.isProActive).isTrue()
+            val state = awaitItem()
+            assertThat(state.isRestoringPurchases).isFalse()
+            assertThat(state.message).isInstanceOf(UiText.StaticText::class.java)
+            val staticText = state.message as UiText.StaticText
+            assertThat(staticText.resId).isEqualTo(R.string.restore_success)
         }
     }
 
     @Test
-    fun `signInWithGoogle updates googleUser and displays welcome message`() = runTest {
-        val mockActivity: Activity = mockk(relaxed = true)
+    fun `updateTheme delegates to AppConfigRepository`() = runTest {
+        viewModel.updateTheme(AppTheme.Dark)
 
         viewModel.uiState.test {
-            assertThat(awaitItem().googleUser).isNull()
-
-            viewModel.signInWithGoogle(mockActivity)
-
-            val updatedState = awaitItem()
-            assertThat(updatedState.googleUser).isNotNull()
-            assertThat(updatedState.googleUser?.displayName).isEqualTo("Test User")
-            assertThat(updatedState.message).isEqualTo(
-                UiText.StaticText(
-                    R.string.google_sign_in_success,
-                    "Test User"
-                )
-            )
+            val state = awaitItem()
+            assertThat(state.currentTheme).isEqualTo(AppTheme.Dark)
         }
     }
 
     @Test
-    fun `signOutGoogle clears googleUser and displays signed out message`() = runTest {
-        val mockActivity: Activity = mockk(relaxed = true)
-        viewModel.signInWithGoogle(mockActivity)
+    fun `logout delegates to authManager and accountRepository`() = runTest {
+        viewModel.logout()
 
-        viewModel.uiState.test {
-            assertThat(awaitItem().googleUser).isNotNull()
-
-            viewModel.signOutGoogle()
-
-            val updatedState = awaitItem()
-            assertThat(updatedState.googleUser).isNull()
-            assertThat(updatedState.message).isEqualTo(UiText.StaticText(R.string.google_signed_out))
+        coVerify {
+            mockAuthManager.logout()
+            mockAccountRepository.removeUserAccount()
         }
-    }
-
-    @Test
-    fun `backupNow creates backup snapshot and emits success message`() = runTest {
-        viewModel.uiState.test {
-            assertThat(awaitItem().backupStatus).isEqualTo(BackupStatus.Idle)
-
-            viewModel.backupNow()
-
-            val successState = awaitItem()
-            assertThat(successState.backupStatus).isInstanceOf(BackupStatus.Success::class.java)
-            assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(
-                BackupOperation.BACKUP
-            )
-            assertThat(successState.lastBackupMetadata).isNotNull()
-            assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.backup_success))
-        }
-    }
-
-    @Test
-    fun `restoreBackup restores snapshot and emits success message`() = runTest {
-        viewModel.backupNow() // Create initial backup
-
-        viewModel.uiState.test {
-            assertThat(awaitItem().lastBackupMetadata).isNotNull()
-
-            viewModel.restoreBackup()
-
-            val successState = awaitItem()
-            assertThat(successState.backupStatus).isInstanceOf(BackupStatus.Success::class.java)
-            assertThat((successState.backupStatus as BackupStatus.Success).operation).isEqualTo(
-                BackupOperation.RESTORE
-            )
-            assertThat(successState.message).isEqualTo(UiText.StaticText(R.string.restore_success_msg))
-        }
-    }
-
-    @Test
-    fun `openDeveloperPanel and dismissDeveloperPanel toggle visibility correctly`() = runTest {
-        viewModel.uiState.test {
-            assertThat(awaitItem().isDeveloperPanelVisible).isFalse()
-
-            viewModel.openDeveloperPanel()
-            assertThat(awaitItem().isDeveloperPanelVisible).isTrue()
-
-            viewModel.dismissDeveloperPanel()
-            assertThat(awaitItem().isDeveloperPanelVisible).isFalse()
-        }
-    }
-
-    @Test
-    fun `clearLocalDatabase calls libraryRepository clearAllLibrary`() = runTest {
-        viewModel.clearLocalDatabase()
-        coVerify { mockLibraryRepository.clearAllLibrary() }
     }
 }

@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.coreBilling)
     implementation(projects.coreBackup)
     implementation(projects.coreCcm)
+    implementation(projects.coreNavigation)
     implementation(projects.sharedData)
     implementation(projects.apiService.tmdb)
     implementation(projects.featureAuth)

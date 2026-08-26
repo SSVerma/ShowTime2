@@ -40,7 +40,6 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.ssverma.showtime.MainActivity
 import com.ssverma.showtime.R
 import com.ssverma.showtime.widget.WatchlistWidgetEntry
 import com.ssverma.showtime.widget.WidgetUpdateHelper

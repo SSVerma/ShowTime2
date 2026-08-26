@@ -18,55 +18,44 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.CloudSync
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import com.ssverma.core.backup.model.BackupFrequency
-import com.ssverma.core.backup.model.BackupMetadata
-import com.ssverma.core.backup.model.BackupOperation
-import com.ssverma.core.backup.model.BackupStatus
-import com.ssverma.core.backup.model.GoogleUser
+import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.ScreenLoadingIndicator
@@ -79,16 +68,19 @@ import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
 import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
-import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.component.Avatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onBackPressed: () -> Unit,
-    onLoginClick: () -> Unit = {},
+    onOpenBackup: () -> Unit,
+    onOpenTrakt: () -> Unit,
+    onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
+    onLoginClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -96,9 +88,6 @@ fun ProfileScreen(
     val activity = context as? Activity
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    var showRestoreConfirmDialog by remember { mutableStateOf(false) }
-    var showSignOutConfirmDialog by remember { mutableStateOf(false) }
-    var showTraktDisconnectConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let { msg ->
@@ -119,32 +108,23 @@ fun ProfileScreen(
     ) { innerPadding ->
         when (val content = uiState.profileContent) {
             is ProfileContentState.Success -> {
-                ProfileMainContent(
+                ProfileContent(
                     profile = content.profile,
                     isProActive = uiState.isProActive,
                     isPaywallRemoteEnabled = uiState.isPaywallRemoteEnabled,
                     currentTheme = uiState.currentTheme,
+                    watchProviderRegion = uiState.watchProviderRegion,
+                    availableRegions = uiState.availableRegions,
+                    contentLanguage = uiState.contentLanguage,
+                    availableLanguages = uiState.availableLanguages,
                     googleUser = uiState.googleUser,
-                    backupStatus = uiState.backupStatus,
-                    lastBackupMetadata = uiState.lastBackupMetadata,
-                    backupFrequency = uiState.backupFrequency,
-                    backupOverWifiOnly = uiState.backupOverWifiOnly,
                     traktAuthState = uiState.traktAuthState,
-                    isTraktSyncing = uiState.isTraktSyncing,
                     onUpgradeClick = { viewModel.openPaywall() },
-                    onThemeSelected = { viewModel.updateTheme(it) },
-                    onSignInGoogleClick = {
-                        activity?.let { viewModel.signInWithGoogle(it) }
-                    },
-                    onSignOutGoogleClick = { showSignOutConfirmDialog = true },
-                    onBackupNowClick = { viewModel.backupNow() },
-                    onRestoreBackupClick = { showRestoreConfirmDialog = true },
-                    onBackupFrequencySelected = { viewModel.onBackupFrequencySelected(it) },
-                    onBackupOverWifiOnlyChanged = { viewModel.onBackupOverWifiOnlyChanged(it) },
-                    onConnectTraktClick = { viewModel.openTraktConnect() },
-                    onSyncTraktNowClick = { viewModel.syncTraktNow() },
-                    onDisconnectTraktClick = { showTraktDisconnectConfirmDialog = true },
-                    onLoginClick = onLoginClick,
+                    onOpenBackup = onOpenBackup,
+                    onOpenTrakt = onOpenTrakt,
+                    onOpenTheme = { viewModel.openThemeSheet() },
+                    onOpenLocalization = { viewModel.openLocalizationSheet() },
+                    onOpenAbout = onOpenAbout,
                     onLogoutClick = { viewModel.logout() },
                     onOpenDeveloperPanelClick = { viewModel.openDeveloperPanel() },
                     modifier = Modifier.padding(innerPadding)
@@ -164,140 +144,26 @@ fun ProfileScreen(
             }
         }
 
-        // Restore Backup Confirmation Dialog
-        if (showRestoreConfirmDialog) {
-            AlertDialog(
-                onDismissRequest = { showRestoreConfirmDialog = false },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.CloudSync,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+        // Theme Selection Bottom Sheet
+        if (uiState.isThemeSheetVisible) {
+            ThemeSelectionBottomSheet(
+                currentTheme = uiState.currentTheme,
+                isDynamicColorEnabled = uiState.isDynamicColorEnabled,
+                isProActive = uiState.isProActive,
+                onThemeSelected = { viewModel.updateTheme(it) },
+                onDynamicColorToggled = { viewModel.updateDynamicColor(it) },
+                onUpgradeToPro = {
+                    viewModel.closeThemeSheet()
+                    viewModel.openPaywall()
                 },
-                title = {
-                    Text(
-                        text = stringResource(R.string.restore_backup_confirm_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(text = stringResource(R.string.restore_backup_confirm_msg))
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showRestoreConfirmDialog = false
-                            viewModel.restoreBackup()
-                        }
-                    ) {
-                        Text(text = stringResource(R.string.restore_backup))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showRestoreConfirmDialog = false }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
-                }
+                onDismissRequest = { viewModel.closeThemeSheet() }
             )
         }
 
-        // Sign Out Confirmation Dialog
-        if (showSignOutConfirmDialog) {
-            AlertDialog(
-                onDismissRequest = { showSignOutConfirmDialog = false },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.sign_out_confirm_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(text = stringResource(R.string.sign_out_confirm_msg))
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showSignOutConfirmDialog = false
-                            viewModel.signOutGoogle()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        )
-                    ) {
-                        Text(text = stringResource(R.string.sign_out_google))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showSignOutConfirmDialog = false }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
-                }
-            )
-        }
-
-        // Disconnect Trakt Confirmation Dialog
-        if (showTraktDisconnectConfirmDialog) {
-            AlertDialog(
-                onDismissRequest = { showTraktDisconnectConfirmDialog = false },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Tv,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.disconnect_trakt_confirm_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(text = stringResource(R.string.disconnect_trakt_confirm_msg))
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showTraktDisconnectConfirmDialog = false
-                            viewModel.disconnectTrakt()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        )
-                    ) {
-                        Text(text = stringResource(R.string.disconnect))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showTraktDisconnectConfirmDialog = false }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
-                }
-            )
-        }
-
-        // Trakt Connect Bottom Sheet
-        if (uiState.isTraktConnectSheetVisible) {
-            TraktConnectBottomSheet(
-                traktAuthManager = viewModel.traktAuthManager,
-                onDismiss = { viewModel.closeTraktConnect() },
-                onConnected = {
-                    viewModel.closeTraktConnect()
-                    viewModel.syncTraktNow()
-                }
+        // Localization (Region & Language) Bottom Sheet
+        if (uiState.isLocalizationSheetVisible) {
+            com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet(
+                onDismissRequest = { viewModel.closeLocalizationSheet() }
             )
         }
 
@@ -342,32 +208,25 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileMainContent(
+private fun ProfileContent(
     profile: Profile,
     isProActive: Boolean,
     isPaywallRemoteEnabled: Boolean,
     currentTheme: AppTheme,
-    googleUser: GoogleUser?,
-    backupStatus: BackupStatus,
-    lastBackupMetadata: BackupMetadata?,
-    backupFrequency: BackupFrequency,
-    backupOverWifiOnly: Boolean,
+    watchProviderRegion: String,
+    availableRegions: List<WatchProviderRegion>,
+    contentLanguage: String,
+    availableLanguages: List<com.ssverma.shared.domain.model.Language>,
+    googleUser: com.ssverma.core.backup.model.GoogleUser?,
     traktAuthState: TraktAuthState,
-    isTraktSyncing: Boolean,
     onUpgradeClick: () -> Unit,
-    onThemeSelected: (AppTheme) -> Unit,
-    onSignInGoogleClick: () -> Unit,
-    onSignOutGoogleClick: () -> Unit,
-    onBackupNowClick: () -> Unit,
-    onRestoreBackupClick: () -> Unit,
-    onBackupFrequencySelected: (BackupFrequency) -> Unit,
-    onBackupOverWifiOnlyChanged: (Boolean) -> Unit,
-    onConnectTraktClick: () -> Unit,
-    onSyncTraktNowClick: () -> Unit,
-    onDisconnectTraktClick: () -> Unit,
-    onLoginClick: () -> Unit,
+    onOpenBackup: () -> Unit,
+    onOpenTrakt: () -> Unit,
+    onOpenTheme: () -> Unit,
+    onOpenLocalization: () -> Unit,
+    onOpenAbout: () -> Unit,
     onLogoutClick: () -> Unit,
-    onOpenDeveloperPanelClick: () -> Unit = {},
+    onOpenDeveloperPanelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isGuest = profile.userName.equals("guest", ignoreCase = true)
@@ -381,33 +240,17 @@ private fun ProfileMainContent(
     ) {
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-        // User Avatar & Name
-        Avatar(
-            imageUrl = profile.imageUrl,
-            onClick = {},
-            modifier = Modifier.size(80.dp)
-        )
-
-        Text(
-            text = profile.displayName.ifBlank { profile.userName },
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = MaterialTheme.spacing.small)
-        )
-
-        Text(
-            text = if (isGuest) stringResource(R.string.guest) else stringResource(
-                id = R.string.username_n,
-                profile.userName
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        // Avatar & Info Header
+        ProfileHeader(
+            profile = profile,
+            isProActive = isProActive,
+            isGuest = isGuest,
+            onLogoutClick = onLogoutClick
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-        // ShowTime Pro Status / Upgrade Banner
+        // Pro Status / Upgrade Banner
         if (isProActive) {
             ProActiveBanner()
         } else if (isPaywallRemoteEnabled) {
@@ -416,95 +259,252 @@ private fun ProfileMainContent(
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-        // Google Drive Cloud Backup Section
-        CloudBackupCard(
-            googleUser = googleUser,
-            backupStatus = backupStatus,
-            lastBackupMetadata = lastBackupMetadata,
-            backupFrequency = backupFrequency,
-            backupOverWifiOnly = backupOverWifiOnly,
-            isProActive = isProActive,
-            onSignInGoogleClick = onSignInGoogleClick,
-            onSignOutGoogleClick = onSignOutGoogleClick,
-            onBackupNowClick = onBackupNowClick,
-            onRestoreBackupClick = onRestoreBackupClick,
-            onBackupFrequencySelected = onBackupFrequencySelected,
-            onBackupOverWifiOnlyChanged = onBackupOverWifiOnlyChanged
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-        // Trakt.tv Cloud Sync Section (Pro)
-        TraktCloudSyncCard(
-            traktAuthState = traktAuthState,
-            isTraktSyncing = isTraktSyncing,
-            isProActive = isProActive,
-            onConnectTraktClick = onConnectTraktClick,
-            onSyncNowClick = onSyncTraktNowClick,
-            onDisconnectClick = onDisconnectTraktClick,
-            onUpgradeClick = onUpgradeClick
-        )
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-
-        // Settings / Appearance Section
-        SettingsSectionHeader(
-            icon = Icons.Rounded.Palette,
-            title = stringResource(R.string.appearance)
-        )
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        // Theme Switcher Card
-        ThemeSelectorCard(
+        // Settings Navigation Group
+        SettingsNavGroup(
             currentTheme = currentTheme,
-            isProActive = isProActive,
-            onThemeSelected = { selectedTheme ->
-                if (selectedTheme == AppTheme.OledMidnight && !isProActive) {
-                    onUpgradeClick()
-                } else {
-                    onThemeSelected(selectedTheme)
-                }
-            }
+            watchProviderRegion = watchProviderRegion,
+            availableRegions = availableRegions,
+            contentLanguage = contentLanguage,
+            availableLanguages = availableLanguages,
+            googleUser = googleUser,
+            traktAuthState = traktAuthState,
+            onOpenBackup = onOpenBackup,
+            onOpenTrakt = onOpenTrakt,
+            onOpenTheme = onOpenTheme,
+            onOpenLocalization = onOpenLocalization,
+            onOpenAbout = onOpenAbout,
+            onOpenDeveloperPanelClick = onOpenDeveloperPanelClick
         )
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-
-        // Auth Action: Connect TMDB for Guest vs Logout for Authenticated User
-        if (isGuest) {
-            Button(
-                onClick = onLoginClick,
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.connect_tmdb),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        } else {
-            OutlinedButton(
-                onClick = onLogoutClick,
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = stringResource(R.string.logout))
-            }
-        }
-
-        // Developer Controls Card (Debug Builds Only)
-        if (BuildConfig.DEBUG) {
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-
-            DeveloperControlsCard(onClick = onOpenDeveloperPanelClick)
-        }
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
     }
 }
 
 @Composable
-private fun DeveloperControlsCard(
+private fun ProfileHeader(
+    profile: Profile,
+    isProActive: Boolean,
+    isGuest: Boolean,
+    onLogoutClick: () -> Unit
+) {
+    Avatar(
+        imageUrl = profile.imageUrl,
+        onClick = {},
+        modifier = Modifier.size(92.dp)
+    )
+
+    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+    Text(
+        text = profile.displayName.ifBlank { profile.userName },
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurface
+    )
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
+        modifier = Modifier.padding(top = 4.dp)
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+            ) {
+                if (isProActive) {
+                    Icon(
+                        imageVector = Icons.Rounded.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.showtime_pro),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                } else {
+                    Text(
+                        text = if (isGuest) stringResource(R.string.guest) else profile.userName,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        if (!isGuest) {
+            OutlinedButton(
+                onClick = onLogoutClick,
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.height(28.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.logout),
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsNavGroup(
+    currentTheme: AppTheme,
+    watchProviderRegion: String,
+    availableRegions: List<WatchProviderRegion>,
+    contentLanguage: String,
+    availableLanguages: List<com.ssverma.shared.domain.model.Language>,
+    googleUser: com.ssverma.core.backup.model.GoogleUser?,
+    traktAuthState: TraktAuthState,
+    onOpenBackup: () -> Unit,
+    onOpenTrakt: () -> Unit,
+    onOpenTheme: () -> Unit,
+    onOpenLocalization: () -> Unit,
+    onOpenAbout: () -> Unit,
+    onOpenDeveloperPanelClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        // Section 1: Sync & Storage
+        Text(
+            text = stringResource(R.string.sync_section),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = MaterialTheme.spacing.extraSmall)
+        )
+
+        SettingsNavTile(
+            title = stringResource(R.string.cloud_backup),
+            subtitle = if (googleUser != null) {
+                googleUser.email
+            } else {
+                stringResource(R.string.cloud_backup_desc)
+            },
+            icon = Icons.Rounded.CloudSync,
+            onClick = onOpenBackup
+        )
+
+        SettingsNavTile(
+            title = stringResource(R.string.trakt_cloud_sync),
+            subtitle = when (traktAuthState) {
+                is TraktAuthState.Connected -> stringResource(
+                    id = R.string.trakt_connected_as,
+                    traktAuthState.user.username
+                )
+
+                else -> stringResource(R.string.trakt_cloud_sync_desc)
+            },
+            icon = Icons.Rounded.Tv,
+            onClick = onOpenTrakt
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+        // Section 2: Preferences
+        Text(
+            text = stringResource(R.string.preferences_section),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = MaterialTheme.spacing.extraSmall)
+        )
+
+        val themeTitle = when (currentTheme) {
+            AppTheme.System -> stringResource(R.string.theme_system)
+            AppTheme.Light -> stringResource(R.string.theme_light)
+            AppTheme.Dark -> stringResource(R.string.theme_dark)
+            AppTheme.OledMidnight -> stringResource(R.string.theme_oled)
+        }
+        SettingsNavTile(
+            title = stringResource(R.string.appearance),
+            subtitle = themeTitle,
+            icon = Icons.Rounded.Palette,
+            onClick = onOpenTheme
+        )
+
+        val currentRegionName =
+            availableRegions.find { it.iso31661.equals(watchProviderRegion, ignoreCase = true) }
+                ?.let {
+                    "${it.englishName} (${it.iso31661})"
+                } ?: watchProviderRegion
+        val currentLanguageName =
+            availableLanguages.find { it.iso6391.equals(contentLanguage, ignoreCase = true) }?.let {
+                "${it.englishName} (${it.iso6391})"
+            } ?: contentLanguage
+        SettingsNavTile(
+            title = stringResource(R.string.localization_settings),
+            subtitle = "$currentRegionName • $currentLanguageName",
+            icon = Icons.Rounded.Public,
+            onClick = onOpenLocalization
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+        // Section 3: About & Advanced
+        Text(
+            text = stringResource(R.string.about_section),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = MaterialTheme.spacing.extraSmall)
+        )
+
+        SettingsNavTile(
+            title = stringResource(R.string.about_showtime),
+            subtitle = stringResource(R.string.about_showtime_desc),
+            icon = Icons.Rounded.Info,
+            onClick = onOpenAbout
+        )
+
+        if (BuildConfig.DEBUG) {
+            SettingsNavTile(
+                title = stringResource(R.string.developer_controls),
+                subtitle = stringResource(R.string.developer_controls_desc),
+                icon = Icons.Rounded.BugReport,
+                onClick = onOpenDeveloperPanelClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsNavTile(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -512,9 +512,12 @@ private fun DeveloperControlsCard(
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        ),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -525,14 +528,14 @@ private fun DeveloperControlsCard(
         ) {
             Surface(
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.tertiary,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.size(40.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Rounded.BugReport,
+                        imageVector = icon,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onTertiary,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -542,17 +545,24 @@ private fun DeveloperControlsCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.developer_controls),
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = stringResource(R.string.developer_controls_desc),
+                    text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Icon(
+                imageVector = Icons.Rounded.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
@@ -561,12 +571,13 @@ private fun DeveloperControlsCard(
 private fun ProActiveBanner(
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -576,9 +587,9 @@ private fun ProActiveBanner(
                 .padding(MaterialTheme.spacing.medium)
         ) {
             Surface(
-                shape = CircleShape,
+                shape = RoundedCornerShape(14.dp),
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(44.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
@@ -593,12 +604,30 @@ private fun ProActiveBanner(
             Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.pro_active),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall)
+                ) {
+                    Text(
+                        text = stringResource(R.string.showtime_pro),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.padding(start = 2.dp)
+                    ) {
+                        Text(
+                            text = "ACTIVE",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
                 Text(
                     text = stringResource(R.string.pro_subtitle),
                     style = MaterialTheme.typography.bodySmall,
@@ -614,12 +643,14 @@ private fun ProUpgradeBanner(
     onUpgradeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+    Surface(
+        onClick = onUpgradeClick,
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -627,31 +658,55 @@ private fun ProUpgradeBanner(
                 .fillMaxWidth()
                 .padding(MaterialTheme.spacing.medium)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Header Row: Icon + Title/Subtitle + PRO Pill
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Surface(
-                    shape = CircleShape,
-                    color = Color(0xFFFF9800).copy(alpha = 0.12f),
-                    modifier = Modifier.size(38.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(44.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Rounded.Star,
+                            imageVector = Icons.Rounded.AutoAwesome,
                             contentDescription = null,
-                            tint = Color(0xFFFF9800),
-                            modifier = Modifier.size(22.dp)
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Column {
+
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.showtime_pro),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 2.dp)
+                        ) {
+                            Text(
+                                text = "PRO",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
                     Text(
-                        text = stringResource(R.string.showtime_pro),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(R.string.pro_feature_no_ads_desc),
+                        text = stringResource(R.string.pro_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -660,13 +715,45 @@ private fun ProUpgradeBanner(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
+            // Feature Highlights Row
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ProFeatureBadge(
+                    icon = Icons.Rounded.Block,
+                    text = "100% Ad-Free",
+                    modifier = Modifier.weight(1f)
+                )
+                ProFeatureBadge(
+                    icon = Icons.Rounded.DarkMode,
+                    text = "OLED Black",
+                    modifier = Modifier.weight(1f)
+                )
+                ProFeatureBadge(
+                    icon = Icons.Rounded.CloudSync,
+                    text = "Trakt Sync",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            // Primary Call-to-Action
             Button(
                 onClick = onUpgradeClick,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                 Text(
-                    text = stringResource(R.string.unlock_showtime_pro),
+                    text = stringResource(R.string.upgrade_to_pro),
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -675,779 +762,38 @@ private fun ProUpgradeBanner(
 }
 
 @Composable
-private fun SettingsSectionHeader(
+private fun ProFeatureBadge(
     icon: ImageVector,
-    title: String,
+    text: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = MaterialTheme.spacing.extraSmall)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-private fun ThemeSelectorCard(
-    currentTheme: AppTheme,
-    isProActive: Boolean,
-    onThemeSelected: (AppTheme) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedCard(
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium)
-        ) {
-            Text(
-                text = stringResource(R.string.theme),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            // Row 1: System & Light
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ThemeOptionButton(
-                    title = stringResource(R.string.theme_system),
-                    selected = currentTheme == AppTheme.System,
-                    onClick = { onThemeSelected(AppTheme.System) },
-                    modifier = Modifier.weight(1f)
-                )
-                ThemeOptionButton(
-                    title = stringResource(R.string.theme_light),
-                    selected = currentTheme == AppTheme.Light,
-                    onClick = { onThemeSelected(AppTheme.Light) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            // Row 2: Dark & OLED Midnight
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ThemeOptionButton(
-                    title = stringResource(R.string.theme_dark),
-                    selected = currentTheme == AppTheme.Dark,
-                    onClick = { onThemeSelected(AppTheme.Dark) },
-                    modifier = Modifier.weight(1f)
-                )
-                ThemeOptionButton(
-                    title = stringResource(R.string.theme_oled),
-                    selected = currentTheme == AppTheme.OledMidnight,
-                    isPro = !isProActive,
-                    onClick = { onThemeSelected(AppTheme.OledMidnight) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ThemeOptionButton(
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isPro: Boolean = false
-) {
-    val containerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-
-    val contentColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-
-    val borderColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.outlineVariant
-    }
-
     Surface(
-        onClick = onClick,
-        shape = MaterialTheme.shapes.medium,
-        color = containerColor,
-        border = BorderStroke(if (selected) 1.5.dp else 1.dp, borderColor),
-        modifier = modifier.height(44.dp)
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        ),
+        modifier = modifier
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = MaterialTheme.spacing.small)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                color = contentColor,
-                maxLines = 1
-            )
-            if (isPro) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.Rounded.Star,
-                    contentDescription = "Pro",
-                    tint = Color(0xFFFF9800),
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CloudBackupCard(
-    googleUser: GoogleUser?,
-    backupStatus: BackupStatus,
-    lastBackupMetadata: BackupMetadata?,
-    backupFrequency: BackupFrequency,
-    backupOverWifiOnly: Boolean,
-    isProActive: Boolean,
-    onSignInGoogleClick: () -> Unit,
-    onSignOutGoogleClick: () -> Unit,
-    onBackupNowClick: () -> Unit,
-    onRestoreBackupClick: () -> Unit,
-    onBackupFrequencySelected: (BackupFrequency) -> Unit,
-    onBackupOverWifiOnlyChanged: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedCard(
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(38.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.CloudSync,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.cloud_backup),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(R.string.cloud_backup_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            if (googleUser == null) {
-                Button(
-                    onClick = onSignInGoogleClick,
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.filledTonalButtonColors(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                    Text(
-                        text = stringResource(R.string.sign_in_with_google),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            } else {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = MaterialTheme.spacing.extraSmall)
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = googleUser.displayName.take(1).uppercase(),
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = googleUser.displayName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = googleUser.email,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    TextButton(onClick = onSignOutGoogleClick) {
-                        Text(
-                            text = stringResource(R.string.sign_out),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                val isBackingUp =
-                    backupStatus is BackupStatus.InProgress && backupStatus.operation == BackupOperation.BACKUP
-                val isRestoring =
-                    backupStatus is BackupStatus.InProgress && backupStatus.operation == BackupOperation.RESTORE
-
-                if (lastBackupMetadata != null) {
-                    Text(
-                        text = stringResource(
-                            R.string.last_backup,
-                            lastBackupMetadata.formattedDate
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "${
-                            stringResource(
-                                R.string.backup_size,
-                                lastBackupMetadata.formattedSize
-                            )
-                        } • ${
-                            stringResource(
-                                R.string.backup_includes_summary,
-                                lastBackupMetadata.favoritesCount,
-                                lastBackupMetadata.watchlistCount,
-                                lastBackupMetadata.customListsCount
-                            )
-                        }",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                } else {
-                    Text(
-                        text = stringResource(R.string.last_backup, stringResource(R.string.never)),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(
-                        onClick = onBackupNowClick,
-                        enabled = !isBackingUp && !isRestoring,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (isBackingUp) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                            Text(text = stringResource(R.string.backing_up))
-                        } else {
-                            Text(
-                                text = stringResource(R.string.back_up_now),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    OutlinedButton(
-                        onClick = onRestoreBackupClick,
-                        enabled = !isBackingUp && !isRestoring && lastBackupMetadata != null,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (isRestoring) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                            Text(text = stringResource(R.string.restoring))
-                        } else {
-                            Text(
-                                text = stringResource(R.string.restore_backup),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.medium),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                // WhatsApp-Style Auto-Backup Settings Section
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Schedule,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                    Text(
-                        text = stringResource(R.string.auto_backup_settings),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-                // Frequency Options
-                BackupFrequencyOption(
-                    title = stringResource(R.string.frequency_off),
-                    selected = backupFrequency == BackupFrequency.OFF,
-                    isPro = false,
-                    isProActive = isProActive,
-                    onClick = { onBackupFrequencySelected(BackupFrequency.OFF) }
-                )
-                BackupFrequencyOption(
-                    title = stringResource(R.string.frequency_daily),
-                    selected = backupFrequency == BackupFrequency.DAILY,
-                    isPro = true,
-                    isProActive = isProActive,
-                    onClick = { onBackupFrequencySelected(BackupFrequency.DAILY) }
-                )
-                BackupFrequencyOption(
-                    title = stringResource(R.string.frequency_weekly),
-                    selected = backupFrequency == BackupFrequency.WEEKLY,
-                    isPro = true,
-                    isProActive = isProActive,
-                    onClick = { onBackupFrequencySelected(BackupFrequency.WEEKLY) }
-                )
-                BackupFrequencyOption(
-                    title = stringResource(R.string.frequency_monthly),
-                    selected = backupFrequency == BackupFrequency.MONTHLY,
-                    isPro = true,
-                    isProActive = isProActive,
-                    onClick = { onBackupFrequencySelected(BackupFrequency.MONTHLY) }
-                )
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-                // Wi-Fi Only Switch
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = MaterialTheme.spacing.extraSmall)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.backup_over_wifi),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.backup_over_wifi_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Switch(
-                        checked = backupOverWifiOnly,
-                        onCheckedChange = onBackupOverWifiOnlyChanged
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BackupFrequencyOption(
-    title: String,
-    selected: Boolean,
-    isPro: Boolean,
-    isProActive: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f) else Color.Transparent,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.spacing.extraSmall, vertical = 6.dp)
-        ) {
-            RadioButton(
-                selected = selected,
-                onClick = onClick
-            )
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            if (isPro) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(
-                        0xFFFF9800
-                    ).copy(alpha = 0.14f)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Star,
-                            contentDescription = "Pro",
-                            tint = if (isProActive) MaterialTheme.colorScheme.primary else Color(
-                                0xFFFF9800
-                            ),
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Text(
-                            text = stringResource(R.string.pro_badge),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isProActive) MaterialTheme.colorScheme.primary else Color(
-                                0xFFFF9800
-                            )
-                        )
-                    }
-                }
-            } else {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Text(
-                        text = stringResource(R.string.free_badge),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProBadge(
-    modifier: Modifier = Modifier,
-    isProActive: Boolean = false
-) {
-    Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else Color(0xFFFF9800).copy(
-            alpha = 0.14f
-        ),
-        modifier = modifier
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            modifier = Modifier.padding(vertical = 6.dp, horizontal = 4.dp)
         ) {
             Icon(
-                imageVector = Icons.Rounded.Star,
+                imageVector = icon,
                 contentDescription = null,
-                tint = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800),
-                modifier = Modifier.size(12.dp)
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(14.dp)
             )
-            Spacer(modifier = Modifier.width(2.dp))
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = stringResource(R.string.pro_badge),
+                text = text,
                 style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = if (isProActive) MaterialTheme.colorScheme.primary else Color(0xFFFF9800)
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
-
-@Composable
-private fun TraktCloudSyncCard(
-    traktAuthState: TraktAuthState,
-    isTraktSyncing: Boolean,
-    isProActive: Boolean,
-    onConnectTraktClick: () -> Unit,
-    onSyncNowClick: () -> Unit,
-    onDisconnectClick: () -> Unit,
-    onUpgradeClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium)
-        ) {
-            // Header: Icon + Title + PRO Badge
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFED1C24).copy(alpha = 0.15f),
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Tv,
-                            contentDescription = null,
-                            tint = Color(0xFFED1C24),
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.trakt_cloud_sync),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        ProBadge(isProActive = isProActive)
-                    }
-                    Text(
-                        text = stringResource(R.string.trakt_cloud_sync_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            when (traktAuthState) {
-                is TraktAuthState.Connected -> {
-                    // Connected User Details Row
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = MaterialTheme.spacing.extraSmall)
-                    ) {
-                        if (!traktAuthState.user.avatarUrl.isNullOrBlank()) {
-                            AsyncImage(
-                                model = traktAuthState.user.avatarUrl,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                            )
-                        } else {
-                            Surface(
-                                shape = CircleShape,
-                                color = Color(0xFFED1C24),
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = traktAuthState.user.displayName.take(1).uppercase(),
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = traktAuthState.user.displayName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.trakt_connected_as,
-                                    traktAuthState.user.username
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        TextButton(onClick = onDisconnectClick) {
-                            Text(
-                                text = stringResource(R.string.disconnect),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-                    Button(
-                        onClick = onSyncNowClick,
-                        enabled = !isTraktSyncing,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (isTraktSyncing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                            Text(text = stringResource(R.string.trakt_syncing))
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.CloudSync,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                            Text(text = stringResource(R.string.trakt_sync_now))
-                        }
-                    }
-                }
-
-                else -> {
-                    Button(
-                        onClick = {
-                            if (!isProActive) {
-                                onUpgradeClick()
-                            } else {
-                                onConnectTraktClick()
-                            }
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Tv,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                        Text(text = stringResource(R.string.connect_trakt))
-                    }
-                }
-            }
-        }
-    }
-}
-
-

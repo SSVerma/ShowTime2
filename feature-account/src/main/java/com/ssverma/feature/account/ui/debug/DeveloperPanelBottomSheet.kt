@@ -287,7 +287,7 @@ fun DeveloperPanelBottomSheet(
                                         onSaveCustomTraktClientId(inputClientId)
                                         Toast.makeText(
                                             context,
-                                            context.getString(R.string.dev_key_saved_msg),
+                                            R.string.dev_key_saved_msg,
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     },
@@ -309,7 +309,7 @@ fun DeveloperPanelBottomSheet(
                                         onInstantMockConnectTrakt()
                                         Toast.makeText(
                                             context,
-                                            context.getString(R.string.dev_mock_connected_msg),
+                                            R.string.dev_mock_connected_msg,
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     },
@@ -360,7 +360,7 @@ fun DeveloperPanelBottomSheet(
                                 onSeedFavorites()
                                 Toast.makeText(
                                     context,
-                                    context.getString(R.string.dev_seeded_favorites_msg),
+                                    R.string.dev_seeded_favorites_msg,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             },
@@ -377,7 +377,7 @@ fun DeveloperPanelBottomSheet(
                                 onSeedWatchlist()
                                 Toast.makeText(
                                     context,
-                                    context.getString(R.string.dev_seeded_watchlist_msg),
+                                    R.string.dev_seeded_watchlist_msg,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             },
@@ -394,7 +394,7 @@ fun DeveloperPanelBottomSheet(
                                 onSeedHistory()
                                 Toast.makeText(
                                     context,
-                                    context.getString(R.string.dev_seeded_history_msg),
+                                    R.string.dev_seeded_history_msg,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             },
@@ -415,7 +415,7 @@ fun DeveloperPanelBottomSheet(
                             onClearDatabase()
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.dev_cleared_db_msg),
+                                R.string.dev_cleared_db_msg,
                                 Toast.LENGTH_SHORT
                             ).show()
                         },
@@ -491,7 +491,7 @@ fun DeveloperPanelBottomSheet(
                             onResetAll()
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.dev_overrides_reset_msg),
+                                R.string.dev_overrides_reset_msg,
                                 Toast.LENGTH_SHORT
                             ).show()
                         },

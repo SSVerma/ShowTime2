@@ -56,10 +56,11 @@ class BackupRepositoryImpl @Inject constructor(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val gson: Gson = GsonBuilder().create()
 
-    private val backupSettingsStorage: KeyValueStorage = keyValueStorageClient.createKeyValueStorage(
-        context = context,
-        config = KeyValueStorageConfig(fileName = "backup_settings_prefs")
-    )
+    private val backupSettingsStorage: KeyValueStorage =
+        keyValueStorageClient.createKeyValueStorage(
+            context = context,
+            config = KeyValueStorageConfig(fileName = "backup_settings_prefs")
+        )
 
     override val googleUser: StateFlow<GoogleUser?> = googleAuthClient.currentUser
 

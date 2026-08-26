@@ -19,7 +19,8 @@ object ReceiptGeneratorHelper {
         val formattedDate = dateFormat.format(date).uppercase(Locale.US)
 
         val totalItems = items.size
-        val totalMinutes = items.sumOf { if (it.runtimeMinutes > 0) it.runtimeMinutes else 115 } // standard feature length fallback
+        val totalMinutes =
+            items.sumOf { if (it.runtimeMinutes > 0) it.runtimeMinutes else 115 } // standard feature length fallback
 
         val hours = totalMinutes / 60
         val mins = totalMinutes % 60

@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui.home.component
+package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,8 +34,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssverma.feature.movie.R
 import com.ssverma.shared.domain.model.game.CinemaGameStats
+import com.ssverma.shared.ui.R
 
 @Composable
 fun DailyGameBanner(
@@ -100,7 +100,7 @@ fun DailyGameBanner(
                         Spacer(modifier = Modifier.width(8.dp))
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFFF9800).copy(alpha = 0.15f)
+                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -110,14 +110,14 @@ fun DailyGameBanner(
                                     imageVector = Icons.Rounded.LocalFireDepartment,
                                     contentDescription = stringResource(id = R.string.cinema_stats_streak),
                                     modifier = Modifier.size(13.dp),
-                                    tint = Color(0xFFFF9800)
+                                    tint = MaterialTheme.colorScheme.tertiary
                                 )
                                 Spacer(modifier = Modifier.width(3.dp))
                                 Text(
                                     text = "${gameStats.currentStreak}d",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFF9800)
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             }
                         }
