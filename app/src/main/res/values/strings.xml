@@ -128,4 +128,18 @@
     <string name="localization_settings">Region &amp; Language</string>
     <string name="localization_settings_desc">Content country, translation and preferred language</string>
     <string name="popular_section">Popular Worldwide</string>
+
+    <!-- Studio & Network Hub Names -->
+    <string name="studio_a24">A24</string>
+    <string name="studio_hbo">HBO</string>
+    <string name="studio_ghibli">Ghibli</string>
+    <string name="studio_pixar">Pixar</string>
+    <string name="studio_marvel">Marvel</string>
+    <string name="studio_apple_tv">Apple TV+</string>
+    <string name="studio_wb">WB</string>
+    <string name="studio_universal">Universal</string>
+    <string name="studio_paramount">Paramount</string>
+    <string name="studio_disney">Disney</string>
+    <string name="studio_sony">Sony</string>
+    <string name="studio_netflix">Netflix</string>
 </resources>

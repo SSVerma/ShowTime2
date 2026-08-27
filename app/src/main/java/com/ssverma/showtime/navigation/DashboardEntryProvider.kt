@@ -54,7 +54,7 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
                         TvShowListingRoute(
                             TvShowListingArgs.Discovery(
                                 initialConfig = tvConfig,
-                                title = portal.name
+                                titleRes = portal.nameRes
                             )
                         )
                     )
@@ -66,7 +66,7 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
                         MovieListingRoute(
                             MovieListingArgs.Discovery(
                                 initialConfig = movieConfig,
-                                title = portal.name
+                                titleRes = portal.nameRes
                             )
                         )
                     )
