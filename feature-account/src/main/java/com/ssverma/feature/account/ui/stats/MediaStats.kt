@@ -129,7 +129,10 @@ fun MediaStatsAction(
             }
         },
         expandState = popupExpansionState,
-        properties = PopupProperties(clippingEnabled = false)
+        properties = PopupProperties(
+            focusable = true,
+            clippingEnabled = false
+        )
     ) {
         when (mediaStatsUiState) {
             is MediaStatsUiState.Error -> {
