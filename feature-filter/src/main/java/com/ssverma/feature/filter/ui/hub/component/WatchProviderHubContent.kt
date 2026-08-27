@@ -118,9 +118,10 @@ fun WatchProviderHubContent(
     onMovieSeeAllClick: (MovieDiscoverConfig) -> Unit,
     onTvSeeAllClick: (TvDiscoverConfig) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
-    isLoading: Boolean = false
+    source: String = "default",
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
     val scrollState = rememberLazyListState()
     val brandingColor = WatchProviderHubBranding.getBrandingColor(provider.providerId)
@@ -157,6 +158,7 @@ fun WatchProviderHubContent(
                     provider = provider,
                     brandingColor = brandingColor,
                     isMovieMode = isMovieMode,
+                    source = source,
                     onToggleMode = onToggleMode
                 )
             }
@@ -447,6 +449,7 @@ private fun BrandIdentitySection(
     provider: ProviderInfo,
     brandingColor: Color,
     isMovieMode: Boolean,
+    source: String,
     onToggleMode: (isMovie: Boolean) -> Unit
 ) {
     Column(
@@ -463,7 +466,7 @@ private fun BrandIdentitySection(
             enableSharedTransition = true,
             sharedContentKey = watchProviderSharedContentKey(
                 provider.providerId,
-                isMovie = isMovieMode
+                source = source
             ),
             modifier = Modifier
                 .graphicsLayer {

@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.LiveTv
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -90,9 +93,7 @@ fun TvShowHomeContent(
     openWatchProviderHub: (ProviderInfo) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
     openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { id, _ ->
-        openTvShowDetails(
-            id
-        )
+        openTvShowDetails(id)
     },
     modifier: Modifier = Modifier,
     onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
@@ -302,6 +303,7 @@ fun TvShowHomeContent(
                     },
                     onRetry = { viewModel.fetchWatchProviders() },
                     isMovie = false,
+                    source = "tv_home",
                     adContent = {
                         ShowTimeNativeAd(
                             ad = uiState.watchProviderAd,
@@ -367,6 +369,11 @@ fun TvShowHomeContent(
             item {
                 AppSection(
                     title = stringResource(R.string.airing_today),
+                    leadingIcon = Icons.Rounded.CalendarToday,
+                    leadingIconContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(
+                        alpha = 0.7f
+                    ),
+                    leadingIconTint = MaterialTheme.colorScheme.primary,
                     uiState = uiState.todayAiringTvShows,
                     isVertical = true,
                     onTrailingActionClicked = {
@@ -448,6 +455,11 @@ fun TvShowHomeContent(
             item {
                 AppSection(
                     title = stringResource(R.string.now_airing),
+                    leadingIcon = Icons.Rounded.LiveTv,
+                    leadingIconContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                        alpha = 0.7f
+                    ),
+                    leadingIconTint = MaterialTheme.colorScheme.secondary,
                     uiState = uiState.nowAiringTvShows,
                     isVertical = true,
                     onTrailingActionClicked = {
@@ -536,4 +548,3 @@ fun TvShowHomeContent(
         }
     }
 }
-

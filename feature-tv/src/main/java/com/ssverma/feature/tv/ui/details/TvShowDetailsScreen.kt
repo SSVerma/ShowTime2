@@ -396,6 +396,7 @@ private fun TvShowContent(
                         )
                         openPersonDetails(cast)
                     },
+                    source = "tv_show_credit",
                     modifier = Modifier.padding(top = SectionVerticalSpacing)
                 )
             }

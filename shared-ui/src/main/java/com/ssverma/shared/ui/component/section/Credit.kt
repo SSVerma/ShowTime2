@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,6 +28,7 @@ fun CreditSection(
     onPersonClick: (Cast) -> Unit,
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int = R.string.casts,
+    source: String = "credit",
 ) {
     Section(
         sectionHeader = {
@@ -48,6 +48,7 @@ fun CreditSection(
                 onClick = {
                     onPersonClick(it)
                 },
+                source = source,
                 modifier = Modifier.width(104.dp)
             )
         }
@@ -59,7 +60,8 @@ fun CastItem(
     cast: Cast,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enableSharedTransition: Boolean = true
+    enableSharedTransition: Boolean = true,
+    source: String = "credit",
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -68,9 +70,9 @@ fun CastItem(
         Avatar(
             imageUrl = cast.avatarImageUrl,
             onClick = onClick,
-            modifier = Modifier.size(80.dp),
+            size = 80.dp,
             enableSharedTransition = enableSharedTransition,
-            sharedContentKey = personSharedContentKey(cast.id)
+            sharedContentKey = personSharedContentKey(cast.id, source = source)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(

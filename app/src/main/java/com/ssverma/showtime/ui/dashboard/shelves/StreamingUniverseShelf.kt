@@ -7,11 +7,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
@@ -30,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.UiState
-import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.component.WatchProviderHubSection
@@ -45,43 +41,25 @@ fun LazyListScope.streamingUniverseShelf(
     onRetry: () -> Unit
 ) {
     item(key = "streaming_universe_shelf") {
-        Column(
+        val activeProviders = if (isMovieSelected) movieProviders else tvProviders
+        WatchProviderHubSection(
+            providersUiState = activeProviders,
+            onProviderClick = { provider ->
+                onProviderClick(provider, isMovieSelected)
+            },
+            onRetry = onRetry,
+            isMovie = isMovieSelected,
+            source = "dashboard",
+            headerTrailingContent = {
+                StreamingSegmentedSwitcher(
+                    isMovieSelected = isMovieSelected,
+                    onToggle = onToggleStreamingType
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
-        ) {
-            // Standard Section Header with Segmented Switcher
-            SectionHeader(
-                title = stringResource(id = R.string.streaming_universe),
-                titleTextStyle = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                trailingContent = {
-                    StreamingSegmentedSwitcher(
-                        isMovieSelected = isMovieSelected,
-                        onToggle = onToggleStreamingType
-                    )
-                }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Watch Provider Hub Section
-            val activeProviders = if (isMovieSelected) movieProviders else tvProviders
-            WatchProviderHubSection(
-                providersUiState = activeProviders,
-                onProviderClick = { provider ->
-                    onProviderClick(provider, isMovieSelected)
-                },
-                onRetry = onRetry,
-                isMovie = isMovieSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+                .padding(top = 18.dp)
+        )
     }
 }
 

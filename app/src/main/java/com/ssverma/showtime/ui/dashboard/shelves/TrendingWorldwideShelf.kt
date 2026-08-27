@@ -25,6 +25,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -76,11 +78,14 @@ fun LazyListScope.trendingWorldwideShelf(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
+                .padding(top = 18.dp)
         ) {
             // 1. Header with Title on Left and Segmented Switcher [ Movie | TV Series ] on Right
             SectionHeader(
                 title = stringResource(id = R.string.popular_section),
+                leadingIcon = Icons.AutoMirrored.Rounded.TrendingUp,
+                leadingIconContainerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f),
+                leadingIconTint = MaterialTheme.colorScheme.tertiary,
                 titleTextStyle = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -94,7 +99,7 @@ fun LazyListScope.trendingWorldwideShelf(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 12.dp)
+                    .padding(bottom = 10.dp)
             )
 
             // 2. Animated Media Carousel with Trailing See All Card

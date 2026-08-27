@@ -341,12 +341,12 @@ private fun GradientAvatar(
         Avatar(
             imageUrl = imageUrl,
             onClick = onClick,
-            modifier = Modifier.size(AvatarSize),
+            size = AvatarSize,
             borderWidth = 2.dp,
             borderColor = MaterialTheme.colorScheme.outlineVariant,
             borderSpacing = 2.dp,
             enableSharedTransition = true,
-            sharedContentKey = personSharedContentKey(personId)
+            sharedContentKey = personSharedContentKey(personId, source = "person_list")
         )
 
         // Rank badge - simple circle

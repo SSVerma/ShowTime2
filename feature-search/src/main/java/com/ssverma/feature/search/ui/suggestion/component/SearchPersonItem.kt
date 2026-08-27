@@ -2,7 +2,6 @@ package com.ssverma.feature.search.ui.suggestion.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -41,11 +40,11 @@ fun SearchPersonItem(
             Avatar(
                 imageUrl = person.imageUrl,
                 onClick = {},
+                size = 32.dp,
                 borderWidth = 1.dp,
                 borderSpacing = 2.dp,
-                modifier = Modifier.size(32.dp),
                 enableSharedTransition = true,
-                sharedContentKey = personSharedContentKey(person.id)
+                sharedContentKey = personSharedContentKey(person.id, source = "search")
             )
 
             SuggestionText(

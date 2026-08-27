@@ -70,7 +70,8 @@ fun PersonDetailsContent(
     openMovieDetails: (movieId: Int) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openPersonAllImages: (personId: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    source: String = "default"
 ) {
     val analytics = LocalAnalytics.current
     val person = (personState as? UiState.Success)?.data
@@ -116,7 +117,8 @@ fun PersonDetailsContent(
                 personId = personId,
                 backdropImageUrl = displayBackdropUrl,
                 profileImageUrl = displayProfileUrl,
-                onBackPress = onBackPress
+                onBackPress = onBackPress,
+                source = source
             )
         }
 

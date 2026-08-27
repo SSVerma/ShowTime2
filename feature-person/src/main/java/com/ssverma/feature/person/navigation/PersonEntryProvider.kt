@@ -27,7 +27,8 @@ fun EntryProviderScope<NavKey>.personEntries(
                     PersonDetailNavKey(
                         personId = person.id,
                         personName = person.name,
-                        personImageUrl = person.imageUrl
+                        personImageUrl = person.imageUrl,
+                        source = "person_list"
                     )
                 )
             },
@@ -64,7 +65,8 @@ fun EntryProviderScope<NavKey>.personEntries(
             },
             openPersonAllImages = { personId ->
                 navigator.navigate(PersonImageShotsNavKey(personId))
-            }
+            },
+            source = key.source
         )
     }
 

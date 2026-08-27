@@ -35,7 +35,8 @@ fun WatchProviderHubScreen(
     onMovieSeeAllClick: (providerInfo: ProviderInfo, discoverConfig: MovieDiscoverConfig) -> Unit,
     onTvSeeAllClick: (providerInfo: ProviderInfo, discoverConfig: TvDiscoverConfig) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
-    viewModel: WatchProviderHubViewModel
+    viewModel: WatchProviderHubViewModel,
+    source: String = "default"
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -78,6 +79,7 @@ fun WatchProviderHubScreen(
                         onMovieSeeAllClick = {},
                         onTvSeeAllClick = {},
                         onAdLoaded = viewModel::onCarouselNativeAdLoaded,
+                        source = source,
                         isLoading = true
                     )
                 }
@@ -102,6 +104,7 @@ fun WatchProviderHubScreen(
                         onTvSeeAllClick(uiState.provider, discoverConfig)
                     },
                     onAdLoaded = viewModel::onCarouselNativeAdLoaded,
+                    source = source,
                     onShowFeedback = { message, actionLabel, destination ->
                         coroutineScope.launch {
                             val result = snackbarHostState.showImmediateSnackbar(

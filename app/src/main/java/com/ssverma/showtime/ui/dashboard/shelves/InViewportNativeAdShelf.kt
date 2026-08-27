@@ -19,7 +19,7 @@ fun LazyListScope.inViewportNativeAdShelf(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp)
+                .padding(top = 18.dp)
         ) {
             ShowTimeNativeAd(
                 ad = nativeAd,

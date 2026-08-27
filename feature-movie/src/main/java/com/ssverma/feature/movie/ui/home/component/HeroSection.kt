@@ -67,7 +67,7 @@ fun HeroSection(
     showAppBar: Boolean = false,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
-    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     overlayContent: (@Composable (MoviePreview) -> Unit)? = { movie ->
         MediaStatsAction(
             mediaType = MediaType.Movie,
@@ -79,7 +79,7 @@ fun HeroSection(
             releaseDate = movie.displayReleaseDate.orEmpty(),
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
             onShowFeedback = onShowFeedback,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(36.dp)
         )
     }
 ) {
@@ -179,7 +179,9 @@ fun HeroSection(
                             val movie = (injectableItem as InjectableContent<MoviePreview>).item
                             HeroItem(
                                 title = movie.title,
-                                imageUrl = movie.posterImageUrl,
+                                imageUrl = movie.backdropImageUrl.ifEmpty { movie.posterImageUrl },
+                                releaseDate = movie.displayReleaseDate,
+                                voteAvg = movie.voteAvg,
                                 onClick = { onMovieClicked(movie) },
                                 overlayContent = { overlayContent?.invoke(movie) }
                             )

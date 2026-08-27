@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiState
@@ -23,6 +26,9 @@ fun <T, FF> AppSection(
     uiState: UiState<List<T>, FF>,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    leadingIcon: ImageVector? = null,
+    leadingIconContainerColor: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+    leadingIconTint: Color = MaterialTheme.colorScheme.primary,
     onTrailingActionClicked: () -> Unit = {},
     showTrailingActionHeader: Boolean = true,
     showTrailingActionCard: Boolean = false,
@@ -39,6 +45,9 @@ fun <T, FF> AppSection(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 title = title,
                 subtitle = subtitle,
+                leadingIcon = leadingIcon,
+                leadingIconContainerColor = leadingIconContainerColor,
+                leadingIconTint = leadingIconTint,
                 hideTrailingAction = !showTrailingActionHeader,
                 onTrailingActionClicked = onTrailingActionClicked
             )

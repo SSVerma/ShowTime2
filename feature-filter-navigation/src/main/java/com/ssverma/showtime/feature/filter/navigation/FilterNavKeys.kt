@@ -11,5 +11,6 @@ data class WatchProviderHubNavKey(
     val providerId: Int,
     val providerName: String,
     val logoPath: String,
-    val isMovie: Boolean
+    val isMovie: Boolean,
+    val source: String = "default"
 ) : NavKey, Parcelable

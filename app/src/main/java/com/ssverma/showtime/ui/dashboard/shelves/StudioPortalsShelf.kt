@@ -135,22 +135,25 @@ fun LazyListScope.studioPortalsShelf(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = MaterialTheme.spacing.medium)
+                .padding(top = 18.dp)
         ) {
             // Standard Section Header
             SectionHeader(
                 title = stringResource(id = R.string.studio_portals),
+                leadingIcon = Icons.Rounded.Theaters,
+                leadingIconContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+                leadingIconTint = MaterialTheme.colorScheme.secondary,
                 titleTextStyle = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = MaterialTheme.spacing.medium),
+                    .padding(horizontal = 16.dp),
                 hideTrailingAction = true
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+            Spacer(modifier = Modifier.height(10.dp))
 
             LazyHorizontalStaggeredGrid(
                 rows = StaggeredGridCells.Fixed(2),

@@ -21,7 +21,7 @@ fun LazyListScope.dailyHabitShelf(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp)
+                .padding(top = 18.dp)
         )
     }
 }

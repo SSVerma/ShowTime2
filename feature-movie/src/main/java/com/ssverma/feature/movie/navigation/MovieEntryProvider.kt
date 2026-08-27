@@ -41,7 +41,8 @@ fun EntryProviderScope<NavKey>.movieEntries(
                         providerId = provider.providerId,
                         providerName = provider.providerName,
                         logoPath = Uri.encode(provider.logoPath),
-                        isMovie = true
+                        isMovie = true,
+                        source = "movie_list"
                     )
                 )
             },
@@ -69,7 +70,8 @@ fun EntryProviderScope<NavKey>.movieEntries(
                         providerId = provider.providerId,
                         providerName = provider.providerName,
                         logoPath = Uri.encode(provider.logoPath),
-                        isMovie = true
+                        isMovie = true,
+                        source = "movie_home"
                     )
                 )
             },
@@ -110,7 +112,8 @@ fun EntryProviderScope<NavKey>.movieEntries(
                     PersonDetailNavKey(
                         personId = cast.id,
                         personName = cast.name,
-                        personImageUrl = cast.avatarImageUrl
+                        personImageUrl = cast.avatarImageUrl,
+                        source = "movie_credit"
                     )
                 )
             },
@@ -123,7 +126,8 @@ fun EntryProviderScope<NavKey>.movieEntries(
                         providerId = provider.providerId,
                         providerName = provider.providerName,
                         logoPath = Uri.encode(provider.logoPath),
-                        isMovie = true
+                        isMovie = true,
+                        source = "movie_details"
                     )
                 )
             },

@@ -2,10 +2,10 @@ package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -32,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiState
@@ -41,7 +41,7 @@ import com.ssverma.core.ui.theme.spacing
 
 object CarouselDefaults {
     val HeroMaxItemWidth = Dp.Unspecified
-    val HeroItemHeight = 200.dp
+    val HeroItemHeight = 220.dp
     val SmallItemMaskWidth = 56.dp
 }
 
@@ -58,7 +58,7 @@ fun <T, FF> AppHeroCarousel(
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
     itemSpacing: Dp = MaterialTheme.spacing.medium,
-    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     key: ((T) -> Any)? = null,
     itemContent: @Composable (T) -> Unit
 ) {
@@ -133,7 +133,7 @@ fun <T> AppHeroCarousel(
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
     itemSpacing: Dp = MaterialTheme.spacing.medium,
-    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     itemShape: Shape = MaterialTheme.shapes.extraLarge,
     key: ((T) -> Any)? = null,
     itemContent: @Composable (T) -> Unit
@@ -181,27 +181,16 @@ fun HeroItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     formatBadge: String? = null,
+    releaseDate: String? = null,
+    voteAvg: Float = 0f,
     itemShape: Shape = MaterialTheme.shapes.extraLarge,
-    overlayGradient: Brush = Brush.verticalGradient(
-        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))
-    ),
     overlayContent: (@Composable () -> Unit)? = null
 ) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .border(
-                width = 1.5.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                    )
-                ),
-                shape = itemShape
-            )
-            .clickable { onClick() }
+            .clip(itemShape)
+            .clickable(onClick = onClick)
     ) {
         NetworkImage(
             url = imageUrl,
@@ -223,53 +212,97 @@ fun HeroItem(
             }
         )
 
-        // Format Badge (Movie / TV)
-        if (formatBadge != null) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = Color.Black.copy(alpha = 0.65f),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.25f)),
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(10.dp)
-            ) {
-                Text(
-                    text = formatBadge,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
-        }
-
-        // Info Overlay
+        // Gradient Scrim
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(overlayGradient)
-                .padding(MaterialTheme.spacing.medium)
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.85f)
+                        ),
+                        startY = 100f
+                    )
+                )
+        )
+
+        // Content Info
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 0.5.sp
-                ),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
                 color = Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+
+            if (!releaseDate.isNullOrEmpty() || voteAvg > 0f) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    if (!releaseDate.isNullOrEmpty()) {
+                        Text(
+                            text = releaseDate,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+
+                    if (voteAvg > 0f) {
+                        Text(
+                            text = "★ ${String.format("%.1f", voteAvg)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                }
+            }
         }
 
-        overlayContent?.let {
+        // Format Badge (e.g. Movie / TV)
+        if (formatBadge != null) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                border = BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                ),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = formatBadge,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+
+        // Overlay Action (Watchlist/Favorite)
+        if (overlayContent != null) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp)
+                    .padding(12.dp)
             ) {
-                it()
+                overlayContent()
             }
         }
     }

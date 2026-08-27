@@ -42,7 +42,6 @@ import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
-import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.shared.ads.injection.InjectableContent
@@ -189,7 +188,7 @@ fun DashboardScreen(
                                     episodeNumber
                                 )
                             },
-                            modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
+                            modifier = Modifier.padding(top = 18.dp)
                         )
                     }
                 }
@@ -265,7 +264,7 @@ fun DashboardScreen(
                         bottomPadding = bottomBarHeight,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = MaterialTheme.spacing.large)
+                            .padding(top = 28.dp)
                     )
                 }
             }

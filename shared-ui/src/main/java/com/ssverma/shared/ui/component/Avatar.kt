@@ -22,13 +22,15 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 
-fun personSharedContentKey(personId: Int): String = "person_avatar_$personId"
+fun personSharedContentKey(personId: Int, source: String = "default"): String =
+    "person_avatar_${personId}_${source}"
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun Avatar(
     imageUrl: String,
     modifier: Modifier = Modifier,
+    size: Dp = AvatarDefaults.Size,
     contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.Crop,
     onClick: () -> Unit,
@@ -63,9 +65,9 @@ fun Avatar(
 
     Box(
         modifier = modifier
+            .size(size)
             .then(sharedModifier)
             .background(color = MaterialTheme.colorScheme.surface, shape = CircleShape)
-            .size(AvatarDefaults.Size)
             .border(
                 width = borderWidth,
                 color = borderColor,

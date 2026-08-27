@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Theaters
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -277,6 +279,7 @@ fun MovieHomeContent(
                     },
                     onRetry = { viewModel.fetchWatchProviders() },
                     isMovie = true,
+                    source = "movie_home",
                     adContent = {
                         ShowTimeNativeAd(
                             ad = uiState.watchProviderAd,
@@ -342,6 +345,11 @@ fun MovieHomeContent(
             item {
                 AppSection(
                     title = stringResource(R.string.now_in_cinemas),
+                    leadingIcon = Icons.Rounded.Theaters,
+                    leadingIconContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(
+                        alpha = 0.7f
+                    ),
+                    leadingIconTint = MaterialTheme.colorScheme.primary,
                     uiState = uiState.inCinemasMovies,
                     isVertical = true,
                     onTrailingActionClicked = {

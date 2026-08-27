@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material3.Icon
@@ -26,6 +27,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -177,6 +181,9 @@ fun SectionHeader(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    leadingIcon: ImageVector? = null,
+    leadingIconContainerColor: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+    leadingIconTint: Color = MaterialTheme.colorScheme.primary,
     leadingIconUrl: String? = null,
     leadingIconSize: Dp = SectionDefaults.leadingIconSize,
     leadingIconEndSpacing: Dp = SectionDefaults.leadingIconEndSpacing,
@@ -185,51 +192,49 @@ fun SectionHeader(
     onTrailingActionClicked: () -> Unit = {},
     titleTextStyle: TextStyle = SectionDefaults.titleTextStyle(),
     subtitleTextStyle: TextStyle = SectionDefaults.subtitleTextStyle(),
+    leadingContent: (@Composable RowScope.() -> Unit)? = null,
+    trailingContent: (@Composable RowScope.() -> Unit)? = null
 ) {
-    SectionHeader(
-        modifier = modifier,
-        titleContent = {
-            SectionTitle(
-                title = title,
-                textStyle = titleTextStyle,
-                modifier = Modifier.fillMaxWidth()
-            )
-        },
-        subtitleContent = {
-            subtitle?.let { subtitle ->
-                SectionSubtitle(subtitle = subtitle, textStyle = subtitleTextStyle)
+    val resolvedLeadingContent: (@Composable RowScope.() -> Unit)? = when {
+        leadingContent != null -> leadingContent
+        leadingIcon != null -> {
+            {
+                SectionLeadingIconBadge(
+                    imageVector = leadingIcon,
+                    containerColor = leadingIconContainerColor,
+                    iconColor = leadingIconTint
+                )
+                Spacer(modifier = Modifier.width(SectionDefaults.leadingBadgeEndSpacing))
             }
-        },
-        leadingContent = {
-            if (!leadingIconUrl.isNullOrEmpty()) {
+        }
+
+        !leadingIconUrl.isNullOrEmpty() -> {
+            {
                 SectionLeadingIcon(
                     leadingIconUrl = leadingIconUrl,
                     leadingIconSize = leadingIconSize,
                     modifier = Modifier.padding(end = leadingIconEndSpacing)
                 )
             }
-        },
-        trailingContent = {
-            if (!hideTrailingAction) {
+        }
+
+        else -> null
+    }
+
+    val resolvedTrailingContent: (@Composable RowScope.() -> Unit)? = when {
+        trailingContent != null -> trailingContent
+        !hideTrailingAction && onTrailingActionClicked != {} -> {
+            {
                 SectionTrailingAction(
                     actionLabel = trailingActionLabel,
                     onTrailingActionClicked = onTrailingActionClicked
                 )
             }
         }
-    )
-}
 
-@Composable
-fun SectionHeader(
-    title: String,
-    modifier: Modifier = Modifier,
-    titleTextStyle: TextStyle = SectionDefaults.titleTextStyle(),
-    subtitle: String? = null,
-    subtitleTextStyle: TextStyle = SectionDefaults.subtitleTextStyle(),
-    leadingContent: (@Composable RowScope.() -> Unit)? = null,
-    trailingContent: (@Composable RowScope.() -> Unit)? = null
-) {
+        else -> null
+    }
+
     SectionHeader(
         modifier = modifier,
         titleContent = {
@@ -244,8 +249,8 @@ fun SectionHeader(
                 SectionSubtitle(subtitle = sub, textStyle = subtitleTextStyle)
             }
         },
-        leadingContent = leadingContent,
-        trailingContent = trailingContent
+        leadingContent = resolvedLeadingContent,
+        trailingContent = resolvedTrailingContent
     )
 }
 
@@ -370,6 +375,32 @@ private fun SectionLeadingIcon(
 }
 
 @Composable
+fun SectionLeadingIconBadge(
+    imageVector: ImageVector,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+    iconColor: Color = MaterialTheme.colorScheme.primary,
+    size: Dp = SectionDefaults.leadingBadgeSize,
+    iconSize: Dp = SectionDefaults.leadingBadgeIconSize,
+    shape: Shape = SectionDefaults.leadingBadgeShape
+) {
+    Surface(
+        shape = shape,
+        color = containerColor,
+        modifier = modifier.size(size)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(iconSize)
+            )
+        }
+    }
+}
+
+@Composable
 fun SectionTrailingAction(
     actionLabel: String,
     onTrailingActionClicked: () -> Unit,
@@ -405,10 +436,14 @@ fun SectionTrailingAction(
 object SectionDefaults {
     val leadingIconSize = 40.dp
     val leadingIconEndSpacing = 16.dp
+    val leadingBadgeSize = 28.dp
+    val leadingBadgeIconSize = 16.dp
+    val leadingBadgeEndSpacing = 8.dp
+    val leadingBadgeShape = RoundedCornerShape(8.dp)
 
     @Composable
     fun titleTextStyle(): TextStyle {
-        return MaterialTheme.typography.titleLarge.copy(
+        return MaterialTheme.typography.titleMedium.copy(
             fontWeight = FontWeight.Bold,
             color = contentColorFor(backgroundColor = MaterialTheme.colorScheme.background)
         )

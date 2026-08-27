@@ -212,7 +212,7 @@ private fun AppInfoLinks() {
             onClick = {
                 uriHandler.openUri("https://x.com/ssverma1916")
             },
-            modifier = Modifier.size(64.dp)
+            size = 64.dp
         )
 
         Text(

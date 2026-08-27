@@ -297,7 +297,7 @@ private fun ProfileHeader(
     Avatar(
         imageUrl = profile.imageUrl,
         onClick = {},
-        modifier = Modifier.size(92.dp)
+        size = 92.dp
     )
 
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))

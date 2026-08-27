@@ -28,6 +28,7 @@ fun EntryProviderScope<NavKey>.filterEntries(
                     isMovie = key.isMovie
                 )
             },
+            source = key.source,
             onMovieClick = { movieId ->
                 navigator.navigate(MovieDetailNavKey(movieId))
             },

@@ -66,7 +66,7 @@ fun HeroSection(
     showAppBar: Boolean = false,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
-    contentPadding: PaddingValues = PaddingValues(horizontal = MaterialTheme.spacing.large),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     overlayContent: (@Composable (TvShowPreview) -> Unit)? = { tvShow ->
         MediaStatsAction(
             mediaType = MediaType.Tv,
@@ -78,7 +78,7 @@ fun HeroSection(
             releaseDate = tvShow.displayFirstAirDate.orEmpty(),
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
             onShowFeedback = onShowFeedback,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(36.dp)
         )
     }
 ) {
@@ -178,7 +178,9 @@ fun HeroSection(
                             val tvShow = (injectableItem as InjectableContent<TvShowPreview>).item
                             HeroItem(
                                 title = tvShow.title,
-                                imageUrl = tvShow.posterImageUrl,
+                                imageUrl = tvShow.backdropImageUrl.ifEmpty { tvShow.posterImageUrl },
+                                releaseDate = tvShow.displayFirstAirDate,
+                                voteAvg = tvShow.voteAvg,
                                 onClick = { onTvShowClicked(tvShow) },
                                 overlayContent = { overlayContent?.invoke(tvShow) }
                             )

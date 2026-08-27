@@ -41,7 +41,8 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
                         providerId = provider.providerId,
                         providerName = provider.providerName,
                         logoPath = Uri.encode(provider.logoPath),
-                        isMovie = isMovie
+                        isMovie = isMovie,
+                        source = "dashboard"
                     )
                 )
             },

@@ -30,7 +30,8 @@ fun PersonDetailsScreen(
     openMovieDetails: (movieId: Int) -> Unit,
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openPersonAllImages: (personId: Int) -> Unit,
-    viewModel: PersonDetailsViewModel
+    viewModel: PersonDetailsViewModel,
+    source: String = "default"
 ) {
     TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_DETAILS)
 
@@ -58,6 +59,7 @@ fun PersonDetailsScreen(
             openMovieDetails = openMovieDetails,
             openTvShowDetails = openTvShowDetails,
             openPersonAllImages = openPersonAllImages,
+            source = source,
             modifier = Modifier.fillMaxSize()
         )
 

@@ -45,7 +45,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                         providerId = provider.providerId,
                         providerName = provider.providerName,
                         logoPath = Uri.encode(provider.logoPath),
-                        isMovie = false
+                        isMovie = false,
+                        source = "tv_list"
                     )
                 )
             },
@@ -73,7 +74,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                         providerId = provider.providerId,
                         providerName = provider.providerName,
                         logoPath = Uri.encode(provider.logoPath),
-                        isMovie = false
+                        isMovie = false,
+                        source = "tv_home"
                     )
                 )
             },
@@ -107,7 +109,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     PersonDetailNavKey(
                         personId = cast.id,
                         personName = cast.name,
-                        personImageUrl = cast.avatarImageUrl
+                        personImageUrl = cast.avatarImageUrl,
+                        source = "tv_show_credit"
                     )
                 )
             },
@@ -130,7 +133,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                         providerId = provider.providerId,
                         providerName = provider.providerName,
                         logoPath = Uri.encode(provider.logoPath),
-                        isMovie = false
+                        isMovie = false,
+                        source = "tv_details"
                     )
                 )
             },
@@ -196,7 +200,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     PersonDetailNavKey(
                         personId = cast.id,
                         personName = cast.name,
-                        personImageUrl = cast.avatarImageUrl
+                        personImageUrl = cast.avatarImageUrl,
+                        source = "tv_season_credit"
                     )
                 )
             }
@@ -220,7 +225,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     PersonDetailNavKey(
                         personId = cast.id,
                         personName = cast.name,
-                        personImageUrl = cast.avatarImageUrl
+                        personImageUrl = cast.avatarImageUrl,
+                        source = "tv_episode_credit"
                     )
                 )
             }

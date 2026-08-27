@@ -34,6 +34,7 @@ fun PersonDetailsBackdropHeader(
     profileImageUrl: String,
     onBackPress: () -> Unit,
     modifier: Modifier = Modifier,
+    source: String = "default",
     enableSharedTransition: Boolean = true
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
@@ -45,7 +46,8 @@ fun PersonDetailsBackdropHeader(
                 Modifier.sharedElement(
                     sharedContentState = rememberSharedContentState(
                         key = personSharedContentKey(
-                            personId
+                            personId,
+                            source = source
                         )
                     ),
                     animatedVisibilityScope = animatedVisibilityScope,

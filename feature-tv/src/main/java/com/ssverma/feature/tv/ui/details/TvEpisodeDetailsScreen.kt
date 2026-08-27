@@ -227,6 +227,7 @@ private fun TvEpisodeContent(
                     )
                     openPersonDetails(cast)
                 },
+                source = "tv_episode_credit",
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }
@@ -244,6 +245,7 @@ private fun TvEpisodeContent(
                     )
                     openPersonDetails(cast)
                 },
+                source = "tv_episode_credit",
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }

@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
@@ -80,47 +80,27 @@ fun UpNextSection(
         modifier = modifier.fillMaxWidth()
     ) {
         // Section Header
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+        SectionHeader(
+            title = stringResource(R.string.up_next_to_watch),
+            leadingIcon = Icons.Rounded.Tv,
+            leadingIconContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+            leadingIconTint = MaterialTheme.colorScheme.primary,
+            titleTextStyle = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.spacing.medium)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Tv,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
+                .padding(horizontal = 16.dp),
+            hideTrailingAction = true
+        )
 
-                Text(
-                    text = stringResource(R.string.up_next_to_watch),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Horizontal Carousel
         LazyRow(
-            contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(
                 items = upNextEpisodes,

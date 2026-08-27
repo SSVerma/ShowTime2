@@ -14,7 +14,8 @@ data object PersonHomeNavKey : NavKey, Parcelable
 data class PersonDetailNavKey(
     val personId: Int,
     val personName: String? = null,
-    val personImageUrl: String? = null
+    val personImageUrl: String? = null,
+    val source: String = "default"
 ) : NavKey, Parcelable
 
 @Serializable

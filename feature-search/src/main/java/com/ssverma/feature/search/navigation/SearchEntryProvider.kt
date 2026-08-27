@@ -25,7 +25,8 @@ fun EntryProviderScope<NavKey>.searchEntries(
                     PersonDetailNavKey(
                         personId = personId,
                         personName = personName,
-                        personImageUrl = personImageUrl
+                        personImageUrl = personImageUrl,
+                        source = "search"
                     )
                 )
             },

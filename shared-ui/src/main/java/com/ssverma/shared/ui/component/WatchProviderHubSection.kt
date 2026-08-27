@@ -11,8 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,13 +31,11 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -64,22 +60,26 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
-import com.ssverma.core.ui.StatefulContent
+import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShimmerPlaceholder
+import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.core.ui.R as CoreUiR
 import com.ssverma.shared.ui.R as SharedUiR
 
-fun watchProviderSharedContentKey(providerId: Int, isMovie: Boolean): String =
-    "watch_provider_logo_${providerId}_${if (isMovie) "movie" else "tv"}"
+fun watchProviderSharedContentKey(providerId: Int, source: String = "default"): String =
+    "watch_provider_logo_${providerId}_${source}"
 
 @Composable
 fun WatchProviderHubSection(
@@ -88,6 +88,8 @@ fun WatchProviderHubSection(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     isMovie: Boolean = true,
+    source: String = if (isMovie) "movie_home" else "tv_home",
+    headerTrailingContent: (@Composable () -> Unit)? = null,
     adSlotIndex: Int? = 2,
     adContent: (@Composable () -> Unit)? = null
 ) {
@@ -95,8 +97,8 @@ fun WatchProviderHubSection(
         return
     }
 
-    StatefulContent(
-        state = providersUiState,
+    DriveCompose(
+        uiState = providersUiState,
         onRetry = onRetry,
         loading = {
             WatchProviderShimmer(modifier = modifier)
@@ -105,7 +107,8 @@ fun WatchProviderHubSection(
         WatchProviderEntryCard(
             providers = providers,
             onProviderClick = onProviderClick,
-            isMovie = isMovie,
+            source = source,
+            headerTrailingContent = headerTrailingContent,
             adSlotIndex = adSlotIndex,
             adContent = adContent,
             modifier = modifier
@@ -113,12 +116,13 @@ fun WatchProviderHubSection(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WatchProviderEntryCard(
     providers: List<ProviderInfo>,
     onProviderClick: (ProviderInfo) -> Unit,
-    isMovie: Boolean,
+    source: String,
+    headerTrailingContent: (@Composable () -> Unit)?,
     adSlotIndex: Int? = null,
     adContent: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -137,18 +141,22 @@ private fun WatchProviderEntryCard(
         }
     )
 
+    val uniqueProviders = remember(providers) {
+        providers.distinctBy { it.providerId }
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp)
             .graphicsLayer {
-                shadowElevation = 8.dp.toPx()
-                shape = RoundedCornerShape(28.dp)
+                shadowElevation = 4.dp.toPx()
+                shape = RoundedCornerShape(24.dp)
                 clip = true
             }
             .border(
                 border = BorderStroke(
-                    width = 2.dp,
+                    width = 1.5.dp,
                     brush = Brush.linearGradient(
                         colors = listOf(
                             Color(0xFF4285F4),
@@ -158,9 +166,9 @@ private fun WatchProviderEntryCard(
                         )
                     )
                 ),
-                shape = RoundedCornerShape(28.dp)
+                shape = RoundedCornerShape(24.dp)
             ),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -172,94 +180,127 @@ private fun WatchProviderEntryCard(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f),
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.15f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.05f)
                         )
                     )
                 )
-                .padding(24.dp)
+                .padding(16.dp)
         ) {
             Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(SharedUiR.string.streaming_universe),
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(SharedUiR.string.streaming_universe_desc),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    if (providers.isNotEmpty()) {
-                        FilledIconButton(
-                            onClick = { showAllSheet = true },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = IconButtonDefaults.filledIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Icon(
-                                Icons.Default.ChevronRight,
-                                contentDescription = stringResource(SharedUiR.string.see_all)
-                            )
+                SectionHeader(
+                    title = stringResource(SharedUiR.string.streaming_universe),
+                    titleTextStyle = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    trailingContent = headerTrailingContent?.let { trailing ->
+                        {
+                            trailing()
                         }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                if (uniqueProviders.isNotEmpty()) {
+                    val maxProviders = if (uniqueProviders.size > 8) {
+                        if (adContent != null) 6 else 7
+                    } else {
+                        if (adContent != null) 7 else 8
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                if (providers.isNotEmpty()) {
-                    val displayProviders = remember(providers, adContent != null) {
-                        val maxCount = if (adContent != null) 9 else 10
-                        providers.distinctBy { it.providerId }.take(maxCount)
+                    val displayProviders = remember(uniqueProviders, maxProviders) {
+                        uniqueProviders.take(maxProviders)
                     }
 
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        maxItemsInEachRow = 5
-                    ) {
-                        displayProviders.forEachIndexed { index, provider ->
-                            if (adSlotIndex != null && index == adSlotIndex && adContent != null) {
-                                adContent()
-                            }
+                    val showSeeAllButton = uniqueProviders.size > displayProviders.size
 
-                            WatchProviderLogo(
-                                provider = provider,
-                                onClick = { onProviderClick(provider) },
-                                size = 56.dp,
-                                enableSharedTransition = true,
-                                sharedContentKey = watchProviderSharedContentKey(
-                                    provider.providerId,
-                                    isMovie
-                                ),
-                                modifier = Modifier
-                                    .graphicsLayer {
-                                        shadowElevation = 4.dp.toPx()
-                                        shape = CircleShape
-                                        clip = true
-                                    }
-                                    .border(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.outlineVariant,
-                                        CircleShape
+                    val slots = buildList<@Composable () -> Unit> {
+                        var providerIndex = 0
+                        for (i in 0 until 8) {
+                            if (adSlotIndex != null && i == adSlotIndex && adContent != null) {
+                                add { adContent() }
+                            } else if (i == 7 && showSeeAllButton) {
+                                add {
+                                    SeeAllPill(
+                                        totalCount = uniqueProviders.size,
+                                        onClick = { showAllSheet = true }
                                     )
-                            )
+                                }
+                            } else if (providerIndex < displayProviders.size) {
+                                val provider = displayProviders[providerIndex++]
+                                add {
+                                    WatchProviderLogo(
+                                        provider = provider,
+                                        onClick = { onProviderClick(provider) },
+                                        size = 52.dp,
+                                        enableSharedTransition = true,
+                                        sharedContentKey = watchProviderSharedContentKey(
+                                            provider.providerId,
+                                            source = source
+                                        ),
+                                        modifier = Modifier
+                                            .graphicsLayer {
+                                                shadowElevation = 2.dp.toPx()
+                                                shape = CircleShape
+                                                clip = true
+                                            }
+                                            .border(
+                                                width = 1.dp,
+                                                color = MaterialTheme.colorScheme.outlineVariant.copy(
+                                                    alpha = 0.5f
+                                                ),
+                                                shape = CircleShape
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    val row1 = slots.take(4)
+                    val row2 = slots.drop(4)
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            for (i in 0 until 4) {
+                                Box(
+                                    modifier = Modifier.weight(1f),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (i < row1.size) {
+                                        row1[i]()
+                                    }
+                                }
+                            }
                         }
 
-                        if (adSlotIndex != null && displayProviders.size <= adSlotIndex && adContent != null && displayProviders.isNotEmpty()) {
-                            adContent()
+                        if (row2.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                for (i in 0 until 4) {
+                                    Box(
+                                        modifier = Modifier.weight(1f),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (i < row2.size) {
+                                            row2[i]()
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -273,6 +314,44 @@ private fun WatchProviderEntryCard(
             onProviderClick = onProviderClick,
             onDismiss = { showAllSheet = false }
         )
+    }
+}
+
+@Composable
+private fun SeeAllPill(
+    totalCount: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val remaining = (totalCount - 7).coerceAtLeast(1)
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+        ),
+        modifier = modifier.size(52.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = "+$remaining",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                text = stringResource(CoreUiR.string.see_all),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+            )
+        }
     }
 }
 
@@ -450,21 +529,20 @@ private fun StreamingUniverseSheet(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun WatchProviderShimmer(modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp)
             .graphicsLayer {
-                shadowElevation = 8.dp.toPx()
-                shape = RoundedCornerShape(28.dp)
+                shadowElevation = 4.dp.toPx()
+                shape = RoundedCornerShape(24.dp)
                 clip = true
             }
             .border(
                 border = BorderStroke(
-                    width = 2.dp,
+                    width = 1.5.dp,
                     brush = Brush.linearGradient(
                         colors = listOf(
                             Color(0xFF4285F4),
@@ -474,9 +552,9 @@ private fun WatchProviderShimmer(modifier: Modifier = Modifier) {
                         )
                     )
                 ),
-                shape = RoundedCornerShape(28.dp)
+                shape = RoundedCornerShape(24.dp)
             ),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -488,45 +566,63 @@ private fun WatchProviderShimmer(modifier: Modifier = Modifier) {
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f),
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.15f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.05f)
                         )
                     )
                 )
-                .padding(24.dp)
+                .padding(16.dp)
         ) {
             Column {
-                ShimmerPlaceholder(
-                    modifier = Modifier
-                        .width(200.dp)
-                        .height(28.dp),
-                    shape = RoundedCornerShape(4.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                ShimmerPlaceholder(
-                    modifier = Modifier
-                        .width(260.dp)
-                        .height(18.dp),
-                    shape = RoundedCornerShape(4.dp)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                FlowRow(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    maxItemsInEachRow = 5
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    repeat(10) {
-                        ShimmerPlaceholder(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outlineVariant,
-                                    CircleShape
-                                ),
-                            shape = CircleShape
-                        )
+                    ShimmerPlaceholder(
+                        modifier = Modifier
+                            .width(160.dp)
+                            .height(24.dp),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+
+                    ShimmerPlaceholder(
+                        modifier = Modifier
+                            .size(32.dp),
+                        shape = CircleShape
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    repeat(2) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            repeat(4) {
+                                Box(
+                                    modifier = Modifier.weight(1f),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    ShimmerPlaceholder(
+                                        modifier = Modifier
+                                            .size(52.dp)
+                                            .border(
+                                                1.dp,
+                                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                                                CircleShape
+                                            ),
+                                        shape = CircleShape
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -540,7 +636,7 @@ fun WatchProviderLogo(
     provider: ProviderInfo,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.Dp = 64.dp,
+    size: Dp = 64.dp,
     enableSharedTransition: Boolean = false,
     sharedContentKey: Any = "watch_provider_logo_${provider.providerId}"
 ) {
@@ -584,3 +680,5 @@ fun WatchProviderLogo(
         )
     }
 }
+
+

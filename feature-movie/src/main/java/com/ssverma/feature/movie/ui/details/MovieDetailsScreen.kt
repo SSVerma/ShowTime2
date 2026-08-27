@@ -343,6 +343,7 @@ fun MovieContent(
                         )
                         openPersonDetails(cast)
                     },
+                    source = "movie_credit",
                     modifier = Modifier.padding(top = SectionVerticalSpacing)
                 )
             }

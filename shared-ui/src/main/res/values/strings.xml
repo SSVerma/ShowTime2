@@ -89,4 +89,6 @@
     <string name="cinema_challenge_banner_title_solved">Today\'s Puzzle Solved!</string>
     <string name="cinema_challenge_banner_desc_solved">View stats and share your score grid</string>
     <string name="cinema_stats_streak">Streak</string>
+    <string name="movie_badge">Movie</string>
+    <string name="tv_badge">TV Series</string>
 </resources>
