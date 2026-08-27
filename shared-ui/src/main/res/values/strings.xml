@@ -74,6 +74,8 @@
     <string name="end_of_curated_content">END OF CURATED CONTENT</string>
     <string name="looking_for_more">Looking for more on %1$s?</string>
     <string name="explore_by_genre">Explore by Genre</string>
+    <string name="provider_universe">%1$s UNIVERSE</string>
+    <string name="tv_series">TV Series</string>
     <string name="select_region">Select region</string>
     <string name="select_language">Select language</string>
     <string name="library">Library</string>

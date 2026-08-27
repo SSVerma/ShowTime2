@@ -25,6 +25,10 @@ dependencies {
     implementation(projects.coreUiPaging)
     implementation(projects.coreNavigation)
     implementation(projects.sharedDomain)
+    implementation(projects.featureAccount)
+    implementation(projects.featureLibraryNavigation)
+    implementation(projects.sharedAds)
+    implementation(projects.coreAds)
 
     implementation(projects.coreNetworking)
     implementation(projects.corePaging)

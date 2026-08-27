@@ -1,6 +1,7 @@
 package com.ssverma.feature.filter.ui.hub
 
 import com.ssverma.core.ui.UiState
+import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -15,20 +16,36 @@ data class WatchProviderHubUiState(
 )
 
 data class HubContent(
-    val heroItems: List<MediaPreview> = emptyList(),
-    val newItems: List<MediaPreview> = emptyList(),
-    val upcomingItems: List<MediaPreview> = emptyList(),
-    val topRatedItems: List<MediaPreview> = emptyList(),
+    val heroItems: List<AdInjectable<MediaPreview>> = emptyList(),
+    val newItems: List<AdInjectable<MediaPreview>> = emptyList(),
+    val upcomingItems: List<AdInjectable<MediaPreview>> = emptyList(),
+    val topRatedItems: List<AdInjectable<MediaPreview>> = emptyList(),
     val genres: List<Genre> = emptyList()
 )
 
 sealed interface MediaPreview {
-    data class Movie(val movie: MoviePreview) : MediaPreview
-    data class TvShow(val tvShow: TvShowPreview) : MediaPreview
-}
+    val id: Int
+    val title: String
+    val posterImageUrl: String
+    val backdropImageUrl: String
+    val voteAvg: Float
+    val displayDate: String?
 
-enum class WatchProviderHubSeeAllType {
-    NewThisWeek,
-    Upcoming,
-    TopRated
+    data class Movie(val movie: MoviePreview) : MediaPreview {
+        override val id: Int get() = movie.id
+        override val title: String get() = movie.title
+        override val posterImageUrl: String get() = movie.posterImageUrl
+        override val backdropImageUrl: String get() = movie.backdropImageUrl
+        override val voteAvg: Float get() = movie.voteAvg
+        override val displayDate: String? get() = movie.displayReleaseDate
+    }
+
+    data class TvShow(val tvShow: TvShowPreview) : MediaPreview {
+        override val id: Int get() = tvShow.id
+        override val title: String get() = tvShow.title
+        override val posterImageUrl: String get() = tvShow.posterImageUrl
+        override val backdropImageUrl: String get() = tvShow.backdropImageUrl
+        override val voteAvg: Float get() = tvShow.voteAvg
+        override val displayDate: String? get() = tvShow.displayFirstAirDate
+    }
 }

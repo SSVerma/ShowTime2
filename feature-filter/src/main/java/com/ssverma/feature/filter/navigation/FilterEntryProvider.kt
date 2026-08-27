@@ -77,6 +77,9 @@ fun EntryProviderScope<NavKey>.filterEntries(
                         )
                     )
                 )
+            },
+            openLibraryPage = { libraryNavKey ->
+                navigator.navigate(libraryNavKey)
             }
         )
     }

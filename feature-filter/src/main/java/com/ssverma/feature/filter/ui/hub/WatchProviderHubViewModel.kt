@@ -3,9 +3,17 @@ package com.ssverma.feature.filter.ui.hub
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.ads.nativead.NativeAd
+import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
 import com.ssverma.feature.filter.ui.hub.config.TvHubDiscoverConfig
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.AdInjectionConfig
+import com.ssverma.shared.ads.injection.AdPlacement
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.injectAds
+import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -25,6 +33,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = WatchProviderHubViewModel.Factory::class)
 class WatchProviderHubViewModel @AssistedInject constructor(
     private val discoveryRepository: DiscoveryRepository,
+    private val adConfigProvider: AdConfigProvider,
     @Assisted("providerId") val providerId: Int,
     @Assisted("providerName") val providerName: String,
     @Assisted("logoPath") private val logoPath: String,
@@ -40,6 +49,14 @@ class WatchProviderHubViewModel @AssistedInject constructor(
             @Assisted("isMovie") isMovie: Boolean
         ): WatchProviderHubViewModel
     }
+
+    private val hubCarouselAdConfig = AdInjectionConfig(
+        placement = AdPlacement.Fixed(positions = listOf(1)),
+        style = NativeAdStyle.Grid
+    )
+
+    private var cachedMovieHub: HubContent? = null
+    private var cachedTvHub: HubContent? = null
 
     private val _uiState = MutableStateFlow(
         WatchProviderHubUiState(
@@ -60,14 +77,56 @@ class WatchProviderHubViewModel @AssistedInject constructor(
         fetchHubContent()
     }
 
+    fun toggleMode(isMovieMode: Boolean) {
+        if (_uiState.value.isMovieMode == isMovieMode) return
+        _uiState.update { it.copy(isMovieMode = isMovieMode) }
+
+        val cached = if (isMovieMode) cachedMovieHub else cachedTvHub
+        if (cached != null) {
+            _uiState.update { it.copy(hubContentState = UiState.Success(cached)) }
+        } else {
+            fetchHubContent()
+        }
+    }
+
     fun fetchHubContent() {
         viewModelScope.launch {
             _uiState.update { it.copy(hubContentState = UiState.Loading) }
-            if (isMovie) {
+            if (_uiState.value.isMovieMode) {
                 fetchMovieHub()
             } else {
                 fetchTvHub()
             }
+        }
+    }
+
+    fun onCarouselNativeAdLoaded(injectableAd: InjectableAd, nativeAd: NativeAd) {
+        _uiState.update { currentState ->
+            val content = (currentState.hubContentState as? UiState.Success)?.data
+                ?: return@update currentState
+
+            fun updateList(list: List<AdInjectable<MediaPreview>>): List<AdInjectable<MediaPreview>> {
+                return list.map { item ->
+                    if (item is InjectableAd && item.id == injectableAd.id) {
+                        item.copy(ad = nativeAd)
+                    } else item
+                }
+            }
+
+            val updatedContent = content.copy(
+                heroItems = updateList(content.heroItems),
+                newItems = updateList(content.newItems),
+                upcomingItems = updateList(content.upcomingItems),
+                topRatedItems = updateList(content.topRatedItems)
+            )
+
+            if (currentState.isMovieMode) {
+                cachedMovieHub = updatedContent
+            } else {
+                cachedTvHub = updatedContent
+            }
+
+            currentState.copy(hubContentState = UiState.Success(updatedContent))
         }
     }
 
@@ -106,22 +165,30 @@ class WatchProviderHubViewModel @AssistedInject constructor(
         val ratedResult = topDeferred.await()
         val genresResult = genresDeferred.await()
 
-        val heroItems = heroResult.getOrDefault(emptyList())
+        val isAds = adConfigProvider.isAdsEnabled
+
+        val rawHero: List<MediaPreview> = heroResult.getOrDefault(emptyList())
+            .map { MediaPreview.Movie(it.asMoviePreview()) }
+        val rawNew: List<MediaPreview> = newResult.getOrDefault(emptyList())
+            .map { MediaPreview.Movie(it.asMoviePreview()) }
+        val rawUpcoming: List<MediaPreview> = upcomingResult.getOrDefault(emptyList())
+            .map { MediaPreview.Movie(it.asMoviePreview()) }
+        val rawRated: List<MediaPreview> = ratedResult.getOrDefault(emptyList())
             .map { MediaPreview.Movie(it.asMoviePreview()) }
 
-        val newItems = newResult.getOrDefault(emptyList())
-            .map { MediaPreview.Movie(it.asMoviePreview()) }
-
-        val upcomingItems = upcomingResult.getOrDefault(emptyList())
-            .map { MediaPreview.Movie(it.asMoviePreview()) }
-
-        val ratedItems = ratedResult.getOrDefault(emptyList())
-            .map { MediaPreview.Movie(it.asMoviePreview()) }
+        val heroItems = rawHero.injectAds(
+            config = hubCarouselAdConfig.copy(style = NativeAdStyle.Carousel),
+            isAdsEnabled = isAds
+        )
+        val newItems = rawNew.injectAds(config = hubCarouselAdConfig, isAdsEnabled = isAds)
+        val upcomingItems =
+            rawUpcoming.injectAds(config = hubCarouselAdConfig, isAdsEnabled = isAds)
+        val ratedItems = rawRated.injectAds(config = hubCarouselAdConfig, isAdsEnabled = isAds)
 
         val genres = genresResult.getOrDefault(emptyList())
 
         // Show error only if all primary sections fail
-        if (heroItems.isEmpty() && newItems.isEmpty() && upcomingItems.isEmpty() && ratedItems.isEmpty()) {
+        if (rawHero.isEmpty() && rawNew.isEmpty() && rawUpcoming.isEmpty() && rawRated.isEmpty()) {
             val error = listOf(heroResult, newResult, upcomingResult, ratedResult)
                 .filterIsInstance<Result.Error<Failure.CoreFailure>>()
                 .firstOrNull()?.error ?: Failure.CoreFailure.UnexpectedFailure
@@ -130,19 +197,15 @@ class WatchProviderHubViewModel @AssistedInject constructor(
             return
         }
 
-        _uiState.update {
-            it.copy(
-                hubContentState = UiState.Success(
-                    HubContent(
-                        heroItems = heroItems,
-                        newItems = newItems,
-                        upcomingItems = upcomingItems,
-                        topRatedItems = ratedItems,
-                        genres = genres
-                    )
-                )
-            )
-        }
+        val content = HubContent(
+            heroItems = heroItems,
+            newItems = newItems,
+            upcomingItems = upcomingItems,
+            topRatedItems = ratedItems,
+            genres = genres
+        )
+        cachedMovieHub = content
+        _uiState.update { it.copy(hubContentState = UiState.Success(content)) }
     }
 
     private suspend fun fetchTvHub() {
@@ -180,21 +243,29 @@ class WatchProviderHubViewModel @AssistedInject constructor(
         val ratedResult = ratedDeferred.await()
         val genresResult = genresDeferred.await()
 
-        val heroItems = heroResult.getOrDefault(emptyList())
+        val isAds = adConfigProvider.isAdsEnabled
+
+        val rawHero: List<MediaPreview> = heroResult.getOrDefault(emptyList())
+            .map { MediaPreview.TvShow(it.asTvShowPreview()) }
+        val rawNew: List<MediaPreview> = newResult.getOrDefault(emptyList())
+            .map { MediaPreview.TvShow(it.asTvShowPreview()) }
+        val rawUpcoming: List<MediaPreview> = upcomingResult.getOrDefault(emptyList())
+            .map { MediaPreview.TvShow(it.asTvShowPreview()) }
+        val rawRated: List<MediaPreview> = ratedResult.getOrDefault(emptyList())
             .map { MediaPreview.TvShow(it.asTvShowPreview()) }
 
-        val newItems = newResult.getOrDefault(emptyList())
-            .map { MediaPreview.TvShow(it.asTvShowPreview()) }
-
-        val upcomingItems = upcomingResult.getOrDefault(emptyList())
-            .map { MediaPreview.TvShow(it.asTvShowPreview()) }
-
-        val ratedItems = ratedResult.getOrDefault(emptyList())
-            .map { MediaPreview.TvShow(it.asTvShowPreview()) }
+        val heroItems = rawHero.injectAds(
+            config = hubCarouselAdConfig.copy(style = NativeAdStyle.Carousel),
+            isAdsEnabled = isAds
+        )
+        val newItems = rawNew.injectAds(config = hubCarouselAdConfig, isAdsEnabled = isAds)
+        val upcomingItems =
+            rawUpcoming.injectAds(config = hubCarouselAdConfig, isAdsEnabled = isAds)
+        val ratedItems = rawRated.injectAds(config = hubCarouselAdConfig, isAdsEnabled = isAds)
 
         val genres = genresResult.getOrDefault(emptyList())
 
-        if (heroItems.isEmpty() && newItems.isEmpty() && upcomingItems.isEmpty() && ratedItems.isEmpty()) {
+        if (rawHero.isEmpty() && rawNew.isEmpty() && rawUpcoming.isEmpty() && rawRated.isEmpty()) {
             val error = listOf(heroResult, newResult, upcomingResult, ratedResult)
                 .filterIsInstance<Result.Error<Failure.CoreFailure>>()
                 .firstOrNull()?.error ?: Failure.CoreFailure.UnexpectedFailure
@@ -203,19 +274,15 @@ class WatchProviderHubViewModel @AssistedInject constructor(
             return
         }
 
-        _uiState.update {
-            it.copy(
-                hubContentState = UiState.Success(
-                    HubContent(
-                        heroItems = heroItems,
-                        newItems = newItems,
-                        upcomingItems = upcomingItems,
-                        topRatedItems = ratedItems,
-                        genres = genres
-                    )
-                )
-            )
-        }
+        val content = HubContent(
+            heroItems = heroItems,
+            newItems = newItems,
+            upcomingItems = upcomingItems,
+            topRatedItems = ratedItems,
+            genres = genres
+        )
+        cachedTvHub = content
+        _uiState.update { it.copy(hubContentState = UiState.Success(content)) }
     }
 
     private fun <T> Result<T, Failure.CoreFailure>.getOrDefault(default: T): T {

@@ -1,41 +1,57 @@
 package com.ssverma.feature.filter.ui.hub.component
 
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.rememberCarouselState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,25 +69,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.component.ShimmerPlaceholder
-import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.filter.ui.hub.MediaPreview
 import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
 import com.ssverma.feature.filter.ui.hub.config.TvHubDiscoverConfig
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.AppHeroCarousel
-import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.MediaItemRowShimmer
 import com.ssverma.shared.ui.component.WatchProviderHubBranding
 import com.ssverma.shared.ui.component.WatchProviderLogo
 import com.ssverma.shared.ui.component.media.MovieGridItem
+import com.ssverma.shared.ui.component.media.SeeAllCard
 import com.ssverma.shared.ui.component.media.TvShowGridItem
 import com.ssverma.shared.ui.component.watchProviderSharedContentKey
 import com.ssverma.shared.ui.R as SharedUiR
@@ -79,22 +104,27 @@ import com.ssverma.shared.ui.R as SharedUiR
 @Composable
 fun WatchProviderHubContent(
     provider: ProviderInfo,
-    heroItems: List<MediaPreview>,
-    newItems: List<MediaPreview>,
-    upcomingItems: List<MediaPreview>,
-    topRatedItems: List<MediaPreview>,
+    heroItems: List<AdInjectable<MediaPreview>>,
+    newItems: List<AdInjectable<MediaPreview>>,
+    upcomingItems: List<AdInjectable<MediaPreview>>,
+    topRatedItems: List<AdInjectable<MediaPreview>>,
     genres: List<Genre>,
     isMovieMode: Boolean,
-    onMediaClick: (Any) -> Unit,
+    onToggleMode: (isMovie: Boolean) -> Unit,
+    onMovieClick: (MoviePreview) -> Unit,
+    onTvShowClick: (TvShowPreview) -> Unit,
     onGenreClick: (Genre) -> Unit,
     onBackClick: () -> Unit,
     onMovieSeeAllClick: (MovieDiscoverConfig) -> Unit,
     onTvSeeAllClick: (TvDiscoverConfig) -> Unit,
+    onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     modifier: Modifier = Modifier,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
     isLoading: Boolean = false
 ) {
     val scrollState = rememberLazyListState()
     val brandingColor = WatchProviderHubBranding.getBrandingColor(provider.providerId)
+    val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     Box(
         modifier = modifier
@@ -113,41 +143,47 @@ fun WatchProviderHubContent(
             state = scrollState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                bottom = 80.dp
+                bottom = MaterialTheme.spacing.extraLarge + bottomInset
             )
         ) {
-            // Parallax Spacing
-            item {
-                Spacer(modifier = Modifier.height(280.dp))
+            // Parallax Spacing Spacer: positions brand logo smoothly across the backdrop
+            item(key = "parallax_spacer") {
+                Spacer(modifier = Modifier.height(140.dp))
             }
 
-            // Brand Identity Section
-            item {
+            // Brand Identity Section with Movie / TV Switcher
+            item(key = "brand_identity") {
                 BrandIdentitySection(
                     provider = provider,
                     brandingColor = brandingColor,
-                    isLoading = isLoading,
-                    isMovieMode = isMovieMode
+                    isMovieMode = isMovieMode,
+                    onToggleMode = onToggleMode
                 )
             }
 
-            // Hero Pager Section
-            item {
+            // Hero Pager Section ("Featured Originals")
+            item(key = "hero_pager") {
                 HeroPagerSection(
                     items = heroItems,
                     isLoading = isLoading,
-                    onItemClick = onMediaClick,
-                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.large)
+                    onMovieClick = onMovieClick,
+                    onTvShowClick = onTvShowClick,
+                    onAdLoaded = onAdLoaded,
+                    onShowFeedback = onShowFeedback,
+                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.small)
                 )
             }
 
             // Curated Row: New This Week
-            item {
+            item(key = "new_this_week") {
                 HubSectionRow(
                     title = stringResource(SharedUiR.string.new_this_week),
                     items = newItems,
                     isLoading = isLoading,
-                    onItemClick = onMediaClick,
+                    onMovieClick = onMovieClick,
+                    onTvShowClick = onTvShowClick,
+                    onAdLoaded = onAdLoaded,
+                    onShowFeedback = onShowFeedback,
                     onSeeAllClick = {
                         if (isMovieMode) {
                             onMovieSeeAllClick(
@@ -159,16 +195,20 @@ fun WatchProviderHubContent(
                             )
                         }
                     },
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
             }
 
             // Curated Row: Upcoming
-            item {
+            item(key = "upcoming") {
                 HubSectionRow(
                     title = stringResource(SharedUiR.string.upcoming),
                     items = upcomingItems,
                     isLoading = isLoading,
-                    onItemClick = onMediaClick,
+                    onMovieClick = onMovieClick,
+                    onTvShowClick = onTvShowClick,
+                    onAdLoaded = onAdLoaded,
+                    onShowFeedback = onShowFeedback,
                     onSeeAllClick = {
                         if (isMovieMode) {
                             onMovieSeeAllClick(
@@ -180,16 +220,20 @@ fun WatchProviderHubContent(
                             )
                         }
                     },
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
             }
 
             // Curated Row: Top Rated (Hidden Gems)
-            item {
+            item(key = "top_rated") {
                 HubSectionRow(
                     title = stringResource(SharedUiR.string.top_rated_gems),
                     items = topRatedItems,
                     isLoading = isLoading,
-                    onItemClick = onMediaClick,
+                    onMovieClick = onMovieClick,
+                    onTvShowClick = onTvShowClick,
+                    onAdLoaded = onAdLoaded,
+                    onShowFeedback = onShowFeedback,
                     onSeeAllClick = {
                         if (isMovieMode) {
                             onMovieSeeAllClick(
@@ -201,21 +245,24 @@ fun WatchProviderHubContent(
                             )
                         }
                     },
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
             }
 
-            if (!isLoading) {
-                item {
+            // Explore by Genre
+            if (!isLoading && genres.isNotEmpty()) {
+                item(key = "genres") {
                     EndOfContentSection(
                         providerName = provider.providerName,
                         genres = genres,
-                        onGenreClick = onGenreClick
+                        onGenreClick = onGenreClick,
+                        modifier = Modifier.padding(top = MaterialTheme.spacing.large)
                     )
                 }
             }
         }
 
-        // 3. Sticky Elevated Top Bar
+        // 3. Sticky Glass Top Bar
         StickyGlassBar(
             provider = provider,
             scrollState = scrollState,
@@ -227,7 +274,7 @@ fun WatchProviderHubContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StickyGlassBar(
+private fun StickyGlassBar(
     provider: ProviderInfo,
     scrollState: LazyListState,
     onBackClick: () -> Unit,
@@ -235,44 +282,42 @@ fun StickyGlassBar(
 ) {
     val isScrolled by remember {
         derivedStateOf {
-            scrollState.firstVisibleItemIndex > 0 || (scrollState.firstVisibleItemIndex == 0 && scrollState.firstVisibleItemScrollOffset > 300)
+            scrollState.firstVisibleItemIndex > 0 || (scrollState.firstVisibleItemIndex == 0 && scrollState.firstVisibleItemScrollOffset > 250)
         }
     }
 
-    val elevation by androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (isScrolled) 8.dp else 0.dp,
-        animationSpec = androidx.compose.animation.core.tween(
+    val elevation by animateDpAsState(
+        targetValue = if (isScrolled) 4.dp else 0.dp,
+        animationSpec = tween(
             durationMillis = 280,
-            easing = androidx.compose.animation.core.FastOutSlowInEasing
+            easing = FastOutSlowInEasing
         ),
         label = "TopBarElevation"
     )
 
     val surfaceAlpha by animateFloatAsState(
         targetValue = if (isScrolled) 1f else 0f,
-        animationSpec = androidx.compose.animation.core.tween(
+        animationSpec = tween(
             durationMillis = 280,
-            easing = androidx.compose.animation.core.FastOutSlowInEasing
+            easing = FastOutSlowInEasing
         ),
         label = "SurfaceAlpha"
     )
 
     val backButtonContainerColor by androidx.compose.animation.animateColorAsState(
         targetValue = if (isScrolled) Color.Transparent else Color.Black.copy(alpha = 0.35f),
-        animationSpec = androidx.compose.animation.core.tween(durationMillis = 250),
+        animationSpec = tween(durationMillis = 250),
         label = "BackButtonContainerColor"
     )
 
     val backButtonContentColor by androidx.compose.animation.animateColorAsState(
         targetValue = if (isScrolled) MaterialTheme.colorScheme.onSurface else Color.White,
-        animationSpec = androidx.compose.animation.core.tween(durationMillis = 250),
+        animationSpec = tween(durationMillis = 250),
         label = "BackButtonContentColor"
     )
 
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        androidx.compose.material3.Surface(
+    Column(modifier = modifier.fillMaxWidth()) {
+        Surface(
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.surface.copy(alpha = surfaceAlpha),
             shadowElevation = elevation,
@@ -287,14 +332,8 @@ fun StickyGlassBar(
                     title = {
                         androidx.compose.animation.AnimatedVisibility(
                             visible = isScrolled,
-                            enter = fadeIn(animationSpec = androidx.compose.animation.core.tween(220)) + androidx.compose.animation.slideInVertically(
-                                initialOffsetY = { it / 3 },
-                                animationSpec = androidx.compose.animation.core.tween(220)
-                            ),
-                            exit = fadeOut(animationSpec = androidx.compose.animation.core.tween(180)) + androidx.compose.animation.slideOutVertically(
-                                targetOffsetY = { it / 3 },
-                                animationSpec = androidx.compose.animation.core.tween(180)
-                            )
+                            enter = fadeIn(animationSpec = tween(220)),
+                            exit = fadeOut(animationSpec = tween(180))
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -302,12 +341,12 @@ fun StickyGlassBar(
                             ) {
                                 WatchProviderLogo(
                                     provider = provider,
-                                    onClick = { /* Already on Hub */ },
-                                    size = 32.dp,
+                                    onClick = { },
+                                    size = 28.dp,
                                     enableSharedTransition = false,
                                     modifier = Modifier.clip(CircleShape)
                                 )
-                                Spacer(modifier = Modifier.width(10.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = provider.providerName,
                                     style = MaterialTheme.typography.titleMedium,
@@ -332,84 +371,59 @@ fun StickyGlassBar(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent,
                         scrolledContainerColor = Color.Transparent
                     )
                 )
             }
         }
-
-        // Soft ambient drop-shadow gradient directly below the surface
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp)
-                .graphicsLayer { alpha = surfaceAlpha }
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Black.copy(alpha = 0.12f),
-                            Color.Transparent
-                        )
-                    )
-                )
-        )
     }
 }
 
 @Composable
-fun ParallaxHeader(
-    heroItems: List<MediaPreview>,
+private fun ParallaxHeader(
+    heroItems: List<AdInjectable<MediaPreview>>,
     scrollState: LazyListState,
     isLoading: Boolean
 ) {
-    val backdropUrl = when (val firstItem = heroItems.firstOrNull()) {
-        is MediaPreview.Movie -> firstItem.movie.backdropImageUrl
-        is MediaPreview.TvShow -> firstItem.tvShow.backdropImageUrl
-        null -> ""
-    }
+    val firstContent =
+        heroItems.firstOrNull { it is InjectableContent } as? InjectableContent<MediaPreview>
+    val backdropUrl = firstContent?.item?.backdropImageUrl.orEmpty()
 
     val density = LocalDensity.current
-    val headerHeight = 450.dp
+    val headerHeight = 360.dp
     val headerHeightPx = with(density) { headerHeight.toPx() }
-
-    val parallaxOffset = remember {
-        derivedStateOf {
-            if (scrollState.firstVisibleItemIndex == 0) {
-                scrollState.firstVisibleItemScrollOffset.toFloat() * 0.6f
-            } else {
-                headerHeightPx
-            }
-        }
-    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(headerHeight)
             .graphicsLayer {
-                translationY = -parallaxOffset.value
-                alpha = (1.2f - (parallaxOffset.value / (headerHeightPx * 0.8f))).coerceIn(0f, 1f)
+                val offset = if (scrollState.firstVisibleItemIndex == 0) {
+                    scrollState.firstVisibleItemScrollOffset.toFloat() * 0.55f
+                } else {
+                    headerHeightPx
+                }
+                translationY = -offset
+                alpha = (1.1f - (offset / (headerHeightPx * 0.8f))).coerceIn(0f, 1f)
             }
     ) {
-        Crossfade(targetState = isLoading, label = "BackdropFade") { loading ->
-            if (loading) {
-                ShimmerPlaceholder(
-                    modifier = Modifier.fillMaxSize(),
-                    shape = RoundedCornerShape(0.dp)
-                )
-            } else {
-                NetworkImage(
-                    url = backdropUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+        if (isLoading) {
+            ShimmerPlaceholder(
+                modifier = Modifier.fillMaxSize(),
+                shape = RoundedCornerShape(0.dp)
+            )
+        } else if (backdropUrl.isNotEmpty()) {
+            NetworkImage(
+                url = backdropUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
-        // Darkened overlay for better contrast
+        // Darkened gradient overlay for smooth blend into background
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -429,23 +443,23 @@ fun ParallaxHeader(
 }
 
 @Composable
-fun BrandIdentitySection(
+private fun BrandIdentitySection(
     provider: ProviderInfo,
     brandingColor: Color,
-    isLoading: Boolean,
-    isMovieMode: Boolean
+    isMovieMode: Boolean,
+    onToggleMode: (isMovie: Boolean) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = MaterialTheme.spacing.large)
-            .padding(bottom = MaterialTheme.spacing.large),
+            .padding(horizontal = MaterialTheme.spacing.medium)
+            .padding(bottom = MaterialTheme.spacing.small),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WatchProviderLogo(
             provider = provider,
-            onClick = { /* Identity Logo Not Usually Clickable */ },
-            size = 100.dp,
+            onClick = { },
+            size = 80.dp,
             enableSharedTransition = true,
             sharedContentKey = watchProviderSharedContentKey(
                 provider.providerId,
@@ -453,23 +467,21 @@ fun BrandIdentitySection(
             ),
             modifier = Modifier
                 .graphicsLayer {
-                    shadowElevation = 24.dp.toPx()
+                    shadowElevation = 16.dp.toPx()
                     shape = CircleShape
                     clip = true
                 }
                 .background(Color.White, CircleShape)
-                .padding(4.dp)
+                .padding(3.dp)
         )
 
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-
-        val title = (provider.providerName + " Universe").uppercase()
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
         Text(
-            text = title,
-            style = MaterialTheme.typography.displaySmall.copy(
-                letterSpacing = 4.sp,
-                lineHeight = 44.sp
+            text = stringResource(SharedUiR.string.provider_universe, provider.providerName),
+            style = MaterialTheme.typography.titleLarge.copy(
+                letterSpacing = 2.sp,
+                lineHeight = 28.sp
             ),
             fontWeight = FontWeight.Black,
             color = brandingColor,
@@ -480,81 +492,175 @@ fun BrandIdentitySection(
 
         Text(
             text = stringResource(SharedUiR.string.streaming_exclusively_on, provider.providerName),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = androidx.compose.ui.unit.TextUnit.Unspecified,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+        // Mode Switcher: [ 🎬 Movies | 📺 TV Shows ]
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                    shape = CircleShape
+                )
+        ) {
+            Row(
+                modifier = Modifier.padding(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HubSegmentItem(
+                    title = stringResource(id = SharedUiR.string.movies),
+                    selected = isMovieMode,
+                    onClick = { onToggleMode(true) }
+                )
+
+                HubSegmentItem(
+                    title = stringResource(id = SharedUiR.string.tv_series),
+                    selected = !isMovieMode,
+                    onClick = { onToggleMode(false) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HubSegmentItem(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        animationSpec = tween(200),
+        label = "hub_segment_bg"
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(200),
+        label = "hub_segment_text"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(bounded = true),
+                onClick = onClick
+            )
+            .padding(horizontal = 14.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+            color = textColor
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeroPagerSection(
-    items: List<MediaPreview>,
+private fun HeroPagerSection(
+    items: List<AdInjectable<MediaPreview>>,
     isLoading: Boolean,
-    onItemClick: (Any) -> Unit,
+    onMovieClick: (MoviePreview) -> Unit,
+    onTvShowClick: (TvShowPreview) -> Unit,
+    onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(SharedUiR.string.featured_originals),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Black,
-            modifier = Modifier.padding(
-                horizontal = MaterialTheme.spacing.large,
-                vertical = MaterialTheme.spacing.medium
-            )
+        SectionHeader(
+            title = stringResource(SharedUiR.string.featured_originals),
+            titleTextStyle = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            hideTrailingAction = true,
+            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
         )
 
-        Crossfade(targetState = isLoading, label = "HeroFade") { loading ->
-            if (loading) {
-                Row(
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+        if (isLoading) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.spacing.medium),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallMedium)
+            ) {
+                ShimmerPlaceholder(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.spacing.large),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
-                ) {
-                    ShimmerPlaceholder(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(200.dp),
-                        shape = MaterialTheme.shapes.large
-                    )
-                    ShimmerPlaceholder(
-                        modifier = Modifier
-                            .weight(0.3f)
-                            .height(200.dp),
-                        shape = MaterialTheme.shapes.large
-                    )
-                }
-            } else if (items.isNotEmpty()) {
-                val carouselState = rememberCarouselState { items.size }
-                AppHeroCarousel(
-                    items = items,
-                    carouselState = carouselState,
-                    itemHeight = 220.dp,
-                    maxItemWidth = 340.dp,
-                ) { item ->
-                    val title = when (item) {
-                        is MediaPreview.Movie -> item.movie.title
-                        is MediaPreview.TvShow -> item.tvShow.title
+                        .weight(1f)
+                        .height(200.dp),
+                    shape = MaterialTheme.shapes.large
+                )
+                ShimmerPlaceholder(
+                    modifier = Modifier
+                        .weight(0.3f)
+                        .height(200.dp),
+                    shape = MaterialTheme.shapes.large
+                )
+            }
+        } else if (items.isNotEmpty()) {
+            val carouselState = rememberCarouselState { items.size }
+            AppHeroCarousel(
+                items = items,
+                carouselState = carouselState,
+                itemHeight = 220.dp,
+                maxItemWidth = 340.dp,
+                contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium)
+            ) { injectableItem ->
+                when (injectableItem) {
+                    is InjectableAd -> {
+                        ShowTimeNativeAd(
+                            ad = injectableItem.ad,
+                            onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                            style = injectableItem.style
+                        )
                     }
-                    val imageUrl = when (item) {
-                        is MediaPreview.Movie -> item.movie.backdropImageUrl
-                        is MediaPreview.TvShow -> item.tvShow.backdropImageUrl
-                    }
-                    HeroItem(
-                        title = title,
-                        imageUrl = imageUrl,
-                        onClick = {
-                            when (item) {
-                                is MediaPreview.Movie -> onItemClick(item.movie)
-                                is MediaPreview.TvShow -> onItemClick(item.tvShow)
+
+                    is InjectableContent<MediaPreview> -> {
+                        val media = injectableItem.item
+                        HeroItem(
+                            title = media.title,
+                            imageUrl = media.backdropImageUrl,
+                            onClick = {
+                                when (media) {
+                                    is MediaPreview.Movie -> onMovieClick(media.movie)
+                                    is MediaPreview.TvShow -> onTvShowClick(media.tvShow)
+                                }
+                            },
+                            overlayContent = {
+                                val isMovie = media is MediaPreview.Movie
+                                MediaStatsAction(
+                                    mediaType = if (isMovie) MediaType.Movie else MediaType.Tv,
+                                    mediaId = media.id,
+                                    title = media.title,
+                                    posterImageUrl = media.posterImageUrl,
+                                    backdropImageUrl = media.backdropImageUrl,
+                                    voteAvg = media.voteAvg,
+                                    releaseDate = media.displayDate.orEmpty(),
+                                    containerColor = MaterialTheme.colorScheme.surface.copy(
+                                        alpha = 0.85f
+                                    ),
+                                    onShowFeedback = onShowFeedback,
+                                    modifier = Modifier.size(32.dp)
+                                )
                             }
-                        },
-                        overlayContent = null
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -562,130 +668,187 @@ fun HeroPagerSection(
 }
 
 @Composable
-fun HubSectionRow(
+private fun HubSectionRow(
     title: String,
-    items: List<MediaPreview>,
+    items: List<AdInjectable<MediaPreview>>,
     isLoading: Boolean,
-    onItemClick: (Any) -> Unit,
+    onMovieClick: (MoviePreview) -> Unit,
+    onTvShowClick: (TvShowPreview) -> Unit,
+    onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     onSeeAllClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
     if (isLoading) {
         Column(modifier = modifier) {
             SectionHeader(
                 title = title,
-                modifier = Modifier.padding(start = MaterialTheme.spacing.large)
-            )
-            MediaItemRowShimmer(
-                contentPadding = PaddingValues(
-                    horizontal = MaterialTheme.spacing.large,
-                    vertical = MaterialTheme.spacing.medium
+                titleTextStyle = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-                itemWidth = 150.dp
+                hideTrailingAction = true,
+                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
+            )
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            MediaItemRowShimmer(
+                contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallMedium)
             )
         }
     } else if (items.isNotEmpty()) {
-        HorizontalLazyListSection(
-            items = items,
-            headerContentSpacing = MaterialTheme.spacing.small,
-            sectionHeader = {
-                SectionHeader(
-                    title = title,
-                    onTrailingActionClicked = onSeeAllClick,
-                    modifier = Modifier.padding(start = MaterialTheme.spacing.large)
-                )
-            },
-            itemContent = { item ->
-                when (item) {
-                    is MediaPreview.Movie -> {
-                        MovieGridItem(
-                            movie = item.movie,
-                            onClick = { onItemClick(item.movie) },
-                            overlayContent = null,
-                            modifier = Modifier.width(150.dp)
-                        )
-                    }
+        Column(modifier = modifier) {
+            SectionHeader(
+                title = title,
+                titleTextStyle = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                hideTrailingAction = true,
+                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
+            )
 
-                    is MediaPreview.TvShow -> {
-                        TvShowGridItem(
-                            tvShow = item.tvShow,
-                            onClick = { onItemClick(item.tvShow) },
-                            overlayContent = null,
-                            modifier = Modifier.width(150.dp)
-                        )
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallMedium),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(
+                    items = items,
+                    key = { item ->
+                        when (item) {
+                            is InjectableAd -> item.id
+                            is InjectableContent<MediaPreview> -> item.item.id
+                        }
+                    }
+                ) { injectableItem ->
+                    when (injectableItem) {
+                        is InjectableAd -> {
+                            ShowTimeNativeAd(
+                                ad = injectableItem.ad,
+                                onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                                style = injectableItem.style
+                            )
+                        }
+
+                        is InjectableContent<MediaPreview> -> {
+                            when (val media = injectableItem.item) {
+                                is MediaPreview.Movie -> {
+                                    MovieGridItem(
+                                        movie = media.movie,
+                                        onClick = onMovieClick,
+                                        overlayContent = {
+                                            MediaStatsAction(
+                                                mediaType = MediaType.Movie,
+                                                mediaId = media.movie.id,
+                                                title = media.movie.title,
+                                                posterImageUrl = media.movie.posterImageUrl,
+                                                backdropImageUrl = media.movie.backdropImageUrl,
+                                                voteAvg = media.movie.voteAvg,
+                                                releaseDate = media.movie.displayReleaseDate.orEmpty(),
+                                                containerColor = MaterialTheme.colorScheme.surface.copy(
+                                                    alpha = 0.85f
+                                                ),
+                                                onShowFeedback = onShowFeedback,
+                                                modifier = Modifier.size(32.dp)
+                                            )
+                                        }
+                                    )
+                                }
+
+                                is MediaPreview.TvShow -> {
+                                    TvShowGridItem(
+                                        tvShow = media.tvShow,
+                                        onClick = onTvShowClick,
+                                        overlayContent = {
+                                            MediaStatsAction(
+                                                mediaType = MediaType.Tv,
+                                                mediaId = media.tvShow.id,
+                                                title = media.tvShow.title,
+                                                posterImageUrl = media.tvShow.posterImageUrl,
+                                                backdropImageUrl = media.tvShow.backdropImageUrl,
+                                                voteAvg = media.tvShow.voteAvg,
+                                                releaseDate = media.tvShow.displayFirstAirDate.orEmpty(),
+                                                containerColor = MaterialTheme.colorScheme.surface.copy(
+                                                    alpha = 0.85f
+                                                ),
+                                                onShowFeedback = onShowFeedback,
+                                                modifier = Modifier.size(32.dp)
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
-            },
-            contentPadding = PaddingValues(
-                horizontal = MaterialTheme.spacing.large,
-                vertical = MaterialTheme.spacing.medium
-            ),
-            modifier = modifier
-        )
+
+                item(key = "see_all_$title") {
+                    SeeAllCard(onClick = onSeeAllClick)
+                }
+            }
+        }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun EndOfContentSection(
+private fun EndOfContentSection(
     providerName: String,
     genres: List<Genre>,
-    onGenreClick: (Genre) -> Unit
+    onGenreClick: (Genre) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(top = 64.dp, bottom = 48.dp)
-            .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = MaterialTheme.spacing.medium)
     ) {
-        HorizontalDivider(
-            modifier = Modifier
-                .width(64.dp)
-                .padding(bottom = MaterialTheme.spacing.large),
-            thickness = 4.dp,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-        )
-
-        Text(
-            text = stringResource(SharedUiR.string.end_of_curated_content),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Black,
-            letterSpacing = androidx.compose.ui.unit.TextUnit.Unspecified,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-        )
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        Text(
-            text = stringResource(SharedUiR.string.looking_for_more, providerName),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        SectionHeader(
+            title = stringResource(SharedUiR.string.explore_by_genre),
+            subtitle = stringResource(SharedUiR.string.looking_for_more, providerName),
+            titleTextStyle = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            hideTrailingAction = true,
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-        Text(
-            text = stringResource(SharedUiR.string.explore_by_genre),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.ExtraBold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        FlowRow(
+        LazyHorizontalStaggeredGrid(
+            rows = StaggeredGridCells.Fixed(2),
+            contentPadding = PaddingValues(0.dp),
+            horizontalItemSpacing = MaterialTheme.spacing.small,
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .height(88.dp)
         ) {
-            genres.forEach { genre ->
-                GenreItem(
-                    genre = genre,
-                    onGenreClicked = { onGenreClick(genre) }
+            items(genres, key = { it.id }) { genre ->
+                AssistChip(
+                    onClick = { onGenreClick(genre) },
+                    label = {
+                        Text(
+                            text = genre.name,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                    },
+                    shape = MaterialTheme.shapes.small,
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    border = AssistChipDefaults.assistChipBorder(
+                        enabled = true,
+                        borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        borderWidth = 1.dp
+                    )
                 )
             }
         }
