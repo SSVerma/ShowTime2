@@ -59,6 +59,9 @@
     <string name="movies">Movies</string>
     <string name="tv_shows">TV Shows</string>
     <string name="see_all">See All</string>
+    <string name="discover">Discover</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Top Rated</string>
 
     <!-- Watch Provider Hub -->
     <string name="streaming_universe">Streaming Universe</string>

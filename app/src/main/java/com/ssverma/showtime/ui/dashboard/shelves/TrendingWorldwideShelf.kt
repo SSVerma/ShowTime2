@@ -47,6 +47,7 @@ import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.MediaItemShimmer
 import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.shared.ui.component.media.SeeAllCard
 import com.ssverma.showtime.R
 
 fun LazyListScope.trendingWorldwideShelf(
@@ -65,29 +66,26 @@ fun LazyListScope.trendingWorldwideShelf(
                 .fillMaxWidth()
                 .padding(top = 16.dp)
         ) {
-            // 1. Standard Section Header with Title and Capsule See All
+            // 1. Header with Title on Left and Segmented Switcher [ Movie | TV Series ] on Right
             SectionHeader(
                 title = stringResource(id = R.string.popular_section),
                 titleTextStyle = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 ),
+                trailingContent = {
+                    PopularSegmentedSwitcher(
+                        isMovieSelected = isMoviePopularSelected,
+                        onToggle = onTogglePopularType
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                onTrailingActionClicked = onSeeAllClick
-            )
-
-            // 2. Segmented Pill Switcher [ Movie | TV Series ]
-            PopularSegmentedSwitcher(
-                isMovieSelected = isMoviePopularSelected,
-                onToggle = onTogglePopularType,
-                modifier = Modifier
                     .padding(horizontal = 16.dp)
-                    .padding(top = 8.dp, bottom = 8.dp)
+                    .padding(bottom = 12.dp)
             )
 
-            // 3. Animated Media Carousel
+            // 2. Animated Media Carousel with Trailing See All Card
             AnimatedContent(
                 targetState = isMoviePopularSelected,
                 transitionSpec = {
@@ -157,6 +155,11 @@ fun LazyListScope.trendingWorldwideShelf(
                                     onClick = { onMovieClick(movie) }
                                 )
                             }
+                            item(key = "see_all_popular_movies") {
+                                SeeAllCard(
+                                    onClick = onSeeAllClick
+                                )
+                            }
                         }
                     }
                 } else {
@@ -184,6 +187,11 @@ fun LazyListScope.trendingWorldwideShelf(
                                     title = tvShow.title,
                                     posterImageUrl = tvShow.posterImageUrl,
                                     onClick = { onTvShowClick(tvShow) }
+                                )
+                            }
+                            item(key = "see_all_popular_tv") {
+                                SeeAllCard(
+                                    onClick = onSeeAllClick
                                 )
                             }
                         }
@@ -267,4 +275,3 @@ private fun PopularSegmentItem(
         )
     }
 }
-

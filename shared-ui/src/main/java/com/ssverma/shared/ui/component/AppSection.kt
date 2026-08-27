@@ -2,8 +2,11 @@ package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -12,6 +15,7 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.shared.ui.component.media.SeeAllCard
 
 @Composable
 fun <T, FF> AppSection(
@@ -20,6 +24,8 @@ fun <T, FF> AppSection(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     onTrailingActionClicked: () -> Unit = {},
+    showTrailingActionHeader: Boolean = true,
+    showTrailingActionCard: Boolean = false,
     onRetry: () -> Unit,
     loadingPlaceholder: @Composable () -> Unit,
     isVertical: Boolean = false,
@@ -33,6 +39,7 @@ fun <T, FF> AppSection(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 title = title,
                 subtitle = subtitle,
+                hideTrailingAction = !showTrailingActionHeader,
                 onTrailingActionClicked = onTrailingActionClicked
             )
         }
@@ -47,7 +54,7 @@ fun <T, FF> AppSection(
                 } else {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         repeat(3) { loadingPlaceholder() }
                     }
@@ -67,7 +74,21 @@ fun <T, FF> AppSection(
                         }
                     }
                 } else {
-                    HorizontalLazyList(items = items) { content(it) }
+                    if (showTrailingActionCard) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(items) {
+                                content(it)
+                            }
+                            item {
+                                SeeAllCard(onClick = onTrailingActionClicked)
+                            }
+                        }
+                    } else {
+                        HorizontalLazyList(items = items) { content(it) }
+                    }
                 }
             }
         }

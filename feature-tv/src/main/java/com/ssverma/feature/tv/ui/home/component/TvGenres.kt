@@ -46,7 +46,7 @@ fun TvGenres(
 
         LazyHorizontalStaggeredGrid(
             rows = StaggeredGridCells.Fixed(2),
-            contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.large),
+            contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
             horizontalItemSpacing = MaterialTheme.spacing.small,
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
             modifier = modifier
