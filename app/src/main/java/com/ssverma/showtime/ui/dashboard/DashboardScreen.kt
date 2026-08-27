@@ -237,11 +237,24 @@ fun DashboardScreen(
                             openTvListing()
                         }
                     },
+                    onAdLoaded = viewModel::onPopularAdLoaded,
                     onRetry = {
                         if (uiState.isMoviePopularSelected) {
                             viewModel.fetchPopularMovies()
                         } else {
                             viewModel.fetchPopularTvShows()
+                        }
+                    },
+                    onShowFeedback = { message, actionLabel, destination ->
+                        coroutineScope.launch {
+                            val result = snackbarHostState.showImmediateSnackbar(
+                                message = message,
+                                actionLabel = actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                            }
                         }
                     }
                 )

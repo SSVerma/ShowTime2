@@ -24,8 +24,8 @@ data class TrendingSpotlightItem(
 
 data class DashboardUiState(
     val trendingMedia: UiState<List<AdInjectable<TrendingSpotlightItem>>, MovieFailure> = UiState.Loading,
-    val popularMovies: UiState<List<MoviePreview>, MovieFailure> = UiState.Loading,
-    val popularTvShows: UiState<List<TvShowPreview>, TvShowFailure> = UiState.Loading,
+    val popularMovies: UiState<List<AdInjectable<MoviePreview>>, MovieFailure> = UiState.Loading,
+    val popularTvShows: UiState<List<AdInjectable<TvShowPreview>>, TvShowFailure> = UiState.Loading,
     val movieProviders: UiState<List<ProviderInfo>, Nothing> = UiState.Loading,
     val tvProviders: UiState<List<ProviderInfo>, Nothing> = UiState.Loading,
     val gameStats: CinemaGameStats = CinemaGameStats(),

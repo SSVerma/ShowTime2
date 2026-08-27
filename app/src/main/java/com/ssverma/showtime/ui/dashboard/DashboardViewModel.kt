@@ -60,6 +60,11 @@ class DashboardViewModel @Inject constructor(
         style = NativeAdStyle.Carousel
     )
 
+    private val popularCarouselAdConfig = AdInjectionConfig(
+        placement = AdPlacement.Fixed(positions = listOf(1)),
+        style = NativeAdStyle.Grid
+    )
+
     init {
         viewModelScope.launch {
             combine(
@@ -162,7 +167,10 @@ class DashboardViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 popularMovies = result.asSuccessOrErrorUiState().mapSuccess { movies ->
-                    movies.map { movie -> movie.asMoviePreview() }
+                    movies.map { movie -> movie.asMoviePreview() }.injectAds(
+                        config = popularCarouselAdConfig,
+                        isAdsEnabled = adConfigProvider.isAdsEnabled
+                    )
                 }
             )
         }
@@ -174,7 +182,10 @@ class DashboardViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 popularTvShows = result.asSuccessOrErrorUiState().mapSuccess { tvShows ->
-                    tvShows.map { tvShow -> tvShow.asTvShowPreview() }
+                    tvShows.map { tvShow -> tvShow.asTvShowPreview() }.injectAds(
+                        config = popularCarouselAdConfig,
+                        isAdsEnabled = adConfigProvider.isAdsEnabled
+                    )
                 }
             )
         }
@@ -217,6 +228,33 @@ class DashboardViewModel @Inject constructor(
             currentState.copy(
                 trendingMedia = updatedTrending?.let { UiState.Success(it) }
                     ?: currentState.trendingMedia
+            )
+        }
+    }
+
+    fun onPopularAdLoaded(injectableAd: InjectableAd, nativeAd: NativeAd) {
+        _uiState.update { currentState ->
+            val updatedMovies =
+                (currentState.popularMovies as? UiState.Success)?.data?.map { item ->
+                    if (item is InjectableAd && item.id == injectableAd.id) {
+                        item.copy(ad = nativeAd)
+                    } else {
+                        item
+                    }
+                }
+            val updatedTv =
+                (currentState.popularTvShows as? UiState.Success)?.data?.map { item ->
+                    if (item is InjectableAd && item.id == injectableAd.id) {
+                        item.copy(ad = nativeAd)
+                    } else {
+                        item
+                    }
+                }
+            currentState.copy(
+                popularMovies = updatedMovies?.let { UiState.Success(it) }
+                    ?: currentState.popularMovies,
+                popularTvShows = updatedTv?.let { UiState.Success(it) }
+                    ?: currentState.popularTvShows
             )
         }
     }
