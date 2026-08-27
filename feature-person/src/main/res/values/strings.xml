@@ -19,4 +19,6 @@
     <string name="unknown">Unknown</string>
     <string name="na">N/A</string>
     <string name="see_more">See more</string>
+    <string name="popular_people">Popular People</string>
+    <string name="people">People</string>
 </resources>

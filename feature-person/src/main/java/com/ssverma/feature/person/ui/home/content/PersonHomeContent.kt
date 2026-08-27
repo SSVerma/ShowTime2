@@ -2,27 +2,26 @@ package com.ssverma.feature.person.ui.home.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.ui.paging.PagedListIndexed
-import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.analytics.PersonAnalyticsEvent
 import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
 import com.ssverma.feature.person.analytics.PersonAnalyticsValues
 import com.ssverma.feature.person.ui.home.component.PersonListItem
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.person.Person
-import com.ssverma.shared.ui.component.HomePageAppBar
 
 @Composable
 fun PersonHomeContent(
@@ -30,28 +29,24 @@ fun PersonHomeContent(
     openPersonDetailsScreen: (Person) -> Unit,
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
-    openSearchPage: () -> Unit,
-    openAccountPage: () -> Unit,
-    openLibraryPage: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val analytics = LocalAnalytics.current
+    val layoutDirection = LocalLayoutDirection.current
     var selectedPersonId by rememberSaveable { mutableIntStateOf(-1) }
+
+    val combinedPadding = PaddingValues(
+        start = contentPadding.calculateStartPadding(layoutDirection),
+        top = contentPadding.calculateTopPadding() + 8.dp,
+        end = contentPadding.calculateEndPadding(layoutDirection),
+        bottom = contentPadding.calculateBottomPadding() + 80.dp
+    )
 
     PagedListIndexed(
         pagingItems = pagedPersons,
-        contentPadding = PaddingValues(
-            bottom = 100.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-        header = {
-            HomePageAppBar(
-                onSearchIconPressed = openSearchPage,
-                onAccountIconPressed = openAccountPage,
-                onLibraryIconPressed = openLibraryPage,
-                modifier = Modifier.statusBarsPadding()
-            )
-        },
+        contentPadding = combinedPadding,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = modifier
     ) { index, person ->
         PersonListItem(
@@ -91,7 +86,7 @@ fun PersonHomeContent(
                     }
                 }
             },
-            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
 }

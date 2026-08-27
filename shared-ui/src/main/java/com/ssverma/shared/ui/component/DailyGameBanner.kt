@@ -1,7 +1,5 @@
 package com.ssverma.shared.ui.component
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +26,6 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -45,22 +42,15 @@ fun DailyGameBanner(
     onOpenGame: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val borderColor by animateColorAsState(
-        targetValue = if (isTodayCompleted) {
-            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f)
-        } else {
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-        },
-        animationSpec = tween(durationMillis = 300),
-        label = "DailyGameBorderColor"
-    )
-
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
         ),
-        border = BorderStroke(width = 1.dp, color = borderColor),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+        ),
         modifier = modifier
             .fillMaxWidth()
             .clickable { onOpenGame() }

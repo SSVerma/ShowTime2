@@ -5,7 +5,6 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
-import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.person.ui.details.PersonDetailsScreen
@@ -13,7 +12,6 @@ import com.ssverma.feature.person.ui.details.PersonDetailsViewModel
 import com.ssverma.feature.person.ui.home.PersonScreen
 import com.ssverma.feature.person.ui.shots.PersonImageShotsScreen
 import com.ssverma.feature.person.ui.shots.PersonImagesViewModel
-import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 
 fun EntryProviderScope<NavKey>.personEntries(
@@ -22,6 +20,7 @@ fun EntryProviderScope<NavKey>.personEntries(
 ) {
     showTimeEntry<PersonHomeNavKey> {
         PersonScreen(
+            onBackPressed = { navigator.goBack() },
             openPersonDetailsScreen = { person ->
                 navigator.navigate(
                     PersonDetailNavKey(
@@ -37,14 +36,7 @@ fun EntryProviderScope<NavKey>.personEntries(
             },
             openTvShowDetailsScreen = { tvShowId ->
                 navigator.navigate(TvShowDetailNavKey(tvShowId))
-            },
-            openSearchPage = {
-                navigator.navigate(SearchNavKey)
-            },
-            openAccountPage = {
-                navigator.navigate(ProfileNavKey)
-            },
-            openLibraryPage = { openLibraryPage(LibraryHomeNavKey.Default) }
+            }
         )
     }
 

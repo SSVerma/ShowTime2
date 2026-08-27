@@ -2,8 +2,11 @@ package com.ssverma.core.ui.component
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -18,7 +21,12 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
@@ -38,39 +46,73 @@ fun ShowTimeTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.background,
-        scrolledContainerColor = MaterialTheme.colorScheme.surface,
+        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+        actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
 ) {
-    // 1. Detect if the list has scrolled under the app bar (even a tiny bit)
-    val isScrolled = scrollBehavior?.state?.overlappedFraction?.let { it > 0.01f } ?: false
+    val isScrolled = scrollBehavior?.state?.let {
+        it.contentOffset < -1f || it.overlappedFraction > 0.01f
+    } ?: false
 
-    // 2. Smoothly animate the shadow appearing and disappearing
-    val elevation by animateDpAsState(
-        targetValue = if (isScrolled) 8.dp else 0.dp,
+    val glowAlpha by animateFloatAsState(
+        targetValue = if (isScrolled) 1f else 0f,
         animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-        label = "TopBarShadow"
+        label = "TopBarGlowAlpha"
     )
 
-    CenterAlignedTopAppBar(
-        title = title,
-        navigationIcon = {
-            IconButton(onClick = onBackPressed) {
-                Icon(
-                    painter = rememberVectorPainter(image = navIcon),
-                    contentDescription = stringResource(id = R.string.back)
-                )
-            }
-        },
-        actions = actions,
-        colors = colors,
-        scrollBehavior = scrollBehavior,
-        // 3. Apply the animated shadow!
-        modifier = modifier.shadow(
-            elevation = elevation,
-            ambientColor = MaterialTheme.colorScheme.primary,
-            spotColor = MaterialTheme.colorScheme.primary
-        )
+    val elevation by animateDpAsState(
+        targetValue = if (isScrolled) 3.dp else 0.dp,
+        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
+        label = "TopBarElevation"
     )
+
+    val primaryColor = MaterialTheme.colorScheme.primary
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .drawBehind {
+                if (glowAlpha > 0f) {
+                    val glowHeight = 6.dp.toPx()
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                primaryColor.copy(alpha = 0.12f * glowAlpha),
+                                primaryColor.copy(alpha = 0.04f * glowAlpha),
+                                Color.Transparent
+                            ),
+                            startY = size.height,
+                            endY = size.height + glowHeight
+                        ),
+                        topLeft = Offset(0f, size.height),
+                        size = Size(size.width, glowHeight)
+                    )
+                }
+            }
+            .shadow(
+                elevation = elevation,
+                ambientColor = primaryColor.copy(alpha = 0.12f),
+                spotColor = primaryColor.copy(alpha = 0.25f),
+                clip = false
+            )
+    ) {
+        CenterAlignedTopAppBar(
+            title = title,
+            navigationIcon = {
+                IconButton(onClick = onBackPressed) {
+                    Icon(
+                        painter = rememberVectorPainter(image = navIcon),
+                        contentDescription = stringResource(id = R.string.back)
+                    )
+                }
+            },
+            actions = actions,
+            colors = colors,
+            scrollBehavior = scrollBehavior
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +126,10 @@ fun ShowTimeTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.background,
-        scrolledContainerColor = MaterialTheme.colorScheme.surface,
+        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+        actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
 ) {
     ShowTimeTopAppBar(

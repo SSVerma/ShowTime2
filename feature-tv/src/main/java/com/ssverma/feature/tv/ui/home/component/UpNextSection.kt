@@ -1,6 +1,5 @@
 package com.ssverma.feature.tv.ui.home.component
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -154,16 +153,6 @@ private fun UpNextCard(
         label = "UpNextProgressAnimation"
     )
 
-    val borderColor by animateColorAsState(
-        targetValue = if (isCompleted) {
-            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f) // Celebration border
-        } else {
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-        },
-        animationSpec = tween(durationMillis = 300),
-        label = "UpNextBorderColor"
-    )
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
@@ -176,7 +165,10 @@ private fun UpNextCard(
             colors = CardDefaults.outlinedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
             ),
-            border = BorderStroke(width = 1.dp, color = borderColor)
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+            )
         ) {
             Row(
                 modifier = Modifier
