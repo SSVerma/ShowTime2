@@ -79,6 +79,7 @@ import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.rememberNavigationState
 import com.ssverma.core.notifications.LocalNotificationManager
+import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
 import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.account.navigation.ProfileNavKey
@@ -345,71 +346,93 @@ fun ShowTime(
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .nestedScroll(bottomBarNestedScrollConnection)
+                    CompositionLocalProvider(
+                        LocalFloatingBarsVisible provides isBottomBarVisible
                     ) {
-                        ShowTimeNavDisplay(
-                            navigationState = navigationState,
-                            navigator = navigator,
-                            openLibraryPage = { navKey ->
-                                navigator.navigate(navKey)
-                            },
+                        Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(
-                                    start = innerPaddingModifier.calculateStartPadding(
-                                        LayoutDirection.Ltr
-                                    ),
-                                    end = innerPaddingModifier.calculateEndPadding(LayoutDirection.Ltr)
-                                )
-                        )
+                                .nestedScroll(bottomBarNestedScrollConnection)
+                        ) {
+                            ShowTimeNavDisplay(
+                                navigationState = navigationState,
+                                navigator = navigator,
+                                openLibraryPage = { navKey ->
+                                    navigator.navigate(navKey)
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(
+                                        start = innerPaddingModifier.calculateStartPadding(
+                                            LayoutDirection.Ltr
+                                        ),
+                                        end = innerPaddingModifier.calculateEndPadding(
+                                            LayoutDirection.Ltr
+                                        )
+                                    )
+                            )
 
-                        if (isHomePage) {
-                            ShowTimeTopSearchBar(
-                                googleUser = googleUser,
-                                isProActive = isProActive,
-                                onMenuClick = {
-                                    coroutineScope.launch { drawerState.open() }
-                                },
-                                onSearchClick = {
-                                    navigator.navigate(SearchNavKey)
-                                },
-                                onProfileClick = {
-                                    navigator.navigate(ProfileNavKey)
-                                },
+                            AnimatedVisibility(
+                                visible = isHomePage && isBottomBarVisible,
+                                enter = slideInVertically(
+                                    initialOffsetY = { -it },
+                                    animationSpec = tween(
+                                        durationMillis = 350,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                ) + fadeIn(animationSpec = tween(250)),
+                                exit = slideOutVertically(
+                                    targetOffsetY = { -it },
+                                    animationSpec = tween(
+                                        durationMillis = 350,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                ) + fadeOut(animationSpec = tween(250)),
                                 modifier = Modifier
                                     .align(Alignment.TopCenter)
                                     .statusBarsPadding()
-                            )
-                        }
+                            ) {
+                                ShowTimeTopSearchBar(
+                                    googleUser = googleUser,
+                                    isProActive = isProActive,
+                                    onMenuClick = {
+                                        coroutineScope.launch { drawerState.open() }
+                                    },
+                                    onSearchClick = {
+                                        navigator.navigate(SearchNavKey)
+                                    },
+                                    onProfileClick = {
+                                        navigator.navigate(ProfileNavKey)
+                                    }
+                                )
+                            }
 
-                        AnimatedVisibility(
-                            visible = isHomePage && isBottomBarVisible,
-                            enter = slideInVertically(
-                                initialOffsetY = { it },
-                                animationSpec = tween(
-                                    durationMillis = 350,
-                                    easing = FastOutSlowInEasing
+                            AnimatedVisibility(
+                                visible = isHomePage && isBottomBarVisible,
+                                enter = slideInVertically(
+                                    initialOffsetY = { it },
+                                    animationSpec = tween(
+                                        durationMillis = 350,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                ) + fadeIn(animationSpec = tween(250)),
+                                exit = slideOutVertically(
+                                    targetOffsetY = { it },
+                                    animationSpec = tween(
+                                        durationMillis = 350,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                ) + fadeOut(animationSpec = tween(250)),
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                            ) {
+                                ShowTimeBottomBar(
+                                    currentNavKey = currentDestination,
+                                    topLevelNavKey = navigationState.topLevelRoute,
+                                    onTopLevelNavItemSelected = { navItem ->
+                                        navigator.navigate(navItem.navKey)
+                                    }
                                 )
-                            ) + fadeIn(animationSpec = tween(250)),
-                            exit = slideOutVertically(
-                                targetOffsetY = { it },
-                                animationSpec = tween(
-                                    durationMillis = 350,
-                                    easing = FastOutSlowInEasing
-                                )
-                            ) + fadeOut(animationSpec = tween(250)),
-                            modifier = Modifier.align(Alignment.BottomCenter)
-                        ) {
-                            ShowTimeBottomBar(
-                                currentNavKey = currentDestination,
-                                topLevelNavKey = navigationState.topLevelRoute,
-                                onTopLevelNavItemSelected = { navItem ->
-                                    navigator.navigate(navItem.navKey)
-                                }
-                            )
+                            }
                         }
                     }
                 }

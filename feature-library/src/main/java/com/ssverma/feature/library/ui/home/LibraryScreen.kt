@@ -2,7 +2,9 @@ package com.ssverma.feature.library.ui.home
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -105,6 +107,7 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.layout.AppPage
+import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.R
@@ -288,9 +291,16 @@ fun LibraryScreen(
             val isScrolled =
                 scrollBehavior.state.collapsedFraction > 0.01f || scrollBehavior.state.contentOffset < -1f
             val headerColor by animateColorAsState(
-                targetValue = if (isScrolled) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.background,
+                targetValue = if (isScrolled) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.background,
                 animationSpec = tween(durationMillis = 250),
                 label = "LibraryHeaderColor"
+            )
+
+            val isFloatingBarsVisible = LocalFloatingBarsVisible.current
+            val topPadding by animateDpAsState(
+                targetValue = if (isFloatingBarsVisible) 64.dp else 0.dp,
+                animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+                label = "LibraryTopPadding"
             )
 
             Surface(
@@ -301,7 +311,7 @@ fun LibraryScreen(
                     modifier = if (isTopLevel) {
                         Modifier
                             .statusBarsPadding()
-                            .padding(top = 64.dp)
+                            .padding(top = topPadding)
                     } else {
                         Modifier
                     }
