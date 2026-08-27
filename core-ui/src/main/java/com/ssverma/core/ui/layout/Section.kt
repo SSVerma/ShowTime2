@@ -189,7 +189,7 @@ fun SectionHeader(
     leadingIconEndSpacing: Dp = SectionDefaults.leadingIconEndSpacing,
     trailingActionLabel: String = stringResource(id = R.string.see_all),
     hideTrailingAction: Boolean = false,
-    onTrailingActionClicked: () -> Unit = {},
+    onTrailingActionClicked: (() -> Unit)? = null,
     titleTextStyle: TextStyle = SectionDefaults.titleTextStyle(),
     subtitleTextStyle: TextStyle = SectionDefaults.subtitleTextStyle(),
     leadingContent: (@Composable RowScope.() -> Unit)? = null,
@@ -223,7 +223,7 @@ fun SectionHeader(
 
     val resolvedTrailingContent: (@Composable RowScope.() -> Unit)? = when {
         trailingContent != null -> trailingContent
-        !hideTrailingAction && onTrailingActionClicked != {} -> {
+        !hideTrailingAction && onTrailingActionClicked != null -> {
             {
                 SectionTrailingAction(
                     actionLabel = trailingActionLabel,
