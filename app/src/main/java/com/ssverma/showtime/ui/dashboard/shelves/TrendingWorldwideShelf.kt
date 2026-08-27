@@ -78,7 +78,7 @@ fun LazyListScope.trendingWorldwideShelf(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 18.dp)
+                .padding(top = 24.dp)
         ) {
             // 1. Header with Title on Left and Segmented Switcher [ Movie | TV Series ] on Right
             SectionHeader(

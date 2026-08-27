@@ -135,7 +135,7 @@ fun LazyListScope.studioPortalsShelf(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 18.dp)
+                .padding(top = 20.dp)
         ) {
             // Standard Section Header
             SectionHeader(
