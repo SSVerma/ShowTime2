@@ -2,10 +2,15 @@ package com.ssverma.showtime
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,12 +51,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
@@ -60,6 +71,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
@@ -281,7 +293,7 @@ fun ShowTime(
                             try {
                                 val intent = Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse("https://github.com/SSVerma/ShowTime/blob/main/PRIVACY_POLICY.md")
+                                    "https://github.com/SSVerma/ShowTime/blob/main/PRIVACY_POLICY.md".toUri()
                                 )
                                 context.startActivity(intent)
                             } catch (_: Exception) {
@@ -302,8 +314,41 @@ fun ShowTime(
                 Scaffold(
                     contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPaddingModifier ->
+                    var isBottomBarVisible by rememberSaveable { mutableStateOf(true) }
+
+                    LaunchedEffect(currentDestination) {
+                        isBottomBarVisible = true
+                    }
+
+                    val bottomBarNestedScrollConnection = remember {
+                        object : NestedScrollConnection {
+                            private var accumulatedScroll = 0f
+
+                            override fun onPreScroll(
+                                available: Offset,
+                                source: NestedScrollSource
+                            ): Offset {
+                                accumulatedScroll += available.y
+                                if (accumulatedScroll < -40f) {
+                                    if (isBottomBarVisible) {
+                                        isBottomBarVisible = false
+                                    }
+                                    accumulatedScroll = 0f
+                                } else if (accumulatedScroll > 40f) {
+                                    if (!isBottomBarVisible) {
+                                        isBottomBarVisible = true
+                                    }
+                                    accumulatedScroll = 0f
+                                }
+                                return Offset.Zero
+                            }
+                        }
+                    }
+
                     Box(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(bottomBarNestedScrollConnection)
                     ) {
                         ShowTimeNavDisplay(
                             navigationState = navigationState,
@@ -340,14 +385,32 @@ fun ShowTime(
                             )
                         }
 
-                        ShowTimeBottomBar(
-                            currentNavKey = currentDestination,
-                            topLevelNavKey = navigationState.topLevelRoute,
-                            onTopLevelNavItemSelected = { navItem ->
-                                navigator.navigate(navItem.navKey)
-                            },
+                        AnimatedVisibility(
+                            visible = isHomePage && isBottomBarVisible,
+                            enter = slideInVertically(
+                                initialOffsetY = { it },
+                                animationSpec = tween(
+                                    durationMillis = 350,
+                                    easing = FastOutSlowInEasing
+                                )
+                            ) + fadeIn(animationSpec = tween(250)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = tween(
+                                    durationMillis = 350,
+                                    easing = FastOutSlowInEasing
+                                )
+                            ) + fadeOut(animationSpec = tween(250)),
                             modifier = Modifier.align(Alignment.BottomCenter)
-                        )
+                        ) {
+                            ShowTimeBottomBar(
+                                currentNavKey = currentDestination,
+                                topLevelNavKey = navigationState.topLevelRoute,
+                                onTopLevelNavItemSelected = { navItem ->
+                                    navigator.navigate(navItem.navKey)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -439,16 +502,23 @@ fun ShowTimeBottomBar(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
+            .shadow(
+                elevation = 5.dp,
+                shape = CircleShape,
+                ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.10f),
+                spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.18f),
+                clip = false
+            ),
         contentAlignment = Alignment.Center
     ) {
         Surface(
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shadowElevation = 8.dp,
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 0.dp,
             border = BorderStroke(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
             ),
             modifier = Modifier
                 .fillMaxWidth()

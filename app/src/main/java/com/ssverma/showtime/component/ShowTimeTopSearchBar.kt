@@ -65,18 +65,18 @@ fun ShowTimeTopSearchBar(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .height(52.dp)
             .shadow(
-                elevation = 6.dp,
+                elevation = 5.dp,
                 shape = CircleShape,
-                ambientColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.16f),
-                spotColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.28f),
+                ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.10f),
+                spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.18f),
                 clip = false
             )
     ) {
         Surface(
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            color = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface,
-            tonalElevation = 2.dp,
+            tonalElevation = 0.dp,
             border = androidx.compose.foundation.BorderStroke(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
@@ -212,4 +212,3 @@ fun ShowTimeTopSearchBar(
         }
     }
 }
-
