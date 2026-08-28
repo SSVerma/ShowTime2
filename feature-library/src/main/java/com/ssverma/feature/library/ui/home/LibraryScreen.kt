@@ -1,5 +1,7 @@
 package com.ssverma.feature.library.ui.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -7,6 +9,11 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -96,7 +103,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -450,10 +459,26 @@ fun LibraryScreen(
                                                         containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
                                                         contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                                                     ) {
-                                                        Text(
-                                                            text = itemCount.toString(),
-                                                            style = MaterialTheme.typography.labelSmall
-                                                        )
+                                                        AnimatedContent(
+                                                            targetState = itemCount,
+                                                            transitionSpec = {
+                                                                if (targetState > initialState) {
+                                                                    slideInVertically { height -> height } + fadeIn() togetherWith
+                                                                            slideOutVertically { height -> -height } + fadeOut()
+                                                                } else {
+                                                                    slideInVertically { height -> -height } + fadeIn() togetherWith
+                                                                            slideOutVertically { height -> height } + fadeOut()
+                                                                }.using(
+                                                                    SizeTransform(clip = false)
+                                                                )
+                                                            },
+                                                            label = "TabBadgeCounterAnimation"
+                                                        ) { count ->
+                                                            Text(
+                                                                text = count.toString(),
+                                                                style = MaterialTheme.typography.labelSmall
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
@@ -854,348 +879,364 @@ private fun MediaCollectionTabContent(
         )
     }
 
-    if (totalCount == 0) {
-        ExpressiveEmptyState(
-            title = emptyTitle,
-            subtitle = emptySubtitle,
-            icon = emptyIcon,
-            actionButtonText = stringResource(R.string.explore_titles),
-            onActionClick = onExploreClick,
-            modifier = modifier
-        )
-    } else {
-        val contentPadding = rememberFloatingBottomBarPadding(
-            start = MaterialTheme.spacing.medium,
-            top = MaterialTheme.spacing.small,
-            end = MaterialTheme.spacing.medium,
-            extraSpacing = MaterialTheme.spacing.large
-        )
+    AnimatedContent(
+        targetState = totalCount == 0,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) togetherWith
+                    fadeOut(animationSpec = tween(180, easing = FastOutSlowInEasing))
+        },
+        label = "MediaCollectionEmptyOrGrid"
+    ) { isEmpty ->
+        if (isEmpty) {
+            ExpressiveEmptyState(
+                title = emptyTitle,
+                subtitle = emptySubtitle,
+                icon = emptyIcon,
+                actionButtonText = stringResource(R.string.explore_titles),
+                onActionClick = onExploreClick,
+                modifier = modifier
+            )
+        } else {
+            val contentPadding = rememberFloatingBottomBarPadding(
+                start = MaterialTheme.spacing.medium,
+                top = MaterialTheme.spacing.small,
+                end = MaterialTheme.spacing.medium,
+                extraSpacing = MaterialTheme.spacing.large
+            )
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 140.dp),
-            contentPadding = contentPadding,
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-            modifier = modifier.fillMaxSize()
-        ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    FilterChip(
-                        selected = activeFilter == MediaTypeFilter.ALL,
-                        onClick = { onFilterSelected(MediaTypeFilter.ALL) },
-                        label = { Text("${stringResource(R.string.filter_all)} ($totalCount)") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                    FilterChip(
-                        selected = activeFilter == MediaTypeFilter.MOVIE,
-                        onClick = { onFilterSelected(MediaTypeFilter.MOVIE) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Rounded.Movie,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        },
-                        label = { Text("${stringResource(R.string.filter_movies)} ($movieCount)") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                    FilterChip(
-                        selected = activeFilter == MediaTypeFilter.TV,
-                        onClick = { onFilterSelected(MediaTypeFilter.TV) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Rounded.Tv,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        },
-                        label = { Text("${stringResource(R.string.filter_tv_shows)} ($tvCount)") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-            }
-
-            if (items.isEmpty()) {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 140.dp),
+                contentPadding = contentPadding,
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                modifier = modifier.fillMaxSize()
+            ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 36.dp, horizontal = MaterialTheme.spacing.medium)
+                            .padding(vertical = 4.dp)
                     ) {
-                        // Multi-layer glowing circular illustration
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(80.dp)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                                modifier = Modifier.size(80.dp)
-                            ) {}
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.size(56.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = when (activeFilter) {
-                                            MediaTypeFilter.MOVIE -> Icons.Rounded.Movie
-                                            MediaTypeFilter.TV -> Icons.Rounded.Tv
-                                            else -> Icons.Rounded.FilterListOff
-                                        },
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        val filterTitle = when (activeFilter) {
-                            MediaTypeFilter.MOVIE -> stringResource(R.string.empty_filter_movies_title)
-                            MediaTypeFilter.TV -> stringResource(R.string.empty_filter_tv_title)
-                            else -> stringResource(R.string.empty_list_items_title)
-                        }
-                        val filterSubtitle = when (activeFilter) {
-                            MediaTypeFilter.MOVIE -> stringResource(R.string.empty_filter_movies_subtitle)
-                            MediaTypeFilter.TV -> stringResource(R.string.empty_filter_tv_subtitle)
-                            else -> stringResource(R.string.empty_list_items_subtitle)
-                        }
-
-                        Text(
-                            text = filterTitle,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = filterSubtitle,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Clean, vertically balanced action hierarchy
-                        Button(
+                        FilterChip(
+                            selected = activeFilter == MediaTypeFilter.ALL,
                             onClick = { onFilterSelected(MediaTypeFilter.ALL) },
-                            shape = RoundedCornerShape(14.dp),
-                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            label = { Text("${stringResource(R.string.filter_all)} ($totalCount)") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.FilterListOff,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                        )
+                        FilterChip(
+                            selected = activeFilter == MediaTypeFilter.MOVIE,
+                            onClick = { onFilterSelected(MediaTypeFilter.MOVIE) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Movie,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            label = { Text("${stringResource(R.string.filter_movies)} ($movieCount)") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "${stringResource(R.string.clear_filter)} ($totalCount)",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold
+                        )
+                        FilterChip(
+                            selected = activeFilter == MediaTypeFilter.TV,
+                            onClick = { onFilterSelected(MediaTypeFilter.TV) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Tv,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            label = { Text("${stringResource(R.string.filter_tv_shows)} ($tvCount)") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        TextButton(
-                            onClick = onExploreClick,
-                            shape = RoundedCornerShape(12.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Search,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = when (activeFilter) {
-                                    MediaTypeFilter.MOVIE -> stringResource(R.string.explore_movies)
-                                    MediaTypeFilter.TV -> stringResource(R.string.explore_tv_shows)
-                                    else -> stringResource(R.string.explore_titles)
-                                },
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        )
                     }
                 }
-            } else {
-                items(
-                    items = items,
-                    key = { it.mediaId },
-                    contentType = { "saved_media" }
-                ) { item ->
-                    val badgeScale = remember { Animatable(1f) }
-                    val coroutineScope = rememberCoroutineScope()
 
-                    MediaItem(
-                        title = item.title,
-                        posterImageUrl = item.posterImageUrl,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem(
-                                fadeInSpec = tween(durationMillis = 300),
-                                fadeOutSpec = tween(durationMillis = 300),
-                                placementSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessLow
+                if (items.isEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    vertical = 36.dp,
+                                    horizontal = MaterialTheme.spacing.medium
                                 )
-                            ),
-                        posterModifier = Modifier.fillMaxWidth(),
-                        titleMaxLines = 2,
-                        indicator = {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = Modifier.padding(4.dp)
+                        ) {
+                            // Multi-layer glowing circular illustration
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.size(80.dp)
                             ) {
-                                if (item.voteAvg > 0f) {
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                            alpha = 0.9f
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                    modifier = Modifier.size(80.dp)
+                                ) {}
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    modifier = Modifier.size(56.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = when (activeFilter) {
+                                                MediaTypeFilter.MOVIE -> Icons.Rounded.Movie
+                                                MediaTypeFilter.TV -> Icons.Rounded.Tv
+                                                else -> Icons.Rounded.FilterListOff
+                                            },
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(28.dp)
                                         )
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(
-                                                horizontal = 5.dp,
-                                                vertical = 2.dp
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            val filterTitle = when (activeFilter) {
+                                MediaTypeFilter.MOVIE -> stringResource(R.string.empty_filter_movies_title)
+                                MediaTypeFilter.TV -> stringResource(R.string.empty_filter_tv_title)
+                                else -> stringResource(R.string.empty_list_items_title)
+                            }
+                            val filterSubtitle = when (activeFilter) {
+                                MediaTypeFilter.MOVIE -> stringResource(R.string.empty_filter_movies_subtitle)
+                                MediaTypeFilter.TV -> stringResource(R.string.empty_filter_tv_subtitle)
+                                else -> stringResource(R.string.empty_list_items_subtitle)
+                            }
+
+                            Text(
+                                text = filterTitle,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = filterSubtitle,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // Clean, vertically balanced action hierarchy
+                            Button(
+                                onClick = { onFilterSelected(MediaTypeFilter.ALL) },
+                                shape = RoundedCornerShape(14.dp),
+                                contentPadding = PaddingValues(
+                                    horizontal = 24.dp,
+                                    vertical = 12.dp
+                                ),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.FilterListOff,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "${stringResource(R.string.clear_filter)} ($totalCount)",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            TextButton(
+                                onClick = onExploreClick,
+                                shape = RoundedCornerShape(12.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Search,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = when (activeFilter) {
+                                        MediaTypeFilter.MOVIE -> stringResource(R.string.explore_movies)
+                                        MediaTypeFilter.TV -> stringResource(R.string.explore_tv_shows)
+                                        else -> stringResource(R.string.explore_titles)
+                                    },
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(
+                        items = items,
+                        key = { "${it.mediaType}_${it.mediaId}" },
+                        contentType = { "saved_media" }
+                    ) { item ->
+                        val badgeScale = remember { Animatable(1f) }
+                        val haptic = LocalHapticFeedback.current
+                        val coroutineScope = rememberCoroutineScope()
+
+                        MediaItem(
+                            title = item.title,
+                            posterImageUrl = item.posterImageUrl,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem(
+                                    fadeInSpec = tween(
+                                        durationMillis = 220,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    fadeOutSpec = tween(
+                                        durationMillis = 180,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    placementSpec = spring(
+                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
+                                ),
+                            posterModifier = Modifier.fillMaxWidth(),
+                            titleMaxLines = 2,
+                            indicator = {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.padding(4.dp)
+                                ) {
+                                    if (item.voteAvg > 0f) {
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                                alpha = 0.9f
                                             )
                                         ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Star,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(12.dp)
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(
+                                                    horizontal = 5.dp,
+                                                    vertical = 2.dp
+                                                )
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Star,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(2.dp))
+                                                Text(
+                                                    text = String.format("%.1f", item.voteAvg),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    if (activeFilter == MediaTypeFilter.ALL) {
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                                alpha = 0.9f
                                             )
-                                            Spacer(modifier = Modifier.width(2.dp))
+                                        ) {
                                             Text(
-                                                text = String.format("%.1f", item.voteAvg),
+                                                text = if (item.mediaType == MediaType.Tv) "TV" else "Movie",
                                                 style = MaterialTheme.typography.labelSmall,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.padding(
+                                                    horizontal = 5.dp,
+                                                    vertical = 2.dp
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    if (item.addedAt > 0L) {
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                                alpha = 0.9f
+                                            )
+                                        ) {
+                                            Text(
+                                                text = formatRelativeDate(item.addedAt, datePrefix),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(
+                                                    horizontal = 5.dp,
+                                                    vertical = 2.dp
+                                                )
                                             )
                                         }
                                     }
                                 }
-
-                                if (activeFilter == MediaTypeFilter.ALL) {
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                            alpha = 0.9f
-                                        )
-                                    ) {
-                                        Text(
-                                            text = if (item.mediaType == MediaType.Tv) "TV" else "Movie",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier.padding(
-                                                horizontal = 5.dp,
-                                                vertical = 2.dp
+                            },
+                            actionIcon = {
+                                Surface(
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        coroutineScope.launch {
+                                            badgeScale.animateTo(0.82f, tween(50))
+                                            badgeScale.animateTo(
+                                                1f,
+                                                spring(dampingRatio = Spring.DampingRatioMediumBouncy)
                                             )
-                                        )
-                                    }
-                                }
-
-                                if (item.addedAt > 0L) {
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                            alpha = 0.9f
-                                        )
-                                    ) {
-                                        Text(
-                                            text = formatRelativeDate(item.addedAt, datePrefix),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Medium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(
-                                                horizontal = 5.dp,
-                                                vertical = 2.dp
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        actionIcon = {
-                            Surface(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        badgeScale.animateTo(0.75f, tween(60))
-                                        badgeScale.animateTo(
-                                            1.25f,
-                                            spring(
-                                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                                stiffness = Spring.StiffnessMediumLow
-                                            )
-                                        )
-                                        badgeScale.animateTo(
-                                            1f,
-                                            spring(dampingRatio = Spring.DampingRatioNoBouncy)
-                                        )
-                                    }
-                                    itemPendingRemoval = item
-                                },
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                                tonalElevation = 2.dp,
-                                shadowElevation = 3.dp,
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .graphicsLayer {
-                                        scaleX = badgeScale.value
-                                        scaleY = badgeScale.value
-                                    }
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
+                                        }
+                                        itemPendingRemoval = item
+                                    },
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                                    tonalElevation = 2.dp,
+                                    shadowElevation = 3.dp,
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .graphicsLayer {
+                                            scaleX = badgeScale.value
+                                            scaleY = badgeScale.value
+                                        }
                                 ) {
-                                    Icon(
-                                        imageVector = actionIconVector,
-                                        contentDescription = stringResource(R.string.remove_from_library),
-                                        tint = actionIconTint,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            imageVector = actionIconVector,
+                                            contentDescription = stringResource(R.string.remove_from_library),
+                                            tint = actionIconTint,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
-                            }
-                        },
-                        onClick = { onItemClick(item) }
-                    )
+                            },
+                            onClick = { onItemClick(item) }
+                        )
+                    }
                 }
             }
         }
@@ -1212,68 +1253,92 @@ private fun CustomListsHubTabContent(
     onExploreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (lists.isEmpty()) {
-        ExpressiveEmptyState(
-            title = stringResource(R.string.empty_custom_lists_title),
-            subtitle = stringResource(R.string.empty_custom_lists_subtitle),
-            icon = Icons.Rounded.FolderSpecial,
-            actionButtonText = stringResource(R.string.create_custom_list),
-            onActionClick = onCreateListClick,
-            modifier = modifier
-        )
-    } else {
-        val contentPadding = rememberFloatingBottomBarPadding(
-            start = MaterialTheme.spacing.medium,
-            top = MaterialTheme.spacing.medium,
-            end = MaterialTheme.spacing.medium,
-            extraSpacing = MaterialTheme.spacing.large
-        )
+    AnimatedContent(
+        targetState = lists.isEmpty(),
+        transitionSpec = {
+            fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) togetherWith
+                    fadeOut(animationSpec = tween(180, easing = FastOutSlowInEasing))
+        },
+        label = "CustomListsEmptyOrGrid"
+    ) { isEmpty ->
+        if (isEmpty) {
+            ExpressiveEmptyState(
+                title = stringResource(R.string.empty_custom_lists_title),
+                subtitle = stringResource(R.string.empty_custom_lists_subtitle),
+                icon = Icons.Rounded.FolderSpecial,
+                actionButtonText = stringResource(R.string.create_custom_list),
+                onActionClick = onCreateListClick,
+                modifier = modifier
+            )
+        } else {
+            val contentPadding = rememberFloatingBottomBarPadding(
+                start = MaterialTheme.spacing.medium,
+                top = MaterialTheme.spacing.medium,
+                end = MaterialTheme.spacing.medium,
+                extraSpacing = MaterialTheme.spacing.large
+            )
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
-            contentPadding = contentPadding,
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-            modifier = modifier.fillMaxSize()
-        ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                ) {
-                    Text(
-                        text = if (lists.size == 1) "1 Collection" else "${lists.size} Collections",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    TextButton(onClick = onCreateListClick) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 160.dp),
+                contentPadding = contentPadding,
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
+                modifier = modifier.fillMaxSize()
+            ) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp)
+                    ) {
+                        Text(
+                            text = if (lists.size == 1) "1 Collection" else "${lists.size} Collections",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = stringResource(R.string.create_custom_list))
+
+                        TextButton(onClick = onCreateListClick) {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = stringResource(R.string.create_custom_list))
+                        }
                     }
                 }
-            }
 
-            items(
-                items = lists,
-                key = { it.listId }
-            ) { list ->
-                CustomListCard(
-                    customList = list,
-                    onClick = { onListClick(list) },
-                    onEditClick = { onEditListClick(list) },
-                    onDeleteClick = { onDeleteListClick(list) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                items(
+                    items = lists,
+                    key = { it.listId }
+                ) { list ->
+                    CustomListCard(
+                        customList = list,
+                        onClick = { onListClick(list) },
+                        onEditClick = { onEditListClick(list) },
+                        onDeleteClick = { onDeleteListClick(list) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem(
+                                fadeInSpec = tween(
+                                    durationMillis = 220,
+                                    easing = FastOutSlowInEasing
+                                ),
+                                fadeOutSpec = tween(
+                                    durationMillis = 180,
+                                    easing = FastOutSlowInEasing
+                                ),
+                                placementSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                )
+                            )
+                    )
+                }
             }
         }
     }
@@ -1619,12 +1684,26 @@ private fun CustomListDetailSheet(
                 ) {
                     items(
                         items = customList.items,
-                        key = { it.mediaId }
+                        key = { "${it.mediaType}_${it.mediaId}" }
                     ) { item ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .animateItem(
+                                    fadeInSpec = tween(
+                                        durationMillis = 220,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    fadeOutSpec = tween(
+                                        durationMillis = 180,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    placementSpec = spring(
+                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
+                                )
                                 .clip(RoundedCornerShape(12.dp))
                                 .clickable { onItemClick(item) }
                                 .padding(vertical = 4.dp)
