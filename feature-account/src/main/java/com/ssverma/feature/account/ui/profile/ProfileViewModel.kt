@@ -12,6 +12,7 @@ import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.domain.repository.AccountRepository
+import com.ssverma.feature.account.domain.seeder.DatabaseSeeder
 import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
@@ -19,17 +20,15 @@ import com.ssverma.feature.auth.domain.sessionIdOrNull
 import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.AppTheme
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.repository.AppConfigRepository
-import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.ConfigurationRepository
-import com.ssverma.shared.domain.repository.LibraryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Optional
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,9 +42,11 @@ class ProfileViewModel @Inject constructor(
     private val appConfigProvider: AppConfigProvider,
     private val traktAuthManager: TraktAuthManager,
     private val debugConfigManager: DebugConfigManager,
-    private val libraryRepository: LibraryRepository,
-    private val cinemaGameRepository: CinemaGameRepository
+    private val optionalDatabaseSeeder: Optional<DatabaseSeeder>
 ) : ViewModel() {
+
+    private val databaseSeeder: DatabaseSeeder
+        get() = if (optionalDatabaseSeeder.isPresent) optionalDatabaseSeeder.get() else DatabaseSeeder.NoOp
 
     private val _uiState = MutableStateFlow(ProfileScreenState())
     val uiState = _uiState.asStateFlow()
@@ -356,15 +357,7 @@ class ProfileViewModel @Inject constructor(
 
     fun seedSampleFavorites() {
         viewModelScope.launch {
-            libraryRepository.toggleFavorite(
-                mediaId = 550,
-                mediaType = MediaType.Movie,
-                title = "Fight Club",
-                posterImageUrl = "/bptfVGEQuv6vDTIMVCHjJ9Dz8PX.jpg",
-                backdropImageUrl = "/hZkgoQYus5vegHoetLkCJzb17zJ.jpg",
-                voteAvg = 8.433f,
-                releaseDate = "1999-10-15"
-            )
+            databaseSeeder.seedFavorites()
             _uiState.update {
                 it.copy(
                     message = UiText.StaticText(R.string.dev_seeded_favorites_msg)
@@ -375,15 +368,7 @@ class ProfileViewModel @Inject constructor(
 
     fun seedSampleWatchlist() {
         viewModelScope.launch {
-            libraryRepository.toggleWatchlist(
-                mediaId = 27205,
-                mediaType = MediaType.Movie,
-                title = "Inception",
-                posterImageUrl = "/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
-                backdropImageUrl = "/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg",
-                voteAvg = 8.364f,
-                releaseDate = "2010-07-15"
-            )
+            databaseSeeder.seedWatchlist()
             _uiState.update {
                 it.copy(
                     message = UiText.StaticText(R.string.dev_seeded_watchlist_msg)
@@ -394,13 +379,7 @@ class ProfileViewModel @Inject constructor(
 
     fun seedSampleHistory() {
         viewModelScope.launch {
-            libraryRepository.toggleWatchHistory(
-                mediaId = 155,
-                mediaType = MediaType.Movie,
-                title = "The Dark Knight",
-                posterImageUrl = "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-                voteAvg = 8.512f
-            )
+            databaseSeeder.seedHistory()
             _uiState.update {
                 it.copy(
                     message = UiText.StaticText(R.string.dev_seeded_history_msg)
@@ -411,8 +390,7 @@ class ProfileViewModel @Inject constructor(
 
     fun clearLocalDatabase() {
         viewModelScope.launch {
-            libraryRepository.deleteFavorite(550)
-            libraryRepository.deleteWatchlist(27205)
+            databaseSeeder.clearDatabase()
             _uiState.update {
                 it.copy(
                     message = UiText.StaticText(R.string.dev_cleared_db_msg)
@@ -423,7 +401,7 @@ class ProfileViewModel @Inject constructor(
 
     fun resetCinemaGame() {
         viewModelScope.launch {
-            cinemaGameRepository.resetGameData()
+            databaseSeeder.resetCinemaGame()
             _uiState.update {
                 it.copy(
                     message = UiText.DynamicText("Daily Cinema Challenge state reset!")

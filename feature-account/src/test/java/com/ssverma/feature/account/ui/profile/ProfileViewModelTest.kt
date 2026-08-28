@@ -11,13 +11,12 @@ import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.repository.AccountRepository
+import com.ssverma.feature.account.domain.seeder.DatabaseSeeder
 import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.model.AppTheme
-import com.ssverma.shared.domain.repository.CinemaGameRepository
-import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import io.mockk.coEvery
@@ -30,6 +29,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.util.Optional
 
 class ProfileViewModelTest {
 
@@ -47,8 +47,7 @@ class ProfileViewModelTest {
     private val mockAuthManager: AuthManager = mockk(relaxed = true)
     private val mockTraktAuthManager: TraktAuthManager = mockk(relaxed = true)
     private val mockDebugConfigManager: DebugConfigManager = mockk(relaxed = true)
-    private val mockLibraryRepository: LibraryRepository = mockk(relaxed = true)
-    private val mockCinemaGameRepository: CinemaGameRepository = mockk(relaxed = true)
+    private val mockDatabaseSeeder: DatabaseSeeder = mockk(relaxed = true)
 
     private val authFlow = MutableSharedFlow<AuthState>(replay = 1)
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
@@ -75,8 +74,7 @@ class ProfileViewModelTest {
             appConfigProvider = fakeAppConfigProvider,
             traktAuthManager = mockTraktAuthManager,
             debugConfigManager = mockDebugConfigManager,
-            libraryRepository = mockLibraryRepository,
-            cinemaGameRepository = mockCinemaGameRepository
+            optionalDatabaseSeeder = Optional.of(mockDatabaseSeeder)
         )
     }
 
@@ -150,6 +148,51 @@ class ProfileViewModelTest {
         coVerify {
             mockAuthManager.logout()
             mockAccountRepository.removeUserAccount()
+        }
+    }
+
+    @Test
+    fun `seedSampleFavorites delegates to databaseSeeder`() = runTest {
+        viewModel.seedSampleFavorites()
+
+        coVerify {
+            mockDatabaseSeeder.seedFavorites()
+        }
+    }
+
+    @Test
+    fun `seedSampleWatchlist delegates to databaseSeeder`() = runTest {
+        viewModel.seedSampleWatchlist()
+
+        coVerify {
+            mockDatabaseSeeder.seedWatchlist()
+        }
+    }
+
+    @Test
+    fun `seedSampleHistory delegates to databaseSeeder`() = runTest {
+        viewModel.seedSampleHistory()
+
+        coVerify {
+            mockDatabaseSeeder.seedHistory()
+        }
+    }
+
+    @Test
+    fun `clearLocalDatabase delegates to databaseSeeder`() = runTest {
+        viewModel.clearLocalDatabase()
+
+        coVerify {
+            mockDatabaseSeeder.clearDatabase()
+        }
+    }
+
+    @Test
+    fun `resetCinemaGame delegates to databaseSeeder`() = runTest {
+        viewModel.resetCinemaGame()
+
+        coVerify {
+            mockDatabaseSeeder.resetCinemaGame()
         }
     }
 }
