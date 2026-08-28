@@ -4,7 +4,6 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
-import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
@@ -28,9 +27,6 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             openSearchPage = {
                 navigator.navigate(SearchNavKey)
-            },
-            openAccountPage = {
-                navigator.navigate(ProfileNavKey)
             },
             initialTab = navKey.initialTab,
             initialMediaType = navKey.initialMediaType,

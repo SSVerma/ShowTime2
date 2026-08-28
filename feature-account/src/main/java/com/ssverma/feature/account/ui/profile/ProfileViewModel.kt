@@ -92,7 +92,24 @@ class ProfileViewModel @Inject constructor(
 
         viewModelScope.launch {
             backupRepository.googleUser.collectLatest { user ->
-                _uiState.update { it.copy(googleUser = user) }
+                _uiState.update { state ->
+                    val updatedProfile = if (state.profileContent is ProfileContentState.Success) {
+                        if (state.profileContent.profile.id == 0 && user != null) {
+                            state.profileContent.profile.copy(
+                                displayName = user.displayName,
+                                imageUrl = user.photoUrl.orEmpty()
+                            )
+                        } else {
+                            state.profileContent.profile
+                        }
+                    } else null
+                    state.copy(
+                        googleUser = user,
+                        profileContent = if (updatedProfile != null)
+                            ProfileContentState.Success(updatedProfile)
+                        else state.profileContent
+                    )
+                }
             }
         }
 
@@ -186,25 +203,30 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun fetchProfile() {
-        _uiState.update { it.copy(profileContent = ProfileContentState.Loading) }
+        val user = backupRepository.googleUser.value
+        val initialProfile = Profile(
+            id = 0,
+            userName = user?.displayName ?: "guest",
+            displayName = user?.displayName ?: "Guest User",
+            imageUrl = user?.photoUrl.orEmpty()
+        )
+
+        _uiState.update { state ->
+            if (state.profileContent is ProfileContentState.Success) {
+                state
+            } else {
+                state.copy(profileContent = ProfileContentState.Success(initialProfile))
+            }
+        }
 
         viewModelScope.launch {
-            val profileResult = accountRepository.fetchProfile(
-                sessionId = authManager.sessionIdOrNull().orEmpty()
-            )
-            val newContentState = when (profileResult) {
-                is Result.Error -> ProfileContentState.Success(
-                    profile = Profile(
-                        id = 0,
-                        userName = "guest",
-                        displayName = "Guest User",
-                        imageUrl = ""
-                    )
-                )
-
-                is Result.Success -> ProfileContentState.Success(profile = profileResult.data)
+            val sessionId = authManager.sessionIdOrNull()
+            if (!sessionId.isNullOrBlank()) {
+                val profileResult = accountRepository.fetchProfile(sessionId = sessionId)
+                if (profileResult is Result.Success) {
+                    _uiState.update { it.copy(profileContent = ProfileContentState.Success(profile = profileResult.data)) }
+                }
             }
-            _uiState.update { it.copy(profileContent = newContentState) }
         }
     }
 

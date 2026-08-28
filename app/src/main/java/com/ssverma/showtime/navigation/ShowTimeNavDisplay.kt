@@ -53,22 +53,42 @@ fun ShowTimeNavDisplay(
         ShowTimeTopLevelNavItems.map { it.navKey }
     }
 
-    SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
+    val outerSharedScope = LocalSharedTransitionScope.current
+
+    if (outerSharedScope != null) {
         CompositionLocalProvider(
             LocalNavigator provides navigator,
             LocalNavigationState provides navigationState,
-            LocalNavEntries provides entries,
-            LocalSharedTransitionScope provides this
+            LocalNavEntries provides entries
         ) {
             NavDisplay(
                 entries = entries,
                 onBack = { navigator.goBack() },
-                sharedTransitionScope = this,
+                sharedTransitionScope = outerSharedScope,
                 transitionSpec = { showTimeForwardTransition(topLevelOrder) },
                 popTransitionSpec = { showTimePopTransition(topLevelOrder) },
                 predictivePopTransitionSpec = { showTimePredictivePopTransition(topLevelOrder) },
-                modifier = Modifier.fillMaxSize()
+                modifier = modifier.fillMaxSize()
             )
+        }
+    } else {
+        SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
+            CompositionLocalProvider(
+                LocalNavigator provides navigator,
+                LocalNavigationState provides navigationState,
+                LocalNavEntries provides entries,
+                LocalSharedTransitionScope provides this
+            ) {
+                NavDisplay(
+                    entries = entries,
+                    onBack = { navigator.goBack() },
+                    sharedTransitionScope = this,
+                    transitionSpec = { showTimeForwardTransition(topLevelOrder) },
+                    popTransitionSpec = { showTimePopTransition(topLevelOrder) },
+                    predictivePopTransitionSpec = { showTimePredictivePopTransition(topLevelOrder) },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }

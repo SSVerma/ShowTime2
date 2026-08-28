@@ -71,6 +71,7 @@ import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.component.Avatar
+import com.ssverma.shared.ui.component.ProfileAvatarSharedKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -243,6 +244,7 @@ private fun ProfileContent(
         // Avatar & Info Header
         ProfileHeader(
             profile = profile,
+            googleUser = googleUser,
             isProActive = isProActive,
             isGuest = isGuest,
             onLogoutClick = onLogoutClick
@@ -290,14 +292,18 @@ private fun ProfileContent(
 @Composable
 private fun ProfileHeader(
     profile: Profile,
+    googleUser: com.ssverma.core.backup.model.GoogleUser?,
     isProActive: Boolean,
     isGuest: Boolean,
     onLogoutClick: () -> Unit
 ) {
+    val avatarUrl = googleUser?.photoUrl?.toString()?.ifBlank { null } ?: profile.imageUrl
     Avatar(
-        imageUrl = profile.imageUrl,
+        imageUrl = avatarUrl,
         onClick = {},
-        size = 92.dp
+        size = 96.dp,
+        enableSharedTransition = true,
+        sharedContentKey = ProfileAvatarSharedKey
     )
 
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))

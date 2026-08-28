@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -76,6 +78,8 @@ import androidx.core.view.WindowCompat
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
 import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
+import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
+import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.rememberNavigationState
 import com.ssverma.core.notifications.LocalNotificationManager
@@ -100,7 +104,7 @@ import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 import com.ssverma.showtime.notifications.NotificationPermissionHandler
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ShowTime(
     initialDeepLinkKey: NavKey? = null
@@ -251,12 +255,6 @@ fun ShowTime(
                 gesturesEnabled = isHomePage,
                 drawerContent = {
                     ShowTimeDrawerContent(
-                        googleUser = googleUser,
-                        isProActive = isProActive,
-                        onOpenProfile = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(ProfileNavKey)
-                        },
                         onOpenPeople = {
                             coroutineScope.launch { drawerState.close() }
                             navigator.navigate(PersonHomeNavKey)
@@ -346,92 +344,137 @@ fun ShowTime(
                         }
                     }
 
-                    CompositionLocalProvider(
-                        LocalFloatingBarsVisible provides isBottomBarVisible
+                    SharedTransitionLayout(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(bottomBarNestedScrollConnection)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .nestedScroll(bottomBarNestedScrollConnection)
+                        CompositionLocalProvider(
+                            LocalFloatingBarsVisible provides isBottomBarVisible,
+                            LocalSharedTransitionScope provides this
                         ) {
-                            ShowTimeNavDisplay(
-                                navigationState = navigationState,
-                                navigator = navigator,
-                                openLibraryPage = { navKey ->
-                                    navigator.navigate(navKey)
-                                },
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(
-                                        start = innerPaddingModifier.calculateStartPadding(
-                                            LayoutDirection.Ltr
-                                        ),
-                                        end = innerPaddingModifier.calculateEndPadding(
-                                            LayoutDirection.Ltr
+                            Box(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                ShowTimeNavDisplay(
+                                    navigationState = navigationState,
+                                    navigator = navigator,
+                                    openLibraryPage = { navKey ->
+                                        navigator.navigate(navKey)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(
+                                            start = innerPaddingModifier.calculateStartPadding(
+                                                LayoutDirection.Ltr
+                                            ),
+                                            end = innerPaddingModifier.calculateEndPadding(
+                                                LayoutDirection.Ltr
+                                            )
                                         )
-                                    )
-                            )
-
-                            AnimatedVisibility(
-                                visible = isHomePage && isBottomBarVisible,
-                                enter = slideInVertically(
-                                    initialOffsetY = { -it },
-                                    animationSpec = tween(
-                                        durationMillis = 350,
-                                        easing = FastOutSlowInEasing
-                                    )
-                                ) + fadeIn(animationSpec = tween(250)),
-                                exit = slideOutVertically(
-                                    targetOffsetY = { -it },
-                                    animationSpec = tween(
-                                        durationMillis = 350,
-                                        easing = FastOutSlowInEasing
-                                    )
-                                ) + fadeOut(animationSpec = tween(250)),
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .statusBarsPadding()
-                            ) {
-                                ShowTimeTopSearchBar(
-                                    googleUser = googleUser,
-                                    isProActive = isProActive,
-                                    onMenuClick = {
-                                        coroutineScope.launch { drawerState.open() }
-                                    },
-                                    onSearchClick = {
-                                        navigator.navigate(SearchNavKey)
-                                    },
-                                    onProfileClick = {
-                                        navigator.navigate(ProfileNavKey)
-                                    }
                                 )
-                            }
 
-                            AnimatedVisibility(
-                                visible = isHomePage && isBottomBarVisible,
-                                enter = slideInVertically(
-                                    initialOffsetY = { it },
-                                    animationSpec = tween(
-                                        durationMillis = 350,
-                                        easing = FastOutSlowInEasing
-                                    )
-                                ) + fadeIn(animationSpec = tween(250)),
-                                exit = slideOutVertically(
-                                    targetOffsetY = { it },
-                                    animationSpec = tween(
-                                        durationMillis = 350,
-                                        easing = FastOutSlowInEasing
-                                    )
-                                ) + fadeOut(animationSpec = tween(250)),
-                                modifier = Modifier.align(Alignment.BottomCenter)
-                            ) {
-                                ShowTimeBottomBar(
-                                    currentNavKey = currentDestination,
-                                    topLevelNavKey = navigationState.topLevelRoute,
-                                    onTopLevelNavItemSelected = { navItem ->
-                                        navigator.navigate(navItem.navKey)
+                                AnimatedVisibility(
+                                    visible = isHomePage && isBottomBarVisible,
+                                    enter = if (isHomePage) {
+                                        slideInVertically(
+                                            initialOffsetY = { -it },
+                                            animationSpec = tween(
+                                                durationMillis = 300,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        ) + fadeIn(animationSpec = tween(220))
+                                    } else {
+                                        fadeIn(
+                                            animationSpec = tween(
+                                                280,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        )
+                                    },
+                                    exit = if (isHomePage) {
+                                        slideOutVertically(
+                                            targetOffsetY = { -it },
+                                            animationSpec = tween(
+                                                durationMillis = 300,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        ) + fadeOut(animationSpec = tween(220))
+                                    } else {
+                                        fadeOut(
+                                            animationSpec = tween(
+                                                280,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.TopCenter)
+                                        .statusBarsPadding()
+                                ) {
+                                    CompositionLocalProvider(
+                                        LocalNavAnimatedVisibilityScope provides this
+                                    ) {
+                                        ShowTimeTopSearchBar(
+                                            googleUser = googleUser,
+                                            isProActive = isProActive,
+                                            onMenuClick = {
+                                                coroutineScope.launch { drawerState.open() }
+                                            },
+                                            onSearchClick = {
+                                                navigator.navigate(SearchNavKey)
+                                            },
+                                            onProfileClick = {
+                                                navigator.navigate(ProfileNavKey)
+                                            }
+                                        )
                                     }
-                                )
+                                }
+
+                                AnimatedVisibility(
+                                    visible = isHomePage && isBottomBarVisible,
+                                    enter = if (isHomePage) {
+                                        slideInVertically(
+                                            initialOffsetY = { it },
+                                            animationSpec = tween(
+                                                durationMillis = 300,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        ) + fadeIn(animationSpec = tween(220))
+                                    } else {
+                                        fadeIn(
+                                            animationSpec = tween(
+                                                280,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        )
+                                    },
+                                    exit = if (isHomePage) {
+                                        slideOutVertically(
+                                            targetOffsetY = { it },
+                                            animationSpec = tween(
+                                                durationMillis = 300,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        ) + fadeOut(animationSpec = tween(220))
+                                    } else {
+                                        fadeOut(
+                                            animationSpec = tween(
+                                                280,
+                                                easing = FastOutSlowInEasing
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier.align(Alignment.BottomCenter)
+                                ) {
+                                    ShowTimeBottomBar(
+                                        currentNavKey = currentDestination,
+                                        topLevelNavKey = navigationState.topLevelRoute,
+                                        onTopLevelNavItemSelected = { navItem ->
+                                            navigator.navigate(navItem.navKey)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

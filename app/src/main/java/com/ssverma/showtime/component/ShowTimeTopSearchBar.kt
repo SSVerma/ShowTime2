@@ -1,8 +1,5 @@
 package com.ssverma.showtime.component
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -18,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
@@ -33,20 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.ssverma.core.backup.model.GoogleUser
-import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
-import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
+import com.ssverma.shared.ui.component.Avatar
+import com.ssverma.shared.ui.component.ProfileAvatarSharedKey
 import com.ssverma.showtime.R
 
-const val ProfileAvatarSharedKey = "profile_user_avatar"
-
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ShowTimeTopSearchBar(
     googleUser: GoogleUser?,
@@ -56,8 +47,6 @@ fun ShowTimeTopSearchBar(
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val sharedTransitionScope = LocalSharedTransitionScope.current
-    val animatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
 
     Box(
         modifier = modifier
@@ -137,24 +126,6 @@ fun ShowTimeTopSearchBar(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Trailing User Avatar with Shared Element Support
-                val avatarSharedModifier =
-                    if (sharedTransitionScope != null && animatedVisibilityScope != null) {
-                        with(sharedTransitionScope) {
-                            Modifier.sharedElement(
-                                sharedContentState = rememberSharedContentState(key = ProfileAvatarSharedKey),
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                boundsTransform = { _, _ ->
-                                    spring(dampingRatio = 0.8f, stiffness = 380f)
-                                },
-                                clipInOverlayDuringTransition = OverlayClip(CircleShape),
-                                zIndexInOverlay = 2f
-                            )
-                        }
-                    } else {
-                        Modifier
-                    }
-
                 if (isProActive) {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
@@ -173,41 +144,18 @@ fun ShowTimeTopSearchBar(
                     }
                 }
 
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .then(avatarSharedModifier)
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                            shape = CircleShape
-                        )
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = ripple(bounded = true),
-                            onClick = onProfileClick
-                        )
-                ) {
-                    if (googleUser?.photoUrl != null) {
-                        AsyncImage(
-                            model = googleUser.photoUrl,
-                            contentDescription = googleUser.displayName,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Rounded.AccountCircle,
-                            contentDescription = stringResource(id = R.string.account),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(26.dp)
-                        )
-                    }
-                }
+                Avatar(
+                    imageUrl = googleUser?.photoUrl.orEmpty(),
+                    contentDescription = googleUser?.displayName
+                        ?: stringResource(id = R.string.account),
+                    onClick = onProfileClick,
+                    size = 36.dp,
+                    borderWidth = 1.dp,
+                    borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    borderSpacing = 0.dp,
+                    enableSharedTransition = true,
+                    sharedContentKey = ProfileAvatarSharedKey
+                )
             }
         }
     }

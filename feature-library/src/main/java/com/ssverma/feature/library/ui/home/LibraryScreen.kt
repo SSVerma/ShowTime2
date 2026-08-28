@@ -44,7 +44,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
-import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
@@ -148,7 +147,6 @@ fun LibraryScreen(
     onMovieClicked: (movieId: Int) -> Unit,
     onTvShowClicked: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
-    openAccountPage: () -> Unit,
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -390,13 +388,6 @@ fun LibraryScreen(
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
                                         contentDescription = stringResource(R.string.cinema_receipt)
-                                    )
-                                }
-
-                                IconButton(onClick = openAccountPage) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.AccountCircle,
-                                        contentDescription = stringResource(R.string.account_cd)
                                     )
                                 }
                             },

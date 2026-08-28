@@ -1,7 +1,8 @@
 package com.ssverma.shared.ui.component
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,6 +24,8 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 
+const val ProfileAvatarSharedKey = "profile_user_avatar"
+
 fun personSharedContentKey(personId: Int, source: String = "default"): String =
     "person_avatar_${personId}_${source}"
 
@@ -33,10 +37,11 @@ fun Avatar(
     size: Dp = AvatarDefaults.Size,
     contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.Crop,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
     borderWidth: Dp = AvatarDefaults.BorderWidth,
     borderColor: Color = MaterialTheme.colorScheme.primary,
     borderSpacing: Dp = AvatarDefaults.BorderSpacing,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
     enableSharedTransition: Boolean = false,
     sharedContentKey: Any? = null
 ) {
@@ -50,13 +55,13 @@ fun Avatar(
                     sharedContentState = rememberSharedContentState(key = sharedContentKey),
                     animatedVisibilityScope = animatedVisibilityScope,
                     boundsTransform = { _, _ ->
-                        spring(
-                            dampingRatio = 0.8f,
-                            stiffness = 380f
+                        tween(
+                            durationMillis = 320,
+                            easing = FastOutSlowInEasing
                         )
                     },
                     clipInOverlayDuringTransition = OverlayClip(CircleShape),
-                    zIndexInOverlay = 1f
+                    zIndexInOverlay = 3f
                 )
             }
         } else {
@@ -64,6 +69,7 @@ fun Avatar(
         }
 
     Box(
+        contentAlignment = androidx.compose.ui.Alignment.Center,
         modifier = modifier
             .size(size)
             .then(sharedModifier)
@@ -77,14 +83,23 @@ fun Avatar(
             .clip(CircleShape)
             .clickable { onClick() }
     ) {
-        NetworkImage(
-            url = imageUrl,
-            contentDescription = contentDescription,
-            contentScale = contentScale,
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-        )
+        if (imageUrl.isNotBlank()) {
+            NetworkImage(
+                url = imageUrl,
+                contentDescription = contentDescription,
+                contentScale = contentScale,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+            )
+        } else {
+            androidx.compose.material3.Icon(
+                imageVector = androidx.compose.material.icons.Icons.Rounded.AccountCircle,
+                contentDescription = contentDescription,
+                tint = iconTint,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 
