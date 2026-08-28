@@ -67,6 +67,7 @@ import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.media.MediaItem
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
+import com.ssverma.shared.ui.component.section.MediaReactionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.shared.ui.component.section.ReviewsSection
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
@@ -137,6 +138,7 @@ fun MovieContent(
     val movie = data.movie
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
+    val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "movie_details_watch_provider")
     val snackbarHostState = remember { SnackbarHostState() }
@@ -294,6 +296,16 @@ fun MovieContent(
                         }
                     )
                 }
+            }
+
+            item(key = "community_reactions") {
+                MediaReactionsSection(
+                    reactions = mediaReactions,
+                    onTagClick = { tag ->
+                        viewModel.onReactionTagClicked(tag = tag)
+                    },
+                    modifier = Modifier.padding(top = SectionVerticalSpacing)
+                )
             }
 
             item {

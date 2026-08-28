@@ -98,4 +98,14 @@
     <string name="season_complete_dialog_all_caught_up">You\'re all caught up with %1$s!</string>
     <string name="season_complete_dialog_action">Awesome!</string>
     <string name="season_complete_dialog_episodes_completed">%1$d of %2$d episodes watched</string>
+
+    <!-- Community Vibe Reactions -->
+    <string name="community_vibes_title">Community Vibes</string>
+    <string name="community_reactions_count">%1$d reactions</string>
+    <string name="tag_mind_bending">Mind-Bending</string>
+    <string name="tag_comfort_watch">Comfort Watch</string>
+    <string name="tag_plot_twist">Plot Twist King</string>
+    <string name="tag_imax_essential">Must Watch in IMAX</string>
+    <string name="tag_cried_eyes_out">Cried My Eyes Out</string>
+    <string name="tag_overrated">Overrated</string>
 </resources>

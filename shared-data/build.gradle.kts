@@ -23,10 +23,14 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
+
     implementation(libs.gson)
     implementation(libs.workmanager.ktx)
     implementation(libs.core.ktx)
     implementation(libs.coroutines.core)
+    implementation(libs.coroutines.play.services)
     implementation(libs.datastore.preferences)
     implementation(libs.kotlinx.serialization.json)
 

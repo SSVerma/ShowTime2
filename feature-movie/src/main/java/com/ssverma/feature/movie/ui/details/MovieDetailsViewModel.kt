@@ -10,9 +10,14 @@ import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
+import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.MediaReactionTag
+import com.ssverma.shared.domain.model.community.MediaReactions
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.movie.imageShots
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.usecase.community.GetMediaReactionsUseCase
+import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -36,6 +41,8 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val application: Application,
     @Assisted val movieId: Int,
     private val movieDetailsUseCase: MovieDetailsUseCase,
+    private val getMediaReactionsUseCase: GetMediaReactionsUseCase,
+    private val toggleMediaReactionUseCase: ToggleMediaReactionUseCase,
     val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
@@ -55,6 +62,15 @@ class MovieDetailsViewModel @AssistedInject constructor(
             initialValue = emptyList()
         )
     val watchProviderRegion: StateFlow<String> = appConfigRepository.watchProviderRegion
+
+    val mediaReactions: StateFlow<MediaReactions> = getMediaReactionsUseCase(
+        mediaType = MediaType.Movie,
+        mediaId = movieId
+    ).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MediaReactions.empty(mediaType = MediaType.Movie, mediaId = movieId)
+    )
 
     init {
         fetchMovieDetails()
@@ -78,6 +94,16 @@ class MovieDetailsViewModel @AssistedInject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun onReactionTagClicked(tag: MediaReactionTag) {
+        viewModelScope.launch {
+            toggleMediaReactionUseCase(
+                mediaType = MediaType.Movie,
+                mediaId = movieId,
+                tag = tag
+            )
         }
     }
 

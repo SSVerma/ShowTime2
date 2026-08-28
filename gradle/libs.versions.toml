@@ -26,7 +26,7 @@ paging-common = "3.5.1"
 
 room = "2.8.4"
 datastore = "1.2.1"
-protobuf = "4.35.1"
+protobuf = "3.25.5"
 protobuf-plugin = "0.10.0"
 
 desugar = "2.1.5"
@@ -123,10 +123,12 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-remote-config = { group = "com.google.firebase", name = "firebase-config" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 
 # Play services
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services" }
 play-billing = { module = "com.android.billingclient:billing-ktx", version.ref = "play-billing" }
+coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
 
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }

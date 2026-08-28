@@ -47,4 +47,6 @@ buildSrc/.gradle
 buildSrc/.kotlin
 
 .artifacts/
-docs/
+docs/*
+!docs/COMMUNITY_VIBES_ARCHITECTURE.md
+!docs/CODE_QUALITY_AND_SECURITY_GUIDE.md

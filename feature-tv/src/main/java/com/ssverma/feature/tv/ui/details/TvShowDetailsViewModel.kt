@@ -12,11 +12,16 @@ import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.feature.tv.domain.usecase.TvShowDetailsUseCase
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
+import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.MediaReactionTag
+import com.ssverma.shared.domain.model.community.MediaReactions
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.tv.imageShots
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
+import com.ssverma.shared.domain.usecase.community.GetMediaReactionsUseCase
+import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -40,6 +45,8 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     private val application: Application,
     @Assisted val tvShowId: Int,
     private val tvShowDetailsUseCase: TvShowDetailsUseCase,
+    private val getMediaReactionsUseCase: GetMediaReactionsUseCase,
+    private val toggleMediaReactionUseCase: ToggleMediaReactionUseCase,
     val appConfigRepository: AppConfigRepository,
     private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository
@@ -78,6 +85,15 @@ class TvShowDetailsViewModel @AssistedInject constructor(
         )
     val watchProviderRegion: StateFlow<String> = appConfigRepository.watchProviderRegion
 
+    val mediaReactions: StateFlow<MediaReactions> = getMediaReactionsUseCase(
+        mediaType = MediaType.Tv,
+        mediaId = tvShowId
+    ).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MediaReactions.empty(mediaType = MediaType.Tv, mediaId = tvShowId)
+    )
+
     init {
         fetchTvShowDetails()
     }
@@ -100,6 +116,16 @@ class TvShowDetailsViewModel @AssistedInject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun onReactionTagClicked(tag: MediaReactionTag) {
+        viewModelScope.launch {
+            toggleMediaReactionUseCase(
+                mediaType = MediaType.Tv,
+                mediaId = tvShowId,
+                tag = tag
+            )
         }
     }
 
