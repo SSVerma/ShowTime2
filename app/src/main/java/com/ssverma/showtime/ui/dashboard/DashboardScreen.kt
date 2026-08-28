@@ -48,6 +48,7 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
 import com.ssverma.showtime.ui.dashboard.shelves.dailyHabitShelf
+import com.ssverma.showtime.ui.dashboard.shelves.dailyPollShelf
 import com.ssverma.showtime.ui.dashboard.shelves.inViewportNativeAdShelf
 import com.ssverma.showtime.ui.dashboard.shelves.streamingUniverseShelf
 import com.ssverma.showtime.ui.dashboard.shelves.studioPortalsShelf
@@ -203,6 +204,12 @@ fun DashboardScreen(
                 inViewportNativeAdShelf(
                     nativeAd = uiState.nativeAd,
                     onAdLoaded = viewModel::onNativeAdLoaded
+                )
+
+                // 4. Daily Community Cinema Poll & Debate
+                dailyPollShelf(
+                    poll = uiState.dailyPoll,
+                    onOptionClick = viewModel::voteDailyPoll
                 )
 
                 // 4. Streaming Universe Hub (Segmented: [ 🎬 Movies | 📺 TV Shows ])

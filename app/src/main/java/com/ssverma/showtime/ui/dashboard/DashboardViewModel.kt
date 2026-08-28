@@ -28,6 +28,8 @@ import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
+import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
+import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +51,9 @@ class DashboardViewModel @Inject constructor(
     private val adConfigProvider: AdConfigProvider,
     private val cinemaGameRepository: CinemaGameRepository,
     private val traktAuthManager: TraktAuthManager,
-    private val traktSyncRepository: TraktSyncRepository
+    private val traktSyncRepository: TraktSyncRepository,
+    private val getDailyPollUseCase: GetDailyPollUseCase,
+    private val voteDailyPollUseCase: VoteDailyPollUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -96,6 +100,16 @@ class DashboardViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            getDailyPollUseCase().collect { poll ->
+                _uiState.update { it.copy(dailyPoll = poll) }
+            }
+        }
+    }
+
+    fun voteDailyPoll(optionIndex: Int) = viewModelScope.launch {
+        voteDailyPollUseCase(optionIndex = optionIndex)
     }
 
     fun fetchAllDashboardData() {

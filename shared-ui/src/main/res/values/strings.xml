@@ -108,4 +108,10 @@
     <string name="tag_imax_essential">Must Watch in IMAX</string>
     <string name="tag_cried_eyes_out">Cried My Eyes Out</string>
     <string name="tag_overrated">Overrated</string>
+
+    <!-- Daily Community Poll -->
+    <string name="daily_poll_badge">DAILY DEBATE</string>
+    <string name="daily_poll_title">Community Cinema Poll</string>
+    <string name="daily_poll_votes_count">%1$d votes</string>
+    <string name="daily_poll_vote_cta">Tap an option to vote</string>
 </resources>

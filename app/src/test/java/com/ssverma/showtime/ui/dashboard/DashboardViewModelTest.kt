@@ -42,6 +42,10 @@ class DashboardViewModelTest {
     private val cinemaGameRepository: CinemaGameRepository = mockk(relaxed = true)
     private val traktAuthManager: TraktAuthManager = mockk(relaxed = true)
     private val fakeTraktSyncRepository = FakeTraktSyncRepository()
+    private val getDailyPollUseCase: com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase =
+        mockk(relaxed = true)
+    private val voteDailyPollUseCase: com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase =
+        mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
 
@@ -67,6 +71,9 @@ class DashboardViewModelTest {
         every { adConfigProvider.isAdsEnabled } returns false
 
         every { traktAuthManager.authState } returns traktAuthFlow
+        every { getDailyPollUseCase(any()) } returns MutableStateFlow(
+            com.ssverma.shared.domain.model.community.DailyPoll.empty(java.time.LocalDate.now())
+        )
 
         coEvery { trendingMoviesUseCase(any()) } returns Result.Success(emptyList())
         coEvery { trendingTvShowsUseCase(any()) } returns Result.Success(emptyList())
@@ -89,7 +96,9 @@ class DashboardViewModelTest {
             adConfigProvider = adConfigProvider,
             cinemaGameRepository = cinemaGameRepository,
             traktAuthManager = traktAuthManager,
-            traktSyncRepository = fakeTraktSyncRepository
+            traktSyncRepository = fakeTraktSyncRepository,
+            getDailyPollUseCase = getDailyPollUseCase,
+            voteDailyPollUseCase = voteDailyPollUseCase
         )
     }
 

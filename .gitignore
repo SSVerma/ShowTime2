@@ -49,4 +49,7 @@ buildSrc/.kotlin
 .artifacts/
 docs/*
 !docs/COMMUNITY_VIBES_ARCHITECTURE.md
+!docs/COMMUNITY_POLLS_ARCHITECTURE.md
 !docs/CODE_QUALITY_AND_SECURITY_GUIDE.md
+config/
+**/daily_polls_catalog.json

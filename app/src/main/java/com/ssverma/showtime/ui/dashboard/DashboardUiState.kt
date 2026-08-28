@@ -13,6 +13,9 @@ import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 
+import com.ssverma.shared.domain.model.community.DailyPoll
+import java.time.LocalDate
+
 data class TrendingSpotlightItem(
     val id: Int,
     val title: String,
@@ -31,6 +34,7 @@ data class DashboardUiState(
     val tvProviders: UiState<List<ProviderInfo>, Nothing> = UiState.Loading,
     val gameStats: CinemaGameStats = CinemaGameStats(),
     val isTodayGameCompleted: Boolean = false,
+    val dailyPoll: DailyPoll = DailyPoll.empty(LocalDate.now()),
     val isMovieStreamingSelected: Boolean = true,
     val isMoviePopularSelected: Boolean = true,
     val upNextQueue: List<TraktUpNextEpisode> = emptyList(),
