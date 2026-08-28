@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -15,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.shared.domain.model.ImageShot
 import kotlinx.coroutines.launch
 
@@ -38,7 +38,7 @@ fun ImageShotBottomSheet(
         content(PaddingValues())
 
         if (sheetState.isVisible) {
-            ModalBottomSheet(
+            ShowTimeBottomSheet(
                 onDismissRequest = { sheetState.hide() },
                 sheetState = sheetState.modalBottomSheetState,
                 containerColor = MaterialTheme.colorScheme.background,

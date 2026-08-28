@@ -1,6 +1,5 @@
 package com.ssverma.shared.ui.component
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -14,14 +13,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -40,8 +38,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -73,6 +69,7 @@ import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.core.ui.R as CoreUiR
@@ -379,31 +376,18 @@ private fun StreamingUniverseSheet(
         label = "ShadowAlpha"
     )
 
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
-        contentWindowInsets = {
-            androidx.compose.foundation.layout.WindowInsets.safeDrawing.only(
-                androidx.compose.foundation.layout.WindowInsetsSides.Top
-            )
-        },
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        dragHandle = { BottomSheetDefaults.DragHandle() },
-        sheetState = sheetState,
-        properties = ModalBottomSheetProperties(
-            shouldDismissOnBackPress = false
-        )
+        dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
-        BackHandler(enabled = true) {
-            onDismiss()
-        }
-
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            val bottomPadding =
-                androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues()
-                    .calculateBottomPadding()
+            val bottomPadding = WindowInsets.navigationBars.asPaddingValues()
+                .calculateBottomPadding()
 
             LazyVerticalGrid(
                 state = gridState,

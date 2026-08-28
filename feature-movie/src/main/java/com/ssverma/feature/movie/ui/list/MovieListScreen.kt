@@ -6,17 +6,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -25,6 +25,7 @@ import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.AppPage
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.paging.PagedContent
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
@@ -62,7 +63,7 @@ fun MovieListScreen(
     ) {
         val moviePagingItems = viewModel.pagedMovies.collectAsLazyPagingItems()
 
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        var showFilterSheet by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
         val snackbarHostState = remember { SnackbarHostState() }
 
@@ -81,7 +82,7 @@ fun MovieListScreen(
                                 listingType = uiState.config.asAnalyticsListingType()
                             )
                         )
-                        coroutineScope.launch { sheetState.show() }
+                        showFilterSheet = true
                     },
                     onBackPressed = onBackPressed,
                     scrollBehavior = behavior
@@ -162,12 +163,11 @@ fun MovieListScreen(
             }
         }
 
-        if (sheetState.isVisible && uiState.isFilterApplicable) {
-            ModalBottomSheet(
+        if (showFilterSheet && uiState.isFilterApplicable) {
+            ShowTimeBottomSheet(
                 onDismissRequest = {
-                    coroutineScope.launch { sheetState.hide() }
+                    showFilterSheet = false
                 },
-                sheetState = sheetState,
                 dragHandle = null,
                 sheetGesturesEnabled = false,
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -175,10 +175,10 @@ fun MovieListScreen(
                 MovieFiltersScreen(
                     initialConfig = uiState.filterConfig,
                     onBackPressed = {
-                        coroutineScope.launch { sheetState.hide() }
+                        showFilterSheet = false
                     },
                     onFilterApplied = { filterConfig ->
-                        coroutineScope.launch { sheetState.hide() }
+                        showFilterSheet = false
                         viewModel.onFiltersApplied(filterConfig)
                     }
                 )

@@ -124,38 +124,39 @@ class MediaStatsViewModelTest {
         }
 
     @Test
-    fun `isMediaActionActiveFlow emits true when media is in favorites, watchlist, or history`() = runTest {
-        viewModel.isMediaActionActiveFlow(500).test {
-            // Initially false
-            assertThat(awaitItem()).isFalse()
+    fun `isMediaActionActiveFlow emits true when media is in favorites, watchlist, or history`() =
+        runTest {
+            viewModel.isMediaActionActiveFlow(500).test {
+                // Initially false
+                assertThat(awaitItem()).isFalse()
 
-            // Add to favorites -> true
-            fakeLibraryRepository.toggleFavorite(
-                mediaId = 500,
-                mediaType = MediaType.Movie,
-                title = "Interstellar",
-                posterImageUrl = "",
-                backdropImageUrl = "",
-                voteAvg = 8.6f,
-                releaseDate = "2014-11-05"
-            )
-            assertThat(awaitItem()).isTrue()
+                // Add to favorites -> true
+                fakeLibraryRepository.toggleFavorite(
+                    mediaId = 500,
+                    mediaType = MediaType.Movie,
+                    title = "Interstellar",
+                    posterImageUrl = "",
+                    backdropImageUrl = "",
+                    voteAvg = 8.6f,
+                    releaseDate = "2014-11-05"
+                )
+                assertThat(awaitItem()).isTrue()
 
-            // Remove from favorites -> false
-            fakeLibraryRepository.deleteFavorite(500)
-            assertThat(awaitItem()).isFalse()
+                // Remove from favorites -> false
+                fakeLibraryRepository.deleteFavorite(500)
+                assertThat(awaitItem()).isFalse()
 
-            // Add to watchlist -> true
-            fakeLibraryRepository.toggleWatchlist(
-                mediaId = 500,
-                mediaType = MediaType.Movie,
-                title = "Interstellar",
-                posterImageUrl = "",
-                backdropImageUrl = "",
-                voteAvg = 8.6f,
-                releaseDate = "2014-11-05"
-            )
-            assertThat(awaitItem()).isTrue()
+                // Add to watchlist -> true
+                fakeLibraryRepository.toggleWatchlist(
+                    mediaId = 500,
+                    mediaType = MediaType.Movie,
+                    title = "Interstellar",
+                    posterImageUrl = "",
+                    backdropImageUrl = "",
+                    voteAvg = 8.6f,
+                    releaseDate = "2014-11-05"
+                )
+                assertThat(awaitItem()).isTrue()
+            }
         }
-    }
 }

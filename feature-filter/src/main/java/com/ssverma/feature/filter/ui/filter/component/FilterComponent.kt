@@ -29,7 +29,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -57,6 +56,7 @@ import com.ssverma.core.ui.SingleSelectableState
 import com.ssverma.core.ui.Toggleable
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.domain.model.FilterId
 import com.ssverma.feature.filter.ui.filter.FilterItem
@@ -300,7 +300,7 @@ fun FilterPickerBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,

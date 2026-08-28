@@ -18,6 +18,9 @@ dependencies {
     api(libs.compose.tooling)
     api(libs.compose.material.icons.core)
     api(libs.compose.material.icons.extended)
+    api(libs.compose.activity)
+    api(libs.androidx.navigationevent.compose)
+    api(libs.androidx.navigationevent.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

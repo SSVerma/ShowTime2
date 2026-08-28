@@ -3,7 +3,6 @@ package com.ssverma.feature.person.ui.details
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -15,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.ssverma.core.analytics.ui.TrackScreenView
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
 import com.ssverma.feature.person.ui.details.content.PersonDetailsContent
 import com.ssverma.shared.ui.bottomsheet.ImagePagerContent
@@ -64,10 +64,10 @@ fun PersonDetailsScreen(
         )
 
         if (showSheet) {
-            ModalBottomSheet(
+            ShowTimeBottomSheet(
                 onDismissRequest = { showSheet = false },
                 sheetState = sheetState,
-                containerColor = MaterialTheme.colorScheme.background,
+                containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 dragHandle = null,
                 modifier = Modifier.fillMaxSize()
             ) {

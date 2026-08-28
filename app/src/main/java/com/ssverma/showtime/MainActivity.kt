@@ -93,16 +93,12 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val backInput = remember { DirectNavigationEventInput() }
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                BackHandler {
-                    backInput.backCompleted()
-                }
+            BackHandler {
+                backInput.backCompleted()
             }
 
             LaunchedEffect(backInput) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                    navigationEventDispatcherOwner.navigationEventDispatcher.addInput(backInput)
-                }
+                navigationEventDispatcherOwner.navigationEventDispatcher.addInput(backInput)
             }
 
             CompositionLocalProvider(

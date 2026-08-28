@@ -77,7 +77,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
@@ -116,6 +115,7 @@ import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.R
@@ -1518,7 +1518,7 @@ private fun CustomListDetailSheet(
         )
     }
 
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -1671,6 +1671,7 @@ private fun CustomListDetailSheet(
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f, fill = false)
                         .padding(bottom = 32.dp)
                 ) {
                     items(

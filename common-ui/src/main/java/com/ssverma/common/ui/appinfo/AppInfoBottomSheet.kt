@@ -22,7 +22,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.common.ui.R
 import com.ssverma.core.ui.component.ShowTimeLogo
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.ui.component.Avatar
 
@@ -61,7 +61,7 @@ fun AppInfoBottomSheet(
     val versionName = packageInfo?.versionName.orEmpty()
 
 
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = { onDismissRequest(dontShowAgain) },
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },

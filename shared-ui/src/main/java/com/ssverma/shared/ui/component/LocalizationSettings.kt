@@ -32,21 +32,17 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,12 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.UiState
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.viewmodel.WatchRegionViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,14 +66,13 @@ fun LocalizationSelector(
     modifier: Modifier = Modifier,
     viewModel: WatchRegionViewModel = hiltViewModel()
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
+    var showSheet by remember { mutableStateOf(false) }
 
     val currentRegion by viewModel.currentRegion.collectAsStateWithLifecycle()
 
     IconButton(
         onClick = {
-            scope.launch { sheetState.show() }
+            showSheet = true
             viewModel.loadAvailableRegions()
             viewModel.loadAvailableLanguages()
         },
@@ -97,11 +92,10 @@ fun LocalizationSelector(
         }
     }
 
-    if (sheetState.isVisible) {
+    if (showSheet) {
         LocalizationSettingsBottomSheet(
             viewModel = viewModel,
-            sheetState = sheetState,
-            onDismiss = { scope.launch { sheetState.hide() } }
+            onDismiss = { showSheet = false }
         )
     }
 }
@@ -113,8 +107,6 @@ fun LocalizationSettingsBottomSheet(
     modifier: Modifier = Modifier,
     viewModel: WatchRegionViewModel = hiltViewModel()
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
     LaunchedEffect(Unit) {
         viewModel.loadAvailableRegions()
         viewModel.loadAvailableLanguages()
@@ -122,8 +114,8 @@ fun LocalizationSettingsBottomSheet(
 
     LocalizationSettingsBottomSheet(
         viewModel = viewModel,
-        sheetState = sheetState,
-        onDismiss = onDismissRequest
+        onDismiss = onDismissRequest,
+        modifier = modifier
     )
 }
 
@@ -131,8 +123,8 @@ fun LocalizationSettingsBottomSheet(
 @Composable
 fun LocalizationSettingsBottomSheet(
     viewModel: WatchRegionViewModel,
-    sheetState: SheetState,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val regionsState by viewModel.regionsState.collectAsStateWithLifecycle()
     val languagesState by viewModel.languagesState.collectAsStateWithLifecycle()
@@ -149,9 +141,8 @@ fun LocalizationSettingsBottomSheet(
         mutableStateOf(preferredOriginalLanguage)
     }
 
-    val regionPickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val languagePickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
+    var showRegionPicker by remember { mutableStateOf(false) }
+    var showLanguagePicker by remember { mutableStateOf(false) }
 
     val selectedRegionName = remember(selectedRegionIso, regionsState) {
         (regionsState as? UiState.Success)?.data?.find {
@@ -173,11 +164,10 @@ fun LocalizationSettingsBottomSheet(
             ?: selectedLanguageIso
     }
 
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
@@ -200,7 +190,7 @@ fun LocalizationSettingsBottomSheet(
                     // Region Selection Hub Row
                     item {
                         Surface(
-                            onClick = { scope.launch { regionPickerSheetState.show() } },
+                            onClick = { showRegionPicker = true },
                             shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier
@@ -281,7 +271,7 @@ fun LocalizationSettingsBottomSheet(
                         }
                         item {
                             Surface(
-                                onClick = { scope.launch { languagePickerSheetState.show() } },
+                                onClick = { showLanguagePicker = true },
                                 shape = RoundedCornerShape(16.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                 modifier = Modifier
@@ -364,31 +354,29 @@ fun LocalizationSettingsBottomSheet(
         }
     }
 
-    if (regionPickerSheetState.isVisible) {
+    if (showRegionPicker) {
         RegionPickerBottomSheet(
             regionsState = regionsState,
             selectedRegionIso = selectedRegionIso,
-            sheetState = regionPickerSheetState,
             onRegionSelected = {
                 selectedRegionIso = it
-                scope.launch { regionPickerSheetState.hide() }
+                showRegionPicker = false
             },
             onRetry = { viewModel.loadAvailableRegions() },
-            onDismiss = { scope.launch { regionPickerSheetState.hide() } }
+            onDismiss = { showRegionPicker = false }
         )
     }
 
-    if (languagePickerSheetState.isVisible) {
+    if (showLanguagePicker) {
         LanguagePickerBottomSheet(
             languagesState = languagesState,
             selectedLanguageIso = selectedLanguageIso,
-            sheetState = languagePickerSheetState,
             onLanguageSelected = {
                 selectedLanguageIso = it
-                scope.launch { languagePickerSheetState.hide() }
+                showLanguagePicker = false
             },
             onRetry = { viewModel.loadAvailableLanguages() },
-            onDismiss = { scope.launch { languagePickerSheetState.hide() } }
+            onDismiss = { showLanguagePicker = false }
         )
     }
 }
@@ -398,14 +386,12 @@ fun LocalizationSettingsBottomSheet(
 fun RegionPickerBottomSheet(
     regionsState: UiState<List<WatchProviderRegion>, *>,
     selectedRegionIso: String,
-    sheetState: SheetState,
     onRegionSelected: (String) -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -436,14 +422,12 @@ fun RegionPickerBottomSheet(
 fun LanguagePickerBottomSheet(
     languagesState: UiState<List<Language>, *>,
     selectedLanguageIso: String,
-    sheetState: SheetState,
     onLanguageSelected: (String) -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {
