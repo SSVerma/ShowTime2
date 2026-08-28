@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+# ShowTime Pre-Commit Quality & Formatting Hook
+# Validates code against docs/CODE_QUALITY_AND_SECURITY_GUIDE.md
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+echo -e "\n${BOLD}${BLUE}==> [ShowTime Quality Gate] Running Pre-Commit Validations...${NC}"
+
+# Get list of staged files (Added, Copied, Modified)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED_FILES" ]; then
+    echo -e "${GREEN}No staged files to check.${NC}"
+    exit 0
+fi
+
+# Filter staged files by extension
+STAGED_KT_FILES=$(echo "$STAGED_FILES" | grep -E '\.(kt|kts)$' || true)
+STAGED_JAVA_FILES=$(echo "$STAGED_FILES" | grep -E '\.java$' || true)
+STAGED_XML_FILES=$(echo "$STAGED_FILES" | grep -E '\.xml$' || true)
+STAGED_CODE_FILES=$(echo "$STAGED_FILES" | grep -E '\.(kt|kts|java|xml)$' || true)
+
+# -----------------------------------------------------------------------------
+# STEP 1: Auto-Reformat & Cleanup (Cmd + Option + L / Ctrl + Option + O)
+# -----------------------------------------------------------------------------
+FORMATTER_BIN=""
+if [ -x "/Applications/Android Studio.app/Contents/bin/format.sh" ]; then
+    FORMATTER_BIN="/Applications/Android Studio.app/Contents/bin/format.sh"
+elif [ -x "/Applications/Android Studio Preview.app/Contents/bin/format.sh" ]; then
+    FORMATTER_BIN="/Applications/Android Studio Preview.app/Contents/bin/format.sh"
+elif [ -x "/Applications/IntelliJ IDEA.app/Contents/bin/format.sh" ]; then
+    FORMATTER_BIN="/Applications/IntelliJ IDEA.app/Contents/bin/format.sh"
+elif command -v format.sh &> /dev/null; then
+    FORMATTER_BIN=$(command -v format.sh)
+fi
+
+if [ -n "$FORMATTER_BIN" ] && [ -n "$STAGED_CODE_FILES" ]; then
+    echo -e "${CYAN}--> [1/2] Auto-reformatting staged files with Android Studio Formatter (Cmd+Option+L)...${NC}"
+    
+    FORMAT_TARGETS=()
+    while IFS= read -r file; do
+        if [ -f "$file" ]; then
+            FORMAT_TARGETS+=("$file")
+        fi
+    done <<< "$STAGED_CODE_FILES"
+
+    if [ ${#FORMAT_TARGETS[@]} -gt 0 ]; then
+        # Run formatter quietly
+        "$FORMATTER_BIN" -allowDefaults "${FORMAT_TARGETS[@]}" > /dev/null 2>&1 || true
+        
+        # Re-stage formatted files
+        for file in "${FORMAT_TARGETS[@]}"; do
+            git add "$file"
+        done
+        echo -e "${GREEN}    [✓] Auto-reformat applied and re-staged.${NC}"
+    fi
+else
+    echo -e "${YELLOW}--> [1/2] Android Studio CLI formatter not found; skipping auto-reformat step.${NC}"
+fi
+
+# -----------------------------------------------------------------------------
+# STEP 2: Code Quality & Security Checklist Verification
+# -----------------------------------------------------------------------------
+echo -e "${CYAN}--> [2/2] Validating staged files against Code Quality Checklist...${NC}"
+
+HAS_ERRORS=0
+
+# Helper function to report errors
+report_error() {
+    local rule_title="$1"
+    local file="$2"
+    local line_num="$3"
+    local line_content="$4"
+    local guide_ref="$5"
+
+    echo -e "${RED}[VIOLATION] ${BOLD}${rule_title}${NC}"
+    echo -e "  ${PURPLE}File:${NC} ${file}:${line_num}"
+    echo -e "  ${YELLOW}Code:${NC} ${line_content}"
+    echo -e "  ${BLUE}Guide:${NC} ${guide_ref}"
+    echo ""
+    HAS_ERRORS=1
+}
+
+# 1. Zero Wildcard Imports
+for file in $STAGED_KT_FILES $STAGED_JAVA_FILES; do
+    [ -f "$file" ] || continue
+    while IFS=: read -r line_num line_content; do
+        report_error "Wildcard import found (import .*)" \
+            "$file" "$line_num" "$line_content" \
+            "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#4-code-hygiene--linting-standards"
+    done < <(grep -nE "^import +[a-zA-Z0-9_.]+\.\*" "$file" || true)
+done
+
+# 2. Zero Hardcoded Hex Colors in UI Composables
+for file in $STAGED_KT_FILES; do
+    [ -f "$file" ] || continue
+    # Skip design token and theme palette definition files
+    if [[ "$file" =~ (Color|Theme|Palette|Spacing|Default|Brush)\.kt$ ]] || [[ "$file" =~ /test/ ]] || [[ "$file" =~ /androidTest/ ]]; then
+        continue
+    fi
+    while IFS=: read -r line_num line_content; do
+        report_error "Hardcoded Hex Color found. Use MaterialTheme.colorScheme tokens instead." \
+            "$file" "$line_num" "$line_content" \
+            "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#2-design-system--token-purity"
+    done < <(grep -nE "Color\((0x[0-9a-fA-F]{6,8}|[0-9]+)\)" "$file" || true)
+done
+
+# 3. Zero Leftover Debug Logs / println in Production
+for file in $STAGED_KT_FILES $STAGED_JAVA_FILES; do
+    [ -f "$file" ] || continue
+    # Skip build scripts, test files, and debug-specific tooling
+    if [[ "$file" =~ \.gradle\.kts$ ]] || [[ "$file" =~ /test/ ]] || [[ "$file" =~ /androidTest/ ]] || [[ "$file" =~ /debug/ ]] || [[ "$file" =~ Debug.*\.kt$ ]]; then
+        continue
+    fi
+    while IFS=: read -r line_num line_content; do
+        # Ignore commented lines
+        if [[ "$line_content" =~ ^[[:space:]]*// ]]; then
+            continue
+        fi
+        report_error "Leftover debug log or print statement found in production code." \
+            "$file" "$line_num" "$line_content" \
+            "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#4-code-hygiene--linting-standards"
+    done < <(grep -nE "(Log\.[dvew]\(|println\(|printStackTrace\(\)|System\.out\.print)" "$file" || true)
+done
+
+# 4. Zero Secrets or Sensitive Config Files
+for file in $STAGED_FILES; do
+    # Check forbidden file names
+    if [[ "$file" =~ (core\.properties|local\.properties|\.jks|\.keystore|google-services\.json)$ ]]; then
+        # Allow google-services.json if it is a template / public demo
+        if [[ ! "$file" =~ google-services\.json$ ]]; then
+            echo -e "${RED}[SECURITY VIOLATION] Sensitive secret file cannot be committed: ${BOLD}$file${NC}"
+            HAS_ERRORS=1
+        fi
+    fi
+
+    # Check for hardcoded API keys / tokens inside staged files
+    if [ -f "$file" ] && [[ ! "$file" =~ \.(png|jpg|webp|jar|ico|so|apk)$ ]]; then
+        while IFS=: read -r line_num line_content; do
+            report_error "Potential API Key / Secret Token hardcoded in source." \
+                "$file" "$line_num" "$line_content" \
+                "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#6-security-secrets--privacy-standards"
+        done < <(grep -nE "(api_key|apiKey|client_secret|clientSecret|private_key)\s*=\s*\"[a-zA-Z0-9_-]{24,}\"" "$file" || true)
+    fi
+done
+
+# 5. Zero Production Mock Data Leakage
+for file in $STAGED_KT_FILES; do
+    [ -f "$file" ] || continue
+    if [[ "$file" =~ src/main/ ]] && [[ ! "$file" =~ /debug/ ]] && [[ ! "$file" =~ /demo/ ]]; then
+        while IFS=: read -r line_num line_content; do
+            report_error "Synthetic mock/sample data leakage in production source (src/main)." \
+                "$file" "$line_num" "$line_content" \
+                "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#7-zero-hardcoded-data-for-production-builds--end-users"
+        done < <(grep -nE "fun +(seedSample|createFake|generateMock)[a-zA-Z0-9_]*\(" "$file" || true)
+    fi
+done
+
+# -----------------------------------------------------------------------------
+# RESULT
+# -----------------------------------------------------------------------------
+if [ $HAS_ERRORS -ne 0 ]; then
+    echo -e "${RED}${BOLD}========================================================================${NC}"
+    echo -e "${RED}${BOLD}[FAILED] Pre-Commit Quality Checks Failed!${NC}"
+    echo -e "${YELLOW}Please fix the violations listed above before committing.${NC}"
+    echo -e "${YELLOW}To bypass in emergency: git commit --no-verify (-n)${NC}"
+    echo -e "${RED}${BOLD}========================================================================${NC}\n"
+    exit 1
+else
+    echo -e "${GREEN}${BOLD}==> [ShowTime Quality Gate] All checks passed cleanly! [✓]${NC}\n"
+    exit 0
+fi
