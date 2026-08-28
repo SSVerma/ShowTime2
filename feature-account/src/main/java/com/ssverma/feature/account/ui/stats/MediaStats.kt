@@ -3,6 +3,8 @@ package com.ssverma.feature.account.ui.stats
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -75,6 +77,9 @@ fun MediaStatsAction(
     viewModel: MediaStatsViewModel = hiltViewModel()
 ) {
     val mediaStatsUiState by viewModel.mediaStats.collectAsState()
+    val isActionActive by remember(mediaId) {
+        viewModel.isMediaActionActiveFlow(mediaId)
+    }.collectAsState(initial = false)
     val popupExpansionState = remember { mutableStateOf(false) }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -122,6 +127,37 @@ fun MediaStatsAction(
                             modifier = Modifier.size(16.dp)
                         )
                     }
+                }
+
+                // Active Indicator Dot when any library action is taken
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = isActionActive,
+                    enter = androidx.compose.animation.scaleIn(
+                        animationSpec = androidx.compose.animation.core.spring(
+                            dampingRatio = 0.7f,
+                            stiffness = 400f
+                        )
+                    ) + androidx.compose.animation.fadeIn(animationSpec = tween(150)),
+                    exit = androidx.compose.animation.scaleOut(
+                        animationSpec = tween(150)
+                    ) + androidx.compose.animation.fadeOut(animationSpec = tween(150)),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 1.dp, end = 1.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape
+                            )
+                            .border(
+                                width = 1.2.dp,
+                                color = containerColor,
+                                shape = CircleShape
+                            )
+                    )
                 }
 
                 // Floating minor hearts rising gracefully in the air above card boundaries
@@ -570,4 +606,3 @@ private data class FloatingHeartData(
     val delay: Int,
     val rotation: Float
 )
-

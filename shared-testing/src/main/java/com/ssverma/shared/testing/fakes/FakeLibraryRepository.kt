@@ -5,6 +5,7 @@ import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.repository.LibraryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 class FakeLibraryRepository : LibraryRepository {
@@ -19,6 +20,22 @@ class FakeLibraryRepository : LibraryRepository {
 
     override suspend fun isFavorite(mediaId: Int): Boolean {
         return favorites.value.containsKey(mediaId)
+    }
+
+    override fun isMediaActionActiveFlow(mediaId: Int): Flow<Boolean> {
+        return combine(
+            isFavoriteFlow(mediaId),
+            isInWatchlistFlow(mediaId),
+            isWatchedFlow(mediaId),
+            getCustomListIdsForMediaFlow(mediaId)
+        ) { fav, watch, watched, custom ->
+            fav || watch || watched || custom.isNotEmpty()
+        }
+    }
+
+    override suspend fun isMediaActionActive(mediaId: Int): Boolean {
+        return isFavorite(mediaId) || isInWatchlist(mediaId) || isWatched(mediaId) ||
+                customLists.value.any { list -> list.items.any { it.mediaId == mediaId } }
     }
 
     override suspend fun toggleFavorite(

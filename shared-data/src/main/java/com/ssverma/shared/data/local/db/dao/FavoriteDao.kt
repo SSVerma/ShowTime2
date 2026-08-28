@@ -24,6 +24,36 @@ interface FavoriteDao {
     @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE mediaId = :mediaId)")
     suspend fun isFavorite(mediaId: Int): Boolean
 
+    @Query(
+        """
+        SELECT EXISTS (
+            SELECT 1 FROM favorites WHERE mediaId = :mediaId
+            UNION ALL
+            SELECT 1 FROM watchlist WHERE mediaId = :mediaId
+            UNION ALL
+            SELECT 1 FROM watch_history WHERE mediaId = :mediaId
+            UNION ALL
+            SELECT 1 FROM custom_list_items WHERE mediaId = :mediaId
+        )
+    """
+    )
+    fun isMediaActionActiveFlow(mediaId: Int): Flow<Boolean>
+
+    @Query(
+        """
+        SELECT EXISTS (
+            SELECT 1 FROM favorites WHERE mediaId = :mediaId
+            UNION ALL
+            SELECT 1 FROM watchlist WHERE mediaId = :mediaId
+            UNION ALL
+            SELECT 1 FROM watch_history WHERE mediaId = :mediaId
+            UNION ALL
+            SELECT 1 FROM custom_list_items WHERE mediaId = :mediaId
+        )
+    """
+    )
+    suspend fun isMediaActionActive(mediaId: Int): Boolean
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavorite(favorite: FavoriteEntity)
 

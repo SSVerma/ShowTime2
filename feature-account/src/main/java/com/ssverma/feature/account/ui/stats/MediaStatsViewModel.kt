@@ -23,6 +23,9 @@ class MediaStatsViewModel @Inject constructor(
 
     val mediaStats = _mediaStats.asStateFlow()
 
+    fun isMediaActionActiveFlow(mediaId: Int): Flow<Boolean> =
+        libraryRepository.isMediaActionActiveFlow(mediaId)
+
     fun fetchMediaStats(mediaType: MediaType, mediaId: Int) {
         viewModelScope.launch {
             val isFavorite = libraryRepository.isFavorite(mediaId)

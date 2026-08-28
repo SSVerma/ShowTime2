@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.Flow
 interface LibraryRepository {
     fun isFavoriteFlow(mediaId: Int): Flow<Boolean>
     suspend fun isFavorite(mediaId: Int): Boolean
+    fun isMediaActionActiveFlow(mediaId: Int): Flow<Boolean>
+    suspend fun isMediaActionActive(mediaId: Int): Boolean
     suspend fun toggleFavorite(
         mediaId: Int,
         mediaType: MediaType,

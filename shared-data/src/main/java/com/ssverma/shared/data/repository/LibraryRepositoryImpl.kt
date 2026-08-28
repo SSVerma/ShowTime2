@@ -43,6 +43,14 @@ class LibraryRepositoryImpl @Inject constructor(
         return favoriteDao.isFavorite(mediaId)
     }
 
+    override fun isMediaActionActiveFlow(mediaId: Int): Flow<Boolean> {
+        return favoriteDao.isMediaActionActiveFlow(mediaId)
+    }
+
+    override suspend fun isMediaActionActive(mediaId: Int): Boolean {
+        return favoriteDao.isMediaActionActive(mediaId)
+    }
+
     override suspend fun toggleFavorite(
         mediaId: Int,
         mediaType: MediaType,
