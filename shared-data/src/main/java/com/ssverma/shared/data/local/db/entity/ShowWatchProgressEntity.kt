@@ -12,6 +12,8 @@ data class ShowWatchProgressEntity(
     val seasonNumber: Int,
     val episodeNumber: Int,
     val episodeTitle: String?,
+    val seasonCompleted: Int = 0,
+    val seasonTotalAired: Int = 0,
     val totalCompleted: Int,
     val totalAired: Int,
     val lastWatchedAt: Long = System.currentTimeMillis()

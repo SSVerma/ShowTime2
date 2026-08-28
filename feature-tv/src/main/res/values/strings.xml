@@ -35,4 +35,6 @@
     <string name="caught_up">Caught Up 🎉</string>
     <string name="season_completed">Season Complete! 🎉</string>
     <string name="all_caught_up_msg">🎉 All caught up with %1$s!</string>
+    <string name="episode_n">Episode %1$d</string>
+    <string name="progress_eps_format">%1$d/%2$d eps</string>
 </resources>

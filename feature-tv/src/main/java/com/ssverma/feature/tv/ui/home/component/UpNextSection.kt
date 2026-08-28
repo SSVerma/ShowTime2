@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
@@ -108,12 +109,9 @@ fun UpNextSection(
                 UpNextCard(
                     episode = episode,
                     modifier = Modifier.animateItem(
-                        fadeInSpec = tween(durationMillis = 300),
-                        fadeOutSpec = tween(durationMillis = 350),
-                        placementSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
+                        fadeInSpec = tween(durationMillis = 250),
+                        fadeOutSpec = tween(durationMillis = 250),
+                        placementSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
                     ),
                     onClick = { onUpNextEpisodeClick(episode.showTmdbId, episode.seasonNumber) },
                     onMarkWatched = {
@@ -141,14 +139,13 @@ private fun UpNextCard(
     var burstTrigger by remember { mutableIntStateOf(0) }
     val isCompleted = episode.totalCompleted >= episode.totalAired
 
-    LaunchedEffect(isCompleted) {
-        if (isCompleted) {
-            burstTrigger++
-        }
-    }
+    val displayCompleted =
+        if (episode.seasonTotalAired > 0) episode.seasonCompleted else episode.totalCompleted
+    val displayTotal =
+        if (episode.seasonTotalAired > 0) episode.seasonTotalAired else episode.totalAired
 
     val animatedProgress by animateFloatAsState(
-        targetValue = episode.progressPercentage,
+        targetValue = episode.seasonProgressPercentage,
         animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
         label = "UpNextProgressAnimation"
     )
@@ -163,11 +160,11 @@ private fun UpNextCard(
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             border = BorderStroke(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
         ) {
             Row(
@@ -264,7 +261,7 @@ private fun UpNextCard(
                     } else if (!rawTitle.isNullOrBlank()) {
                         rawTitle
                     } else {
-                        "Episode ${episode.episodeNumber}"
+                        stringResource(R.string.episode_n, episode.episodeNumber)
                     }
 
                     Text(
@@ -288,13 +285,13 @@ private fun UpNextCard(
                         progress = { animatedProgress },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(3.5.dp)
+                            .height(4.dp)
                             .clip(RoundedCornerShape(2.dp)),
                         color = if (isCompleted) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     // Progress Count & 1-Tap Watched Action
                     Row(
@@ -303,25 +300,32 @@ private fun UpNextCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "${episode.totalCompleted}/${episode.totalAired} eps",
-                            style = MaterialTheme.typography.labelSmall,
+                            text = stringResource(
+                                R.string.progress_eps_format,
+                                displayCompleted,
+                                displayTotal
+                            ),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         FilledTonalButton(
                             onClick = {
                                 coroutineScope.launch {
-                                    buttonScale.animateTo(0.85f, animationSpec = tween(50))
-                                    buttonScale.animateTo(1f, animationSpec = spring())
+                                    buttonScale.animateTo(0.88f, animationSpec = tween(50))
+                                    buttonScale.animateTo(
+                                        1f,
+                                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+                                    )
                                 }
                                 burstTrigger++
                                 onMarkWatched()
                             },
                             enabled = !isCompleted,
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                             modifier = Modifier
-                                .height(26.dp)
+                                .height(28.dp)
                                 .graphicsLayer {
                                     scaleX = buttonScale.value
                                     scaleY = buttonScale.value
@@ -343,9 +347,9 @@ private fun UpNextCard(
                             Icon(
                                 imageVector = Icons.Rounded.Check,
                                 contentDescription = null,
-                                modifier = Modifier.size(12.dp)
+                                modifier = Modifier.size(13.dp)
                             )
-                            Spacer(modifier = Modifier.width(3.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = if (isCompleted) {
                                     stringResource(R.string.mark_watched_done)

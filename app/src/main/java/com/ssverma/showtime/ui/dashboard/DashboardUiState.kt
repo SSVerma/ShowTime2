@@ -9,6 +9,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.game.CinemaGameStats
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 
@@ -34,5 +35,6 @@ data class DashboardUiState(
     val isMoviePopularSelected: Boolean = true,
     val upNextQueue: List<TraktUpNextEpisode> = emptyList(),
     val isTraktConnected: Boolean = false,
-    val nativeAd: NativeAd? = null
+    val nativeAd: NativeAd? = null,
+    val completedShowDialog: CompletedShowDialogState? = null
 )

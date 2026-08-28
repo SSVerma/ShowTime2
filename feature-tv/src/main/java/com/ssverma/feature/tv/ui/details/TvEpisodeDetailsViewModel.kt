@@ -93,8 +93,8 @@ class TvEpisodeDetailsViewModel @AssistedInject constructor(
                 episode = episodeNumber,
                 showTitle = tvShowTitle.orEmpty(),
                 showPosterPath = tvShowPosterPath,
-                episodeTitle = episodeData?.title ?: "Episode $episodeNumber",
-                totalAired = 10
+                episodeTitle = episodeData?.title,
+                totalAired = 0
             )
         }
     }

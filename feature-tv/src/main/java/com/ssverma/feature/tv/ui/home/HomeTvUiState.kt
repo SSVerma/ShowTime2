@@ -7,6 +7,8 @@ import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
+import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 
 data class HomeTvUiState(
@@ -20,6 +22,7 @@ data class HomeTvUiState(
     val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle,
     val watchProviderAd: NativeAd? = null,
     val feedInlineAd: NativeAd? = null,
-    val upNextQueue: List<com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode> = emptyList(),
-    val isTraktConnected: Boolean = false
+    val upNextQueue: List<TraktUpNextEpisode> = emptyList(),
+    val isTraktConnected: Boolean = false,
+    val completedShowDialog: CompletedShowDialogState? = null
 )

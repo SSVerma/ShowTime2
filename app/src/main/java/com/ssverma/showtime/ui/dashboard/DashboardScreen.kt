@@ -2,8 +2,6 @@ package com.ssverma.showtime.ui.dashboard
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -42,6 +40,7 @@ import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.shared.ads.injection.InjectableContent
@@ -163,15 +162,15 @@ fun DashboardScreen(
                 item(key = "dashboard_up_next_section") {
                     AnimatedVisibility(
                         visible = uiState.upNextQueue.isNotEmpty(),
-                        enter = fadeIn(animationSpec = tween(350)) + expandVertically(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
+                        enter = fadeIn(animationSpec = tween(300)) + expandVertically(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
                             )
                         ),
-                        exit = fadeOut(animationSpec = tween(350)) + shrinkVertically(
+                        exit = fadeOut(animationSpec = tween(250)) + shrinkVertically(
                             animationSpec = tween(
-                                durationMillis = 400,
+                                durationMillis = 250,
                                 easing = FastOutSlowInEasing
                             )
                         )
@@ -183,12 +182,12 @@ fun DashboardScreen(
                             },
                             onMarkWatchedClick = { showTmdbId, seasonNumber, episodeNumber ->
                                 viewModel.markEpisodeWatched(
-                                    showTmdbId,
-                                    seasonNumber,
-                                    episodeNumber
+                                    showTmdbId = showTmdbId,
+                                    season = seasonNumber,
+                                    episode = episodeNumber
                                 )
                             },
-                            modifier = Modifier.padding(top = 18.dp)
+                            modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                         )
                     }
                 }
@@ -275,6 +274,13 @@ fun DashboardScreen(
                 floatingBottomBar = true,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
+
+            uiState.completedShowDialog?.let { dialogState ->
+                com.ssverma.shared.ui.component.SeasonCompletionDialog(
+                    state = dialogState,
+                    onDismiss = viewModel::dismissCompletedShowDialog
+                )
+            }
         }
     }
 }

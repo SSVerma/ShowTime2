@@ -56,6 +56,11 @@ class HomeTvShowViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeTvUiState())
     val uiState: StateFlow<HomeTvUiState> = _uiState.asStateFlow()
 
+    private val homeAdConfig = AdInjectionConfig(
+        placement = AdPlacement.Fixed(positions = listOf(1)),
+        style = NativeAdStyle.Grid
+    )
+
     init {
         viewModelScope.launch {
             combine(
@@ -95,11 +100,6 @@ class HomeTvShowViewModel @Inject constructor(
             (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken.orEmpty()
         fetchUpNextQueue(token)
     }
-
-    private val homeAdConfig = AdInjectionConfig(
-        placement = AdPlacement.Fixed(positions = listOf(1)),
-        style = NativeAdStyle.Grid
-    )
 
     fun fetchTvGenres() = viewModelScope.launch {
         _uiState.update { it.copy(genres = UiState.Loading) }
@@ -328,16 +328,23 @@ class HomeTvShowViewModel @Inject constructor(
 
         // 1. Optimistically update local upNextQueue in UI state so the user immediately sees progress & celebration!
         val currentQueue = _uiState.value.upNextQueue
-        var wasFinalEpisode = false
+        val targetItem = currentQueue.find { it.showTmdbId == showTmdbId }
+        val wasFinalEpisode =
+            targetItem != null && (targetItem.totalCompleted + 1 >= targetItem.totalAired)
+
         val updatedQueue = currentQueue.map { item ->
             if (item.showTmdbId == showTmdbId) {
-                val nextCompleted = item.totalCompleted + 1
-                if (nextCompleted >= item.totalAired) {
-                    wasFinalEpisode = true
-                }
+                val nextSeasonCompleted = item.seasonCompleted + 1
+                val isSeasonFinished =
+                    item.seasonTotalAired > 0 && nextSeasonCompleted >= item.seasonTotalAired
+                val nextTotalCompleted = item.totalCompleted + 1
+
                 item.copy(
-                    totalCompleted = nextCompleted.coerceAtMost(item.totalAired),
-                    episodeNumber = item.episodeNumber + 1
+                    seasonCompleted = nextSeasonCompleted.coerceAtMost(if (item.seasonTotalAired > 0) item.seasonTotalAired else nextSeasonCompleted),
+                    totalCompleted = nextTotalCompleted.coerceAtMost(item.totalAired),
+                    episodeNumber = if (isSeasonFinished) 1 else item.episodeNumber + 1,
+                    seasonNumber = if (isSeasonFinished) item.seasonNumber + 1 else item.seasonNumber,
+                    episodeTitle = null
                 )
             } else item
         }
@@ -348,14 +355,40 @@ class HomeTvShowViewModel @Inject constructor(
             accessToken = token,
             showTmdbId = showTmdbId,
             season = season,
-            episode = episode
+            episode = episode,
+            showTitle = targetItem?.showTitle.orEmpty(),
+            showPosterPath = targetItem?.showPosterPath,
+            totalAired = targetItem?.totalAired ?: 0
         )
 
-        // 3. If it was the final episode, keep the triumphant "Caught Up 🎉" card visible for 2 seconds
-        // so the user can enjoy the fireworks particle burst and golden glow celebration!
-        if (wasFinalEpisode) {
-            kotlinx.coroutines.delay(2000)
+        // 3. If it was the final episode, present the celebratory Season Completion Dialog!
+        if (targetItem != null && (targetItem.totalCompleted + 1 >= targetItem.totalAired)) {
+            _uiState.update {
+                it.copy(
+                    completedShowDialog = com.ssverma.shared.domain.model.trakt.CompletedShowDialogState(
+                        showTmdbId = targetItem.showTmdbId,
+                        showTitle = targetItem.showTitle,
+                        showPosterPath = targetItem.showPosterPath,
+                        seasonNumber = targetItem.seasonNumber,
+                        totalCompleted = targetItem.totalAired,
+                        totalAired = targetItem.totalAired
+                    )
+                )
+            }
         }
-        fetchUpNextQueue(token.orEmpty())
+    }
+
+    fun dismissCompletedShowDialog() {
+        val completedShow = _uiState.value.completedShowDialog
+        _uiState.update { state ->
+            state.copy(
+                completedShowDialog = null,
+                upNextQueue = if (completedShow != null) {
+                    state.upNextQueue.filter { it.showTmdbId != completedShow.showTmdbId }
+                } else {
+                    state.upNextQueue
+                }
+            )
+        }
     }
 }

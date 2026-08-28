@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ShowWatchProgressDao {
-    @Query("SELECT * FROM show_watch_progress ORDER BY lastWatchedAt DESC")
+    @Query("SELECT * FROM show_watch_progress WHERE totalAired == 0 OR totalCompleted < totalAired ORDER BY lastWatchedAt DESC")
     fun getUpNextQueueFlow(): Flow<List<ShowWatchProgressEntity>>
 
-    @Query("SELECT * FROM show_watch_progress ORDER BY lastWatchedAt DESC")
+    @Query("SELECT * FROM show_watch_progress WHERE totalAired == 0 OR totalCompleted < totalAired ORDER BY lastWatchedAt DESC")
     suspend fun getUpNextQueue(): List<ShowWatchProgressEntity>
 
     @Query("SELECT * FROM show_watch_progress WHERE showId = :showId")

@@ -7,8 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -220,14 +218,11 @@ fun TvShowHomeContent(
             item(key = "up_next_section") {
                 AnimatedVisibility(
                     visible = uiState.upNextQueue.isNotEmpty(),
-                    enter = fadeIn(animationSpec = tween(350)) + expandVertically(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
+                    enter = fadeIn(animationSpec = tween(300)) + expandVertically(
+                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
                     ),
-                    exit = fadeOut(animationSpec = tween(350)) + shrinkVertically(
-                        animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                    exit = fadeOut(animationSpec = tween(250)) + shrinkVertically(
+                        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing)
                     )
                 ) {
                     UpNextSection(
@@ -545,6 +540,13 @@ fun TvShowHomeContent(
                     modifier = Modifier.padding(top = MaterialTheme.spacing.large)
                 )
             }
+        }
+
+        uiState.completedShowDialog?.let { dialogState ->
+            com.ssverma.shared.ui.component.SeasonCompletionDialog(
+                state = dialogState,
+                onDismiss = viewModel::dismissCompletedShowDialog
+            )
         }
     }
 }

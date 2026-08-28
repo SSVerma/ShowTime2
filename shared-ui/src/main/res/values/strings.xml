@@ -91,4 +91,11 @@
     <string name="cinema_stats_streak">Streak</string>
     <string name="movie_badge">Movie</string>
     <string name="tv_badge">TV Series</string>
+
+    <!-- Season Completion Celebration Dialog -->
+    <string name="season_complete_dialog_title">Season Complete! 🎉</string>
+    <string name="season_complete_dialog_msg">You\'ve completed Season %1$d of %2$s.</string>
+    <string name="season_complete_dialog_all_caught_up">You\'re all caught up with %1$s!</string>
+    <string name="season_complete_dialog_action">Awesome!</string>
+    <string name="season_complete_dialog_episodes_completed">%1$d of %2$d episodes watched</string>
 </resources>

@@ -87,7 +87,7 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
             val targetEpTitle =
                 seasonData?.episodes?.firstOrNull { it.episodeNumber == targetEpNumber }?.title
                     ?: seasonData?.episodes?.firstOrNull { it.episodeNumber == episodeNumber }?.title
-            val totalAired = seasonData?.episodes?.size ?: 10
+            val totalAired = seasonData?.episodes?.size ?: 0
             val effectiveShowTitle = if (!tvShowTitle.isNullOrBlank()) {
                 tvShowTitle
             } else {
@@ -111,7 +111,7 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
         viewModelScope.launch {
             val token = (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken
             val seasonData = (_uiState.value as? UiState.Success)?.data
-            val totalAired = seasonData?.episodes?.size ?: 10
+            val totalAired = seasonData?.episodes?.size ?: 0
             val effectiveShowTitle = if (!tvShowTitle.isNullOrBlank()) {
                 tvShowTitle
             } else {

@@ -262,4 +262,325 @@ class TraktSyncRepositoryTest {
         assertThat(captured.totalCompleted).isEqualTo(22)
         assertThat(captured.totalAired).isEqualTo(151)
     }
+
+    @Test
+    fun `markEpisodeWatched preserves totalAired denominator without incrementing it`() = runTest {
+        isMockTraktFlow.value = false
+
+        // Existing progress is 6/9 eps
+        coEvery { mockShowWatchProgressDao.getProgress(93405) } returns
+                com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity(
+                    showId = 93405,
+                    showTitle = "Severance",
+                    showPosterPath = null,
+                    seasonNumber = 2,
+                    episodeNumber = 1,
+                    episodeTitle = "Hello, Innie",
+                    totalCompleted = 6,
+                    totalAired = 9,
+                    lastWatchedAt = 1000L
+                )
+
+        // After marking 7th episode
+        coEvery { mockEpisodeWatchHistoryDao.isEpisodeWatched(93405, 2, 1) } returns false
+        coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(93405) } returns (1..7).map {
+            com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(93405, 1, it, 1000L)
+        }
+
+        val progressSlot =
+            io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+        coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
+
+        repository.markEpisodeWatched(
+            accessToken = null,
+            showTmdbId = 93405,
+            season = 2,
+            episode = 1,
+            showTitle = "Severance",
+            totalAired = 9
+        )
+
+        // totalCompleted must be 7, and totalAired must stay 9 (not 10 or 8)
+        assertThat(progressSlot.isCaptured).isTrue()
+        val captured = progressSlot.captured
+        assertThat(captured.totalCompleted).isEqualTo(7)
+        assertThat(captured.totalAired).isEqualTo(9)
+    }
+
+    @Test
+    fun `markEpisodeWatched unmarking episode decreases completed count and preserves totalAired`() =
+        runTest {
+            isMockTraktFlow.value = false
+
+            // Existing progress: 7/9 eps
+            coEvery { mockShowWatchProgressDao.getProgress(93405) } returns
+                    com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity(
+                        showId = 93405,
+                        showTitle = "Severance",
+                        showPosterPath = null,
+                        seasonNumber = 2,
+                        episodeNumber = 2,
+                        episodeTitle = "Goodbye, Mrs. Selvig",
+                        totalCompleted = 7,
+                        totalAired = 9,
+                        lastWatchedAt = 1000L
+                    )
+
+            // Episode is currently watched -> will be deleted
+            coEvery { mockEpisodeWatchHistoryDao.isEpisodeWatched(93405, 2, 1) } returns true
+            coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(93405) } returns (1..6).map {
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    1,
+                    it,
+                    1000L
+                )
+            }
+
+            val progressSlot =
+                io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+            coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
+
+            repository.markEpisodeWatched(
+                accessToken = null,
+                showTmdbId = 93405,
+                season = 2,
+                episode = 1,
+                showTitle = "Severance",
+                totalAired = 9
+            )
+
+            // Verifies deletion and updated progress: totalCompleted = 6, totalAired = 9
+            io.mockk.coVerify { mockEpisodeWatchHistoryDao.deleteEpisode(93405, 2, 1) }
+            assertThat(progressSlot.isCaptured).isTrue()
+            val captured = progressSlot.captured
+            assertThat(captured.totalCompleted).isEqualTo(6)
+            assertThat(captured.totalAired).isEqualTo(9)
+        }
+
+    @Test
+    fun `getUpNextQueueFlow emits progress list mapped to TraktUpNextEpisode`() = runTest {
+        isMockTraktFlow.value = false
+
+        val progressList = listOf(
+            com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity(
+                showId = 93405,
+                showTitle = "Severance",
+                showPosterPath = "poster.jpg",
+                seasonNumber = 2,
+                episodeNumber = 1,
+                episodeTitle = "Hello, Innie",
+                totalCompleted = 6,
+                totalAired = 9,
+                lastWatchedAt = 1000L
+            )
+        )
+        coEvery { mockShowWatchProgressDao.getUpNextQueueFlow() } returns kotlinx.coroutines.flow.flowOf(
+            progressList
+        )
+
+        val flow = repository.getUpNextQueueFlow("token")
+        flow.collect { list ->
+            assertThat(list).hasSize(1)
+            val item = list.first()
+            assertThat(item.showTmdbId).isEqualTo(93405)
+            assertThat(item.showTitle).isEqualTo("Severance")
+            assertThat(item.totalCompleted).isEqualTo(6)
+            assertThat(item.totalAired).isEqualTo(9)
+            assertThat(item.progressPercentage).isWithin(0.01f).of(6f / 9f)
+        }
+    }
+
+    @Test
+    fun `markEpisodeWatched resolves next episode title from mock catalog or service`() = runTest {
+        isMockTraktFlow.value = false
+
+        // Existing progress is S2E1 ("Hello, Innie")
+        coEvery { mockShowWatchProgressDao.getProgress(93405) } returns
+                com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity(
+                    showId = 93405,
+                    showTitle = "Severance",
+                    showPosterPath = null,
+                    seasonNumber = 2,
+                    episodeNumber = 1,
+                    episodeTitle = "Hello, Innie",
+                    totalCompleted = 6,
+                    totalAired = 9,
+                    lastWatchedAt = 1000L
+                )
+
+        coEvery { mockEpisodeWatchHistoryDao.isEpisodeWatched(93405, 2, 1) } returns false
+        coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(93405) } returns listOf(
+            com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(93405, 2, 1, 1000L)
+        )
+
+        val progressSlot =
+            io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+        coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
+
+        repository.markEpisodeWatched(
+            accessToken = null,
+            showTmdbId = 93405,
+            season = 2,
+            episode = 1,
+            showTitle = "Severance",
+            totalAired = 9
+        )
+
+        assertThat(progressSlot.isCaptured).isTrue()
+        val captured = progressSlot.captured
+        assertThat(captured.seasonNumber).isEqualTo(2)
+        assertThat(captured.episodeNumber).isEqualTo(2)
+        // Resolves S2E2 title from catalog ("Goodbye, Mrs. Selvig"), not stale "Hello, Innie"
+        assertThat(captured.episodeTitle).isEqualTo("Goodbye, Mrs. Selvig")
+    }
+
+    @Test
+    fun `multi-season tracking points to earliest unwatched episode and avoids premature completion`() =
+        runTest {
+            isMockTraktFlow.value = false
+
+            // Given show with S1 (10 eps) and S2 (9 eps) -> Total 19 eps
+            // User watched S1E1, S1E2, S1E3 and S2E1, S2E2 (Total completed = 5)
+            val watchedList = listOf(
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    1,
+                    1,
+                    1000L
+                ),
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    1,
+                    2,
+                    1000L
+                ),
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    1,
+                    3,
+                    1000L
+                ),
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    2,
+                    1,
+                    1000L
+                ),
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    2,
+                    2,
+                    1000L
+                )
+            )
+
+            coEvery { mockEpisodeWatchHistoryDao.isEpisodeWatched(93405, 2, 2) } returns false
+            coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(93405) } returns watchedList
+            coEvery { mockShowWatchProgressDao.getProgress(93405) } returns
+                    com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity(
+                        showId = 93405,
+                        showTitle = "Severance",
+                        showPosterPath = null,
+                        seasonNumber = 1,
+                        episodeNumber = 3,
+                        episodeTitle = "In Perpetuity",
+                        seasonCompleted = 3,
+                        seasonTotalAired = 10,
+                        totalCompleted = 4,
+                        totalAired = 19,
+                        lastWatchedAt = 1000L
+                    )
+
+            val progressSlot =
+                io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+            coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
+
+            repository.markEpisodeWatched(
+                accessToken = null,
+                showTmdbId = 93405,
+                season = 2,
+                episode = 2,
+                showTitle = "Severance",
+                totalAired = 19
+            )
+
+            // Then Up Next reliably points to Season 1, Episode 4 (the earliest unwatched episode)
+            assertThat(progressSlot.isCaptured).isTrue()
+            val captured = progressSlot.captured
+            assertThat(captured.seasonNumber).isEqualTo(1)
+            assertThat(captured.episodeNumber).isEqualTo(4)
+            assertThat(captured.seasonCompleted).isEqualTo(3)
+            assertThat(captured.seasonTotalAired).isEqualTo(10)
+            assertThat(captured.totalCompleted).isEqualTo(5)
+            assertThat(captured.totalAired).isEqualTo(19)
+        }
+
+    @Test
+    fun `multi-season tracking advances to Season 2 when all Season 1 episodes are completed`() =
+        runTest {
+            isMockTraktFlow.value = false
+
+            // Given all 10 episodes of Season 1 watched + 2 episodes of Season 2 watched = 12 completed
+            val watchedList = (1..10).map {
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    1,
+                    it,
+                    1000L
+                )
+            } + listOf(
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    2,
+                    1,
+                    1000L
+                ),
+                com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity(
+                    93405,
+                    2,
+                    2,
+                    1000L
+                )
+            )
+
+            coEvery { mockEpisodeWatchHistoryDao.isEpisodeWatched(93405, 1, 10) } returns false
+            coEvery { mockEpisodeWatchHistoryDao.getAllWatchedEpisodes(93405) } returns watchedList
+            coEvery { mockShowWatchProgressDao.getProgress(93405) } returns
+                    com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity(
+                        showId = 93405,
+                        showTitle = "Severance",
+                        showPosterPath = null,
+                        seasonNumber = 1,
+                        episodeNumber = 9,
+                        episodeTitle = "The We We Are",
+                        seasonCompleted = 9,
+                        seasonTotalAired = 10,
+                        totalCompleted = 11,
+                        totalAired = 19,
+                        lastWatchedAt = 1000L
+                    )
+
+            val progressSlot =
+                io.mockk.slot<com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity>()
+            coEvery { mockShowWatchProgressDao.insertOrUpdate(capture(progressSlot)) } returns Unit
+
+            repository.markEpisodeWatched(
+                accessToken = null,
+                showTmdbId = 93405,
+                season = 1,
+                episode = 10,
+                showTitle = "Severance",
+                totalAired = 19
+            )
+
+            // Then Up Next advances to Season 2, Episode 3
+            assertThat(progressSlot.isCaptured).isTrue()
+            val captured = progressSlot.captured
+            assertThat(captured.seasonNumber).isEqualTo(2)
+            assertThat(captured.episodeNumber).isEqualTo(3)
+            assertThat(captured.seasonCompleted).isEqualTo(2)
+            assertThat(captured.totalCompleted).isEqualTo(12)
+            assertThat(captured.totalAired).isEqualTo(19)
+        }
 }
