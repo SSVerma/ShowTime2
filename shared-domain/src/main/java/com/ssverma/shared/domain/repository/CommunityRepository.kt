@@ -14,6 +14,10 @@ import com.ssverma.shared.domain.model.community.PostCommentParams
 import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
 import com.ssverma.shared.domain.model.community.TrendingDiscussion
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.PublishCustomListParams
+import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
+import com.ssverma.shared.domain.model.community.UnpublishCustomListParams
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -44,4 +48,16 @@ interface CommunityRepository {
     suspend fun deleteComment(params: DeleteCommentParams): Result<Unit, Failure.CoreFailure>
 
     fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>>
+
+    fun getCommunityCuratedLists(category: String? = null): Flow<List<CommunityCuratedList>>
+
+    fun getCommunityListDetails(listId: String): Flow<CommunityCuratedList?>
+
+    suspend fun publishCustomList(params: PublishCustomListParams): Result<Unit, Failure.CoreFailure>
+
+    suspend fun unpublishCustomList(params: UnpublishCustomListParams): Result<Unit, Failure.CoreFailure>
+
+    suspend fun toggleCommunityListUpvote(params: ToggleListUpvoteParams): Result<Unit, Failure.CoreFailure>
+
+    suspend fun recordListClone(listId: String): Result<Unit, Failure.CoreFailure>
 }

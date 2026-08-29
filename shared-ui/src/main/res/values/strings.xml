@@ -166,4 +166,42 @@
     <string name="editing_thought_hint">Editing thought</string>
     <string name="save_action">Save</string>
     <string name="hide_replies">Hide replies</string>
+
+    <!-- Community Curated Lists -->
+    <string name="cd_favorite_button">Favorite button</string>
+    <string name="clone_to_my_library">Clone to My Library</string>
+    <string name="cloned_badge">Saved</string>
+    <string name="clone_short">Clone</string>
+    <string name="explore_community_collections">Explore Community</string>
+    <string name="my_custom_lists">My Lists</string>
+    <string name="publish_to_community">Publish to Community</string>
+    <string name="publish_list_title">Publish Collection</string>
+    <string name="publish_list_desc">Share this curated collection with the ShowTime cinephile community.</string>
+    <string name="select_category">Select Category</string>
+    <string name="unpublish_action">Make Private</string>
+    <string name="unpublish_dialog_title">Make collection private?</string>
+    <string name="unpublish_dialog_msg">This collection will be removed from Explore Community. Anyone who has already saved this collection to their library will keep their personal copy.</string>
+    <string name="published_badge">Public in Community</string>
+    <string name="public_badge">Public</string>
+    <string name="private_badge">Private</string>
+    <string name="clone_dialog_title">Save to My Library?</string>
+    <string name="clone_dialog_msg">Save \"%1$s\" (%2$d titles) to your personal collections?</string>
+    <string name="delete_public_list_confirm">Delete \"%1$s\"? Since this collection is published, it will also be removed from the Community discovery feed.</string>
+    <string name="list_created_success">Collection \"%1$s\" created successfully!</string>
+    <string name="list_published_success">Collection published to Community!</string>
+    <string name="list_made_private_success">Collection is now private.</string>
+    <string name="share_list">Share Collection</string>
+    <string name="list_cloned_success">Collection cloned to your Library!</string>
+    <string name="trending_cinephile_lists">Trending Community Lists</string>
+    <string name="no_community_lists_found">No community collections found in this category.</string>
+    <string name="empty_community_lists_title">No Collections Yet</string>
+    <string name="empty_community_lists_subtitle">Be the first to publish a curated collection to the ShowTime Cinephile Community!</string>
+    <string name="clone_own_list_warning">This is your own published collection.</string>
+    <string name="already_cloned_warning">You have already saved this collection to My Lists.</string>
+    <string name="private_collection_badge">Private Collection</string>
+    <string name="public_collection_badge">Public in Community</string>
+    <string name="publish_action">Publish</string>
+    <string name="publish_first_collection">Publish a Collection</string>
+    <string name="tab_my_lists">My Lists</string>
+    <string name="tab_community">Community</string>
 </resources>

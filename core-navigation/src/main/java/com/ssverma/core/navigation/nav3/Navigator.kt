@@ -7,16 +7,28 @@ import androidx.navigation3.runtime.NavKey
  */
 class Navigator(val state: NavigationState) {
     fun navigate(route: NavKey) {
-        if (route in state.backStacks.keys) {
-            if (state.topLevelRoute == route) {
-                // Re-clicking current tab: pop to root
-                val currentStack = state.backStacks[route]
-                while (currentStack != null && currentStack.size > 1) {
-                    currentStack.removeLastOrNull()
+        val matchingTopLevel =
+            state.backStacks.keys.firstOrNull { it == route || it::class == route::class }
+        if (matchingTopLevel != null) {
+            if (state.topLevelRoute == matchingTopLevel) {
+                val currentStack = state.backStacks[matchingTopLevel]
+                if (currentStack != null) {
+                    if (route != matchingTopLevel) {
+                        currentStack.clear()
+                        currentStack.add(route)
+                    } else {
+                        while (currentStack.size > 1) {
+                            currentStack.removeLastOrNull()
+                        }
+                    }
                 }
             } else {
-                // Switch to new tab
-                state.topLevelRoute = route
+                val targetStack = state.backStacks[matchingTopLevel]
+                if (targetStack != null && route != matchingTopLevel) {
+                    targetStack.clear()
+                    targetStack.add(route)
+                }
+                state.topLevelRoute = matchingTopLevel
             }
         } else {
             // Push onto current stack

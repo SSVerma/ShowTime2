@@ -1,12 +1,16 @@
 package com.ssverma.shared.testing.fakes
 
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.library.CustomList
+import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.repository.LibraryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import java.util.UUID
 
 class FakeLibraryRepository : LibraryRepository {
 
@@ -237,14 +241,15 @@ class FakeLibraryRepository : LibraryRepository {
         return history
     }
 
-    private val customLists =
-        MutableStateFlow<List<com.ssverma.shared.domain.model.library.CustomList>>(emptyList())
+    private val customLists = MutableStateFlow<List<CustomList>>(emptyList())
 
-    override fun getCustomListsFlow(): Flow<List<com.ssverma.shared.domain.model.library.CustomList>> {
+    fun getAllCustomLists(): List<CustomList> = customLists.value
+
+    override fun getCustomListsFlow(): Flow<List<CustomList>> {
         return customLists
     }
 
-    override fun getCustomListWithItemsFlow(listId: String): Flow<com.ssverma.shared.domain.model.library.CustomList?> {
+    override fun getCustomListWithItemsFlow(listId: String): Flow<CustomList?> {
         return customLists.map { lists -> lists.find { it.listId == listId } }
     }
 
@@ -253,8 +258,8 @@ class FakeLibraryRepository : LibraryRepository {
         description: String?,
         coverImageUrl: String?
     ): String {
-        val id = java.util.UUID.randomUUID().toString()
-        val newList = com.ssverma.shared.domain.model.library.CustomList(
+        val id = UUID.randomUUID().toString()
+        val newList = CustomList(
             listId = id,
             title = title,
             description = description,
@@ -287,7 +292,7 @@ class FakeLibraryRepository : LibraryRepository {
         voteAvg: Float,
         userNotes: String?
     ) {
-        val item = com.ssverma.shared.domain.model.library.CustomListItem(
+        val item = CustomListItem(
             listId = listId,
             mediaId = mediaId,
             mediaType = mediaType,
@@ -316,5 +321,39 @@ class FakeLibraryRepository : LibraryRepository {
         return customLists.map { lists ->
             lists.filter { list -> list.items.any { it.mediaId == mediaId } }.map { it.listId }
         }
+    }
+
+    override suspend fun setCustomListPublicStatus(listId: String, isPublic: Boolean) {
+        customLists.value = customLists.value.map { list ->
+            if (list.listId == listId) {
+                list.copy(isPublic = isPublic)
+            } else list
+        }
+    }
+
+    override suspend fun cloneCommunityListToLocal(communityList: CommunityCuratedList): String {
+        val newListId = UUID.randomUUID().toString()
+        val clonedItems = communityList.items.mapIndexed { index, item ->
+            CustomListItem(
+                listId = newListId,
+                mediaId = item.mediaId,
+                mediaType = item.mediaType,
+                title = item.title,
+                posterImageUrl = item.posterImageUrl,
+                backdropImageUrl = item.backdropImageUrl,
+                voteAvg = item.voteAvg,
+                rankOrder = index
+            )
+        }
+        val newList = CustomList(
+            listId = newListId,
+            title = communityList.title,
+            description = communityList.description,
+            coverImageUrl = communityList.previewPosters.firstOrNull(),
+            isPublic = false,
+            items = clonedItems
+        )
+        customLists.value = customLists.value + newList
+        return newListId
     }
 }

@@ -65,6 +65,18 @@ class ShowTimeDeepLinkHandlerTest {
     }
 
     @Test
+    fun parse_libraryCommunityDeepLink_returnsLibraryHomeNavKeyWithCommunity() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/library/community")
+        assertEquals(LibraryHomeNavKey(initialTab = LibraryTabDestination.Community), navKey)
+    }
+
+    @Test
+    fun parse_communityDirectDeepLink_returnsLibraryHomeNavKeyWithCommunity() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/community")
+        assertEquals(LibraryHomeNavKey(initialTab = LibraryTabDestination.Community), navKey)
+    }
+
+    @Test
     fun parse_tvHomeDeepLink_returnsTvShowHomeNavKey() {
         val navKey = ShowTimeDeepLinkHandler.parse("showtime://www.ssverma.in/tv")
         assertEquals(TvShowHomeNavKey, navKey)

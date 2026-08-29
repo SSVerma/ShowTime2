@@ -5,6 +5,7 @@ import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.library.ui.home.LibraryScreen
+import com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
@@ -13,12 +14,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
     navigator: Navigator
 ) {
     showTimeEntry<LibraryHomeNavKey> { navKey ->
-        val isTopLevel = navKey == LibraryHomeNavKey.Default
         LibraryScreen(
-            onBackPressed = if (isTopLevel) null else {
-                { navigator.goBack() }
-            },
-            isTopLevel = isTopLevel,
+            onBackPressed = null,
+            isTopLevel = true,
             onMovieClicked = { movieId ->
                 navigator.navigate(MovieDetailNavKey(movieId))
             },
@@ -35,7 +33,7 @@ fun EntryProviderScope<NavKey>.libraryEntries(
     }
 
     showTimeEntry<CinemaReceiptNavKey> {
-        com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen(
+        CinemaReceiptScreen(
             onBackPressed = {
                 navigator.goBack()
             }

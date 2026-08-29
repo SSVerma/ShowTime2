@@ -1,7 +1,6 @@
 package com.ssverma.showtime.navigation
 
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
@@ -16,23 +15,8 @@ import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
 
 object ShowTimeDeepLinkHandler {
-    private const val TAG = "DeepLinkHandler"
     private const val HOST = "www.ssverma.in"
     private const val SCHEME = "showtime"
-
-    private fun logWarn(message: String) {
-        try {
-            Log.w(TAG, message)
-        } catch (_: Throwable) {
-        }
-    }
-
-    private fun logError(message: String, throwable: Throwable? = null) {
-        try {
-            Log.e(TAG, message, throwable)
-        } catch (_: Throwable) {
-        }
-    }
 
     fun parse(uri: Uri): NavKey? {
         return parseParts(uri.scheme, uri.host, uri.pathSegments)
@@ -45,18 +29,12 @@ object ShowTimeDeepLinkHandler {
             val segments = javaUri.path?.split("/")?.filter { it.isNotEmpty() } ?: emptyList()
             parseParts(javaUri.scheme, javaUri.host, segments)
         } catch (_: Exception) {
-            try {
-                parse(uriString.toUri())
-            } catch (e: Exception) {
-                logError("Error parsing deep link string: $uriString", e)
-                null
-            }
+            null
         }
     }
 
     fun parseParts(scheme: String?, host: String?, pathSegments: List<String>): NavKey? {
         if (!scheme.equals(SCHEME, ignoreCase = true) || !host.equals(HOST, ignoreCase = true)) {
-            logWarn("Invalid scheme or host. Expected: $SCHEME://$HOST, Actual: $scheme://$host")
             return null
         }
 
@@ -74,13 +52,16 @@ object ShowTimeDeepLinkHandler {
 
                 "search" -> SearchNavKey
 
+                "community" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
+
                 "library" -> {
                     val subTab =
                         if (pathSegments.size > 1) pathSegments[1].lowercase() else "watchlist"
                     when (subTab) {
                         "favorites", "favorite" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Favorites)
                         "history" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
-                        "custom_lists", "lists" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists)
+                        "custom_lists", "lists", "my_lists" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists)
+                        "community", "explore", "community_lists" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
                         else -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Watchlist)
                     }
                 }
@@ -112,13 +93,9 @@ object ShowTimeDeepLinkHandler {
                     }
                 }
 
-                else -> {
-                    logWarn("Unsupported type: $type")
-                    null
-                }
+                else -> null
             }
-        } catch (e: Exception) {
-            logError("Error parsing deep link", e)
+        } catch (_: Exception) {
             null
         }
     }

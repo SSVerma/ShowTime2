@@ -42,6 +42,13 @@ interface CustomListDao {
         updatedAt: Long = System.currentTimeMillis()
     )
 
+    @Query("UPDATE custom_lists SET isPublic = :isPublic, updatedAt = :updatedAt WHERE listId = :listId")
+    suspend fun updatePublicStatus(
+        listId: String,
+        isPublic: Boolean,
+        updatedAt: Long = System.currentTimeMillis()
+    )
+
     @Query("DELETE FROM custom_lists WHERE listId = :listId")
     suspend fun deleteListById(listId: String)
 

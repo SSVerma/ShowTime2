@@ -22,6 +22,7 @@ data class LibraryTab(
             is LibraryTabType.Favorites -> tabType.items.size
             is LibraryTabType.History -> tabType.items.size
             is LibraryTabType.CustomLists -> tabType.lists.size
+            is LibraryTabType.Community -> tabType.count
         }
 }
 
@@ -40,5 +41,9 @@ sealed interface LibraryTabType {
 
     data class CustomLists(
         val lists: List<CustomList>
+    ) : LibraryTabType
+
+    data class Community(
+        val count: Int = 0
     ) : LibraryTabType
 }

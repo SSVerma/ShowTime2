@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -20,6 +21,9 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.CommunityCuratedListItem
+import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.DailyPollQuestion
 import com.ssverma.shared.domain.model.community.DailyPollQuestionBank
@@ -29,9 +33,12 @@ import com.ssverma.shared.domain.model.community.EditCommentParams
 import com.ssverma.shared.domain.model.community.MediaReactionTag
 import com.ssverma.shared.domain.model.community.MediaReactions
 import com.ssverma.shared.domain.model.community.PostCommentParams
+import com.ssverma.shared.domain.model.community.PublishCustomListParams
 import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
+import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.model.community.TrendingDiscussion
+import com.ssverma.shared.domain.model.community.UnpublishCustomListParams
 import com.ssverma.shared.domain.repository.CommunityRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -94,6 +101,17 @@ class CommunityRepositoryImpl @Inject constructor(
 
     private val optimisticCommentOverrides =
         ConcurrentHashMap<String, MutableStateFlow<Map<String, CommentOverride>>>()
+
+    private data class ListOverride(
+        val upvotesCount: Long? = null,
+        val isUpvotedByMe: Boolean? = null,
+        val clonesCount: Long? = null,
+        val isClonedByMe: Boolean? = null,
+        val isPublished: Boolean? = null
+    )
+
+    private val optimisticListOverrides =
+        MutableStateFlow<Map<String, ListOverride>>(emptyMap())
 
     init {
         // Trigger background catalog sync on startup
@@ -270,6 +288,13 @@ class CommunityRepositoryImpl @Inject constructor(
             MediaType.Unknown -> "unknown"
         }
         return "${userId}_${typeStr}_$mediaId"
+    }
+
+    private fun MediaType.toStorageKey(): String = when (this) {
+        MediaType.Movie -> "movie"
+        MediaType.Tv -> "tv"
+        MediaType.Person -> "person"
+        MediaType.Unknown -> "unknown"
     }
 
     override fun getMediaReactions(mediaType: MediaType, mediaId: Int): Flow<MediaReactions> {
@@ -1130,6 +1155,331 @@ class CommunityRepositoryImpl @Inject constructor(
                 }
             awaitClose { listener.remove() }
         }
+    }
+
+    override fun getCommunityCuratedLists(category: String?): Flow<List<CommunityCuratedList>> {
+        return callbackFlow {
+            val currentUserId = getEffectiveUserId()
+            val collectionRef = firestore.collection("community_curated_lists")
+                .whereEqualTo("isPublished", true)
+
+            val listener = collectionRef.addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val list = snapshot?.documents.orEmpty().mapNotNull { doc ->
+                    doc.toCommunityCuratedList(currentUserId)
+                }
+
+                trySend(list)
+            }
+
+            awaitClose { listener.remove() }
+        }.combine(optimisticListOverrides) { rawList, overrides ->
+            // Sort raw snapshot lists first so optimistic like/clone interactions don't jump card positions
+            val sortedRaw = rawList.sortedWith(
+                compareByDescending<CommunityCuratedList> { it.upvotesCount * 2 + it.clonesCount }
+                    .thenByDescending { it.createdAtEpochMs }
+            )
+
+            sortedRaw.mapNotNull { list ->
+                val override = overrides[list.listId]
+                if (override?.isPublished == false) {
+                    null
+                } else {
+                    list.copy(
+                        upvotesCount = override?.upvotesCount ?: list.upvotesCount,
+                        isUpvotedByMe = override?.isUpvotedByMe ?: list.isUpvotedByMe,
+                        clonesCount = override?.clonesCount ?: list.clonesCount,
+                        isClonedByMe = override?.isClonedByMe ?: list.isClonedByMe
+                    )
+                }
+            }.filter { list ->
+                if (category.isNullOrBlank() || category == CommunityListCategories.ALL) {
+                    true
+                } else {
+                    list.categoryTag.equals(category, ignoreCase = true)
+                }
+            }
+        }
+    }
+
+    override fun getCommunityListDetails(listId: String): Flow<CommunityCuratedList?> {
+        return callbackFlow {
+            val currentUserId = getEffectiveUserId()
+            val docRef = firestore.collection("community_curated_lists").document(listId)
+            val listener = docRef.addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || !snapshot.exists()) {
+                    trySend(null)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot.toCommunityCuratedList(currentUserId))
+            }
+            awaitClose { listener.remove() }
+        }.combine(optimisticListOverrides) { rawList, overrides ->
+            if (rawList == null) null
+            else {
+                val override = overrides[rawList.listId]
+                if (override?.isPublished == false) null
+                else {
+                    rawList.copy(
+                        upvotesCount = override?.upvotesCount ?: rawList.upvotesCount,
+                        isUpvotedByMe = override?.isUpvotedByMe ?: rawList.isUpvotedByMe,
+                        clonesCount = override?.clonesCount ?: rawList.clonesCount,
+                        isClonedByMe = override?.isClonedByMe ?: rawList.isClonedByMe
+                    )
+                }
+            }
+        }
+    }
+
+    override suspend fun publishCustomList(params: PublishCustomListParams): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val currentUserId = getEffectiveUserId()
+            val user = googleAuthClient.currentUser.value
+            val authorName =
+                user?.displayName ?: "Cinephile #${abs(currentUserId.hashCode() % 1000)}"
+            val authorAvatarUrl = user?.photoUrl
+
+            val local = params.localList
+            val itemsData = local.items.mapIndexed { index, item ->
+                mapOf(
+                    "mediaId" to item.mediaId,
+                    "mediaType" to item.mediaType.toStorageKey(),
+                    "title" to item.title,
+                    "posterImageUrl" to item.posterImageUrl,
+                    "backdropImageUrl" to item.backdropImageUrl,
+                    "voteAvg" to item.voteAvg.toDouble(),
+                    "rankOrder" to index
+                )
+            }
+
+            val docData = hashMapOf(
+                "listId" to local.listId,
+                "title" to local.title,
+                "description" to (local.description ?: ""),
+                "authorId" to currentUserId,
+                "authorName" to authorName,
+                "authorAvatarUrl" to (authorAvatarUrl ?: ""),
+                "categoryTag" to params.categoryTag,
+                "itemCount" to local.items.size.toLong(),
+                "items" to itemsData,
+                "previewPosters" to local.previewPosters,
+                "upvotesCount" to 0L,
+                "clonesCount" to 0L,
+                "isPublished" to true,
+                "createdAt" to local.createdAt,
+                "updatedAt" to System.currentTimeMillis()
+            )
+
+            // Update optimistic overrides immediately
+            val currentOverrides = optimisticListOverrides.value.toMutableMap()
+            currentOverrides[local.listId] = ListOverride(isPublished = true)
+            optimisticListOverrides.value = currentOverrides
+
+            repositoryScope.launch {
+                try {
+                    firestore.collection("community_curated_lists")
+                        .document(local.listId)
+                        .set(docData, SetOptions.merge())
+                        .await()
+                } catch (_: Exception) {
+                    // Graceful fallback for offline / permission states
+                }
+            }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun unpublishCustomList(params: UnpublishCustomListParams): Result<Unit, Failure.CoreFailure> {
+        return try {
+            // Optimistic 0ms update
+            val currentOverrides = optimisticListOverrides.value.toMutableMap()
+            currentOverrides[params.listId] = ListOverride(isPublished = false)
+            optimisticListOverrides.value = currentOverrides
+
+            repositoryScope.launch {
+                try {
+                    firestore.collection("community_curated_lists")
+                        .document(params.listId)
+                        .update("isPublished", false)
+                        .await()
+                } catch (_: Exception) {
+                    // Graceful fallback
+                }
+            }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun toggleCommunityListUpvote(params: ToggleListUpvoteParams): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val currentUserId = getEffectiveUserId()
+            val userInteractionRef = firestore.collection("user_list_interactions")
+                .document("${currentUserId}_${params.listId}")
+
+            val currentlyUpvoted =
+                optimisticListOverrides.value[params.listId]?.isUpvotedByMe ?: false
+            val newUpvoted = !currentlyUpvoted
+
+            // 0ms Optimistic UI update
+            val currentOverrides = optimisticListOverrides.value.toMutableMap()
+            val existingOverride = currentOverrides[params.listId]
+            val currentUpvotes = existingOverride?.upvotesCount ?: 0L
+            val nextUpvotes = (currentUpvotes + if (newUpvoted) 1L else -1L).coerceAtLeast(0L)
+            currentOverrides[params.listId] = (existingOverride ?: ListOverride()).copy(
+                isUpvotedByMe = newUpvoted,
+                upvotesCount = nextUpvotes
+            )
+            optimisticListOverrides.value = currentOverrides
+
+            repositoryScope.launch {
+                try {
+                    val listRef =
+                        firestore.collection("community_curated_lists").document(params.listId)
+                    val batch = firestore.batch()
+                    batch.set(
+                        userInteractionRef,
+                        mapOf(
+                            "userId" to currentUserId,
+                            "listId" to params.listId,
+                            "isUpvoted" to newUpvoted,
+                            "updatedAt" to System.currentTimeMillis()
+                        ),
+                        SetOptions.merge()
+                    )
+
+                    batch.update(
+                        listRef,
+                        "upvotesCount",
+                        FieldValue.increment(if (newUpvoted) 1L else -1L)
+                    )
+
+                    batch.commit().await()
+                } catch (_: Exception) {
+                    // Non-blocking firestore sync
+                }
+            }
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun recordListClone(listId: String): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val currentUserId = getEffectiveUserId()
+            val userInteractionRef = firestore.collection("user_list_interactions")
+                .document("${currentUserId}_${listId}")
+
+            // 0ms Optimistic UI update
+            val currentOverrides = optimisticListOverrides.value.toMutableMap()
+            val existingOverride = currentOverrides[listId]
+            val currentClones = existingOverride?.clonesCount ?: 0L
+            currentOverrides[listId] = (existingOverride ?: ListOverride()).copy(
+                isClonedByMe = true,
+                clonesCount = currentClones + 1L
+            )
+            optimisticListOverrides.value = currentOverrides
+
+            repositoryScope.launch {
+                try {
+                    val batch = firestore.batch()
+                    batch.set(
+                        userInteractionRef,
+                        mapOf(
+                            "userId" to currentUserId,
+                            "listId" to listId,
+                            "isCloned" to true,
+                            "updatedAt" to System.currentTimeMillis()
+                        ),
+                        SetOptions.merge()
+                    )
+                    batch.update(
+                        firestore.collection("community_curated_lists").document(listId),
+                        "clonesCount",
+                        FieldValue.increment(1L)
+                    )
+                    batch.commit().await()
+                } catch (_: Exception) {
+                    // Non-blocking firestore sync
+                }
+            }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    private fun DocumentSnapshot.toCommunityCuratedList(
+        currentUserId: String
+    ): CommunityCuratedList? {
+        val listId = getString("listId") ?: id
+        val title = getString("title") ?: return null
+        val description = getString("description")
+        val authorId = getString("authorId") ?: "unknown"
+        val authorName = getString("authorName") ?: "Cinephile"
+        val authorAvatarUrl = getString("authorAvatarUrl")
+        val categoryTag = getString("categoryTag") ?: "Cinephile Favorites"
+        val itemCount = getLong("itemCount")?.toInt() ?: 0
+        val upvotesCount = getLong("upvotesCount") ?: 0L
+        val clonesCount = getLong("clonesCount") ?: 0L
+        val createdAt = getLong("createdAt") ?: System.currentTimeMillis()
+        val updatedAt = getLong("updatedAt") ?: System.currentTimeMillis()
+
+        @Suppress("UNCHECKED_CAST")
+        val rawItems = get("items") as? List<Map<String, Any>> ?: emptyList()
+        val items = rawItems.mapNotNull { itemMap ->
+            val mediaId = (itemMap["mediaId"] as? Number)?.toInt() ?: return@mapNotNull null
+            val mediaTypeStr = itemMap["mediaType"] as? String ?: "movie"
+            val mediaType = if (mediaTypeStr == "tv") MediaType.Tv else MediaType.Movie
+            val itemTitle = itemMap["title"] as? String ?: ""
+            val posterImageUrl = itemMap["posterImageUrl"] as? String ?: ""
+            val backdropImageUrl = itemMap["backdropImageUrl"] as? String ?: ""
+            val voteAvg = (itemMap["voteAvg"] as? Number)?.toFloat() ?: 0f
+            val rankOrder = (itemMap["rankOrder"] as? Number)?.toInt() ?: 0
+
+            CommunityCuratedListItem(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = itemTitle,
+                posterImageUrl = posterImageUrl,
+                backdropImageUrl = backdropImageUrl,
+                voteAvg = voteAvg,
+                rankOrder = rankOrder
+            )
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val previewPosters = get("previewPosters") as? List<String>
+            ?: items.map { it.posterImageUrl }.filter { it.isNotBlank() }.take(4)
+
+        return CommunityCuratedList(
+            listId = listId,
+            title = title,
+            description = description,
+            authorId = authorId,
+            authorName = authorName,
+            authorAvatarUrl = authorAvatarUrl,
+            categoryTag = categoryTag,
+            itemCount = itemCount.coerceAtLeast(items.size),
+            items = items,
+            previewPosters = previewPosters,
+            upvotesCount = upvotesCount,
+            clonesCount = clonesCount,
+            isMine = (authorId == currentUserId),
+            createdAtEpochMs = createdAt,
+            updatedAtEpochMs = updatedAt
+        )
     }
 
     private fun getDiscussionPathKey(

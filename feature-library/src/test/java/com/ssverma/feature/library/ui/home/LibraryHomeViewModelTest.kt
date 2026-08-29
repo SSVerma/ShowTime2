@@ -5,6 +5,13 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
+import com.ssverma.shared.domain.usecase.community.GetCommunityListDetailsUseCase
+import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
+import com.ssverma.shared.domain.usecase.community.PublishCustomListUseCase
+import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
+import com.ssverma.shared.domain.usecase.community.UnpublishCustomListUseCase
+import com.ssverma.shared.testing.fakes.FakeCommunityRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -17,12 +24,37 @@ class LibraryHomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var fakeLibraryRepository: FakeLibraryRepository
+    private lateinit var fakeCommunityRepository: FakeCommunityRepository
     private lateinit var viewModel: LibraryHomeViewModel
 
     @Before
     fun setUp() {
         fakeLibraryRepository = FakeLibraryRepository()
-        viewModel = LibraryHomeViewModel(libraryRepository = fakeLibraryRepository)
+        fakeCommunityRepository = FakeCommunityRepository()
+        viewModel = LibraryHomeViewModel(
+            libraryRepository = fakeLibraryRepository,
+            getCommunityListsUseCase = GetCommunityListsUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            getCommunityListDetailsUseCase = GetCommunityListDetailsUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            publishCustomListUseCase = PublishCustomListUseCase(
+                communityRepository = fakeCommunityRepository,
+                libraryRepository = fakeLibraryRepository
+            ),
+            unpublishCustomListUseCase = UnpublishCustomListUseCase(
+                communityRepository = fakeCommunityRepository,
+                libraryRepository = fakeLibraryRepository
+            ),
+            toggleCommunityListUpvoteUseCase = ToggleCommunityListUpvoteUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            cloneCommunityListUseCase = CloneCommunityListUseCase(
+                libraryRepository = fakeLibraryRepository,
+                communityRepository = fakeCommunityRepository
+            )
+        )
     }
 
     @Test
@@ -132,6 +164,71 @@ class LibraryHomeViewModelTest {
             val emptyLists = awaitItem()
             assertThat(emptyLists).isEmpty()
             assertThat(viewModel.selectedCustomListId.value).isNull()
+        }
+    }
+
+    @Test
+    fun `publishCustomList and unpublishCustomList work as expected`() = runTest {
+        viewModel.communityLists.test {
+            assertThat(awaitItem()).isEmpty()
+
+            // 1. Create a local list
+            fakeLibraryRepository.createCustomList("Cyberpunk Essentials", "Top neon cinema")
+            val localLists = fakeLibraryRepository.getAllCustomLists()
+            val localList = localLists.first()
+
+            // 2. Publish to community
+            viewModel.publishCustomList(localList, "Sci-Fi Essentials")
+
+            val publishedLists = awaitItem()
+            assertThat(publishedLists).hasSize(1)
+            assertThat(publishedLists.first().title).isEqualTo("Cyberpunk Essentials")
+            assertThat(publishedLists.first().categoryTag).isEqualTo("Sci-Fi Essentials")
+
+            // 3. Unpublish from community
+            viewModel.unpublishCustomList(localList.listId)
+            val afterUnpublish = awaitItem()
+            assertThat(afterUnpublish).isEmpty()
+        }
+    }
+
+    @Test
+    fun `toggleCommunityListUpvote updates upvote status`() = runTest {
+        viewModel.communityLists.test {
+            assertThat(awaitItem()).isEmpty()
+
+            fakeLibraryRepository.createCustomList("A24 Wonders", "Artistic movies")
+            val localList = fakeLibraryRepository.getAllCustomLists().first()
+            viewModel.publishCustomList(localList, "A24 Gems")
+
+            val list = awaitItem().first()
+            assertThat(list.isUpvotedByMe).isFalse()
+
+            viewModel.toggleCommunityListUpvote(list.listId)
+            val upvotedList = awaitItem().first()
+            assertThat(upvotedList.isUpvotedByMe).isTrue()
+            assertThat(upvotedList.upvotesCount).isEqualTo(1L)
+        }
+    }
+
+    @Test
+    fun `cloneCommunityList clones collection into local library`() = runTest {
+        viewModel.communityLists.test {
+            assertThat(awaitItem()).isEmpty()
+
+            fakeLibraryRepository.createCustomList("Classic Noir", "Dark alleys")
+            val localList = fakeLibraryRepository.getAllCustomLists().first()
+            viewModel.publishCustomList(localList, "Hidden Gems")
+            val published = awaitItem().first()
+
+            var clonedId: String? = null
+            viewModel.cloneCommunityList(published) { id -> clonedId = id }
+
+            val afterClone = awaitItem()
+            assertThat(afterClone.first().isClonedByMe).isTrue()
+
+            val myLists = fakeLibraryRepository.getAllCustomLists()
+            assertThat(myLists.any { it.title.contains("Classic Noir") }).isTrue()
         }
     }
 }

@@ -13,6 +13,7 @@ import com.ssverma.shared.data.local.db.entity.FavoriteEntity
 import com.ssverma.shared.data.local.db.entity.WatchHistoryEntity
 import com.ssverma.shared.data.local.db.entity.WatchlistEntity
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
@@ -352,6 +353,48 @@ class LibraryRepositoryImpl @Inject constructor(
 
     override fun getCustomListIdsForMediaFlow(mediaId: Int): Flow<List<String>> {
         return customListDao.getListIdsForMediaFlow(mediaId)
+    }
+
+    override suspend fun setCustomListPublicStatus(listId: String, isPublic: Boolean) {
+        customListDao.updatePublicStatus(listId = listId, isPublic = isPublic)
+    }
+
+    override suspend fun cloneCommunityListToLocal(communityList: CommunityCuratedList): String {
+        val newListId = UUID.randomUUID().toString()
+        val now = System.currentTimeMillis()
+
+        // Insert new CustomListEntity in Room
+        customListDao.insertList(
+            CustomListEntity(
+                listId = newListId,
+                title = communityList.title,
+                description = communityList.description,
+                coverImageUrl = communityList.previewPosters.firstOrNull(),
+                isPublic = false,
+                createdAt = now,
+                updatedAt = now
+            )
+        )
+
+        // Insert each item
+        communityList.items.forEachIndexed { index, item ->
+            customListDao.insertListItem(
+                CustomListItemEntity(
+                    listId = newListId,
+                    mediaId = item.mediaId,
+                    mediaType = item.mediaType.toStorageKey(),
+                    title = item.title,
+                    posterImageUrl = item.posterImageUrl,
+                    backdropImageUrl = item.backdropImageUrl,
+                    voteAvg = item.voteAvg,
+                    userNotes = null,
+                    rankOrder = index,
+                    addedAt = now
+                )
+            )
+        }
+
+        return newListId
     }
 
     private fun CustomListWithItems.toCustomList(): CustomList {

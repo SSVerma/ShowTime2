@@ -1,6 +1,7 @@
 package com.ssverma.shared.domain.repository
 
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import kotlinx.coroutines.flow.Flow
@@ -94,4 +95,7 @@ interface LibraryRepository {
 
     suspend fun removeMediaFromCustomList(listId: String, mediaId: Int)
     fun getCustomListIdsForMediaFlow(mediaId: Int): Flow<List<String>>
+
+    suspend fun setCustomListPublicStatus(listId: String, isPublic: Boolean)
+    suspend fun cloneCommunityListToLocal(communityList: CommunityCuratedList): String
 }

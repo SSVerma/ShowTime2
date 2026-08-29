@@ -89,12 +89,14 @@ import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.account.navigation.TraktSyncNavKey
 import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
+import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.ui.LocalAppInfoTrigger
 import com.ssverma.shared.ui.LocalAppStateHolder
+import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.showtime.component.ShowTimeDrawerContent
 import com.ssverma.showtime.component.ShowTimeTopSearchBar
 import com.ssverma.showtime.navigation.DashboardHomeNavKey
@@ -202,7 +204,7 @@ fun ShowTime(
         }
 
         if (showLocalizationSettingsSheet) {
-            com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet(
+            LocalizationSettingsBottomSheet(
                 onDismissRequest = {
                     showLocalizationSettingsSheet = false
                 }
@@ -265,7 +267,7 @@ fun ShowTime(
                         },
                         onOpenReceipt = {
                             coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(com.ssverma.feature.library.navigation.CinemaReceiptNavKey)
+                            navigator.navigate(CinemaReceiptNavKey)
                         },
                         onOpenBackup = {
                             coroutineScope.launch { drawerState.close() }
@@ -549,7 +551,9 @@ private fun isHomePage(
     currentNavKey: NavKey?,
     bottomNavDestinations: List<ShowTimeTopLevelNavItem>
 ): Boolean {
-    return bottomNavDestinations.any { it.navKey == currentNavKey }
+    return bottomNavDestinations.any {
+        it.navKey == currentNavKey || (currentNavKey != null && it.navKey::class == currentNavKey::class)
+    }
 }
 
 @Composable
@@ -601,7 +605,7 @@ fun ShowTimeBottomBar(
                     ShowTimeToolbarTab(
                         iconResId = item.iconResId,
                         titleResId = item.titleResId,
-                        selected = item.navKey == topLevelNavKey,
+                        selected = item.navKey == topLevelNavKey || item.navKey::class == topLevelNavKey::class,
                         onClick = { onTopLevelNavItemSelected(item) },
                         modifier = Modifier
                             .weight(1f)

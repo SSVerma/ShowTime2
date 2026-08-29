@@ -22,7 +22,8 @@ enum class LibraryTabDestination {
     Watchlist,
     Favorites,
     History,
-    CustomLists
+    CustomLists,
+    Community
 }
 
 @Serializable

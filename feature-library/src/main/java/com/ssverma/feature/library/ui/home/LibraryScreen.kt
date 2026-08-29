@@ -46,6 +46,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Edit
@@ -55,8 +56,12 @@ import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.FilterListOff
 import androidx.compose.material.icons.rounded.FolderSpecial
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material.icons.rounded.PublicOff
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
@@ -79,6 +84,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -103,6 +110,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -113,6 +121,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.asString
+import com.ssverma.core.ui.component.ShowTimeSnackbarHost
+import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
@@ -129,9 +139,15 @@ import com.ssverma.feature.library.ui.home.component.LibraryTabType
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptBottomSheet
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
+import com.ssverma.shared.ui.R as SharedR
+import com.ssverma.shared.ui.component.community.CommunityListCard
+import com.ssverma.shared.ui.component.community.CommunityListDetailSheet
+import com.ssverma.shared.ui.component.community.PublishListBottomSheet
 import com.ssverma.shared.ui.component.media.MediaItem
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -156,17 +172,25 @@ fun LibraryScreen(
     val favoriteItems by viewModel.favoriteItems.collectAsState()
     val historyItems by viewModel.historyItems.collectAsState()
     val customLists by viewModel.customLists.collectAsState()
+    val communityLists by viewModel.communityLists.collectAsState()
+    val selectedCommunityCategory by viewModel.selectedCommunityCategory.collectAsState()
+    val selectedCommunityList by viewModel.selectedCommunityList.collectAsState()
 
     val watchlistFilter by viewModel.watchlistFilter.collectAsState()
     val favoritesFilter by viewModel.favoritesFilter.collectAsState()
     val historyFilter by viewModel.historyFilter.collectAsState()
 
     val selectedCustomList by viewModel.selectedCustomList.collectAsState()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var showCreateListDialog by remember { mutableStateOf(false) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
     var listPendingDeletion by remember { mutableStateOf<CustomList?>(null) }
     var listPendingEdit by remember { mutableStateOf<CustomList?>(null) }
+    var listPendingPublish by remember { mutableStateOf<CustomList?>(null) }
+    var listPendingUnpublish by remember { mutableStateOf<CustomList?>(null) }
+    var listPendingClone by remember { mutableStateOf<CommunityCuratedList?>(null) }
     var topMenuExpanded by remember { mutableStateOf(false) }
 
     var showReceiptSheet by remember { mutableStateOf(false) }
@@ -230,7 +254,7 @@ fun LibraryScreen(
         }
     }
 
-    val tabs = remember(watchlistItems, favoriteItems, historyItems, customLists) {
+    val tabs = remember(watchlistItems, favoriteItems, historyItems, customLists, communityLists) {
         listOf(
             LibraryTab(
                 title = UiText.StaticText(resId = R.string.watchlist),
@@ -248,14 +272,23 @@ fun LibraryScreen(
                 tabType = LibraryTabType.History(items = historyItems)
             ),
             LibraryTab(
-                title = UiText.StaticText(resId = R.string.custom_lists),
+                title = UiText.StaticText(resId = SharedR.string.tab_my_lists),
                 icon = Icons.Rounded.FolderSpecial,
                 tabType = LibraryTabType.CustomLists(lists = customLists)
+            ),
+            LibraryTab(
+                title = UiText.StaticText(resId = SharedR.string.tab_community),
+                icon = Icons.Rounded.Public,
+                tabType = LibraryTabType.Community(count = communityLists.size)
             )
         )
     }
 
-    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val selectedTabIndex by viewModel.selectedTabIndex.collectAsState()
+    val pagerState = rememberPagerState(
+        initialPage = selectedTabIndex,
+        pageCount = { tabs.size }
+    )
     val coroutineScope = rememberCoroutineScope()
     val scrollBehavior = if (isTopLevel) {
         TopAppBarDefaults.pinnedScrollBehavior()
@@ -263,37 +296,63 @@ fun LibraryScreen(
         TopAppBarDefaults.enterAlwaysScrollBehavior()
     }
 
+    // Keep ViewModel synced with pager swipes/clicks
+    LaunchedEffect(pagerState.currentPage) {
+        viewModel.setSelectedTabIndex(pagerState.currentPage)
+    }
+
+    var hasHandledInitialArgs by rememberSaveable(
+        initialTab,
+        initialMediaType,
+        targetCustomListId
+    ) {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(initialTab, initialMediaType, targetCustomListId) {
-        val targetPage = when (initialTab) {
-            LibraryTabDestination.Watchlist -> 0
-            LibraryTabDestination.Favorites -> 1
-            LibraryTabDestination.History -> 2
-            LibraryTabDestination.CustomLists -> 3
-        }
-        if (targetPage in 0 until tabs.size) {
-            pagerState.animateScrollToPage(targetPage)
-        }
+        if (!hasHandledInitialArgs) {
+            hasHandledInitialArgs = true
+            val targetPage = when (initialTab) {
+                LibraryTabDestination.Watchlist -> 0
+                LibraryTabDestination.Favorites -> 1
+                LibraryTabDestination.History -> 2
+                LibraryTabDestination.CustomLists -> 3
+                LibraryTabDestination.Community -> 4
+            }
+            if (targetPage in 0 until tabs.size && (targetPage != 0 || targetPage != pagerState.currentPage)) {
+                pagerState.scrollToPage(targetPage)
+                viewModel.setSelectedTabIndex(targetPage)
+            }
 
-        val initialFilter = when (initialMediaType?.lowercase()) {
-            "movie" -> MediaTypeFilter.MOVIE
-            "tv" -> MediaTypeFilter.TV
-            else -> MediaTypeFilter.ALL
-        }
+            val initialFilter = when (initialMediaType?.lowercase()) {
+                "movie" -> MediaTypeFilter.MOVIE
+                "tv" -> MediaTypeFilter.TV
+                else -> null
+            }
 
-        when (initialTab) {
-            LibraryTabDestination.Watchlist -> viewModel.setWatchlistFilter(initialFilter)
-            LibraryTabDestination.Favorites -> viewModel.setFavoritesFilter(initialFilter)
-            LibraryTabDestination.History -> viewModel.setHistoryFilter(initialFilter)
-            LibraryTabDestination.CustomLists -> {
-                if (targetCustomListId != null) {
-                    viewModel.selectCustomList(targetCustomListId)
+            if (initialFilter != null) {
+                when (initialTab) {
+                    LibraryTabDestination.Watchlist -> viewModel.setWatchlistFilter(initialFilter)
+                    LibraryTabDestination.Favorites -> viewModel.setFavoritesFilter(initialFilter)
+                    LibraryTabDestination.History -> viewModel.setHistoryFilter(initialFilter)
+                    else -> {}
                 }
+            }
+
+            if (targetCustomListId != null) {
+                viewModel.selectCustomList(targetCustomListId)
             }
         }
     }
 
     AppPage(
         scrollBehavior = scrollBehavior,
+        snackbarHost = {
+            ShowTimeSnackbarHost(
+                hostState = snackbarHostState,
+                floatingBottomBar = true
+            )
+        },
         topBar = {
             val isScrolled =
                 scrollBehavior.state.collapsedFraction > 0.01f || scrollBehavior.state.contentOffset < -1f
@@ -615,163 +674,420 @@ fun LibraryScreen(
                 }
 
                 3 -> {
-                    CustomListsHubTabContent(
+                    MyListsTabContent(
                         lists = customLists,
                         onCreateListClick = { showCreateListDialog = true },
                         onListClick = { list -> viewModel.selectCustomList(list.listId) },
                         onEditListClick = { list -> listPendingEdit = list },
                         onDeleteListClick = { list -> listPendingDeletion = list },
-                        onExploreClick = openSearchPage
+                        onExploreCommunityClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(4)
+                            }
+                        }
+                    )
+                }
+
+                4 -> {
+                    CommunityTabContent(
+                        communityLists = communityLists,
+                        selectedCategory = selectedCommunityCategory,
+                        onCategorySelect = viewModel::setCommunityCategory,
+                        onCommunityListClick = { list -> viewModel.selectCommunityList(list) },
+                        onToggleCommunityListUpvote = { listId ->
+                            viewModel.toggleCommunityListUpvote(listId)
+                        },
+                        onCloneCommunityList = { list ->
+                            if (list.isMine) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.clone_own_list_warning)
+                                    )
+                                }
+                            } else if (list.isClonedByMe) {
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.already_cloned_warning)
+                                    )
+                                }
+                            } else {
+                                listPendingClone = list
+                            }
+                        },
+                        onCreateListClick = { showCreateListDialog = true }
                     )
                 }
             }
         }
-    }
 
-    if (showCreateListDialog) {
-        CreateCustomListDialog(
-            onDismiss = { showCreateListDialog = false },
-            onCreate = { title, desc ->
-                viewModel.createCustomList(
-                    title,
-                    desc
-                ); showCreateListDialog = false
-            }
-        )
-    }
-
-    listPendingEdit?.let { list ->
-        EditCustomListDialog(
-            customList = list,
-            onDismiss = { listPendingEdit = null },
-            onSave = { title, desc ->
-                viewModel.updateCustomList(list.listId, title, desc)
-                listPendingEdit = null
-            }
-        )
-    }
-
-    if (showClearHistoryDialog) {
-        AlertDialog(
-            onDismissRequest = { showClearHistoryDialog = false },
-            shape = RoundedCornerShape(24.dp),
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.DeleteOutline,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.clear_history),
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = { Text(text = stringResource(R.string.clear_history_confirm)) },
-            confirmButton = {
-                Button(
-                    onClick = { viewModel.clearHistory(); showClearHistoryDialog = false },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text(text = stringResource(R.string.clear_history))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showClearHistoryDialog = false
-                }) { Text(text = stringResource(R.string.cancel)) }
-            }
-        )
-    }
-
-    listPendingDeletion?.let { list ->
-        AlertDialog(
-            onDismissRequest = { listPendingDeletion = null },
-            shape = RoundedCornerShape(24.dp),
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.DeleteOutline,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.delete_list),
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(R.string.delete_list_confirm, list.title)
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val targetId = list.listId
-                        listPendingDeletion = null
-                        if (selectedCustomList?.listId == targetId) {
-                            viewModel.selectCustomList(null)
+        if (showCreateListDialog) {
+            CreateCustomListDialog(
+                onDismiss = { showCreateListDialog = false },
+                onCreate = { title, desc ->
+                    showCreateListDialog = false
+                    viewModel.createCustomList(title, desc) { id ->
+                        coroutineScope.launch {
+                            if (pagerState.currentPage != 3) {
+                                pagerState.animateScrollToPage(3)
+                            }
+                            snackbarHostState.showImmediateSnackbar(
+                                message = context.getString(
+                                    SharedR.string.list_created_success,
+                                    title
+                                )
+                            )
                         }
-                        viewModel.deleteCustomList(targetId)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
+                    }
+                }
+            )
+        }
+
+        listPendingEdit?.let { list ->
+            EditCustomListDialog(
+                customList = list,
+                onDismiss = { listPendingEdit = null },
+                onSave = { title, desc ->
+                    viewModel.updateCustomList(list.listId, title, desc)
+                    listPendingEdit = null
+                }
+            )
+        }
+
+        if (showClearHistoryDialog) {
+            AlertDialog(
+                onDismissRequest = { showClearHistoryDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.DeleteOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
                     )
-                ) {
-                    Text(text = stringResource(R.string.delete_list))
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.clear_history),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = { Text(text = stringResource(R.string.clear_history_confirm)) },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.clearHistory(); showClearHistoryDialog = false },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(text = stringResource(R.string.clear_history))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showClearHistoryDialog = false
+                    }) { Text(text = stringResource(R.string.cancel)) }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { listPendingDeletion = null }) {
-                    Text(text = stringResource(R.string.cancel))
+            )
+        }
+
+        listPendingDeletion?.let { list ->
+            AlertDialog(
+                onDismissRequest = { listPendingDeletion = null },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.DeleteOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.delete_list),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = if (list.isPublic) {
+                            stringResource(SharedR.string.delete_public_list_confirm, list.title)
+                        } else {
+                            stringResource(R.string.delete_list_confirm, list.title)
+                        }
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val targetId = list.listId
+                            val isPub = list.isPublic
+                            listPendingDeletion = null
+                            if (selectedCustomList?.listId == targetId) {
+                                viewModel.selectCustomList(null)
+                            }
+                            viewModel.deleteCustomList(targetId, isPublic = isPub)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(text = stringResource(R.string.delete_list))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { listPendingDeletion = null }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
                 }
-            }
-        )
-    }
+            )
+        }
 
-    if (selectedCustomList != null) {
-        CustomListDetailSheet(
-            customList = selectedCustomList!!,
-            onDismiss = { viewModel.selectCustomList(null) },
-            onItemClick = { item ->
-                viewModel.selectCustomList(null)
-                if (item.mediaType == MediaType.Tv) onTvShowClicked(item.mediaId) else onMovieClicked(
-                    item.mediaId
-                )
-            },
-            onRemoveItem = { item ->
-                viewModel.removeItemFromCustomList(
-                    selectedCustomList!!.listId,
-                    item.mediaId
-                )
-            },
-            onEditList = { listPendingEdit = selectedCustomList },
-            onDeleteList = { listPendingDeletion = selectedCustomList },
-            onExploreClick = openSearchPage,
-            onShareReceipt = {
-                customListForReceipt = selectedCustomList
-                showReceiptSheet = true
-            }
-        )
-    }
+        if (selectedCustomList != null) {
+            CustomListDetailSheet(
+                customList = selectedCustomList!!,
+                onDismiss = { viewModel.selectCustomList(null) },
+                onItemClick = { item ->
+                    viewModel.selectCustomList(null)
+                    if (item.mediaType == MediaType.Tv) onTvShowClicked(item.mediaId) else onMovieClicked(
+                        item.mediaId
+                    )
+                },
+                onRemoveItem = { item ->
+                    viewModel.removeItemFromCustomList(
+                        selectedCustomList!!.listId,
+                        item.mediaId
+                    )
+                },
+                onEditList = { listPendingEdit = selectedCustomList },
+                onDeleteList = { listPendingDeletion = selectedCustomList },
+                onExploreClick = openSearchPage,
+                onShareReceipt = {
+                    customListForReceipt = selectedCustomList
+                    showReceiptSheet = true
+                },
+                onPublishClick = { listPendingPublish = selectedCustomList },
+                onUnpublishClick = { listPendingUnpublish = selectedCustomList }
+            )
+        }
 
-    if (showReceiptSheet) {
-        CinemaReceiptBottomSheet(
-            snapshot = activeReceiptSnapshot,
-            selectedStyle = receiptStyle,
-            onStyleSelected = { receiptStyle = it },
-            selectedSource = receiptSource,
-            onSourceSelected = { receiptSource = it },
-            onDismiss = { showReceiptSheet = false },
-            isCustomCollection = customListForReceipt != null
-        )
+        listPendingPublish?.let { listToPublish ->
+            val publishSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            PublishListBottomSheet(
+                customList = listToPublish,
+                sheetState = publishSheetState,
+                onDismiss = { listPendingPublish = null },
+                onPublish = { categoryTag ->
+                    listPendingPublish = null
+                    viewModel.selectCustomList(null)
+                    viewModel.publishCustomList(
+                        localList = listToPublish,
+                        categoryTag = categoryTag,
+                        onPublished = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(4)
+                                snackbarHostState.showImmediateSnackbar(
+                                    message = context.getString(SharedR.string.list_published_success)
+                                )
+                            }
+                        },
+                        onError = { errorMsg ->
+                            coroutineScope.launch {
+                                snackbarHostState.showImmediateSnackbar(
+                                    message = "Publish failed: $errorMsg"
+                                )
+                            }
+                        }
+                    )
+                }
+            )
+        }
+
+        listPendingUnpublish?.let { listToUnpublish ->
+            AlertDialog(
+                onDismissRequest = { listPendingUnpublish = null },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.PublicOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(SharedR.string.unpublish_dialog_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(text = stringResource(SharedR.string.unpublish_dialog_msg))
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val targetId = listToUnpublish.listId
+                            listPendingUnpublish = null
+                            viewModel.unpublishCustomList(
+                                listId = targetId,
+                                onUnpublished = {
+                                    viewModel.selectCommunityList(null)
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(3)
+                                        snackbarHostState.showImmediateSnackbar(
+                                            message = context.getString(SharedR.string.list_made_private_success)
+                                        )
+                                    }
+                                },
+                                onError = { errorMsg ->
+                                    coroutineScope.launch {
+                                        snackbarHostState.showImmediateSnackbar(
+                                            message = "Failed: $errorMsg"
+                                        )
+                                    }
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(text = stringResource(SharedR.string.unpublish_action))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { listPendingUnpublish = null }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
+
+        listPendingClone?.let { listToClone ->
+            AlertDialog(
+                onDismissRequest = { listPendingClone = null },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.BookmarkAdd,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(SharedR.string.clone_dialog_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(
+                            SharedR.string.clone_dialog_msg,
+                            listToClone.title,
+                            listToClone.itemCount
+                        )
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val targetList = listToClone
+                            listPendingClone = null
+                            viewModel.cloneCommunityList(
+                                communityList = targetList,
+                                onCloned = {
+                                    viewModel.selectCommunityList(null)
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(3)
+                                        snackbarHostState.showImmediateSnackbar(
+                                            message = context.getString(SharedR.string.list_cloned_success)
+                                        )
+                                    }
+                                },
+                                onError = { errorMsg ->
+                                    coroutineScope.launch {
+                                        snackbarHostState.showImmediateSnackbar(
+                                            message = "Clone failed: $errorMsg"
+                                        )
+                                    }
+                                }
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(text = stringResource(SharedR.string.clone_short))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { listPendingClone = null }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
+
+        selectedCommunityList?.let { communityList ->
+            val communitySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            CommunityListDetailSheet(
+                communityList = communityList,
+                sheetState = communitySheetState,
+                onDismiss = { viewModel.selectCommunityList(null) },
+                onItemClick = { mediaType, mediaId ->
+                    viewModel.selectCommunityList(null)
+                    if (mediaType == MediaType.Tv) onTvShowClicked(mediaId) else onMovieClicked(
+                        mediaId
+                    )
+                },
+                onToggleUpvote = { viewModel.toggleCommunityListUpvote(communityList.listId) },
+                onCloneList = {
+                    if (communityList.isMine) {
+                        coroutineScope.launch {
+                            snackbarHostState.showImmediateSnackbar(
+                                message = context.getString(SharedR.string.clone_own_list_warning)
+                            )
+                        }
+                    } else if (communityList.isClonedByMe) {
+                        coroutineScope.launch {
+                            snackbarHostState.showImmediateSnackbar(
+                                message = context.getString(SharedR.string.already_cloned_warning)
+                            )
+                        }
+                    } else {
+                        listPendingClone = communityList
+                    }
+                },
+                onUnpublish = if (communityList.isMine) {
+                    {
+                        val target =
+                            customLists.firstOrNull { it.listId == communityList.listId }
+                                ?: CustomList(
+                                    listId = communityList.listId,
+                                    title = communityList.title,
+                                    description = communityList.description,
+                                    isPublic = true,
+                                    createdAt = communityList.createdAtEpochMs,
+                                    updatedAt = communityList.updatedAtEpochMs
+                                )
+                        listPendingUnpublish = target
+                    }
+                } else null
+            )
+        }
+
+        if (showReceiptSheet) {
+            CinemaReceiptBottomSheet(
+                snapshot = activeReceiptSnapshot,
+                selectedStyle = receiptStyle,
+                onStyleSelected = { receiptStyle = it },
+                selectedSource = receiptSource,
+                onSourceSelected = { receiptSource = it },
+                onDismiss = { showReceiptSheet = false },
+                isCustomCollection = customListForReceipt != null
+            )
+        }
     }
 }
 
@@ -1058,7 +1374,10 @@ private fun MediaCollectionTabContent(
                             TextButton(
                                 onClick = onExploreClick,
                                 shape = RoundedCornerShape(12.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                contentPadding = PaddingValues(
+                                    horizontal = 16.dp,
+                                    vertical = 8.dp
+                                )
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Search,
@@ -1175,7 +1494,10 @@ private fun MediaCollectionTabContent(
                                             )
                                         ) {
                                             Text(
-                                                text = formatRelativeDate(item.addedAt, datePrefix),
+                                                text = formatRelativeDate(
+                                                    item.addedAt,
+                                                    datePrefix
+                                                ),
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Medium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1235,22 +1557,35 @@ private fun MediaCollectionTabContent(
 }
 
 @Composable
-private fun CustomListsHubTabContent(
+private fun MyListsTabContent(
     lists: List<CustomList>,
     onCreateListClick: () -> Unit,
     onListClick: (CustomList) -> Unit,
     onEditListClick: (CustomList) -> Unit,
     onDeleteListClick: (CustomList) -> Unit,
-    onExploreClick: () -> Unit,
+    onExploreCommunityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val contentPadding = rememberFloatingBottomBarPadding(
+        start = MaterialTheme.spacing.medium,
+        top = MaterialTheme.spacing.medium,
+        end = MaterialTheme.spacing.medium,
+        extraSpacing = MaterialTheme.spacing.large
+    )
+
     AnimatedContent(
         targetState = lists.isEmpty(),
         transitionSpec = {
-            fadeIn(animationSpec = tween(220, easing = FastOutSlowInEasing)) togetherWith
+            fadeIn(
+                animationSpec = tween(
+                    220,
+                    easing = FastOutSlowInEasing
+                )
+            ) togetherWith
                     fadeOut(animationSpec = tween(180, easing = FastOutSlowInEasing))
         },
-        label = "CustomListsEmptyOrGrid"
+        label = "CustomListsEmptyOrGrid",
+        modifier = modifier.fillMaxSize()
     ) { isEmpty ->
         if (isEmpty) {
             ExpressiveEmptyState(
@@ -1259,22 +1594,15 @@ private fun CustomListsHubTabContent(
                 icon = Icons.Rounded.FolderSpecial,
                 actionButtonText = stringResource(R.string.create_custom_list),
                 onActionClick = onCreateListClick,
-                modifier = modifier
+                modifier = Modifier.fillMaxSize()
             )
         } else {
-            val contentPadding = rememberFloatingBottomBarPadding(
-                start = MaterialTheme.spacing.medium,
-                top = MaterialTheme.spacing.medium,
-                end = MaterialTheme.spacing.medium,
-                extraSpacing = MaterialTheme.spacing.large
-            )
-
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 160.dp),
                 contentPadding = contentPadding,
                 horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
-                modifier = modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(
@@ -1336,6 +1664,83 @@ private fun CustomListsHubTabContent(
 }
 
 @Composable
+private fun CommunityTabContent(
+    communityLists: List<CommunityCuratedList>,
+    selectedCategory: String,
+    onCategorySelect: (String) -> Unit,
+    onCommunityListClick: (CommunityCuratedList) -> Unit,
+    onToggleCommunityListUpvote: (String) -> Unit,
+    onCloneCommunityList: (CommunityCuratedList) -> Unit,
+    onCreateListClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val contentPadding = rememberFloatingBottomBarPadding(
+        start = MaterialTheme.spacing.medium,
+        top = MaterialTheme.spacing.medium,
+        end = MaterialTheme.spacing.medium,
+        extraSpacing = MaterialTheme.spacing.large
+    )
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // Category Filter Chips
+        androidx.compose.foundation.lazy.LazyRow(
+            contentPadding = PaddingValues(
+                horizontal = MaterialTheme.spacing.medium,
+                vertical = 4.dp
+            ),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(CommunityListCategories.DEFAULT_CATEGORIES) { category ->
+                val isSelected = (selectedCategory == category)
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onCategorySelect(category) },
+                    label = { Text(text = category) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
+        }
+
+        if (communityLists.isEmpty()) {
+            ExpressiveEmptyState(
+                title = stringResource(SharedR.string.empty_community_lists_title),
+                subtitle = if (selectedCategory == CommunityListCategories.ALL) {
+                    stringResource(SharedR.string.empty_community_lists_subtitle)
+                } else {
+                    stringResource(SharedR.string.no_community_lists_found)
+                },
+                icon = Icons.Rounded.Public,
+                actionButtonText = stringResource(SharedR.string.publish_first_collection),
+                onActionClick = onCreateListClick,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(1),
+                contentPadding = contentPadding,
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(communityLists, key = { it.listId }) { item ->
+                    CommunityListCard(
+                        communityList = item,
+                        onClick = { onCommunityListClick(item) },
+                        onToggleUpvote = { onToggleCommunityListUpvote(item.listId) },
+                        onCloneList = { onCloneCommunityList(item) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun CustomListCard(
     customList: CustomList,
     onClick: () -> Unit,
@@ -1383,49 +1788,58 @@ private fun CustomListCard(
                     }
                 }
 
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    IconButton(
-                        onClick = onEditClick,
-                        modifier = Modifier.size(28.dp)
+                if (customList.isPublic) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
                     ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                            modifier = Modifier.size(28.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Edit,
-                                    contentDescription = stringResource(R.string.edit_list),
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Public,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(SharedR.string.public_badge),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
                     }
-
-                    IconButton(
-                        onClick = onDeleteClick,
-                        modifier = Modifier.size(28.dp)
+                } else {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
                     ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                            modifier = Modifier.size(28.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.DeleteOutline,
-                                    contentDescription = stringResource(R.string.delete_list),
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(SharedR.string.private_badge),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -1466,7 +1880,9 @@ private fun CustomListDetailSheet(
     onEditList: () -> Unit,
     onDeleteList: () -> Unit,
     onExploreClick: () -> Unit,
-    onShareReceipt: () -> Unit
+    onShareReceipt: () -> Unit,
+    onPublishClick: () -> Unit,
+    onUnpublishClick: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -1528,57 +1944,191 @@ private fun CustomListDetailSheet(
                 .fillMaxWidth()
                 .padding(horizontal = MaterialTheme.spacing.medium)
         ) {
+            // Header Info Row
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = customList.title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = customList.title,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (customList.isPublic) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f)
+                            }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (customList.isPublic) Icons.Rounded.Public else Icons.Rounded.Lock,
+                                    contentDescription = null,
+                                    tint = if (customList.isPublic) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = stringResource(if (customList.isPublic) SharedR.string.public_collection_badge else SharedR.string.private_collection_badge),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (customList.isPublic) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                     val desc = customList.description
                     if (!desc.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = desc,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = if (customList.itemCount == 1) stringResource(R.string.one_item_count) else stringResource(
                             R.string.items_count,
                             customList.itemCount
                         ),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
+            }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (customList.items.isNotEmpty()) {
-                        IconButton(onClick = onShareReceipt) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Action Buttons Bar with sleek pill surfaces
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (customList.isPublic) {
+                    Surface(
+                        onClick = onUnpublishClick,
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                        ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
-                                contentDescription = stringResource(R.string.cinema_receipt),
-                                tint = MaterialTheme.colorScheme.primary
+                                imageVector = Icons.Rounded.PublicOff,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = stringResource(SharedR.string.unpublish_action),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.error
                             )
                         }
                     }
-                    IconButton(onClick = onEditList) {
+                } else if (customList.items.isNotEmpty()) {
+                    Surface(
+                        onClick = onPublishClick,
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Public,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = stringResource(SharedR.string.publish_action),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
+                if (customList.items.isNotEmpty()) {
+                    Surface(
+                        onClick = onShareReceipt,
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = stringResource(R.string.cinema_receipt),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Edit Button
+                Surface(
+                    onClick = onEditList,
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.size(34.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Rounded.Edit,
                             contentDescription = stringResource(R.string.edit_list),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
-                    IconButton(onClick = onDeleteList) {
+                }
+
+                // Delete Button
+                Surface(
+                    onClick = onDeleteList,
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                    modifier = Modifier.size(34.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Rounded.DeleteOutline,
                             contentDescription = stringResource(R.string.delete_list),
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -1609,14 +2159,14 @@ private fun CustomListDetailSheet(
                         Surface(
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier.size(56.dp)
+                            modifier = Modifier.size(54.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
-                                    imageVector = Icons.Rounded.FolderSpecial,
+                                    imageVector = Icons.Rounded.Movie,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(26.dp)
                                 )
                             }
                         }
@@ -1628,19 +2178,20 @@ private fun CustomListDetailSheet(
                         text = stringResource(R.string.empty_list_items_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
                         text = stringResource(R.string.empty_list_items_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
                     Button(
                         onClick = {
@@ -1731,7 +2282,12 @@ private fun CustomListDetailSheet(
                                     )
                                     if (item.voteAvg > 0f) {
                                         Text(
-                                            text = " • ★ ${String.format("%.1f", item.voteAvg)}",
+                                            text = " • ★ ${
+                                                String.format(
+                                                    "%.1f",
+                                                    item.voteAvg
+                                                )
+                                            }",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.SemiBold
@@ -2004,5 +2560,3 @@ private fun formatRelativeDate(timestamp: Long, prefix: String = "Added "): Stri
         }
     }
 }
-
-
