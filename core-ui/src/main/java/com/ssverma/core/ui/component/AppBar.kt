@@ -44,6 +44,7 @@ fun ShowTimeTopAppBar(
     navIcon: ImageVector = Icons.AutoMirrored.Rounded.ArrowBack,
     actions: @Composable RowScope.() -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    showBottomShadow: Boolean = true,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.background,
         scrolledContainerColor = MaterialTheme.colorScheme.surface,
@@ -52,9 +53,11 @@ fun ShowTimeTopAppBar(
         actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
 ) {
-    val isScrolled = scrollBehavior?.state?.let {
-        it.contentOffset < -1f || it.overlappedFraction > 0.01f
-    } ?: false
+    val isScrolled = if (showBottomShadow) {
+        scrollBehavior?.state?.let {
+            it.contentOffset < -1f || it.overlappedFraction > 0.01f
+        } ?: false
+    } else false
 
     val glowAlpha by animateFloatAsState(
         targetValue = if (isScrolled) 1f else 0f,

@@ -37,6 +37,19 @@ while IFS=: read -r file line_num line_content; do
     report_error "Wildcard import found (import .*)" "$file" "$line_num" "$line_content"
 done < <(grep -rnE --include="*.kt" --include="*.java" --exclude-dir=".git" --exclude-dir="build" "^import +[a-zA-Z0-9_.]+\.\*" "$TARGET_DIR" || true)
 
+# 1b. Inline Fully Qualified Class Names (FQCN)
+echo "Checking for inline fully qualified class names..."
+while IFS=: read -r file line_num line_content; do
+    [ -z "$file" ] && continue
+    if [[ "$file" =~ /test/ ]] || [[ "$file" =~ /androidTest/ ]]; then
+        continue
+    fi
+    if [[ "$line_content" =~ ^[[:space:]]*(package|import|//|\*) ]] || [[ "$line_content" =~ \"com\.ssverma\. ]]; then
+        continue
+    fi
+    report_error "Inline fully qualified class name (FQCN) found. Use top-level import." "$file" "$line_num" "$line_content"
+done < <(grep -rnE --include="*.kt" --include="*.java" --exclude-dir=".git" --exclude-dir="build" "com\.ssverma\.[a-zA-Z0-9_.]+" "$TARGET_DIR" || true)
+
 # 2. Hardcoded Hex Colors
 echo "Checking for hardcoded hex colors..."
 while IFS=: read -r file line_num line_content; do

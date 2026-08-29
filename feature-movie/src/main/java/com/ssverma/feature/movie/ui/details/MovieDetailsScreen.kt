@@ -11,10 +11,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ChatBubbleOutline
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -59,7 +58,10 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.ShareMediaUtils
+import com.ssverma.shared.ui.R as SharedR
+import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.ActionSize
+import com.ssverma.shared.ui.component.BackdropActionButton
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
@@ -84,6 +86,7 @@ fun MovieDetailsScreen(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (movieId: Int) -> Unit,
+    openDiscussionsList: (movieId: Int, movieTitle: String?, posterImageUrl: String?, backdropImageUrl: String?) -> Unit = { _, _, _, _ -> },
     openPersonDetails: (Cast) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
@@ -107,6 +110,14 @@ fun MovieDetailsScreen(
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 openReviewsList = { openReviewsList(data.movie.id) },
+                openDiscussionsList = {
+                    openDiscussionsList(
+                        data.movie.id,
+                        data.movie.title,
+                        data.movie.posterImageUrl,
+                        data.movie.backdropImageUrl
+                    )
+                },
                 openYoutube = { videoId ->
                     viewModel.openYoutubeApp(videoId = videoId)
                 },
@@ -128,6 +139,7 @@ fun MovieContent(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: () -> Unit,
+    openDiscussionsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (Cast) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
@@ -139,6 +151,7 @@ fun MovieContent(
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
+    val discussions by viewModel.discussions.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "movie_details_watch_provider")
     val snackbarHostState = remember { SnackbarHostState() }
@@ -176,7 +189,7 @@ fun MovieContent(
                             backdropImageUrl = movie.backdropImageUrl,
                             voteAvg = movie.voteAvg,
                             releaseDate = movie.releaseDate?.toString().orEmpty(),
-                            triggerIcon = Icons.Default.Add,
+                            triggerIcon = Icons.Rounded.Add,
                             onShowFeedback = { message, actionLabel, destination ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
@@ -199,7 +212,7 @@ fun MovieContent(
                                 )
                             }
                         )
-                        FloatingActionButton(
+                        BackdropActionButton(
                             onClick = {
                                 analytics.logEvent(
                                     MovieAnalyticsEvent.ShareClicked(
@@ -215,14 +228,14 @@ fun MovieContent(
                                 )
                                 context.dispatchShareTextIntent(text = shareableText)
                             },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            modifier = modifier.size(ActionSize)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = null
-                            )
-                        }
+                            icon = Icons.Rounded.Share,
+                            contentDescription = stringResource(id = SharedR.string.share)
+                        )
+                        BackdropActionButton(
+                            onClick = openDiscussionsList,
+                            icon = Icons.Rounded.ChatBubbleOutline,
+                            contentDescription = stringResource(id = SharedR.string.discussions)
+                        )
                     }
                 )
             }
@@ -399,6 +412,19 @@ fun MovieContent(
                         openYoutube(video.key)
                     },
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
+                )
+            }
+
+            item(key = "media_discussions") {
+                MediaDiscussionsSection(
+                    discussions = discussions,
+                    onDiscussionsViewAllClick = openDiscussionsList,
+                    onPostComment = viewModel::postComment,
+                    onEditComment = viewModel::editComment,
+                    onReportComment = viewModel::reportComment,
+                    onToggleUpvote = viewModel::toggleCommentUpvote,
+                    onDeleteComment = viewModel::deleteComment,
+                    modifier = Modifier.padding(top = SectionVerticalSpacing)
                 )
             }
 

@@ -100,6 +100,23 @@ for file in $STAGED_KT_FILES $STAGED_JAVA_FILES; do
     done < <(grep -nE "^import +[a-zA-Z0-9_.]+\.\*" "$file" || true)
 done
 
+# 1b. Zero Inline Fully Qualified Class Names (Must Use Top-Level Imports)
+for file in $STAGED_KT_FILES $STAGED_JAVA_FILES; do
+    [ -f "$file" ] || continue
+    if [[ "$file" =~ /test/ ]] || [[ "$file" =~ /androidTest/ ]]; then
+        continue
+    fi
+    while IFS=: read -r line_num line_content; do
+        # Ignore package declarations, import statements, comments, or string literals
+        if [[ "$line_content" =~ ^[[:space:]]*(package|import|//|\*) ]] || [[ "$line_content" =~ \"com\.ssverma\. ]]; then
+            continue
+        fi
+        report_error "Inline fully qualified class name (FQCN) found. Add an explicit top-level import instead." \
+            "$file" "$line_num" "$line_content" \
+            "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#4-code-hygiene--linting-standards"
+    done < <(grep -nE "com\.ssverma\.[a-zA-Z0-9_.]+" "$file" || true)
+done
+
 # 2. Zero Hardcoded Hex Colors in UI Composables
 for file in $STAGED_KT_FILES; do
     [ -f "$file" ] || continue

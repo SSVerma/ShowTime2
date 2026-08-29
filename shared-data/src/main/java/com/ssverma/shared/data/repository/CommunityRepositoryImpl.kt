@@ -19,11 +19,19 @@ import com.ssverma.core.storage.keyvalue.write
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.DailyPollQuestion
 import com.ssverma.shared.domain.model.community.DailyPollQuestionBank
+import com.ssverma.shared.domain.model.community.DeleteCommentParams
+import com.ssverma.shared.domain.model.community.DiscussionTarget
+import com.ssverma.shared.domain.model.community.EditCommentParams
 import com.ssverma.shared.domain.model.community.MediaReactionTag
 import com.ssverma.shared.domain.model.community.MediaReactions
+import com.ssverma.shared.domain.model.community.PostCommentParams
+import com.ssverma.shared.domain.model.community.ReportCommentParams
+import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
+import com.ssverma.shared.domain.model.community.TrendingDiscussion
 import com.ssverma.shared.domain.repository.CommunityRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
 
 @Singleton
 class CommunityRepositoryImpl @Inject constructor(
@@ -70,6 +79,21 @@ class CommunityRepositoryImpl @Inject constructor(
 
     private val optimisticDailyPollCache =
         ConcurrentHashMap<String, MutableStateFlow<DailyPoll>>()
+
+    private val optimisticDiscussionsCache =
+        ConcurrentHashMap<String, MutableStateFlow<List<Comment>>>()
+
+    private data class CommentOverride(
+        val upvotesCount: Int? = null,
+        val isUpvotedByMe: Boolean? = null,
+        val content: String? = null,
+        val isSpoiler: Boolean? = null,
+        val isEdited: Boolean? = null,
+        val isDeleted: Boolean = false
+    )
+
+    private val optimisticCommentOverrides =
+        ConcurrentHashMap<String, MutableStateFlow<Map<String, CommentOverride>>>()
 
     init {
         // Trigger background catalog sync on startup
@@ -658,5 +682,469 @@ class CommunityRepositoryImpl @Inject constructor(
             Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
-}
 
+    override fun getDiscussions(
+        target: DiscussionTarget
+    ): Flow<List<Comment>> {
+        val pathKey = getDiscussionPathKey(target)
+        val optimisticFlow = optimisticDiscussionsCache.getOrPut(pathKey) {
+            MutableStateFlow(emptyList())
+        }
+
+        val firestoreFlow = callbackFlow {
+            val userId = getEffectiveUserId()
+            val commentsCollection = firestore
+                .collection("media_discussions")
+                .document(pathKey)
+                .collection("comments")
+                .orderBy(
+                    "createdAtEpochMs",
+                    com.google.firebase.firestore.Query.Direction.DESCENDING
+                )
+                .limit(50)
+
+            val listener = commentsCollection.addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val comments = snapshot.documents.mapNotNull { doc ->
+                        val id = doc.id
+                        val authorId = doc.getString("authorId") ?: return@mapNotNull null
+                        val authorName = doc.getString("authorName") ?: "Cinephile"
+                        val authorAvatarUrl = doc.getString("authorAvatarUrl")
+                        val content = doc.getString("content") ?: return@mapNotNull null
+                        val isSpoiler = doc.getBoolean("isSpoiler") ?: false
+                        val upvotesCount = doc.getLong("upvotesCount")?.toInt() ?: 0
+                        val upvoterIds = doc.get("upvoterIds") as? List<*> ?: emptyList<Any>()
+                        val isUpvotedByMe = upvoterIds.any { it.toString() == userId }
+                        val isOwner = authorId == userId
+                        val isEdited = doc.getBoolean("isEdited") ?: false
+                        val parentId = doc.getString("parentId")
+                        val replyToAuthorName = doc.getString("replyToAuthorName")
+                        val repliesCount = doc.getLong("repliesCount")?.toInt() ?: 0
+                        val reportCount = doc.getLong("reportCount")?.toInt() ?: 0
+                        val createdAtEpochMs = doc.getLong("createdAtEpochMs")
+                            ?: doc.getTimestamp("createdAt")?.toDate()?.time
+                            ?: System.currentTimeMillis()
+
+                        // Filter out reported content if report count >= 5
+                        if (reportCount < 5) {
+                            Comment(
+                                id = id,
+                                authorId = authorId,
+                                authorName = authorName,
+                                authorAvatarUrl = authorAvatarUrl,
+                                content = content,
+                                isSpoiler = isSpoiler,
+                                upvotesCount = upvotesCount,
+                                isUpvotedByMe = isUpvotedByMe,
+                                isOwner = isOwner,
+                                isEdited = isEdited,
+                                parentId = parentId,
+                                replyToAuthorName = replyToAuthorName,
+                                repliesCount = repliesCount,
+                                reportCount = reportCount,
+                                createdAtEpochMs = createdAtEpochMs
+                            )
+                        } else null
+                    }
+                    trySend(comments)
+                }
+            }
+            awaitClose { listener.remove() }
+        }
+
+        val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
+            MutableStateFlow(emptyMap())
+        }
+
+        return combine(
+            optimisticFlow,
+            firestoreFlow,
+            overridesFlow
+        ) { optimistic, firestoreList, overrides ->
+            val firestoreIds = firestoreList.map { it.id }.toSet()
+            val pendingLocal = optimistic.filter { it.id !in firestoreIds }
+            val combined = pendingLocal + firestoreList
+
+            val allFlat = combined.mapNotNull { comment ->
+                val override = overrides[comment.id]
+                if (override?.isDeleted == true) {
+                    null
+                } else if (override != null) {
+                    comment.copy(
+                        upvotesCount = override.upvotesCount ?: comment.upvotesCount,
+                        isUpvotedByMe = override.isUpvotedByMe ?: comment.isUpvotedByMe,
+                        content = override.content ?: comment.content,
+                        isSpoiler = override.isSpoiler ?: comment.isSpoiler,
+                        isEdited = override.isEdited ?: comment.isEdited
+                    )
+                } else {
+                    comment
+                }
+            }
+
+            val allIds = allFlat.map { it.id }.toSet()
+            // Direct roots have parentId == null. If parentId points to an ID not in allFlat, treat as root so it's not lost.
+            val roots = allFlat.filter { it.parentId == null || it.parentId !in allIds }
+            val childrenByParent = allFlat.filter { it.parentId != null && it.parentId in allIds }
+                .groupBy { it.parentId!! }
+
+            fun getAllDescendants(
+                parentId: String,
+                visited: Set<String> = emptySet()
+            ): List<Comment> {
+                if (parentId in visited) return emptyList()
+                val direct = childrenByParent[parentId].orEmpty()
+                return direct + direct.flatMap { getAllDescendants(it.id, visited + parentId) }
+            }
+
+            roots.map { root ->
+                val threadReplies =
+                    getAllDescendants(root.id).distinctBy { it.id }.sortedBy { it.createdAtEpochMs }
+                root.copy(
+                    replies = threadReplies,
+                    repliesCount = if (threadReplies.isNotEmpty()) threadReplies.size else root.repliesCount
+                )
+            }
+        }
+    }
+
+    override suspend fun postComment(
+        params: PostCommentParams
+    ): Result<Comment, Failure.CoreFailure> {
+        return try {
+            val pathKey = getDiscussionPathKey(params.target)
+            val userId = getEffectiveUserId()
+            val googleUser = googleAuthClient.currentUser.value
+            val authorName = googleUser?.displayName?.takeIf { it.isNotBlank() }
+                ?: googleUser?.email?.substringBefore("@")
+                ?: "Cinephile #${abs(userId.hashCode() % 900) + 100}"
+            val authorAvatarUrl = googleUser?.photoUrl
+
+            val commentId = UUID.randomUUID().toString()
+            val now = System.currentTimeMillis()
+
+            val newComment = Comment(
+                id = commentId,
+                authorId = userId,
+                authorName = authorName,
+                authorAvatarUrl = authorAvatarUrl,
+                content = params.content.trim(),
+                isSpoiler = params.isSpoiler,
+                upvotesCount = 0,
+                isUpvotedByMe = false,
+                isOwner = true,
+                isEdited = false,
+                parentId = params.parentId,
+                replyToAuthorName = params.replyToAuthorName,
+                repliesCount = 0,
+                reportCount = 0,
+                createdAtEpochMs = now
+            )
+
+            // 0ms Optimistic local update
+            val optimisticFlow = optimisticDiscussionsCache.getOrPut(pathKey) {
+                MutableStateFlow(emptyList())
+            }
+            optimisticFlow.value = listOf(newComment) + optimisticFlow.value
+
+            // Save to Firestore
+            val commentDoc = mutableMapOf(
+                "authorId" to userId,
+                "authorName" to authorName,
+                "authorAvatarUrl" to authorAvatarUrl,
+                "content" to params.content.trim(),
+                "isSpoiler" to params.isSpoiler,
+                "upvotesCount" to 0L,
+                "upvoterIds" to emptyList<String>(),
+                "parentId" to params.parentId,
+                "replyToAuthorName" to params.replyToAuthorName,
+                "repliesCount" to 0L,
+                "reportCount" to 0L,
+                "isEdited" to false,
+                "createdAtEpochMs" to now,
+                "createdAt" to FieldValue.serverTimestamp()
+            )
+
+            val mediaDoc = firestore.collection("media_discussions").document(pathKey)
+            val mediaMetadata = mutableMapOf<String, Any>(
+                "mediaId" to params.target.mediaId,
+                "mediaType" to if (params.target.mediaType == MediaType.Tv) "tv" else "movie",
+                "discussionCount" to FieldValue.increment(1L),
+                "latestCommentSnippet" to params.content.trim().take(100),
+                "lastCommentedAt" to FieldValue.serverTimestamp()
+            )
+            params.mediaTitle?.let { mediaMetadata["title"] = it }
+            params.posterImageUrl?.let { mediaMetadata["posterImageUrl"] = it }
+            params.backdropImageUrl?.let { mediaMetadata["backdropImageUrl"] = it }
+            params.target.seasonNumber?.let { mediaMetadata["seasonNumber"] = it }
+            params.target.episodeNumber?.let { mediaMetadata["episodeNumber"] = it }
+
+            val batch = firestore.batch()
+            batch.set(mediaDoc, mediaMetadata, SetOptions.merge())
+            val parentId = params.parentId
+            if (parentId != null) {
+                val parentDoc = mediaDoc.collection("comments").document(parentId)
+                batch.set(
+                    parentDoc,
+                    mapOf("repliesCount" to FieldValue.increment(1L)),
+                    SetOptions.merge()
+                )
+            }
+            batch.set(mediaDoc.collection("comments").document(commentId), commentDoc)
+            batch.commit().await()
+
+            Result.Success(newComment)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun editComment(
+        params: EditCommentParams
+    ): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val pathKey = getDiscussionPathKey(params.target)
+            val userId = getEffectiveUserId()
+
+            // 0ms Optimistic local update
+            val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
+                MutableStateFlow(emptyMap())
+            }
+            overridesFlow.value = overridesFlow.value + (params.commentId to CommentOverride(
+                content = params.newContent.trim(),
+                isSpoiler = params.isSpoiler,
+                isEdited = true
+            ))
+
+            val commentDocRef = firestore
+                .collection("media_discussions")
+                .document(pathKey)
+                .collection("comments")
+                .document(params.commentId)
+
+            val doc = commentDocRef.get().await()
+            if (doc.getString("authorId") == userId) {
+                commentDocRef.set(
+                    mapOf(
+                        "content" to params.newContent.trim(),
+                        "isSpoiler" to params.isSpoiler,
+                        "isEdited" to true,
+                        "updatedAt" to FieldValue.serverTimestamp()
+                    ),
+                    SetOptions.merge()
+                ).await()
+            }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun reportComment(
+        params: ReportCommentParams
+    ): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val pathKey = getDiscussionPathKey(params.target)
+            val userId = getEffectiveUserId()
+
+            val commentDocRef = firestore
+                .collection("media_discussions")
+                .document(pathKey)
+                .collection("comments")
+                .document(params.commentId)
+
+            val batch = firestore.batch()
+            batch.update(commentDocRef, "reportCount", FieldValue.increment(1L))
+            val reportDoc =
+                commentDocRef.collection("reports").document(UUID.randomUUID().toString())
+            batch.set(
+                reportDoc,
+                mapOf(
+                    "reporterId" to userId,
+                    "reason" to params.reason,
+                    "reportedAt" to FieldValue.serverTimestamp()
+                )
+            )
+            batch.commit().await()
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun toggleCommentUpvote(
+        params: ToggleCommentUpvoteParams
+    ): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val pathKey = getDiscussionPathKey(params.target)
+            val userId = getEffectiveUserId()
+
+            val commentDocRef = firestore
+                .collection("media_discussions")
+                .document(pathKey)
+                .collection("comments")
+                .document(params.commentId)
+
+            val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
+                MutableStateFlow(emptyMap())
+            }
+            val currentOverrides = overridesFlow.value
+            val existingOverride = currentOverrides[params.commentId]
+
+            val docSnapshot = try {
+                commentDocRef.get().await()
+            } catch (_: Exception) {
+                null
+            }
+            val upvoterIds =
+                (docSnapshot?.get("upvoterIds") as? List<*>)?.map { it.toString() } ?: emptyList()
+            val isAlreadyUpvotedInDb = upvoterIds.contains(userId)
+            val currentCountInDb = docSnapshot?.getLong("upvotesCount")?.toInt() ?: 0
+
+            val currentIsUpvoted = existingOverride?.isUpvotedByMe ?: isAlreadyUpvotedInDb
+            val currentCount = existingOverride?.upvotesCount ?: currentCountInDb
+
+            val newIsUpvoted = !currentIsUpvoted
+            val newCount =
+                if (newIsUpvoted) currentCount + 1 else (currentCount - 1).coerceAtLeast(0)
+
+            // 0ms Optimistic local update
+            overridesFlow.value = currentOverrides + (params.commentId to CommentOverride(
+                upvotesCount = newCount,
+                isUpvotedByMe = newIsUpvoted
+            ))
+
+            // Resilient Firestore update
+            if (newIsUpvoted) {
+                commentDocRef.set(
+                    mapOf(
+                        "upvotesCount" to FieldValue.increment(1L),
+                        "upvoterIds" to FieldValue.arrayUnion(userId)
+                    ),
+                    SetOptions.merge()
+                ).await()
+            } else {
+                commentDocRef.set(
+                    mapOf(
+                        "upvotesCount" to FieldValue.increment(-1L),
+                        "upvoterIds" to FieldValue.arrayRemove(userId)
+                    ),
+                    SetOptions.merge()
+                ).await()
+            }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun deleteComment(
+        params: DeleteCommentParams
+    ): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val pathKey = getDiscussionPathKey(params.target)
+            val userId = getEffectiveUserId()
+
+            // 0ms Optimistic local update
+            val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
+                MutableStateFlow(emptyMap())
+            }
+            overridesFlow.value = overridesFlow.value + (params.commentId to CommentOverride(
+                isDeleted = true
+            ))
+
+            val commentDocRef = firestore
+                .collection("media_discussions")
+                .document(pathKey)
+                .collection("comments")
+                .document(params.commentId)
+
+            val doc = commentDocRef.get().await()
+            if (doc.getString("authorId") == userId) {
+                val mediaDoc = firestore.collection("media_discussions").document(pathKey)
+                val batch = firestore.batch()
+                batch.delete(commentDocRef)
+                batch.set(
+                    mediaDoc,
+                    mapOf("discussionCount" to FieldValue.increment(-1L)),
+                    SetOptions.merge()
+                )
+                batch.commit().await()
+            }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>> {
+        return callbackFlow {
+            val listener = firestore
+                .collection("media_discussions")
+                .whereGreaterThan("discussionCount", 0)
+                .orderBy(
+                    "discussionCount",
+                    com.google.firebase.firestore.Query.Direction.DESCENDING
+                )
+                .limit(10)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        return@addSnapshotListener
+                    }
+
+                    val trendingList = snapshot?.documents.orEmpty().mapNotNull { doc ->
+                        val mediaId = doc.getLong("mediaId")?.toInt() ?: return@mapNotNull null
+                        val mediaTypeStr = doc.getString("mediaType") ?: "movie"
+                        val mediaType = if (mediaTypeStr == "tv") MediaType.Tv else MediaType.Movie
+                        val title = doc.getString("title") ?: "Discussion"
+                        val backdropImageUrl = doc.getString("backdropImageUrl")
+                        val posterImageUrl = doc.getString("posterImageUrl")
+                        val discussionCount = doc.getLong("discussionCount")?.toInt() ?: 0
+                        val latestSnippet = doc.getString("latestCommentSnippet") ?: ""
+                        val seasonNumber = doc.getLong("seasonNumber")?.toInt()
+                        val episodeNumber = doc.getLong("episodeNumber")?.toInt()
+
+                        if (discussionCount > 0) {
+                            TrendingDiscussion(
+                                mediaId = mediaId,
+                                mediaType = mediaType,
+                                title = title,
+                                backdropImageUrl = backdropImageUrl,
+                                posterImageUrl = posterImageUrl,
+                                discussionCount = discussionCount,
+                                latestCommentSnippet = latestSnippet,
+                                seasonNumber = seasonNumber,
+                                episodeNumber = episodeNumber
+                            )
+                        } else null
+                    }
+                    trySend(trendingList)
+                }
+            awaitClose { listener.remove() }
+        }
+    }
+
+    private fun getDiscussionPathKey(
+        target: DiscussionTarget
+    ): String {
+        return if (target.seasonNumber != null && target.episodeNumber != null) {
+            "tv_${target.mediaId}_s${target.seasonNumber}_e${target.episodeNumber}"
+        } else {
+            val typeStr = when (target.mediaType) {
+                MediaType.Movie -> "movie"
+                MediaType.Tv -> "tv"
+                MediaType.Person -> "person"
+                MediaType.Unknown -> "unknown"
+            }
+            "${typeStr}_${target.mediaId}"
+        }
+    }
+}

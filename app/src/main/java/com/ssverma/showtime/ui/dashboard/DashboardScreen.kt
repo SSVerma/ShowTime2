@@ -44,6 +44,7 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
@@ -52,6 +53,7 @@ import com.ssverma.showtime.ui.dashboard.shelves.dailyPollShelf
 import com.ssverma.showtime.ui.dashboard.shelves.inViewportNativeAdShelf
 import com.ssverma.showtime.ui.dashboard.shelves.streamingUniverseShelf
 import com.ssverma.showtime.ui.dashboard.shelves.studioPortalsShelf
+import com.ssverma.showtime.ui.dashboard.shelves.trendingDiscussionsShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingSpotlightShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingWorldwideShelf
 import kotlinx.coroutines.launch
@@ -61,6 +63,7 @@ import kotlinx.coroutines.launch
 fun DashboardScreen(
     openMovieDetails: (Int) -> Unit,
     openTvShowDetails: (Int) -> Unit,
+    openDiscussions: (MediaType, Int, Int?, Int?, String, String?, String?) -> Unit,
     openCinemaGame: () -> Unit,
     openWatchProviderHub: (ProviderInfo, Boolean) -> Unit,
     openStudioPortal: (StudioPortalItem) -> Unit,
@@ -212,7 +215,13 @@ fun DashboardScreen(
                     onOptionClick = viewModel::voteDailyPoll
                 )
 
-                // 4. Streaming Universe Hub (Segmented: [ 🎬 Movies | 📺 TV Shows ])
+                // 5. Trending Community Discussions & Cinephile Buzz
+                trendingDiscussionsShelf(
+                    discussions = uiState.trendingDiscussions,
+                    onDiscussionClick = openDiscussions
+                )
+
+                // 6. Streaming Universe Hub (Segmented: [ 🎬 Movies | 📺 TV Shows ])
                 streamingUniverseShelf(
                     movieProviders = uiState.movieProviders,
                     tvProviders = uiState.tvProviders,

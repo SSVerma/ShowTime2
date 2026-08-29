@@ -11,6 +11,8 @@ import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
 import com.ssverma.feature.movie.ui.details.MovieDetailsViewModel
+import com.ssverma.feature.movie.ui.details.MovieDiscussionsScreen
+import com.ssverma.feature.movie.ui.details.MovieDiscussionsViewModel
 import com.ssverma.feature.movie.ui.details.MovieImagePagerScreen
 import com.ssverma.feature.movie.ui.details.MovieImageShotsScreen
 import com.ssverma.feature.movie.ui.details.MovieReviewsScreen
@@ -107,6 +109,16 @@ fun EntryProviderScope<NavKey>.movieEntries(
             openReviewsList = { movieId ->
                 navigator.navigate(MovieReviewsNavKey(movieId))
             },
+            openDiscussionsList = { movieId, movieTitle, posterImageUrl, backdropImageUrl ->
+                navigator.navigate(
+                    MovieDiscussionsNavKey(
+                        movieId = movieId,
+                        movieTitle = movieTitle,
+                        posterImageUrl = posterImageUrl,
+                        backdropImageUrl = backdropImageUrl
+                    )
+                )
+            },
             openPersonDetails = { cast ->
                 navigator.navigate(
                     PersonDetailNavKey(
@@ -132,6 +144,20 @@ fun EntryProviderScope<NavKey>.movieEntries(
                 )
             },
             openLibraryPage = openLibraryPage
+        )
+    }
+
+    showTimeEntry<MovieDiscussionsNavKey> { key ->
+        MovieDiscussionsScreen(
+            viewModel = hiltViewModel<MovieDiscussionsViewModel, MovieDiscussionsViewModel.Factory> { factory ->
+                factory.create(
+                    movieId = key.movieId,
+                    movieTitle = key.movieTitle,
+                    posterImageUrl = key.posterImageUrl,
+                    backdropImageUrl = key.backdropImageUrl
+                )
+            },
+            onBackPressed = { navigator.goBack() }
         )
     }
 

@@ -43,6 +43,7 @@ import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.shared.domain.model.Cast
+import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
@@ -53,6 +54,7 @@ import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
+import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import kotlinx.coroutines.launch
 
@@ -61,13 +63,15 @@ import kotlinx.coroutines.launch
 fun TvEpisodeDetailsScreen(
     onBackPress: () -> Unit,
     openPersonDetails: (Cast) -> Unit,
-    viewModel: TvEpisodeDetailsViewModel
+    viewModel: TvEpisodeDetailsViewModel,
+    openDiscussionsList: (tvShowId: Int, seasonNumber: Int, episodeNumber: Int, episodeTitle: String?, posterImageUrl: String?, backdropImageUrl: String?) -> Unit = { _, _, _, _, _, _ -> }
 ) {
     val imageSheetState = rememberImageShotBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
 
     val tvEpisodeUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isWatched by viewModel.isWatched.collectAsStateWithLifecycle()
+    val discussions by viewModel.discussions.collectAsStateWithLifecycle()
 
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_EPISODE)
 
@@ -83,7 +87,23 @@ fun TvEpisodeDetailsScreen(
                 TvEpisodeContent(
                     episode = episode,
                     isWatched = isWatched,
+                    discussions = discussions,
                     onToggleWatched = { viewModel.toggleWatched() },
+                    onDiscussionsViewAllClick = {
+                        openDiscussionsList(
+                            viewModel.tvShowId,
+                            episode.seasonNumber,
+                            episode.episodeNumber,
+                            episode.title,
+                            episode.posterImageUrl,
+                            null
+                        )
+                    },
+                    onPostComment = viewModel::postComment,
+                    onEditComment = viewModel::editComment,
+                    onReportComment = viewModel::reportComment,
+                    onToggleUpvote = viewModel::toggleCommentUpvote,
+                    onDeleteComment = viewModel::deleteComment,
                     onBackPress = onBackPress,
                     openPersonDetails = openPersonDetails,
                     openImageShotsList = {
@@ -108,7 +128,14 @@ fun TvEpisodeDetailsScreen(
 private fun TvEpisodeContent(
     episode: TvEpisode,
     isWatched: Boolean,
+    discussions: List<Comment>,
     onToggleWatched: () -> Unit,
+    onDiscussionsViewAllClick: () -> Unit,
+    onPostComment: (content: String, isSpoiler: Boolean) -> Unit,
+    onEditComment: (commentId: String, newContent: String, isSpoiler: Boolean) -> Unit,
+    onReportComment: (commentId: String, reason: String) -> Unit,
+    onToggleUpvote: (commentId: String) -> Unit,
+    onDeleteComment: (commentId: String) -> Unit,
     onBackPress: () -> Unit,
     openPersonDetails: (Cast) -> Unit,
     openImageShotsList: () -> Unit,
@@ -149,7 +176,7 @@ private fun TvEpisodeContent(
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = if (isWatched) {
-                            Color(0xFF4CAF50).copy(alpha = 0.2f)
+                            MaterialTheme.colorScheme.primaryContainer
                         } else {
                             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                         }
@@ -162,7 +189,7 @@ private fun TvEpisodeContent(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = if (isWatched) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            color = if (isWatched) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
                                 alpha = 0.2f
                             ),
                             modifier = Modifier.size(24.dp)
@@ -171,7 +198,7 @@ private fun TvEpisodeContent(
                                 Icon(
                                     imageVector = Icons.Rounded.Check,
                                     contentDescription = null,
-                                    tint = if (isWatched) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    tint = if (isWatched) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -180,7 +207,7 @@ private fun TvEpisodeContent(
                             text = if (isWatched) "Watched" else "Mark as Watched",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = if (isWatched) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurface
+                            color = if (isWatched) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -246,6 +273,20 @@ private fun TvEpisodeContent(
                     openPersonDetails(cast)
                 },
                 source = "tv_episode_credit",
+                modifier = Modifier.padding(top = SectionSpacing)
+            )
+        }
+
+        /*Episode Community Discussions*/
+        item(key = "media_discussions") {
+            MediaDiscussionsSection(
+                discussions = discussions,
+                onDiscussionsViewAllClick = onDiscussionsViewAllClick,
+                onPostComment = onPostComment,
+                onEditComment = onEditComment,
+                onReportComment = onReportComment,
+                onToggleUpvote = onToggleUpvote,
+                onDeleteComment = onDeleteComment,
                 modifier = Modifier.padding(top = SectionSpacing)
             )
         }

@@ -19,6 +19,15 @@ data class MovieReviewsNavKey(val movieId: Int) : NavKey, Parcelable
 
 @Serializable
 @Parcelize
+data class MovieDiscussionsNavKey(
+    val movieId: Int,
+    val movieTitle: String? = null,
+    val posterImageUrl: String? = null,
+    val backdropImageUrl: String? = null
+) : NavKey, Parcelable
+
+@Serializable
+@Parcelize
 data class MovieImageShotsNavKey(val movieId: Int) : NavKey, Parcelable
 
 @Serializable

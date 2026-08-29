@@ -53,7 +53,8 @@ class DashboardViewModel @Inject constructor(
     private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository,
     private val getDailyPollUseCase: GetDailyPollUseCase,
-    private val voteDailyPollUseCase: VoteDailyPollUseCase
+    private val voteDailyPollUseCase: VoteDailyPollUseCase,
+    private val getTrendingDiscussionsUseCase: com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -104,6 +105,12 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             getDailyPollUseCase().collect { poll ->
                 _uiState.update { it.copy(dailyPoll = poll) }
+            }
+        }
+
+        viewModelScope.launch {
+            getTrendingDiscussionsUseCase().collect { discussions ->
+                _uiState.update { it.copy(trendingDiscussions = discussions) }
             }
         }
     }

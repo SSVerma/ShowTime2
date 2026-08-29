@@ -90,7 +90,7 @@ fun MediaStatsAction(
         anchorContent = {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = modifier.size(28.dp)
+                modifier = modifier
             ) {
                 Surface(
                     onClick = {
@@ -124,7 +124,7 @@ fun MediaStatsAction(
                             imageVector = triggerIcon,
                             contentDescription = null,
                             tint = contentColor,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -452,14 +452,19 @@ private fun FloatingHeartsBurst(
 ) {
     if (trigger == 0) return
 
-    val particles = remember(trigger) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+    val tertiaryColor = MaterialTheme.colorScheme.tertiary
+    val errorColor = MaterialTheme.colorScheme.error
+
+    val particles = remember(trigger, primaryColor, secondaryColor, tertiaryColor, errorColor) {
         listOf(
             FloatingHeartData(
                 offsetX = -6f,
                 driftX = -28f,
                 targetY = -120f,
                 size = 15.dp,
-                color = Color(0xFFFF2A6D),
+                color = primaryColor,
                 delay = 0,
                 rotation = -14f
             ),
@@ -468,7 +473,7 @@ private fun FloatingHeartsBurst(
                 driftX = 24f,
                 targetY = -160f,
                 size = 20.dp,
-                color = Color(0xFFFF5376),
+                color = tertiaryColor,
                 delay = 70,
                 rotation = 16f
             ),
@@ -477,7 +482,7 @@ private fun FloatingHeartsBurst(
                 driftX = -12f,
                 targetY = -140f,
                 size = 13.dp,
-                color = Color(0xFFFF85A1),
+                color = secondaryColor,
                 delay = 140,
                 rotation = -8f
             ),
@@ -486,7 +491,7 @@ private fun FloatingHeartsBurst(
                 driftX = 35f,
                 targetY = -110f,
                 size = 16.dp,
-                color = Color(0xFFFF3366),
+                color = errorColor,
                 delay = 210,
                 rotation = 20f
             ),
@@ -495,7 +500,7 @@ private fun FloatingHeartsBurst(
                 driftX = -36f,
                 targetY = -175f,
                 size = 14.dp,
-                color = Color(0xFFFF4081),
+                color = primaryColor.copy(alpha = 0.85f),
                 delay = 280,
                 rotation = -16f
             ),
@@ -504,7 +509,7 @@ private fun FloatingHeartsBurst(
                 driftX = 12f,
                 targetY = -190f,
                 size = 22.dp,
-                color = Color(0xFFE91E63),
+                color = tertiaryColor.copy(alpha = 0.85f),
                 delay = 100,
                 rotation = 10f
             ),
@@ -513,7 +518,7 @@ private fun FloatingHeartsBurst(
                 driftX = -20f,
                 targetY = -150f,
                 size = 18.dp,
-                color = Color(0xFFFF6E40),
+                color = secondaryColor.copy(alpha = 0.85f),
                 delay = 350,
                 rotation = -10f
             ),
@@ -522,7 +527,7 @@ private fun FloatingHeartsBurst(
                 driftX = 18f,
                 targetY = -180f,
                 size = 16.dp,
-                color = Color(0xFFFF1744),
+                color = errorColor.copy(alpha = 0.85f),
                 delay = 420,
                 rotation = 12f
             )

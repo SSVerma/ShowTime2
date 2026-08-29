@@ -14,10 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ChatBubbleOutline
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -56,6 +55,7 @@ import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
+import com.ssverma.shared.ui.R as SharedR
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.analytics.TvAnalyticsValues
@@ -71,6 +71,7 @@ import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.shared.ui.component.ActionSize
+import com.ssverma.shared.ui.component.BackdropActionButton
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
@@ -78,6 +79,7 @@ import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.media.MediaItem
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
+import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.section.MediaReactionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.shared.ui.component.section.ReviewsSection
@@ -96,6 +98,7 @@ fun TvShowDetailsScreen(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (tvShowId: Int) -> Unit,
+    openDiscussionsList: (tvShowId: Int, tvShowTitle: String?, posterImageUrl: String?, backdropImageUrl: String?) -> Unit = { _, _, _, _ -> },
     openPersonDetails: (Cast) -> Unit,
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
@@ -121,6 +124,14 @@ fun TvShowDetailsScreen(
                 openImageShotsList = openImageShotsList,
                 openImageShot = openImageShot,
                 openReviewsList = { openReviewsList(data.tvShow.id) },
+                openDiscussionsList = {
+                    openDiscussionsList(
+                        data.tvShow.id,
+                        data.tvShow.title,
+                        data.tvShow.posterImageUrl,
+                        data.tvShow.backdropImageUrl
+                    )
+                },
                 openYoutube = { videoId -> viewModel.openYoutubeApp(videoId = videoId) },
                 openPersonDetails = openPersonDetails,
                 openTvShowList = openTvShowList,
@@ -142,6 +153,7 @@ private fun TvShowContent(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: () -> Unit,
+    openDiscussionsList: () -> Unit,
     openYoutube: (videoId: String) -> Unit,
     openPersonDetails: (Cast) -> Unit,
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
@@ -154,6 +166,7 @@ private fun TvShowContent(
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
     val seasonWatchCounts by viewModel.seasonWatchCounts.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
+    val discussions by viewModel.discussions.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "tv_details_watch_provider")
     val snackbarHostState = remember { SnackbarHostState() }
@@ -191,7 +204,7 @@ private fun TvShowContent(
                             backdropImageUrl = tvShow.backdropImageUrl,
                             voteAvg = tvShow.voteAvg,
                             releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
-                            triggerIcon = Icons.Default.Add,
+                            triggerIcon = Icons.Rounded.Add,
                             onShowFeedback = { message, actionLabel, destination ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
@@ -214,7 +227,7 @@ private fun TvShowContent(
                                 )
                             }
                         )
-                        FloatingActionButton(
+                        BackdropActionButton(
                             onClick = {
                                 analytics.logEvent(
                                     TvAnalyticsEvent.ShareClicked(
@@ -230,14 +243,14 @@ private fun TvShowContent(
                                 )
                                 context.dispatchShareTextIntent(text = shareableText)
                             },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            modifier = Modifier.size(ActionSize)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = null
-                            )
-                        }
+                            icon = Icons.Rounded.Share,
+                            contentDescription = stringResource(id = SharedR.string.share)
+                        )
+                        BackdropActionButton(
+                            onClick = openDiscussionsList,
+                            icon = Icons.Rounded.ChatBubbleOutline,
+                            contentDescription = stringResource(id = SharedR.string.discussions)
+                        )
                     }
                 )
             }
@@ -454,6 +467,20 @@ private fun TvShowContent(
                         openYoutube(it.key)
                     },
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
+                )
+            }
+
+            /*Community Discussions*/
+            item(key = "media_discussions") {
+                MediaDiscussionsSection(
+                    discussions = discussions,
+                    onDiscussionsViewAllClick = openDiscussionsList,
+                    onPostComment = viewModel::postComment,
+                    onEditComment = viewModel::editComment,
+                    onReportComment = viewModel::reportComment,
+                    onToggleUpvote = viewModel::toggleCommentUpvote,
+                    onDeleteComment = viewModel::deleteComment,
+                    modifier = Modifier.padding(top = SectionVerticalSpacing)
                 )
             }
 

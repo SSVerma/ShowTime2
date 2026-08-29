@@ -11,12 +11,25 @@ import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.model.community.DeleteCommentParams
+import com.ssverma.shared.domain.model.community.DiscussionTarget
+import com.ssverma.shared.domain.model.community.EditCommentParams
 import com.ssverma.shared.domain.model.community.MediaReactionTag
 import com.ssverma.shared.domain.model.community.MediaReactions
+import com.ssverma.shared.domain.model.community.PostCommentParams
+import com.ssverma.shared.domain.model.community.ReportCommentParams
+import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.movie.imageShots
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.usecase.community.DeleteCommentUseCase
+import com.ssverma.shared.domain.usecase.community.EditCommentUseCase
+import com.ssverma.shared.domain.usecase.community.GetDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.GetMediaReactionsUseCase
+import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
+import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
+import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -43,6 +56,12 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val movieDetailsUseCase: MovieDetailsUseCase,
     private val getMediaReactionsUseCase: GetMediaReactionsUseCase,
     private val toggleMediaReactionUseCase: ToggleMediaReactionUseCase,
+    private val getDiscussionsUseCase: GetDiscussionsUseCase,
+    private val postCommentUseCase: PostCommentUseCase,
+    private val editCommentUseCase: EditCommentUseCase,
+    private val reportCommentUseCase: ReportCommentUseCase,
+    private val toggleCommentUpvoteUseCase: ToggleCommentUpvoteUseCase,
+    private val deleteCommentUseCase: DeleteCommentUseCase,
     val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
@@ -71,6 +90,15 @@ class MovieDetailsViewModel @AssistedInject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = MediaReactions.empty(mediaType = MediaType.Movie, mediaId = movieId)
     )
+
+    private val discussionTarget = DiscussionTarget.movie(movieId)
+
+    val discussions: StateFlow<List<Comment>> =
+        getDiscussionsUseCase(discussionTarget).stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     init {
         fetchMovieDetails()
@@ -103,6 +131,71 @@ class MovieDetailsViewModel @AssistedInject constructor(
                 mediaType = MediaType.Movie,
                 mediaId = movieId,
                 tag = tag
+            )
+        }
+    }
+
+    fun toggleMediaReaction(tag: MediaReactionTag) = onReactionTagClicked(tag)
+
+    fun postComment(content: String, isSpoiler: Boolean) {
+        viewModelScope.launch {
+            val movie = (_uiState.value as? UiState.Success)?.data?.movie
+            postCommentUseCase(
+                PostCommentParams(
+                    target = discussionTarget,
+                    content = content,
+                    isSpoiler = isSpoiler,
+                    mediaTitle = movie?.title,
+                    posterImageUrl = movie?.posterImageUrl,
+                    backdropImageUrl = movie?.backdropImageUrl
+                )
+            )
+        }
+    }
+
+    fun editComment(commentId: String, newContent: String, isSpoiler: Boolean) {
+        viewModelScope.launch {
+            editCommentUseCase(
+                EditCommentParams(
+                    target = discussionTarget,
+                    commentId = commentId,
+                    newContent = newContent,
+                    isSpoiler = isSpoiler
+                )
+            )
+        }
+    }
+
+    fun reportComment(commentId: String, reason: String) {
+        viewModelScope.launch {
+            reportCommentUseCase(
+                ReportCommentParams(
+                    target = discussionTarget,
+                    commentId = commentId,
+                    reason = reason
+                )
+            )
+        }
+    }
+
+    fun toggleCommentUpvote(commentId: String) {
+        viewModelScope.launch {
+            toggleCommentUpvoteUseCase(
+                ToggleCommentUpvoteParams(
+                    target = discussionTarget,
+                    commentId = commentId
+                )
+            )
+        }
+    }
+
+    fun deleteComment(commentId: String) {
+        viewModelScope.launch {
+            deleteCommentUseCase(
+                DeleteCommentParams(
+                    target = discussionTarget,
+                    commentId = commentId
+                )
             )
         }
     }

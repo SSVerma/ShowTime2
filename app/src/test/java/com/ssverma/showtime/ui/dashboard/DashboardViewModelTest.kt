@@ -46,6 +46,8 @@ class DashboardViewModelTest {
         mockk(relaxed = true)
     private val voteDailyPollUseCase: com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase =
         mockk(relaxed = true)
+    private val getTrendingDiscussionsUseCase: com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase =
+        mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
 
@@ -74,6 +76,7 @@ class DashboardViewModelTest {
         every { getDailyPollUseCase(any()) } returns MutableStateFlow(
             com.ssverma.shared.domain.model.community.DailyPoll.empty(java.time.LocalDate.now())
         )
+        every { getTrendingDiscussionsUseCase() } returns MutableStateFlow(emptyList())
 
         coEvery { trendingMoviesUseCase(any()) } returns Result.Success(emptyList())
         coEvery { trendingTvShowsUseCase(any()) } returns Result.Success(emptyList())
@@ -98,7 +101,8 @@ class DashboardViewModelTest {
             traktAuthManager = traktAuthManager,
             traktSyncRepository = fakeTraktSyncRepository,
             getDailyPollUseCase = getDailyPollUseCase,
-            voteDailyPollUseCase = voteDailyPollUseCase
+            voteDailyPollUseCase = voteDailyPollUseCase,
+            getTrendingDiscussionsUseCase = getTrendingDiscussionsUseCase
         )
     }
 

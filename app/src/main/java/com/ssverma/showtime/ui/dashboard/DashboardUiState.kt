@@ -7,13 +7,13 @@ import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.community.DailyPoll
+import com.ssverma.shared.domain.model.community.TrendingDiscussion
 import com.ssverma.shared.domain.model.game.CinemaGameStats
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShowPreview
-
-import com.ssverma.shared.domain.model.community.DailyPoll
 import java.time.LocalDate
 
 data class TrendingSpotlightItem(
@@ -35,6 +35,7 @@ data class DashboardUiState(
     val gameStats: CinemaGameStats = CinemaGameStats(),
     val isTodayGameCompleted: Boolean = false,
     val dailyPoll: DailyPoll = DailyPoll.empty(LocalDate.now()),
+    val trendingDiscussions: List<TrendingDiscussion> = emptyList(),
     val isMovieStreamingSelected: Boolean = true,
     val isMoviePopularSelected: Boolean = true,
     val upNextQueue: List<TraktUpNextEpisode> = emptyList(),
