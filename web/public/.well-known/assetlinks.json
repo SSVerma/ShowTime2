@@ -1,0 +1,26 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ssverma.showtime",
+      "sha256_cert_fingerprint_list": [
+        "69:78:9D:9B:BE:FA:DD:96:4F:25:91:74:14:4A:0C:5D:F1:8E:75:60:41:6B:38:38:2F:FA:81:95:01:18:3E:D4"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ssverma.showtime.debug",
+      "sha256_cert_fingerprint_list": [
+        "88:DD:C2:BE:9D:E6:6A:C7:13:06:1B:FA:62:E5:AB:BA:BA:96:AB:27:F9:FF:69:22:BF:B8:7E:F8:CB:6F:02:9F"
+      ]
+    }
+  }
+]

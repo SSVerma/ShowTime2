@@ -151,6 +151,16 @@ class CommunityCuratedListsTest {
         assertTrue(text.contains("Se7en"))
         assertTrue(text.contains("The Silence of the Lambs"))
         assertTrue(text.contains("https://play.google.com/store/apps/details?id=com.ssverma.showtime"))
+
+        val textWithListId = ShareMediaUtils.buildShareableListText(
+            listTitle = "Best 90s Thrillers",
+            listDescription = "Edge of your seat masterworks",
+            authorName = "Cinephile Dave",
+            itemTitles = listOf("Se7en"),
+            appPackageName = "com.ssverma.showtime",
+            listId = "list-123"
+        )
+        assertTrue(textWithListId.contains("https://showtime.ssverma.in/lists/list-123"))
     }
 
     @Test

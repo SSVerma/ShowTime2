@@ -132,7 +132,8 @@ fun CommunityListDetailSheet(
                                 listDescription = communityList.description,
                                 authorName = communityList.authorName,
                                 itemTitles = communityList.items.map { it.title },
-                                appPackageName = context.packageName
+                                appPackageName = context.packageName,
+                                listId = communityList.listId
                             )
                             context.dispatchShareTextIntent(text = shareText)
                         }

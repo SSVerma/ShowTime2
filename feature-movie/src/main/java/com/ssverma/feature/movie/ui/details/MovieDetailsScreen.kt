@@ -224,7 +224,9 @@ fun MovieContent(
                                     mediaTitle = movie.title,
                                     mediaTagline = movie.tagline,
                                     mediaOverview = movie.overview,
-                                    appPackageName = context.packageName
+                                    appPackageName = context.packageName,
+                                    mediaType = "movie",
+                                    mediaId = movie.id
                                 )
                                 context.dispatchShareTextIntent(text = shareableText)
                             },

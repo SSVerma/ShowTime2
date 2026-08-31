@@ -3,6 +3,7 @@ package com.ssverma.showtime.navigation
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
@@ -15,8 +16,13 @@ import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
 
 object ShowTimeDeepLinkHandler {
-    private const val HOST = "www.ssverma.in"
-    private const val SCHEME = "showtime"
+    const val PRIMARY_HOST = "showtime.ssverma.in"
+    private val ALLOWED_HOSTS = setOf(
+        "showtime.ssverma.in",
+        "www.ssverma.in",
+        "ssverma.in"
+    )
+    private val ALLOWED_SCHEMES = setOf("showtime", "https", "http")
 
     fun parse(uri: Uri): NavKey? {
         return parseParts(uri.scheme, uri.host, uri.pathSegments)
@@ -34,15 +40,28 @@ object ShowTimeDeepLinkHandler {
     }
 
     fun parseParts(scheme: String?, host: String?, pathSegments: List<String>): NavKey? {
-        if (!scheme.equals(SCHEME, ignoreCase = true) || !host.equals(HOST, ignoreCase = true)) {
+        if (scheme == null || !ALLOWED_SCHEMES.contains(scheme.lowercase())) {
+            return null
+        }
+        if (host == null || !ALLOWED_HOSTS.contains(host.lowercase())) {
             return null
         }
 
-        if (pathSegments.isEmpty()) {
+        val effectiveSegments = if (pathSegments.isNotEmpty() && pathSegments[0].equals(
+                "showtime",
+                ignoreCase = true
+            )
+        ) {
+            pathSegments.drop(1)
+        } else {
+            pathSegments
+        }
+
+        if (effectiveSegments.isEmpty()) {
             return DashboardHomeNavKey
         }
 
-        val type = pathSegments[0].lowercase()
+        val type = effectiveSegments[0].lowercase()
 
         return try {
             when (type) {
@@ -52,23 +71,65 @@ object ShowTimeDeepLinkHandler {
 
                 "search" -> SearchNavKey
 
-                "community" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
+                "receipt", "receipts" -> CinemaReceiptNavKey
+
+                "lists", "list" -> {
+                    if (effectiveSegments.size >= 2) {
+                        LibraryHomeNavKey(
+                            initialTab = LibraryTabDestination.CustomLists,
+                            targetCustomListId = effectiveSegments[1]
+                        )
+                    } else {
+                        LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists)
+                    }
+                }
+
+                "community" -> {
+                    if (effectiveSegments.size >= 2) {
+                        LibraryHomeNavKey(
+                            initialTab = LibraryTabDestination.Community,
+                            targetCustomListId = effectiveSegments[1]
+                        )
+                    } else {
+                        LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
+                    }
+                }
 
                 "library" -> {
                     val subTab =
-                        if (pathSegments.size > 1) pathSegments[1].lowercase() else "watchlist"
+                        if (effectiveSegments.size > 1) effectiveSegments[1].lowercase() else "watchlist"
                     when (subTab) {
                         "favorites", "favorite" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Favorites)
                         "history" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
-                        "custom_lists", "lists", "my_lists" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists)
-                        "community", "explore", "community_lists" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
+                        "custom_lists", "lists", "my_lists" -> {
+                            if (effectiveSegments.size >= 3) {
+                                LibraryHomeNavKey(
+                                    initialTab = LibraryTabDestination.CustomLists,
+                                    targetCustomListId = effectiveSegments[2]
+                                )
+                            } else {
+                                LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists)
+                            }
+                        }
+
+                        "community", "explore", "community_lists" -> {
+                            if (effectiveSegments.size >= 3) {
+                                LibraryHomeNavKey(
+                                    initialTab = LibraryTabDestination.Community,
+                                    targetCustomListId = effectiveSegments[2]
+                                )
+                            } else {
+                                LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
+                            }
+                        }
+
                         else -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Watchlist)
                     }
                 }
 
                 "tv" -> {
-                    if (pathSegments.size >= 2) {
-                        val id = pathSegments[1].toIntOrNull()
+                    if (effectiveSegments.size >= 2) {
+                        val id = effectiveSegments[1].toIntOrNull()
                         if (id != null) TvShowDetailNavKey(id) else TvShowHomeNavKey
                     } else {
                         TvShowHomeNavKey
@@ -76,8 +137,8 @@ object ShowTimeDeepLinkHandler {
                 }
 
                 "movie" -> {
-                    if (pathSegments.size >= 2) {
-                        val id = pathSegments[1].toIntOrNull()
+                    if (effectiveSegments.size >= 2) {
+                        val id = effectiveSegments[1].toIntOrNull()
                         if (id != null) MovieDetailNavKey(id) else MovieHomeNavKey
                     } else {
                         MovieHomeNavKey
@@ -85,8 +146,8 @@ object ShowTimeDeepLinkHandler {
                 }
 
                 "person", "people" -> {
-                    if (pathSegments.size >= 2) {
-                        val id = pathSegments[1].toIntOrNull()
+                    if (effectiveSegments.size >= 2) {
+                        val id = effectiveSegments[1].toIntOrNull()
                         if (id != null) PersonDetailNavKey(id) else PersonHomeNavKey
                     } else {
                         PersonHomeNavKey
@@ -100,3 +161,4 @@ object ShowTimeDeepLinkHandler {
         }
     }
 }
+

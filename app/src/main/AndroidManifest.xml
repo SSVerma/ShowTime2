@@ -24,15 +24,32 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Custom Scheme Deep Links (showtime://...) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
+                <data android:scheme="showtime" />
+            </intent-filter>
+
+            <!-- Universal Android App Links (https://showtime.ssverma.in/...) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
-                    android:host="www.ssverma.in"
-                    android:scheme="showtime" />
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in" />
+                <data
+                    android:scheme="https"
+                    android:host="www.ssverma.in" />
+                <data
+                    android:scheme="https"
+                    android:host="ssverma.in" />
             </intent-filter>
         </activity>
 

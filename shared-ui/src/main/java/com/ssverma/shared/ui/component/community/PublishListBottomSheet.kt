@@ -158,7 +158,13 @@ fun PublishListBottomSheet(
                     FilterChip(
                         selected = isSelected,
                         onClick = { selectedCategory = category },
-                        label = { Text(text = category) },
+                        label = {
+                            Text(
+                                text = category,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        },
                         leadingIcon = if (isSelected) {
                             {
                                 Icon(

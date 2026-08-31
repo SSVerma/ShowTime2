@@ -239,7 +239,9 @@ private fun TvShowContent(
                                     mediaTitle = tvShow.title,
                                     mediaTagline = tvShow.tagline,
                                     mediaOverview = tvShow.overview,
-                                    appPackageName = context.packageName
+                                    appPackageName = context.packageName,
+                                    mediaType = "tv",
+                                    mediaId = tvShow.id
                                 )
                                 context.dispatchShareTextIntent(text = shareableText)
                             },

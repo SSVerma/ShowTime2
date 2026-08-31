@@ -37,6 +37,8 @@ feature-search-navigation/build
 **/google-services.json
 **/credentials*.json
 **/service-account*.json
+**/.firebaserc
+**/.firebase/
 
 **/.DS_Store
 build/
@@ -47,10 +49,9 @@ buildSrc/.gradle
 buildSrc/.kotlin
 
 .artifacts/
-docs/*
-!docs/COMMUNITY_VIBES_ARCHITECTURE.md
-!docs/COMMUNITY_POLLS_ARCHITECTURE.md
-!docs/COMMUNITY_DISCUSSIONS_ARCHITECTURE.md
-!docs/CODE_QUALITY_AND_SECURITY_GUIDE.md
 config/
 **/daily_polls_catalog.json
+
+# Private Development, Strategy, & Milestone Docs
+private/
+.private/

@@ -1,13 +1,25 @@
 package com.ssverma.shared.domain.utils
 
 object ShareMediaUtils {
-    private const val AppUrlPrefix = "https://play.google.com/store/apps/details?id="
+    const val DeepLinkDomain = "showtime.ssverma.in"
+    const val UniversalWebBaseUrl = "https://$DeepLinkDomain"
+    private const val PlayStoreUrlPrefix = "https://play.google.com/store/apps/details?id="
+
+    fun buildMediaUrl(mediaType: String, mediaId: Int): String {
+        return "$UniversalWebBaseUrl/$mediaType/$mediaId"
+    }
+
+    fun buildListUrl(listId: String): String {
+        return "$UniversalWebBaseUrl/lists/$listId"
+    }
 
     fun buildShareableMediaText(
         mediaTitle: String,
         mediaTagline: String?,
         mediaOverview: String,
-        appPackageName: String
+        appPackageName: String,
+        mediaType: String? = null,
+        mediaId: Int? = null
     ): String {
         val builder = StringBuilder()
             .append(mediaTitle)
@@ -20,10 +32,14 @@ object ShareMediaUtils {
         builder.append("\n\n")
             .append(mediaOverview)
 
-        val appUrl = AppUrlPrefix + appPackageName
+        val targetUrl = if (mediaType != null && mediaId != null) {
+            buildMediaUrl(mediaType, mediaId)
+        } else {
+            PlayStoreUrlPrefix + appPackageName
+        }
 
         builder.append("\n\n\n")
-            .append(appUrl)
+            .append(targetUrl)
 
         return builder.toString()
     }
@@ -33,7 +49,8 @@ object ShareMediaUtils {
         listDescription: String?,
         authorName: String,
         itemTitles: List<String>,
-        appPackageName: String
+        appPackageName: String,
+        listId: String? = null
     ): String {
         val builder = StringBuilder()
             .append("🍿 Cinephile Collection: \"$listTitle\"")
@@ -53,9 +70,14 @@ object ShareMediaUtils {
             }
         }
 
-        val appUrl = AppUrlPrefix + appPackageName
+        val shareUrl = if (!listId.isNullOrBlank()) {
+            buildListUrl(listId)
+        } else {
+            PlayStoreUrlPrefix + appPackageName
+        }
+
         builder.append("\nExplore & Clone in ShowTime:\n")
-            .append(appUrl)
+            .append(shareUrl)
 
         return builder.toString()
     }

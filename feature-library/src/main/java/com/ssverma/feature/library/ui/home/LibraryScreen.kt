@@ -17,6 +17,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,9 +65,12 @@ import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.PublicOff
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material.icons.rounded.Visibility
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -191,7 +196,7 @@ fun LibraryScreen(
     var listPendingPublish by remember { mutableStateOf<CustomList?>(null) }
     var listPendingUnpublish by remember { mutableStateOf<CustomList?>(null) }
     var listPendingClone by remember { mutableStateOf<CommunityCuratedList?>(null) }
-    var topMenuExpanded by remember { mutableStateOf(false) }
+
 
     var showReceiptSheet by remember { mutableStateOf(false) }
     var receiptStyle by remember { mutableStateOf(ReceiptStyle.THERMAL) }
@@ -402,39 +407,6 @@ fun LibraryScreen(
                                 }
                             },
                             actions = {
-                                if (pagerState.currentPage == 2 && historyItems.isNotEmpty()) {
-                                    IconButton(onClick = { topMenuExpanded = true }) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.MoreVert,
-                                            contentDescription = stringResource(R.string.more_options)
-                                        )
-                                    }
-                                    DropdownMenu(
-                                        expanded = topMenuExpanded,
-                                        onDismissRequest = { topMenuExpanded = false }
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    text = stringResource(R.string.clear_history),
-                                                    color = MaterialTheme.colorScheme.error
-                                                )
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.DeleteOutline,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.error
-                                                )
-                                            },
-                                            onClick = {
-                                                topMenuExpanded = false
-                                                showClearHistoryDialog = true
-                                            }
-                                        )
-                                    }
-                                }
-
                                 IconButton(onClick = {
                                     customListForReceipt = null
                                     receiptSource = when (pagerState.currentPage) {
@@ -549,42 +521,6 @@ fun LibraryScreen(
                                 )
                             }
                         }
-
-                        if (isTopLevel) {
-                            if (pagerState.currentPage == 2 && historyItems.isNotEmpty()) {
-                                IconButton(onClick = { topMenuExpanded = true }) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.MoreVert,
-                                        contentDescription = stringResource(R.string.more_options),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = topMenuExpanded,
-                                    onDismissRequest = { topMenuExpanded = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = stringResource(R.string.clear_history),
-                                                color = MaterialTheme.colorScheme.error
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Rounded.DeleteOutline,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.error
-                                            )
-                                        },
-                                        onClick = {
-                                            topMenuExpanded = false
-                                            showClearHistoryDialog = true
-                                        }
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -669,7 +605,10 @@ fun LibraryScreen(
                             ) else onMovieClicked(item.mediaId)
                         },
                         onActionClick = { viewModel.removeFromHistory(it.mediaId) },
-                        onExploreClick = openSearchPage
+                        onExploreClick = openSearchPage,
+                        onClearAll = if (historyItems.isNotEmpty()) {
+                            { showClearHistoryDialog = true }
+                        } else null
                     )
                 }
 
@@ -1119,6 +1058,7 @@ private fun MediaCollectionTabContent(
     onItemClick: (SavedMediaItem) -> Unit,
     onActionClick: (SavedMediaItem) -> Unit,
     onExploreClick: () -> Unit,
+    onClearAll: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var itemPendingRemoval by remember { mutableStateOf<SavedMediaItem?>(null) }
@@ -1220,53 +1160,120 @@ private fun MediaCollectionTabContent(
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        FilterChip(
-                            selected = activeFilter == MediaTypeFilter.ALL,
-                            onClick = { onFilterSelected(MediaTypeFilter.ALL) },
-                            label = { Text("${stringResource(R.string.filter_all)} ($totalCount)") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        )
-                        FilterChip(
-                            selected = activeFilter == MediaTypeFilter.MOVIE,
-                            onClick = { onFilterSelected(MediaTypeFilter.MOVIE) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Movie,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .horizontalScroll(rememberScrollState())
+                        ) {
+                            FilterChip(
+                                selected = activeFilter == MediaTypeFilter.ALL,
+                                onClick = { onFilterSelected(MediaTypeFilter.ALL) },
+                                label = {
+                                    Text(
+                                        text = "${stringResource(R.string.filter_all)} ($totalCount)",
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
-                            },
-                            label = { Text("${stringResource(R.string.filter_movies)} ($movieCount)") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                        )
-                        FilterChip(
-                            selected = activeFilter == MediaTypeFilter.TV,
-                            onClick = { onFilterSelected(MediaTypeFilter.TV) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Tv,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
+                            FilterChip(
+                                selected = activeFilter == MediaTypeFilter.MOVIE,
+                                onClick = { onFilterSelected(MediaTypeFilter.MOVIE) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Movie,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = "${stringResource(R.string.filter_movies)} ($movieCount)",
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
-                            },
-                            label = { Text("${stringResource(R.string.filter_tv_shows)} ($tvCount)") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                        )
+                            FilterChip(
+                                selected = activeFilter == MediaTypeFilter.TV,
+                                onClick = { onFilterSelected(MediaTypeFilter.TV) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Tv,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = "${stringResource(R.string.filter_tv_shows)} ($tvCount)",
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+
+                        if (onClearAll != null) {
+                            var showClearMenu by remember { mutableStateOf(false) }
+                            Box {
+                                IconButton(
+                                    onClick = { showClearMenu = true },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.MoreVert,
+                                        contentDescription = stringResource(R.string.more_options),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showClearMenu,
+                                    onDismissRequest = { showClearMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = stringResource(R.string.clear_history),
+                                                color = MaterialTheme.colorScheme.error,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Rounded.DeleteOutline,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.error
+                                            )
+                                        },
+                                        onClick = {
+                                            showClearMenu = false
+                                            onClearAll()
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -1696,7 +1703,13 @@ private fun CommunityTabContent(
                 FilterChip(
                     selected = isSelected,
                     onClick = { onCategorySelect(category) },
-                    label = { Text(text = category) },
+                    label = {
+                        Text(
+                            text = category,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -1716,7 +1729,9 @@ private fun CommunityTabContent(
                 icon = Icons.Rounded.Public,
                 actionButtonText = stringResource(SharedR.string.publish_first_collection),
                 onActionClick = onCreateListClick,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
             )
         } else {
             LazyVerticalGrid(
@@ -2019,6 +2034,42 @@ private fun CustomListDetailSheet(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (customList.isPublic) {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    Surface(
+                        onClick = {
+                            val shareText = ShareMediaUtils.buildShareableListText(
+                                listTitle = customList.title,
+                                listDescription = customList.description,
+                                authorName = "Me",
+                                itemTitles = customList.items.map { it.title },
+                                appPackageName = context.packageName,
+                                listId = customList.listId
+                            )
+                            context.dispatchShareTextIntent(text = shareText)
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = stringResource(SharedR.string.share),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
                     Surface(
                         onClick = onUnpublishClick,
                         shape = RoundedCornerShape(10.dp),
@@ -2446,11 +2497,13 @@ private fun ExpressiveEmptyState(
     onActionClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val bottomBarPadding = rememberFloatingBottomBarPadding()
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxSize()
-            .padding(MaterialTheme.spacing.large)
+            .padding(horizontal = MaterialTheme.spacing.large)
+            .padding(bottom = bottomBarPadding.calculateBottomPadding() / 2)
     ) {
         Surface(
             shape = RoundedCornerShape(28.dp),
