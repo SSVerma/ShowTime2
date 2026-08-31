@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ssverma.core.backup.auth.GoogleAuthClient
@@ -17,6 +19,7 @@ import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import android.content.pm.ApplicationInfo
 import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
 import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
@@ -36,6 +39,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -50,6 +54,7 @@ class BackupRepositoryImpl @Inject constructor(
     private val watchHistoryDao: WatchHistoryDao,
     private val customListDao: CustomListDao,
     private val appConfigRepository: AppConfigRepository,
+    private val firestore: FirebaseFirestore,
     keyValueStorageClient: KeyValueStorageClient
 ) : BackupRepository {
 
@@ -137,27 +142,76 @@ class BackupRepositoryImpl @Inject constructor(
         }
     }
 
+    private val isDebug: Boolean =
+        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    private val colPrefix = if (isDebug) "dev_" else ""
+    private val colUserBackups get() = "${colPrefix}user_backups"
+
     private suspend fun loadExistingBackupMetadata() = withContext(Dispatchers.IO) {
-        val json =
-            googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME) ?: return@withContext
-        try {
-            val snapshot = gson.fromJson(json, BackupSnapshot::class.java)
-            val (_, metadata) = googleDriveBackupClient.saveCompressedBackup(
-                fileName = BACKUP_FILE_NAME,
-                jsonPayload = json,
-                timestamp = snapshot.timestamp,
-                deviceName = snapshot.deviceName,
-                favoritesCount = snapshot.favorites.size,
-                watchlistCount = snapshot.watchlist.size,
-                historyCount = snapshot.history.size,
-                customListsCount = snapshot.customLists.size,
-                customListItemsCount = snapshot.customListItems.size
-            )
-            _lastBackupMetadata.value = metadata
-        } catch (e: Exception) {
-            // Ignore corrupted cache
+        val json = googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME)
+        if (!json.isNullOrBlank()) {
+            try {
+                val snapshot = gson.fromJson(json, BackupSnapshot::class.java)
+                val (_, metadata) = googleDriveBackupClient.saveCompressedBackup(
+                    fileName = BACKUP_FILE_NAME,
+                    jsonPayload = json,
+                    timestamp = snapshot.timestamp,
+                    deviceName = snapshot.deviceName,
+                    favoritesCount = snapshot.favorites.size,
+                    watchlistCount = snapshot.watchlist.size,
+                    historyCount = snapshot.history.size,
+                    customListsCount = snapshot.customLists.size,
+                    customListItemsCount = snapshot.customListItems.size
+                )
+                _lastBackupMetadata.value = metadata
+            } catch (_: Exception) {
+                // Ignore corrupted cache
+            }
         }
+        fetchRemoteBackupMetadata()
     }
+
+    override suspend fun fetchRemoteBackupMetadata(): Result<BackupMetadata?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val effectiveUid = getEffectiveUserId()
+                val doc = firestore.collection(colUserBackups).document(effectiveUid).get().await()
+                if (doc.exists()) {
+                    val metadata = BackupMetadata(
+                        timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis(),
+                        formattedDate = doc.getString("formattedDate").orEmpty(),
+                        sizeBytes = doc.getLong("sizeBytes") ?: 0L,
+                        formattedSize = doc.getString("formattedSize").orEmpty(),
+                        deviceName = doc.getString("deviceName").orEmpty(),
+                        favoritesCount = doc.getLong("favoritesCount")?.toInt() ?: 0,
+                        watchlistCount = doc.getLong("watchlistCount")?.toInt() ?: 0,
+                        historyCount = doc.getLong("historyCount")?.toInt() ?: 0,
+                        customListsCount = doc.getLong("customListsCount")?.toInt() ?: 0,
+                        customListItemsCount = doc.getLong("customListItemsCount")?.toInt() ?: 0
+                    )
+                    _lastBackupMetadata.value = metadata
+                    val remotePayload = doc.getString("payloadJson")
+                    if (!remotePayload.isNullOrBlank()) {
+                        googleDriveBackupClient.saveCompressedBackup(
+                            fileName = BACKUP_FILE_NAME,
+                            jsonPayload = remotePayload,
+                            timestamp = metadata.timestamp,
+                            deviceName = metadata.deviceName,
+                            favoritesCount = metadata.favoritesCount,
+                            watchlistCount = metadata.watchlistCount,
+                            historyCount = metadata.historyCount,
+                            customListsCount = metadata.customListsCount,
+                            customListItemsCount = metadata.customListItemsCount
+                        )
+                    }
+                    Result.success(metadata)
+                } else {
+                    Result.success(_lastBackupMetadata.value)
+                }
+            } catch (_: Exception) {
+                Result.success(_lastBackupMetadata.value)
+            }
+        }
 
     override suspend fun signInWithGoogle(activity: Activity): Result<GoogleUser> {
         return googleAuthClient.signIn(activity)
@@ -221,6 +275,30 @@ class BackupRepositoryImpl @Inject constructor(
                 customListItemsCount = customListItems.size
             )
 
+            // Cloud Firestore upload
+            try {
+                val effectiveUid = getEffectiveUserId()
+                val backupDoc = mapOf(
+                    "uid" to effectiveUid,
+                    "version" to snapshot.version,
+                    "timestamp" to snapshot.timestamp,
+                    "formattedDate" to metadata.formattedDate,
+                    "deviceName" to metadata.deviceName,
+                    "sizeBytes" to metadata.sizeBytes,
+                    "formattedSize" to metadata.formattedSize,
+                    "favoritesCount" to metadata.favoritesCount,
+                    "watchlistCount" to metadata.watchlistCount,
+                    "historyCount" to metadata.historyCount,
+                    "customListsCount" to metadata.customListsCount,
+                    "customListItemsCount" to metadata.customListItemsCount,
+                    "payloadJson" to jsonPayload
+                )
+                firestore.collection(colUserBackups).document(effectiveUid)
+                    .set(backupDoc, SetOptions.merge()).await()
+            } catch (_: Exception) {
+                // Non-fatal if offline: local compressed backup was already saved
+            }
+
             _lastBackupMetadata.value = metadata
             _backupStatus.value = BackupStatus.Success(
                 operation = BackupOperation.BACKUP,
@@ -244,7 +322,21 @@ class BackupRepositoryImpl @Inject constructor(
         )
 
         try {
-            val json = googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME)
+            var json = googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME)
+            if (json.isNullOrBlank()) {
+                // Try fetching from Firestore
+                try {
+                    val effectiveUid = getEffectiveUserId()
+                    val doc =
+                        firestore.collection(colUserBackups).document(effectiveUid).get().await()
+                    if (doc.exists()) {
+                        json = doc.getString("payloadJson")
+                    }
+                } catch (_: Exception) {
+                    // Ignore
+                }
+            }
+
             if (json.isNullOrBlank()) {
                 val error = IllegalStateException("No backup found to restore")
                 _backupStatus.value = BackupStatus.Error(

@@ -3,6 +3,12 @@ package com.ssverma.shared.data.repository
 import android.content.Context
 import androidx.datastore.preferences.core.emptyPreferences
 import com.google.common.truth.Truth.assertThat
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.ssverma.core.backup.auth.GoogleAuthClient
 import com.ssverma.core.backup.drive.GoogleDriveBackupClient
 import com.ssverma.core.backup.model.BackupMetadata
@@ -43,6 +49,7 @@ class BackupRepositoryTest {
     private val mockWatchHistoryDao: WatchHistoryDao = mockk(relaxed = true)
     private val mockCustomListDao: CustomListDao = mockk(relaxed = true)
     private val mockAppConfigRepository: AppConfigRepository = mockk(relaxed = true)
+    private val mockFirestore: FirebaseFirestore = mockk(relaxed = true)
     private val mockKeyValueStorageClient: KeyValueStorageClient = mockk(relaxed = true)
     private val mockStorage: KeyValueStorage = mockk(relaxed = true)
 
@@ -60,6 +67,15 @@ class BackupRepositoryTest {
         every { mockStorage.data } returns flowOf(emptyPreferences())
         every { mockAppConfigRepository.appTheme } returns flowOf(AppTheme.System)
         every { mockAppConfigRepository.watchProviderRegion } returns MutableStateFlow("US")
+
+        val mockCollection: CollectionReference = mockk(relaxed = true)
+        val mockDocument: DocumentReference = mockk(relaxed = true)
+        val mockSnapshot: DocumentSnapshot = mockk(relaxed = true)
+        every { mockSnapshot.exists() } returns false
+        every { mockFirestore.collection(any()) } returns mockCollection
+        every { mockCollection.document(any()) } returns mockDocument
+        every { mockDocument.set(any(), any<SetOptions>()) } returns Tasks.forResult(null)
+        every { mockDocument.get() } returns Tasks.forResult(mockSnapshot)
 
         every {
             mockGoogleDriveBackupClient.saveCompressedBackup(
@@ -105,6 +121,7 @@ class BackupRepositoryTest {
             watchHistoryDao = mockWatchHistoryDao,
             customListDao = mockCustomListDao,
             appConfigRepository = mockAppConfigRepository,
+            firestore = mockFirestore,
             keyValueStorageClient = mockKeyValueStorageClient
         )
     }

@@ -66,6 +66,10 @@ class FakeBackupRepository : BackupRepository {
         return fakeEffectiveUserId
     }
 
+    override suspend fun fetchRemoteBackupMetadata(): Result<BackupMetadata?> {
+        return Result.success(_lastBackupMetadata.value)
+    }
+
     override suspend fun backupNow(): Result<BackupMetadata> {
         if (shouldFailBackup) {
             val error = "Simulated backup failure"

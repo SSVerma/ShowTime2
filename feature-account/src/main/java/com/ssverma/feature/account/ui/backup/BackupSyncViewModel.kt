@@ -28,8 +28,15 @@ class BackupSyncViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            backupRepository.fetchRemoteBackupMetadata()
+        }
+
+        viewModelScope.launch {
             backupRepository.googleUser.collectLatest { user ->
                 _uiState.update { it.copy(googleUser = user) }
+                if (user != null) {
+                    backupRepository.fetchRemoteBackupMetadata()
+                }
             }
         }
 

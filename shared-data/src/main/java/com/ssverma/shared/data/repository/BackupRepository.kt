@@ -16,6 +16,7 @@ interface BackupRepository {
 
     suspend fun signInWithGoogle(activity: Activity): Result<GoogleUser>
     suspend fun signOutGoogle()
+    suspend fun fetchRemoteBackupMetadata(): Result<BackupMetadata?>
     suspend fun backupNow(): Result<BackupMetadata>
     suspend fun restoreBackup(): Result<BackupMetadata>
     suspend fun setBackupFrequency(frequency: BackupFrequency)

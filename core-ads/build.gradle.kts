@@ -62,6 +62,8 @@ dependencies {
     implementation(projects.coreDi)
     implementation(projects.coreCcm)
     implementation(projects.coreBilling)
+    implementation(projects.coreStorage)
+    implementation(libs.datastore.preferences)
     implementation(libs.compose.ui)
 
     api(libs.play.services.ads)
