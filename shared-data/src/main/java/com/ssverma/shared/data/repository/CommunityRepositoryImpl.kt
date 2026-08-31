@@ -1,6 +1,7 @@
 package com.ssverma.shared.data.repository
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -57,7 +58,6 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.abs
-import android.content.pm.ApplicationInfo
 
 @Singleton
 class CommunityRepositoryImpl @Inject constructor(
@@ -78,7 +78,7 @@ class CommunityRepositoryImpl @Inject constructor(
     private val isDebug: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
     private val colPrefix = if (isDebug) "dev_" else ""
-    private val colAppConfig get() = "${colPrefix}app_config"
+    private val colDailyPollCatalog get() = "${colPrefix}daily_poll_catalog"
     private val colMediaReactions get() = "${colPrefix}media_reactions"
     private val colUserMediaReactions get() = "${colPrefix}user_media_reactions"
     private val colDailyPolls get() = "${colPrefix}daily_polls"
@@ -162,8 +162,8 @@ class CommunityRepositoryImpl @Inject constructor(
             val isStale = (now - lastFetched) > TimeUnit.HOURS.toMillis(24)
 
             if (isStale) {
-                val doc = firestore.collection(colAppConfig)
-                    .document("daily_polls_catalog")
+                val doc = firestore.collection(colDailyPollCatalog)
+                    .document("active_catalog")
                     .get()
                     .await()
 
@@ -219,8 +219,8 @@ class CommunityRepositoryImpl @Inject constructor(
                                 map
                             }
                         )
-                        firestore.collection(colAppConfig)
-                            .document("daily_polls_catalog")
+                        firestore.collection(colDailyPollCatalog)
+                            .document("active_catalog")
                             .set(seedDoc)
                             .await()
 
@@ -667,24 +667,19 @@ class CommunityRepositoryImpl @Inject constructor(
             }
 
             val current = optimisticFlow.value
-            if (current.selectedOptionIndex == optionIndex) {
-                // Already voted for this option
+            if (current.selectedOptionIndex != null) {
+                // Already voted today; lock vote to prevent extra writes
                 return Result.Success(current)
             }
 
-            val oldIndex = current.selectedOptionIndex
             val newVoteCounts = current.voteCounts.toMutableList()
 
             // If switching vote or initial vote
-            if (oldIndex != null && oldIndex in newVoteCounts.indices) {
-                newVoteCounts[oldIndex] = (newVoteCounts[oldIndex] - 1).coerceAtLeast(0)
-            }
-
             if (optionIndex in newVoteCounts.indices) {
                 newVoteCounts[optionIndex] = newVoteCounts[optionIndex] + 1
             }
 
-            val newTotalVotes = if (oldIndex == null) current.totalVotes + 1 else current.totalVotes
+            val newTotalVotes = current.totalVotes + 1
 
             val optimisticUpdated = DailyPoll(
                 dateString = dateStr,
@@ -708,9 +703,6 @@ class CommunityRepositoryImpl @Inject constructor(
             val voteCountsMap = mutableMapOf<String, Any>(
                 optionIndex.toString() to FieldValue.increment(1L)
             )
-            if (oldIndex != null) {
-                voteCountsMap[oldIndex.toString()] = FieldValue.increment(-1L)
-            }
 
             batch.set(
                 pollDocRef,
@@ -719,7 +711,7 @@ class CommunityRepositoryImpl @Inject constructor(
                     "question" to resolvedQuestion.question,
                     "options" to resolvedQuestion.options,
                     "voteCounts" to voteCountsMap,
-                    "totalVotes" to FieldValue.increment(if (oldIndex == null) 1L else 0L),
+                    "totalVotes" to FieldValue.increment(1L),
                     "updatedAt" to FieldValue.serverTimestamp()
                 ),
                 SetOptions.merge()
@@ -974,7 +966,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
                 MutableStateFlow(emptyMap())
             }
-            overridesFlow.value = overridesFlow.value + (params.commentId to CommentOverride(
+            overridesFlow.value += (params.commentId to CommentOverride(
                 content = params.newContent.trim(),
                 isSpoiler = params.isSpoiler,
                 isEdited = true
@@ -1116,9 +1108,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
                 MutableStateFlow(emptyMap())
             }
-            overridesFlow.value = overridesFlow.value + (params.commentId to CommentOverride(
-                isDeleted = true
-            ))
+            overridesFlow.value += (params.commentId to CommentOverride(isDeleted = true))
 
             val commentDocRef = firestore
                 .collection(colMediaDiscussions)

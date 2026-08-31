@@ -215,7 +215,7 @@ private fun PollOptionItem(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
+            .clickable(enabled = !hasVoted, onClick = onClick)
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
