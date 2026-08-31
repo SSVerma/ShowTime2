@@ -58,8 +58,9 @@ import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.account.R
-import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
+import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.feature.auth.domain.model.TraktUser
 import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -205,7 +206,7 @@ fun TraktSyncScreen(
 
 @Composable
 private fun TraktConnectedCard(
-    traktUser: com.ssverma.feature.auth.domain.model.TraktUser,
+    traktUser: TraktUser,
     isSyncing: Boolean,
     isProActive: Boolean,
     onSyncNowClick: () -> Unit,

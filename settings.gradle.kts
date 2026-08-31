@@ -61,3 +61,6 @@ include(":core-billing")
 include(":core-testing")
 include(":core-backup")
 include(":shared-testing")
+include(":feature-payment")
+include(":feature-payment-navigation")
+

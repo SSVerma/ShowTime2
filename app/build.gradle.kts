@@ -159,6 +159,8 @@ dependencies {
     implementation(projects.featureAuthNavigation)
     implementation(projects.featureAccount)
     implementation(projects.featureAccountNavigation)
+    implementation(projects.featurePayment)
+    implementation(projects.featurePaymentNavigation)
     implementation(projects.featureFilter)
     implementation(projects.featureFilterNavigation)
 

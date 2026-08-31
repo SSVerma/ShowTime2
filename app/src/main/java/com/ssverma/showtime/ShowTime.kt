@@ -88,7 +88,7 @@ import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.account.navigation.TraktSyncNavKey
-import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
+import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey

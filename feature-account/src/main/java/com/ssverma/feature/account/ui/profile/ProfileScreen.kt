@@ -75,7 +75,7 @@ import com.ssverma.feature.account.BuildConfig
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
-import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
+import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language

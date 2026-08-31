@@ -14,8 +14,8 @@ dependencies {
     implementation(projects.featureSearchNavigation)
     implementation(projects.featureMovieNavigation)
     implementation(projects.featureTvNavigation)
-
-    implementation(projects.featureAccount)
+    implementation(projects.featureAccountNavigation)
+    implementation(projects.featurePaymentNavigation)
 
     testImplementation(libs.junit)
     testImplementation(projects.coreTesting)

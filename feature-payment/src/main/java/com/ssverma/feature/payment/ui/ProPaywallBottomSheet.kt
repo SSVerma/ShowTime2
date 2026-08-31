@@ -1,4 +1,4 @@
-package com.ssverma.feature.account.ui.pro
+package com.ssverma.feature.payment.ui
 
 import android.app.Activity
 import androidx.compose.animation.animateColorAsState
@@ -55,9 +55,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.billing.model.BillingProduct
+import com.ssverma.core.billing.model.ProductType
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.account.R
+import com.ssverma.feature.payment.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +75,6 @@ fun ProPaywallBottomSheet(
     val context = LocalContext.current
     val activity = context as? Activity
 
-    // Default select Lifetime plan, or first available product
     var selectedProductId by remember(products) {
         mutableStateOf(
             products.firstOrNull { it.id == BillingConstants.SKU_PRO_LIFETIME }?.id
@@ -97,7 +97,6 @@ fun ProPaywallBottomSheet(
                 .padding(bottom = MaterialTheme.spacing.medium),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header Icon & Title
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -131,9 +130,6 @@ fun ProPaywallBottomSheet(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            // Pro Features List (Vertical layout with clean dividers and spacing)
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -173,13 +169,11 @@ fun ProPaywallBottomSheet(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            // Plan Selectors
             if (!isProActive) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Fallback mockup plans if BillingClient is still loading
                     val displayProducts = if (products.isNotEmpty()) {
                         products
                     } else {
@@ -191,7 +185,7 @@ fun ProPaywallBottomSheet(
                                 formattedPrice = "$9.99",
                                 priceAmountMicros = 9990000,
                                 priceCurrencyCode = "USD",
-                                productType = com.ssverma.core.billing.model.ProductType.INAPP,
+                                productType = ProductType.INAPP,
                                 rawProductDetails = null
                             )
                         )
@@ -210,7 +204,6 @@ fun ProPaywallBottomSheet(
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-                // Primary CTA Button
                 Button(
                     onClick = {
                         val selectedProduct = products.firstOrNull { it.id == selectedProductId }
@@ -257,7 +250,6 @@ fun ProPaywallBottomSheet(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-            // Restore Purchases Action
             TextButton(
                 onClick = onRestoreClick,
                 enabled = !isRestoring
@@ -361,7 +353,6 @@ private fun PlanOptionCard(
                     vertical = MaterialTheme.spacing.small
                 )
         ) {
-            // Radio Circle
             Surface(
                 shape = CircleShape,
                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,

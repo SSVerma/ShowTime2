@@ -9,6 +9,7 @@ import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.feature.account.navigation.accountEntries
 import com.ssverma.feature.auth.navigation.authEntries
 import com.ssverma.feature.filter.navigation.filterEntries
+import com.ssverma.feature.payment.navigation.paymentEntries
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.libraryEntries
 import com.ssverma.feature.movie.navigation.movieEntries
@@ -31,6 +32,7 @@ fun rememberShowTimeEntryProvider(
             searchEntries(navigator)
             authEntries(navigator)
             accountEntries(navigator)
+            paymentEntries(navigator)
             filterEntries(navigator)
         }
     }

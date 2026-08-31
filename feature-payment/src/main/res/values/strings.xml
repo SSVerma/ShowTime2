@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="showtime_pro">ShowTime Pro</string>
+    <string name="pro_active">Pro Active</string>
+    <string name="pro_subtitle">Enjoy pure cinema with zero distractions</string>
+    <string name="pro_feature_no_ads">100%% Ad-Free Experience</string>
+    <string name="pro_feature_no_ads_desc">No banner, native, or video ads anywhere</string>
+    <string name="pro_feature_oled">OLED Midnight Theme</string>
+    <string name="pro_feature_oled_desc">Pitch-black true AMOLED theme for maximum battery saving</string>
+    <string name="pro_feature_icons">Dynamic App Icons</string>
+    <string name="pro_feature_icons_desc">Customize your phone home screen with exclusive launcher icons</string>
+    <string name="pro_feature_sync">Trakt.tv &amp; Cloud Sync</string>
+    <string name="pro_feature_sync_desc">Sync watchlists, ratings, and history across all your devices</string>
+    <string name="pro_badge">PRO</string>
+    <string name="plan_lifetime">Lifetime</string>
+    <string name="plan_one_time">One-time purchase</string>
+    <string name="plan_annual">Annual</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="plan_per_year">Billed annually</string>
+    <string name="plan_per_month">Billed monthly</string>
+    <string name="plan_best_value">BEST VALUE</string>
+    <string name="upgrade_to_pro">Upgrade to Pro</string>
+    <string name="restore_purchases">Restore Purchases</string>
+    <string name="best_value">BEST VALUE</string>
+    <string name="save_percent">SAVE %d%%</string>
+</resources>
