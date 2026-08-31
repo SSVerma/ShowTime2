@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.backup.model.BackupFrequency
+import com.ssverma.core.backup.model.isGoogleSignInCancelled
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
@@ -76,11 +77,15 @@ class BackupSyncViewModel @Inject constructor(
                         )
                     )
                 }
-            }.onFailure {
+            }.onFailure { error ->
                 _uiState.update {
                     it.copy(
                         isSigningIn = false,
-                        message = UiText.StaticText(R.string.google_sign_in_failed)
+                        message = if (error.isGoogleSignInCancelled()) {
+                            null
+                        } else {
+                            UiText.StaticText(R.string.google_sign_in_failed)
+                        }
                     )
                 }
             }

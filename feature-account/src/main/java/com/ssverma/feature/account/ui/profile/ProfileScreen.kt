@@ -131,6 +131,7 @@ fun ProfileScreen(
                     contentLanguage = uiState.contentLanguage,
                     availableLanguages = uiState.availableLanguages,
                     googleUser = uiState.googleUser,
+                    guestPseudonym = uiState.guestPseudonym,
                     isSigningIn = uiState.isSigningIn,
                     isSigningOut = uiState.isSigningOut,
                     traktAuthState = uiState.traktAuthState,
@@ -277,6 +278,7 @@ private fun ProfileContent(
     contentLanguage: String,
     availableLanguages: List<Language>,
     googleUser: GoogleUser?,
+    guestPseudonym: String,
     isSigningIn: Boolean,
     isSigningOut: Boolean,
     traktAuthState: TraktAuthState,
@@ -306,6 +308,7 @@ private fun ProfileContent(
         ProfileHeader(
             profile = profile,
             googleUser = googleUser,
+            guestPseudonym = guestPseudonym,
             isProActive = isProActive,
             isGuest = isGuest,
             isSigningOut = isSigningOut,
@@ -334,7 +337,8 @@ private fun ProfileContent(
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+            thickness = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
@@ -364,13 +368,21 @@ private fun ProfileContent(
 private fun ProfileHeader(
     profile: Profile,
     googleUser: GoogleUser?,
+    guestPseudonym: String,
     isProActive: Boolean,
     isGuest: Boolean,
     isSigningOut: Boolean,
     onLogoutClick: () -> Unit
 ) {
     val displayName = googleUser?.displayName?.takeIf { it.isNotBlank() }
-        ?: profile.displayName.ifBlank { profile.userName }
+        ?: googleUser?.email?.substringBefore("@")
+        ?: profile.displayName.takeIf {
+            it.isNotBlank() && !it.equals(
+                "Guest User",
+                ignoreCase = true
+            ) && !it.equals("guest", ignoreCase = true)
+        }
+        ?: guestPseudonym
     val avatarUrl = googleUser?.photoUrl?.toString()?.ifBlank { null } ?: profile.imageUrl
 
     Avatar(
@@ -426,6 +438,13 @@ private fun ProfileHeader(
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 } else if (isGuest) {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = stringResource(R.string.guest),
                         style = MaterialTheme.typography.labelMedium,

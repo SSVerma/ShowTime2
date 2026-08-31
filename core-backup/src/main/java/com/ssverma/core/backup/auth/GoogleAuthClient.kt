@@ -15,6 +15,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.ssverma.core.backup.model.GoogleSignInCancelledException
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
@@ -196,9 +197,19 @@ class GoogleAuthClient @Inject constructor(
                 Result.failure(IllegalStateException("Unexpected credential type returned"))
             }
         } catch (e: GetCredentialCancellationException) {
-            Result.failure(e)
+            Result.failure(GoogleSignInCancelledException(cause = e))
+        } catch (e: java.util.concurrent.CancellationException) {
+            Result.failure(GoogleSignInCancelledException(cause = e))
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Result.failure(e)
+            if (e.javaClass.simpleName.contains("Cancel", ignoreCase = true) ||
+                e.message?.contains("cancel", ignoreCase = true) == true
+            ) {
+                Result.failure(GoogleSignInCancelledException(cause = e))
+            } else {
+                Result.failure(e)
+            }
         }
     }
 

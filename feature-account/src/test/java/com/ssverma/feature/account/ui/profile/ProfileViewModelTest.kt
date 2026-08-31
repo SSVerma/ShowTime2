@@ -1,8 +1,10 @@
 package com.ssverma.feature.account.ui.profile
 
+import android.app.Activity
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.backup.model.BackupStatus
+import com.ssverma.core.backup.model.GoogleSignInCancelledException
 import com.ssverma.core.storage.debug.DebugConfigManager
 import com.ssverma.core.storage.debug.DebugProOverride
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
@@ -203,6 +205,37 @@ class ProfileViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertThat(state.googleUser).isNull()
+            assertThat(state.guestPseudonym).startsWith("Cinephile #")
+        }
+    }
+
+    @Test
+    fun `signInWithGoogle on cancellation resets loading without error message`() = runTest {
+        val mockActivity: Activity = mockk(relaxed = true)
+        fakeBackupRepository.signInFailureException = GoogleSignInCancelledException()
+
+        viewModel.signInWithGoogle(mockActivity)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isSigningIn).isFalse()
+            assertThat(state.message).isNull()
+        }
+    }
+
+    @Test
+    fun `signInWithGoogle on unexpected error sets error message and resets loading`() = runTest {
+        val mockActivity: Activity = mockk(relaxed = true)
+        fakeBackupRepository.signInFailureException = RuntimeException("Network down")
+
+        viewModel.signInWithGoogle(mockActivity)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isSigningIn).isFalse()
+            assertThat(state.message).isInstanceOf(UiText.StaticText::class.java)
+            val staticText = state.message as UiText.StaticText
+            assertThat(staticText.resId).isEqualTo(R.string.google_sign_in_failed)
         }
     }
 }

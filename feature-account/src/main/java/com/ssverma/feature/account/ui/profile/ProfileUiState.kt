@@ -30,6 +30,7 @@ data class ProfileScreenState(
     val availableLanguages: List<Language> = emptyList(),
     val isLocalizationSheetVisible: Boolean = false,
     val googleUser: GoogleUser? = null,
+    val guestPseudonym: String = "Cinephile",
     val isSigningIn: Boolean = false,
     val isSigningOut: Boolean = false,
     val backupStatus: BackupStatus = BackupStatus.Idle,

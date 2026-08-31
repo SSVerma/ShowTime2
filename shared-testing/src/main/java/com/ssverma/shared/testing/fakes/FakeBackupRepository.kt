@@ -30,6 +30,7 @@ class FakeBackupRepository : BackupRepository {
 
     var shouldFailBackup: Boolean = false
     var shouldFailRestore: Boolean = false
+    var signInFailureException: Throwable? = null
 
     fun setGoogleUser(user: GoogleUser?) {
         _googleUser.value = user
@@ -44,6 +45,7 @@ class FakeBackupRepository : BackupRepository {
     }
 
     override suspend fun signInWithGoogle(activity: Activity): Result<GoogleUser> {
+        signInFailureException?.let { return Result.failure(it) }
         val user = GoogleUser(
             email = "user@example.com",
             displayName = "Test User",
@@ -56,6 +58,12 @@ class FakeBackupRepository : BackupRepository {
 
     override suspend fun signOutGoogle() {
         _googleUser.value = null
+    }
+
+    var fakeEffectiveUserId: String = "fake_user_123"
+
+    override suspend fun getEffectiveUserId(): String {
+        return fakeEffectiveUserId
     }
 
     override suspend fun backupNow(): Result<BackupMetadata> {

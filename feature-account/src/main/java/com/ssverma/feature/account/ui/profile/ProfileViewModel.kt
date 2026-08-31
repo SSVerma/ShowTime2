@@ -3,6 +3,7 @@ package com.ssverma.feature.account.ui.profile
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.backup.model.isGoogleSignInCancelled
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ccm.AppConfigProvider
@@ -89,6 +90,12 @@ class ProfileViewModel @Inject constructor(
             billingRepository.isProActive.collectLatest { isPro ->
                 _uiState.update { it.copy(isProActive = isPro) }
             }
+        }
+
+        viewModelScope.launch {
+            val uid = backupRepository.getEffectiveUserId()
+            val pseudonym = "Cinephile #${kotlin.math.abs(uid.hashCode() % 900) + 100}"
+            _uiState.update { it.copy(guestPseudonym = pseudonym) }
         }
 
         viewModelScope.launch {
@@ -304,11 +311,15 @@ class ProfileViewModel @Inject constructor(
                         message = UiText.DynamicText("Signed in as ${user.displayName}")
                     )
                 }
-            }.onFailure {
+            }.onFailure { error ->
                 _uiState.update { state ->
                     state.copy(
                         isSigningIn = false,
-                        message = UiText.StaticText(R.string.google_sign_in_failed)
+                        message = if (error.isGoogleSignInCancelled()) {
+                            null
+                        } else {
+                            UiText.StaticText(R.string.google_sign_in_failed)
+                        }
                     )
                 }
             }
@@ -319,9 +330,12 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSigningOut = true) }
             backupRepository.signOutGoogle()
+            val uid = backupRepository.getEffectiveUserId()
+            val pseudonym = "Cinephile #${kotlin.math.abs(uid.hashCode() % 900) + 100}"
             _uiState.update {
                 it.copy(
                     isSigningOut = false,
+                    guestPseudonym = pseudonym,
                     message = UiText.StaticText(R.string.google_signed_out)
                 )
             }

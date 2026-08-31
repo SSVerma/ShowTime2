@@ -167,6 +167,10 @@ class BackupRepositoryImpl @Inject constructor(
         googleAuthClient.signOut()
     }
 
+    override suspend fun getEffectiveUserId(): String {
+        return googleAuthClient.getEffectiveUserId()
+    }
+
     override suspend fun backupNow(): Result<BackupMetadata> = withContext(Dispatchers.IO) {
         _backupStatus.value = BackupStatus.InProgress(
             operation = BackupOperation.BACKUP,

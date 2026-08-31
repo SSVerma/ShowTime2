@@ -84,7 +84,19 @@ flowchart TB
 
 ---
 
-## 4. Community Display Identity Logic
+## 4. Anonymous vs Local Fallback UUID (Online vs Offline)
+
+| Feature | 👤 **Firebase Anonymous Auth** | 📱 **Local Fallback UUID** |
+| :--- | :--- | :--- |
+| **Where it lives** | Firebase Cloud Backend & SDK | Local `DataStore` (Device storage) |
+| **Network Requirement** | Requires internet for initial handshake | 100% offline, zero network latency |
+| **Firestore Security Rules** | Passes `request.auth != null` rules | Only used locally when network is down |
+| **Google Linking** | Upgrades directly via `linkWithCredential` | Cannot link without cloud session |
+| **Primary Purpose** | Secure backend identity without friction | Zero-crash guarantee during airplane mode / offline start |
+
+---
+
+## 5. Community Display Identity & Pseudonym Resolution
 
 ShowTime determines a user's visible display identity using a privacy-first hierarchy:
 
@@ -96,23 +108,35 @@ val authorName = googleUser?.displayName?.takeIf { it.isNotBlank() }
 val authorAvatarUrl = googleUser?.photoUrl
 ```
 
-- **Signed-in Google Users**: Render their public Google name and avatar photo.
-- **Anonymous Guest Users**: Render a friendly, deterministic pseudonym (e.g., `Cinephile #342`) with standard default initials/avatars.
+### Why "Cinephile #12xy" for Anonymous Users?
+1. **Privacy & Anonymity**: Unauthenticated guest users do not expose personal emails or names to the public community.
+2. **Deterministic Pseudonym**: The numerical suffix is mathematically derived from the hash of their unique anonymous `userId` (`abs(userId.hashCode() % 900) + 100`). This ensures a guest's comments consistently show the same pseudonym across different posts on their device.
+3. **Seamless Transition**: The moment the user signs in with Google:
+   - Newly authored comments immediately show their verified **Google Display Name** (e.g., `Gleee Vibe`) and profile avatar.
+   - On logging out, the session resets to a fresh anonymous identity with a new distinct `Cinephile #XXX` pseudonym.
 
 ---
 
-## 5. Security & Firestore Rules Integration
+## 6. Security & Firestore Rules Integration
 
 Because all users (guests and signed-in users alike) hold a valid Firebase Authentication token, Firestore rules can safely enforce authenticated user constraints:
 
 ```javascript
-// Example Firestore Security Rule leveraging Firebase Auth UID
+// Daily Poll Votes
 match /dev_user_daily_poll_votes/{voteId} {
   allow read: if true;
   allow write: if request.auth != null && request.auth.uid != null;
 }
 
+// Media Discussions & Comments
 match /dev_media_discussions/{mediaKey}/comments/{commentId} {
+  allow read: if true;
+  allow create: if request.auth != null;
+  allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+}
+
+// Curated Community Lists
+match /dev_community_curated_lists/{listId} {
   allow read: if true;
   allow create: if request.auth != null;
   allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
