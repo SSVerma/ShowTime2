@@ -356,4 +356,24 @@ class DiscussionsTest {
         assertEquals(target, upvoteParams.target)
         assertEquals("c100", upvoteParams.commentId)
     }
+
+    @Test
+    fun discussions_remoteKillSwitch_constantsDefined() {
+        assertEquals(
+            "remote_discussions_enabled",
+            CommunityRepositoryImpl.REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED
+        )
+        assertEquals(
+            "remote_reactions_enabled",
+            CommunityRepositoryImpl.REMOTE_KEY_COMMUNITY_REACTIONS_ENABLED
+        )
+        assertEquals(
+            "remote_daily_polls_enabled",
+            CommunityRepositoryImpl.REMOTE_KEY_DAILY_POLLS_ENABLED
+        )
+        assertEquals(
+            "remote_community_lists_enabled",
+            CommunityRepositoryImpl.REMOTE_KEY_COMMUNITY_LISTS_ENABLED
+        )
+    }
 }

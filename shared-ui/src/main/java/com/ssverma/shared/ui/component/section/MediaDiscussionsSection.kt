@@ -57,8 +57,11 @@ fun MediaDiscussionsSection(
     onToggleUpvote: (commentId: String) -> Unit,
     onDeleteComment: (commentId: String) -> Unit,
     modifier: Modifier = Modifier,
-    currentUserId: String? = null
+    currentUserId: String? = null,
+    isEnabled: Boolean = true
 ) {
+    if (!isEnabled) return
+
     var isPostSheetVisible by remember { mutableStateOf(false) }
     var commentToDelete by remember { mutableStateOf<Comment?>(null) }
     var commentToReport by remember { mutableStateOf<Comment?>(null) }

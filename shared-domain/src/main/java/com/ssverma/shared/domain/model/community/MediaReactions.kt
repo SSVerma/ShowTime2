@@ -7,7 +7,8 @@ data class MediaReactions(
     val mediaId: Int,
     val tagCounts: Map<MediaReactionTag, Int> = emptyMap(),
     val totalReactions: Int = 0,
-    val userSelectedTags: Set<MediaReactionTag> = emptySet()
+    val userSelectedTags: Set<MediaReactionTag> = emptySet(),
+    val isEnabled: Boolean = true
 ) {
     fun getPercentageForTag(tag: MediaReactionTag): Float {
         if (totalReactions <= 0) return 0f

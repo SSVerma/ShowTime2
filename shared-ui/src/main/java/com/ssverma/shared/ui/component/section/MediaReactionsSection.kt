@@ -43,6 +43,8 @@ fun MediaReactionsSection(
     onTagClick: (MediaReactionTag) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (!reactions.isEnabled) return
+
     val haptic = LocalHapticFeedback.current
 
     Column(

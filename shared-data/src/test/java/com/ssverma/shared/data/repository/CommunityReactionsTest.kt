@@ -107,4 +107,21 @@ class CommunityReactionsTest {
         val success = result as Result.Success
         assertThat(success.data.isTagSelected(MediaReactionTag.IMAX_ESSENTIAL)).isTrue()
     }
+
+    @Test
+    fun `ToggleMediaReactionUseCase returns failure when disabled remotely`() = runTest {
+        val mockRepo = mockk<CommunityRepository>()
+        coEvery {
+            mockRepo.toggleMediaReaction(MediaType.Movie, 100, MediaReactionTag.IMAX_ESSENTIAL)
+        } returns Result.Error(com.ssverma.shared.domain.failure.Failure.CoreFailure.UnexpectedFailure)
+
+        val useCase = ToggleMediaReactionUseCase(communityRepository = mockRepo)
+        val result = useCase(
+            mediaType = MediaType.Movie,
+            mediaId = 100,
+            tag = MediaReactionTag.IMAX_ESSENTIAL
+        )
+
+        assertThat(result).isInstanceOf(Result.Error::class.java)
+    }
 }

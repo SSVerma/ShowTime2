@@ -13,6 +13,7 @@ import com.google.firebase.firestore.SetOptions
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ssverma.core.backup.auth.GoogleAuthClient
+import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
@@ -64,6 +65,7 @@ class CommunityRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val firestore: FirebaseFirestore,
     private val googleAuthClient: GoogleAuthClient,
+    private val appConfigProvider: AppConfigProvider,
     keyValueStorageClient: KeyValueStorageClient
 ) : CommunityRepository {
 
@@ -395,11 +397,20 @@ class CommunityRepositoryImpl @Inject constructor(
             awaitClose { listener.remove() }
         }
 
+        val remoteEnabledFlow =
+            appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_REACTIONS_ENABLED, true)
+
         return combine(
             optimisticFlow,
             aggregateFlow,
-            userReactionFlow
-        ) { optimistic, (firestoreTagCounts, firestoreTotal), firestoreUserTags ->
+            userReactionFlow,
+            remoteEnabledFlow
+        ) { optimistic, (firestoreTagCounts, firestoreTotal), firestoreUserTags, isRemotelyEnabled ->
+            if (!isRemotelyEnabled) {
+                return@combine MediaReactions.empty(mediaType = mediaType, mediaId = mediaId)
+                    .copy(isEnabled = false)
+            }
+
             val mergedTagCounts = if (firestoreTagCounts.isNotEmpty()) {
                 firestoreTagCounts
             } else {
@@ -423,7 +434,8 @@ class CommunityRepositoryImpl @Inject constructor(
                 mediaId = mediaId,
                 tagCounts = mergedTagCounts,
                 totalReactions = mergedTotal,
-                userSelectedTags = mergedUserTags
+                userSelectedTags = mergedUserTags,
+                isEnabled = isRemotelyEnabled
             )
         }
     }
@@ -433,6 +445,9 @@ class CommunityRepositoryImpl @Inject constructor(
         mediaId: Int,
         tag: MediaReactionTag
     ): Result<MediaReactions, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_REACTIONS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val mediaKey = getMediaDocKey(mediaType = mediaType, mediaId = mediaId)
             val userId = getEffectiveUserId()
@@ -604,13 +619,17 @@ class CommunityRepositoryImpl @Inject constructor(
             awaitClose { listener.remove() }
         }
 
+        val remoteEnabledFlow =
+            appConfigProvider.observeBoolean(REMOTE_KEY_DAILY_POLLS_ENABLED, true)
+
         return combine(
             optimisticFlow,
             aggregateFlow,
-            userVoteFlow
-        ) { optimistic, (resolvedQuestion, firestoreVoteCounts, firestoreTotal), firestoreUserSelection ->
-            if (resolvedQuestion == null) {
-                return@combine DailyPoll.empty(date)
+            userVoteFlow,
+            remoteEnabledFlow
+        ) { optimistic, (resolvedQuestion, firestoreVoteCounts, firestoreTotal), firestoreUserSelection, isRemotelyEnabled ->
+            if (resolvedQuestion == null || !isRemotelyEnabled) {
+                return@combine DailyPoll.empty(date).copy(isEnabled = false)
             }
 
             val hasFirestoreCounts = firestoreVoteCounts.any { it > 0 }
@@ -631,7 +650,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 voteCounts = if (mergedCounts.isEmpty()) List(resolvedQuestion.options.size) { 0 } else mergedCounts,
                 totalVotes = mergedTotal,
                 selectedOptionIndex = mergedUserSelection,
-                isEnabled = optimistic.isEnabled
+                isEnabled = optimistic.isEnabled && isRemotelyEnabled
             )
         }
     }
@@ -640,6 +659,9 @@ class CommunityRepositoryImpl @Inject constructor(
         date: LocalDate,
         optionIndex: Int
     ): Result<DailyPoll, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_DAILY_POLLS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val dateStr = date.toString()
             val userId = getEffectiveUserId()
@@ -812,11 +834,19 @@ class CommunityRepositoryImpl @Inject constructor(
             MutableStateFlow(emptyMap())
         }
 
+        val remoteEnabledFlow =
+            appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)
+
         return combine(
             optimisticFlow,
             firestoreFlow,
-            overridesFlow
-        ) { optimistic, firestoreList, overrides ->
+            overridesFlow,
+            remoteEnabledFlow
+        ) { optimistic, firestoreList, overrides, isRemotelyEnabled ->
+            if (!isRemotelyEnabled) {
+                return@combine emptyList<Comment>()
+            }
+
             val firestoreIds = firestoreList.map { it.id }.toSet()
             val pendingLocal = optimistic.filter { it.id !in firestoreIds }
             val combined = pendingLocal + firestoreList
@@ -867,6 +897,9 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun postComment(
         params: PostCommentParams
     ): Result<Comment, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -958,6 +991,9 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun editComment(
         params: EditCommentParams
     ): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1000,6 +1036,9 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun reportComment(
         params: ReportCommentParams
     ): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1033,6 +1072,9 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun toggleCommentUpvote(
         params: ToggleCommentUpvoteParams
     ): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1100,6 +1142,9 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun deleteComment(
         params: DeleteCommentParams
     ): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1136,6 +1181,9 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     override fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>> {
+        val remoteEnabledFlow =
+            appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)
+
         return callbackFlow {
             val listener = firestore
                 .collection(colMediaDiscussions)
@@ -1179,10 +1227,15 @@ class CommunityRepositoryImpl @Inject constructor(
                     trySend(trendingList)
                 }
             awaitClose { listener.remove() }
+        }.combine(remoteEnabledFlow) { trendingList, isRemotelyEnabled ->
+            if (!isRemotelyEnabled) emptyList() else trendingList
         }
     }
 
     override fun getCommunityCuratedLists(category: String?): Flow<List<CommunityCuratedList>> {
+        val remoteEnabledFlow =
+            appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)
+
         return callbackFlow {
             val currentUserId = getEffectiveUserId()
             val upvotedSet = getCachedUpvotedListIds()
@@ -1236,10 +1289,15 @@ class CommunityRepositoryImpl @Inject constructor(
                     list.categoryTag.equals(category, ignoreCase = true)
                 }
             }
+        }.combine(remoteEnabledFlow) { list, isRemotelyEnabled ->
+            if (!isRemotelyEnabled) emptyList() else list
         }
     }
 
     override fun getCommunityListDetails(listId: String): Flow<CommunityCuratedList?> {
+        val remoteEnabledFlow =
+            appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)
+
         return callbackFlow {
             val currentUserId = getEffectiveUserId()
             val upvotedSet = getCachedUpvotedListIds()
@@ -1273,10 +1331,15 @@ class CommunityRepositoryImpl @Inject constructor(
                     )
                 }
             }
+        }.combine(remoteEnabledFlow) { details, isRemotelyEnabled ->
+            if (!isRemotelyEnabled) null else details
         }
     }
 
     override suspend fun publishCustomList(params: PublishCustomListParams): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val currentUserId = getEffectiveUserId()
             val user = googleAuthClient.currentUser.value
@@ -1332,6 +1395,9 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     override suspend fun unpublishCustomList(params: UnpublishCustomListParams): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             // Optimistic 0ms update
             val currentOverrides = optimisticListOverrides.value.toMutableMap()
@@ -1350,6 +1416,9 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     override suspend fun toggleCommunityListUpvote(params: ToggleListUpvoteParams): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val currentUserId = getEffectiveUserId()
             val upvotedSet = getCachedUpvotedListIds()
@@ -1412,6 +1481,9 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     override suspend fun recordListClone(listId: String): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
         return try {
             val currentUserId = getEffectiveUserId()
             val clonedSet = getCachedClonedListIds()
@@ -1541,5 +1613,12 @@ class CommunityRepositoryImpl @Inject constructor(
             }
             "${typeStr}_${target.mediaId}"
         }
+    }
+
+    companion object {
+        const val REMOTE_KEY_COMMUNITY_LISTS_ENABLED = "remote_community_lists_enabled"
+        const val REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED = "remote_discussions_enabled"
+        const val REMOTE_KEY_COMMUNITY_REACTIONS_ENABLED = "remote_reactions_enabled"
+        const val REMOTE_KEY_DAILY_POLLS_ENABLED = "remote_daily_polls_enabled"
     }
 }

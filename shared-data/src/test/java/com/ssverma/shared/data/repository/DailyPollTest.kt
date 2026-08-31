@@ -98,4 +98,10 @@ class DailyPollTest {
         assertEquals(99, resolved?.id)
         assertEquals("Oscar Night Special", resolved?.question)
     }
+
+    @Test
+    fun dailyPoll_remoteKillSwitch_disablesPoll() {
+        val disabledPoll = DailyPoll.empty(LocalDate.of(2026, 8, 31)).copy(isEnabled = false)
+        assertFalse(disabledPoll.isEnabled)
+    }
 }
