@@ -95,7 +95,7 @@ class ShowTimeDeepLinkHandlerTest {
         val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/lists/list_999")
         assertEquals(
             LibraryHomeNavKey(
-                initialTab = LibraryTabDestination.CustomLists,
+                initialTab = LibraryTabDestination.Community,
                 targetCustomListId = "list_999"
             ),
             navKey

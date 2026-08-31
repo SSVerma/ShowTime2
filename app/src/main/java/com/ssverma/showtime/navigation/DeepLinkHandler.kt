@@ -76,11 +76,11 @@ object ShowTimeDeepLinkHandler {
                 "lists", "list" -> {
                     if (effectiveSegments.size >= 2) {
                         LibraryHomeNavKey(
-                            initialTab = LibraryTabDestination.CustomLists,
+                            initialTab = LibraryTabDestination.Community,
                             targetCustomListId = effectiveSegments[1]
                         )
                     } else {
-                        LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists)
+                        LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
                     }
                 }
 

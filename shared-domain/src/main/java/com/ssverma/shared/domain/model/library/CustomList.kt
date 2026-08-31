@@ -6,6 +6,8 @@ data class CustomList(
     val description: String? = null,
     val coverImageUrl: String? = null,
     val isPublic: Boolean = false,
+    val isCloned: Boolean = false,
+    val sourceAuthorName: String? = null,
     val items: List<CustomListItem> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

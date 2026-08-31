@@ -218,6 +218,10 @@ class LibraryHomeViewModel @Inject constructor(
         _selectedCommunityListId.value = list?.listId
     }
 
+    fun selectCommunityListId(listId: String?) {
+        _selectedCommunityListId.value = listId
+    }
+
     fun publishCustomList(
         localList: CustomList,
         categoryTag: String,
@@ -232,6 +236,7 @@ class LibraryHomeViewModel @Inject constructor(
                 )
             )
             if (result is Result.Success) {
+                libraryRepository.setCustomListPublicStatus(localList.listId, true)
                 onPublished?.invoke()
             } else if (result is Result.Error) {
                 onError?.invoke("Unable to publish collection. Please try again.")
@@ -241,6 +246,7 @@ class LibraryHomeViewModel @Inject constructor(
 
     fun unpublishCustomList(
         listId: String,
+        fallbackList: CommunityCuratedList? = null,
         onUnpublished: (() -> Unit)? = null,
         onError: ((String) -> Unit)? = null
     ) {
@@ -249,6 +255,11 @@ class LibraryHomeViewModel @Inject constructor(
                 UnpublishCustomListParams(listId = listId)
             )
             if (result is Result.Success) {
+                libraryRepository.setCustomListPublicStatus(
+                    listId = listId,
+                    isPublic = false,
+                    fallbackList = fallbackList
+                )
                 onUnpublished?.invoke()
             } else if (result is Result.Error) {
                 onError?.invoke("Unable to make collection private. Please try again.")

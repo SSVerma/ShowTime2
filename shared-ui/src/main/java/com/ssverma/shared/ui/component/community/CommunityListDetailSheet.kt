@@ -1,5 +1,6 @@
 package com.ssverma.shared.ui.component.community
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -91,6 +92,8 @@ fun CommunityListDetailSheet(
         label = "DetailHeartTint"
     )
 
+    BackHandler { onDismiss() }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -123,36 +126,25 @@ fun CommunityListDetailSheet(
                     )
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Share button
-                    IconButton(
-                        onClick = {
-                            val shareText = ShareMediaUtils.buildShareableListText(
-                                listTitle = communityList.title,
-                                listDescription = communityList.description,
-                                authorName = communityList.authorName,
-                                itemTitles = communityList.items.map { it.title },
-                                appPackageName = context.packageName,
-                                listId = communityList.listId
-                            )
-                            context.dispatchShareTextIntent(text = shareText)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Share,
-                            contentDescription = stringResource(id = R.string.share_list),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                // Share button
+                IconButton(
+                    onClick = {
+                        val shareText = ShareMediaUtils.buildShareableListText(
+                            listTitle = communityList.title,
+                            listDescription = communityList.description,
+                            authorName = communityList.authorName,
+                            itemTitles = communityList.items.map { it.title },
+                            appPackageName = context.packageName,
+                            listId = communityList.listId
                         )
+                        context.dispatchShareTextIntent(text = shareText)
                     }
-
-                    // Close button
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = stringResource(id = R.string.cancel_action),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = stringResource(id = R.string.share_list),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -240,6 +232,7 @@ fun CommunityListDetailSheet(
                         // Action Buttons Row (Like, Clone to Library, Unpublish if mine)
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             // Upvote Button
@@ -253,7 +246,10 @@ fun CommunityListDetailSheet(
                                         MaterialTheme.colorScheme.surfaceVariant
                                     }
                                 ),
-                                modifier = Modifier.weight(1f)
+                                contentPadding = PaddingValues(horizontal = 12.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
                             ) {
                                 Icon(
                                     imageVector = if (communityList.isUpvotedByMe) {
@@ -289,7 +285,10 @@ fun CommunityListDetailSheet(
                                         width = 1.dp,
                                         color = MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
                                     ),
-                                    modifier = Modifier.weight(1.5f)
+                                    contentPadding = PaddingValues(horizontal = 12.dp),
+                                    modifier = Modifier
+                                        .weight(1.5f)
+                                        .height(40.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.DeleteOutline,
@@ -305,36 +304,58 @@ fun CommunityListDetailSheet(
                                         color = MaterialTheme.colorScheme.error
                                     )
                                 }
-                            } else {
+                            } else if (communityList.isClonedByMe) {
+                                // Non-clickable subtle saved info pill with exact matching height
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier
+                                        .weight(1.2f)
+                                        .height(40.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(horizontal = 12.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Check,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = stringResource(id = R.string.in_my_lists),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            } else if (!communityList.isMine) {
                                 // Clone to My Library Button
                                 Button(
                                     onClick = onCloneList,
                                     shape = RoundedCornerShape(12.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (communityList.isClonedByMe) {
-                                            MaterialTheme.colorScheme.secondary
-                                        } else {
-                                            MaterialTheme.colorScheme.primary
-                                        }
+                                        containerColor = MaterialTheme.colorScheme.primary
                                     ),
-                                    modifier = Modifier.weight(1.5f)
+                                    contentPadding = PaddingValues(horizontal = 12.dp),
+                                    modifier = Modifier
+                                        .weight(1.5f)
+                                        .height(40.dp)
                                 ) {
                                     Icon(
-                                        imageVector = if (communityList.isClonedByMe) {
-                                            Icons.Rounded.Check
-                                        } else {
-                                            Icons.Rounded.BookmarkAdd
-                                        },
+                                        imageVector = Icons.Rounded.BookmarkAdd,
                                         contentDescription = null,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = if (communityList.isClonedByMe) {
-                                            stringResource(id = R.string.cloned_badge)
-                                        } else {
-                                            stringResource(id = R.string.clone_to_my_library)
-                                        },
+                                        text = stringResource(id = R.string.clone_to_my_library),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold
                                     )

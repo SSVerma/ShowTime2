@@ -26,7 +26,7 @@ import com.ssverma.shared.data.local.db.entity.WatchlistEntity
         EpisodeWatchHistoryEntity::class,
         ShowWatchProgressEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class ShowTimeDatabase : RoomDatabase() {

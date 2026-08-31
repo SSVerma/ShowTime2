@@ -11,6 +11,8 @@ data class CustomListEntity(
     val description: String? = null,
     val coverImageUrl: String? = null,
     val isPublic: Boolean = false,
+    val isCloned: Boolean = false,
+    val sourceAuthorName: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

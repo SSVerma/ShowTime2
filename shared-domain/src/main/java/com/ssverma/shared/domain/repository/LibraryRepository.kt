@@ -96,6 +96,11 @@ interface LibraryRepository {
     suspend fun removeMediaFromCustomList(listId: String, mediaId: Int)
     fun getCustomListIdsForMediaFlow(mediaId: Int): Flow<List<String>>
 
-    suspend fun setCustomListPublicStatus(listId: String, isPublic: Boolean)
+    suspend fun setCustomListPublicStatus(
+        listId: String,
+        isPublic: Boolean,
+        fallbackList: CommunityCuratedList? = null
+    )
+
     suspend fun cloneCommunityListToLocal(communityList: CommunityCuratedList): String
 }

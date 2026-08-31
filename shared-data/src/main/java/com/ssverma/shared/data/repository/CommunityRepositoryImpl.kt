@@ -57,6 +57,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.abs
+import android.content.pm.ApplicationInfo
 
 @Singleton
 class CommunityRepositoryImpl @Inject constructor(
@@ -74,11 +75,45 @@ class CommunityRepositoryImpl @Inject constructor(
     private val gson = Gson()
     private val repositoryScope = CoroutineScope(Dispatchers.IO)
 
+    private val isDebug: Boolean =
+        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    private val colPrefix = if (isDebug) "dev_" else ""
+    private val colAppConfig get() = "${colPrefix}app_config"
+    private val colMediaReactions get() = "${colPrefix}media_reactions"
+    private val colUserMediaReactions get() = "${colPrefix}user_media_reactions"
+    private val colDailyPolls get() = "${colPrefix}daily_polls"
+    private val colUserDailyPollVotes get() = "${colPrefix}user_daily_poll_votes"
+    private val colMediaDiscussions get() = "${colPrefix}media_discussions"
+    private val colCommunityCuratedLists get() = "${colPrefix}community_curated_lists"
+    private val colUserListInteractions get() = "${colPrefix}user_list_interactions"
+
     private val installationIdKey = stringPreferencesKey("community_installation_id")
     private val keyPollCatalogJson = stringPreferencesKey("poll_catalog_json")
     private val keyPollCatalogVersion = intPreferencesKey("poll_catalog_version")
     private val keyPollCatalogLastFetched = longPreferencesKey("poll_catalog_last_fetched_epoch")
     private val keyPollEnabled = booleanPreferencesKey("poll_enabled")
+    private val keyUpvotedLists = stringPreferencesKey("community_upvoted_list_ids")
+    private val keyClonedLists = stringPreferencesKey("community_cloned_list_ids")
+
+    private suspend fun getCachedUpvotedListIds(): MutableSet<String> {
+        val json = storage.read(key = keyUpvotedLists) ?: return mutableSetOf()
+        return try {
+            gson.fromJson<Set<String>>(json, object : TypeToken<Set<String>>() {}.type)
+                .toMutableSet()
+        } catch (_: Exception) {
+            mutableSetOf()
+        }
+    }
+
+    private suspend fun getCachedClonedListIds(): MutableSet<String> {
+        val json = storage.read(key = keyClonedLists) ?: return mutableSetOf()
+        return try {
+            gson.fromJson<Set<String>>(json, object : TypeToken<Set<String>>() {}.type)
+                .toMutableSet()
+        } catch (_: Exception) {
+            mutableSetOf()
+        }
+    }
 
     // In-memory cache for instant 0ms optimistic updates
     private val optimisticReactionsCache =
@@ -127,7 +162,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val isStale = (now - lastFetched) > TimeUnit.HOURS.toMillis(24)
 
             if (isStale) {
-                val doc = firestore.collection("app_config")
+                val doc = firestore.collection(colAppConfig)
                     .document("daily_polls_catalog")
                     .get()
                     .await()
@@ -184,7 +219,7 @@ class CommunityRepositoryImpl @Inject constructor(
                                 map
                             }
                         )
-                        firestore.collection("app_config")
+                        firestore.collection(colAppConfig)
                             .document("daily_polls_catalog")
                             .set(seedDoc)
                             .await()
@@ -306,7 +341,7 @@ class CommunityRepositoryImpl @Inject constructor(
         }
 
         val aggregateFlow = callbackFlow {
-            val docRef = firestore.collection("media_reactions").document(mediaKey)
+            val docRef = firestore.collection(colMediaReactions).document(mediaKey)
             val listener = docRef.addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     return@addSnapshotListener
@@ -339,7 +374,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val userId = getEffectiveUserId()
             val userDocKey =
                 getUserDocKey(userId = userId, mediaType = mediaType, mediaId = mediaId)
-            val docRef = firestore.collection("user_media_reactions").document(userDocKey)
+            val docRef = firestore.collection(colUserMediaReactions).document(userDocKey)
 
             val listener = docRef.addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -450,8 +485,8 @@ class CommunityRepositoryImpl @Inject constructor(
 
             // Background Firestore Batch Update
             val batch = firestore.batch()
-            val mediaDocRef = firestore.collection("media_reactions").document(mediaKey)
-            val userDocRef = firestore.collection("user_media_reactions").document(userDocKey)
+            val mediaDocRef = firestore.collection(colMediaReactions).document(mediaKey)
+            val userDocRef = firestore.collection(colUserMediaReactions).document(userDocKey)
 
             val incrementVal = if (isSelected) -1L else 1L
             val tagFieldPath = "tagCounts.${tag.tagKey}"
@@ -510,7 +545,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 return@callbackFlow
             }
 
-            val docRef = firestore.collection("daily_polls").document(dateStr)
+            val docRef = firestore.collection(colDailyPolls).document(dateStr)
             val listener = docRef.addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     return@addSnapshotListener
@@ -552,7 +587,7 @@ class CommunityRepositoryImpl @Inject constructor(
         val userVoteFlow = callbackFlow {
             val userId = getEffectiveUserId()
             val userVoteDocKey = "${userId}_$dateStr"
-            val docRef = firestore.collection("user_daily_poll_votes").document(userVoteDocKey)
+            val docRef = firestore.collection(colUserDailyPollVotes).document(userVoteDocKey)
 
             val listener = docRef.addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -667,8 +702,8 @@ class CommunityRepositoryImpl @Inject constructor(
 
             // Background Firestore Batch Write
             val batch = firestore.batch()
-            val pollDocRef = firestore.collection("daily_polls").document(dateStr)
-            val userDocRef = firestore.collection("user_daily_poll_votes").document(userVoteDocKey)
+            val pollDocRef = firestore.collection(colDailyPolls).document(dateStr)
+            val userDocRef = firestore.collection(colUserDailyPollVotes).document(userVoteDocKey)
 
             val voteCountsMap = mutableMapOf<String, Any>(
                 optionIndex.toString() to FieldValue.increment(1L)
@@ -719,7 +754,7 @@ class CommunityRepositoryImpl @Inject constructor(
         val firestoreFlow = callbackFlow {
             val userId = getEffectiveUserId()
             val commentsCollection = firestore
-                .collection("media_discussions")
+                .collection(colMediaDiscussions)
                 .document(pathKey)
                 .collection("comments")
                 .orderBy(
@@ -894,7 +929,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 "createdAt" to FieldValue.serverTimestamp()
             )
 
-            val mediaDoc = firestore.collection("media_discussions").document(pathKey)
+            val mediaDoc = firestore.collection(colMediaDiscussions).document(pathKey)
             val mediaMetadata = mutableMapOf<String, Any>(
                 "mediaId" to params.target.mediaId,
                 "mediaType" to if (params.target.mediaType == MediaType.Tv) "tv" else "movie",
@@ -946,7 +981,7 @@ class CommunityRepositoryImpl @Inject constructor(
             ))
 
             val commentDocRef = firestore
-                .collection("media_discussions")
+                .collection(colMediaDiscussions)
                 .document(pathKey)
                 .collection("comments")
                 .document(params.commentId)
@@ -978,7 +1013,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val userId = getEffectiveUserId()
 
             val commentDocRef = firestore
-                .collection("media_discussions")
+                .collection(colMediaDiscussions)
                 .document(pathKey)
                 .collection("comments")
                 .document(params.commentId)
@@ -1011,7 +1046,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val userId = getEffectiveUserId()
 
             val commentDocRef = firestore
-                .collection("media_discussions")
+                .collection(colMediaDiscussions)
                 .document(pathKey)
                 .collection("comments")
                 .document(params.commentId)
@@ -1086,14 +1121,14 @@ class CommunityRepositoryImpl @Inject constructor(
             ))
 
             val commentDocRef = firestore
-                .collection("media_discussions")
+                .collection(colMediaDiscussions)
                 .document(pathKey)
                 .collection("comments")
                 .document(params.commentId)
 
             val doc = commentDocRef.get().await()
             if (doc.getString("authorId") == userId) {
-                val mediaDoc = firestore.collection("media_discussions").document(pathKey)
+                val mediaDoc = firestore.collection(colMediaDiscussions).document(pathKey)
                 val batch = firestore.batch()
                 batch.delete(commentDocRef)
                 batch.set(
@@ -1113,7 +1148,7 @@ class CommunityRepositoryImpl @Inject constructor(
     override fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>> {
         return callbackFlow {
             val listener = firestore
-                .collection("media_discussions")
+                .collection(colMediaDiscussions)
                 .whereGreaterThan("discussionCount", 0)
                 .orderBy(
                     "discussionCount",
@@ -1160,8 +1195,11 @@ class CommunityRepositoryImpl @Inject constructor(
     override fun getCommunityCuratedLists(category: String?): Flow<List<CommunityCuratedList>> {
         return callbackFlow {
             val currentUserId = getEffectiveUserId()
-            val collectionRef = firestore.collection("community_curated_lists")
+            val upvotedSet = getCachedUpvotedListIds()
+            val clonedSet = getCachedClonedListIds()
+            val collectionRef = firestore.collection(colCommunityCuratedLists)
                 .whereEqualTo("isPublished", true)
+                .limit(50)
 
             val listener = collectionRef.addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -1170,7 +1208,12 @@ class CommunityRepositoryImpl @Inject constructor(
                 }
 
                 val list = snapshot?.documents.orEmpty().mapNotNull { doc ->
-                    doc.toCommunityCuratedList(currentUserId)
+                    val listId = doc.getString("listId") ?: doc.id
+                    doc.toCommunityCuratedList(
+                        currentUserId = currentUserId,
+                        isUpvoted = upvotedSet.contains(listId),
+                        isCloned = clonedSet.contains(listId)
+                    )
                 }
 
                 trySend(list)
@@ -1209,13 +1252,21 @@ class CommunityRepositoryImpl @Inject constructor(
     override fun getCommunityListDetails(listId: String): Flow<CommunityCuratedList?> {
         return callbackFlow {
             val currentUserId = getEffectiveUserId()
-            val docRef = firestore.collection("community_curated_lists").document(listId)
+            val upvotedSet = getCachedUpvotedListIds()
+            val clonedSet = getCachedClonedListIds()
+            val docRef = firestore.collection(colCommunityCuratedLists).document(listId)
             val listener = docRef.addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null || !snapshot.exists()) {
                     trySend(null)
                     return@addSnapshotListener
                 }
-                trySend(snapshot.toCommunityCuratedList(currentUserId))
+                trySend(
+                    snapshot.toCommunityCuratedList(
+                        currentUserId = currentUserId,
+                        isUpvoted = upvotedSet.contains(listId),
+                        isCloned = clonedSet.contains(listId)
+                    )
+                )
             }
             awaitClose { listener.remove() }
         }.combine(optimisticListOverrides) { rawList, overrides ->
@@ -1279,16 +1330,10 @@ class CommunityRepositoryImpl @Inject constructor(
             currentOverrides[local.listId] = ListOverride(isPublished = true)
             optimisticListOverrides.value = currentOverrides
 
-            repositoryScope.launch {
-                try {
-                    firestore.collection("community_curated_lists")
-                        .document(local.listId)
-                        .set(docData, SetOptions.merge())
-                        .await()
-                } catch (_: Exception) {
-                    // Graceful fallback for offline / permission states
-                }
-            }
+            firestore.collection(colCommunityCuratedLists)
+                .document(local.listId)
+                .set(docData, SetOptions.merge())
+                .await()
 
             Result.Success(Unit)
         } catch (e: Exception) {
@@ -1303,16 +1348,10 @@ class CommunityRepositoryImpl @Inject constructor(
             currentOverrides[params.listId] = ListOverride(isPublished = false)
             optimisticListOverrides.value = currentOverrides
 
-            repositoryScope.launch {
-                try {
-                    firestore.collection("community_curated_lists")
-                        .document(params.listId)
-                        .update("isPublished", false)
-                        .await()
-                } catch (_: Exception) {
-                    // Graceful fallback
-                }
-            }
+            firestore.collection(colCommunityCuratedLists)
+                .document(params.listId)
+                .update("isPublished", false)
+                .await()
 
             Result.Success(Unit)
         } catch (e: Exception) {
@@ -1323,18 +1362,24 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun toggleCommunityListUpvote(params: ToggleListUpvoteParams): Result<Unit, Failure.CoreFailure> {
         return try {
             val currentUserId = getEffectiveUserId()
-            val userInteractionRef = firestore.collection("user_list_interactions")
-                .document("${currentUserId}_${params.listId}")
+            val upvotedSet = getCachedUpvotedListIds()
+            val isAlreadyUpvoted = optimisticListOverrides.value[params.listId]?.isUpvotedByMe
+                ?: upvotedSet.contains(params.listId)
+            val newUpvoted = !isAlreadyUpvoted
 
-            val currentlyUpvoted =
-                optimisticListOverrides.value[params.listId]?.isUpvotedByMe ?: false
-            val newUpvoted = !currentlyUpvoted
+            if (newUpvoted) {
+                upvotedSet.add(params.listId)
+            } else {
+                upvotedSet.remove(params.listId)
+            }
+            storage.write(key = keyUpvotedLists, value = gson.toJson(upvotedSet))
 
             // 0ms Optimistic UI update
             val currentOverrides = optimisticListOverrides.value.toMutableMap()
             val existingOverride = currentOverrides[params.listId]
-            val currentUpvotes = existingOverride?.upvotesCount ?: 0L
-            val nextUpvotes = (currentUpvotes + if (newUpvoted) 1L else -1L).coerceAtLeast(0L)
+            val currentUpvotes = existingOverride?.upvotesCount
+            val delta = if (newUpvoted) 1L else -1L
+            val nextUpvotes = currentUpvotes?.let { (it + delta).coerceAtLeast(0L) }
             currentOverrides[params.listId] = (existingOverride ?: ListOverride()).copy(
                 isUpvotedByMe = newUpvoted,
                 upvotesCount = nextUpvotes
@@ -1344,7 +1389,9 @@ class CommunityRepositoryImpl @Inject constructor(
             repositoryScope.launch {
                 try {
                     val listRef =
-                        firestore.collection("community_curated_lists").document(params.listId)
+                        firestore.collection(colCommunityCuratedLists).document(params.listId)
+                    val userInteractionRef = firestore.collection(colUserListInteractions)
+                        .document("${currentUserId}_${params.listId}")
                     val batch = firestore.batch()
                     batch.set(
                         userInteractionRef,
@@ -1360,7 +1407,7 @@ class CommunityRepositoryImpl @Inject constructor(
                     batch.update(
                         listRef,
                         "upvotesCount",
-                        FieldValue.increment(if (newUpvoted) 1L else -1L)
+                        FieldValue.increment(delta)
                     )
 
                     batch.commit().await()
@@ -1377,22 +1424,26 @@ class CommunityRepositoryImpl @Inject constructor(
     override suspend fun recordListClone(listId: String): Result<Unit, Failure.CoreFailure> {
         return try {
             val currentUserId = getEffectiveUserId()
-            val userInteractionRef = firestore.collection("user_list_interactions")
-                .document("${currentUserId}_${listId}")
+            val clonedSet = getCachedClonedListIds()
+            clonedSet.add(listId)
+            storage.write(key = keyClonedLists, value = gson.toJson(clonedSet))
 
             // 0ms Optimistic UI update
             val currentOverrides = optimisticListOverrides.value.toMutableMap()
             val existingOverride = currentOverrides[listId]
-            val currentClones = existingOverride?.clonesCount ?: 0L
+            val currentClones = existingOverride?.clonesCount
+            val nextClones = currentClones?.let { it + 1L }
             currentOverrides[listId] = (existingOverride ?: ListOverride()).copy(
                 isClonedByMe = true,
-                clonesCount = currentClones + 1L
+                clonesCount = nextClones
             )
             optimisticListOverrides.value = currentOverrides
 
             repositoryScope.launch {
                 try {
                     val batch = firestore.batch()
+                    val userInteractionRef = firestore.collection(colUserListInteractions)
+                        .document("${currentUserId}_${listId}")
                     batch.set(
                         userInteractionRef,
                         mapOf(
@@ -1404,7 +1455,7 @@ class CommunityRepositoryImpl @Inject constructor(
                         SetOptions.merge()
                     )
                     batch.update(
-                        firestore.collection("community_curated_lists").document(listId),
+                        firestore.collection(colCommunityCuratedLists).document(listId),
                         "clonesCount",
                         FieldValue.increment(1L)
                     )
@@ -1421,7 +1472,9 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     private fun DocumentSnapshot.toCommunityCuratedList(
-        currentUserId: String
+        currentUserId: String,
+        isUpvoted: Boolean = false,
+        isCloned: Boolean = false
     ): CommunityCuratedList? {
         val listId = getString("listId") ?: id
         val title = getString("title") ?: return null
@@ -1477,6 +1530,8 @@ class CommunityRepositoryImpl @Inject constructor(
             upvotesCount = upvotesCount,
             clonesCount = clonesCount,
             isMine = (authorId == currentUserId),
+            isUpvotedByMe = isUpvoted,
+            isClonedByMe = isCloned,
             createdAtEpochMs = createdAt,
             updatedAtEpochMs = updatedAt
         )

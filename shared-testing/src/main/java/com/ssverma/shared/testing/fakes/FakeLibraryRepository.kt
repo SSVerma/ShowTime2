@@ -323,11 +323,41 @@ class FakeLibraryRepository : LibraryRepository {
         }
     }
 
-    override suspend fun setCustomListPublicStatus(listId: String, isPublic: Boolean) {
-        customLists.value = customLists.value.map { list ->
-            if (list.listId == listId) {
-                list.copy(isPublic = isPublic)
-            } else list
+    override suspend fun setCustomListPublicStatus(
+        listId: String,
+        isPublic: Boolean,
+        fallbackList: CommunityCuratedList?
+    ) {
+        val exists = customLists.value.any { it.listId == listId }
+        if (exists) {
+            customLists.value = customLists.value.map { list ->
+                if (list.listId == listId) {
+                    list.copy(isPublic = isPublic)
+                } else list
+            }
+        } else if (fallbackList != null) {
+            val newList = CustomList(
+                listId = fallbackList.listId,
+                title = fallbackList.title,
+                description = fallbackList.description,
+                coverImageUrl = fallbackList.previewPosters.firstOrNull(),
+                isPublic = isPublic,
+                isCloned = false,
+                sourceAuthorName = null,
+                items = fallbackList.items.mapIndexed { index, item ->
+                    CustomListItem(
+                        listId = fallbackList.listId,
+                        mediaId = item.mediaId,
+                        mediaType = item.mediaType,
+                        title = item.title,
+                        posterImageUrl = item.posterImageUrl,
+                        backdropImageUrl = item.backdropImageUrl,
+                        voteAvg = item.voteAvg,
+                        rankOrder = index
+                    )
+                }
+            )
+            customLists.value = customLists.value + newList
         }
     }
 
@@ -351,6 +381,8 @@ class FakeLibraryRepository : LibraryRepository {
             description = communityList.description,
             coverImageUrl = communityList.previewPosters.firstOrNull(),
             isPublic = false,
+            isCloned = true,
+            sourceAuthorName = communityList.authorName,
             items = clonedItems
         )
         customLists.value = customLists.value + newList

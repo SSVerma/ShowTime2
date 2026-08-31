@@ -1,5 +1,6 @@
 package com.ssverma.feature.library.ui.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
@@ -18,7 +19,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +41,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material.icons.rounded.BookmarkBorder
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Explore
@@ -60,7 +62,6 @@ import androidx.compose.material.icons.rounded.FolderSpecial
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.PublicOff
@@ -69,8 +70,6 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material.icons.rounded.Visibility
-import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
-import com.ssverma.shared.domain.utils.ShareMediaUtils
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -89,7 +88,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -105,6 +103,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -124,6 +123,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.UiText
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
@@ -149,7 +149,7 @@ import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
-import com.ssverma.shared.ui.R as SharedR
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.shared.ui.component.community.CommunityListCard
 import com.ssverma.shared.ui.component.community.CommunityListDetailSheet
 import com.ssverma.shared.ui.component.community.PublishListBottomSheet
@@ -159,6 +159,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.ssverma.core.ui.R as CoreUiR
+import com.ssverma.shared.ui.R as SharedR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -345,7 +346,14 @@ fun LibraryScreen(
             }
 
             if (targetCustomListId != null) {
-                viewModel.selectCustomList(targetCustomListId)
+                val isMyLocalList = customLists.any { it.listId == targetCustomListId }
+                if (initialTab == LibraryTabDestination.Community) {
+                    viewModel.selectCommunityListId(targetCustomListId)
+                } else if (isMyLocalList) {
+                    viewModel.selectCustomList(targetCustomListId)
+                } else {
+                    viewModel.selectCommunityListId(targetCustomListId)
+                }
             }
         }
     }
@@ -867,8 +875,11 @@ fun LibraryScreen(
                         onClick = {
                             val targetId = listToUnpublish.listId
                             listPendingUnpublish = null
+                            val fallback = selectedCommunityList
+                                ?: communityLists.firstOrNull { it.listId == targetId }
                             viewModel.unpublishCustomList(
                                 listId = targetId,
+                                fallbackList = fallback,
                                 onUnpublished = {
                                     viewModel.selectCommunityList(null)
                                     coroutineScope.launch {
@@ -1007,6 +1018,17 @@ fun LibraryScreen(
                                     title = communityList.title,
                                     description = communityList.description,
                                     isPublic = true,
+                                    items = communityList.items.map { item ->
+                                        CustomListItem(
+                                            listId = communityList.listId,
+                                            mediaId = item.mediaId,
+                                            mediaType = item.mediaType,
+                                            title = item.title,
+                                            posterImageUrl = item.posterImageUrl,
+                                            backdropImageUrl = item.backdropImageUrl,
+                                            voteAvg = item.voteAvg
+                                        )
+                                    },
                                     createdAt = communityList.createdAtEpochMs,
                                     updatedAt = communityList.updatedAtEpochMs
                                 )
@@ -1803,59 +1825,52 @@ private fun CustomListCard(
                     }
                 }
 
-                if (customList.isPublic) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(8.dp)
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = when {
+                        customList.isPublic -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                        customList.isCloned -> MaterialTheme.colorScheme.tertiaryContainer.copy(
+                            alpha = 0.9f
+                        )
+
+                        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Public,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(SharedR.string.public_badge),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                        val badgeIcon = when {
+                            customList.isPublic -> Icons.Rounded.Public
+                            customList.isCloned -> Icons.Rounded.Bookmark
+                            else -> Icons.Rounded.Lock
                         }
-                    }
-                } else {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Lock,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(SharedR.string.private_badge),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        val badgeTint = when {
+                            customList.isPublic -> MaterialTheme.colorScheme.onPrimaryContainer
+                            customList.isCloned -> MaterialTheme.colorScheme.onTertiaryContainer
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
+                        val badgeText = when {
+                            customList.isPublic -> stringResource(SharedR.string.public_badge)
+                            customList.isCloned -> stringResource(SharedR.string.cloned_badge_grid)
+                            else -> stringResource(SharedR.string.private_badge)
+                        }
+                        Icon(
+                            imageVector = badgeIcon,
+                            contentDescription = null,
+                            tint = badgeTint,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = badgeText,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = badgeTint
+                        )
                     }
                 }
             }
@@ -1949,6 +1964,9 @@ private fun CustomListDetailSheet(
         )
     }
 
+    BackHandler { onDismiss() }
+    var showMenu by remember { mutableStateOf(false) }
+
     ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -1973,32 +1991,58 @@ private fun CustomListDetailSheet(
                         Text(
                             text = customList.title,
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
                         )
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = if (customList.isPublic) {
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f)
+                            color = when {
+                                customList.isPublic -> MaterialTheme.colorScheme.primaryContainer.copy(
+                                    alpha = 0.85f
+                                )
+
+                                customList.isCloned -> MaterialTheme.colorScheme.tertiaryContainer.copy(
+                                    alpha = 0.85f
+                                )
+
+                                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f)
                             }
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                             ) {
+                                val badgeIcon = when {
+                                    customList.isPublic -> Icons.Rounded.Public
+                                    customList.isCloned -> Icons.Rounded.Bookmark
+                                    else -> Icons.Rounded.Lock
+                                }
+                                val badgeTint = when {
+                                    customList.isPublic -> MaterialTheme.colorScheme.onPrimaryContainer
+                                    customList.isCloned -> MaterialTheme.colorScheme.onTertiaryContainer
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                                val badgeText = when {
+                                    customList.isPublic -> stringResource(SharedR.string.public_collection_badge)
+                                    customList.isCloned -> stringResource(SharedR.string.cloned_collection_badge)
+                                    else -> stringResource(SharedR.string.private_collection_badge)
+                                }
                                 Icon(
-                                    imageVector = if (customList.isPublic) Icons.Rounded.Public else Icons.Rounded.Lock,
+                                    imageVector = badgeIcon,
                                     contentDescription = null,
-                                    tint = if (customList.isPublic) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    tint = badgeTint,
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Spacer(modifier = Modifier.width(3.dp))
                                 Text(
-                                    text = stringResource(if (customList.isPublic) SharedR.string.public_collection_badge else SharedR.string.private_collection_badge),
+                                    text = badgeText,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (customList.isPublic) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = badgeTint,
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
                             }
                         }
@@ -2012,6 +2056,19 @@ private fun CustomListDetailSheet(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    val authorName = customList.sourceAuthorName
+                    if (customList.isCloned && !authorName.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = stringResource(
+                                SharedR.string.cloned_from_author,
+                                authorName
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = if (customList.itemCount == 1) stringResource(R.string.one_item_count) else stringResource(
@@ -2023,15 +2080,66 @@ private fun CustomListDetailSheet(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
+
+                // Header Overflow Action Menu (Edit, Delete)
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Rounded.MoreVert,
+                            contentDescription = stringResource(R.string.more_options),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(R.string.edit_list)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Edit,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            onClick = {
+                                showMenu = false
+                                onEditList()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = stringResource(R.string.delete_list),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.DeleteOutline,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            onClick = {
+                                showMenu = false
+                                onDeleteList()
+                            }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Action Buttons Bar with sleek pill surfaces
+            // Action Buttons Bar with sleek pill surfaces (Horizontally scrollable)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
             ) {
                 if (customList.isPublic) {
                     val context = androidx.compose.ui.platform.LocalContext.current
@@ -2052,7 +2160,7 @@ private fun CustomListDetailSheet(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Share,
@@ -2060,7 +2168,7 @@ private fun CustomListDetailSheet(
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(5.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(SharedR.string.share),
                                 style = MaterialTheme.typography.labelMedium,
@@ -2077,7 +2185,7 @@ private fun CustomListDetailSheet(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.PublicOff,
@@ -2085,7 +2193,7 @@ private fun CustomListDetailSheet(
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(5.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(SharedR.string.unpublish_action),
                                 style = MaterialTheme.typography.labelMedium,
@@ -2094,7 +2202,7 @@ private fun CustomListDetailSheet(
                             )
                         }
                     }
-                } else if (customList.items.isNotEmpty()) {
+                } else if (!customList.isCloned && customList.items.isNotEmpty()) {
                     Surface(
                         onClick = onPublishClick,
                         shape = RoundedCornerShape(10.dp),
@@ -2102,7 +2210,7 @@ private fun CustomListDetailSheet(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Public,
@@ -2110,7 +2218,7 @@ private fun CustomListDetailSheet(
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(5.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(SharedR.string.publish_action),
                                 style = MaterialTheme.typography.labelMedium,
@@ -2129,7 +2237,7 @@ private fun CustomListDetailSheet(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
@@ -2137,7 +2245,7 @@ private fun CustomListDetailSheet(
                                 tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(15.dp)
                             )
-                            Spacer(modifier = Modifier.width(5.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(R.string.cinema_receipt),
                                 style = MaterialTheme.typography.labelMedium,
@@ -2145,42 +2253,6 @@ private fun CustomListDetailSheet(
                                 color = MaterialTheme.colorScheme.secondary
                             )
                         }
-                    }
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Edit Button
-                Surface(
-                    onClick = onEditList,
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier.size(34.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Edit,
-                            contentDescription = stringResource(R.string.edit_list),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                // Delete Button
-                Surface(
-                    onClick = onDeleteList,
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                    modifier = Modifier.size(34.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.DeleteOutline,
-                            contentDescription = stringResource(R.string.delete_list),
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(16.dp)
-                        )
                     }
                 }
             }
@@ -2362,6 +2434,9 @@ private fun CustomListDetailSheet(
     }
 }
 
+private const val MAX_LIST_TITLE_LENGTH = 50
+private const val MAX_LIST_DESCRIPTION_LENGTH = 200
+
 @Composable
 private fun CreateCustomListDialog(
     onDismiss: () -> Unit,
@@ -2383,8 +2458,20 @@ private fun CreateCustomListDialog(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it },
+                    onValueChange = {
+                        if (it.length <= MAX_LIST_TITLE_LENGTH) {
+                            title = it
+                        }
+                    },
                     label = { Text(stringResource(R.string.list_title_hint)) },
+                    supportingText = {
+                        Text(
+                            text = "${title.length} / $MAX_LIST_TITLE_LENGTH",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -2392,8 +2479,20 @@ private fun CreateCustomListDialog(
 
                 OutlinedTextField(
                     value = description,
-                    onValueChange = { description = it },
+                    onValueChange = {
+                        if (it.length <= MAX_LIST_DESCRIPTION_LENGTH) {
+                            description = it
+                        }
+                    },
                     label = { Text(stringResource(R.string.list_desc_hint)) },
+                    supportingText = {
+                        Text(
+                            text = "${description.length} / $MAX_LIST_DESCRIPTION_LENGTH",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    },
                     maxLines = 3,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -2407,7 +2506,7 @@ private fun CreateCustomListDialog(
                         onCreate(title.trim(), description.trim().ifEmpty { null })
                     }
                 },
-                enabled = title.isNotBlank(),
+                enabled = title.isNotBlank() && title.length <= MAX_LIST_TITLE_LENGTH,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = stringResource(R.string.create_list_action))
@@ -2427,8 +2526,14 @@ private fun EditCustomListDialog(
     onDismiss: () -> Unit,
     onSave: (title: String, description: String?) -> Unit
 ) {
-    var title by remember { mutableStateOf(customList.title) }
-    var description by remember { mutableStateOf(customList.description ?: "") }
+    var title by remember { mutableStateOf(customList.title.take(MAX_LIST_TITLE_LENGTH)) }
+    var description by remember {
+        mutableStateOf(
+            customList.description?.take(
+                MAX_LIST_DESCRIPTION_LENGTH
+            ) ?: ""
+        )
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -2450,8 +2555,20 @@ private fun EditCustomListDialog(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it },
+                    onValueChange = {
+                        if (it.length <= MAX_LIST_TITLE_LENGTH) {
+                            title = it
+                        }
+                    },
                     label = { Text(stringResource(R.string.list_title_hint)) },
+                    supportingText = {
+                        Text(
+                            text = "${title.length} / $MAX_LIST_TITLE_LENGTH",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -2459,8 +2576,20 @@ private fun EditCustomListDialog(
 
                 OutlinedTextField(
                     value = description,
-                    onValueChange = { description = it },
+                    onValueChange = {
+                        if (it.length <= MAX_LIST_DESCRIPTION_LENGTH) {
+                            description = it
+                        }
+                    },
                     label = { Text(stringResource(R.string.list_desc_hint)) },
+                    supportingText = {
+                        Text(
+                            text = "${description.length} / $MAX_LIST_DESCRIPTION_LENGTH",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    },
                     maxLines = 3,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -2474,7 +2603,7 @@ private fun EditCustomListDialog(
                         onSave(title.trim(), description.trim().ifEmpty { null })
                     }
                 },
-                enabled = title.isNotBlank(),
+                enabled = title.isNotBlank() && title.length <= MAX_LIST_TITLE_LENGTH,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = stringResource(R.string.edit_list_action))

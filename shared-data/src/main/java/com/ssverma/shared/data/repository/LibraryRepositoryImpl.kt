@@ -20,6 +20,7 @@ import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.notifier.WidgetSyncNotifier
 import com.ssverma.shared.domain.repository.LibraryRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
@@ -355,8 +356,46 @@ class LibraryRepositoryImpl @Inject constructor(
         return customListDao.getListIdsForMediaFlow(mediaId)
     }
 
-    override suspend fun setCustomListPublicStatus(listId: String, isPublic: Boolean) {
-        customListDao.updatePublicStatus(listId = listId, isPublic = isPublic)
+    override suspend fun setCustomListPublicStatus(
+        listId: String,
+        isPublic: Boolean,
+        fallbackList: CommunityCuratedList?
+    ) {
+        val existing = customListDao.getListWithItemsFlow(listId).firstOrNull()
+        if (existing != null) {
+            customListDao.updatePublicStatus(listId = listId, isPublic = isPublic)
+        } else if (fallbackList != null) {
+            val now = System.currentTimeMillis()
+            customListDao.insertList(
+                CustomListEntity(
+                    listId = fallbackList.listId,
+                    title = fallbackList.title,
+                    description = fallbackList.description,
+                    coverImageUrl = fallbackList.previewPosters.firstOrNull(),
+                    isPublic = isPublic,
+                    isCloned = false,
+                    sourceAuthorName = null,
+                    createdAt = fallbackList.createdAtEpochMs,
+                    updatedAt = now
+                )
+            )
+            fallbackList.items.forEachIndexed { index, item ->
+                customListDao.insertListItem(
+                    CustomListItemEntity(
+                        listId = fallbackList.listId,
+                        mediaId = item.mediaId,
+                        mediaType = item.mediaType.toStorageKey(),
+                        title = item.title,
+                        posterImageUrl = item.posterImageUrl,
+                        backdropImageUrl = item.backdropImageUrl,
+                        voteAvg = item.voteAvg,
+                        userNotes = null,
+                        rankOrder = index,
+                        addedAt = now
+                    )
+                )
+            }
+        }
     }
 
     override suspend fun cloneCommunityListToLocal(communityList: CommunityCuratedList): String {
@@ -371,6 +410,8 @@ class LibraryRepositoryImpl @Inject constructor(
                 description = communityList.description,
                 coverImageUrl = communityList.previewPosters.firstOrNull(),
                 isPublic = false,
+                isCloned = true,
+                sourceAuthorName = communityList.authorName,
                 createdAt = now,
                 updatedAt = now
             )
@@ -404,6 +445,8 @@ class LibraryRepositoryImpl @Inject constructor(
             description = list.description,
             coverImageUrl = list.coverImageUrl,
             isPublic = list.isPublic,
+            isCloned = list.isCloned,
+            sourceAuthorName = list.sourceAuthorName,
             items = items.map { it.toCustomListItem() },
             createdAt = list.createdAt,
             updatedAt = list.updatedAt

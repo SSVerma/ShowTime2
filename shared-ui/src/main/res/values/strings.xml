@@ -170,7 +170,8 @@
     <!-- Community Curated Lists -->
     <string name="cd_favorite_button">Favorite button</string>
     <string name="clone_to_my_library">Clone to My Library</string>
-    <string name="cloned_badge">Saved</string>
+    <string name="cloned_badge">Cloned</string>
+    <string name="in_my_lists">Cloned to My Lists (Private)</string>
     <string name="clone_short">Clone</string>
     <string name="explore_community_collections">Explore Community</string>
     <string name="my_custom_lists">My Lists</string>
@@ -200,6 +201,9 @@
     <string name="already_cloned_warning">You have already saved this collection to My Lists.</string>
     <string name="private_collection_badge">Private Collection</string>
     <string name="public_collection_badge">Public in Community</string>
+    <string name="cloned_collection_badge">Private • Cloned</string>
+    <string name="cloned_badge_grid">Private • Cloned</string>
+    <string name="cloned_from_author">Curated by %1$s</string>
     <string name="publish_action">Publish</string>
     <string name="publish_first_collection">Publish a Collection</string>
     <string name="tab_my_lists">My Lists</string>
