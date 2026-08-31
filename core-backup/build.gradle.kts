@@ -20,7 +20,11 @@ dependencies {
     implementation(libs.workmanager.ktx)
     implementation(libs.gson)
     implementation(libs.coroutines.core)
+    implementation(libs.coroutines.play.services)
     implementation(libs.datastore.preferences)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
     testImplementation(projects.coreTesting)
 }

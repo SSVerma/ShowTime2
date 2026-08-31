@@ -116,6 +116,8 @@ fun BackupSyncScreen(
             // Google Account Status
             GoogleAccountSection(
                 googleUser = uiState.googleUser,
+                isSigningIn = uiState.isSigningIn,
+                isSigningOut = uiState.isSigningOut,
                 onSignInClick = { activity?.let { viewModel.signInWithGoogle(it) } },
                 onSignOutClick = { showSignOutConfirmDialog = true }
             )
@@ -232,6 +234,8 @@ fun BackupSyncScreen(
 @Composable
 private fun GoogleAccountSection(
     googleUser: GoogleUser?,
+    isSigningIn: Boolean,
+    isSigningOut: Boolean,
     onSignInClick: () -> Unit,
     onSignOutClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -306,9 +310,20 @@ private fun GoogleAccountSection(
 
                     OutlinedButton(
                         onClick = onSignOutClick,
+                        enabled = !isSigningOut,
                         shape = MaterialTheme.shapes.small
                     ) {
-                        Text(text = stringResource(R.string.sign_out))
+                        if (isSigningOut) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
+                            Text(text = stringResource(R.string.signing_out))
+                        } else {
+                            Text(text = stringResource(R.string.sign_out))
+                        }
                     }
                 }
             } else {
@@ -322,19 +337,33 @@ private fun GoogleAccountSection(
 
                 Button(
                     onClick = onSignInClick,
+                    enabled = !isSigningIn,
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                    Text(
-                        text = stringResource(R.string.sign_in_with_google),
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    if (isSigningIn) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = stringResource(R.string.signing_in),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.AccountCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = stringResource(R.string.sign_in_with_google),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }

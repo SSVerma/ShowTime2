@@ -65,10 +65,12 @@ class BackupSyncViewModel @Inject constructor(
 
     fun signInWithGoogle(activity: Activity) {
         viewModelScope.launch {
+            _uiState.update { it.copy(isSigningIn = true) }
             val result = backupRepository.signInWithGoogle(activity = activity)
             result.onSuccess { user ->
                 _uiState.update {
                     it.copy(
+                        isSigningIn = false,
                         message = UiText.DynamicText(
                             "Signed in as ${user.displayName.ifBlank { user.email }}"
                         )
@@ -77,6 +79,7 @@ class BackupSyncViewModel @Inject constructor(
             }.onFailure {
                 _uiState.update {
                     it.copy(
+                        isSigningIn = false,
                         message = UiText.StaticText(R.string.google_sign_in_failed)
                     )
                 }
@@ -86,9 +89,11 @@ class BackupSyncViewModel @Inject constructor(
 
     fun signOutGoogle() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isSigningOut = true) }
             backupRepository.signOutGoogle()
             _uiState.update {
                 it.copy(
+                    isSigningOut = false,
                     message = UiText.StaticText(R.string.google_signed_out)
                 )
             }

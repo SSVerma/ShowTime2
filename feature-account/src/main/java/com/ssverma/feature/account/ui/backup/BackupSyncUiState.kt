@@ -8,6 +8,8 @@ import com.ssverma.core.ui.UiText
 
 data class BackupSyncUiState(
     val googleUser: GoogleUser? = null,
+    val isSigningIn: Boolean = false,
+    val isSigningOut: Boolean = false,
     val backupStatus: BackupStatus = BackupStatus.Idle,
     val lastBackupMetadata: BackupMetadata? = null,
     val backupFrequency: BackupFrequency = BackupFrequency.OFF,

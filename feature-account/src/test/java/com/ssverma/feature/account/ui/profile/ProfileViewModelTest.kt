@@ -152,8 +152,8 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `seedSampleFavorites delegates to databaseSeeder`() = runTest {
-        viewModel.seedSampleFavorites()
+    fun `populateDemoFavorites delegates to databaseSeeder`() = runTest {
+        viewModel.populateDemoFavorites()
 
         coVerify {
             mockDatabaseSeeder.seedFavorites()
@@ -161,8 +161,8 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `seedSampleWatchlist delegates to databaseSeeder`() = runTest {
-        viewModel.seedSampleWatchlist()
+    fun `populateDemoWatchlist delegates to databaseSeeder`() = runTest {
+        viewModel.populateDemoWatchlist()
 
         coVerify {
             mockDatabaseSeeder.seedWatchlist()
@@ -170,8 +170,8 @@ class ProfileViewModelTest {
     }
 
     @Test
-    fun `seedSampleHistory delegates to databaseSeeder`() = runTest {
-        viewModel.seedSampleHistory()
+    fun `populateDemoHistory delegates to databaseSeeder`() = runTest {
+        viewModel.populateDemoHistory()
 
         coVerify {
             mockDatabaseSeeder.seedHistory()
@@ -193,6 +193,16 @@ class ProfileViewModelTest {
 
         coVerify {
             mockDatabaseSeeder.resetCinemaGame()
+        }
+    }
+
+    @Test
+    fun `signOutGoogle updates google user and message`() = runTest {
+        viewModel.signOutGoogle()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.googleUser).isNull()
         }
     }
 }

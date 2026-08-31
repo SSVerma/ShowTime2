@@ -293,10 +293,46 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(isLocalizationSheetVisible = false) }
     }
 
+    fun signInWithGoogle(activity: Activity) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSigningIn = true) }
+            val result = backupRepository.signInWithGoogle(activity)
+            result.onSuccess { user ->
+                _uiState.update { state ->
+                    state.copy(
+                        isSigningIn = false,
+                        message = UiText.DynamicText("Signed in as ${user.displayName}")
+                    )
+                }
+            }.onFailure {
+                _uiState.update { state ->
+                    state.copy(
+                        isSigningIn = false,
+                        message = UiText.StaticText(R.string.google_sign_in_failed)
+                    )
+                }
+            }
+        }
+    }
+
+    fun signOutGoogle() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSigningOut = true) }
+            backupRepository.signOutGoogle()
+            _uiState.update {
+                it.copy(
+                    isSigningOut = false,
+                    message = UiText.StaticText(R.string.google_signed_out)
+                )
+            }
+        }
+    }
+
     fun logout() {
         viewModelScope.launch {
             authManager.logout()
             accountRepository.removeUserAccount()
+            backupRepository.signOutGoogle()
             fetchProfile()
         }
     }
@@ -355,7 +391,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun seedSampleFavorites() {
+    fun populateDemoFavorites() {
         viewModelScope.launch {
             databaseSeeder.seedFavorites()
             _uiState.update {
@@ -366,7 +402,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun seedSampleWatchlist() {
+    fun populateDemoWatchlist() {
         viewModelScope.launch {
             databaseSeeder.seedWatchlist()
             _uiState.update {
@@ -377,7 +413,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun seedSampleHistory() {
+    fun populateDemoHistory() {
         viewModelScope.launch {
             databaseSeeder.seedHistory()
             _uiState.update {

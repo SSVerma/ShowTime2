@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.BugReport
@@ -29,8 +31,11 @@ import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,12 +46,15 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -56,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
+import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.ScreenLoadingIndicator
@@ -69,8 +78,10 @@ import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
 import com.ssverma.feature.account.ui.pro.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.component.Avatar
+import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.shared.ui.component.ProfileAvatarSharedKey
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,6 +100,7 @@ fun ProfileScreen(
     val activity = context as? Activity
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var showSignOutConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let { msg ->
@@ -119,6 +131,8 @@ fun ProfileScreen(
                     contentLanguage = uiState.contentLanguage,
                     availableLanguages = uiState.availableLanguages,
                     googleUser = uiState.googleUser,
+                    isSigningIn = uiState.isSigningIn,
+                    isSigningOut = uiState.isSigningOut,
                     traktAuthState = uiState.traktAuthState,
                     onUpgradeClick = { viewModel.openPaywall() },
                     onOpenBackup = onOpenBackup,
@@ -126,7 +140,8 @@ fun ProfileScreen(
                     onOpenTheme = { viewModel.openThemeSheet() },
                     onOpenLocalization = { viewModel.openLocalizationSheet() },
                     onOpenAbout = onOpenAbout,
-                    onLogoutClick = { viewModel.logout() },
+                    onLogoutClick = { showSignOutConfirmDialog = true },
+                    onGoogleSignInClick = { activity?.let { viewModel.signInWithGoogle(it) } },
                     onOpenDeveloperPanelClick = { viewModel.openDeveloperPanel() },
                     modifier = Modifier.padding(innerPadding)
                 )
@@ -143,6 +158,49 @@ fun ProfileScreen(
             ProfileContentState.Loading -> {
                 ScreenLoadingIndicator(modifier = Modifier.padding(innerPadding))
             }
+        }
+
+        // Sign Out Confirmation Dialog
+        if (showSignOutConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showSignOutConfirmDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.sign_out_confirm_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(text = stringResource(R.string.sign_out_confirm_msg))
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showSignOutConfirmDialog = false
+                            viewModel.signOutGoogle()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(text = stringResource(R.string.sign_out))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showSignOutConfirmDialog = false }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
+            )
         }
 
         // Theme Selection Bottom Sheet
@@ -163,7 +221,7 @@ fun ProfileScreen(
 
         // Localization (Region & Language) Bottom Sheet
         if (uiState.isLocalizationSheetVisible) {
-            com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet(
+            LocalizationSettingsBottomSheet(
                 onDismissRequest = { viewModel.closeLocalizationSheet() }
             )
         }
@@ -196,9 +254,9 @@ fun ProfileScreen(
                 onAdsDisabledToggled = { viewModel.setDebugAdsDisabled(it) },
                 onInstantMockConnectTrakt = { viewModel.instantMockConnectTrakt() },
                 onDisconnectTrakt = { viewModel.disconnectTrakt() },
-                onSeedFavorites = { viewModel.seedSampleFavorites() },
-                onSeedWatchlist = { viewModel.seedSampleWatchlist() },
-                onSeedHistory = { viewModel.seedSampleHistory() },
+                onSeedFavorites = { viewModel.populateDemoFavorites() },
+                onSeedWatchlist = { viewModel.populateDemoWatchlist() },
+                onSeedHistory = { viewModel.populateDemoHistory() },
                 onClearDatabase = { viewModel.clearLocalDatabase() },
                 onResetCinemaGame = { viewModel.resetCinemaGame() },
                 onResetAll = { viewModel.resetAllDebugOverrides() },
@@ -217,8 +275,10 @@ private fun ProfileContent(
     watchProviderRegion: String,
     availableRegions: List<WatchProviderRegion>,
     contentLanguage: String,
-    availableLanguages: List<com.ssverma.shared.domain.model.Language>,
-    googleUser: com.ssverma.core.backup.model.GoogleUser?,
+    availableLanguages: List<Language>,
+    googleUser: GoogleUser?,
+    isSigningIn: Boolean,
+    isSigningOut: Boolean,
     traktAuthState: TraktAuthState,
     onUpgradeClick: () -> Unit,
     onOpenBackup: () -> Unit,
@@ -227,10 +287,11 @@ private fun ProfileContent(
     onOpenLocalization: () -> Unit,
     onOpenAbout: () -> Unit,
     onLogoutClick: () -> Unit,
+    onGoogleSignInClick: () -> Unit,
     onOpenDeveloperPanelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isGuest = profile.userName.equals("guest", ignoreCase = true)
+    val isGuest = profile.userName.equals("guest", ignoreCase = true) && googleUser == null
 
     Column(
         modifier = modifier
@@ -247,8 +308,18 @@ private fun ProfileContent(
             googleUser = googleUser,
             isProActive = isProActive,
             isGuest = isGuest,
+            isSigningOut = isSigningOut,
             onLogoutClick = onLogoutClick
         )
+
+        // Google Sign-In Prompt Card (shown only when not signed in)
+        if (googleUser == null) {
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+            GoogleSignInPromptCard(
+                isSigningIn = isSigningIn,
+                onSignInClick = onGoogleSignInClick
+            )
+        }
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
@@ -292,12 +363,16 @@ private fun ProfileContent(
 @Composable
 private fun ProfileHeader(
     profile: Profile,
-    googleUser: com.ssverma.core.backup.model.GoogleUser?,
+    googleUser: GoogleUser?,
     isProActive: Boolean,
     isGuest: Boolean,
+    isSigningOut: Boolean,
     onLogoutClick: () -> Unit
 ) {
+    val displayName = googleUser?.displayName?.takeIf { it.isNotBlank() }
+        ?: profile.displayName.ifBlank { profile.userName }
     val avatarUrl = googleUser?.photoUrl?.toString()?.ifBlank { null } ?: profile.imageUrl
+
     Avatar(
         imageUrl = avatarUrl,
         onClick = {},
@@ -309,16 +384,24 @@ private fun ProfileHeader(
     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
     Text(
-        text = profile.displayName.ifBlank { profile.userName },
+        text = displayName,
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface
     )
 
+    if (googleUser != null && googleUser.email.isNotBlank()) {
+        Text(
+            text = googleUser.email,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
-        modifier = Modifier.padding(top = 4.dp)
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+        modifier = Modifier.padding(top = MaterialTheme.spacing.small)
     ) {
         Surface(
             shape = CircleShape,
@@ -326,26 +409,40 @@ private fun ProfileHeader(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 if (isProActive) {
                     Icon(
                         imageVector = Icons.Rounded.Star,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = stringResource(R.string.showtime_pro),
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                } else {
+                } else if (isGuest) {
                     Text(
-                        text = if (isGuest) stringResource(R.string.guest) else profile.userName,
-                        style = MaterialTheme.typography.labelSmall,
+                        text = stringResource(R.string.guest),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.google_account),
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -356,15 +453,165 @@ private fun ProfileHeader(
         if (!isGuest) {
             OutlinedButton(
                 onClick = onLogoutClick,
-                shape = MaterialTheme.shapes.small,
-                modifier = Modifier.height(28.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.logout),
-                    style = MaterialTheme.typography.labelSmall
+                enabled = !isSigningOut,
+                shape = CircleShape,
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+                modifier = Modifier.height(32.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                ),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
                 )
+            ) {
+                if (isSigningOut) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.signing_out),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.sign_out),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun GoogleSignInPromptCard(
+    isSigningIn: Boolean,
+    onSignInClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        tonalElevation = 2.dp,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.AccountCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+                Column {
+                    Text(
+                        text = stringResource(R.string.connect_google_account_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.connect_google_account_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp, bottom = 4.dp)
+            ) {
+                BenefitBulletItem(
+                    icon = Icons.Rounded.CloudSync,
+                    text = stringResource(R.string.sync_benefit_backup)
+                )
+                BenefitBulletItem(
+                    icon = Icons.Rounded.Public,
+                    text = stringResource(R.string.sync_benefit_community)
+                )
+                BenefitBulletItem(
+                    icon = Icons.Rounded.Tv,
+                    text = stringResource(R.string.sync_benefit_devices)
+                )
+            }
+
+            Button(
+                onClick = onSignInClick,
+                enabled = !isSigningIn,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                if (isSigningIn) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.signing_in),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.sign_in_with_google),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BenefitBulletItem(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -374,8 +621,8 @@ private fun SettingsNavGroup(
     watchProviderRegion: String,
     availableRegions: List<WatchProviderRegion>,
     contentLanguage: String,
-    availableLanguages: List<com.ssverma.shared.domain.model.Language>,
-    googleUser: com.ssverma.core.backup.model.GoogleUser?,
+    availableLanguages: List<Language>,
+    googleUser: GoogleUser?,
     traktAuthState: TraktAuthState,
     onOpenBackup: () -> Unit,
     onOpenTrakt: () -> Unit,

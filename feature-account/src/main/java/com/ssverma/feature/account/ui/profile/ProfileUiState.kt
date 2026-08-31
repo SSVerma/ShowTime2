@@ -11,6 +11,7 @@ import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 
 data class ProfileScreenState(
@@ -26,9 +27,11 @@ data class ProfileScreenState(
     val watchProviderRegion: String = "US",
     val availableRegions: List<WatchProviderRegion> = emptyList(),
     val contentLanguage: String = "en",
-    val availableLanguages: List<com.ssverma.shared.domain.model.Language> = emptyList(),
+    val availableLanguages: List<Language> = emptyList(),
     val isLocalizationSheetVisible: Boolean = false,
     val googleUser: GoogleUser? = null,
+    val isSigningIn: Boolean = false,
+    val isSigningOut: Boolean = false,
     val backupStatus: BackupStatus = BackupStatus.Idle,
     val lastBackupMetadata: BackupMetadata? = null,
     val backupFrequency: BackupFrequency = BackupFrequency.OFF,

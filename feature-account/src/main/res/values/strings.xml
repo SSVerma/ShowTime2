@@ -62,6 +62,13 @@
     <string name="google_sign_in_failed">Unable to sign in with Google. Please try again.</string>
     <string name="google_sign_in_cancelled">Sign-in cancelled.</string>
     <string name="google_signed_out">Signed out of Google.</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="signing_out">Signing out…</string>
+    <string name="connect_google_account_title">Sign in to ShowTime</string>
+    <string name="connect_google_account_subtitle">Sync your library &amp; unlock community features</string>
+    <string name="sync_benefit_backup">Private cloud backup for your lists &amp; favorites</string>
+    <string name="sync_benefit_community">Community identity for discussions &amp; poll streaks</string>
+    <string name="sync_benefit_devices">Seamless cross-device synchronization</string>
     <string name="backup_failed">Backup failed. Please try again.</string>
     <string name="restore_failed">Restore failed. Please try again.</string>
     <string name="mark_as_watched">Mark as Watched</string>

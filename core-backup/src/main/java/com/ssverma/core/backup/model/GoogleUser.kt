@@ -4,5 +4,6 @@ data class GoogleUser(
     val email: String,
     val displayName: String,
     val photoUrl: String?,
-    val idToken: String
+    val idToken: String,
+    val uid: String = ""
 )

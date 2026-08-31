@@ -124,6 +124,7 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-remote-config = { group = "com.google.firebase", name = "firebase-config" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 
 # Play services
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services" }

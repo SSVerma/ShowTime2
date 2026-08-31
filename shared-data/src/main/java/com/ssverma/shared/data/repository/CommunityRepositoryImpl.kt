@@ -291,20 +291,7 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getEffectiveUserId(): String {
-        val googleUser = googleAuthClient.currentUser.value
-        if (googleUser != null && googleUser.email.isNotBlank()) {
-            val sanitizedEmail = googleUser.email.replace(".", "_").replace("@", "_at_")
-            return "user_$sanitizedEmail"
-        }
-
-        val cachedInstallationId = storage.read(key = installationIdKey)
-        if (!cachedInstallationId.isNullOrBlank()) {
-            return "anon_$cachedInstallationId"
-        }
-
-        val newId = UUID.randomUUID().toString().replace("-", "")
-        storage.write(key = installationIdKey, value = newId)
-        return "anon_$newId"
+        return googleAuthClient.getEffectiveUserId()
     }
 
     private fun getMediaDocKey(mediaType: MediaType, mediaId: Int): String {
