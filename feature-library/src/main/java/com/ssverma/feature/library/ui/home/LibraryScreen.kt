@@ -139,6 +139,7 @@ import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.ui.home.component.LibraryBackupBanner
 import com.ssverma.feature.library.ui.home.component.LibraryTab
 import com.ssverma.feature.library.ui.home.component.LibraryTabType
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
@@ -172,6 +173,7 @@ fun LibraryScreen(
     onTvShowClicked: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
     onNavigateToProPaywall: () -> Unit = {},
+    onOpenBackup: () -> Unit = {},
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -535,6 +537,12 @@ fun LibraryScreen(
                             }
                         }
                     }
+                    val backupBannerState by viewModel.backupBannerState.collectAsState()
+                    LibraryBackupBanner(
+                        bannerState = backupBannerState,
+                        onActionClick = onOpenBackup,
+                        onDismiss = { viewModel.dismissBackupBanner() }
+                    )
                 }
             }
         }
@@ -671,408 +679,408 @@ fun LibraryScreen(
                 }
             }
         }
+    }
 
-        if (isCreateListDialogVisible) {
-            CreateCustomListDialog(
-                onDismiss = { viewModel.dismissCreateListDialog() },
-                onCreate = { title, desc ->
-                    viewModel.createCustomList(title, desc) { id ->
-                        coroutineScope.launch {
-                            if (pagerState.currentPage != 3) {
-                                pagerState.animateScrollToPage(3)
-                            }
-                            snackbarHostState.showImmediateSnackbar(
-                                message = context.getString(
-                                    SharedR.string.list_created_success,
-                                    title
-                                )
-                            )
+    if (isCreateListDialogVisible) {
+        CreateCustomListDialog(
+            onDismiss = { viewModel.dismissCreateListDialog() },
+            onCreate = { title, desc ->
+                viewModel.createCustomList(title, desc) { id ->
+                    coroutineScope.launch {
+                        if (pagerState.currentPage != 3) {
+                            pagerState.animateScrollToPage(3)
                         }
-                    }
-                }
-            )
-        }
-
-        if (isQuotaGateVisible) {
-            val activity = context as? Activity
-            FeatureQuotaGateBottomSheet(
-                title = stringResource(R.string.custom_list_quota_reached_title),
-                description = stringResource(R.string.custom_list_quota_reached_desc),
-                rewardActionLabel = stringResource(R.string.watch_ad_for_extra_list_slot),
-                isAdLoading = isAdLoading,
-                onWatchAdClick = {
-                    if (activity != null) {
-                        viewModel.watchAdForListSlot(activity)
-                    }
-                },
-                onUpgradeProClick = {
-                    viewModel.dismissQuotaGate()
-                    onNavigateToProPaywall()
-                },
-                onDismissRequest = { viewModel.dismissQuotaGate() }
-            )
-        }
-
-        listPendingEdit?.let { list ->
-            EditCustomListDialog(
-                customList = list,
-                onDismiss = { listPendingEdit = null },
-                onSave = { title, desc ->
-                    viewModel.updateCustomList(list.listId, title, desc)
-                    listPendingEdit = null
-                }
-            )
-        }
-
-        if (showClearHistoryDialog) {
-            AlertDialog(
-                onDismissRequest = { showClearHistoryDialog = false },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.DeleteOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.clear_history),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = { Text(text = stringResource(R.string.clear_history_confirm)) },
-                confirmButton = {
-                    Button(
-                        onClick = { viewModel.clearHistory(); showClearHistoryDialog = false },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
+                        snackbarHostState.showImmediateSnackbar(
+                            message = context.getString(
+                                SharedR.string.list_created_success,
+                                title
+                            )
                         )
-                    ) {
-                        Text(text = stringResource(R.string.clear_history))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showClearHistoryDialog = false
-                    }) { Text(text = stringResource(R.string.cancel)) }
-                }
-            )
-        }
-
-        listPendingDeletion?.let { list ->
-            AlertDialog(
-                onDismissRequest = { listPendingDeletion = null },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.DeleteOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.delete_list),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(
-                        text = if (list.isPublic) {
-                            stringResource(SharedR.string.delete_public_list_confirm, list.title)
-                        } else {
-                            stringResource(R.string.delete_list_confirm, list.title)
-                        }
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val targetId = list.listId
-                            val isPub = list.isPublic
-                            listPendingDeletion = null
-                            if (selectedCustomList?.listId == targetId) {
-                                viewModel.selectCustomList(null)
-                            }
-                            viewModel.deleteCustomList(targetId, isPublic = isPub)
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        )
-                    ) {
-                        Text(text = stringResource(R.string.delete_list))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { listPendingDeletion = null }) {
-                        Text(text = stringResource(R.string.cancel))
                     }
                 }
-            )
-        }
+            }
+        )
+    }
 
-        if (selectedCustomList != null) {
-            CustomListDetailSheet(
-                customList = selectedCustomList!!,
-                onDismiss = { viewModel.selectCustomList(null) },
-                onItemClick = { item ->
-                    viewModel.selectCustomList(null)
-                    if (item.mediaType == MediaType.Tv) onTvShowClicked(item.mediaId) else onMovieClicked(
-                        item.mediaId
-                    )
-                },
-                onRemoveItem = { item ->
-                    viewModel.removeItemFromCustomList(
-                        selectedCustomList!!.listId,
-                        item.mediaId
-                    )
-                },
-                onEditList = { listPendingEdit = selectedCustomList },
-                onDeleteList = { listPendingDeletion = selectedCustomList },
-                onExploreClick = openSearchPage,
-                onShareReceipt = {
-                    customListForReceipt = selectedCustomList
-                    showReceiptSheet = true
-                },
-                onPublishClick = { listPendingPublish = selectedCustomList },
-                onUnpublishClick = { listPendingUnpublish = selectedCustomList }
-            )
-        }
-
-        listPendingPublish?.let { listToPublish ->
-            val publishSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            PublishListBottomSheet(
-                customList = listToPublish,
-                sheetState = publishSheetState,
-                onDismiss = { listPendingPublish = null },
-                onPublish = { categoryTag ->
-                    listPendingPublish = null
-                    viewModel.selectCustomList(null)
-                    viewModel.publishCustomList(
-                        localList = listToPublish,
-                        categoryTag = categoryTag,
-                        onPublished = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(4)
-                                snackbarHostState.showImmediateSnackbar(
-                                    message = context.getString(SharedR.string.list_published_success)
-                                )
-                            }
-                        },
-                        onError = { errorMsg ->
-                            coroutineScope.launch {
-                                snackbarHostState.showImmediateSnackbar(
-                                    message = "Publish failed: $errorMsg"
-                                )
-                            }
-                        }
-                    )
+    if (isQuotaGateVisible) {
+        val activity = context as? Activity
+        FeatureQuotaGateBottomSheet(
+            title = stringResource(R.string.custom_list_quota_reached_title),
+            description = stringResource(R.string.custom_list_quota_reached_desc),
+            rewardActionLabel = stringResource(R.string.watch_ad_for_extra_list_slot),
+            isAdLoading = isAdLoading,
+            onWatchAdClick = {
+                if (activity != null) {
+                    viewModel.watchAdForListSlot(activity)
                 }
-            )
-        }
+            },
+            onUpgradeProClick = {
+                viewModel.dismissQuotaGate()
+                onNavigateToProPaywall()
+            },
+            onDismissRequest = { viewModel.dismissQuotaGate() }
+        )
+    }
 
-        listPendingUnpublish?.let { listToUnpublish ->
-            AlertDialog(
-                onDismissRequest = { listPendingUnpublish = null },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.PublicOff,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
+    listPendingEdit?.let { list ->
+        EditCustomListDialog(
+            customList = list,
+            onDismiss = { listPendingEdit = null },
+            onSave = { title, desc ->
+                viewModel.updateCustomList(list.listId, title, desc)
+                listPendingEdit = null
+            }
+        )
+    }
+
+    if (showClearHistoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearHistoryDialog = false },
+            shape = RoundedCornerShape(24.dp),
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.clear_history),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = { Text(text = stringResource(R.string.clear_history_confirm)) },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.clearHistory(); showClearHistoryDialog = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
                     )
-                },
-                title = {
-                    Text(
-                        text = stringResource(SharedR.string.unpublish_dialog_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(text = stringResource(SharedR.string.unpublish_dialog_msg))
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val targetId = listToUnpublish.listId
-                            listPendingUnpublish = null
-                            val fallback = selectedCommunityList
-                                ?: communityLists.firstOrNull { it.listId == targetId }
-                            viewModel.unpublishCustomList(
-                                listId = targetId,
-                                fallbackList = fallback,
-                                onUnpublished = {
-                                    viewModel.selectCommunityList(null)
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(3)
-                                        snackbarHostState.showImmediateSnackbar(
-                                            message = context.getString(SharedR.string.list_made_private_success)
-                                        )
-                                    }
-                                },
-                                onError = { errorMsg ->
-                                    coroutineScope.launch {
-                                        snackbarHostState.showImmediateSnackbar(
-                                            message = "Failed: $errorMsg"
-                                        )
-                                    }
-                                }
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(text = stringResource(SharedR.string.unpublish_action))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { listPendingUnpublish = null }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
+                ) {
+                    Text(text = stringResource(R.string.clear_history))
                 }
-            )
-        }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showClearHistoryDialog = false
+                }) { Text(text = stringResource(R.string.cancel)) }
+            }
+        )
+    }
 
-        listPendingClone?.let { listToClone ->
-            AlertDialog(
-                onDismissRequest = { listPendingClone = null },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.BookmarkAdd,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(SharedR.string.clone_dialog_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(
-                        text = stringResource(
-                            SharedR.string.clone_dialog_msg,
-                            listToClone.title,
-                            listToClone.itemCount
-                        )
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val targetList = listToClone
-                            listPendingClone = null
-                            viewModel.cloneCommunityList(
-                                communityList = targetList,
-                                onCloned = {
-                                    viewModel.selectCommunityList(null)
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(3)
-                                        snackbarHostState.showImmediateSnackbar(
-                                            message = context.getString(SharedR.string.list_cloned_success)
-                                        )
-                                    }
-                                },
-                                onError = { errorMsg ->
-                                    coroutineScope.launch {
-                                        snackbarHostState.showImmediateSnackbar(
-                                            message = "Clone failed: $errorMsg"
-                                        )
-                                    }
-                                }
-                            )
-                        },
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(text = stringResource(SharedR.string.clone_short))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { listPendingClone = null }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
-                }
-            )
-        }
-
-        selectedCommunityList?.let { communityList ->
-            val communitySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            CommunityListDetailSheet(
-                communityList = communityList,
-                sheetState = communitySheetState,
-                onDismiss = { viewModel.selectCommunityList(null) },
-                onItemClick = { mediaType, mediaId ->
-                    viewModel.selectCommunityList(null)
-                    if (mediaType == MediaType.Tv) onTvShowClicked(mediaId) else onMovieClicked(
-                        mediaId
-                    )
-                },
-                onToggleUpvote = { viewModel.toggleCommunityListUpvote(communityList.listId) },
-                onCloneList = {
-                    if (communityList.isMine) {
-                        coroutineScope.launch {
-                            snackbarHostState.showImmediateSnackbar(
-                                message = context.getString(SharedR.string.clone_own_list_warning)
-                            )
-                        }
-                    } else if (communityList.isClonedByMe) {
-                        coroutineScope.launch {
-                            snackbarHostState.showImmediateSnackbar(
-                                message = context.getString(SharedR.string.already_cloned_warning)
-                            )
-                        }
+    listPendingDeletion?.let { list ->
+        AlertDialog(
+            onDismissRequest = { listPendingDeletion = null },
+            shape = RoundedCornerShape(24.dp),
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.delete_list),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = if (list.isPublic) {
+                        stringResource(SharedR.string.delete_public_list_confirm, list.title)
                     } else {
-                        listPendingClone = communityList
+                        stringResource(R.string.delete_list_confirm, list.title)
                     }
-                },
-                onUnpublish = if (communityList.isMine) {
-                    {
-                        val target =
-                            customLists.firstOrNull { it.listId == communityList.listId }
-                                ?: CustomList(
-                                    listId = communityList.listId,
-                                    title = communityList.title,
-                                    description = communityList.description,
-                                    isPublic = true,
-                                    items = communityList.items.map { item ->
-                                        CustomListItem(
-                                            listId = communityList.listId,
-                                            mediaId = item.mediaId,
-                                            mediaType = item.mediaType,
-                                            title = item.title,
-                                            posterImageUrl = item.posterImageUrl,
-                                            backdropImageUrl = item.backdropImageUrl,
-                                            voteAvg = item.voteAvg
-                                        )
-                                    },
-                                    createdAt = communityList.createdAtEpochMs,
-                                    updatedAt = communityList.updatedAtEpochMs
-                                )
-                        listPendingUnpublish = target
-                    }
-                } else null
-            )
-        }
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val targetId = list.listId
+                        val isPub = list.isPublic
+                        listPendingDeletion = null
+                        if (selectedCustomList?.listId == targetId) {
+                            viewModel.selectCustomList(null)
+                        }
+                        viewModel.deleteCustomList(targetId, isPublic = isPub)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(text = stringResource(R.string.delete_list))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { listPendingDeletion = null }) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
 
-        if (showReceiptSheet) {
-            CinemaReceiptBottomSheet(
-                snapshot = activeReceiptSnapshot,
-                selectedStyle = receiptStyle,
-                onStyleSelected = { receiptStyle = it },
-                selectedSource = receiptSource,
-                onSourceSelected = { receiptSource = it },
-                onDismiss = { showReceiptSheet = false },
-                isCustomCollection = customListForReceipt != null
-            )
-        }
+    if (selectedCustomList != null) {
+        CustomListDetailSheet(
+            customList = selectedCustomList!!,
+            onDismiss = { viewModel.selectCustomList(null) },
+            onItemClick = { item ->
+                viewModel.selectCustomList(null)
+                if (item.mediaType == MediaType.Tv) onTvShowClicked(item.mediaId) else onMovieClicked(
+                    item.mediaId
+                )
+            },
+            onRemoveItem = { item ->
+                viewModel.removeItemFromCustomList(
+                    selectedCustomList!!.listId,
+                    item.mediaId
+                )
+            },
+            onEditList = { listPendingEdit = selectedCustomList },
+            onDeleteList = { listPendingDeletion = selectedCustomList },
+            onExploreClick = openSearchPage,
+            onShareReceipt = {
+                customListForReceipt = selectedCustomList
+                showReceiptSheet = true
+            },
+            onPublishClick = { listPendingPublish = selectedCustomList },
+            onUnpublishClick = { listPendingUnpublish = selectedCustomList }
+        )
+    }
+
+    listPendingPublish?.let { listToPublish ->
+        val publishSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        PublishListBottomSheet(
+            customList = listToPublish,
+            sheetState = publishSheetState,
+            onDismiss = { listPendingPublish = null },
+            onPublish = { categoryTag ->
+                listPendingPublish = null
+                viewModel.selectCustomList(null)
+                viewModel.publishCustomList(
+                    localList = listToPublish,
+                    categoryTag = categoryTag,
+                    onPublished = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(4)
+                            snackbarHostState.showImmediateSnackbar(
+                                message = context.getString(SharedR.string.list_published_success)
+                            )
+                        }
+                    },
+                    onError = { errorMsg ->
+                        coroutineScope.launch {
+                            snackbarHostState.showImmediateSnackbar(
+                                message = "Publish failed: $errorMsg"
+                            )
+                        }
+                    }
+                )
+            }
+        )
+    }
+
+    listPendingUnpublish?.let { listToUnpublish ->
+        AlertDialog(
+            onDismissRequest = { listPendingUnpublish = null },
+            shape = RoundedCornerShape(24.dp),
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.PublicOff,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(SharedR.string.unpublish_dialog_title),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(text = stringResource(SharedR.string.unpublish_dialog_msg))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val targetId = listToUnpublish.listId
+                        listPendingUnpublish = null
+                        val fallback = selectedCommunityList
+                            ?: communityLists.firstOrNull { it.listId == targetId }
+                        viewModel.unpublishCustomList(
+                            listId = targetId,
+                            fallbackList = fallback,
+                            onUnpublished = {
+                                viewModel.selectCommunityList(null)
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(3)
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.list_made_private_success)
+                                    )
+                                }
+                            },
+                            onError = { errorMsg ->
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = "Failed: $errorMsg"
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(text = stringResource(SharedR.string.unpublish_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { listPendingUnpublish = null }) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    listPendingClone?.let { listToClone ->
+        AlertDialog(
+            onDismissRequest = { listPendingClone = null },
+            shape = RoundedCornerShape(24.dp),
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.BookmarkAdd,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(SharedR.string.clone_dialog_title),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        SharedR.string.clone_dialog_msg,
+                        listToClone.title,
+                        listToClone.itemCount
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val targetList = listToClone
+                        listPendingClone = null
+                        viewModel.cloneCommunityList(
+                            communityList = targetList,
+                            onCloned = {
+                                viewModel.selectCommunityList(null)
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(3)
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.list_cloned_success)
+                                    )
+                                }
+                            },
+                            onError = { errorMsg ->
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = "Clone failed: $errorMsg"
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(text = stringResource(SharedR.string.clone_short))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { listPendingClone = null }) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    selectedCommunityList?.let { communityList ->
+        val communitySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        CommunityListDetailSheet(
+            communityList = communityList,
+            sheetState = communitySheetState,
+            onDismiss = { viewModel.selectCommunityList(null) },
+            onItemClick = { mediaType, mediaId ->
+                viewModel.selectCommunityList(null)
+                if (mediaType == MediaType.Tv) onTvShowClicked(mediaId) else onMovieClicked(
+                    mediaId
+                )
+            },
+            onToggleUpvote = { viewModel.toggleCommunityListUpvote(communityList.listId) },
+            onCloneList = {
+                if (communityList.isMine) {
+                    coroutineScope.launch {
+                        snackbarHostState.showImmediateSnackbar(
+                            message = context.getString(SharedR.string.clone_own_list_warning)
+                        )
+                    }
+                } else if (communityList.isClonedByMe) {
+                    coroutineScope.launch {
+                        snackbarHostState.showImmediateSnackbar(
+                            message = context.getString(SharedR.string.already_cloned_warning)
+                        )
+                    }
+                } else {
+                    listPendingClone = communityList
+                }
+            },
+            onUnpublish = if (communityList.isMine) {
+                {
+                    val target =
+                        customLists.firstOrNull { it.listId == communityList.listId }
+                            ?: CustomList(
+                                listId = communityList.listId,
+                                title = communityList.title,
+                                description = communityList.description,
+                                isPublic = true,
+                                items = communityList.items.map { item ->
+                                    CustomListItem(
+                                        listId = communityList.listId,
+                                        mediaId = item.mediaId,
+                                        mediaType = item.mediaType,
+                                        title = item.title,
+                                        posterImageUrl = item.posterImageUrl,
+                                        backdropImageUrl = item.backdropImageUrl,
+                                        voteAvg = item.voteAvg
+                                    )
+                                },
+                                createdAt = communityList.createdAtEpochMs,
+                                updatedAt = communityList.updatedAtEpochMs
+                            )
+                    listPendingUnpublish = target
+                }
+            } else null
+        )
+    }
+
+    if (showReceiptSheet) {
+        CinemaReceiptBottomSheet(
+            snapshot = activeReceiptSnapshot,
+            selectedStyle = receiptStyle,
+            onStyleSelected = { receiptStyle = it },
+            selectedSource = receiptSource,
+            onSourceSelected = { receiptSource = it },
+            onDismiss = { showReceiptSheet = false },
+            isCustomCollection = customListForReceipt != null
+        )
     }
 }
 

@@ -24,12 +24,16 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.ads.quota.RewardManager
 import com.ssverma.core.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.feature.library.ui.home.component.LibraryBackupBannerState
+import com.ssverma.shared.data.repository.BackupRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -49,8 +53,12 @@ class LibraryHomeViewModel @Inject constructor(
     private val cloneCommunityListUseCase: CloneCommunityListUseCase,
     private val rewardManager: RewardManager,
     private val rewardedAdManager: RewardedAdManager,
-    private val billingRepository: BillingRepository
+    private val billingRepository: BillingRepository,
+    private val backupRepository: BackupRepository
 ) : ViewModel() {
+
+    private val _isBackupBannerDismissed = MutableStateFlow(false)
+    val isBackupBannerDismissed: StateFlow<Boolean> = _isBackupBannerDismissed.asStateFlow()
 
     val watchlistItems: StateFlow<List<SavedMediaItem>> = libraryRepository.getAllWatchlist()
         .stateIn(
@@ -79,6 +87,52 @@ class LibraryHomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+    private val totalLocalItemsCount: Flow<Int> = combine(
+        watchlistItems,
+        favoriteItems,
+        historyItems,
+        customLists
+    ) { watchlist, favorites, history, lists ->
+        watchlist.size + favorites.size + history.size + lists.size
+    }
+
+    val backupBannerState: StateFlow<LibraryBackupBannerState> = combine(
+        totalLocalItemsCount,
+        backupRepository.lastBackupMetadata,
+        _isBackupBannerDismissed
+    ) { totalCount, lastBackup, isDismissed ->
+        val cloudCount = lastBackup?.let {
+            it.favoritesCount + it.watchlistCount + it.historyCount + it.customListsCount
+        } ?: 0
+
+        val hasUnsavedChanges =
+            lastBackup == null || totalCount > cloudCount || isBackupStale(lastBackup.timestamp)
+
+        if (isDismissed) {
+            LibraryBackupBannerState.HIDDEN
+        } else if (totalCount == 0 && lastBackup != null && cloudCount > 0) {
+            LibraryBackupBannerState.RESTORE_AVAILABLE
+        } else if (totalCount >= 3 && hasUnsavedChanges) {
+            LibraryBackupBannerState.BACKUP_RECOMMENDED
+        } else {
+            LibraryBackupBannerState.HIDDEN
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = LibraryBackupBannerState.HIDDEN
+    )
+
+    fun dismissBackupBanner() {
+        _isBackupBannerDismissed.value = true
+    }
+
+    private fun isBackupStale(timestamp: Long): Boolean {
+        if (timestamp <= 0L) return true
+        val fourteenDaysMs = 14L * 24 * 60 * 60 * 1000
+        return System.currentTimeMillis() - timestamp > fourteenDaysMs
+    }
 
     val isProActive: StateFlow<Boolean> = billingRepository.isProActive
 

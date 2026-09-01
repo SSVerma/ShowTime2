@@ -101,4 +101,13 @@
     <string name="custom_list_quota_reached_desc">Free tier includes up to 3 custom collections. Upgrade to ShowTime Pro for unlimited lists or watch a short video to unlock an extra list slot.</string>
     <string name="watch_ad_for_extra_list_slot">Watch Video for +1 Slot</string>
     <string name="extra_list_slot_unlocked">1 Extra Custom List Slot Unlocked! 🎬</string>
+
+    <!-- Context-Aware Backup/Restore Banner -->
+    <string name="library_backup_banner_restore_title">Cloud Backup Found</string>
+    <string name="library_backup_banner_restore_desc">Restore your saved watchlist, favorites &amp; history</string>
+    <string name="library_backup_banner_restore_cta">Restore</string>
+    <string name="library_backup_banner_backup_title">Protect Your Collection</string>
+    <string name="library_backup_banner_backup_desc">Back up your library to Google Cloud</string>
+    <string name="library_backup_banner_backup_cta">Back Up</string>
+    <string name="dismiss_banner_cd">Dismiss banner</string>
 </resources>

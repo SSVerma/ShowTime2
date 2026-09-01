@@ -19,6 +19,7 @@ dependencies {
     implementation(projects.featureAccountNavigation)
     implementation(projects.featurePayment)
     implementation(projects.featurePaymentNavigation)
+    implementation(projects.coreBackup)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

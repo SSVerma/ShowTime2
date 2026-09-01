@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
+import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
@@ -29,6 +30,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             onNavigateToProPaywall = {
                 navigator.navigate(ProPaywallNavKey)
+            },
+            onOpenBackup = {
+                navigator.navigate(BackupSyncNavKey)
             },
             initialTab = navKey.initialTab,
             initialMediaType = navKey.initialMediaType,

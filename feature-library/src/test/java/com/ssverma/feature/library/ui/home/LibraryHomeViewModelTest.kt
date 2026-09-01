@@ -15,6 +15,9 @@ import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.PublishCustomListUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.UnpublishCustomListUseCase
+import com.ssverma.core.backup.model.BackupMetadata
+import com.ssverma.feature.library.ui.home.component.LibraryBackupBannerState
+import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import com.ssverma.shared.testing.fakes.FakeCommunityRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
 import io.mockk.coEvery
@@ -33,6 +36,7 @@ class LibraryHomeViewModelTest {
 
     private lateinit var fakeLibraryRepository: FakeLibraryRepository
     private lateinit var fakeCommunityRepository: FakeCommunityRepository
+    private lateinit var fakeBackupRepository: FakeBackupRepository
     private val fakeBillingRepository = FakeBillingRepository(initialProActive = false)
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
@@ -44,6 +48,7 @@ class LibraryHomeViewModelTest {
     fun setUp() {
         fakeLibraryRepository = FakeLibraryRepository()
         fakeCommunityRepository = FakeCommunityRepository()
+        fakeBackupRepository = FakeBackupRepository()
         every { mockRewardManager.passStatus } returns passStatusFlow
         coEvery { mockRewardManager.canCreateCustomList(any(), any()) } returns true
 
@@ -72,7 +77,8 @@ class LibraryHomeViewModelTest {
             ),
             rewardManager = mockRewardManager,
             rewardedAdManager = mockRewardedAdManager,
-            billingRepository = fakeBillingRepository
+            billingRepository = fakeBillingRepository,
+            backupRepository = fakeBackupRepository
         )
     }
 
@@ -217,5 +223,195 @@ class LibraryHomeViewModelTest {
 
         viewModel.setHistoryFilter(MediaTypeFilter.MOVIE)
         assertThat(viewModel.historyFilter.value).isEqualTo(MediaTypeFilter.MOVIE)
+    }
+
+    @Test
+    fun `backupBannerState shows RESTORE_AVAILABLE when library is empty and cloud backup exists`() =
+        runTest {
+            viewModel.backupBannerState.test {
+                assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.HIDDEN)
+
+                val sampleBackup = BackupMetadata(
+                    timestamp = System.currentTimeMillis(),
+                    formattedDate = "Today",
+                    deviceName = "Pixel 8",
+                    sizeBytes = 1024,
+                    formattedSize = "1 KB",
+                    favoritesCount = 2,
+                    watchlistCount = 3,
+                    historyCount = 1,
+                    customListsCount = 0,
+                    customListItemsCount = 0
+                )
+
+                fakeBackupRepository.setLastBackupMetadata(sampleBackup)
+                assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.RESTORE_AVAILABLE)
+            }
+        }
+
+    @Test
+    fun `backupBannerState shows BACKUP_RECOMMENDED when library has 3 or more items and no backup exists`() =
+        runTest {
+            viewModel.backupBannerState.test {
+                assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.HIDDEN)
+
+                fakeLibraryRepository.toggleWatchlist(
+                    1,
+                    MediaType.Movie,
+                    "Movie 1",
+                    "/p1.jpg",
+                    "",
+                    7f,
+                    "2024-01-01"
+                )
+                fakeLibraryRepository.toggleWatchlist(
+                    2,
+                    MediaType.Movie,
+                    "Movie 2",
+                    "/p2.jpg",
+                    "",
+                    8f,
+                    "2024-01-01"
+                )
+                fakeLibraryRepository.toggleFavorite(
+                    3,
+                    MediaType.Movie,
+                    "Movie 3",
+                    "/p3.jpg",
+                    "",
+                    9f,
+                    "2024-01-01"
+                )
+
+                assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.BACKUP_RECOMMENDED)
+            }
+        }
+
+    @Test
+    fun `backupBannerState shows HIDDEN when dismissed by user`() = runTest {
+        viewModel.backupBannerState.test {
+            assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.HIDDEN)
+
+            val sampleBackup = BackupMetadata(
+                timestamp = System.currentTimeMillis(),
+                formattedDate = "Today",
+                deviceName = "Pixel 8",
+                sizeBytes = 1024,
+                formattedSize = "1 KB",
+                favoritesCount = 2,
+                watchlistCount = 3,
+                historyCount = 1,
+                customListsCount = 0,
+                customListItemsCount = 0
+            )
+
+            fakeBackupRepository.setLastBackupMetadata(sampleBackup)
+            assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.RESTORE_AVAILABLE)
+
+            viewModel.dismissBackupBanner()
+            assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.HIDDEN)
+        }
+    }
+
+    @Test
+    fun `backupBannerState shows BACKUP_RECOMMENDED when local items exceed cloud backup count`() =
+        runTest {
+            val existingCloudBackup = BackupMetadata(
+                timestamp = System.currentTimeMillis(),
+                formattedDate = "Today",
+                deviceName = "Pixel 8",
+                sizeBytes = 1024,
+                formattedSize = "1 KB",
+                favoritesCount = 1,
+                watchlistCount = 1,
+                historyCount = 0,
+                customListsCount = 0,
+                customListItemsCount = 0
+            )
+            fakeBackupRepository.setLastBackupMetadata(existingCloudBackup)
+
+            // Local has 3 items (more than cloud's 2 items)
+            fakeLibraryRepository.toggleWatchlist(
+                1,
+                MediaType.Movie,
+                "M1",
+                "/p1.jpg",
+                "",
+                7f,
+                "2024-01-01"
+            )
+            fakeLibraryRepository.toggleWatchlist(
+                2,
+                MediaType.Movie,
+                "M2",
+                "/p2.jpg",
+                "",
+                8f,
+                "2024-01-01"
+            )
+            fakeLibraryRepository.toggleFavorite(
+                3,
+                MediaType.Movie,
+                "M3",
+                "/p3.jpg",
+                "",
+                9f,
+                "2024-01-01"
+            )
+
+            viewModel.backupBannerState.test {
+                assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.BACKUP_RECOMMENDED)
+            }
+        }
+
+    @Test
+    fun `backupBannerState shows HIDDEN when local items match fresh cloud backup`() = runTest {
+        // Local has 3 items
+        fakeLibraryRepository.toggleWatchlist(
+            1,
+            MediaType.Movie,
+            "M1",
+            "/p1.jpg",
+            "",
+            7f,
+            "2024-01-01"
+        )
+        fakeLibraryRepository.toggleWatchlist(
+            2,
+            MediaType.Movie,
+            "M2",
+            "/p2.jpg",
+            "",
+            8f,
+            "2024-01-01"
+        )
+        fakeLibraryRepository.toggleFavorite(
+            3,
+            MediaType.Movie,
+            "M3",
+            "/p3.jpg",
+            "",
+            9f,
+            "2024-01-01"
+        )
+
+        // Cloud also has 3 items
+        val matchedCloudBackup = BackupMetadata(
+            timestamp = System.currentTimeMillis(),
+            formattedDate = "Today",
+            deviceName = "Pixel 8",
+            sizeBytes = 1024,
+            formattedSize = "1 KB",
+            favoritesCount = 1,
+            watchlistCount = 2,
+            historyCount = 0,
+            customListsCount = 0,
+            customListItemsCount = 0
+        )
+        fakeBackupRepository.setLastBackupMetadata(matchedCloudBackup)
+
+        viewModel.backupBannerState.test {
+            assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.HIDDEN)
+        }
     }
 }
