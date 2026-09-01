@@ -119,26 +119,104 @@ val authorAvatarUrl = googleUser?.photoUrl
 
 ## 6. Security & Firestore Rules Integration
 
-Because all users (guests and signed-in users alike) hold a valid Firebase Authentication token, Firestore rules can safely enforce authenticated user constraints:
+Because all users (guests and signed-in users alike) hold a valid Firebase Authentication token, Firestore rules enforce authenticated user constraints across both production and development environments:
 
 ```javascript
-// Daily Poll Votes
-match /dev_user_daily_poll_votes/{voteId} {
-  allow read: if true;
-  allow write: if request.auth != null && request.auth.uid != null;
-}
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Cloud Backups (Production & Dev)
+    match /user_backups/{backupId} {
+      allow read, write: if request.auth != null;
+    }
+    match /dev_user_backups/{backupId} {
+      allow read, write: if request.auth != null;
+    }
 
-// Media Discussions & Comments
-match /dev_media_discussions/{mediaKey}/comments/{commentId} {
-  allow read: if true;
-  allow create: if request.auth != null;
-  allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
-}
+    // Community Curated Lists
+    match /community_curated_lists/{listId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /dev_community_curated_lists/{listId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
 
-// Curated Community Lists
-match /dev_community_curated_lists/{listId} {
-  allow read: if true;
-  allow create: if request.auth != null;
-  allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+    // Media Reactions
+    match /media_reactions/{mediaId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /dev_media_reactions/{mediaId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // User Media Reactions
+    match /user_media_reactions/{userReactionId} {
+      allow read, write: if request.auth != null;
+    }
+    match /dev_user_media_reactions/{userReactionId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Daily Polls & Catalog
+    match /daily_polls/{pollId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /dev_daily_polls/{pollId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /daily_poll_catalog/{catalogId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /dev_daily_poll_catalog/{catalogId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /user_daily_poll_votes/{voteId} {
+      allow read, write: if request.auth != null;
+    }
+    match /dev_user_daily_poll_votes/{voteId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Media Discussions
+    match /media_discussions/{discussionId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      match /threads/{threadId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+    }
+    match /dev_media_discussions/{discussionId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      match /threads/{threadId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+    }
+
+    // User List Interactions
+    match /user_list_interactions/{interactionId} {
+      allow read, write: if request.auth != null;
+    }
+    match /dev_user_list_interactions/{interactionId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Default fallback
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
 }
 ```
+

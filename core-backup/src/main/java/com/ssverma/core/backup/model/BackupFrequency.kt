@@ -3,8 +3,7 @@ package com.ssverma.core.backup.model
 enum class BackupFrequency(val intervalDays: Long) {
     OFF(intervalDays = 0),
     DAILY(intervalDays = 1),
-    WEEKLY(intervalDays = 7),
-    MONTHLY(intervalDays = 30);
+    WEEKLY(intervalDays = 7);
 
     val isAutomated: Boolean
         get() = this != OFF

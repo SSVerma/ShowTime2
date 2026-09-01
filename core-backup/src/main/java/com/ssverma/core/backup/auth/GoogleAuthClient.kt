@@ -69,6 +69,25 @@ class GoogleAuthClient @Inject constructor(
     }
 
     suspend fun getEffectiveUserId(): String {
+        val user = _currentUser.value ?: storage.data.map { prefs ->
+            val email = prefs[KEY_EMAIL].orEmpty()
+            val uid = prefs[KEY_UID].orEmpty()
+            if (email.isNotBlank()) email to uid else null
+        }.first()?.let { (email, uid) ->
+            GoogleUser(
+                email = email,
+                displayName = "",
+                photoUrl = null,
+                idToken = "cached",
+                uid = uid
+            )
+        }
+
+        if (user != null && user.email.isNotBlank()) {
+            val safeEmail = user.email.trim().lowercase().replace(".", "_").replace("@", "_at_")
+            return "user_$safeEmail"
+        }
+
         val currentUid = firebaseAuth.currentUser?.uid
         if (!currentUid.isNullOrBlank()) {
             return currentUid

@@ -15,5 +15,8 @@ data class BackupSyncUiState(
     val backupFrequency: BackupFrequency = BackupFrequency.OFF,
     val backupOverWifiOnly: Boolean = true,
     val isProActive: Boolean = false,
+    val isManualBackupGateVisible: Boolean = false,
+    val isAutoBackupPaywallVisible: Boolean = false,
+    val isAdLoading: Boolean = false,
     val message: UiText? = null
 )

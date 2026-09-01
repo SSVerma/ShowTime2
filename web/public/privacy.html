@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — ShowTime</title>
+  
+  <meta name="title" content="Privacy Policy — ShowTime">
+  <meta name="description" content="Privacy Policy for ShowTime movie and TV discovery application. Learn how your data is handled and protected.">
+  <meta name="theme-color" content="#0B0F19">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0B0F19;
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface-hover: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #6366F1;
+      --primary-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      backdrop-filter: blur(12px);
+    }
+
+    .header {
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .meta {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      color: #E2E8F0;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      color: #CBD5E1;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    a {
+      color: #818CF8;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: #A5B4FC;
+      text-decoration: underline;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="brand">
+        <div class="logo-icon">🎬</div>
+        <span style="font-weight: 700; font-size: 18px;">ShowTime</span>
+      </a>
+      <h1>Privacy Policy</h1>
+      <div class="meta">Effective Date: September 1, 2026 • Last Updated: September 1, 2026</div>
+    </div>
+
+    <p>ShowTime ("we", "our", or "the app") is an open-source movie and TV show exploration application. We are committed to transparency and protecting your privacy. This Privacy Policy outlines what information ShowTime collects, how it is used, and the choices you have concerning your data.</p>
+
+    <h2>1. Information We Collect and How We Use It</h2>
+
+    <h3>A. Local Device Data (Default Behavior)</h3>
+    <p>By default, ShowTime functions completely locally on your device without requiring an account or login:</p>
+    <ul>
+      <li>Your <strong>Watchlist</strong>, <strong>Favorites</strong>, <strong>Watch History</strong>, and <strong>Custom Lists</strong> are stored securely in a local SQLite database (Room) on your phone.</li>
+      <li>This data remains strictly on your device unless you voluntarily choose to use our Cloud Backup & Sync service.</li>
+    </ul>
+
+    <h3>B. Cloud Backup & Sync (Optional Google Sign-In)</h3>
+    <p>If you optionally choose to enable <strong>Cloud Backup & Sync</strong> by signing in with your Google Account:</p>
+    <ul>
+      <li><strong>Account Identity:</strong> We store your Google Account email address, display name, and avatar URL.</li>
+      <li><strong>Library Snapshot:</strong> We store an encrypted, compressed snapshot of your movie/TV watchlist, favorites, custom lists, and watch history in our secure Google Cloud Firestore database.</li>
+      <li><strong>Informational Device Identifier:</strong> We store an informational device model label (e.g. <em>"Pixel 8"</em>) solely to help you identify which device created a particular backup snapshot.</li>
+      <li><strong>Purpose:</strong> Solely to authenticate your identity and restore your personal movie collection across your devices or after reinstalling the app.</li>
+    </ul>
+
+    <h3>C. Community Features & Daily Polls (Optional)</h3>
+    <p>ShowTime offers community interactive features (daily polls, vibe reactions, and discussions):</p>
+    <ul>
+      <li>Guest users receive a randomized anonymous session ID to participate in polls and discussions without registration.</li>
+      <li>If signed in with Google, your comments will display your verified Google display name and avatar.</li>
+    </ul>
+
+    <h2>2. Third-Party Services & Integrations</h2>
+    <p>ShowTime integrates with trusted third-party services to deliver app functionality:</p>
+    <ul>
+      <li><strong>The Movie Database (TMDB):</strong> Used for movie and TV show metadata, cast information, and artwork. TMDB does not receive your personal data from ShowTime.</li>
+      <li><strong>Trakt.tv (Optional):</strong> If connected, your watchlist and scrobble history sync directly with your personal Trakt account.</li>
+      <li><strong>Google Firebase:</strong> Used for secure cloud database storage (Firestore) and anonymous crash diagnostics.</li>
+      <li><strong>Google AdMob:</strong> Used to display rewarded video ads for optional free feature passes.</li>
+      <li><strong>Google Play In-App Billing:</strong> All payments for ShowTime Pro are processed directly by Google Play. ShowTime never sees or stores your credit card details.</li>
+    </ul>
+
+    <h2>3. Data Sharing & Disclosure</h2>
+    <ul>
+      <li><strong>We never sell, rent, or trade your personal data.</strong></li>
+      <li>Your data is never shared with third-party data brokers or advertisers.</li>
+      <li>Cloud backups are strictly private and accessible only when authenticated under your personal Google account.</li>
+    </ul>
+
+    <h2>4. Data Retention and Deletion</h2>
+    <p>You have full control over your data at all times:</p>
+    <ul>
+      <li><strong>Local Data:</strong> You can clear all local data at any time via Android Settings or by uninstalling the app.</li>
+      <li><strong>Cloud Backup:</strong> You can delete your cloud snapshot and sign out directly within the app's <strong>Cloud Backup & Sync</strong> screen.</li>
+      <li><strong>Manual Deletion Requests:</strong> You can open an issue on our GitHub repository to request manual account data deletion.</li>
+    </ul>
+
+    <h2>5. Open Source & Transparency</h2>
+    <p>ShowTime is open-source software. You can inspect our source code, security rules, and data practices at any time:</p>
+    <p><a href="https://github.com/SSVerma/ShowTime" target="_blank" rel="noopener noreferrer">GitHub Repository — SSVerma/ShowTime</a></p>
+
+    <h2>6. Contact Us</h2>
+    <p>If you have any questions, feedback, or privacy-related requests regarding ShowTime, please contact us directly:</p>
+    <ul>
+      <li><strong>Email:</strong> <a href="mailto:ssvermahmh@gmail.com">ssvermahmh@gmail.com</a></li>
+      <li><strong>GitHub Issues:</strong> <a href="https://github.com/SSVerma/ShowTime/issues" target="_blank" rel="noopener noreferrer">https://github.com/SSVerma/ShowTime/issues</a></li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    &copy; 2026 ShowTime. All rights reserved. Open-source under Apache-2.0 License.
+  </div>
+</body>
+</html>

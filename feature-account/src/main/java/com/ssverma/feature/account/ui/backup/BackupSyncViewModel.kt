@@ -9,10 +9,14 @@ import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.shared.data.repository.BackupRepository
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,7 +24,9 @@ import javax.inject.Inject
 @HiltViewModel
 class BackupSyncViewModel @Inject constructor(
     private val backupRepository: BackupRepository,
-    private val billingRepository: BillingRepository
+    private val billingRepository: BillingRepository,
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BackupSyncUiState())
@@ -67,8 +73,13 @@ class BackupSyncViewModel @Inject constructor(
         viewModelScope.launch {
             billingRepository.isProActive.collectLatest { isPro ->
                 _uiState.update { it.copy(isProActive = isPro) }
+                if (!isPro && _uiState.value.backupFrequency.isAutomated) {
+                    backupRepository.setBackupFrequency(BackupFrequency.OFF)
+                }
             }
         }
+
+        rewardedAdManager.loadAd()
     }
 
     fun signInWithGoogle(activity: Activity) {
@@ -112,6 +123,30 @@ class BackupSyncViewModel @Inject constructor(
         }
     }
 
+    fun onAttemptBackupNow() {
+        viewModelScope.launch {
+            val isPro = billingRepository.isProActive.first()
+            if (isPro) {
+                backupNow()
+            } else {
+                _uiState.update { it.copy(isManualBackupGateVisible = true) }
+                rewardedAdManager.loadAd()
+            }
+        }
+    }
+
+    fun watchAdForManualBackup(activity: Activity) {
+        _uiState.update { it.copy(isAdLoading = true) }
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            _uiState.update { it.copy(isManualBackupGateVisible = false, isAdLoading = false) }
+            backupNow()
+        }
+    }
+
+    fun dismissManualBackupGate() {
+        _uiState.update { it.copy(isManualBackupGateVisible = false, isAdLoading = false) }
+    }
+
     fun backupNow() {
         viewModelScope.launch {
             val result = backupRepository.backupNow()
@@ -151,9 +186,25 @@ class BackupSyncViewModel @Inject constructor(
     }
 
     fun onBackupFrequencySelected(frequency: BackupFrequency) {
-        viewModelScope.launch {
-            backupRepository.setBackupFrequency(frequency = frequency)
+        if (frequency == BackupFrequency.OFF) {
+            viewModelScope.launch {
+                backupRepository.setBackupFrequency(BackupFrequency.OFF)
+            }
+            return
         }
+
+        viewModelScope.launch {
+            val isPro = billingRepository.isProActive.first()
+            if (isPro) {
+                backupRepository.setBackupFrequency(frequency)
+            } else {
+                _uiState.update { it.copy(isAutoBackupPaywallVisible = true) }
+            }
+        }
+    }
+
+    fun dismissAutoBackupPaywall() {
+        _uiState.update { it.copy(isAutoBackupPaywallVisible = false) }
     }
 
     fun onBackupOverWifiOnlyChanged(enabled: Boolean) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +32,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +78,7 @@ import com.ssverma.feature.account.R
 @Composable
 fun BackupSyncScreen(
     onBackPressed: () -> Unit,
+    onNavigateToProPaywall: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: BackupSyncViewModel = hiltViewModel()
 ) {
@@ -129,7 +132,7 @@ fun BackupSyncScreen(
                 googleUser = uiState.googleUser,
                 backupStatus = uiState.backupStatus,
                 lastBackupMetadata = uiState.lastBackupMetadata,
-                onBackupNowClick = { viewModel.backupNow() },
+                onBackupNowClick = { viewModel.onAttemptBackupNow() },
                 onRestoreClick = { showRestoreConfirmDialog = true }
             )
 
@@ -140,8 +143,10 @@ fun BackupSyncScreen(
                 googleUser = uiState.googleUser,
                 backupFrequency = uiState.backupFrequency,
                 backupOverWifiOnly = uiState.backupOverWifiOnly,
+                isProActive = uiState.isProActive,
                 onFrequencySelected = { viewModel.onBackupFrequencySelected(it) },
-                onWifiOnlyChanged = { viewModel.onBackupOverWifiOnlyChanged(it) }
+                onWifiOnlyChanged = { viewModel.onBackupOverWifiOnlyChanged(it) },
+                onUpgradeProClick = onNavigateToProPaywall
             )
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
@@ -227,6 +232,32 @@ fun BackupSyncScreen(
                     }
                 }
             )
+        }
+
+        if (uiState.isManualBackupGateVisible) {
+            FeatureQuotaGateBottomSheet(
+                title = stringResource(R.string.manual_backup_gate_title),
+                description = stringResource(R.string.manual_backup_gate_desc),
+                rewardActionLabel = stringResource(R.string.watch_ad_to_backup_now),
+                isAdLoading = uiState.isAdLoading,
+                onWatchAdClick = {
+                    if (activity != null) {
+                        viewModel.watchAdForManualBackup(activity)
+                    }
+                },
+                onUpgradeProClick = {
+                    viewModel.dismissManualBackupGate()
+                    onNavigateToProPaywall()
+                },
+                onDismissRequest = { viewModel.dismissManualBackupGate() }
+            )
+        }
+
+        if (uiState.isAutoBackupPaywallVisible) {
+            LaunchedEffect(Unit) {
+                viewModel.dismissAutoBackupPaywall()
+                onNavigateToProPaywall()
+            }
         }
     }
 }
@@ -437,6 +468,7 @@ private fun BackupOperationsCard(
                         id = R.string.backup_includes_summary,
                         lastBackupMetadata.favoritesCount,
                         lastBackupMetadata.watchlistCount,
+                        lastBackupMetadata.historyCount,
                         lastBackupMetadata.customListsCount
                     ),
                     style = MaterialTheme.typography.labelSmall,
@@ -512,8 +544,10 @@ private fun AutoBackupSettingsCard(
     googleUser: GoogleUser?,
     backupFrequency: BackupFrequency,
     backupOverWifiOnly: Boolean,
+    isProActive: Boolean,
     onFrequencySelected: (BackupFrequency) -> Unit,
     onWifiOnlyChanged: (Boolean) -> Unit,
+    onUpgradeProClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     OutlinedCard(
@@ -528,20 +562,42 @@ private fun AutoBackupSettingsCard(
         modifier = modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(MaterialTheme.spacing.medium)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Rounded.Schedule,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Text(
-                    text = stringResource(R.string.auto_backup_settings),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    Text(
+                        text = stringResource(R.string.auto_backup_settings),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                if (isProActive) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.padding(start = MaterialTheme.spacing.extraSmall)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.pro_badge),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
@@ -558,62 +614,138 @@ private fun AutoBackupSettingsCard(
             val frequencies = listOf(
                 BackupFrequency.OFF to stringResource(R.string.frequency_off),
                 BackupFrequency.DAILY to stringResource(R.string.frequency_daily),
-                BackupFrequency.WEEKLY to stringResource(R.string.frequency_weekly),
-                BackupFrequency.MONTHLY to stringResource(R.string.frequency_monthly)
+                BackupFrequency.WEEKLY to stringResource(R.string.frequency_weekly)
             )
 
             frequencies.forEach { (freq, label) ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 2.dp)
                 ) {
-                    RadioButton(
-                        selected = backupFrequency == freq,
-                        onClick = { if (googleUser != null) onFrequencySelected(freq) },
-                        enabled = googleUser != null
-                    )
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (googleUser != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = 0.4f
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        RadioButton(
+                            selected = backupFrequency == freq,
+                            onClick = {
+                                if (googleUser != null && (isProActive || freq == BackupFrequency.OFF)) onFrequencySelected(
+                                    freq
+                                )
+                            },
+                            enabled = googleUser != null && (isProActive || freq == BackupFrequency.OFF)
                         )
-                    )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (googleUser != null && (isProActive || freq == BackupFrequency.OFF)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.4f
+                            )
+                        )
+                    }
+
+                    if (freq != BackupFrequency.OFF && !isProActive) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.padding(end = MaterialTheme.spacing.small)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.pro_badge),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (googleUser != null && !isProActive) {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.padding(
+                            horizontal = MaterialTheme.spacing.small,
+                            vertical = 6.dp
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.auto_backup_pro_only_notice),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        TextButton(
+                            onClick = onUpgradeProClick,
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.upgrade_to_pro),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                        }
+                    }
                 }
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
+                modifier = Modifier.padding(vertical = MaterialTheme.spacing.medium),
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
             )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = MaterialTheme.spacing.extraSmall)
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Wifi,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
+                    tint = if (googleUser != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.38f
+                    ),
+                    modifier = Modifier.size(24.dp)
                 )
 
                 Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
 
-                Column(modifier = Modifier.weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = MaterialTheme.spacing.medium)
+                ) {
                     Text(
                         text = stringResource(R.string.backup_over_wifi),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = if (googleUser != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = 0.38f
+                        )
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = stringResource(R.string.backup_over_wifi_desc),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (googleUser != null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = 0.38f
+                        )
                     )
                 }
 

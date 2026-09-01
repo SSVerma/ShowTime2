@@ -33,6 +33,7 @@ enum class RewardPassType {
 
 data class RewardPassStatus(
     val isAutoBackupUnlocked: Boolean = false,
+    val autoBackupExpiryTimestamp: Long = 0L,
     val isProThemeUnlocked: Boolean = false,
     val isTraktSyncUnlocked: Boolean = false,
     val extraCustomListSlots: Int = 0,
@@ -86,6 +87,7 @@ class RewardManagerImpl @Inject constructor(
 
             RewardPassStatus(
                 isAutoBackupUnlocked = autoBackupExpiry > now,
+                autoBackupExpiryTimestamp = if (autoBackupExpiry > now) autoBackupExpiry else 0L,
                 isProThemeUnlocked = proThemeExpiry > now,
                 isTraktSyncUnlocked = traktSyncExpiry > now,
                 extraCustomListSlots = extraListSlots,
@@ -105,10 +107,14 @@ class RewardManagerImpl @Inject constructor(
         storage.edit { prefs ->
             when (passType) {
                 RewardPassType.AUTO_BACKUP -> {
+                    val maxStackDays =
+                        appConfigProvider.getLong(KEY_CONFIG_MAX_BACKUP_STACK_DAYS, 14L)
+                    val maxExpiry = now + TimeUnit.DAYS.toMillis(maxStackDays)
                     val currentExpiry = prefs[KEY_AUTO_BACKUP_EXPIRY] ?: 0L
                     val baseTime = if (currentExpiry > now) currentExpiry else now
+                    val targetExpiry = baseTime + TimeUnit.DAYS.toMillis(backupDurationDays)
                     prefs[KEY_AUTO_BACKUP_EXPIRY] =
-                        baseTime + TimeUnit.DAYS.toMillis(backupDurationDays)
+                        if (targetExpiry > maxExpiry) maxExpiry else targetExpiry
                 }
 
                 RewardPassType.PRO_THEME -> {
@@ -202,6 +208,7 @@ class RewardManagerImpl @Inject constructor(
         const val KEY_CONFIG_FREE_CUSTOM_LIST_LIMIT = "free_custom_list_limit"
         const val KEY_CONFIG_FREE_PUBLISH_LIMIT = "free_community_publish_limit"
         const val KEY_CONFIG_REWARDED_BACKUP_DAYS = "rewarded_backup_duration_days"
+        const val KEY_CONFIG_MAX_BACKUP_STACK_DAYS = "rewarded_backup_max_stack_days"
         const val KEY_CONFIG_REWARDED_THEME_HOURS = "rewarded_theme_duration_hours"
         const val KEY_CONFIG_REWARDED_TRAKT_HOURS = "rewarded_trakt_duration_hours"
         const val KEY_CONFIG_AUTO_BACKUP_PRO_REQUIRED = "auto_backup_pro_required"

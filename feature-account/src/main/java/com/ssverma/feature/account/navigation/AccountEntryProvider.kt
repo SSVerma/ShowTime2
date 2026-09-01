@@ -10,6 +10,8 @@ import com.ssverma.feature.account.ui.trakt.TraktSyncScreen
 import com.ssverma.feature.auth.navigation.AuthNavKey
 import com.ssverma.shared.ui.LocalAppInfoTrigger
 
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
+
 fun EntryProviderScope<NavKey>.accountEntries(
     navigator: Navigator
 ) {
@@ -38,6 +40,9 @@ fun EntryProviderScope<NavKey>.accountEntries(
         BackupSyncScreen(
             onBackPressed = {
                 navigator.goBack()
+            },
+            onNavigateToProPaywall = {
+                navigator.navigate(ProPaywallNavKey)
             }
         )
     }

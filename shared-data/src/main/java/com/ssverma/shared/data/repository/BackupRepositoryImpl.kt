@@ -35,6 +35,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -86,7 +87,13 @@ class BackupRepositoryImpl @Inject constructor(
             loadBackupSettings()
         }
         scope.launch {
-            loadExistingBackupMetadata()
+            googleUser.collectLatest { user ->
+                if (user != null) {
+                    fetchRemoteBackupMetadata()
+                } else {
+                    loadExistingBackupMetadata()
+                }
+            }
         }
     }
 
@@ -214,11 +221,17 @@ class BackupRepositoryImpl @Inject constructor(
         }
 
     override suspend fun signInWithGoogle(activity: Activity): Result<GoogleUser> {
-        return googleAuthClient.signIn(activity)
+        val result = googleAuthClient.signIn(activity)
+        result.onSuccess {
+            fetchRemoteBackupMetadata()
+        }
+        return result
     }
 
     override suspend fun signOutGoogle() {
         googleAuthClient.signOut()
+        _lastBackupMetadata.value = null
+        googleDriveBackupClient.deleteBackup(BACKUP_FILE_NAME)
     }
 
     override suspend fun getEffectiveUserId(): String {
@@ -322,19 +335,21 @@ class BackupRepositoryImpl @Inject constructor(
         )
 
         try {
-            var json = googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME)
-            if (json.isNullOrBlank()) {
-                // Try fetching from Firestore
-                try {
-                    val effectiveUid = getEffectiveUserId()
-                    val doc =
-                        firestore.collection(colUserBackups).document(effectiveUid).get().await()
-                    if (doc.exists()) {
-                        json = doc.getString("payloadJson")
-                    }
-                } catch (_: Exception) {
-                    // Ignore
+            var json: String? = null
+            // Prioritize fetching latest from Cloud Firestore
+            try {
+                val effectiveUid = getEffectiveUserId()
+                val doc =
+                    firestore.collection(colUserBackups).document(effectiveUid).get().await()
+                if (doc.exists()) {
+                    json = doc.getString("payloadJson")
                 }
+            } catch (_: Exception) {
+                // Fallback to local storage if offline
+            }
+
+            if (json.isNullOrBlank()) {
+                json = googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME)
             }
 
             if (json.isNullOrBlank()) {
