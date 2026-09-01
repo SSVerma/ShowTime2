@@ -3,6 +3,9 @@ package com.ssverma.feature.account.ui.trakt
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ui.UiText
@@ -14,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,7 +26,9 @@ import javax.inject.Inject
 class TraktSyncViewModel @Inject constructor(
     val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository,
-    private val billingRepository: BillingRepository
+    private val billingRepository: BillingRepository,
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TraktSyncUiState())
@@ -42,7 +48,51 @@ class TraktSyncViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            combine(
+                billingRepository.isProActive,
+                rewardManager.passStatus
+            ) { isPro, passStatus ->
+                isPro || passStatus.isTraktSyncUnlocked
+            }.collectLatest { isUnlocked ->
+                _uiState.update { it.copy(isTraktSyncUnlocked = isUnlocked) }
+            }
+        }
+
+        viewModelScope.launch {
             _uiState.update { it.copy(availableProducts = billingRepository.getAvailableProducts()) }
+        }
+
+        // Preload rewarded ad
+        rewardedAdManager.loadAd()
+    }
+
+    fun onConnectTraktClicked() {
+        if (_uiState.value.isTraktSyncUnlocked) {
+            openTraktConnect()
+        } else {
+            _uiState.update { it.copy(isQuotaGateVisible = true) }
+            rewardedAdManager.loadAd()
+        }
+    }
+
+    fun dismissQuotaGate() {
+        _uiState.update { it.copy(isQuotaGateVisible = false, isAdLoading = false) }
+    }
+
+    fun watchAdForTraktPass(activity: Activity) {
+        _uiState.update { it.copy(isAdLoading = true) }
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.TRAKT_SYNC)
+                _uiState.update {
+                    it.copy(
+                        isQuotaGateVisible = false,
+                        isAdLoading = false,
+                        message = UiText.DynamicText("24-Hour Trakt Sync Pass Unlocked! 🎬")
+                    )
+                }
+                openTraktConnect()
+            }
         }
     }
 
@@ -55,7 +105,7 @@ class TraktSyncViewModel @Inject constructor(
     }
 
     fun openPaywall() {
-        _uiState.update { it.copy(isPaywallVisible = true) }
+        _uiState.update { it.copy(isPaywallVisible = true, isQuotaGateVisible = false) }
         viewModelScope.launch {
             _uiState.update { it.copy(availableProducts = billingRepository.getAvailableProducts()) }
         }

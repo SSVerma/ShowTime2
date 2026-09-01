@@ -18,8 +18,8 @@ import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -136,9 +136,8 @@ fun FeatureQuotaGateBottomSheet(
                     .height(50.dp)
             ) {
                 if (isAdLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp
+                    ShowTimeLoadingIndicator(
+                        modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                 } else {

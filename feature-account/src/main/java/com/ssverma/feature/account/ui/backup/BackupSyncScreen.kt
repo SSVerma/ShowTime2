@@ -29,8 +29,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -314,10 +314,8 @@ private fun GoogleAccountSection(
                         shape = MaterialTheme.shapes.small
                     ) {
                         if (isSigningOut) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(14.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
+                            ShowTimeLoadingIndicator(
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
                             Text(text = stringResource(R.string.signing_out))
@@ -342,10 +340,8 @@ private fun GoogleAccountSection(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (isSigningIn) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
+                        ShowTimeLoadingIndicator(
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                         Text(
@@ -468,9 +464,7 @@ private fun BackupOperationsCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (isBackingUp) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp,
+                        ShowTimeLoadingIndicator(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
@@ -493,9 +487,7 @@ private fun BackupOperationsCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (isRestoring) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary,
-                            strokeWidth = 2.dp,
+                        ShowTimeLoadingIndicator(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))

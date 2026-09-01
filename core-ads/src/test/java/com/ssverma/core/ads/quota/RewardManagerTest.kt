@@ -69,4 +69,21 @@ class RewardManagerTest {
         val allowed = rewardManager.isAutoBackupAllowed(isProActive = true)
         assertThat(allowed).isTrue()
     }
+
+    @Test
+    fun `isTraktSyncAllowed returns true for pro user`() = runTest {
+        val allowed = rewardManager.isTraktSyncAllowed(isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isTraktSyncAllowed returns false for free user when no pass active and pro required`() =
+        runTest {
+            fakeAppConfigProvider.setBoolean(
+                RewardManagerImpl.KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED,
+                true
+            )
+            val allowed = rewardManager.isTraktSyncAllowed(isProActive = false)
+            assertThat(allowed).isFalse()
+        }
 }

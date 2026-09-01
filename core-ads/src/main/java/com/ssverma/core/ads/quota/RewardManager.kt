@@ -25,6 +25,7 @@ import javax.inject.Singleton
 enum class RewardPassType {
     AUTO_BACKUP,
     PRO_THEME,
+    TRAKT_SYNC,
     EXTRA_CUSTOM_LIST,
     COMMUNITY_PUBLISH,
     CINEMA_GAME_REVIVE
@@ -33,6 +34,7 @@ enum class RewardPassType {
 data class RewardPassStatus(
     val isAutoBackupUnlocked: Boolean = false,
     val isProThemeUnlocked: Boolean = false,
+    val isTraktSyncUnlocked: Boolean = false,
     val extraCustomListSlots: Int = 0,
     val extraCommunityPublishSlots: Int = 0,
     val cinemaGameRevivesRemaining: Int = 0
@@ -46,6 +48,7 @@ interface RewardManager {
     suspend fun canPublishCommunityList(currentActiveCount: Int, isProActive: Boolean): Boolean
     suspend fun isAutoBackupAllowed(isProActive: Boolean): Boolean
     suspend fun isThemeUnlocked(isProActive: Boolean): Boolean
+    suspend fun isTraktSyncAllowed(isProActive: Boolean): Boolean
     suspend fun useCinemaGameRevive(): Boolean
 }
 
@@ -76,6 +79,7 @@ class RewardManagerImpl @Inject constructor(
         val status = storage.data.map { prefs ->
             val autoBackupExpiry = prefs[KEY_AUTO_BACKUP_EXPIRY] ?: 0L
             val proThemeExpiry = prefs[KEY_PRO_THEME_EXPIRY] ?: 0L
+            val traktSyncExpiry = prefs[KEY_TRAKT_SYNC_EXPIRY] ?: 0L
             val extraListSlots = prefs[KEY_EXTRA_LIST_SLOTS] ?: 0
             val extraPublishSlots = prefs[KEY_EXTRA_PUBLISH_SLOTS] ?: 0
             val revives = prefs[KEY_GAME_REVIVES] ?: 0
@@ -83,6 +87,7 @@ class RewardManagerImpl @Inject constructor(
             RewardPassStatus(
                 isAutoBackupUnlocked = autoBackupExpiry > now,
                 isProThemeUnlocked = proThemeExpiry > now,
+                isTraktSyncUnlocked = traktSyncExpiry > now,
                 extraCustomListSlots = extraListSlots,
                 extraCommunityPublishSlots = extraPublishSlots,
                 cinemaGameRevivesRemaining = revives
@@ -95,6 +100,7 @@ class RewardManagerImpl @Inject constructor(
         val now = System.currentTimeMillis()
         val backupDurationDays = appConfigProvider.getLong(KEY_CONFIG_REWARDED_BACKUP_DAYS, 7L)
         val themeDurationHours = appConfigProvider.getLong(KEY_CONFIG_REWARDED_THEME_HOURS, 24L)
+        val traktDurationHours = appConfigProvider.getLong(KEY_CONFIG_REWARDED_TRAKT_HOURS, 24L)
 
         storage.edit { prefs ->
             when (passType) {
@@ -110,6 +116,13 @@ class RewardManagerImpl @Inject constructor(
                     val baseTime = if (currentExpiry > now) currentExpiry else now
                     prefs[KEY_PRO_THEME_EXPIRY] =
                         baseTime + TimeUnit.HOURS.toMillis(themeDurationHours)
+                }
+
+                RewardPassType.TRAKT_SYNC -> {
+                    val currentExpiry = prefs[KEY_TRAKT_SYNC_EXPIRY] ?: 0L
+                    val baseTime = if (currentExpiry > now) currentExpiry else now
+                    prefs[KEY_TRAKT_SYNC_EXPIRY] =
+                        baseTime + TimeUnit.HOURS.toMillis(traktDurationHours)
                 }
 
                 RewardPassType.EXTRA_CUSTOM_LIST -> {
@@ -160,6 +173,13 @@ class RewardManagerImpl @Inject constructor(
         return _passStatus.value.isProThemeUnlocked
     }
 
+    override suspend fun isTraktSyncAllowed(isProActive: Boolean): Boolean {
+        if (isProActive) return true
+        val proRequired = appConfigProvider.getBoolean(KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED, true)
+        if (!proRequired) return true
+        return _passStatus.value.isTraktSyncUnlocked
+    }
+
     override suspend fun useCinemaGameRevive(): Boolean {
         val current = _passStatus.value.cinemaGameRevivesRemaining
         if (current <= 0) return false
@@ -174,6 +194,7 @@ class RewardManagerImpl @Inject constructor(
     companion object {
         private val KEY_AUTO_BACKUP_EXPIRY = longPreferencesKey("reward_auto_backup_expiry")
         private val KEY_PRO_THEME_EXPIRY = longPreferencesKey("reward_pro_theme_expiry")
+        private val KEY_TRAKT_SYNC_EXPIRY = longPreferencesKey("reward_trakt_sync_expiry")
         private val KEY_EXTRA_LIST_SLOTS = intPreferencesKey("reward_extra_list_slots")
         private val KEY_EXTRA_PUBLISH_SLOTS = intPreferencesKey("reward_extra_publish_slots")
         private val KEY_GAME_REVIVES = intPreferencesKey("reward_game_revives")
@@ -182,6 +203,8 @@ class RewardManagerImpl @Inject constructor(
         const val KEY_CONFIG_FREE_PUBLISH_LIMIT = "free_community_publish_limit"
         const val KEY_CONFIG_REWARDED_BACKUP_DAYS = "rewarded_backup_duration_days"
         const val KEY_CONFIG_REWARDED_THEME_HOURS = "rewarded_theme_duration_hours"
+        const val KEY_CONFIG_REWARDED_TRAKT_HOURS = "rewarded_trakt_duration_hours"
         const val KEY_CONFIG_AUTO_BACKUP_PRO_REQUIRED = "auto_backup_pro_required"
+        const val KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED = "trakt_sync_pro_required"
     }
 }

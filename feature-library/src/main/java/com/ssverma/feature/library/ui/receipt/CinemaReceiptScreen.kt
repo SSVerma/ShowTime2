@@ -21,8 +21,8 @@ import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -279,10 +279,8 @@ fun CinemaReceiptScreen(
                         )
                     ) {
                         if (uiState.isExporting) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
+                            ShowTimeLoadingIndicator(
+                                modifier = Modifier.size(18.dp)
                             )
                         } else {
                             Icon(

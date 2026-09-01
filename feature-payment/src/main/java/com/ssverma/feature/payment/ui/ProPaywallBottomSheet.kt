@@ -28,8 +28,8 @@ import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -255,9 +255,8 @@ fun ProPaywallBottomSheet(
                 enabled = !isRestoring
             ) {
                 if (isRestoring) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
+                    ShowTimeLoadingIndicator(
+                        modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                 }

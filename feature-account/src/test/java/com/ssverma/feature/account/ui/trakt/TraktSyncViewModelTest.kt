@@ -22,6 +22,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassStatus
+
 class TraktSyncViewModelTest {
 
     @get:Rule
@@ -30,19 +34,25 @@ class TraktSyncViewModelTest {
     private val fakeBillingRepository = FakeBillingRepository(initialProActive = true)
     private val fakeTraktSyncRepository = FakeTraktSyncRepository()
     private val mockTraktAuthManager: TraktAuthManager = mockk(relaxed = true)
+    private val mockRewardManager: RewardManager = mockk(relaxed = true)
+    private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
+    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
 
     private lateinit var viewModel: TraktSyncViewModel
 
     @Before
     fun setUp() {
         every { mockTraktAuthManager.authState } returns traktAuthFlow
+        every { mockRewardManager.passStatus } returns passStatusFlow
 
         viewModel = TraktSyncViewModel(
             traktAuthManager = mockTraktAuthManager,
             traktSyncRepository = fakeTraktSyncRepository,
-            billingRepository = fakeBillingRepository
+            billingRepository = fakeBillingRepository,
+            rewardManager = mockRewardManager,
+            rewardedAdManager = mockRewardedAdManager
         )
     }
 
@@ -104,6 +114,29 @@ class TraktSyncViewModelTest {
         viewModel.disconnectTrakt()
 
         coVerify { mockTraktAuthManager.disconnect() }
+    }
+
+    @Test
+    fun `onConnectTraktClicked opens connect sheet directly when user is pro`() = runTest {
+        fakeBillingRepository.setProActive(true)
+        testScheduler.advanceUntilIdle()
+
+        viewModel.onConnectTraktClicked()
+        val state = viewModel.uiState.value
+        assertThat(state.isTraktConnectSheetVisible).isTrue()
+        assertThat(state.isQuotaGateVisible).isFalse()
+    }
+
+    @Test
+    fun `onConnectTraktClicked shows quota gate when user is free without active pass`() = runTest {
+        fakeBillingRepository.setProActive(false)
+        passStatusFlow.value = RewardPassStatus(isTraktSyncUnlocked = false)
+        testScheduler.advanceUntilIdle()
+
+        viewModel.onConnectTraktClicked()
+        val state = viewModel.uiState.value
+        assertThat(state.isQuotaGateVisible).isTrue()
+        assertThat(state.isTraktConnectSheetVisible).isFalse()
     }
 
     private class FakeTraktSyncRepository : TraktSyncRepository {

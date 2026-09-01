@@ -24,8 +24,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -56,8 +56,10 @@ import coil.compose.AsyncImage
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.showImmediateSnackbar
+import android.app.Activity
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.account.R
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.auth.domain.model.TraktUser
@@ -107,7 +109,7 @@ fun TraktSyncScreen(
                     TraktConnectedCard(
                         traktUser = authState.user,
                         isSyncing = uiState.isTraktSyncing,
-                        isProActive = uiState.isProActive,
+                        isProActive = uiState.isTraktSyncUnlocked,
                         onSyncNowClick = { viewModel.syncTraktNow() },
                         onDisconnectClick = { showDisconnectConfirmDialog = true },
                         onUpgradeClick = { viewModel.openPaywall() }
@@ -116,14 +118,8 @@ fun TraktSyncScreen(
 
                 else -> {
                     TraktDisconnectedCard(
-                        isProActive = uiState.isProActive,
-                        onConnectClick = {
-                            if (uiState.isProActive) {
-                                viewModel.openTraktConnect()
-                            } else {
-                                viewModel.openPaywall()
-                            }
-                        },
+                        isProActive = uiState.isTraktSyncUnlocked,
+                        onConnectClick = { viewModel.onConnectTraktClicked() },
                         onUpgradeClick = { viewModel.openPaywall() }
                     )
                 }
@@ -187,9 +183,27 @@ fun TraktSyncScreen(
             )
         }
 
+        // Rewarded Quota Gate Bottom Sheet
+        if (uiState.isQuotaGateVisible) {
+            val activity = context as? Activity
+            FeatureQuotaGateBottomSheet(
+                title = stringResource(R.string.trakt_pro_locked_title),
+                description = stringResource(R.string.trakt_pro_locked_desc),
+                rewardActionLabel = stringResource(R.string.watch_ad_for_trakt_pass),
+                isAdLoading = uiState.isAdLoading,
+                onWatchAdClick = {
+                    if (activity != null) {
+                        viewModel.watchAdForTraktPass(activity)
+                    }
+                },
+                onUpgradeProClick = { viewModel.openPaywall() },
+                onDismissRequest = { viewModel.dismissQuotaGate() }
+            )
+        }
+
         // Pro Paywall Bottom Sheet
         if (uiState.isPaywallVisible) {
-            val activity = context as? android.app.Activity
+            val activity = context as? Activity
             ProPaywallBottomSheet(
                 products = uiState.availableProducts,
                 isProActive = uiState.isProActive,
@@ -318,9 +332,7 @@ private fun TraktConnectedCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (isSyncing) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
+                    ShowTimeLoadingIndicator(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))

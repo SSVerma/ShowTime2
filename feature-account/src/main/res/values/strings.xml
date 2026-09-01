@@ -19,6 +19,10 @@
     <string name="pro_feature_icons_desc">Customize your phone home screen with exclusive launcher icons</string>
     <string name="pro_feature_sync">Trakt.tv &amp; Cloud Sync</string>
     <string name="pro_feature_sync_desc">Sync watchlists, ratings, and history across all your devices</string>
+    <string name="trakt_pro_locked_title">Trakt.tv Cloud Sync</string>
+    <string name="trakt_pro_locked_desc">Sync your watchlists, ratings, and TV progress across all your devices with Trakt.tv. Upgrade to ShowTime Pro for unlimited sync or watch a short video to unlock a 24-hour pass.</string>
+    <string name="watch_ad_for_trakt_pass">Watch Video for 24h Pass</string>
+    <string name="trakt_pass_active">24h Pass Active</string>
     <string name="plan_lifetime">Lifetime</string>
     <string name="plan_annual">Annual</string>
     <string name="plan_monthly">Monthly</string>

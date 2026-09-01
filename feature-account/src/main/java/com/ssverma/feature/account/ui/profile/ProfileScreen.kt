@@ -35,8 +35,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -135,6 +135,7 @@ fun ProfileScreen(
                     isSigningIn = uiState.isSigningIn,
                     isSigningOut = uiState.isSigningOut,
                     traktAuthState = uiState.traktAuthState,
+                    isMockTraktEnabled = uiState.isMockTraktEnabled,
                     onUpgradeClick = { viewModel.openPaywall() },
                     onOpenBackup = onOpenBackup,
                     onOpenTrakt = onOpenTrakt,
@@ -282,6 +283,7 @@ private fun ProfileContent(
     isSigningIn: Boolean,
     isSigningOut: Boolean,
     traktAuthState: TraktAuthState,
+    isMockTraktEnabled: Boolean,
     onUpgradeClick: () -> Unit,
     onOpenBackup: () -> Unit,
     onOpenTrakt: () -> Unit,
@@ -352,6 +354,7 @@ private fun ProfileContent(
             availableLanguages = availableLanguages,
             googleUser = googleUser,
             traktAuthState = traktAuthState,
+            isMockTraktEnabled = isMockTraktEnabled,
             onOpenBackup = onOpenBackup,
             onOpenTrakt = onOpenTrakt,
             onOpenTheme = onOpenTheme,
@@ -485,10 +488,8 @@ private fun ProfileHeader(
                 )
             ) {
                 if (isSigningOut) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(14.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.error
+                    ShowTimeLoadingIndicator(
+                        modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -584,10 +585,8 @@ private fun GoogleSignInPromptCard(
                     .height(48.dp)
             ) {
                 if (isSigningIn) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                    ShowTimeLoadingIndicator(
+                        modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -643,6 +642,7 @@ private fun SettingsNavGroup(
     availableLanguages: List<Language>,
     googleUser: GoogleUser?,
     traktAuthState: TraktAuthState,
+    isMockTraktEnabled: Boolean,
     onOpenBackup: () -> Unit,
     onOpenTrakt: () -> Unit,
     onOpenTheme: () -> Unit,
@@ -675,19 +675,21 @@ private fun SettingsNavGroup(
             onClick = onOpenBackup
         )
 
-        SettingsNavTile(
-            title = stringResource(R.string.trakt_cloud_sync),
-            subtitle = when (traktAuthState) {
-                is TraktAuthState.Connected -> stringResource(
-                    id = R.string.trakt_connected_as,
-                    traktAuthState.user.username
-                )
+        if (isMockTraktEnabled || traktAuthState is TraktAuthState.Connected) {
+            SettingsNavTile(
+                title = stringResource(R.string.trakt_cloud_sync),
+                subtitle = when (traktAuthState) {
+                    is TraktAuthState.Connected -> stringResource(
+                        id = R.string.trakt_connected_as,
+                        traktAuthState.user.username
+                    )
 
-                else -> stringResource(R.string.trakt_cloud_sync_desc)
-            },
-            icon = Icons.Rounded.Tv,
-            onClick = onOpenTrakt
-        )
+                    else -> stringResource(R.string.trakt_cloud_sync_desc)
+                },
+                icon = Icons.Rounded.Tv,
+                onClick = onOpenTrakt
+            )
+        }
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 

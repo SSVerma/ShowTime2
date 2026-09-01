@@ -9,8 +9,8 @@
     <string name="pro_feature_oled_desc">Pitch-black true AMOLED theme for maximum battery saving</string>
     <string name="pro_feature_icons">Dynamic App Icons</string>
     <string name="pro_feature_icons_desc">Customize your phone home screen with exclusive launcher icons</string>
-    <string name="pro_feature_sync">Trakt.tv &amp; Cloud Sync</string>
-    <string name="pro_feature_sync_desc">Sync watchlists, ratings, and history across all your devices</string>
+    <string name="pro_feature_sync">Cloud Sync &amp; Auto-Backup</string>
+    <string name="pro_feature_sync_desc">Automatic background backup of watchlists, custom lists &amp; favorites</string>
     <string name="pro_badge">PRO</string>
     <string name="plan_lifetime">Lifetime</string>
     <string name="plan_one_time">One-time purchase</string>
