@@ -19,12 +19,18 @@ import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.PublishCustomListUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.UnpublishCustomListUseCase
+import android.app.Activity
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.billing.BillingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -40,7 +46,10 @@ class LibraryHomeViewModel @Inject constructor(
     private val publishCustomListUseCase: PublishCustomListUseCase,
     private val unpublishCustomListUseCase: UnpublishCustomListUseCase,
     private val toggleCommunityListUpvoteUseCase: ToggleCommunityListUpvoteUseCase,
-    private val cloneCommunityListUseCase: CloneCommunityListUseCase
+    private val cloneCommunityListUseCase: CloneCommunityListUseCase,
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager,
+    private val billingRepository: BillingRepository
 ) : ViewModel() {
 
     val watchlistItems: StateFlow<List<SavedMediaItem>> = libraryRepository.getAllWatchlist()
@@ -70,6 +79,17 @@ class LibraryHomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+    val isProActive: StateFlow<Boolean> = billingRepository.isProActive
+
+    private val _isQuotaGateVisible = MutableStateFlow(false)
+    val isQuotaGateVisible: StateFlow<Boolean> = _isQuotaGateVisible.asStateFlow()
+
+    private val _isCreateListDialogVisible = MutableStateFlow(false)
+    val isCreateListDialogVisible: StateFlow<Boolean> = _isCreateListDialogVisible.asStateFlow()
+
+    private val _isAdLoading = MutableStateFlow(false)
+    val isAdLoading: StateFlow<Boolean> = _isAdLoading.asStateFlow()
 
     private val _watchlistFilter = MutableStateFlow(MediaTypeFilter.ALL)
     val watchlistFilter: StateFlow<MediaTypeFilter> = _watchlistFilter.asStateFlow()
@@ -138,6 +158,41 @@ class LibraryHomeViewModel @Inject constructor(
         }
     }
 
+    fun onAttemptCreateList() {
+        viewModelScope.launch {
+            val currentCount = customLists.value.size
+            val isPro = billingRepository.isProActive.first()
+            val canCreate = rewardManager.canCreateCustomList(currentCount, isPro)
+            if (canCreate) {
+                _isCreateListDialogVisible.value = true
+            } else {
+                _isQuotaGateVisible.value = true
+                rewardedAdManager.loadAd()
+            }
+        }
+    }
+
+    fun dismissQuotaGate() {
+        _isQuotaGateVisible.value = false
+        _isAdLoading.value = false
+    }
+
+    fun dismissCreateListDialog() {
+        _isCreateListDialogVisible.value = false
+    }
+
+    fun watchAdForListSlot(activity: Activity) {
+        _isAdLoading.value = true
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.EXTRA_CUSTOM_LIST)
+                _isQuotaGateVisible.value = false
+                _isAdLoading.value = false
+                _isCreateListDialogVisible.value = true
+            }
+        }
+    }
+
     fun clearHistory() {
         viewModelScope.launch {
             libraryRepository.clearWatchHistory()
@@ -151,6 +206,7 @@ class LibraryHomeViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val id = libraryRepository.createCustomList(title = title, description = description)
+            _isCreateListDialogVisible.value = false
             onCreated?.invoke(id)
         }
     }

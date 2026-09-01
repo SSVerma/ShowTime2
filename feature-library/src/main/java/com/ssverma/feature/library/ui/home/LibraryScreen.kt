@@ -147,6 +147,8 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.library.CustomList
+import android.app.Activity
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.utils.ShareMediaUtils
@@ -169,6 +171,7 @@ fun LibraryScreen(
     onMovieClicked: (movieId: Int) -> Unit,
     onTvShowClicked: (tvShowId: Int) -> Unit,
     openSearchPage: () -> Unit,
+    onNavigateToProPaywall: () -> Unit = {},
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -187,10 +190,12 @@ fun LibraryScreen(
     val historyFilter by viewModel.historyFilter.collectAsState()
 
     val selectedCustomList by viewModel.selectedCustomList.collectAsState()
+    val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsState()
+    val isCreateListDialogVisible by viewModel.isCreateListDialogVisible.collectAsState()
+    val isAdLoading by viewModel.isAdLoading.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var showCreateListDialog by remember { mutableStateOf(false) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
     var listPendingDeletion by remember { mutableStateOf<CustomList?>(null) }
     var listPendingEdit by remember { mutableStateOf<CustomList?>(null) }
@@ -623,7 +628,7 @@ fun LibraryScreen(
                 3 -> {
                     MyListsTabContent(
                         lists = customLists,
-                        onCreateListClick = { showCreateListDialog = true },
+                        onCreateListClick = { viewModel.onAttemptCreateList() },
                         onListClick = { list -> viewModel.selectCustomList(list.listId) },
                         onEditListClick = { list -> listPendingEdit = list },
                         onDeleteListClick = { list -> listPendingDeletion = list },
@@ -661,17 +666,16 @@ fun LibraryScreen(
                                 listPendingClone = list
                             }
                         },
-                        onCreateListClick = { showCreateListDialog = true }
+                        onCreateListClick = { viewModel.onAttemptCreateList() }
                     )
                 }
             }
         }
 
-        if (showCreateListDialog) {
+        if (isCreateListDialogVisible) {
             CreateCustomListDialog(
-                onDismiss = { showCreateListDialog = false },
+                onDismiss = { viewModel.dismissCreateListDialog() },
                 onCreate = { title, desc ->
-                    showCreateListDialog = false
                     viewModel.createCustomList(title, desc) { id ->
                         coroutineScope.launch {
                             if (pagerState.currentPage != 3) {
@@ -686,6 +690,26 @@ fun LibraryScreen(
                         }
                     }
                 }
+            )
+        }
+
+        if (isQuotaGateVisible) {
+            val activity = context as? Activity
+            FeatureQuotaGateBottomSheet(
+                title = stringResource(R.string.custom_list_quota_reached_title),
+                description = stringResource(R.string.custom_list_quota_reached_desc),
+                rewardActionLabel = stringResource(R.string.watch_ad_for_extra_list_slot),
+                isAdLoading = isAdLoading,
+                onWatchAdClick = {
+                    if (activity != null) {
+                        viewModel.watchAdForListSlot(activity)
+                    }
+                },
+                onUpgradeProClick = {
+                    viewModel.dismissQuotaGate()
+                    onNavigateToProPaywall()
+                },
+                onDismissRequest = { viewModel.dismissQuotaGate() }
             )
         }
 

@@ -7,6 +7,7 @@ import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 
@@ -25,6 +26,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             openSearchPage = {
                 navigator.navigate(SearchNavKey)
+            },
+            onNavigateToProPaywall = {
+                navigator.navigate(ProPaywallNavKey)
             },
             initialTab = navKey.initialTab,
             initialMediaType = navKey.initialMediaType,

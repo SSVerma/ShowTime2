@@ -95,4 +95,10 @@
     <string name="close">Close</string>
     <string name="receipt_saved_success">Receipt image saved successfully</string>
     <string name="receipt_save_failed">Failed to save receipt image</string>
+
+    <!-- Custom List Quota & Monetization -->
+    <string name="custom_list_quota_reached_title">Custom List Limit Reached</string>
+    <string name="custom_list_quota_reached_desc">Free tier includes up to 3 custom collections. Upgrade to ShowTime Pro for unlimited lists or watch a short video to unlock an extra list slot.</string>
+    <string name="watch_ad_for_extra_list_slot">Watch Video for +1 Slot</string>
+    <string name="extra_list_slot_unlocked">1 Extra Custom List Slot Unlocked! 🎬</string>
 </resources>
