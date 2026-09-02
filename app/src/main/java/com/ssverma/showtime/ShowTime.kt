@@ -90,6 +90,7 @@ import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.account.navigation.TraktSyncNavKey
 import com.ssverma.shared.domain.utils.AppConfigConstants
 import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
+import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
@@ -277,6 +278,10 @@ fun ShowTime(
                         onOpenWrapped = {
                             coroutineScope.launch { drawerState.close() }
                             navigator.navigate(CinephileWrappedNavKey)
+                        },
+                        onOpenBacklogChallenges = {
+                            coroutineScope.launch { drawerState.close() }
+                            navigator.navigate(BacklogChallengeNavKey)
                         },
                         onOpenPeople = {
                             coroutineScope.launch { drawerState.close() }

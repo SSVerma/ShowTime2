@@ -60,6 +60,7 @@ import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.FilterListOff
+import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.FolderSpecial
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.HistoryEdu
@@ -124,7 +125,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.UiText
@@ -180,6 +181,7 @@ fun LibraryScreen(
     onOpenDiary: () -> Unit = {},
     onOpenTasteProfile: () -> Unit = {},
     onOpenWrapped: () -> Unit = {},
+    onOpenChallenges: () -> Unit = {},
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -438,6 +440,12 @@ fun LibraryScreen(
                                     Icon(
                                         imageVector = Icons.Rounded.EmojiEvents,
                                         contentDescription = "Cinema Wrapped & Milestones"
+                                    )
+                                }
+                                IconButton(onClick = onOpenChallenges) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Flag,
+                                        contentDescription = "Cinephile Challenges & Blindspots"
                                     )
                                 }
                                 IconButton(onClick = onOpenDiary) {

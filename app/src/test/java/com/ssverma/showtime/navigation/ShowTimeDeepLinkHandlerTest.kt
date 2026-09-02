@@ -1,5 +1,6 @@
 package com.ssverma.showtime.navigation
 
+import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
@@ -58,7 +59,7 @@ class ShowTimeDeepLinkHandlerTest {
 
     @Test
     fun parse_gameDeepLink_returnsCinemaGameNavKey() {
-        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/challenge")
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/game")
         assertEquals(CinemaGameNavKey, navKey)
     }
 
@@ -157,6 +158,18 @@ class ShowTimeDeepLinkHandlerTest {
     fun parse_legacyHostWithShowTimePrefix_returnsParsedNavKey() {
         val navKey = ShowTimeDeepLinkHandler.parse("https://www.ssverma.in/showtime/movie/550")
         assertEquals(MovieDetailNavKey(550), navKey)
+    }
+
+    @Test
+    fun parse_challengesDeepLink_returnsBacklogChallengeNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/challenges")
+        assertEquals(BacklogChallengeNavKey, navKey)
+    }
+
+    @Test
+    fun parse_backlogDeepLink_returnsBacklogChallengeNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("showtime://showtime.ssverma.in/backlog")
+        assertEquals(BacklogChallengeNavKey, navKey)
     }
 
     @Test

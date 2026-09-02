@@ -52,6 +52,7 @@ fun ShowTimeDrawerContent(
     onOpenCinemaDiary: () -> Unit = {},
     onOpenTasteProfile: () -> Unit = {},
     onOpenWrapped: () -> Unit = {},
+    onOpenBacklogChallenges: () -> Unit = {},
     onOpenCinemaGame: () -> Unit,
     onOpenReceipt: () -> Unit,
     onOpenBackup: () -> Unit,
@@ -128,6 +129,11 @@ fun ShowTimeDrawerContent(
                 label = "Cinema Wrapped & Milestones",
                 icon = Icons.Rounded.EmojiEvents,
                 onClick = onOpenWrapped
+            )
+            DrawerItem(
+                label = "Blindspots & Challenges",
+                icon = Icons.Rounded.EmojiEvents,
+                onClick = onOpenBacklogChallenges
             )
             DrawerItem(
                 label = stringResource(id = R.string.people),

@@ -47,7 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.feature.library.ui.diary.component.DiaryStatsHeader
@@ -66,6 +66,7 @@ fun CinemaDiaryScreen(
     modifier: Modifier = Modifier,
     onOpenTasteProfile: () -> Unit = {},
     onOpenWrapped: () -> Unit = {},
+    onOpenChallenges: () -> Unit = {},
     viewModel: CinemaDiaryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -130,7 +131,8 @@ fun CinemaDiaryScreen(
                         DiaryStatsHeader(
                             stats = uiState.stats,
                             onOpenTasteProfile = onOpenTasteProfile,
-                            onOpenWrapped = onOpenWrapped
+                            onOpenWrapped = onOpenWrapped,
+                            onOpenChallenges = onOpenChallenges
                         )
                     }
                 }

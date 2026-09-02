@@ -32,7 +32,8 @@ fun DiaryStatsHeader(
     stats: DiarySummaryStats,
     modifier: Modifier = Modifier,
     onOpenTasteProfile: (() -> Unit)? = null,
-    onOpenWrapped: (() -> Unit)? = null
+    onOpenWrapped: (() -> Unit)? = null,
+    onOpenChallenges: (() -> Unit)? = null
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -52,16 +53,13 @@ fun DiaryStatsHeader(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "CINEMA DIARY STATS",
-                    style = MaterialTheme.typography.labelSmall,
+                    text = "Your Cinephile Journey",
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (onOpenTasteProfile != null) {
                         Surface(
                             shape = RoundedCornerShape(12.dp),
@@ -115,6 +113,28 @@ fun DiaryStatsHeader(
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onTertiary,
                                     modifier = Modifier.size(12.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    if (onOpenChallenges != null) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable(onClick = onOpenChallenges)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Goals",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondary
                                 )
                             }
                         }
