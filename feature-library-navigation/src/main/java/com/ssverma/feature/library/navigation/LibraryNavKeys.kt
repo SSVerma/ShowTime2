@@ -29,3 +29,7 @@ enum class LibraryTabDestination {
 @Serializable
 @Parcelize
 data object CinemaReceiptNavKey : NavKey, Parcelable
+
+@Serializable
+@Parcelize
+data object CinemaDiaryNavKey : NavKey, Parcelable

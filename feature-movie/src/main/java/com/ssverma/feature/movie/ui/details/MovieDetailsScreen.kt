@@ -14,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -23,8 +25,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -66,6 +70,7 @@ import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaItem
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
@@ -152,6 +157,8 @@ fun MovieContent(
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
+    val diaryEntries by viewModel.diaryEntries.collectAsStateWithLifecycle()
+    var showLogDialog by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "movie_details_watch_provider")
     val snackbarHostState = remember { SnackbarHostState() }
@@ -181,6 +188,11 @@ fun MovieContent(
                         viewModel.onPlayTrailerClicked(movie)
                     },
                     secondaryActions = {
+                        BackdropActionButton(
+                            onClick = { showLogDialog = true },
+                            icon = if (diaryEntries.isNotEmpty()) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                            contentDescription = "Log & Rate"
+                        )
                         MediaStatsAction(
                             mediaType = MediaType.Movie,
                             mediaId = movie.id,
@@ -514,6 +526,30 @@ fun MovieContent(
             }
 
             item { Spacer(modifier = Modifier.height(48.dp)) }
+        }
+
+        if (showLogDialog) {
+            LogAndRateDialog(
+                mediaId = movie.id,
+                mediaType = MediaType.Movie,
+                title = movie.title,
+                posterImageUrl = movie.posterImageUrl,
+                backdropImageUrl = movie.backdropImageUrl,
+                releaseDate = movie.releaseDate?.toString().orEmpty(),
+                tmdbRating = movie.voteAvg,
+                existingEntry = diaryEntries.firstOrNull(),
+                onDismiss = { showLogDialog = false },
+                onSave = { entry ->
+                    viewModel.saveDiaryEntry(entry)
+                    showLogDialog = false
+                    coroutineScope.launch {
+                        snackbarHostState.showImmediateSnackbar(
+                            message = "Logged \"${movie.title}\" to Cinema Diary! ✨",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                }
+            )
         }
     }
 }

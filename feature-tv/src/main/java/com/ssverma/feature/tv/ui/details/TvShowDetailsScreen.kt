@@ -17,6 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -29,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -76,6 +79,7 @@ import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaItem
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
@@ -167,6 +171,8 @@ private fun TvShowContent(
     val seasonWatchCounts by viewModel.seasonWatchCounts.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
+    val diaryEntries by viewModel.diaryEntries.collectAsStateWithLifecycle()
+    var showLogDialog by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "tv_details_watch_provider")
     val snackbarHostState = remember { SnackbarHostState() }
@@ -196,6 +202,11 @@ private fun TvShowContent(
                         viewModel.onPlayTrailerClicked(tvShow)
                     },
                     secondaryActions = {
+                        BackdropActionButton(
+                            onClick = { showLogDialog = true },
+                            icon = if (diaryEntries.isNotEmpty()) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                            contentDescription = "Log & Rate"
+                        )
                         MediaStatsAction(
                             mediaType = MediaType.Tv,
                             mediaId = tvShow.id,
@@ -579,6 +590,30 @@ private fun TvShowContent(
             item {
                 Spacer(modifier = Modifier.height(48.dp))
             }
+        }
+
+        if (showLogDialog) {
+            LogAndRateDialog(
+                mediaId = tvShow.id,
+                mediaType = MediaType.Tv,
+                title = tvShow.title,
+                posterImageUrl = tvShow.posterImageUrl,
+                backdropImageUrl = tvShow.backdropImageUrl,
+                releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
+                tmdbRating = tvShow.voteAvg,
+                existingEntry = diaryEntries.firstOrNull(),
+                onDismiss = { showLogDialog = false },
+                onSave = { entry ->
+                    viewModel.saveDiaryEntry(entry)
+                    showLogDialog = false
+                    coroutineScope.launch {
+                        snackbarHostState.showImmediateSnackbar(
+                            message = "Logged \"${tvShow.title}\" to Cinema Diary! ✨",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                }
+            )
         }
     }
 }

@@ -22,6 +22,7 @@ import com.ssverma.shared.domain.model.community.MediaReactions
 import com.ssverma.shared.domain.model.community.PostCommentParams
 import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
+import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.tv.imageShots
@@ -35,6 +36,8 @@ import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
+import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
+import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -66,6 +69,8 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     private val reportCommentUseCase: ReportCommentUseCase,
     private val toggleCommentUpvoteUseCase: ToggleCommentUpvoteUseCase,
     private val deleteCommentUseCase: DeleteCommentUseCase,
+    private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
+    private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
     val appConfigRepository: AppConfigRepository,
     private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository
@@ -94,6 +99,19 @@ class TvShowDetailsViewModel @AssistedInject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyMap()
         )
+
+    val diaryEntries: StateFlow<List<DiaryEntry>> =
+        getDiaryEntriesUseCase.forMedia(tvShowId, MediaType.Tv).stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun saveDiaryEntry(entry: DiaryEntry) {
+        viewModelScope.launch {
+            saveDiaryEntryUseCase(entry)
+        }
+    }
 
     val imageShots: StateFlow<List<ImageShot>> = uiState
         .map { (it as? UiState.Success)?.data?.imageShots ?: emptyList() }

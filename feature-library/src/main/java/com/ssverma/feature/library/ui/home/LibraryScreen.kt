@@ -60,6 +60,7 @@ import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.FilterListOff
 import androidx.compose.material.icons.rounded.FolderSpecial
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Movie
@@ -174,6 +175,7 @@ fun LibraryScreen(
     openSearchPage: () -> Unit,
     onNavigateToProPaywall: () -> Unit = {},
     onOpenBackup: () -> Unit = {},
+    onOpenDiary: () -> Unit = {},
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -422,6 +424,12 @@ fun LibraryScreen(
                                 }
                             },
                             actions = {
+                                IconButton(onClick = onOpenDiary) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.HistoryEdu,
+                                        contentDescription = "Cinema Diary"
+                                    )
+                                }
                                 IconButton(onClick = {
                                     customListForReceipt = null
                                     receiptSource = when (pagerState.currentPage) {

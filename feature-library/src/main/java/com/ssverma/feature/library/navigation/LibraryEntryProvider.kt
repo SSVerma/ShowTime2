@@ -5,6 +5,7 @@ import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
+import com.ssverma.feature.library.ui.diary.CinemaDiaryScreen
 import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
@@ -34,6 +35,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             onOpenBackup = {
                 navigator.navigate(BackupSyncNavKey)
             },
+            onOpenDiary = {
+                navigator.navigate(CinemaDiaryNavKey)
+            },
             initialTab = navKey.initialTab,
             initialMediaType = navKey.initialMediaType,
             targetCustomListId = navKey.targetCustomListId
@@ -44,6 +48,20 @@ fun EntryProviderScope<NavKey>.libraryEntries(
         CinemaReceiptScreen(
             onBackPressed = {
                 navigator.goBack()
+            }
+        )
+    }
+
+    showTimeEntry<CinemaDiaryNavKey> {
+        CinemaDiaryScreen(
+            onBackClick = {
+                navigator.goBack()
+            },
+            onOpenMovieDetails = { movieId ->
+                navigator.navigate(MovieDetailNavKey(movieId))
+            },
+            onOpenTvShowDetails = { tvShowId ->
+                navigator.navigate(TvShowDetailNavKey(tvShowId))
             }
         )
     }

@@ -90,6 +90,7 @@ import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.account.navigation.TraktSyncNavKey
 import com.ssverma.shared.domain.utils.AppConfigConstants
 import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
+import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
@@ -262,6 +263,10 @@ fun ShowTime(
                         onOpenDiscovery = {
                             coroutineScope.launch { drawerState.close() }
                             navigator.navigate(UniversalDiscoveryNavKey())
+                        },
+                        onOpenCinemaDiary = {
+                            coroutineScope.launch { drawerState.close() }
+                            navigator.navigate(CinemaDiaryNavKey)
                         },
                         onOpenPeople = {
                             coroutineScope.launch { drawerState.close() }

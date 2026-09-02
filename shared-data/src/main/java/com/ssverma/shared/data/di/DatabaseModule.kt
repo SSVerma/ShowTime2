@@ -5,6 +5,7 @@ import com.ssverma.core.storage.StorageClient
 import com.ssverma.core.storage.db.DatabaseConfig
 import com.ssverma.shared.data.local.db.ShowTimeDatabase
 import com.ssverma.shared.data.local.db.dao.CustomListDao
+import com.ssverma.shared.data.local.db.dao.DiaryDao
 import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
 import com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao
@@ -70,5 +71,11 @@ object DatabaseModule {
     @Singleton
     fun provideShowWatchProgressDao(database: ShowTimeDatabase): ShowWatchProgressDao {
         return database.showWatchProgressDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDiaryDao(database: ShowTimeDatabase): DiaryDao {
+        return database.diaryDao()
     }
 }

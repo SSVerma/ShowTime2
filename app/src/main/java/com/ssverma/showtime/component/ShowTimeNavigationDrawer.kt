@@ -48,6 +48,7 @@ import com.ssverma.showtime.R
 fun ShowTimeDrawerContent(
     onOpenDiscovery: () -> Unit,
     onOpenPeople: () -> Unit,
+    onOpenCinemaDiary: () -> Unit = {},
     onOpenCinemaGame: () -> Unit,
     onOpenReceipt: () -> Unit,
     onOpenBackup: () -> Unit,
@@ -109,6 +110,11 @@ fun ShowTimeDrawerContent(
                 label = "Discover & Browse",
                 icon = Icons.Rounded.AutoAwesome,
                 onClick = onOpenDiscovery
+            )
+            DrawerItem(
+                label = "Cinema Diary",
+                icon = Icons.Rounded.Star,
+                onClick = onOpenCinemaDiary
             )
             DrawerItem(
                 label = stringResource(id = R.string.people),

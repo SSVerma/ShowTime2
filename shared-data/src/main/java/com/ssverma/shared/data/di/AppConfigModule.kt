@@ -5,9 +5,15 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.shared.data.repository.AffiliateRepositoryImpl
+import com.ssverma.shared.data.repository.BackupRepository
+import com.ssverma.shared.data.repository.BackupRepositoryImpl
 import com.ssverma.shared.data.repository.DefaultAppConfigRepository
+import com.ssverma.shared.data.repository.DefaultDiaryRepository
+import com.ssverma.shared.data.repository.LibraryRepositoryImpl
 import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.repository.DiaryRepository
+import com.ssverma.shared.domain.repository.LibraryRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -35,14 +41,20 @@ abstract class AppConfigBindingModule {
     @Singleton
     @Binds
     abstract fun bindLibraryRepository(
-        repository: com.ssverma.shared.data.repository.LibraryRepositoryImpl
-    ): com.ssverma.shared.domain.repository.LibraryRepository
+        repository: LibraryRepositoryImpl
+    ): LibraryRepository
 
     @Singleton
     @Binds
     abstract fun bindBackupRepository(
-        repository: com.ssverma.shared.data.repository.BackupRepositoryImpl
-    ): com.ssverma.shared.data.repository.BackupRepository
+        repository: BackupRepositoryImpl
+    ): BackupRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindDiaryRepository(
+        repository: DefaultDiaryRepository
+    ): DiaryRepository
 }
 
 @Module

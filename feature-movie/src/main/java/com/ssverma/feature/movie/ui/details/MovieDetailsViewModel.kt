@@ -20,6 +20,7 @@ import com.ssverma.shared.domain.model.community.MediaReactions
 import com.ssverma.shared.domain.model.community.PostCommentParams
 import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
+import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.movie.imageShots
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -31,6 +32,8 @@ import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
+import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
+import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -62,6 +65,8 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val reportCommentUseCase: ReportCommentUseCase,
     private val toggleCommentUpvoteUseCase: ToggleCommentUpvoteUseCase,
     private val deleteCommentUseCase: DeleteCommentUseCase,
+    private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
+    private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
     val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
@@ -99,6 +104,19 @@ class MovieDetailsViewModel @AssistedInject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    val diaryEntries: StateFlow<List<DiaryEntry>> =
+        getDiaryEntriesUseCase.forMedia(movieId, MediaType.Movie).stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun saveDiaryEntry(entry: DiaryEntry) {
+        viewModelScope.launch {
+            saveDiaryEntryUseCase(entry)
+        }
+    }
 
     init {
         fetchMovieDetails()
