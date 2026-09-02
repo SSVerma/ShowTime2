@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Palette
@@ -50,6 +51,7 @@ fun ShowTimeDrawerContent(
     onOpenPeople: () -> Unit,
     onOpenCinemaDiary: () -> Unit = {},
     onOpenTasteProfile: () -> Unit = {},
+    onOpenWrapped: () -> Unit = {},
     onOpenCinemaGame: () -> Unit,
     onOpenReceipt: () -> Unit,
     onOpenBackup: () -> Unit,
@@ -121,6 +123,11 @@ fun ShowTimeDrawerContent(
                 label = "Taste Profile & Picks",
                 icon = Icons.Rounded.AutoAwesome,
                 onClick = onOpenTasteProfile
+            )
+            DrawerItem(
+                label = "Cinema Wrapped & Milestones",
+                icon = Icons.Rounded.EmojiEvents,
+                onClick = onOpenWrapped
             )
             DrawerItem(
                 label = stringResource(id = R.string.people),

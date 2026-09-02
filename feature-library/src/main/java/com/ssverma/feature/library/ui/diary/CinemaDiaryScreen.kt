@@ -65,6 +65,7 @@ fun CinemaDiaryScreen(
     onOpenTvShowDetails: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onOpenTasteProfile: () -> Unit = {},
+    onOpenWrapped: () -> Unit = {},
     viewModel: CinemaDiaryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -128,7 +129,8 @@ fun CinemaDiaryScreen(
                     item {
                         DiaryStatsHeader(
                             stats = uiState.stats,
-                            onOpenTasteProfile = onOpenTasteProfile
+                            onOpenTasteProfile = onOpenTasteProfile,
+                            onOpenWrapped = onOpenWrapped
                         )
                     }
                 }

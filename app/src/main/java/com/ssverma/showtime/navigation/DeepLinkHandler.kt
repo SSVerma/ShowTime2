@@ -3,9 +3,12 @@ package com.ssverma.showtime.navigation
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
+import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.navigation.TasteProfileNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieHomeNavKey
@@ -72,6 +75,12 @@ object ShowTimeDeepLinkHandler {
                 "search" -> SearchNavKey
 
                 "receipt", "receipts" -> CinemaReceiptNavKey
+
+                "wrapped", "milestones" -> CinephileWrappedNavKey
+
+                "taste", "recommendations" -> TasteProfileNavKey
+
+                "diary" -> CinemaDiaryNavKey
 
                 "lists", "list" -> {
                     if (effectiveSegments.size >= 2) {

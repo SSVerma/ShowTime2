@@ -55,6 +55,7 @@ import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -178,6 +179,7 @@ fun LibraryScreen(
     onOpenBackup: () -> Unit = {},
     onOpenDiary: () -> Unit = {},
     onOpenTasteProfile: () -> Unit = {},
+    onOpenWrapped: () -> Unit = {},
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -430,6 +432,12 @@ fun LibraryScreen(
                                     Icon(
                                         imageVector = Icons.Rounded.AutoAwesome,
                                         contentDescription = "Taste Profile & Smart Picks"
+                                    )
+                                }
+                                IconButton(onClick = onOpenWrapped) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.EmojiEvents,
+                                        contentDescription = "Cinema Wrapped & Milestones"
                                     )
                                 }
                                 IconButton(onClick = onOpenDiary) {

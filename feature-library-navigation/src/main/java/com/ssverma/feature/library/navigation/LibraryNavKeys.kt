@@ -37,3 +37,7 @@ data object CinemaDiaryNavKey : NavKey, Parcelable
 @Serializable
 @Parcelize
 data object TasteProfileNavKey : NavKey, Parcelable
+
+@Serializable
+@Parcelize
+data object CinephileWrappedNavKey : NavKey, Parcelable

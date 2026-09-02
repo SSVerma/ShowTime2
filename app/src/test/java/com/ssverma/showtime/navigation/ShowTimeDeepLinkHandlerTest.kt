@@ -1,8 +1,11 @@
 package com.ssverma.showtime.navigation
 
+import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
+import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.navigation.TasteProfileNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieHomeNavKey
@@ -21,6 +24,24 @@ class ShowTimeDeepLinkHandlerTest {
     fun parse_rootDeepLink_returnsDashboardHomeNavKey() {
         val navKey = ShowTimeDeepLinkHandler.parse("showtime://showtime.ssverma.in")
         assertEquals(DashboardHomeNavKey, navKey)
+    }
+
+    @Test
+    fun parse_wrappedDeepLink_returnsCinephileWrappedNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/wrapped")
+        assertEquals(CinephileWrappedNavKey, navKey)
+    }
+
+    @Test
+    fun parse_tasteDeepLink_returnsTasteProfileNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/taste")
+        assertEquals(TasteProfileNavKey, navKey)
+    }
+
+    @Test
+    fun parse_diaryDeepLink_returnsCinemaDiaryNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/diary")
+        assertEquals(CinemaDiaryNavKey, navKey)
     }
 
     @Test
