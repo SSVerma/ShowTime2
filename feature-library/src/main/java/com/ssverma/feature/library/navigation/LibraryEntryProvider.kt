@@ -8,6 +8,7 @@ import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.library.ui.diary.CinemaDiaryScreen
 import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen
+import com.ssverma.feature.library.ui.taste.TasteProfileScreen
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
@@ -38,6 +39,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             onOpenDiary = {
                 navigator.navigate(CinemaDiaryNavKey)
             },
+            onOpenTasteProfile = {
+                navigator.navigate(TasteProfileNavKey)
+            },
             initialTab = navKey.initialTab,
             initialMediaType = navKey.initialMediaType,
             targetCustomListId = navKey.targetCustomListId
@@ -54,6 +58,23 @@ fun EntryProviderScope<NavKey>.libraryEntries(
 
     showTimeEntry<CinemaDiaryNavKey> {
         CinemaDiaryScreen(
+            onBackClick = {
+                navigator.goBack()
+            },
+            onOpenMovieDetails = { movieId ->
+                navigator.navigate(MovieDetailNavKey(movieId))
+            },
+            onOpenTvShowDetails = { tvShowId ->
+                navigator.navigate(TvShowDetailNavKey(tvShowId))
+            },
+            onOpenTasteProfile = {
+                navigator.navigate(TasteProfileNavKey)
+            }
+        )
+    }
+
+    showTimeEntry<TasteProfileNavKey> {
+        TasteProfileScreen(
             onBackClick = {
                 navigator.goBack()
             },

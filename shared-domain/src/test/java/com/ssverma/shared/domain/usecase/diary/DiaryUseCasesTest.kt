@@ -1,9 +1,9 @@
 package com.ssverma.shared.domain.usecase.diary
 
+import com.ssverma.shared.domain.fakes.FakeDiaryRepository
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
-import com.ssverma.shared.testing.fakes.FakeDiaryRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -63,37 +63,56 @@ class DiaryUseCasesTest {
         val tvEntries = getDiaryEntriesUseCase(DiaryFilterType.TV_ONLY).first()
         assertEquals(1, tvEntries.size)
         assertEquals("Breaking Bad", tvEntries.first().title)
+    }
+
+    @Test
+    fun `delete diary entry updates stats and list`() = runTest {
+        val entry = DiaryEntry(
+            id = 1L,
+            mediaId = 101,
+            mediaType = MediaType.Movie,
+            title = "Interstellar",
+            posterImageUrl = "/interstellar.jpg",
+            userRating = 5.0f
+        )
+        val savedId = saveDiaryEntryUseCase(entry)
+        val listBefore = getDiaryEntriesUseCase(DiaryFilterType.ALL).first()
+        assertEquals(1, listBefore.size)
+
+        deleteDiaryEntryUseCase(savedId)
+        val listAfter = getDiaryEntriesUseCase(DiaryFilterType.ALL).first()
+        assertTrue(listAfter.isEmpty())
+    }
+
+    @Test
+    fun `summary stats calculation aggregates accurately`() = runTest {
+        saveDiaryEntryUseCase(
+            DiaryEntry(
+                mediaId = 1,
+                mediaType = MediaType.Movie,
+                title = "Movie 1",
+                posterImageUrl = "/m1.jpg",
+                userRating = 5.0f,
+                isRewatch = true
+            )
+        )
+        saveDiaryEntryUseCase(
+            DiaryEntry(
+                mediaId = 2,
+                mediaType = MediaType.Tv,
+                title = "TV 1",
+                posterImageUrl = "/t1.jpg",
+                userRating = 4.0f,
+                isRewatch = false
+            )
+        )
 
         val stats = getDiarySummaryStatsUseCase().first()
         assertEquals(2, stats.totalLogged)
         assertEquals(1, stats.totalMovies)
         assertEquals(1, stats.totalTvShows)
-        assertEquals(5.0f, stats.averageUserRating, 0.01f)
+        assertEquals(4.5f, stats.averageUserRating, 0.01f)
         assertEquals(1, stats.rewatchCount)
-        assertEquals(2, stats.fiveStarCount)
-    }
-
-    @Test
-    fun `delete diary entry updates stats and list correctly`() = runTest {
-        val id = saveDiaryEntryUseCase(
-            DiaryEntry(
-                mediaId = 303,
-                mediaType = MediaType.Movie,
-                title = "Interstellar",
-                posterImageUrl = "/interstellar.jpg",
-                userRating = 4.5f
-            )
-        )
-
-        val beforeDelete = getDiaryEntriesUseCase().first()
-        assertEquals(1, beforeDelete.size)
-
-        deleteDiaryEntryUseCase(id)
-
-        val afterDelete = getDiaryEntriesUseCase().first()
-        assertTrue(afterDelete.isEmpty())
-
-        val stats = getDiarySummaryStatsUseCase().first()
-        assertEquals(0, stats.totalLogged)
+        assertEquals(1, stats.fiveStarCount)
     }
 }

@@ -48,6 +48,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material.icons.rounded.BookmarkBorder
@@ -176,6 +177,7 @@ fun LibraryScreen(
     onNavigateToProPaywall: () -> Unit = {},
     onOpenBackup: () -> Unit = {},
     onOpenDiary: () -> Unit = {},
+    onOpenTasteProfile: () -> Unit = {},
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -424,6 +426,12 @@ fun LibraryScreen(
                                 }
                             },
                             actions = {
+                                IconButton(onClick = onOpenTasteProfile) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.AutoAwesome,
+                                        contentDescription = "Taste Profile & Smart Picks"
+                                    )
+                                }
                                 IconButton(onClick = onOpenDiary) {
                                     Icon(
                                         imageVector = Icons.Rounded.HistoryEdu,

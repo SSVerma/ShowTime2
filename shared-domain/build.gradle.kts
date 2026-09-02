@@ -12,4 +12,9 @@ dependencies {
     implementation(projects.corePaging)
 
     implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.truth)
 }

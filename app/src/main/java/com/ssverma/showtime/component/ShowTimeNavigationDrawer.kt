@@ -49,6 +49,7 @@ fun ShowTimeDrawerContent(
     onOpenDiscovery: () -> Unit,
     onOpenPeople: () -> Unit,
     onOpenCinemaDiary: () -> Unit = {},
+    onOpenTasteProfile: () -> Unit = {},
     onOpenCinemaGame: () -> Unit,
     onOpenReceipt: () -> Unit,
     onOpenBackup: () -> Unit,
@@ -115,6 +116,11 @@ fun ShowTimeDrawerContent(
                 label = "Cinema Diary",
                 icon = Icons.Rounded.Star,
                 onClick = onOpenCinemaDiary
+            )
+            DrawerItem(
+                label = "Taste Profile & Picks",
+                icon = Icons.Rounded.AutoAwesome,
+                onClick = onOpenTasteProfile
             )
             DrawerItem(
                 label = stringResource(id = R.string.people),

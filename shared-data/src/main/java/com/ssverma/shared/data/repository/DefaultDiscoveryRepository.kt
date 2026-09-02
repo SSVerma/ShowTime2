@@ -1,6 +1,8 @@
 package com.ssverma.shared.data.repository
 
 import com.ssverma.api.service.tmdb.TmdbApiService
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.shared.data.mapper.GenresMapper
@@ -107,8 +109,8 @@ class DefaultDiscoveryRepository @Inject constructor(
                         mediaType = MediaType.Movie,
                         title = remote.title.orEmpty(),
                         overview = remote.overview.orEmpty(),
-                        posterImageUrl = remote.posterPath.orEmpty(),
-                        backdropImageUrl = remote.backdropPath.orEmpty(),
+                        posterImageUrl = remote.posterPath.convertToTmdbPosterUrl(),
+                        backdropImageUrl = remote.backdropPath.convertToTmdbBackdropUrl(),
                         voteAvg = remote.voteAvg,
                         voteCount = remote.voteCount,
                         releaseDate = remote.releaseDate.orEmpty()
@@ -123,8 +125,8 @@ class DefaultDiscoveryRepository @Inject constructor(
                         mediaType = MediaType.Tv,
                         title = remote.title.orEmpty(),
                         overview = remote.overview.orEmpty(),
-                        posterImageUrl = remote.posterPath.orEmpty(),
-                        backdropImageUrl = remote.backdropPath.orEmpty(),
+                        posterImageUrl = remote.posterPath.convertToTmdbPosterUrl(),
+                        backdropImageUrl = remote.backdropPath.convertToTmdbBackdropUrl(),
                         voteAvg = remote.voteAvg,
                         voteCount = remote.voteCount,
                         releaseDate = remote.firstAirDate.orEmpty()
