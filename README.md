@@ -63,10 +63,18 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
 
 ## Documentation & Architecture Guides
 
-- [Cinephile Suite & Discovery Architecture Guide](docs/CINEPHILE_SUITE_AND_DISCOVERY_ARCHITECTURE.md)
-- [Code Quality, Design System & Security Standards](docs/CODE_QUALITY_AND_SECURITY_GUIDE.md)
-- [Deep Linking & Social Sharing Guide](docs/DEEP_LINKING_AND_SHARING_GUIDE.md)
-- [Firebase Anonymous Auth & Google Linking](docs/FIREBASE_ANONYMOUS_AUTH_AND_GOOGLE_LINKING_ARCHITECTURE.md)
+- **Core Suite Overview**: [Cinephile Suite & Discovery Master Architecture](docs/CINEPHILE_SUITE_AND_DISCOVERY_ARCHITECTURE.md)
+- **Feature Guides (What, Why, How & Security)**:
+  - [Universal Discover & Browse Hub](docs/features/UNIVERSAL_DISCOVER_AND_BROWSE_ARCHITECTURE.md)
+  - [Personal Cinema Diary & Review Log](docs/features/CINEMA_DIARY_AND_REVIEW_LOG_ARCHITECTURE.md)
+  - [Cinephile Taste Profile & Recommendations](docs/features/CINEPHILE_TASTE_PROFILE_AND_RECOMMENDATIONS_ARCHITECTURE.md)
+  - [Annual Cinema Wrapped & Milestones](docs/features/CINEMA_WRAPPED_AND_MILESTONES_ARCHITECTURE.md)
+  - [Cinephile Backlog & Blindspot Challenges](docs/features/CINEPHILE_BACKLOG_AND_BLINDSPOT_CHALLENGES_ARCHITECTURE.md)
+  - [Cloud Backup, Auth & Pro Gating](docs/features/CLOUD_BACKUP_AUTH_AND_PRO_GATING_ARCHITECTURE.md)
+- **Standards & Guides**:
+  - [Code Quality, Design System & Security Standards](docs/CODE_QUALITY_AND_SECURITY_GUIDE.md)
+  - [Deep Linking & Social Sharing Guide](docs/DEEP_LINKING_AND_SHARING_GUIDE.md)
+  - [Firebase Anonymous Auth & Google Linking](docs/FIREBASE_ANONYMOUS_AUTH_AND_GOOGLE_LINKING_ARCHITECTURE.md)
 
 ## Tech Stack
 
