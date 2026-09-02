@@ -64,12 +64,39 @@ class UniversalDiscoveryViewModel @Inject constructor(
             null
         }
 
+        val initialGenreId = savedStateHandle.get<Int>("initialGenreId")
+        val initialGenres =
+            if (initialGenreId != null && initialGenreId > 0) setOf(initialGenreId) else emptySet()
+
+        val initialProviderId = savedStateHandle.get<Int>("initialProviderId")
+        val initialProviders =
+            if (initialProviderId != null && initialProviderId > 0) setOf(initialProviderId) else emptySet()
+
+        val initialDecadeStr = savedStateHandle.get<String>("initialDecade")
+        val initialDecade = try {
+            initialDecadeStr?.let { DiscoveryDecade.valueOf(it) } ?: DiscoveryDecade.ALL_TIME
+        } catch (_: Exception) {
+            DiscoveryDecade.ALL_TIME
+        }
+
+        val initialSortStr = savedStateHandle.get<String>("initialSortOrder")
+        val initialSort = try {
+            initialSortStr?.let { DiscoverySortOrder.valueOf(it) }
+                ?: DiscoverySortOrder.POPULARITY_DESC
+        } catch (_: Exception) {
+            DiscoverySortOrder.POPULARITY_DESC
+        }
+
         _uiState.update {
             it.copy(
                 filter = it.filter.copy(
                     mediaType = initialMediaType,
                     vibePreset = initialVibe,
-                    studioHub = initialStudio
+                    studioHub = initialStudio,
+                    selectedGenreIds = initialGenres,
+                    selectedProviderIds = initialProviders,
+                    decade = initialDecade,
+                    sortOrder = initialSort
                 )
             )
         }
@@ -93,10 +120,12 @@ class UniversalDiscoveryViewModel @Inject constructor(
 
         viewModelScope.launch {
             appConfigRepository.userStreamingSubscriptions.collectLatest { subscriptions ->
-                _uiState.update {
-                    it.copy(filter = it.filter.copy(selectedProviderIds = subscriptions))
+                if (initialProviders.isEmpty()) {
+                    _uiState.update {
+                        it.copy(filter = it.filter.copy(selectedProviderIds = subscriptions))
+                    }
+                    scheduleQuery(debounceMs = 150)
                 }
-                scheduleQuery(debounceMs = 150)
             }
         }
     }
@@ -199,6 +228,33 @@ class UniversalDiscoveryViewModel @Inject constructor(
             it.copy(filter = it.filter.copy(vibePreset = vibePreset))
         }
         scheduleQuery()
+    }
+
+    fun applyFilter(newFilter: UniversalDiscoveryFilter) {
+        _uiState.update {
+            it.copy(
+                filter = newFilter,
+                isFilterSheetOpen = false
+            )
+        }
+        scheduleQuery(debounceMs = 0)
+    }
+
+    fun resetFilters() {
+        _uiState.update {
+            it.copy(
+                filter = it.filter.copy(
+                    vibePreset = DiscoveryVibePreset.ALL,
+                    decade = DiscoveryDecade.ALL_TIME,
+                    sortOrder = DiscoverySortOrder.POPULARITY_DESC,
+                    studioHub = null,
+                    selectedGenreIds = emptySet(),
+                    minRating = null,
+                    hideWatched = true
+                )
+            )
+        }
+        scheduleQuery(debounceMs = 0)
     }
 
     fun setDecade(decade: DiscoveryDecade) {

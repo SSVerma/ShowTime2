@@ -124,6 +124,7 @@ data class UniversalDiscoveryFilter(
     val decade: DiscoveryDecade = DiscoveryDecade.ALL_TIME,
     val sortOrder: DiscoverySortOrder = DiscoverySortOrder.POPULARITY_DESC,
     val studioHub: DiscoveryStudioHub? = null,
+    val selectedGenreIds: Set<Int> = emptySet(),
     val selectedProviderIds: Set<Int> = emptySet(),
     val watchRegion: String = "US",
     val minRating: Float? = null,

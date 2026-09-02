@@ -20,6 +20,10 @@ data class WatchProviderHubNavKey(
 data class UniversalDiscoveryNavKey(
     val initialMediaType: String = "Movie",
     val initialVibe: String = "ALL",
-    val initialStudioHub: String? = null
+    val initialStudioHub: String? = null,
+    val initialGenreId: Int? = null,
+    val initialProviderId: Int? = null,
+    val initialDecade: String? = null,
+    val initialSortOrder: String? = null
 ) : NavKey, Parcelable
 

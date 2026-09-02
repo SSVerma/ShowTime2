@@ -551,24 +551,22 @@ private fun HubSegmentItem(
         label = "hub_segment_text"
     )
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .clip(CircleShape)
-            .background(backgroundColor)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(bounded = true),
-                onClick = onClick
-            )
-            .padding(horizontal = 14.dp, vertical = 6.dp)
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = backgroundColor
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            color = textColor
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = textColor
+            )
+        }
     }
 }
 

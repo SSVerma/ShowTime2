@@ -61,14 +61,14 @@ class DefaultDiscoveryRepository @Inject constructor(
         queryMap["vote_average.gte"] = minVoteAvg.toString()
         queryMap["vote_count.gte"] = filter.vibePreset.minVoteCount.toString()
 
-        if (filter.mediaType == MediaType.Movie) {
-            if (filter.vibePreset.movieGenreIds.isNotEmpty()) {
-                queryMap["with_genres"] = filter.vibePreset.movieGenreIds.joinToString(",")
-            }
+        val combinedGenreIds = if (filter.mediaType == MediaType.Movie) {
+            (filter.vibePreset.movieGenreIds + filter.selectedGenreIds).distinct()
         } else {
-            if (filter.vibePreset.tvGenreIds.isNotEmpty()) {
-                queryMap["with_genres"] = filter.vibePreset.tvGenreIds.joinToString(",")
-            }
+            (filter.vibePreset.tvGenreIds + filter.selectedGenreIds).distinct()
+        }
+
+        if (combinedGenreIds.isNotEmpty()) {
+            queryMap["with_genres"] = combinedGenreIds.joinToString(",")
         }
 
         if (filter.selectedProviderIds.isNotEmpty()) {

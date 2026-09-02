@@ -109,12 +109,10 @@ fun UniversalDiscoveryShelf(
                 }
 
                 Surface(
+                    onClick = { onOpenDiscovery(UniversalDiscoveryNavKey()) },
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .clickable { onOpenDiscovery(UniversalDiscoveryNavKey()) }
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -135,17 +133,16 @@ fun UniversalDiscoveryShelf(
             // Vibe Pills Carousel
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
             ) {
                 // Roulette Pill
                 Surface(
+                    onClick = { onOpenDiscovery(UniversalDiscoveryNavKey()) },
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable { onOpenDiscovery(UniversalDiscoveryNavKey()) }
+                    color = MaterialTheme.colorScheme.primary
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -176,17 +173,15 @@ fun UniversalDiscoveryShelf(
                     DiscoveryVibePreset.MASTERPIECES
                 ).forEach { vibe ->
                     Surface(
+                        onClick = {
+                            onOpenDiscovery(UniversalDiscoveryNavKey(initialVibe = vibe.name))
+                        },
                         shape = RoundedCornerShape(12.dp),
                         color = MaterialTheme.colorScheme.surface,
                         border = BorderStroke(
                             1.dp,
                             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                        ),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable {
-                                onOpenDiscovery(UniversalDiscoveryNavKey(initialVibe = vibe.name))
-                            }
+                        )
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

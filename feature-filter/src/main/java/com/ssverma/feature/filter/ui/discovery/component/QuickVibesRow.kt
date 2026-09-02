@@ -59,16 +59,14 @@ fun QuickVibesRow(
             )
 
             Surface(
+                onClick = { onVibeSelected(vibe) },
                 shape = RoundedCornerShape(20.dp),
                 color = containerColor,
                 border = BorderStroke(
                     1.dp,
                     if (isSelected) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                ),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .clickable { onVibeSelected(vibe) }
+                )
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

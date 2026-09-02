@@ -173,6 +173,19 @@ class ShowTimeDeepLinkHandlerTest {
     }
 
     @Test
+    fun `parse discover deep link returns UniversalDiscoveryNavKey`() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/discover")
+        assertEquals(UniversalDiscoveryNavKey(initialVibe = "ALL"), navKey)
+    }
+
+    @Test
+    fun `parse discover vibe deep link returns UniversalDiscoveryNavKey with vibe`() {
+        val navKey =
+            ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/discover/MIND_BENDING")
+        assertEquals(UniversalDiscoveryNavKey(initialVibe = "MIND_BENDING"), navKey)
+    }
+
+    @Test
     fun parse_invalidHost_returnsNull() {
         val navKey = ShowTimeDeepLinkHandler.parse("https://www.google.com/tv/1399")
         assertNull(navKey)

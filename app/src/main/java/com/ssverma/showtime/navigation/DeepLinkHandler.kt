@@ -18,6 +18,7 @@ import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
+import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 
 object ShowTimeDeepLinkHandler {
     const val PRIMARY_HOST = "showtime.ssverma.in"
@@ -76,6 +77,11 @@ object ShowTimeDeepLinkHandler {
                 "challenges", "challenge", "backlog", "blindspot", "blindspots" -> BacklogChallengeNavKey
 
                 "search" -> SearchNavKey
+
+                "discover", "discovery", "browse" -> {
+                    val vibe = if (effectiveSegments.size >= 2) effectiveSegments[1] else "ALL"
+                    UniversalDiscoveryNavKey(initialVibe = vibe)
+                }
 
                 "receipt", "receipts" -> CinemaReceiptNavKey
 

@@ -99,6 +99,70 @@ class UniversalDiscoveryViewModelTest {
     }
 
     @Test
+    fun `initial state parses continuous navigation arguments`() = runTest {
+        val customVm = UniversalDiscoveryViewModel(
+            getUniversalDiscoveryUseCase = mockGetUniversalDiscoveryUseCase,
+            getRouletteSurpriseUseCase = mockGetRouletteSurpriseUseCase,
+            discoveryRepository = mockDiscoveryRepository,
+            watchProviderRepository = mockWatchProviderRepository,
+            appConfigRepository = mockAppConfigRepository,
+            libraryRepository = mockLibraryRepository,
+            savedStateHandle = SavedStateHandle(
+                mapOf(
+                    "initialMediaType" to "Tv",
+                    "initialVibe" to "COMFORT_BINGE",
+                    "initialGenreId" to 35,
+                    "initialProviderId" to 119,
+                    "initialDecade" to "NINETIES_1990S",
+                    "initialSortOrder" to "VOTE_AVERAGE_DESC"
+                )
+            )
+        )
+        advanceUntilIdle()
+
+        val state = customVm.uiState.value
+        assertThat(state.filter.mediaType).isEqualTo(MediaType.Tv)
+        assertThat(state.filter.vibePreset).isEqualTo(DiscoveryVibePreset.COMFORT_BINGE)
+        assertThat(state.filter.selectedGenreIds).containsExactly(35)
+        assertThat(state.filter.selectedProviderIds).containsExactly(119)
+        assertThat(state.filter.decade).isEqualTo(DiscoveryDecade.NINETIES_1990S)
+        assertThat(state.filter.sortOrder).isEqualTo(DiscoverySortOrder.VOTE_AVERAGE_DESC)
+    }
+
+    @Test
+    fun `applyFilter updates filter and dismisses sheet`() = runTest {
+        advanceUntilIdle()
+        val updated = viewModel.uiState.value.filter.copy(
+            vibePreset = DiscoveryVibePreset.EPIC_WORLDS,
+            decade = DiscoveryDecade.EIGHTIES_1980S
+        )
+        viewModel.openFilterSheet(true)
+        assertThat(viewModel.uiState.value.isFilterSheetOpen).isTrue()
+
+        viewModel.applyFilter(updated)
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.filter.vibePreset).isEqualTo(DiscoveryVibePreset.EPIC_WORLDS)
+        assertThat(viewModel.uiState.value.filter.decade).isEqualTo(DiscoveryDecade.EIGHTIES_1980S)
+        assertThat(viewModel.uiState.value.isFilterSheetOpen).isFalse()
+    }
+
+    @Test
+    fun `resetFilters resets filters to defaults`() = runTest {
+        advanceUntilIdle()
+        viewModel.setVibePreset(DiscoveryVibePreset.DARK_AND_GRITTY)
+        viewModel.setDecade(DiscoveryDecade.GOLDEN_AGE)
+
+        viewModel.resetFilters()
+        advanceUntilIdle()
+
+        val filter = viewModel.uiState.value.filter
+        assertThat(filter.vibePreset).isEqualTo(DiscoveryVibePreset.ALL)
+        assertThat(filter.decade).isEqualTo(DiscoveryDecade.ALL_TIME)
+        assertThat(filter.sortOrder).isEqualTo(DiscoverySortOrder.POPULARITY_DESC)
+    }
+
+    @Test
     fun `toggleViewMode switches between grid and list`() = runTest {
         assertThat(viewModel.uiState.value.isGridView).isTrue()
         viewModel.toggleViewMode()

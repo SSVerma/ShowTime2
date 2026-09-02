@@ -57,12 +57,10 @@ fun StreamingFilterRow(
     ) {
         // Region Selector Chip
         Surface(
+            onClick = onOpenRegionSheet,
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)),
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .clickable(onClick = onOpenRegionSheet)
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f))
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -86,15 +84,13 @@ fun StreamingFilterRow(
 
         // Advanced Filter & Sort Button
         Surface(
+            onClick = onOpenFilterSheet,
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
             border = BorderStroke(
                 1.dp,
                 MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-            ),
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .clickable(onClick = onOpenFilterSheet)
+            )
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -133,12 +129,10 @@ fun StreamingFilterRow(
             )
 
             Surface(
+                onClick = { onToggleProvider(provider.providerId) },
                 shape = RoundedCornerShape(16.dp),
                 color = containerColor,
-                border = BorderStroke(1.dp, borderColor),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable { onToggleProvider(provider.providerId) }
+                border = BorderStroke(1.dp, borderColor)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
