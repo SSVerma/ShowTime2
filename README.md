@@ -51,58 +51,38 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
   </tr>
 </table>
 
+## Features & Cinephile Suite
+
+- **Universal Discover & Browse Hub**: Faceted discovery with mood vibes, streaming providers, decades, boutique studio hubs, and Cinema Roulette surprise picker.
+- **Personal Cinema Diary**: Chronological timeline log for watched films/shows, star ratings, custom written reviews, and viewing velocity.
+- **Cinephile Taste Profile**: On-device taste analysis, viewing archetype identification, and personalized recommendation engine.
+- **Cinema Wrapped & Milestones**: Annual year-in-review visual story with achievement badges and shareable graphics.
+- **Backlog & Blindspot Challenges**: 52-Film challenge, Criterion quests, and automated watchlist resurfacing.
+- **Cloud Backup & Restore**: Optional encrypted Firestore backup linked via Google Sign-In with full local-first offline support.
+- **Deep Linking & Sharing**: Universal App Links (`https://showtime.ssverma.in/...`) with rich OpenGraph sharing.
+
+## Documentation & Architecture Guides
+
+- [Cinephile Suite & Discovery Architecture Guide](docs/CINEPHILE_SUITE_AND_DISCOVERY_ARCHITECTURE.md)
+- [Code Quality, Design System & Security Standards](docs/CODE_QUALITY_AND_SECURITY_GUIDE.md)
+- [Deep Linking & Social Sharing Guide](docs/DEEP_LINKING_AND_SHARING_GUIDE.md)
+- [Firebase Anonymous Auth & Google Linking](docs/FIREBASE_ANONYMOUS_AUTH_AND_GOOGLE_LINKING_ARCHITECTURE.md)
+
 ## Tech Stack
 
-- [Kotlin](https://kotlinlang.org/) - Modern programming language for Android development.
-- [Jetpack Compose](https://developer.android.com/jetpack/compose) - Android’s modern UI toolkit.
-- [Coroutines](https://kotlinlang.org/docs/reference/coroutines-overview.html) - A concurrency
-  design pattern that you can use on Android to simplify code that executes asynchronously.
-- [Android Architecture Components](https://developer.android.com/topic/libraries/architecture) -
-  Collection of libraries that help you design robust, testable, and maintainable apps.
-    - [LiveData](https://developer.android.com/topic/libraries/architecture/livedata) - Lifecycle
-      aware observable data holder.
-    - [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Stores
-      UI-related data that isn"t destroyed on UI changes.
-    - [Navigation](https://developer.android.com/jetpack/compose/navigation) - The Navigation
-      component provides support for Jetpack Compose applications.
-    - [Paging](https://developer.android.com/jetpack/androidx/releases/paging) - The Paging Library
-      makes it easier for you to load data gradually and gracefully.
+- [Kotlin](https://kotlinlang.org/) - Modern programming language for Android.
+- [Jetpack Compose & Material 3](https://developer.android.com/jetpack/compose) - Modern declarative UI with dynamic theming and expressive components.
+- [Navigation 3 (Nav3)](https://developer.android.com/guide/navigation) - Type-safe multi-module navigation with compile-time checked NavKeys.
+- [Coroutines & Flow](https://kotlinlang.org/docs/reference/coroutines-overview.html) - Reactive, asynchronous concurrency and StateFlow.
+- [Android Architecture Components](https://developer.android.com/topic/libraries/architecture) - ViewModel, Room SQLite database, Lifecycle, and Paging 3.
+- [Coil](https://coil-kt.github.io/coil/compose/) - Asynchronous image loading with placeholder and memory caching.
+- [Dagger Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Dependency injection.
+- [Retrofit & OkHttp](https://square.github.io/retrofit/) - Resilient REST networking with client rate-limiting.
 
-- [Coil](https://coil-kt.github.io/coil/compose/) - This library provides easy-to-use Painter which
-  can fetch and display images from external sources, such as network.
-- [Insets](https://google.github.io/accompanist/insets/) - Allows easy handling
-  of [WindowInsets](https://developer.android.com/reference/android/view/WindowInsets.html).
-- [Pager](https://google.github.io/accompanist/pager/) - Paging layouts for Jetpack Compose similar
-  to [ViewPager](https://developer.android.com/reference/kotlin/androidx/viewpager/widget/ViewPager)
-  .
-- [Dagger Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - For
-  Dependency Injection.
-- [Retrofit](https://square.github.io/retrofit/) - For Networking.
-- [De-Sugaring](https://developer.android.com/studio/write/java8-support) - To use Java 8 features,
-  Uses Java 8 [Date/Time](https://www.baeldung.com/java-8-date-time-intro) api in the project.
-- [Material Design Components](https://material.io/develop/android) - To build modern beautiful UIs.
+## Security & Open-Source Principles
 
-## Architecture
+- **Local-First & Zero PII**: All personal data is stored on-device in Room SQLite. No tracking or telemetry.
+- **Secret Isolation**: No API keys or private tokens in git. Build configurations injected via `local.properties`.
+- **Open-Source Reproducibility**: Builds in offline/mock mode without requiring private Firebase or Trakt credentials.
+- **Strict Firestore Rules**: All cloud backup documents are locked strictly to the authenticated user UID (`request.auth.uid == userId`).
 
-ShowTime demonstrates uses
-of [MVVM](https://developer.android.com/jetpack/docs/guide#recommended-app-arch) architecture.
-
-- core-* : Modules which can be resued across projects (beyond ShowTime, plug and play). Some
-  refactoring is pending to reduce dependencies at some places.
-- shared-*: Modules which are shared across feature modules.
-- feature-*: Modules representing a particular app feature.
-- feature-*-navigation: Modules representing entry points to access corresponding feature.
-
-## API Key
-
-You need to supply API key for [TMDB](https://www.themoviedb.org/documentation/api) to build the
-project.
-
-## Planned work
-
-- Material design 3 support
-- Multi form factor support like Tablet, Wear etc.
-- Move **core-*** modules as independent supporting libraries and add them as dependencies
-- Improve navigation support including bottom sheets, dialog etc.
-- Improve library and sharing features
-- Cross platform experiments using Compose

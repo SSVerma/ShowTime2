@@ -46,6 +46,12 @@ flowchart TD
 | **Watchlist Tab** | `https://showtime.ssverma.in/library/watchlist` | `showtime://showtime.ssverma.in/library/watchlist` | `LibraryHomeNavKey(initialTab = Watchlist)` |
 | **Favorites Tab** | `https://showtime.ssverma.in/library/favorites` | `showtime://showtime.ssverma.in/library/favorites` | `LibraryHomeNavKey(initialTab = Favorites)` |
 | **History Tab** | `https://showtime.ssverma.in/library/history` | `showtime://showtime.ssverma.in/library/history` | `LibraryHomeNavKey(initialTab = History)` |
+| **Universal Discover** | `https://showtime.ssverma.in/discover` | `showtime://showtime.ssverma.in/discover` | `UniversalDiscoveryNavKey(initialVibe = "ALL")` |
+| **Discover by Vibe** | `https://showtime.ssverma.in/discover/{vibe}` | `showtime://showtime.ssverma.in/discover/{vibe}` | `UniversalDiscoveryNavKey(initialVibe = vibe)` |
+| **Personal Cinema Diary** | `https://showtime.ssverma.in/diary` | `showtime://showtime.ssverma.in/diary` | `CinemaDiaryNavKey` |
+| **Cinephile Taste Profile**| `https://showtime.ssverma.in/taste` | `showtime://showtime.ssverma.in/taste` | `TasteProfileNavKey` |
+| **Cinema Wrapped** | `https://showtime.ssverma.in/wrapped` | `showtime://showtime.ssverma.in/wrapped` | `CinephileWrappedNavKey` |
+| **Backlog & Blindspots** | `https://showtime.ssverma.in/challenges` | `showtime://showtime.ssverma.in/challenges` | `BacklogChallengeNavKey` |
 | **Daily Cinema Game** | `https://showtime.ssverma.in/challenge` | `showtime://showtime.ssverma.in/challenge` | `CinemaGameNavKey` |
 | **Cinema Receipt** | `https://showtime.ssverma.in/receipt` | `showtime://showtime.ssverma.in/receipt` | `CinemaReceiptNavKey` |
 | **Global Search** | `https://showtime.ssverma.in/search` | `showtime://showtime.ssverma.in/search` | `SearchNavKey` |
