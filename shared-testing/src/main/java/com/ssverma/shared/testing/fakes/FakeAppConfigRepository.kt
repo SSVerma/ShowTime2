@@ -40,6 +40,10 @@ class FakeAppConfigRepository(
     private val _isNotificationsEnabled = MutableStateFlow(true)
     override val isNotificationsEnabled: Flow<Boolean> = _isNotificationsEnabled.asStateFlow()
 
+    private val _userStreamingSubscriptions = MutableStateFlow<Set<Int>>(emptySet())
+    override val userStreamingSubscriptions: Flow<Set<Int>> =
+        _userStreamingSubscriptions.asStateFlow()
+
     override suspend fun updateAppTheme(theme: AppTheme) {
         _appTheme.value = theme
     }
@@ -54,6 +58,10 @@ class FakeAppConfigRepository(
 
     override suspend fun updateWatchProviderRegion(regionCode: String) {
         _watchProviderRegion.value = regionCode
+    }
+
+    override suspend fun updateStreamingSubscriptions(providerIds: Set<Int>) {
+        _userStreamingSubscriptions.value = providerIds
     }
 
     override suspend fun updateTranslationEnabled(enabled: Boolean) {

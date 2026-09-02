@@ -13,6 +13,8 @@ import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
+import com.ssverma.feature.filter.ui.discovery.UniversalDiscoveryScreen
+import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 
 fun EntryProviderScope<NavKey>.filterEntries(
@@ -82,6 +84,14 @@ fun EntryProviderScope<NavKey>.filterEntries(
             openLibraryPage = { libraryNavKey ->
                 navigator.navigate(libraryNavKey)
             }
+        )
+    }
+
+    showTimeEntry<UniversalDiscoveryNavKey> {
+        UniversalDiscoveryScreen(
+            onBackClick = { navigator.goBack() },
+            onOpenMovieDetails = { movieId -> navigator.navigate(MovieDetailNavKey(movieId)) },
+            onOpenTvShowDetails = { tvShowId -> navigator.navigate(TvShowDetailNavKey(tvShowId)) }
         )
     }
 }

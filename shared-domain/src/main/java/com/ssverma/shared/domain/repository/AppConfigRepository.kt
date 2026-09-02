@@ -23,6 +23,8 @@ interface AppConfigRepository {
 
     val isNotificationsEnabled: Flow<Boolean>
 
+    val userStreamingSubscriptions: Flow<Set<Int>>
+
     suspend fun updateAppTheme(theme: AppTheme)
 
     suspend fun updateDynamicColor(enabled: Boolean)
@@ -30,6 +32,8 @@ interface AppConfigRepository {
     suspend fun dismissAppInfoBottomSheet()
 
     suspend fun updateWatchProviderRegion(regionCode: String)
+
+    suspend fun updateStreamingSubscriptions(providerIds: Set<Int>)
 
     suspend fun updateTranslationEnabled(enabled: Boolean)
 

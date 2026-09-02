@@ -5,6 +5,9 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
+import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.tv.TvShow
 
@@ -17,7 +20,16 @@ interface DiscoveryRepository {
         discoverConfig: TvDiscoverConfig
     ): Result<List<TvShow>, Failure.CoreFailure>
 
+    suspend fun discoverUniversal(
+        filter: UniversalDiscoveryFilter,
+        page: Int
+    ): Result<List<UniversalMediaItem>, Failure.CoreFailure>
+
     suspend fun fetchMovieGenre(): Result<List<Genre>, Failure.CoreFailure>
 
     suspend fun fetchTvShowGenre(): Result<List<Genre>, Failure.CoreFailure>
+
+    suspend fun fetchWatchProviders(
+        isMovie: Boolean
+    ): Result<List<ProviderInfo>, Failure.CoreFailure>
 }

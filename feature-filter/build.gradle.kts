@@ -20,6 +20,7 @@ dependencies {
     implementation(projects.featureTvNavigation)
 
     implementation(projects.coreUi)
+    implementation(projects.commonUi)
     implementation(projects.sharedUi)
     implementation(projects.sharedData)
     implementation(projects.coreUiPaging)
@@ -36,4 +37,9 @@ dependencies {
     implementation(projects.apiService.tmdb)
     implementation(projects.coreImage)
     implementation(libs.hilt.navigation.compose)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(projects.coreTesting)
+    testImplementation(projects.sharedTesting)
 }

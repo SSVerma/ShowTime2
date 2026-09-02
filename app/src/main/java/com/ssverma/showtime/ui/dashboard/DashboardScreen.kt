@@ -47,6 +47,8 @@ import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.component.AttributionFooter
+import com.ssverma.shared.ui.component.SeasonCompletionDialog
+import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
 import com.ssverma.showtime.ui.dashboard.shelves.dailyHabitShelf
 import com.ssverma.showtime.ui.dashboard.shelves.dailyPollShelf
@@ -56,6 +58,7 @@ import com.ssverma.showtime.ui.dashboard.shelves.studioPortalsShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingDiscussionsShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingSpotlightShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingWorldwideShelf
+import com.ssverma.showtime.ui.dashboard.shelves.universalDiscoveryShelf
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +73,7 @@ fun DashboardScreen(
     openMovieListing: () -> Unit,
     openTvListing: () -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openUniversalDiscovery: (UniversalDiscoveryNavKey) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -203,6 +207,11 @@ fun DashboardScreen(
                     onOpenGame = openCinemaGame
                 )
 
+                // 3.1 Universal Discovery & Browse Hub ("What to Watch Tonight")
+                universalDiscoveryShelf(
+                    onOpenDiscovery = openUniversalDiscovery
+                )
+
                 // 3. In-Viewport Native Ad Showcase (Guaranteed viewability & high CPM)
                 inViewportNativeAdShelf(
                     nativeAd = uiState.nativeAd,
@@ -292,7 +301,7 @@ fun DashboardScreen(
             )
 
             uiState.completedShowDialog?.let { dialogState ->
-                com.ssverma.shared.ui.component.SeasonCompletionDialog(
+                SeasonCompletionDialog(
                     state = dialogState,
                     onDismiss = viewModel::dismissCompletedShowDialog
                 )

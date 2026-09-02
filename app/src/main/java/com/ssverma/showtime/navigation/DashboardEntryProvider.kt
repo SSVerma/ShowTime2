@@ -123,7 +123,10 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
                     )
                 )
             },
-            openLibraryPage = openLibraryPage
+            openLibraryPage = openLibraryPage,
+            openUniversalDiscovery = { navKey ->
+                navigator.navigate(navKey)
+            }
         )
     }
 }

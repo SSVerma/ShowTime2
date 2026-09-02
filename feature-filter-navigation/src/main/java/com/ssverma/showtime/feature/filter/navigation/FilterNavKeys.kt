@@ -14,3 +14,12 @@ data class WatchProviderHubNavKey(
     val isMovie: Boolean,
     val source: String = "default"
 ) : NavKey, Parcelable
+
+@Serializable
+@Parcelize
+data class UniversalDiscoveryNavKey(
+    val initialMediaType: String = "Movie",
+    val initialVibe: String = "ALL",
+    val initialStudioHub: String? = null
+) : NavKey, Parcelable
+

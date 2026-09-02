@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Info
@@ -45,6 +46,7 @@ import com.ssverma.showtime.R
 
 @Composable
 fun ShowTimeDrawerContent(
+    onOpenDiscovery: () -> Unit,
     onOpenPeople: () -> Unit,
     onOpenCinemaGame: () -> Unit,
     onOpenReceipt: () -> Unit,
@@ -104,6 +106,11 @@ fun ShowTimeDrawerContent(
             // Section 1: Explore & Discovery
             DrawerSectionHeader(title = stringResource(id = R.string.explore_section))
             DrawerItem(
+                label = "Discover & Browse",
+                icon = Icons.Rounded.AutoAwesome,
+                onClick = onOpenDiscovery
+            )
+            DrawerItem(
                 label = stringResource(id = R.string.people),
                 icon = Icons.Rounded.People,
                 onClick = onOpenPeople
@@ -147,7 +154,7 @@ fun ShowTimeDrawerContent(
             DrawerItem(
                 label = stringResource(id = R.string.pro_membership),
                 icon = Icons.Rounded.Star,
-                iconTint = Color(0xFFFFB300),
+                iconTint = MaterialTheme.colorScheme.primary,
                 onClick = onOpenPro
             )
             DrawerItem(

@@ -100,6 +100,7 @@ import com.ssverma.shared.ui.LocalAppStateHolder
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.showtime.component.ShowTimeDrawerContent
 import com.ssverma.showtime.component.ShowTimeTopSearchBar
+import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.navigation.DashboardHomeNavKey
 import com.ssverma.showtime.navigation.ShowTimeNavDisplay
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
@@ -258,6 +259,10 @@ fun ShowTime(
                 gesturesEnabled = isHomePage,
                 drawerContent = {
                     ShowTimeDrawerContent(
+                        onOpenDiscovery = {
+                            coroutineScope.launch { drawerState.close() }
+                            navigator.navigate(UniversalDiscoveryNavKey())
+                        },
                         onOpenPeople = {
                             coroutineScope.launch { drawerState.close() }
                             navigator.navigate(PersonHomeNavKey)

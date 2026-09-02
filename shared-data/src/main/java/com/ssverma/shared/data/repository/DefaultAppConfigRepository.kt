@@ -131,6 +131,17 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(NotificationsEnabledKey, enabled)
     }
 
+    override val userStreamingSubscriptions: Flow<Set<Int>>
+        get() = keyValueStorage.observe(UserStreamingSubscriptionsKey, "").map { raw ->
+            if (raw.isBlank()) emptySet()
+            else raw.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+        }
+
+    override suspend fun updateStreamingSubscriptions(providerIds: Set<Int>) {
+        val raw = providerIds.joinToString(",")
+        keyValueStorage.write(UserStreamingSubscriptionsKey, raw)
+    }
+
     companion object {
         private val AppThemeKey = stringPreferencesKey("app_theme")
 
@@ -140,6 +151,9 @@ class DefaultAppConfigRepository @Inject constructor(
             booleanPreferencesKey("app_info_bottom_sheet_dismissed")
 
         private val WatchProviderRegionKey = stringPreferencesKey("watch_provider_region")
+
+        private val UserStreamingSubscriptionsKey =
+            stringPreferencesKey("user_streaming_subscriptions")
 
         private val TranslationEnabledKey = booleanPreferencesKey("translation_enabled")
 
