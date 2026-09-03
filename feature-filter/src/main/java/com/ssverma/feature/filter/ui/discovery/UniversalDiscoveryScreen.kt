@@ -1,6 +1,5 @@
 package com.ssverma.feature.filter.ui.discovery
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -82,7 +81,7 @@ fun UniversalDiscoveryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val gridState = rememberLazyGridState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -107,16 +106,13 @@ fun UniversalDiscoveryScreen(
     }
 
     val isScrolled by remember {
-        derivedStateOf { gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0 }
+        derivedStateOf {
+            gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
+        }
     }
     val shadowAlpha by animateFloatAsState(
-        targetValue = if (isScrolled) 0.12f else 0f,
+        targetValue = if (isScrolled) 0.35f else 0f,
         label = "filter_bar_shadow_alpha"
-    )
-    val filterBarColor by animateColorAsState(
-        targetValue = if (isScrolled) MaterialTheme.colorScheme.surfaceContainer
-        else MaterialTheme.colorScheme.background,
-        label = "filter_bar_color"
     )
 
     Scaffold(
@@ -154,7 +150,7 @@ fun UniversalDiscoveryScreen(
                 )
 
                 Surface(
-                    color = filterBarColor,
+                    color = MaterialTheme.colorScheme.background,
                     tonalElevation = 0.dp,
                     shadowElevation = 0.dp,
                     modifier = Modifier.fillMaxWidth()
@@ -180,23 +176,23 @@ fun UniversalDiscoveryScreen(
                         } else {
                             Spacer(modifier = Modifier.height(2.dp))
                         }
-
-                        if (shadowAlpha > 0f) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(4.dp)
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.Black.copy(alpha = shadowAlpha),
-                                                Color.Transparent
-                                            )
-                                        )
-                                    )
-                            )
-                        }
                     }
+                }
+
+                if (shadowAlpha > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Black.copy(alpha = shadowAlpha),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
                 }
             }
         },
@@ -233,14 +229,14 @@ fun UniversalDiscoveryScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier = Modifier.fillMaxSize()
         ) {
             if (uiState.isLoading && uiState.items.isEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
                 ) {
                     ShowTimeLoadingIndicator(modifier = Modifier.size(48.dp))
                 }
@@ -248,7 +244,12 @@ fun UniversalDiscoveryScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = innerPadding.calculateTopPadding() + 4.dp,
+                            bottom = innerPadding.calculateBottomPadding() + 16.dp
+                        )
                 ) {
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier
@@ -338,8 +339,8 @@ fun UniversalDiscoveryScreen(
                     contentPadding = PaddingValues(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 2.dp,
-                        bottom = 88.dp
+                        top = innerPadding.calculateTopPadding() + 2.dp,
+                        bottom = innerPadding.calculateBottomPadding() + 80.dp
                     ),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
