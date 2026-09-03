@@ -40,6 +40,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -49,6 +52,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -83,6 +88,8 @@ fun TasteProfileScreen(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     val isScrolled by remember {
         derivedStateOf {
@@ -106,6 +113,7 @@ fun TasteProfileScreen(
                 shadowAlpha = shadowAlpha
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
             .fillMaxSize()
@@ -214,7 +222,16 @@ fun TasteProfileScreen(
                     }
 
                     IconButton(
-                        onClick = { viewModel.refreshRecommendations() },
+                        onClick = {
+                            viewModel.refreshRecommendations()
+                            coroutineScope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(
+                                    message = "Recommendations refreshed",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        },
                         enabled = !uiState.isRefreshingRecommendations
                     ) {
                         if (uiState.isRefreshingRecommendations) {

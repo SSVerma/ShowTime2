@@ -18,7 +18,8 @@ class GetSmartRecommendationsUseCase @Inject constructor(
     suspend operator fun invoke(
         filterType: DiaryFilterType = DiaryFilterType.ALL,
         selectedProviderIds: Set<Int> = emptySet(),
-        watchRegion: String = "US"
+        watchRegion: String = "US",
+        page: Int = 1
     ): Result<List<RecommendationShelf>, Failure.CoreFailure> = coroutineScope {
         val shelves = mutableListOf<RecommendationShelf>()
 
@@ -40,7 +41,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
                     watchRegion = watchRegion,
                     minRating = 7.0f
                 ),
-                page = 1
+                page = page
             )
         }
 
@@ -53,7 +54,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
                     watchRegion = watchRegion,
                     minRating = 8.0f
                 ),
-                page = 1
+                page = page
             )
         }
 
@@ -65,7 +66,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
                     selectedProviderIds = selectedProviderIds,
                     watchRegion = watchRegion
                 ),
-                page = 1
+                page = page
             )
         }
 
@@ -77,7 +78,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
                     selectedProviderIds = selectedProviderIds,
                     watchRegion = watchRegion
                 ),
-                page = 1
+                page = page
             )
         }
 
@@ -90,7 +91,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
                         selectedProviderIds = selectedProviderIds,
                         watchRegion = watchRegion
                     ),
-                    page = 1
+                    page = page
                 )
             } else null
         }
@@ -118,7 +119,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
             shelves.add(
                 RecommendationShelf(
                     id = "masterpieces",
-                    title = "Critically Acclaimed Masterpieces",
+                    title = "Acclaimed Masterpieces",
                     subtitle = "Highest rated cinema with 8.0+ TMDB score",
                     badge = "★ 8.0+ Rating",
                     emoji = "🏆",
@@ -131,7 +132,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
             shelves.add(
                 RecommendationShelf(
                     id = "pure_fun",
-                    title = "Popcorn & Crowd Pleasers",
+                    title = "Crowd Pleasers",
                     subtitle = "Exciting, high-energy entertainment",
                     badge = "Trending",
                     emoji = "🍿",
@@ -144,7 +145,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
             shelves.add(
                 RecommendationShelf(
                     id = "epic_worlds",
-                    title = "Epic Worlds & Sci-Fi Journeys",
+                    title = "Epic & Sci-Fi Worlds",
                     subtitle = "Immersive storytelling and spectacle",
                     badge = "Sci-Fi & Fantasy",
                     emoji = "🌌",
@@ -157,7 +158,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
             shelves.add(
                 RecommendationShelf(
                     id = "tv_spotlight",
-                    title = "Binge-Worthy TV Series",
+                    title = "Binge-Worthy TV",
                     subtitle = "Hooking seasons and acclaimed shows",
                     badge = "TV Spotlight",
                     emoji = "📺",

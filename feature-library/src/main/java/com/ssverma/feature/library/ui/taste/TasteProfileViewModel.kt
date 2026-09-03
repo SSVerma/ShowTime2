@@ -56,19 +56,24 @@ class TasteProfileViewModel @Inject constructor(
         initialValue = TasteProfileUiState(isLoading = true)
     )
 
+    private var recommendationPage = 1
+
     fun setFilter(filter: DiaryFilterType) {
+        if (_selectedFilter.value == filter) return
         _selectedFilter.value = filter
-        loadRecommendations(filter)
+        recommendationPage = 1
+        loadRecommendations(filter, page = 1)
     }
 
     fun refreshRecommendations() {
-        loadRecommendations(_selectedFilter.value)
+        recommendationPage = if (recommendationPage >= 3) 1 else recommendationPage + 1
+        loadRecommendations(_selectedFilter.value, page = recommendationPage)
     }
 
-    private fun loadRecommendations(filter: DiaryFilterType) {
+    private fun loadRecommendations(filter: DiaryFilterType, page: Int = 1) {
         viewModelScope.launch {
             _isRefreshing.value = true
-            when (val result = getSmartRecommendationsUseCase(filterType = filter)) {
+            when (val result = getSmartRecommendationsUseCase(filterType = filter, page = page)) {
                 is Result.Success -> {
                     _recommendationShelves.value = result.data
                 }
