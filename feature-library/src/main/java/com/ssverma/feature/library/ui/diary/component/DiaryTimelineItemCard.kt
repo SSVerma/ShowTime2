@@ -117,15 +117,30 @@ fun DiaryTimelineItemCard(
 
                             DropdownMenu(
                                 expanded = showMenu,
-                                onDismissRequest = { showMenu = false }
+                                onDismissRequest = { showMenu = false },
+                                shape = RoundedCornerShape(16.dp),
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                tonalElevation = 3.dp,
+                                shadowElevation = 6.dp,
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                )
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Edit Log") },
+                                    text = {
+                                        Text(
+                                            text = "Edit Log",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    },
                                     leadingIcon = {
                                         Icon(
-                                            Icons.Rounded.Edit,
+                                            imageVector = Icons.Rounded.Edit,
                                             contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
                                         )
                                     },
                                     onClick = {
@@ -134,12 +149,19 @@ fun DiaryTimelineItemCard(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Share Review") },
+                                    text = {
+                                        Text(
+                                            text = "Share Review",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    },
                                     leadingIcon = {
                                         Icon(
-                                            Icons.Rounded.Share,
+                                            imageVector = Icons.Rounded.Share,
                                             contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
                                         )
                                     },
                                     onClick = {
@@ -148,13 +170,20 @@ fun DiaryTimelineItemCard(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Delete Entry") },
+                                    text = {
+                                        Text(
+                                            text = "Delete Entry",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    },
                                     leadingIcon = {
                                         Icon(
-                                            Icons.Rounded.DeleteOutline,
+                                            imageVector = Icons.Rounded.DeleteOutline,
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.error,
-                                            modifier = Modifier.size(18.dp)
+                                            modifier = Modifier.size(20.dp)
                                         )
                                     },
                                     onClick = {

@@ -1335,7 +1335,15 @@ private fun MediaCollectionTabContent(
                                 }
                                 DropdownMenu(
                                     expanded = showClearMenu,
-                                    onDismissRequest = { showClearMenu = false }
+                                    onDismissRequest = { showClearMenu = false },
+                                    shape = RoundedCornerShape(16.dp),
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                    tonalElevation = 3.dp,
+                                    shadowElevation = 6.dp,
+                                    border = BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                    )
                                 ) {
                                     DropdownMenuItem(
                                         text = {
@@ -2156,7 +2164,15 @@ private fun CustomListDetailSheet(
                     }
                     DropdownMenu(
                         expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
+                        onDismissRequest = { showMenu = false },
+                        shape = RoundedCornerShape(16.dp),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        tonalElevation = 3.dp,
+                        shadowElevation = 6.dp,
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                        )
                     ) {
                         DropdownMenuItem(
                             text = { Text(text = stringResource(R.string.edit_list)) },
