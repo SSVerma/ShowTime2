@@ -41,7 +41,12 @@
     <string name="provided_by_justwatch">Data provided by JustWatch</string>
     <string name="watch_region">Region</string>
     <string name="select_watch_region">Select Region</string>
+    <string name="content_region">Content Region</string>
+    <string name="content_region_desc">Set default country for streaming services &amp; releases</string>
     <string name="search_region">Search regions</string>
+    <string name="search_regions">Search by country name or code</string>
+    <string name="no_regions_found">No regions found</string>
+    <string name="no_regions_found_desc">Try searching with a different country name or code</string>
     <string name="unexpected_error_msg">An unexpected error occurred. Please try again later.</string>
     <string name="retry">Retry</string>
     <string name="close">Close</string>

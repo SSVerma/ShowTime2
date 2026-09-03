@@ -58,6 +58,7 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.region.RegionSelectionBottomSheet
 import com.ssverma.shared.ui.viewmodel.WatchRegionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -381,7 +382,6 @@ fun LocalizationSettingsBottomSheet(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegionPickerBottomSheet(
     regionsState: UiState<List<WatchProviderRegion>, *>,
@@ -390,31 +390,13 @@ fun RegionPickerBottomSheet(
     onRetry: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    ShowTimeBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.85f)
-                .padding(bottom = MaterialTheme.spacing.medium)
-        ) {
-            Text(
-                text = stringResource(R.string.select_region),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.large)
-            )
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-            RegionPicker(
-                regionsState = regionsState,
-                selectedRegionIso = selectedRegionIso,
-                onRegionSelected = onRegionSelected,
-                onRetry = onRetry
-            )
-        }
-    }
+    RegionSelectionBottomSheet(
+        regionsState = regionsState,
+        selectedRegionIso = selectedRegionIso,
+        onRegionSelected = onRegionSelected,
+        onRetry = onRetry,
+        onDismissRequest = onDismiss
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
