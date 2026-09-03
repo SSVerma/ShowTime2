@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.layout
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -81,7 +85,9 @@ fun UniversalDiscoveryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val gridState = rememberLazyGridState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val density = LocalDensity.current
+    var initialHeaderHeight by remember { mutableStateOf<Dp?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -107,7 +113,9 @@ fun UniversalDiscoveryScreen(
 
     val isScrolled by remember {
         derivedStateOf {
-            gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
+            gridState.firstVisibleItemIndex > 0 ||
+                    gridState.firstVisibleItemScrollOffset > 0 ||
+                    scrollBehavior.state.collapsedFraction > 0f
         }
     }
     val shadowAlpha by animateFloatAsState(
@@ -117,7 +125,15 @@ fun UniversalDiscoveryScreen(
 
     Scaffold(
         topBar = {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        if (scrollBehavior.state.heightOffset == 0f) {
+                            initialHeaderHeight = with(density) { coordinates.size.height.toDp() }
+                        }
+                    }
+            ) {
                 TopAppBar(
                     title = {
                         Text(
@@ -247,7 +263,8 @@ fun UniversalDiscoveryScreen(
                         .padding(
                             start = 16.dp,
                             end = 16.dp,
-                            top = innerPadding.calculateTopPadding() + 4.dp,
+                            top = (initialHeaderHeight
+                                ?: innerPadding.calculateTopPadding()) + 4.dp,
                             bottom = innerPadding.calculateBottomPadding() + 16.dp
                         )
                 ) {
@@ -339,7 +356,7 @@ fun UniversalDiscoveryScreen(
                     contentPadding = PaddingValues(
                         start = 16.dp,
                         end = 16.dp,
-                        top = innerPadding.calculateTopPadding() + 2.dp,
+                        top = (initialHeaderHeight ?: innerPadding.calculateTopPadding()) + 2.dp,
                         bottom = innerPadding.calculateBottomPadding() + 80.dp
                     ),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
