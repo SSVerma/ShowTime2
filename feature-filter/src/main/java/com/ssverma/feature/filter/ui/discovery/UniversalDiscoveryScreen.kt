@@ -73,6 +73,7 @@ import com.ssverma.feature.filter.ui.discovery.component.SpinTheReelDialog
 import com.ssverma.feature.filter.ui.discovery.component.StreamingFilterRow
 import com.ssverma.feature.filter.ui.discovery.component.UniversalMediaCard
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,8 +82,15 @@ fun UniversalDiscoveryScreen(
     onOpenMovieDetails: (Int) -> Unit,
     onOpenTvShowDetails: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    navKey: UniversalDiscoveryNavKey? = null,
     viewModel: UniversalDiscoveryViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(navKey) {
+        if (navKey != null) {
+            viewModel.initFromNavKey(navKey)
+        }
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val gridState = rememberLazyGridState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()

@@ -17,6 +17,7 @@ import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.repository.WatchProviderRepository
 import com.ssverma.shared.domain.usecase.discovery.GetRouletteSurpriseUseCase
 import com.ssverma.shared.domain.usecase.discovery.GetUniversalDiscoveryUseCase
+import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -133,6 +134,62 @@ class UniversalDiscoveryViewModel @Inject constructor(
                     scheduleQuery(debounceMs = 150)
                 }
             }
+        }
+    }
+
+    fun initFromNavKey(navKey: UniversalDiscoveryNavKey) {
+        val initialMediaType =
+            if (navKey.initialMediaType == "Tv") MediaType.Tv else MediaType.Movie
+
+        val initialVibe = try {
+            DiscoveryVibePreset.valueOf(navKey.initialVibe)
+        } catch (_: Exception) {
+            DiscoveryVibePreset.ALL
+        }
+
+        val initialStudio = try {
+            navKey.initialStudioHub?.let { DiscoveryStudioHub.valueOf(it) }
+        } catch (_: Exception) {
+            null
+        }
+
+        val genreId = navKey.initialGenreId
+        val initialGenres =
+            if (genreId != null && genreId > 0) setOf(genreId) else emptySet()
+
+        val providerId = navKey.initialProviderId
+        val initialProviders =
+            if (providerId != null && providerId > 0) setOf(providerId) else emptySet()
+
+        val initialDecade = try {
+            navKey.initialDecade?.let { DiscoveryDecade.valueOf(it) } ?: DiscoveryDecade.ALL_TIME
+        } catch (_: Exception) {
+            DiscoveryDecade.ALL_TIME
+        }
+
+        val initialSort = try {
+            navKey.initialSortOrder?.let { DiscoverySortOrder.valueOf(it) }
+                ?: DiscoverySortOrder.POPULARITY_DESC
+        } catch (_: Exception) {
+            DiscoverySortOrder.POPULARITY_DESC
+        }
+
+        _uiState.update {
+            it.copy(
+                filter = it.filter.copy(
+                    mediaType = initialMediaType,
+                    vibePreset = initialVibe,
+                    studioHub = initialStudio,
+                    selectedGenreIds = initialGenres,
+                    selectedProviderIds = initialProviders,
+                    decade = initialDecade,
+                    sortOrder = initialSort
+                )
+            )
+        }
+
+        if (navKey.autoSpinRoulette) {
+            spinRoulette()
         }
     }
 

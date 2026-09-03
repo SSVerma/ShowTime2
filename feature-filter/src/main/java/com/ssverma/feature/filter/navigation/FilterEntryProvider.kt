@@ -87,8 +87,9 @@ fun EntryProviderScope<NavKey>.filterEntries(
         )
     }
 
-    showTimeEntry<UniversalDiscoveryNavKey> {
+    showTimeEntry<UniversalDiscoveryNavKey> { key ->
         UniversalDiscoveryScreen(
+            navKey = key,
             onBackClick = { navigator.goBack() },
             onOpenMovieDetails = { movieId -> navigator.navigate(MovieDetailNavKey(movieId)) },
             onOpenTvShowDetails = { tvShowId -> navigator.navigate(TvShowDetailNavKey(tvShowId)) }

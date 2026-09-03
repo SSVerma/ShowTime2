@@ -57,6 +57,7 @@ fun UniversalDiscoveryShelf(
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = { onOpenDiscovery(UniversalDiscoveryNavKey()) },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
@@ -141,7 +142,7 @@ fun UniversalDiscoveryShelf(
             ) {
                 // Roulette Pill
                 Surface(
-                    onClick = { onOpenDiscovery(UniversalDiscoveryNavKey()) },
+                    onClick = { onOpenDiscovery(UniversalDiscoveryNavKey(autoSpinRoulette = true)) },
                     shape = RoundedCornerShape(12.dp),
                     color = MaterialTheme.colorScheme.primary
                 ) {

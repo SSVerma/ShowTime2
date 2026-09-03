@@ -24,6 +24,7 @@ data class UniversalDiscoveryNavKey(
     val initialGenreId: Int? = null,
     val initialProviderId: Int? = null,
     val initialDecade: String? = null,
-    val initialSortOrder: String? = null
+    val initialSortOrder: String? = null,
+    val autoSpinRoulette: Boolean = false
 ) : NavKey, Parcelable
 
