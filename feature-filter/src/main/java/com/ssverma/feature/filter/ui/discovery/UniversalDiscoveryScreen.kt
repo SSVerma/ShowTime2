@@ -111,7 +111,7 @@ fun UniversalDiscoveryScreen(
         }
     }
     val shadowAlpha by animateFloatAsState(
-        targetValue = if (isScrolled) 0.35f else 0f,
+        targetValue = if (isScrolled) 0.20f else 0f,
         label = "filter_bar_shadow_alpha"
     )
 
@@ -183,7 +183,7 @@ fun UniversalDiscoveryScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(8.dp)
+                            .height(2.dp)
                             .background(
                                 Brush.verticalGradient(
                                     colors = listOf(
@@ -408,6 +408,7 @@ fun UniversalDiscoveryScreen(
                     items(uiState.items, key = { "${it.mediaType}_${it.id}" }) { item ->
                         UniversalMediaCard(
                             item = item,
+                            isGridView = uiState.isGridView,
                             onClick = {
                                 if (item.mediaType == MediaType.Movie) {
                                     onOpenMovieDetails(item.id)
