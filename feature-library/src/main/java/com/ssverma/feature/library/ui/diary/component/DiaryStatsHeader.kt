@@ -1,5 +1,6 @@
 package com.ssverma.feature.library.ui.diary.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,16 +9,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Stars
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,11 +40,14 @@ fun DiaryStatsHeader(
     onOpenWrapped: (() -> Unit)? = null,
     onOpenChallenges: (() -> Unit)? = null
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         ),
+        tonalElevation = 1.dp,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -51,121 +55,53 @@ fun DiaryStatsHeader(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            // Header Row: Title & Icon
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Your Cinephile Journey",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (onOpenTasteProfile != null) {
-                        Surface(
-                            onClick = onOpenTasteProfile,
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.primary
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.AutoAwesome,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                                Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-                                Text(
-                                    text = "Taste",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                        }
-                    }
-
-                    if (onOpenWrapped != null) {
-                        Surface(
-                            onClick = onOpenWrapped,
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.tertiary
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = "Wrapped",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onTertiary
-                                )
-                                Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onTertiary,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    if (onOpenChallenges != null) {
-                        Surface(
-                            onClick = onOpenChallenges,
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.secondary
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = "Goals",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondary
-                                )
-                            }
-                        }
-                    }
-                }
             }
 
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // 4 Stat Tiles
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                StatPill(
+                StatTile(
                     label = "Logged",
                     value = stats.totalLogged.toString(),
                     icon = Icons.Rounded.Movie,
                     modifier = Modifier.weight(1f)
                 )
-                StatPill(
+                StatTile(
                     label = "Avg Rating",
                     value = if (stats.averageUserRating > 0f) "%.1f".format(stats.averageUserRating) else "—",
                     icon = Icons.Rounded.Star,
                     iconTint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
-                StatPill(
+                StatTile(
                     label = "Rewatches",
                     value = "${stats.rewatchCount}",
                     icon = Icons.Rounded.Replay,
                     modifier = Modifier.weight(1f)
                 )
-                StatPill(
+                StatTile(
                     label = "5-Stars",
                     value = "${stats.fiveStarCount}",
                     icon = Icons.Rounded.Stars,
@@ -173,47 +109,136 @@ fun DiaryStatsHeader(
                     modifier = Modifier.weight(1f)
                 )
             }
+
+            // Quick Navigation Shortcuts Row
+            if (onOpenTasteProfile != null || onOpenWrapped != null || onOpenChallenges != null) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+                    thickness = 0.5.dp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (onOpenTasteProfile != null) {
+                        QuickNavButton(
+                            label = "Taste Profile",
+                            icon = Icons.Rounded.AutoAwesome,
+                            onClick = onOpenTasteProfile,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    if (onOpenWrapped != null) {
+                        QuickNavButton(
+                            label = "Wrapped",
+                            icon = Icons.Rounded.Stars,
+                            onClick = onOpenWrapped,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    if (onOpenChallenges != null) {
+                        QuickNavButton(
+                            label = "Goals",
+                            icon = Icons.Rounded.EmojiEvents,
+                            onClick = onOpenChallenges,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun StatPill(
+private fun QuickNavButton(
+    label: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(14.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatTile(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     iconTint: Color? = null
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
         modifier = modifier
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp)
         ) {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint ?: MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier
-                        .size(15.dp)
-                        .padding(end = 2.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .size(15.dp)
+                            .padding(end = 3.dp)
+                    )
+                }
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
             )
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-        )
     }
 }
