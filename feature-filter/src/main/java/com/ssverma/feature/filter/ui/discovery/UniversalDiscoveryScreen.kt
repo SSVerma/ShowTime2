@@ -2,7 +2,6 @@ package com.ssverma.feature.filter.ui.discovery
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ViewList
@@ -34,8 +32,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -62,7 +66,6 @@ import com.ssverma.feature.filter.ui.discovery.component.SpinTheReelDialog
 import com.ssverma.feature.filter.ui.discovery.component.StreamingFilterRow
 import com.ssverma.feature.filter.ui.discovery.component.UniversalMediaCard
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +79,13 @@ fun UniversalDiscoveryScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val gridState = rememberLazyGridState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { message ->
+            snackbarHostState.showSnackbar(message = message, withDismissAction = true)
+        }
+    }
 
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -95,154 +105,82 @@ fun UniversalDiscoveryScreen(
     val isScrolled by remember {
         derivedStateOf { gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0 }
     }
-    val headerElevation by animateDpAsState(
+    val filterBarElevation by animateDpAsState(
         targetValue = if (isScrolled) 4.dp else 0.dp,
-        label = "header_elevation"
+        label = "filter_bar_elevation"
     )
-    val headerColor by animateColorAsState(
+    val filterBarColor by animateColorAsState(
         targetValue = if (isScrolled) MaterialTheme.colorScheme.surfaceContainer
         else MaterialTheme.colorScheme.background,
-        label = "header_color"
+        label = "filter_bar_color"
     )
 
     Scaffold(
         topBar = {
-            Surface(
-                color = headerColor,
-                shadowElevation = headerElevation,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = "Discover & Browse",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = onBackClick) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                    contentDescription = "Back"
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { viewModel.toggleViewMode() }) {
-                                Icon(
-                                    imageVector = if (uiState.isGridView) Icons.AutoMirrored.Rounded.ViewList else Icons.Rounded.GridView,
-                                    contentDescription = "Toggle View"
-                                )
-                            }
-                        },
-                        scrollBehavior = scrollBehavior,
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                            scrolledContainerColor = Color.Transparent
+            Column(modifier = Modifier.fillMaxWidth()) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Discover & Browse",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                         )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { viewModel.toggleViewMode() }) {
+                            Icon(
+                                imageVector = if (uiState.isGridView) Icons.AutoMirrored.Rounded.ViewList else Icons.Rounded.GridView,
+                                contentDescription = "Toggle View"
+                            )
+                        }
+                    },
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        scrolledContainerColor = MaterialTheme.colorScheme.background
                     )
+                )
 
-                    // Symmetrical Movies vs TV Switcher Pill
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 2.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
+                Surface(
+                    color = filterBarColor,
+                    tonalElevation = filterBarElevation,
+                    shadowElevation = filterBarElevation,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        StreamingFilterRow(
+                            watchRegion = uiState.filter.watchRegion,
+                            availableProviders = uiState.availableProviders,
+                            selectedProviderIds = uiState.filter.selectedProviderIds,
+                            onToggleProvider = { viewModel.toggleStreamingProvider(it) },
+                            onOpenRegionSheet = { viewModel.openRegionSheet(true) },
+                            onOpenFilterSheet = { viewModel.openFilterSheet(true) }
+                        )
+
+                        if (uiState.isLoading && uiState.items.isNotEmpty()) {
+                            LinearProgressIndicator(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(4.dp)
-                            ) {
-                                val isMovieSelected = uiState.filter.mediaType == MediaType.Movie
-                                val isTvSelected = uiState.filter.mediaType == MediaType.Tv
-
-                                Surface(
-                                    onClick = { viewModel.setMediaType(MediaType.Movie) },
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = if (isMovieSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Movie,
-                                            contentDescription = null,
-                                            tint = if (isMovieSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            text = "Movies",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = if (isMovieSelected) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isMovieSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-
-                                Surface(
-                                    onClick = { viewModel.setMediaType(MediaType.Tv) },
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = if (isTvSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Tv,
-                                            contentDescription = null,
-                                            tint = if (isTvSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            text = "TV Shows",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = if (isTvSelected) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isTvSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-                            }
+                                    .height(2.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = Color.Transparent
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.height(2.dp))
                         }
                     }
-
-                    // Quick Vibes Carousel
-                    QuickVibesRow(
-                        selectedVibe = uiState.filter.vibePreset,
-                        onVibeSelected = { viewModel.setVibePreset(it) }
-                    )
-
-                    // Streaming Subscriptions Bar
-                    StreamingFilterRow(
-                        watchRegion = uiState.filter.watchRegion,
-                        availableProviders = uiState.availableProviders,
-                        selectedProviderIds = uiState.filter.selectedProviderIds,
-                        onToggleProvider = { viewModel.toggleStreamingProvider(it) },
-                        onOpenRegionSheet = { viewModel.openRegionSheet(true) },
-                        onOpenFilterSheet = { viewModel.openFilterSheet(true) }
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.spinRoulette() },
@@ -288,29 +226,85 @@ fun UniversalDiscoveryScreen(
                 }
             } else if (uiState.items.isEmpty()) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Text(
-                        text = "No titles found matching your criteria",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Try switching vibes, adjusting streaming filters, or changing decade.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.resetFilters() }) {
-                        Text("Reset Filters")
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        val isMovieSelected = uiState.filter.mediaType == MediaType.Movie
+                        val isTvSelected = uiState.filter.mediaType == MediaType.Tv
+
+                        SegmentedButton(
+                            selected = isMovieSelected,
+                            onClick = { viewModel.setMediaType(MediaType.Movie) },
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                            icon = {
+                                SegmentedButtonDefaults.Icon(active = isMovieSelected) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Movie,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                    )
+                                }
+                            }
+                        ) {
+                            Text("Movies")
+                        }
+
+                        SegmentedButton(
+                            selected = isTvSelected,
+                            onClick = { viewModel.setMediaType(MediaType.Tv) },
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                            icon = {
+                                SegmentedButtonDefaults.Icon(active = isTvSelected) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Tv,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                    )
+                                }
+                            }
+                        ) {
+                            Text("TV Shows")
+                        }
                     }
+
+                    QuickVibesRow(
+                        selectedVibe = uiState.filter.vibePreset,
+                        onVibeSelected = { viewModel.setVibePreset(it) }
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "No titles found matching your criteria",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Try switching vibes, adjusting streaming filters, or changing decade.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.resetFilters() }) {
+                            Text("Reset Filters")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             } else {
                 val columns = if (uiState.isGridView) 2 else 1
@@ -328,6 +322,59 @@ fun UniversalDiscoveryScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            val isMovieSelected = uiState.filter.mediaType == MediaType.Movie
+                            val isTvSelected = uiState.filter.mediaType == MediaType.Tv
+
+                            SegmentedButton(
+                                selected = isMovieSelected,
+                                onClick = { viewModel.setMediaType(MediaType.Movie) },
+                                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                                icon = {
+                                    SegmentedButtonDefaults.Icon(active = isMovieSelected) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Movie,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                        )
+                                    }
+                                }
+                            ) {
+                                Text("Movies")
+                            }
+
+                            SegmentedButton(
+                                selected = isTvSelected,
+                                onClick = { viewModel.setMediaType(MediaType.Tv) },
+                                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                                icon = {
+                                    SegmentedButtonDefaults.Icon(active = isTvSelected) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Tv,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                        )
+                                    }
+                                }
+                            ) {
+                                Text("TV Shows")
+                            }
+                        }
+                    }
+
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        QuickVibesRow(
+                            selectedVibe = uiState.filter.vibePreset,
+                            onVibeSelected = { viewModel.setVibePreset(it) },
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
                     items(uiState.items, key = { "${it.mediaType}_${it.id}" }) { item ->
                         UniversalMediaCard(
                             item = item,
@@ -361,41 +408,51 @@ fun UniversalDiscoveryScreen(
         }
     }
 
-    // Advanced Filters Sheet
-    if (uiState.isFilterSheetOpen) {
-        DiscoveryFilterSheet(
-            filter = uiState.filter,
-            onApply = { viewModel.applyFilter(it) },
-            onReset = { viewModel.resetFilters() },
-            onDismiss = { viewModel.openFilterSheet(false) }
-        )
-    }
-
-    // Region Selection Sheet
-    if (uiState.isRegionSheetOpen) {
-        RegionSelectionBottomSheet(
-            selectedRegionCode = uiState.filter.watchRegion,
-            availableRegions = uiState.availableRegions,
-            onRegionSelected = { viewModel.updateRegion(it.iso31661) },
-            onDismissRequest = { viewModel.openRegionSheet(false) }
-        )
-    }
-
-    // Cinema Roulette Dialog
-    if (uiState.isRouletteSpinning || uiState.rouletteItem != null) {
+    if (uiState.rouletteItem != null || uiState.isRouletteSpinning) {
         SpinTheReelDialog(
             item = uiState.rouletteItem,
             isSpinning = uiState.isRouletteSpinning,
             onSpinAgain = { viewModel.spinRoulette() },
-            onOpenDetails = { type, id ->
-                if (type == MediaType.Movie) {
+            onOpenDetails = { mediaType, id ->
+                viewModel.dismissRoulette()
+                if (mediaType == MediaType.Movie) {
                     onOpenMovieDetails(id)
                 } else {
                     onOpenTvShowDetails(id)
                 }
             },
-            onToggleWatchlist = { viewModel.toggleWatchlist(it) },
+            onToggleWatchlist = { item ->
+                viewModel.toggleWatchlist(item)
+            },
             onDismiss = { viewModel.dismissRoulette() }
+        )
+    }
+
+    if (uiState.isFilterSheetOpen) {
+        DiscoveryFilterSheet(
+            filter = uiState.filter,
+            onApply = { updatedFilter ->
+                viewModel.applyFilter(updatedFilter)
+            },
+            onReset = {
+                viewModel.resetFilters()
+            },
+            onDismiss = {
+                viewModel.openFilterSheet(false)
+            }
+        )
+    }
+
+    if (uiState.isRegionSheetOpen) {
+        RegionSelectionBottomSheet(
+            selectedRegionCode = uiState.filter.watchRegion,
+            availableRegions = uiState.availableRegions,
+            onRegionSelected = { region ->
+                viewModel.updateRegion(region.iso31661)
+            },
+            onDismissRequest = {
+                viewModel.openRegionSheet(false)
+            }
         )
     }
 }

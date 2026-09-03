@@ -281,8 +281,6 @@ fun DiscoveryFilterSheet(
             // Pinned Bottom CTA Row
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
-                tonalElevation = 4.dp,
-                shadowElevation = 8.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(

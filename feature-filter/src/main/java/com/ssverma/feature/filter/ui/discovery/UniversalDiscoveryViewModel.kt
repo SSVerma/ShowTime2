@@ -20,8 +20,11 @@ import com.ssverma.shared.domain.usecase.discovery.GetUniversalDiscoveryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
@@ -42,6 +45,9 @@ class UniversalDiscoveryViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(UniversalDiscoveryUiState())
     val uiState: StateFlow<UniversalDiscoveryUiState> = _uiState.asStateFlow()
+
+    private val _uiEffect = MutableSharedFlow<String>()
+    val uiEffect: SharedFlow<String> = _uiEffect.asSharedFlow()
 
     private var searchJob: Job? = null
     private var currentPage = 1
@@ -353,6 +359,8 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 releaseDate = item.releaseDate
             )
             updateItemInState(item.id) { it.copy(isFavorite = isFav) }
+            val message = if (isFav) "Added to Favorites" else "Removed from Favorites"
+            _uiEffect.emit(message)
         }
     }
 
@@ -368,6 +376,8 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 releaseDate = item.releaseDate
             )
             updateItemInState(item.id) { it.copy(isInWatchlist = inWatchlist) }
+            val message = if (inWatchlist) "Added to Watchlist" else "Removed from Watchlist"
+            _uiEffect.emit(message)
         }
     }
 
@@ -381,6 +391,8 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 voteAvg = item.voteAvg
             )
             updateItemInState(item.id) { it.copy(isWatched = watched) }
+            val message = if (watched) "Marked as Watched" else "Removed from Watched"
+            _uiEffect.emit(message)
         }
     }
 

@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
+import com.ssverma.shared.ui.discovery.icon
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 
 fun LazyListScope.universalDiscoveryShelf(
@@ -156,7 +157,7 @@ fun UniversalDiscoveryShelf(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Roulette 🎰",
+                            text = "Roulette",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary
@@ -187,8 +188,13 @@ fun UniversalDiscoveryShelf(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
                         ) {
-                            Text(text = vibe.emoji, style = MaterialTheme.typography.bodyMedium)
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = vibe.icon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = vibe.label,
                                 style = MaterialTheme.typography.labelMedium,
