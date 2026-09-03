@@ -1,7 +1,8 @@
 package com.ssverma.feature.filter.ui.discovery
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -105,9 +109,9 @@ fun UniversalDiscoveryScreen(
     val isScrolled by remember {
         derivedStateOf { gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0 }
     }
-    val filterBarElevation by animateDpAsState(
-        targetValue = if (isScrolled) 4.dp else 0.dp,
-        label = "filter_bar_elevation"
+    val shadowAlpha by animateFloatAsState(
+        targetValue = if (isScrolled) 0.12f else 0f,
+        label = "filter_bar_shadow_alpha"
     )
     val filterBarColor by animateColorAsState(
         targetValue = if (isScrolled) MaterialTheme.colorScheme.surfaceContainer
@@ -151,8 +155,8 @@ fun UniversalDiscoveryScreen(
 
                 Surface(
                     color = filterBarColor,
-                    tonalElevation = filterBarElevation,
-                    shadowElevation = filterBarElevation,
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
@@ -175,6 +179,22 @@ fun UniversalDiscoveryScreen(
                             )
                         } else {
                             Spacer(modifier = Modifier.height(2.dp))
+                        }
+
+                        if (shadowAlpha > 0f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(4.dp)
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Black.copy(alpha = shadowAlpha),
+                                                Color.Transparent
+                                            )
+                                        )
+                                    )
+                            )
                         }
                     }
                 }
@@ -228,12 +248,12 @@ fun UniversalDiscoveryScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(bottom = 6.dp)
                     ) {
                         val isMovieSelected = uiState.filter.mediaType == MediaType.Movie
                         val isTvSelected = uiState.filter.mediaType == MediaType.Tv
@@ -275,7 +295,10 @@ fun UniversalDiscoveryScreen(
 
                     QuickVibesRow(
                         selectedVibe = uiState.filter.vibePreset,
-                        onVibeSelected = { viewModel.setVibePreset(it) }
+                        onVibeSelected = { viewModel.setVibePreset(it) },
+                        modifier = Modifier
+                            .ignoreHorizontalParentPadding(16.dp)
+                            .fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -315,7 +338,7 @@ fun UniversalDiscoveryScreen(
                     contentPadding = PaddingValues(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 8.dp,
+                        top = 2.dp,
                         bottom = 88.dp
                     ),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -323,56 +346,62 @@ fun UniversalDiscoveryScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        SingleChoiceSegmentedButtonRow(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp)
+                                .padding(top = 2.dp, bottom = 2.dp)
                         ) {
-                            val isMovieSelected = uiState.filter.mediaType == MediaType.Movie
-                            val isTvSelected = uiState.filter.mediaType == MediaType.Tv
-
-                            SegmentedButton(
-                                selected = isMovieSelected,
-                                onClick = { viewModel.setMediaType(MediaType.Movie) },
-                                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                                icon = {
-                                    SegmentedButtonDefaults.Icon(active = isMovieSelected) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Movie,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
-                                        )
-                                    }
-                                }
+                            SingleChoiceSegmentedButtonRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 6.dp)
                             ) {
-                                Text("Movies")
+                                val isMovieSelected = uiState.filter.mediaType == MediaType.Movie
+                                val isTvSelected = uiState.filter.mediaType == MediaType.Tv
+
+                                SegmentedButton(
+                                    selected = isMovieSelected,
+                                    onClick = { viewModel.setMediaType(MediaType.Movie) },
+                                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                                    icon = {
+                                        SegmentedButtonDefaults.Icon(active = isMovieSelected) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Movie,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    Text("Movies")
+                                }
+
+                                SegmentedButton(
+                                    selected = isTvSelected,
+                                    onClick = { viewModel.setMediaType(MediaType.Tv) },
+                                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                                    icon = {
+                                        SegmentedButtonDefaults.Icon(active = isTvSelected) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Tv,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    Text("TV Shows")
+                                }
                             }
 
-                            SegmentedButton(
-                                selected = isTvSelected,
-                                onClick = { viewModel.setMediaType(MediaType.Tv) },
-                                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                                icon = {
-                                    SegmentedButtonDefaults.Icon(active = isTvSelected) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Tv,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
-                                        )
-                                    }
-                                }
-                            ) {
-                                Text("TV Shows")
-                            }
+                            QuickVibesRow(
+                                selectedVibe = uiState.filter.vibePreset,
+                                onVibeSelected = { viewModel.setVibePreset(it) },
+                                modifier = Modifier
+                                    .ignoreHorizontalParentPadding(16.dp)
+                                    .fillMaxWidth()
+                            )
                         }
-                    }
-
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        QuickVibesRow(
-                            selectedVibe = uiState.filter.vibePreset,
-                            onVibeSelected = { viewModel.setVibePreset(it) },
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
                     }
 
                     items(uiState.items, key = { "${it.mediaType}_${it.id}" }) { item ->
@@ -456,3 +485,18 @@ fun UniversalDiscoveryScreen(
         )
     }
 }
+
+private fun Modifier.ignoreHorizontalParentPadding(horizontal: Dp = 16.dp): Modifier =
+    layout { measurable, constraints ->
+        val paddingPx = horizontal.roundToPx()
+        val placeable = measurable.measure(
+            constraints.copy(
+                maxWidth = constraints.maxWidth + 2 * paddingPx,
+                minWidth = constraints.maxWidth + 2 * paddingPx
+            )
+        )
+        layout(constraints.maxWidth, placeable.height) {
+            placeable.placeRelative(-paddingPx, 0)
+        }
+    }
+

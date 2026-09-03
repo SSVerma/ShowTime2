@@ -2,15 +2,16 @@ package com.ssverma.feature.filter.ui.discovery.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,17 +32,16 @@ fun QuickVibesRow(
     onVibeSelected: (DiscoveryVibePreset) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val scrollState = rememberScrollState()
-
-    Row(
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(scrollState)
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+        modifier = modifier.fillMaxWidth()
     ) {
-        DiscoveryVibePreset.entries.forEach { vibe ->
+        items(
+            items = DiscoveryVibePreset.entries,
+            key = { it.name }
+        ) { vibe ->
             val isSelected = vibe == selectedVibe
 
             val containerColor by animateColorAsState(
@@ -58,7 +58,7 @@ fun QuickVibesRow(
 
             Surface(
                 onClick = { onVibeSelected(vibe) },
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(16.dp),
                 color = containerColor,
                 border = BorderStroke(
                     1.dp,
@@ -68,7 +68,7 @@ fun QuickVibesRow(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Icon(
                         imageVector = vibe.icon,
@@ -79,7 +79,7 @@ fun QuickVibesRow(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = vibe.label,
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         color = contentColor
                     )
