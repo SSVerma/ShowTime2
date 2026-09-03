@@ -15,10 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -30,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
@@ -79,7 +83,7 @@ fun WrappedHeroCard(
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AutoAwesome,
+                                imageVector = Icons.Rounded.AutoAwesome,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)
@@ -166,19 +170,21 @@ fun WrappedHeroCard(
                     )
                     StatPillar(
                         label = "Avg Rating",
-                        value = if (summary.averageUserRating > 0) "★ ${
-                            String.format(
-                                "%.1f",
-                                summary.averageUserRating
-                            )
-                        }" else "—",
+                        value = if (summary.averageUserRating > 0) String.format(
+                            "%.1f",
+                            summary.averageUserRating
+                        ) else "—",
                         subtitle = "5-Star Scale",
+                        icon = Icons.Rounded.Star,
+                        iconTint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                     StatPillar(
                         label = "Rewatches",
                         value = "${summary.rewatchCount}",
                         subtitle = if (summary.totalLogged > 0) "${((summary.rewatchCount.toFloat() / summary.totalLogged) * 100).toInt()}% Rate" else "0%",
+                        icon = Icons.Rounded.Replay,
+                        iconTint = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -196,7 +202,7 @@ fun WrappedHeroCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Share,
+                        imageVector = Icons.Rounded.Share,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -217,7 +223,9 @@ private fun StatPillar(
     label: String,
     value: String,
     subtitle: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    iconTint: Color? = null
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -234,12 +242,24 @@ private fun StatPillar(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint ?: MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(15.dp)
+                            .padding(end = 3.dp)
+                    )
+                }
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,

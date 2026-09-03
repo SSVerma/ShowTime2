@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,8 @@ fun MilestoneDetailBottomSheet(
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val tierColor = MilestonePalette.getTierColor(milestone.tier)
+    val milestoneIcon = getMilestoneIcon(milestone.id)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -61,17 +64,21 @@ fun MilestoneDetailBottomSheet(
             // Icon Badge
             Surface(
                 shape = CircleShape,
-                color = if (milestone.isUnlocked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                color = if (milestone.isUnlocked) tierColor.copy(alpha = 0.18f) else MaterialTheme.colorScheme.surfaceVariant,
                 border = BorderStroke(
                     width = 2.dp,
-                    color = if (milestone.isUnlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                    color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.outlineVariant
                 ),
                 modifier = Modifier.size(80.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = milestone.iconEmoji,
-                        fontSize = 36.sp
+                    Icon(
+                        imageVector = milestoneIcon,
+                        contentDescription = null,
+                        tint = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = 0.5f
+                        ),
+                        modifier = Modifier.size(40.dp)
                     )
                 }
             }
@@ -89,14 +96,14 @@ fun MilestoneDetailBottomSheet(
             Spacer(modifier = Modifier.height(6.dp))
 
             Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = tierColor.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = "${milestone.tier.name} TIER • ${milestone.category}",
+                    text = "${milestone.tier.name} TIER • ${milestone.category.uppercase()}",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = tierColor,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                 )
             }

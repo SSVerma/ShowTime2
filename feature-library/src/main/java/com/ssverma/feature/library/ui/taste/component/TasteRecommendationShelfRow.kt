@@ -13,10 +13,20 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Celebration
+import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Explore
+import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +56,15 @@ fun TasteRecommendationShelfRow(
     val subtitle = shelf.subtitle
     val badge = shelf.badge
 
+    val shelfIcon = when (shelf.id) {
+        "top_picks" -> Icons.Rounded.AutoAwesome
+        "masterpieces" -> Icons.Rounded.EmojiEvents
+        "pure_fun" -> Icons.Rounded.Celebration
+        "epic_worlds" -> Icons.Rounded.Explore
+        "tv_spotlight" -> Icons.Rounded.Tv
+        else -> Icons.Rounded.Movie
+    }
+
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -57,10 +77,13 @@ fun TasteRecommendationShelfRow(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = shelf.emoji,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 6.dp)
+                    Icon(
+                        imageVector = shelfIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .padding(end = 6.dp)
                     )
                     Text(
                         text = shelf.title,
@@ -153,13 +176,24 @@ private fun RecommendedMediaCard(
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
                 ) {
-                    Text(
-                        text = "★ %.1f".format(item.voteAvg),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                    )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = "%.1f".format(item.voteAvg),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
 

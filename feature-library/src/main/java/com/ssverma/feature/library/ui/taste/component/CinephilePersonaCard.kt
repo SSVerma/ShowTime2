@@ -15,7 +15,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Psychology
+import androidx.compose.material.icons.rounded.RocketLaunch
+import androidx.compose.material.icons.rounded.SentimentVerySatisfied
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.TheaterComedy
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -37,6 +44,16 @@ fun CinephilePersonaCard(
     onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val personaIcon = when (persona) {
+        CinephilePersona.ACTION_BUFF -> Icons.Rounded.Bolt
+        CinephilePersona.SCI_FI_EXPLORER -> Icons.Rounded.RocketLaunch
+        CinephilePersona.DRAMA_DEVOTEE -> Icons.Rounded.TheaterComedy
+        CinephilePersona.COMEDY_CHAMPION -> Icons.Rounded.SentimentVerySatisfied
+        CinephilePersona.THRILLER_DETECTIVE -> Icons.Rounded.Psychology
+        CinephilePersona.ANIMATION_FANATIC -> Icons.Rounded.Palette
+        CinephilePersona.ECLECTIC_CINEPHILE -> Icons.Rounded.AutoAwesome
+    }
+
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
@@ -57,9 +74,11 @@ fun CinephilePersonaCard(
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primaryContainer)
                 ) {
-                    Text(
-                        text = persona.emoji,
-                        fontSize = 28.sp
+                    Icon(
+                        imageVector = personaIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
                     )
                 }
 
@@ -112,7 +131,7 @@ fun CinephilePersonaCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Share,
+                    imageVector = Icons.Rounded.Share,
                     contentDescription = "Share Profile",
                     modifier = Modifier.size(18.dp)
                 )

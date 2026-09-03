@@ -8,13 +8,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ssverma.shared.domain.model.stats.TasteProfileStats
@@ -36,7 +45,8 @@ fun TasteKeyMetricsRow(
                 label = "WATCH TIME",
                 value = "${stats.totalWatchedHours}h",
                 subtitle = "~${"%.1f".format(stats.totalWatchedDays)} Days",
-                emoji = "⏱️",
+                icon = Icons.Rounded.Schedule,
+                iconTint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
 
@@ -44,7 +54,8 @@ fun TasteKeyMetricsRow(
                 label = "TOTAL LOGGED",
                 value = "${stats.totalItemsLogged}",
                 subtitle = "${stats.totalMoviesLogged} Movies • ${stats.totalTvLogged} TV",
-                emoji = "🎬",
+                icon = Icons.Rounded.Movie,
+                iconTint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -55,9 +66,10 @@ fun TasteKeyMetricsRow(
         ) {
             MetricCard(
                 label = "AVG RATING",
-                value = "★ ${stats.averageRating}",
+                value = "${stats.averageRating}",
                 subtitle = "Out of 5.0",
-                emoji = "⭐",
+                icon = Icons.Rounded.Star,
+                iconTint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
 
@@ -65,7 +77,8 @@ fun TasteKeyMetricsRow(
                 label = "REWATCH RATE",
                 value = "${stats.rewatchPercentage}%",
                 subtitle = "${stats.rewatchCount} Rewatches",
-                emoji = "🔁",
+                icon = Icons.Rounded.Replay,
+                iconTint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -77,7 +90,8 @@ private fun MetricCard(
     label: String,
     value: String,
     subtitle: String,
-    emoji: String,
+    icon: ImageVector,
+    iconTint: Color,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -100,7 +114,12 @@ private fun MetricCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(text = emoji)
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(18.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(6.dp))
