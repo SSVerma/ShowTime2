@@ -113,10 +113,12 @@ fun BlindspotRadarCard(
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = modifier.width(150.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        modifier = modifier
+            .width(150.dp)
+            .height(264.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(

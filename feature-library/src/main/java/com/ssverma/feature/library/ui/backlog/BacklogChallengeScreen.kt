@@ -211,8 +211,7 @@ fun BacklogChallengeScreen(
                                 ) { challengeProgress ->
                                     ActiveChallengeCard(
                                         progress = challengeProgress,
-                                        onClick = { onOpenChallengeDetail(challengeProgress.challenge.id) },
-                                        modifier = Modifier.width(260.dp)
+                                        onClick = { onOpenChallengeDetail(challengeProgress.challenge.id) }
                                     )
                                 }
                             }
