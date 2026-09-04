@@ -29,9 +29,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
@@ -113,6 +115,7 @@ fun BlindspotRadarCard(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier.width(150.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -122,8 +125,9 @@ fun BlindspotRadarCard(
                     .height(190.dp)
             ) {
                 NetworkImage(
-                    url = item.posterImageUrl,
+                    url = item.posterImageUrl.convertToTmdbPosterUrl(),
                     contentDescription = item.title,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth()
                 )
 

@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui.taste
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -45,18 +44,14 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -66,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.feature.library.ui.taste.component.CinephilePersonaCard
 import com.ssverma.feature.library.ui.taste.component.TasteEraDistributionCard
 import com.ssverma.feature.library.ui.taste.component.TasteKeyMetricsRow
@@ -91,26 +87,41 @@ fun TasteProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val isScrolled by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
-        }
-    }
-    val shadowAlpha by animateFloatAsState(
-        targetValue = if (isScrolled) 0.20f else 0f,
-        label = "taste_top_shadow_alpha"
-    )
-
     Scaffold(
         topBar = {
-            TasteProfileTopAppBar(
-                onBackClick = onBackClick,
-                onShareClick = {
-                    val shareText = viewModel.getShareTasteText(uiState.stats)
-                    context.dispatchShareTextIntent(text = shareText)
+            ShowTimeTopAppBar(
+                title = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Taste Profile & Picks",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Your personal cinema stats & insights",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                onBackPressed = onBackClick,
+                actions = {
+                    IconButton(onClick = {
+                        val shareText = viewModel.getShareTasteText(uiState.stats)
+                        context.dispatchShareTextIntent(text = shareText)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Share Profile"
+                        )
+                    }
                 },
                 scrollBehavior = scrollBehavior,
-                shadowAlpha = shadowAlpha
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -277,74 +288,6 @@ fun TasteProfileScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TasteProfileTopAppBar(
-    onBackClick: () -> Unit,
-    onShareClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    shadowAlpha: Float = 0f
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        TopAppBar(
-            title = {
-                Column {
-                    Text(
-                        text = "Taste Profile & Picks",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Your personal cinema stats & insights",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-            navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            },
-            actions = {
-                IconButton(onClick = onShareClick) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share Profile",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            },
-            scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                scrolledContainerColor = MaterialTheme.colorScheme.background
-            )
-        )
-
-        if (shadowAlpha > 0f) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = shadowAlpha),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-        }
-    }
-}
 
 @Composable
 private fun TasteFilterChipsRow(

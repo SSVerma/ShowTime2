@@ -1,7 +1,6 @@
 package com.ssverma.feature.library.ui.wrapped
 
 import android.content.Intent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -33,16 +32,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -50,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.feature.library.ui.wrapped.component.MilestoneDetailBottomSheet
 import com.ssverma.feature.library.ui.wrapped.component.WrappedHeroCard
 import com.ssverma.feature.library.ui.wrapped.component.WrappedMilestonesGrid
@@ -71,16 +66,6 @@ fun CinephileWrappedScreen(
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    val isScrolled by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
-        }
-    }
-    val shadowAlpha by animateFloatAsState(
-        targetValue = if (isScrolled) 0.20f else 0f,
-        label = "wrapped_top_shadow_alpha"
-    )
-
     val onShareWrapped = {
         uiState.summary?.let { summary ->
             val shareText = viewModel.generateWrappedShareText(summary)
@@ -97,11 +82,36 @@ fun CinephileWrappedScreen(
 
     Scaffold(
         topBar = {
-            WrappedTopAppBar(
-                onBackClick = onBackPressed,
-                onShareClick = onShareWrapped,
+            ShowTimeTopAppBar(
+                title = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Cinema Wrapped",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Your annual & all-time cinema journey",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                onBackPressed = onBackPressed,
+                actions = {
+                    IconButton(onClick = onShareWrapped) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Share"
+                        )
+                    }
+                },
                 scrollBehavior = scrollBehavior,
-                shadowAlpha = shadowAlpha
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -231,71 +241,3 @@ fun CinephileWrappedScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun WrappedTopAppBar(
-    onBackClick: () -> Unit,
-    onShareClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    shadowAlpha: Float = 0f
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        TopAppBar(
-            title = {
-                Column {
-                    Text(
-                        text = "Cinema Wrapped",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Your annual & all-time cinema journey",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-            navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            },
-            actions = {
-                IconButton(onClick = onShareClick) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = "Share",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            },
-            scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                scrolledContainerColor = MaterialTheme.colorScheme.background
-            )
-        )
-
-        if (shadowAlpha > 0f) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = shadowAlpha),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-        }
-    }
-}

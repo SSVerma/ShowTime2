@@ -32,8 +32,56 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.R
+
+@Composable
+fun Modifier.scrolledBottomElevation(
+    isScrolled: Boolean,
+    maxElevation: Dp = 3.dp,
+    glowHeight: Dp = 6.dp
+): Modifier {
+    val glowAlpha by animateFloatAsState(
+        targetValue = if (isScrolled) 1f else 0f,
+        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+        label = "TopBarGlowAlpha"
+    )
+
+    val elevation by animateDpAsState(
+        targetValue = if (isScrolled) maxElevation else 0.dp,
+        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
+        label = "TopBarElevation"
+    )
+
+    val primaryColor = MaterialTheme.colorScheme.primary
+
+    return this
+        .drawBehind {
+            if (glowAlpha > 0f) {
+                val glowPx = glowHeight.toPx()
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            primaryColor.copy(alpha = 0.12f * glowAlpha),
+                            primaryColor.copy(alpha = 0.04f * glowAlpha),
+                            Color.Transparent
+                        ),
+                        startY = size.height,
+                        endY = size.height + glowPx
+                    ),
+                    topLeft = Offset(0f, size.height),
+                    size = Size(size.width, glowPx)
+                )
+            }
+        }
+        .shadow(
+            elevation = elevation,
+            ambientColor = primaryColor.copy(alpha = 0.12f),
+            spotColor = primaryColor.copy(alpha = 0.25f),
+            clip = false
+        )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,47 +107,10 @@ fun ShowTimeTopAppBar(
         } ?: false
     } else false
 
-    val glowAlpha by animateFloatAsState(
-        targetValue = if (isScrolled) 1f else 0f,
-        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-        label = "TopBarGlowAlpha"
-    )
-
-    val elevation by animateDpAsState(
-        targetValue = if (isScrolled) 3.dp else 0.dp,
-        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
-        label = "TopBarElevation"
-    )
-
-    val primaryColor = MaterialTheme.colorScheme.primary
-
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .drawBehind {
-                if (glowAlpha > 0f) {
-                    val glowHeight = 6.dp.toPx()
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                primaryColor.copy(alpha = 0.12f * glowAlpha),
-                                primaryColor.copy(alpha = 0.04f * glowAlpha),
-                                Color.Transparent
-                            ),
-                            startY = size.height,
-                            endY = size.height + glowHeight
-                        ),
-                        topLeft = Offset(0f, size.height),
-                        size = Size(size.width, glowHeight)
-                    )
-                }
-            }
-            .shadow(
-                elevation = elevation,
-                ambientColor = primaryColor.copy(alpha = 0.12f),
-                spotColor = primaryColor.copy(alpha = 0.25f),
-                clip = false
-            )
+            .scrolledBottomElevation(isScrolled = isScrolled)
     ) {
         CenterAlignedTopAppBar(
             title = title,
@@ -127,6 +138,7 @@ fun ShowTimeTopAppBar(
     navIcon: ImageVector = Icons.AutoMirrored.Rounded.ArrowBack,
     actions: @Composable RowScope.() -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    showBottomShadow: Boolean = true,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.background,
         scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -150,6 +162,7 @@ fun ShowTimeTopAppBar(
         navIcon = navIcon,
         actions = actions,
         scrollBehavior = scrollBehavior,
+        showBottomShadow = showBottomShadow,
         colors = colors
     )
 }

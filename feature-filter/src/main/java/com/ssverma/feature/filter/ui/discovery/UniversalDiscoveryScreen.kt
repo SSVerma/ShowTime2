@@ -1,6 +1,5 @@
 package com.ssverma.feature.filter.ui.discovery
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.layout
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -49,7 +47,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,6 +55,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.component.scrolledBottomElevation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -126,11 +125,6 @@ fun UniversalDiscoveryScreen(
                     scrollBehavior.state.collapsedFraction > 0f
         }
     }
-    val shadowAlpha by animateFloatAsState(
-        targetValue = if (isScrolled) 0.20f else 0f,
-        label = "filter_bar_shadow_alpha"
-    )
-
     Scaffold(
         topBar = {
             Column(
@@ -141,23 +135,11 @@ fun UniversalDiscoveryScreen(
                             initialHeaderHeight = with(density) { coordinates.size.height.toDp() }
                         }
                     }
+                    .scrolledBottomElevation(isScrolled = isScrolled)
             ) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "Discover & Browse",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBackClick) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    },
+                ShowTimeTopAppBar(
+                    title = "Discover & Browse",
+                    onBackPressed = onBackClick,
                     actions = {
                         IconButton(onClick = { viewModel.toggleViewMode() }) {
                             Icon(
@@ -167,6 +149,7 @@ fun UniversalDiscoveryScreen(
                         }
                     },
                     scrollBehavior = scrollBehavior,
+                    showBottomShadow = false,
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                         scrolledContainerColor = MaterialTheme.colorScheme.background
@@ -201,22 +184,6 @@ fun UniversalDiscoveryScreen(
                             Spacer(modifier = Modifier.height(2.dp))
                         }
                     }
-                }
-
-                if (shadowAlpha > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(2.dp)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Black.copy(alpha = shadowAlpha),
-                                        Color.Transparent
-                                    )
-                                )
-                            )
-                    )
                 }
             }
         },
