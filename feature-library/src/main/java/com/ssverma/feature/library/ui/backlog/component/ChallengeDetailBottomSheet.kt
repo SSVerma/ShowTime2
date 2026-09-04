@@ -1,7 +1,6 @@
 package com.ssverma.feature.library.ui.backlog.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -231,7 +231,7 @@ fun ChallengeDetailBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(280.dp)
+                        .heightIn(max = 360.dp)
                 ) {
                     items(displayedItems, key = { "${it.mediaType}_${it.id}" }) { item ->
                         val isItemWatched = watchedIdSet.contains(item.id to item.mediaType)
@@ -313,11 +313,14 @@ fun ChallengeItemRow(
     modifier: Modifier = Modifier
 ) {
     Surface(
+        onClick = onClick,
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+        border = BorderStroke(
+            width = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        ),
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier

@@ -61,14 +61,16 @@ fun ChallengeHeroProgressCard(
     )
 
     Card(
+        onClick = onViewBreakdown,
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -198,8 +200,13 @@ fun ChallengeHeroProgressCard(
                 Spacer(modifier = Modifier.height(16.dp))
                 val nextUp = progress.remainingItems.first()
                 Surface(
+                    onClick = onViewBreakdown,
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                    border = BorderStroke(
+                        width = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(

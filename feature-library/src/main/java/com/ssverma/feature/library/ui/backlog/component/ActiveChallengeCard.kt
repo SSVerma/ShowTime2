@@ -1,7 +1,6 @@
 package com.ssverma.feature.library.ui.backlog.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +41,7 @@ fun ActiveChallengeCard(
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -50,9 +50,7 @@ fun ActiveChallengeCard(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
         ),
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier

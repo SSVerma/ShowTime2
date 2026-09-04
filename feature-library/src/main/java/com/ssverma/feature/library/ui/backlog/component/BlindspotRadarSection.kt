@@ -1,7 +1,6 @@
 package com.ssverma.feature.library.ui.backlog.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
+import java.util.Locale
 
 @Composable
 fun BlindspotRadarSection(
@@ -104,6 +104,7 @@ fun BlindspotRadarCard(
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -112,9 +113,7 @@ fun BlindspotRadarCard(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
         ),
-        modifier = modifier
-            .width(150.dp)
-            .clickable(onClick = onClick)
+        modifier = modifier.width(150.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(
@@ -171,7 +170,7 @@ fun BlindspotRadarCard(
                             )
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = String.format("%.1f", item.voteAvg),
+                                text = String.format(Locale.US, "%.1f", item.voteAvg),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold
                             )

@@ -92,14 +92,17 @@ fun CuratedChallengeItemCard(
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = { if (!isJoined) onJoin() },
+        enabled = !isJoined,
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = modifier.width(280.dp)
     ) {
         Column(
