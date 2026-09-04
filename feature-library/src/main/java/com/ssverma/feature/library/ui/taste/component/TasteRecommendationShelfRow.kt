@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui.taste.component
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +24,7 @@ import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Stars
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +43,7 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
 import com.ssverma.shared.domain.model.stats.RecommendationShelf
+import java.util.Locale
 
 @Composable
 fun TasteRecommendationShelfRow(
@@ -57,7 +57,7 @@ fun TasteRecommendationShelfRow(
     val badge = shelf.badge
 
     val shelfIcon = when (shelf.id) {
-        "top_picks" -> Icons.Rounded.AutoAwesome
+        "top_picks" -> Icons.Rounded.Stars
         "masterpieces" -> Icons.Rounded.EmojiEvents
         "pure_fun" -> Icons.Rounded.Celebration
         "epic_worlds" -> Icons.Rounded.Explore
@@ -153,14 +153,13 @@ private fun RecommendedMediaCard(
     Column(
         modifier = modifier
             .width(130.dp)
-            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(2f / 3f)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             NetworkImage(
@@ -169,55 +168,6 @@ private fun RecommendedMediaCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize()
             )
-
-            // Rating Pill
-            if (item.voteAvg > 0f) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Star,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(10.dp)
-                        )
-                        Text(
-                            text = "%.1f".format(item.voteAvg),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-
-            // Media Type Pill
-            Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(6.dp)
-            ) {
-                Text(
-                    text = if (item.mediaType == MediaType.Movie) "Movie" else "TV Series",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -231,9 +181,54 @@ private fun RecommendedMediaCard(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        if (item.releaseDate.isNotBlank()) {
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (item.voteAvg > 0f) {
+                Icon(
+                    imageVector = Icons.Rounded.Star,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(12.dp)
+                )
+                Text(
+                    text = String.format(Locale.US, "%.1f", item.voteAvg),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            val year = item.releaseDate.take(4)
+            if (year.isNotBlank()) {
+                if (item.voteAvg > 0f) {
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text(
+                    text = year,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            val typeLabel = if (item.mediaType == MediaType.Movie) "Movie" else "TV"
+            if (item.voteAvg > 0f || year.isNotBlank()) {
+                Text(
+                    text = "•",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
-                text = item.releaseDate.take(4),
+                text = typeLabel,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
