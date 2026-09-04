@@ -223,12 +223,11 @@ class BacklogRepositoryImpl @Inject constructor(
     override suspend fun joinChallenge(challenge: CinephileChallenge): Unit =
         withContext(Dispatchers.IO) {
             val current = activeChallengesFlow.first().toMutableList()
-            if (current.none { it.id == challenge.id }) {
-                val joined = challenge.copy(joinedAt = System.currentTimeMillis())
-                current.add(joined)
-                storage.edit { prefs ->
-                    prefs[KEY_ACTIVE_CHALLENGES] = gson.toJson(current)
-                }
+            current.removeAll { it.id == challenge.id }
+            val joined = challenge.copy(joinedAt = System.currentTimeMillis())
+            current.add(0, joined)
+            storage.edit { prefs ->
+                prefs[KEY_ACTIVE_CHALLENGES] = gson.toJson(current)
             }
         }
 

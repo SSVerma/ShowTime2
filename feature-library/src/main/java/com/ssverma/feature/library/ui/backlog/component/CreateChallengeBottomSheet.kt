@@ -8,11 +8,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -41,6 +49,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -74,7 +83,13 @@ fun CreateChallengeBottomSheet(
     onSearchQueryChange: (String, ChallengeMediaTypeFilter) -> Unit,
     onClearSearch: () -> Unit,
     onDismiss: () -> Unit,
-    onCreateGoal: (String, String, ChallengeMediaTypeFilter, Int, List<ChallengeMediaItem>) -> Unit,
+    onCreateGoal: (
+        title: String,
+        description: String,
+        mediaTypeFilter: ChallengeMediaTypeFilter,
+        targetCount: Int,
+        targetItems: List<ChallengeMediaItem>
+    ) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -85,17 +100,23 @@ fun CreateChallengeBottomSheet(
     var targetCount by remember { mutableFloatStateOf(25f) }
     val selectedTitles = remember { mutableStateListOf<ChallengeMediaItem>() }
 
+    val imeInsets = WindowInsets.ime.asPaddingValues()
+    val isKeyboardOpen = imeInsets.calculateBottomPadding() > 0.dp
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,
+        contentWindowInsets = { WindowInsets.safeDrawing.only(WindowInsetsSides.Top) },
         modifier = modifier
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 32.dp)
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(bottom = if (isKeyboardOpen) 10.dp else 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             // Header Row
@@ -262,28 +283,44 @@ fun CreateChallengeBottomSheet(
                     Icon(
                         imageVector = Icons.Rounded.Search,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                     )
                 },
                 trailingIcon = {
                     if (isSearching) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     } else if (searchQuery.isNotBlank()) {
                         IconButton(onClick = onClearSearch) {
                             Icon(
                                 imageVector = Icons.Rounded.Clear,
                                 contentDescription = "Clear search",
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 },
-                placeholder = { Text("Search movies or TV shows to add...") },
+                placeholder = {
+                    Text(
+                        text = "Search movies or TV shows...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+                        alpha = 0.6f
+                    )
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
 

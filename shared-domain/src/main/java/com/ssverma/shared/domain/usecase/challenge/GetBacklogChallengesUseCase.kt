@@ -42,7 +42,7 @@ class GetBacklogChallengesUseCase @Inject constructor(
                     challenge
                 }
                 computeProgress(effectiveChallenge, watchedMediaSet, diaryEntries)
-            }
+            }.sortedByDescending { it.challenge.joinedAt ?: 0L }
         }
     }
 

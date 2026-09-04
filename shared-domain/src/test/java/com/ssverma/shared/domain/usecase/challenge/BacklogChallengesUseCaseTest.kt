@@ -299,4 +299,38 @@ class BacklogChallengesUseCaseTest {
             progress?.challenge?.targetMediaItems?.first()?.posterImageUrl
         )
     }
+
+    @Test
+    fun `invoke sorts active challenges with latest joined first`() = runTest {
+        val olderChallenge = CinephileChallenge(
+            id = "c1",
+            title = "Older Challenge",
+            description = "Started earlier",
+            category = ChallengeCategory.PersonalGoal,
+            targetCount = 5,
+            joinedAt = 1000L
+        )
+        val newerChallenge = CinephileChallenge(
+            id = "c2",
+            title = "Newer Challenge",
+            description = "Started later",
+            category = ChallengeCategory.PersonalGoal,
+            targetCount = 5,
+            joinedAt = 2000L
+        )
+
+        every { backlogRepository.activeChallengesFlow } returns flowOf(
+            listOf(
+                olderChallenge,
+                newerChallenge
+            )
+        )
+        every { backlogRepository.curatedChallengesFlow } returns flowOf(emptyList())
+        every { diaryRepository.getAllDiaryEntries() } returns flowOf(emptyList())
+
+        val result = getBacklogChallengesUseCase().first()
+        assertEquals(2, result.size)
+        assertEquals("Newer Challenge", result[0].challenge.title)
+        assertEquals("Older Challenge", result[1].challenge.title)
+    }
 }

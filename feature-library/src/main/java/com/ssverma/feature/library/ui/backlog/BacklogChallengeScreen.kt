@@ -34,9 +34,6 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,7 +72,6 @@ fun BacklogChallengeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val pullToRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -139,102 +135,89 @@ fun BacklogChallengeScreen(
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
-        PullToRefreshBox(
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = viewModel::refresh,
-            state = pullToRefreshState,
-            indicator = {
-                PullToRefreshDefaults.Indicator(
-                    state = pullToRefreshState,
-                    isRefreshing = uiState.isRefreshing,
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = innerPadding.calculateTopPadding())
-                )
-            },
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding() + 8.dp,
+                bottom = innerPadding.calculateBottomPadding() + 24.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding() + 8.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 24.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // 1. Active Challenges Section or Intro Banner
-                if (uiState.activeChallenges.isNotEmpty()) {
-                    item(key = "active_challenges_section") {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Active Challenges (${uiState.activeChallenges.size})",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
+            // 1. Active Challenges Section or Intro Banner
+            if (uiState.activeChallenges.isNotEmpty()) {
+                item(key = "active_challenges_section") {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Active Challenges (${uiState.activeChallenges.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                            LazyRow(
-                                contentPadding = PaddingValues(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                items(
-                                    items = uiState.activeChallenges,
-                                    key = { it.challenge.id }
-                                ) { challengeProgress ->
-                                    val cardModifier = if (uiState.activeChallenges.size == 1) {
-                                        Modifier.fillParentMaxWidth()
-                                    } else {
-                                        Modifier.width(285.dp)
-                                    }
-                                    ActiveChallengeCard(
-                                        progress = challengeProgress,
-                                        onClick = { onOpenChallengeDetail(challengeProgress.challenge.id) },
-                                        modifier = cardModifier
-                                    )
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(
+                                items = uiState.activeChallenges,
+                                key = { it.challenge.id }
+                            ) { progress ->
+                                val cardModifier = if (uiState.activeChallenges.size == 1) {
+                                    Modifier.fillParentMaxWidth()
+                                } else {
+                                    Modifier.width(285.dp)
                                 }
+                                ActiveChallengeCard(
+                                    progress = progress,
+                                    onClick = {
+                                        viewModel.openChallengeDetail(progress)
+                                        onOpenChallengeDetail(progress.challenge.id)
+                                    },
+                                    modifier = cardModifier
+                                )
                             }
                         }
                     }
-                } else {
-                    item(key = "hero_intro_card") {
-                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            BacklogHeroIntroCard(
-                                curatedCount = uiState.curatedChallenges.size,
-                                onCreateGoalClick = viewModel::openCreateCustomGoalSheet
-                            )
-                        }
+                }
+            } else {
+                item(key = "intro_hero_card") {
+                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        BacklogHeroIntroCard(
+                            curatedCount = uiState.curatedChallenges.size,
+                            onCreateGoalClick = viewModel::openCreateCustomGoalSheet
+                        )
                     }
                 }
+            }
 
-                // 3. Priority Blindspots Radar
-                item(key = "blindspots_radar") {
-                    BlindspotRadarSection(
-                        blindspots = uiState.blindspots,
-                        onOpenMovieDetails = onOpenMovieDetails,
-                        onOpenTvShowDetails = onOpenTvShowDetails,
-                        onRemoveBlindspot = viewModel::removeBlindspot
-                    )
-                }
+            // 2. Priority Blindspots Radar
+            item(key = "blindspots_radar") {
+                BlindspotRadarSection(
+                    blindspots = uiState.blindspots,
+                    onOpenMovieDetails = onOpenMovieDetails,
+                    onOpenTvShowDetails = onOpenTvShowDetails,
+                    onRemoveBlindspot = viewModel::removeBlindspot
+                )
+            }
 
-                // 4. Curated Challenges Catalog
-                item(key = "curated_challenges_shelf") {
-                    CuratedChallengeShelf(
-                        curatedChallenges = uiState.curatedChallenges,
-                        activeChallengeIds = uiState.activeChallenges.map { it.challenge.id }
-                            .toSet(),
-                        onJoinChallenge = { challenge ->
-                            challengeToJoin = challenge
-                        },
-                        onOpenChallengeDetail = { challenge ->
-                            onOpenChallengeDetail(challenge.id)
-                        }
-                    )
-                }
+            // 3. Curated Challenges Shelf
+            item(key = "curated_challenges_shelf") {
+                CuratedChallengeShelf(
+                    curatedChallenges = uiState.curatedChallenges,
+                    activeChallengeIds = uiState.activeChallenges.map { it.challenge.id }
+                        .toSet(),
+                    onJoinChallenge = { challenge ->
+                        challengeToJoin = challenge
+                    },
+                    onOpenChallengeDetail = { challenge ->
+                        onOpenChallengeDetail(challenge.id)
+                    }
+                )
             }
         }
     }
