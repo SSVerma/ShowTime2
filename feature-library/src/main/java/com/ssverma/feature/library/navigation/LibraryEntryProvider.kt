@@ -6,6 +6,7 @@ import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.library.ui.backlog.BacklogChallengeScreen
+import com.ssverma.feature.library.ui.backlog.detail.ChallengeDetailScreen
 import com.ssverma.feature.library.ui.diary.CinemaDiaryScreen
 import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen
@@ -118,6 +119,24 @@ fun EntryProviderScope<NavKey>.libraryEntries(
     showTimeEntry<BacklogChallengeNavKey> {
         BacklogChallengeScreen(
             onBackPressed = {
+                navigator.goBack()
+            },
+            onOpenMovieDetails = { movieId ->
+                navigator.navigate(MovieDetailNavKey(movieId))
+            },
+            onOpenTvShowDetails = { tvShowId ->
+                navigator.navigate(TvShowDetailNavKey(tvShowId))
+            },
+            onOpenChallengeDetail = { challengeId ->
+                navigator.navigate(ChallengeDetailNavKey(challengeId))
+            }
+        )
+    }
+
+    showTimeEntry<ChallengeDetailNavKey> { navKey ->
+        ChallengeDetailScreen(
+            challengeId = navKey.challengeId,
+            onBackClick = {
                 navigator.goBack()
             },
             onOpenMovieDetails = { movieId ->

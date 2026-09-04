@@ -93,11 +93,11 @@ fun CuratedChallengeItemCard(
     challenge: CinephileChallenge,
     isJoined: Boolean,
     onJoin: () -> Unit,
-    onOpenDetail: () -> Unit = onJoin,
+    onOpenDetail: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { if (isJoined) onOpenDetail() else onJoin() },
+        onClick = onOpenDetail,
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface

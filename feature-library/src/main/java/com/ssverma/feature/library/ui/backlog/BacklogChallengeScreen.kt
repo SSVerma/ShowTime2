@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,14 +32,17 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,12 +56,12 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.feature.library.ui.backlog.component.ActiveChallengeCard
 import com.ssverma.feature.library.ui.backlog.component.BacklogHeroIntroCard
 import com.ssverma.feature.library.ui.backlog.component.BlindspotRadarSection
-import com.ssverma.feature.library.ui.backlog.component.ChallengeDetailBottomSheet
 import com.ssverma.feature.library.ui.backlog.component.ChallengeHeroProgressCard
 import com.ssverma.feature.library.ui.backlog.component.CreateChallengeBottomSheet
 import com.ssverma.feature.library.ui.backlog.component.CuratedChallengeShelf
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
+import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +70,7 @@ fun BacklogChallengeScreen(
     onOpenMovieDetails: (Int) -> Unit,
     onOpenTvShowDetails: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenChallengeDetail: (String) -> Unit = {},
     viewModel: BacklogChallengeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -75,6 +80,7 @@ fun BacklogChallengeScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var challengeToJoin by remember { mutableStateOf<CinephileChallenge?>(null) }
 
     val handleShare: (String) -> Unit = { text ->
         val intent = Intent(Intent.ACTION_SEND).apply {
@@ -164,7 +170,7 @@ fun BacklogChallengeScreen(
                         Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                             ChallengeHeroProgressCard(
                                 progress = heroChallenge,
-                                onViewBreakdown = { viewModel.openChallengeDetail(heroChallenge) },
+                                onViewBreakdown = { onOpenChallengeDetail(heroChallenge.challenge.id) },
                                 onShare = handleShare
                             )
                         }
@@ -205,7 +211,7 @@ fun BacklogChallengeScreen(
                                 ) { challengeProgress ->
                                     ActiveChallengeCard(
                                         progress = challengeProgress,
-                                        onClick = { viewModel.openChallengeDetail(challengeProgress) },
+                                        onClick = { onOpenChallengeDetail(challengeProgress.challenge.id) },
                                         modifier = Modifier.width(260.dp)
                                     )
                                 }
@@ -231,20 +237,10 @@ fun BacklogChallengeScreen(
                         activeChallengeIds = uiState.activeChallenges.map { it.challenge.id }
                             .toSet(),
                         onJoinChallenge = { challenge ->
-                            viewModel.joinCuratedChallenge(challenge)
-                            coroutineScope.launch {
-                                val result = snackbarHostState.showSnackbar(
-                                    message = "Joined \"${challenge.title}\"!",
-                                    actionLabel = "View",
-                                    duration = SnackbarDuration.Short
-                                )
-                                if (result == SnackbarResult.ActionPerformed) {
-                                    listState.animateScrollToItem(0)
-                                }
-                            }
+                            challengeToJoin = challenge
                         },
                         onOpenChallengeDetail = { challenge ->
-                            viewModel.openChallengeDetail(challenge)
+                            onOpenChallengeDetail(challenge.id)
                         }
                     )
                 }
@@ -252,15 +248,51 @@ fun BacklogChallengeScreen(
         }
     }
 
-    // Modal Sheet: Challenge Breakdown Details
-    uiState.selectedChallengeDetail?.let { detail ->
-        ChallengeDetailBottomSheet(
-            progress = detail,
-            onDismiss = viewModel::closeChallengeDetail,
-            onOpenMovieDetails = onOpenMovieDetails,
-            onOpenTvShowDetails = onOpenTvShowDetails,
-            onLeaveChallenge = viewModel::leaveChallenge,
-            onShare = handleShare
+    // Join Challenge Confirmation Dialog
+    challengeToJoin?.let { challenge ->
+        AlertDialog(
+            onDismissRequest = { challengeToJoin = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.EmojiEvents,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = {
+                Text(text = "Join Challenge?")
+            },
+            text = {
+                Text(
+                    text = "Start tracking your progress for \"${challenge.title}\". You can log titles via your Cinema Diary to complete this challenge."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val toJoin = challenge
+                        challengeToJoin = null
+                        viewModel.joinCuratedChallenge(toJoin)
+                        coroutineScope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = "Joined \"${toJoin.title}\"!",
+                                actionLabel = "View",
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                onOpenChallengeDetail(toJoin.id)
+                            }
+                        }
+                    }
+                ) {
+                    Text(text = "Join Challenge")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { challengeToJoin = null }) {
+                    Text(text = "Cancel")
+                }
+            }
         )
     }
 

@@ -46,3 +46,7 @@ data object CinephileWrappedNavKey : NavKey, Parcelable
 @Parcelize
 data object BacklogChallengeNavKey : NavKey, Parcelable
 
+@Serializable
+@Parcelize
+data class ChallengeDetailNavKey(val challengeId: String) : NavKey, Parcelable
+

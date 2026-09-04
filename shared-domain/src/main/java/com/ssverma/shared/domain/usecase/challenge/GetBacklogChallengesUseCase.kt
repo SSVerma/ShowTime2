@@ -46,6 +46,27 @@ class GetBacklogChallengesUseCase @Inject constructor(
         }
     }
 
+    fun getChallengeDetailFlow(challengeId: String): Flow<Pair<ChallengeProgress?, Boolean>> {
+        return combine(
+            backlogRepository.activeChallengesFlow,
+            backlogRepository.curatedChallengesFlow,
+            diaryRepository.getAllDiaryEntries()
+        ) { activeChallenges, curatedChallenges, diaryEntries ->
+            val activeChallenge = activeChallenges.firstOrNull { it.id == challengeId }
+            val isJoined = activeChallenge != null
+            val challenge =
+                activeChallenge ?: curatedChallenges.firstOrNull { it.id == challengeId }
+
+            if (challenge != null) {
+                val watchedMediaSet = diaryEntries.map { it.mediaId to it.mediaType }.toSet()
+                val progress = computeProgress(challenge, watchedMediaSet, diaryEntries)
+                progress to isJoined
+            } else {
+                null to false
+            }
+        }
+    }
+
     private fun computeProgress(
         challenge: CinephileChallenge,
         watchedMediaSet: Set<Pair<Int, MediaType>>,
