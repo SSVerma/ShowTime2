@@ -11,6 +11,7 @@ import com.ssverma.shared.domain.repository.BacklogRepository
 import com.ssverma.shared.domain.repository.DiaryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetBacklogChallengesUseCase @Inject constructor(
@@ -30,8 +31,16 @@ class GetBacklogChallengesUseCase @Inject constructor(
         }
     }
 
-    suspend fun getCuratedChallengesWithProgress(): List<ChallengeProgress> {
-        val curated = backlogRepository.getCuratedChallenges()
+    fun getCuratedChallengesFlow(): Flow<List<ChallengeProgress>> {
+        return backlogRepository.curatedChallengesFlow.map { curated ->
+            curated.map { challenge ->
+                computeProgress(challenge, emptySet(), emptyList())
+            }
+        }
+    }
+
+    suspend fun getCuratedChallengesWithProgress(forceRefresh: Boolean = false): List<ChallengeProgress> {
+        val curated = backlogRepository.getCuratedChallenges(forceRefresh)
         return curated.map { challenge ->
             computeProgress(challenge, emptySet(), emptyList())
         }

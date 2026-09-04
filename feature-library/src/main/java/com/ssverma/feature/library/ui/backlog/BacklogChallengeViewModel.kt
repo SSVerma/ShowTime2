@@ -34,9 +34,14 @@ class BacklogChallengeViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            val curated =
-                getBacklogChallengesUseCase.getCuratedChallengesWithProgress().map { it.challenge }
-            _uiState.update { it.copy(curatedChallenges = curated) }
+            getBacklogChallengesUseCase.getCuratedChallengesFlow().collect { curatedList ->
+                _uiState.update { it.copy(curatedChallenges = curatedList.map { p -> p.challenge }) }
+            }
+        }
+
+        viewModelScope.launch {
+            // Trigger initial sync in background
+            getBacklogChallengesUseCase.getCuratedChallengesWithProgress(forceRefresh = false)
         }
 
         viewModelScope.launch {
@@ -65,7 +70,10 @@ class BacklogChallengeViewModel @Inject constructor(
 
     fun refresh() {
         _uiState.update { it.copy(isRefreshing = true) }
-        loadData()
+        viewModelScope.launch {
+            getBacklogChallengesUseCase.getCuratedChallengesWithProgress(forceRefresh = true)
+            _uiState.update { it.copy(isRefreshing = false) }
+        }
     }
 
     fun selectCategoryFilter(category: ChallengeCategory?) {

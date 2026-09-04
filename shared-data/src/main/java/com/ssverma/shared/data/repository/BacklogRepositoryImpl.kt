@@ -1,14 +1,21 @@
 package com.ssverma.shared.data.repository
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.core.storage.keyvalue.observe
+import com.ssverma.core.storage.keyvalue.read
+import com.ssverma.core.storage.keyvalue.write
 import com.ssverma.shared.data.local.adapter.MediaTypeJsonAdapter
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
@@ -20,16 +27,20 @@ import com.ssverma.shared.domain.repository.BacklogRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class BacklogRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val firestore: FirebaseFirestore,
     keyValueStorageClient: KeyValueStorageClient
 ) : BacklogRepository {
 
@@ -42,16 +53,43 @@ class BacklogRepositoryImpl @Inject constructor(
         config = KeyValueStorageConfig(fileName = "showtime_backlog_challenges_prefs")
     )
 
+    private val isDebug: Boolean =
+        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    private val colPrefix: String = if (isDebug) "dev_" else ""
+    private val colCuratedChallenges: String get() = "${colPrefix}curated_challenges"
+
     private companion object {
         val KEY_ACTIVE_CHALLENGES = stringPreferencesKey("backlog_active_challenges_json")
         val KEY_BLINDSPOTS = stringPreferencesKey("backlog_blindspots_json")
+        val KEY_CURATED_CHALLENGES_CACHE =
+            stringPreferencesKey("backlog_curated_challenges_cached_json")
+        val KEY_CURATED_CHALLENGES_LAST_FETCHED =
+            longPreferencesKey("backlog_curated_challenges_last_fetched_epoch")
+        const val SEED_ASSET_FILE = "curated_challenges_seed.json"
+        const val DOC_ACTIVE_CATALOG = "active_catalog"
     }
+
+    override val curatedChallengesFlow: Flow<List<CinephileChallenge>> =
+        storage.observe(KEY_CURATED_CHALLENGES_CACHE)
+            .map { cachedJson ->
+                if (!cachedJson.isNullOrBlank()) {
+                    try {
+                        val type = object : TypeToken<List<CinephileChallenge>>() {}.type
+                        gson.fromJson<List<CinephileChallenge>>(cachedJson, type) ?: emptyList()
+                    } catch (_: Exception) {
+                        loadCuratedChallengesFromAsset()
+                    }
+                } else {
+                    loadCuratedChallengesFromAsset()
+                }
+            }
+            .distinctUntilChanged()
 
     override val activeChallengesFlow: Flow<List<CinephileChallenge>> = storage.data.map { prefs ->
         val json = prefs[KEY_ACTIVE_CHALLENGES]
         if (json.isNullOrBlank()) {
             // Default: start with the top curated challenge joined
-            val defaultList = listOf(getCuratedChallenges().first())
+            val defaultList = loadCuratedChallengesFromAsset().take(1)
             defaultList
         } else {
             try {
@@ -77,264 +115,109 @@ class BacklogRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getCuratedChallenges(): List<CinephileChallenge> {
-        return listOf(
-            CinephileChallenge(
-                id = "curated_sight_and_sound",
-                title = "Sight & Sound Masterpieces",
-                description = "The defining cinematic milestones of world cinema history.",
-                category = ChallengeCategory.Curated,
-                mediaTypeFilter = ChallengeMediaTypeFilter.MOVIE,
-                targetCount = 10,
-                targetMediaItems = listOf(
-                    ChallengeMediaItem(
-                        id = 238,
-                        title = "The Godfather",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
-                        releaseYear = "1972",
-                        directorOrCreator = "Francis Ford Coppola",
-                        voteAvg = 8.7f
-                    ),
-                    ChallengeMediaItem(
-                        id = 62,
-                        title = "2001: A Space Odyssey",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/90T7b2LIrL07ndYSaYr0BDkeYnu.jpg",
-                        releaseYear = "1968",
-                        directorOrCreator = "Stanley Kubrick",
-                        voteAvg = 8.1f
-                    ),
-                    ChallengeMediaItem(
-                        id = 429,
-                        title = "The Good, the Bad and the Ugly",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/bX2xnavhMYjWDoZp1VM6VnU1xwe.jpg",
-                        releaseYear = "1966",
-                        directorOrCreator = "Sergio Leone",
-                        voteAvg = 8.5f
-                    ),
-                    ChallengeMediaItem(
-                        id = 129,
-                        title = "Spirited Away",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg",
-                        releaseYear = "2001",
-                        directorOrCreator = "Hayao Miyazaki",
-                        voteAvg = 8.5f
-                    ),
-                    ChallengeMediaItem(
-                        id = 389,
-                        title = "12 Angry Men",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/ow3wq89wM8qd5X7hWKxiRfsFf9C.jpg",
-                        releaseYear = "1957",
-                        directorOrCreator = "Sidney Lumet",
-                        voteAvg = 8.5f
-                    ),
-                    ChallengeMediaItem(
-                        id = 497,
-                        title = "Schindler's List",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg",
-                        releaseYear = "1993",
-                        directorOrCreator = "Steven Spielberg",
-                        voteAvg = 8.6f
-                    ),
-                    ChallengeMediaItem(
-                        id = 155,
-                        title = "The Dark Knight",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-                        releaseYear = "2008",
-                        directorOrCreator = "Christopher Nolan",
-                        voteAvg = 8.5f
-                    ),
-                    ChallengeMediaItem(
-                        id = 496243,
-                        title = "Parasite",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
-                        releaseYear = "2019",
-                        directorOrCreator = "Bong Joon-ho",
-                        voteAvg = 8.5f
-                    ),
-                    ChallengeMediaItem(
-                        id = 19404,
-                        title = "Dilwale Dulhania Le Jayenge",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/ktejodb09GplUm0nR1zM447uqjY.jpg",
-                        releaseYear = "1995",
-                        directorOrCreator = "Aditya Chopra",
-                        voteAvg = 8.5f
-                    ),
-                    ChallengeMediaItem(
-                        id = 157336,
-                        title = "Interstellar",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-                        releaseYear = "2014",
-                        directorOrCreator = "Christopher Nolan",
-                        voteAvg = 8.4f
-                    )
-                )
-            ),
-            CinephileChallenge(
-                id = "curated_prestige_tv",
-                title = "Prestige TV Hall of Fame",
-                description = "The gold standard of serialized storytelling that redefined television.",
-                category = ChallengeCategory.Curated,
-                mediaTypeFilter = ChallengeMediaTypeFilter.TV,
-                targetCount = 8,
-                targetMediaItems = listOf(
-                    ChallengeMediaItem(
-                        id = 1396,
-                        title = "Breaking Bad",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg",
-                        releaseYear = "2008",
-                        directorOrCreator = "Vince Gilligan",
-                        voteAvg = 8.9f
-                    ),
-                    ChallengeMediaItem(
-                        id = 76331,
-                        title = "Succession",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/7TB1B6wX5jT1h1fGq4T5vN0u1s2.jpg",
-                        releaseYear = "2018",
-                        directorOrCreator = "Jesse Armstrong",
-                        voteAvg = 8.6f
-                    ),
-                    ChallengeMediaItem(
-                        id = 87108,
-                        title = "Chernobyl",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg",
-                        releaseYear = "2019",
-                        directorOrCreator = "Craig Mazin",
-                        voteAvg = 8.7f
-                    ),
-                    ChallengeMediaItem(
-                        id = 1398,
-                        title = "The Sopranos",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/rweIrveL43TaxUN0akQEaAXL6x0.jpg",
-                        releaseYear = "1999",
-                        directorOrCreator = "David Chase",
-                        voteAvg = 8.6f
-                    ),
-                    ChallengeMediaItem(
-                        id = 1438,
-                        title = "The Wire",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/og7Glq4HGe1uPebG2M9kC0oTsmF.jpg",
-                        releaseYear = "2002",
-                        directorOrCreator = "David Simon",
-                        voteAvg = 8.6f
-                    ),
-                    ChallengeMediaItem(
-                        id = 60059,
-                        title = "Better Call Saul",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/fC2HDm5t0kHsfNxPkUQIZIMhv1X.jpg",
-                        releaseYear = "2015",
-                        directorOrCreator = "Peter Gould",
-                        voteAvg = 8.7f
-                    ),
-                    ChallengeMediaItem(
-                        id = 100088,
-                        title = "The Last of Us",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/uKvVjHNqB5VmOrdxqAt2V7JMrne.jpg",
-                        releaseYear = "2023",
-                        directorOrCreator = "Craig Mazin, Neil Druckmann",
-                        voteAvg = 8.6f
-                    ),
-                    ChallengeMediaItem(
-                        id = 94997,
-                        title = "House of the Dragon",
-                        mediaType = MediaType.Tv,
-                        posterImageUrl = "/t9Xke5724fqtp0dL4DR29YmKdua.jpg",
-                        releaseYear = "2022",
-                        directorOrCreator = "Ryan J. Condal",
-                        voteAvg = 8.4f
-                    )
-                )
-            ),
-            CinephileChallenge(
-                id = "curated_nolan_villeneuve",
-                title = "Auteur Vision: Nolan & Villeneuve",
-                description = "Modern visionary epics blending grand spectacle with existential depth.",
-                category = ChallengeCategory.DirectorSpotlight,
-                mediaTypeFilter = ChallengeMediaTypeFilter.MOVIE,
-                targetCount = 6,
-                targetMediaItems = listOf(
-                    ChallengeMediaItem(
-                        id = 872585,
-                        title = "Oppenheimer",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
-                        releaseYear = "2023",
-                        directorOrCreator = "Christopher Nolan",
-                        voteAvg = 8.1f
-                    ),
-                    ChallengeMediaItem(
-                        id = 693134,
-                        title = "Dune: Part Two",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
-                        releaseYear = "2024",
-                        directorOrCreator = "Denis Villeneuve",
-                        voteAvg = 8.2f
-                    ),
-                    ChallengeMediaItem(
-                        id = 27205,
-                        title = "Inception",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg",
-                        releaseYear = "2010",
-                        directorOrCreator = "Christopher Nolan",
-                        voteAvg = 8.4f
-                    ),
-                    ChallengeMediaItem(
-                        id = 335984,
-                        title = "Blade Runner 2049",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",
-                        releaseYear = "2017",
-                        directorOrCreator = "Denis Villeneuve",
-                        voteAvg = 7.6f
-                    ),
-                    ChallengeMediaItem(
-                        id = 329865,
-                        title = "Arrival",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg",
-                        releaseYear = "2016",
-                        directorOrCreator = "Denis Villeneuve",
-                        voteAvg = 7.9f
-                    ),
-                    ChallengeMediaItem(
-                        id = 146233,
-                        title = "Prisoners",
-                        mediaType = MediaType.Movie,
-                        posterImageUrl = "/jsW6cpm0t2Wd91a92B60w5xQo4H.jpg",
-                        releaseYear = "2013",
-                        directorOrCreator = "Denis Villeneuve",
-                        voteAvg = 8.1f
-                    )
-                )
-            ),
-            CinephileChallenge(
-                id = "curated_century_sprint_2026",
-                title = "2026 Cinema Century Sprint",
-                description = "Watch 52 Movies or TV Shows this year (1 title per week).",
-                category = ChallengeCategory.PersonalGoal,
-                mediaTypeFilter = ChallengeMediaTypeFilter.ALL,
-                targetCount = 52,
-                targetMediaItems = emptyList()
-            )
-        )
+    override suspend fun getCuratedChallenges(forceRefresh: Boolean): List<CinephileChallenge> =
+        withContext(Dispatchers.IO) {
+            syncCatalogIfStale(forceRefresh = forceRefresh)
+        }
+
+    private suspend fun syncCatalogIfStale(forceRefresh: Boolean): List<CinephileChallenge> {
+        val now = System.currentTimeMillis()
+        val lastFetched = storage.read(key = KEY_CURATED_CHALLENGES_LAST_FETCHED, default = 0L)
+        val isStale = (now - lastFetched) > TimeUnit.HOURS.toMillis(24)
+
+        if (!isStale && !forceRefresh) {
+            val cached = getCachedCuratedChallenges()
+            if (!cached.isNullOrEmpty()) {
+                return cached
+            }
+        }
+
+        try {
+            val doc = firestore.collection(colCuratedChallenges)
+                .document(DOC_ACTIVE_CATALOG)
+                .get()
+                .await()
+
+            if (doc != null && doc.exists()) {
+                val rawChallenges = doc.get("challenges")
+                if (rawChallenges != null) {
+                    val jsonString = gson.toJson(rawChallenges)
+                    val type = object : TypeToken<List<CinephileChallenge>>() {}.type
+                    val parsed: List<CinephileChallenge>? = gson.fromJson(jsonString, type)
+                    if (!parsed.isNullOrEmpty()) {
+                        storage.write(
+                            key = KEY_CURATED_CHALLENGES_CACHE,
+                            value = gson.toJson(parsed)
+                        )
+                        storage.write(key = KEY_CURATED_CHALLENGES_LAST_FETCHED, value = now)
+                        return parsed
+                    }
+                }
+            } else if (isDebug) {
+                // In Debug mode, auto-seed dev_curated_challenges if the document does not exist yet
+                val seedList = loadCuratedChallengesFromAsset()
+                if (seedList.isNotEmpty()) {
+                    try {
+                        val seedDoc = mapOf(
+                            "catalogVersion" to 1,
+                            "enabled" to true,
+                            "updatedAt" to FieldValue.serverTimestamp(),
+                            "challenges" to seedList
+                        )
+                        firestore.collection(colCuratedChallenges)
+                            .document(DOC_ACTIVE_CATALOG)
+                            .set(seedDoc)
+                            .await()
+                    } catch (_: Exception) {
+                        // Fail gracefully if dev environment lacks write permissions
+                    }
+                    storage.write(key = KEY_CURATED_CHALLENGES_CACHE, value = gson.toJson(seedList))
+                    storage.write(key = KEY_CURATED_CHALLENGES_LAST_FETCHED, value = now)
+                    return seedList
+                }
+            }
+        } catch (_: Exception) {
+            // Fail gracefully, use cached catalog or asset seed
+        }
+
+        val cached = getCachedCuratedChallenges()
+        if (!cached.isNullOrEmpty()) {
+            return cached
+        }
+
+        val assetList = loadCuratedChallengesFromAsset()
+        if (assetList.isNotEmpty()) {
+            storage.write(key = KEY_CURATED_CHALLENGES_CACHE, value = gson.toJson(assetList))
+            return assetList
+        }
+
+        return emptyList()
+    }
+
+    private fun loadCuratedChallengesFromAsset(): List<CinephileChallenge> {
+        return try {
+            context.assets.open(SEED_ASSET_FILE).use { inputStream ->
+                val jsonString = inputStream.bufferedReader().readText()
+                val type = object : TypeToken<List<CinephileChallenge>>() {}.type
+                gson.fromJson<List<CinephileChallenge>>(jsonString, type) ?: emptyList()
+            }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    private suspend fun getCachedCuratedChallenges(): List<CinephileChallenge>? {
+        return try {
+            val cachedJson = storage.read(key = KEY_CURATED_CHALLENGES_CACHE)
+            if (!cachedJson.isNullOrBlank()) {
+                val type = object : TypeToken<List<CinephileChallenge>>() {}.type
+                gson.fromJson<List<CinephileChallenge>>(cachedJson, type)
+            } else {
+                null
+            }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     override suspend fun joinChallenge(challenge: CinephileChallenge): Unit =

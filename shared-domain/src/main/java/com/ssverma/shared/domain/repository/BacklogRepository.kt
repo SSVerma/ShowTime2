@@ -8,10 +8,11 @@ import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import kotlinx.coroutines.flow.Flow
 
 interface BacklogRepository {
+    val curatedChallengesFlow: Flow<List<CinephileChallenge>>
     val activeChallengesFlow: Flow<List<CinephileChallenge>>
     val blindspotsFlow: Flow<List<BlindspotPriorityItem>>
 
-    suspend fun getCuratedChallenges(): List<CinephileChallenge>
+    suspend fun getCuratedChallenges(forceRefresh: Boolean = false): List<CinephileChallenge>
     suspend fun joinChallenge(challenge: CinephileChallenge)
     suspend fun leaveChallenge(challengeId: String)
     suspend fun createCustomChallenge(

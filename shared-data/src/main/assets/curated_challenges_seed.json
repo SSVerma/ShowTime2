@@ -1,0 +1,309 @@
+[
+  {
+    "id": "curated_sight_and_sound",
+    "title": "Sight & Sound Masterpieces",
+    "description": "The defining cinematic milestones of world cinema history.",
+    "category": "Curated",
+    "mediaTypeFilter": "MOVIE",
+    "targetCount": 10,
+    "targetMediaItems": [
+      {
+        "id": 238,
+        "title": "The Godfather",
+        "mediaType": "movie",
+        "posterImageUrl": "/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "1972",
+        "directorOrCreator": "Francis Ford Coppola",
+        "overview": "",
+        "voteAvg": 8.7
+      },
+      {
+        "id": 62,
+        "title": "2001: A Space Odyssey",
+        "mediaType": "movie",
+        "posterImageUrl": "/90T7b2LIrL07ndYSaYr0BDkeYnu.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "1968",
+        "directorOrCreator": "Stanley Kubrick",
+        "overview": "",
+        "voteAvg": 8.1
+      },
+      {
+        "id": 429,
+        "title": "The Good, the Bad and the Ugly",
+        "mediaType": "movie",
+        "posterImageUrl": "/bX2xnavhMYjWDoZp1VM6VnU1xwe.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "1966",
+        "directorOrCreator": "Sergio Leone",
+        "overview": "",
+        "voteAvg": 8.5
+      },
+      {
+        "id": 129,
+        "title": "Spirited Away",
+        "mediaType": "movie",
+        "posterImageUrl": "/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2001",
+        "directorOrCreator": "Hayao Miyazaki",
+        "overview": "",
+        "voteAvg": 8.5
+      },
+      {
+        "id": 389,
+        "title": "12 Angry Men",
+        "mediaType": "movie",
+        "posterImageUrl": "/ow3wq89wM8qd5X7hWKxiRfsFf9C.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "1957",
+        "directorOrCreator": "Sidney Lumet",
+        "overview": "",
+        "voteAvg": 8.5
+      },
+      {
+        "id": 497,
+        "title": "Schindler's List",
+        "mediaType": "movie",
+        "posterImageUrl": "/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "1993",
+        "directorOrCreator": "Steven Spielberg",
+        "overview": "",
+        "voteAvg": 8.6
+      },
+      {
+        "id": 155,
+        "title": "The Dark Knight",
+        "mediaType": "movie",
+        "posterImageUrl": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2008",
+        "directorOrCreator": "Christopher Nolan",
+        "overview": "",
+        "voteAvg": 8.5
+      },
+      {
+        "id": 496243,
+        "title": "Parasite",
+        "mediaType": "movie",
+        "posterImageUrl": "/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2019",
+        "directorOrCreator": "Bong Joon-ho",
+        "overview": "",
+        "voteAvg": 8.5
+      },
+      {
+        "id": 19404,
+        "title": "Dilwale Dulhania Le Jayenge",
+        "mediaType": "movie",
+        "posterImageUrl": "/ktejodb09GplUm0nR1zM447uqjY.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "1995",
+        "directorOrCreator": "Aditya Chopra",
+        "overview": "",
+        "voteAvg": 8.5
+      },
+      {
+        "id": 157336,
+        "title": "Interstellar",
+        "mediaType": "movie",
+        "posterImageUrl": "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2014",
+        "directorOrCreator": "Christopher Nolan",
+        "overview": "",
+        "voteAvg": 8.4
+      }
+    ],
+    "isCustom": false
+  },
+  {
+    "id": "curated_prestige_tv",
+    "title": "Prestige TV Hall of Fame",
+    "description": "The gold standard of serialized storytelling that redefined television.",
+    "category": "Curated",
+    "mediaTypeFilter": "TV",
+    "targetCount": 8,
+    "targetMediaItems": [
+      {
+        "id": 1396,
+        "title": "Breaking Bad",
+        "mediaType": "tv",
+        "posterImageUrl": "/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2008",
+        "directorOrCreator": "Vince Gilligan",
+        "overview": "",
+        "voteAvg": 8.9
+      },
+      {
+        "id": 76331,
+        "title": "Succession",
+        "mediaType": "tv",
+        "posterImageUrl": "/7TB1B6wX5jT1h1fGq4T5vN0u1s2.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2018",
+        "directorOrCreator": "Jesse Armstrong",
+        "overview": "",
+        "voteAvg": 8.6
+      },
+      {
+        "id": 87108,
+        "title": "Chernobyl",
+        "mediaType": "tv",
+        "posterImageUrl": "/hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2019",
+        "directorOrCreator": "Craig Mazin",
+        "overview": "",
+        "voteAvg": 8.7
+      },
+      {
+        "id": 1398,
+        "title": "The Sopranos",
+        "mediaType": "tv",
+        "posterImageUrl": "/rweIrveL43TaxUN0akQEaAXL6x0.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "1999",
+        "directorOrCreator": "David Chase",
+        "overview": "",
+        "voteAvg": 8.6
+      },
+      {
+        "id": 1438,
+        "title": "The Wire",
+        "mediaType": "tv",
+        "posterImageUrl": "/og7Glq4HGe1uPebG2M9kC0oTsmF.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2002",
+        "directorOrCreator": "David Simon",
+        "overview": "",
+        "voteAvg": 8.6
+      },
+      {
+        "id": 60059,
+        "title": "Better Call Saul",
+        "mediaType": "tv",
+        "posterImageUrl": "/fC2HDm5t0kHsfNxPkUQIZIMhv1X.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2015",
+        "directorOrCreator": "Peter Gould",
+        "overview": "",
+        "voteAvg": 8.7
+      },
+      {
+        "id": 100088,
+        "title": "The Last of Us",
+        "mediaType": "tv",
+        "posterImageUrl": "/uKvVjHNqB5VmOrdxqAt2V7JMrne.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2023",
+        "directorOrCreator": "Craig Mazin, Neil Druckmann",
+        "overview": "",
+        "voteAvg": 8.6
+      },
+      {
+        "id": 94997,
+        "title": "House of the Dragon",
+        "mediaType": "tv",
+        "posterImageUrl": "/t9Xke5724fqtp0dL4DR29YmKdua.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2022",
+        "directorOrCreator": "Ryan J. Condal",
+        "overview": "",
+        "voteAvg": 8.4
+      }
+    ],
+    "isCustom": false
+  },
+  {
+    "id": "curated_nolan_villeneuve",
+    "title": "Auteur Vision: Nolan & Villeneuve",
+    "description": "Modern visionary epics blending grand spectacle with existential depth.",
+    "category": "DirectorSpotlight",
+    "mediaTypeFilter": "MOVIE",
+    "targetCount": 6,
+    "targetMediaItems": [
+      {
+        "id": 872585,
+        "title": "Oppenheimer",
+        "mediaType": "movie",
+        "posterImageUrl": "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2023",
+        "directorOrCreator": "Christopher Nolan",
+        "overview": "",
+        "voteAvg": 8.1
+      },
+      {
+        "id": 693134,
+        "title": "Dune: Part Two",
+        "mediaType": "movie",
+        "posterImageUrl": "/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2024",
+        "directorOrCreator": "Denis Villeneuve",
+        "overview": "",
+        "voteAvg": 8.2
+      },
+      {
+        "id": 27205,
+        "title": "Inception",
+        "mediaType": "movie",
+        "posterImageUrl": "/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2010",
+        "directorOrCreator": "Christopher Nolan",
+        "overview": "",
+        "voteAvg": 8.4
+      },
+      {
+        "id": 335984,
+        "title": "Blade Runner 2049",
+        "mediaType": "movie",
+        "posterImageUrl": "/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2017",
+        "directorOrCreator": "Denis Villeneuve",
+        "overview": "",
+        "voteAvg": 7.6
+      },
+      {
+        "id": 329865,
+        "title": "Arrival",
+        "mediaType": "movie",
+        "posterImageUrl": "/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2016",
+        "directorOrCreator": "Denis Villeneuve",
+        "overview": "",
+        "voteAvg": 7.9
+      },
+      {
+        "id": 146233,
+        "title": "Prisoners",
+        "mediaType": "movie",
+        "posterImageUrl": "/jsW6cpm0t2Wd91a92B60w5xQo4H.jpg",
+        "backdropImageUrl": "",
+        "releaseYear": "2013",
+        "directorOrCreator": "Denis Villeneuve",
+        "overview": "",
+        "voteAvg": 8.1
+      }
+    ],
+    "isCustom": false
+  },
+  {
+    "id": "curated_century_sprint_2026",
+    "title": "2026 Cinema Century Sprint",
+    "description": "Watch 52 Movies or TV Shows this year (1 title per week).",
+    "category": "PersonalGoal",
+    "mediaTypeFilter": "ALL",
+    "targetCount": 52,
+    "targetMediaItems": [],
+    "isCustom": false
+  }
+]
