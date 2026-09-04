@@ -21,12 +21,27 @@ class GetBacklogChallengesUseCase @Inject constructor(
     operator fun invoke(): Flow<List<ChallengeProgress>> {
         return combine(
             backlogRepository.activeChallengesFlow,
+            backlogRepository.curatedChallengesFlow,
             diaryRepository.getAllDiaryEntries()
-        ) { activeChallenges, diaryEntries ->
+        ) { activeChallenges, curatedChallenges, diaryEntries ->
+            val curatedMap = curatedChallenges.associateBy { it.id }
             val watchedMediaSet = diaryEntries.map { it.mediaId to it.mediaType }.toSet()
 
             activeChallenges.map { challenge ->
-                computeProgress(challenge, watchedMediaSet, diaryEntries)
+                val curated = curatedMap[challenge.id]
+                val effectiveChallenge = if (curated != null) {
+                    challenge.copy(
+                        title = curated.title,
+                        description = curated.description,
+                        targetMediaItems = curated.targetMediaItems,
+                        targetCount = curated.targetCount,
+                        category = curated.category,
+                        mediaTypeFilter = curated.mediaTypeFilter
+                    )
+                } else {
+                    challenge
+                }
+                computeProgress(effectiveChallenge, watchedMediaSet, diaryEntries)
             }
         }
     }
@@ -54,8 +69,22 @@ class GetBacklogChallengesUseCase @Inject constructor(
         ) { activeChallenges, curatedChallenges, diaryEntries ->
             val activeChallenge = activeChallenges.firstOrNull { it.id == challengeId }
             val isJoined = activeChallenge != null
-            val challenge =
-                activeChallenge ?: curatedChallenges.firstOrNull { it.id == challengeId }
+            val curatedChallenge = curatedChallenges.firstOrNull { it.id == challengeId }
+            val challenge = when {
+                activeChallenge != null && curatedChallenge != null -> {
+                    activeChallenge.copy(
+                        title = curatedChallenge.title,
+                        description = curatedChallenge.description,
+                        targetMediaItems = curatedChallenge.targetMediaItems,
+                        targetCount = curatedChallenge.targetCount,
+                        category = curatedChallenge.category,
+                        mediaTypeFilter = curatedChallenge.mediaTypeFilter
+                    )
+                }
+
+                activeChallenge != null -> activeChallenge
+                else -> curatedChallenge
+            }
 
             if (challenge != null) {
                 val watchedMediaSet = diaryEntries.map { it.mediaId to it.mediaType }.toSet()

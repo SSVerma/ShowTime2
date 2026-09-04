@@ -62,7 +62,7 @@ class BacklogRepositoryImpl @Inject constructor(
         val KEY_ACTIVE_CHALLENGES = stringPreferencesKey("backlog_active_challenges_json")
         val KEY_BLINDSPOTS = stringPreferencesKey("backlog_blindspots_json")
         val KEY_CURATED_CHALLENGES_CACHE =
-            stringPreferencesKey("backlog_curated_challenges_cached_json")
+            stringPreferencesKey("backlog_curated_challenges_cached_json_v2")
         val KEY_CURATED_CHALLENGES_LAST_FETCHED =
             longPreferencesKey("backlog_curated_challenges_last_fetched_epoch")
         const val SEED_ASSET_FILE = "curated_challenges_seed.json"

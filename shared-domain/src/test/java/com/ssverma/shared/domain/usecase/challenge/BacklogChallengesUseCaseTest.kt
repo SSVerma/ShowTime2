@@ -32,6 +32,7 @@ class BacklogChallengesUseCaseTest {
 
     @Before
     fun setUp() {
+        every { backlogRepository.curatedChallengesFlow } returns flowOf(emptyList())
         getBacklogChallengesUseCase = GetBacklogChallengesUseCase(
             backlogRepository = backlogRepository,
             diaryRepository = diaryRepository
@@ -185,5 +186,117 @@ class BacklogChallengesUseCaseTest {
 
         coEvery { backlogRepository.isBlindspot(300, MediaType.Movie) } returns true
         assertTrue(manageChallengeUseCase.isBlindspot(300, MediaType.Movie))
+    }
+
+    @Test
+    fun `invoke enriches active curated challenges with updated curated metadata`() = runTest {
+        val staleActiveChallenge = CinephileChallenge(
+            id = "curated_prestige_tv",
+            title = "Old Title",
+            description = "Old Desc",
+            category = ChallengeCategory.Curated,
+            mediaTypeFilter = ChallengeMediaTypeFilter.TV,
+            targetCount = 1,
+            targetMediaItems = listOf(
+                ChallengeMediaItem(
+                    id = 1398,
+                    title = "The Sopranos",
+                    mediaType = MediaType.Tv,
+                    posterImageUrl = "/old_spiderman_poster.jpg",
+                    releaseYear = "1999"
+                )
+            )
+        )
+
+        val freshCuratedChallenge = CinephileChallenge(
+            id = "curated_prestige_tv",
+            title = "Prestige TV Hall of Fame",
+            description = "Updated Desc",
+            category = ChallengeCategory.Curated,
+            mediaTypeFilter = ChallengeMediaTypeFilter.TV,
+            targetCount = 1,
+            targetMediaItems = listOf(
+                ChallengeMediaItem(
+                    id = 1398,
+                    title = "The Sopranos",
+                    mediaType = MediaType.Tv,
+                    posterImageUrl = "/rTc7ZXdroqjkKivFPvCPX0Ru7uw.jpg",
+                    releaseYear = "1999"
+                )
+            )
+        )
+
+        every { backlogRepository.activeChallengesFlow } returns flowOf(listOf(staleActiveChallenge))
+        every { backlogRepository.curatedChallengesFlow } returns flowOf(
+            listOf(
+                freshCuratedChallenge
+            )
+        )
+        every { diaryRepository.getAllDiaryEntries() } returns flowOf(emptyList())
+
+        val result = getBacklogChallengesUseCase().first()
+        assertEquals(1, result.size)
+        val progress = result.first()
+        assertEquals("Prestige TV Hall of Fame", progress.challenge.title)
+        assertEquals(
+            "/rTc7ZXdroqjkKivFPvCPX0Ru7uw.jpg",
+            progress.challenge.targetMediaItems.first().posterImageUrl
+        )
+    }
+
+    @Test
+    fun `getChallengeDetailFlow returns enriched metadata and joined status`() = runTest {
+        val staleActiveChallenge = CinephileChallenge(
+            id = "curated_prestige_tv",
+            title = "Old Title",
+            description = "Old Desc",
+            category = ChallengeCategory.Curated,
+            mediaTypeFilter = ChallengeMediaTypeFilter.TV,
+            targetCount = 1,
+            targetMediaItems = listOf(
+                ChallengeMediaItem(
+                    id = 1398,
+                    title = "The Sopranos",
+                    mediaType = MediaType.Tv,
+                    posterImageUrl = "/wrong.jpg",
+                    releaseYear = "1999"
+                )
+            )
+        )
+
+        val freshCuratedChallenge = CinephileChallenge(
+            id = "curated_prestige_tv",
+            title = "Prestige TV Hall of Fame",
+            description = "Updated Desc",
+            category = ChallengeCategory.Curated,
+            mediaTypeFilter = ChallengeMediaTypeFilter.TV,
+            targetCount = 1,
+            targetMediaItems = listOf(
+                ChallengeMediaItem(
+                    id = 1398,
+                    title = "The Sopranos",
+                    mediaType = MediaType.Tv,
+                    posterImageUrl = "/rTc7ZXdroqjkKivFPvCPX0Ru7uw.jpg",
+                    releaseYear = "1999"
+                )
+            )
+        )
+
+        every { backlogRepository.activeChallengesFlow } returns flowOf(listOf(staleActiveChallenge))
+        every { backlogRepository.curatedChallengesFlow } returns flowOf(
+            listOf(
+                freshCuratedChallenge
+            )
+        )
+        every { diaryRepository.getAllDiaryEntries() } returns flowOf(emptyList())
+
+        val (progress, isJoined) = getBacklogChallengesUseCase.getChallengeDetailFlow("curated_prestige_tv")
+            .first()
+        assertTrue(isJoined)
+        assertEquals("Prestige TV Hall of Fame", progress?.challenge?.title)
+        assertEquals(
+            "/rTc7ZXdroqjkKivFPvCPX0Ru7uw.jpg",
+            progress?.challenge?.targetMediaItems?.first()?.posterImageUrl
+        )
     }
 }

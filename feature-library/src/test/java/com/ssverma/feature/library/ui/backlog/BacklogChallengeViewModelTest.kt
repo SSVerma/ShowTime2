@@ -40,6 +40,7 @@ class BacklogChallengeViewModelTest {
     private val diaryRepository: DiaryRepository = mockk(relaxed = true)
 
     private val activeChallengesFlow = MutableStateFlow<List<CinephileChallenge>>(emptyList())
+    private val curatedChallengesFlow = MutableStateFlow<List<CinephileChallenge>>(emptyList())
     private val blindspotsFlow = MutableStateFlow<List<BlindspotPriorityItem>>(emptyList())
     private val diaryEntriesFlow = MutableStateFlow<List<DiaryEntry>>(emptyList())
 
@@ -50,6 +51,7 @@ class BacklogChallengeViewModelTest {
     @Before
     fun setUp() {
         every { backlogRepository.activeChallengesFlow } returns activeChallengesFlow
+        every { backlogRepository.curatedChallengesFlow } returns curatedChallengesFlow
         every { backlogRepository.blindspotsFlow } returns blindspotsFlow
         every { diaryRepository.getAllDiaryEntries() } returns diaryEntriesFlow
 

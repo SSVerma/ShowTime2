@@ -13,7 +13,7 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 
 object NetworkImageDefaults {
-    const val CrossFadeDurationMs = 650
+    const val CrossFadeDurationMs = 200
     const val PlaceHolderAlpha = 0.1f
 }
 
@@ -28,6 +28,7 @@ fun NetworkImage(
     enableCrossFade: Boolean = true,
     crossFadeDurationMillis: Int = NetworkImageDefaults.CrossFadeDurationMs,
     diskCachePolicy: CachePolicy = CachePolicy.ENABLED,
+    memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
     onSuccess: (() -> Unit)? = null,
     onError: (() -> Unit)? = null
 ) {
@@ -37,6 +38,7 @@ fun NetworkImage(
             .crossfade(enableCrossFade)
             .crossfade(crossFadeDurationMillis)
             .diskCachePolicy(diskCachePolicy)
+            .memoryCachePolicy(memoryCachePolicy)
             .build(),
         contentDescription = contentDescription,
         contentScale = contentScale,
