@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
@@ -76,7 +77,7 @@ fun DiaryTimelineItemCard(
             ) {
                 // Poster
                 NetworkImage(
-                    url = entry.posterImageUrl,
+                    url = entry.posterImageUrl.convertToTmdbPosterUrl(),
                     contentDescription = entry.title,
                     modifier = Modifier
                         .size(width = 64.dp, height = 96.dp)

@@ -13,6 +13,10 @@ import com.ssverma.shared.domain.repository.BacklogRepository
 import com.ssverma.shared.domain.repository.DiaryRepository
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
 import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
+import com.ssverma.api.service.tmdb.TmdbApiService
+import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
+import com.ssverma.core.networking.adapter.ApiResponse
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -38,6 +42,7 @@ class BacklogChallengeViewModelTest {
 
     private val backlogRepository: BacklogRepository = mockk(relaxed = true)
     private val diaryRepository: DiaryRepository = mockk(relaxed = true)
+    private val tmdbApiService: TmdbApiService = mockk(relaxed = true)
 
     private val activeChallengesFlow = MutableStateFlow<List<CinephileChallenge>>(emptyList())
     private val curatedChallengesFlow = MutableStateFlow<List<CinephileChallenge>>(emptyList())
@@ -65,7 +70,8 @@ class BacklogChallengeViewModelTest {
 
         viewModel = BacklogChallengeViewModel(
             getBacklogChallengesUseCase = getBacklogChallengesUseCase,
-            manageChallengeUseCase = manageChallengeUseCase
+            manageChallengeUseCase = manageChallengeUseCase,
+            tmdbApiService = tmdbApiService
         )
     }
 
@@ -149,8 +155,118 @@ class BacklogChallengeViewModelTest {
                 description = "50 titles",
                 mediaTypeFilter = ChallengeMediaTypeFilter.ALL,
                 targetCount = 50,
-                targetItems = any()
+                targetItems = emptyList()
             )
         }
+    }
+
+    @Test
+    fun `creating custom goal with specific items passes them to repository`() = runTest {
+        val sampleItem = ChallengeMediaItem(
+            id = 550,
+            title = "Fight Club",
+            mediaType = MediaType.Movie,
+            posterImageUrl = "/fightclub.jpg",
+            releaseYear = "1999"
+        )
+
+        viewModel.createCustomGoal(
+            title = "Mind Benders",
+            description = "Twist movies",
+            mediaTypeFilter = ChallengeMediaTypeFilter.MOVIE,
+            targetCount = 1,
+            targetItems = listOf(sampleItem)
+        )
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            backlogRepository.createCustomChallenge(
+                title = "Mind Benders",
+                description = "Twist movies",
+                mediaTypeFilter = ChallengeMediaTypeFilter.MOVIE,
+                targetCount = 1,
+                targetItems = listOf(sampleItem)
+            )
+        }
+    }
+
+    @Test
+    fun `searching media queries TmdbApiService and updates suggestions`() = runTest {
+        val mockSuggestion = RemoteMultiSearchSuggestion(
+            mediaType = "movie",
+            id = 550,
+            name = "Fight Club",
+            popularity = 45f,
+            profilePath = null,
+            department = null,
+            gender = 0,
+            backdropPath = "/backdrop.jpg",
+            posterPath = "/poster.jpg",
+            overview = "An insomniac office worker...",
+            videoAvailable = false,
+            voteAvg = 8.4f,
+            voteCount = 24000,
+            originalLanguage = "en",
+            releaseDate = "1999-10-15",
+            firstAirDate = null
+        )
+
+        coEvery { tmdbApiService.multiSearch("Fight") } returns ApiResponse.Success(
+            body = PagedPayload(
+                id = 0,
+                page = 1,
+                pageCount = 1,
+                resultCount = 1,
+                results = listOf(mockSuggestion)
+            ),
+            payload = mockk(relaxed = true)
+        )
+
+        viewModel.onMediaSearchQueryChange("Fight", ChallengeMediaTypeFilter.ALL)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.first()
+        assertEquals(1, state.mediaSearchSuggestions.size)
+        assertEquals("Fight Club", state.mediaSearchSuggestions.first().title)
+        assertEquals(MediaType.Movie, state.mediaSearchSuggestions.first().mediaType)
+        assertEquals("1999", state.mediaSearchSuggestions.first().releaseYear)
+    }
+
+    @Test
+    fun `leaving curated challenge keeps custom challenge in active challenges`() = runTest {
+        val curatedChallenge = CinephileChallenge(
+            id = "c1",
+            title = "Sight & Sound",
+            description = "Top 10",
+            category = ChallengeCategory.Curated,
+            targetCount = 10
+        )
+        val customChallenge = CinephileChallenge(
+            id = "custom_marvel",
+            title = "Marvel",
+            description = "MR. Stark",
+            category = ChallengeCategory.PersonalGoal,
+            targetCount = 50,
+            isCustom = true
+        )
+
+        activeChallengesFlow.value = listOf(curatedChallenge, customChallenge)
+        advanceUntilIdle()
+
+        assertEquals(2, viewModel.uiState.first().activeChallenges.size)
+
+        // User leaves curated challenge
+        viewModel.leaveChallenge("c1")
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { backlogRepository.leaveChallenge("c1") }
+
+        // Simulate repository update
+        activeChallengesFlow.value = listOf(customChallenge)
+        advanceUntilIdle()
+
+        val updatedState = viewModel.uiState.first()
+        assertEquals(1, updatedState.activeChallenges.size)
+        assertEquals("Marvel", updatedState.activeChallenges.first().challenge.title)
     }
 }

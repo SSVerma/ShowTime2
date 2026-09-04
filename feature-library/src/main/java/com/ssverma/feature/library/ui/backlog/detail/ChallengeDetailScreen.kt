@@ -65,6 +65,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
@@ -373,7 +374,8 @@ fun ChallengeDetailScreen(
             mediaId = mediaItem.id,
             mediaType = mediaItem.mediaType,
             title = mediaItem.title,
-            posterImageUrl = mediaItem.posterImageUrl,
+            posterImageUrl = mediaItem.posterImageUrl.convertToTmdbPosterUrl(),
+            backdropImageUrl = mediaItem.backdropImageUrl.convertToTmdbBackdropUrl(),
             releaseDate = mediaItem.releaseYear,
             tmdbRating = mediaItem.voteAvg,
             onDismiss = { viewModel.dismissLogDialog() },

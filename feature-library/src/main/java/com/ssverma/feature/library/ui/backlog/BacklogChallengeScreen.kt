@@ -163,31 +163,8 @@ fun BacklogChallengeScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                // 1. Primary Highlight Hero Card / Intro Banner
-                val heroChallenge = uiState.activeChallenges.firstOrNull()
-                if (heroChallenge != null) {
-                    item(key = "hero_challenge_card") {
-                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            ChallengeHeroProgressCard(
-                                progress = heroChallenge,
-                                onViewBreakdown = { onOpenChallengeDetail(heroChallenge.challenge.id) },
-                                onShare = handleShare
-                            )
-                        }
-                    }
-                } else {
-                    item(key = "hero_intro_card") {
-                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            BacklogHeroIntroCard(
-                                curatedCount = uiState.curatedChallenges.size,
-                                onCreateGoalClick = viewModel::openCreateCustomGoalSheet
-                            )
-                        }
-                    }
-                }
-
-                // 2. Active Challenges Carousel / List
-                if (uiState.activeChallenges.size > 1) {
+                // 1. Active Challenges Section or Intro Banner
+                if (uiState.activeChallenges.isNotEmpty()) {
                     item(key = "active_challenges_section") {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
@@ -206,15 +183,30 @@ fun BacklogChallengeScreen(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 items(
-                                    items = uiState.activeChallenges.drop(1),
+                                    items = uiState.activeChallenges,
                                     key = { it.challenge.id }
                                 ) { challengeProgress ->
+                                    val cardModifier = if (uiState.activeChallenges.size == 1) {
+                                        Modifier.fillParentMaxWidth()
+                                    } else {
+                                        Modifier.width(285.dp)
+                                    }
                                     ActiveChallengeCard(
                                         progress = challengeProgress,
-                                        onClick = { onOpenChallengeDetail(challengeProgress.challenge.id) }
+                                        onClick = { onOpenChallengeDetail(challengeProgress.challenge.id) },
+                                        modifier = cardModifier
                                     )
                                 }
                             }
+                        }
+                    }
+                } else {
+                    item(key = "hero_intro_card") {
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            BacklogHeroIntroCard(
+                                curatedCount = uiState.curatedChallenges.size,
+                                onCreateGoalClick = viewModel::openCreateCustomGoalSheet
+                            )
                         }
                     }
                 }
@@ -298,6 +290,11 @@ fun BacklogChallengeScreen(
     // Modal Sheet: Create Personal Goal
     if (uiState.isCreatingCustomGoal) {
         CreateChallengeBottomSheet(
+            searchQuery = uiState.mediaSearchQuery,
+            searchSuggestions = uiState.mediaSearchSuggestions,
+            isSearching = uiState.isSearchingMedia,
+            onSearchQueryChange = viewModel::onMediaSearchQueryChange,
+            onClearSearch = viewModel::clearMediaSearch,
             onDismiss = viewModel::closeCreateCustomGoalSheet,
             onCreateGoal = viewModel::createCustomGoal
         )

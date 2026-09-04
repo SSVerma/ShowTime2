@@ -58,6 +58,7 @@ fun String?.convertToTmdbLogoUrl(): String {
 fun buildImageUrl(baseUrl: String, imagePath: String?): String {
     return imagePath?.let { path ->
         if (path.isBlank()) return@let ""
+        if (path.startsWith("http://") || path.startsWith("https://")) return@let path
         val normalizedPath = if (path.startsWith("/")) path else "/$path"
         val normalizedBase = baseUrl.trimEnd('/')
         "$normalizedBase$normalizedPath"

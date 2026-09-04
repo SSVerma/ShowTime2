@@ -79,6 +79,30 @@ fun LogAndRateDialog(
     var review by remember { mutableStateOf(existingEntry?.review ?: "") }
     var isRewatch by remember { mutableStateOf(existingEntry?.isRewatch ?: false) }
 
+    val resolvedPosterUrl = remember(posterImageUrl) {
+        when {
+            posterImageUrl.isBlank() -> ""
+            posterImageUrl.startsWith("http://") || posterImageUrl.startsWith("https://") -> posterImageUrl
+            else -> {
+                val path =
+                    if (posterImageUrl.startsWith("/")) posterImageUrl else "/$posterImageUrl"
+                "https://image.tmdb.org/t/p/w500$path"
+            }
+        }
+    }
+
+    val resolvedBackdropUrl = remember(backdropImageUrl) {
+        when {
+            backdropImageUrl.isBlank() -> ""
+            backdropImageUrl.startsWith("http://") || backdropImageUrl.startsWith("https://") -> backdropImageUrl
+            else -> {
+                val path =
+                    if (backdropImageUrl.startsWith("/")) backdropImageUrl else "/$backdropImageUrl"
+                "https://image.tmdb.org/t/p/w780$path"
+            }
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -190,7 +214,7 @@ fun LogAndRateDialog(
                                     .padding(10.dp)
                             ) {
                                 NetworkImage(
-                                    url = posterImageUrl,
+                                    url = resolvedPosterUrl,
                                     contentDescription = title,
                                     modifier = Modifier
                                         .size(width = 44.dp, height = 66.dp)
@@ -393,8 +417,8 @@ fun LogAndRateDialog(
                                     mediaId = mediaId,
                                     mediaType = mediaType,
                                     title = title,
-                                    posterImageUrl = posterImageUrl,
-                                    backdropImageUrl = backdropImageUrl,
+                                    posterImageUrl = resolvedPosterUrl,
+                                    backdropImageUrl = resolvedBackdropUrl,
                                     releaseDate = releaseDate,
                                     tmdbRating = tmdbRating,
                                     userRating = userRating,

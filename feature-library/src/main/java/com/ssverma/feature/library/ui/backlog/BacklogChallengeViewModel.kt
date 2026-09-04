@@ -10,7 +10,14 @@ import com.ssverma.shared.domain.model.challenge.ChallengeProgress
 import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
 import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
+import com.ssverma.api.service.tmdb.TmdbApiService
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
+import com.ssverma.core.networking.adapter.ApiResponse
+import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BacklogChallengeViewModel @Inject constructor(
     private val getBacklogChallengesUseCase: GetBacklogChallengesUseCase,
-    private val manageChallengeUseCase: ManageChallengeUseCase
+    private val manageChallengeUseCase: ManageChallengeUseCase,
+    private val tmdbApiService: TmdbApiService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BacklogChallengeUiState())
@@ -96,12 +104,102 @@ class BacklogChallengeViewModel @Inject constructor(
         _uiState.update { it.copy(selectedChallengeDetail = null) }
     }
 
+    private var mediaSearchJob: Job? = null
+
     fun openCreateCustomGoalSheet() {
         _uiState.update { it.copy(isCreatingCustomGoal = true) }
     }
 
     fun closeCreateCustomGoalSheet() {
+        clearMediaSearch()
         _uiState.update { it.copy(isCreatingCustomGoal = false) }
+    }
+
+    fun onMediaSearchQueryChange(
+        query: String,
+        filter: ChallengeMediaTypeFilter = ChallengeMediaTypeFilter.ALL
+    ) {
+        _uiState.update { it.copy(mediaSearchQuery = query) }
+        mediaSearchJob?.cancel()
+
+        val trimmed = query.trim()
+        if (trimmed.length < 2) {
+            _uiState.update {
+                it.copy(
+                    mediaSearchSuggestions = emptyList(),
+                    isSearchingMedia = false
+                )
+            }
+            return
+        }
+
+        mediaSearchJob = viewModelScope.launch {
+            delay(250) // Debounce typing
+            _uiState.update { it.copy(isSearchingMedia = true) }
+
+            when (val response = tmdbApiService.multiSearch(query = trimmed)) {
+                is ApiResponse.Success -> {
+                    val rawResults = response.body.results.orEmpty()
+                    val filteredSuggestions = rawResults
+                        .filter { item ->
+                            val type = item.mediaType?.lowercase().orEmpty()
+                            when (filter) {
+                                ChallengeMediaTypeFilter.ALL -> type == "movie" || type == "tv"
+                                ChallengeMediaTypeFilter.MOVIE -> type == "movie"
+                                ChallengeMediaTypeFilter.TV -> type == "tv"
+                            }
+                        }
+                        .distinctBy { it.id }
+                        .take(8)
+                        .map { item ->
+                            val mediaType = if (item.mediaType.equals("tv", ignoreCase = true)) {
+                                MediaType.Tv
+                            } else {
+                                MediaType.Movie
+                            }
+                            val year = (item.releaseDate ?: item.firstAirDate)?.take(4).orEmpty()
+                            ChallengeMediaItem(
+                                id = item.id,
+                                title = item.name.orEmpty(),
+                                mediaType = mediaType,
+                                posterImageUrl = item.posterPath.convertToTmdbPosterUrl(),
+                                backdropImageUrl = item.backdropPath.convertToTmdbBackdropUrl(),
+                                releaseYear = year,
+                                directorOrCreator = "",
+                                overview = item.overview.orEmpty(),
+                                voteAvg = item.voteAvg
+                            )
+                        }
+
+                    _uiState.update {
+                        it.copy(
+                            mediaSearchSuggestions = filteredSuggestions,
+                            isSearchingMedia = false
+                        )
+                    }
+                }
+
+                else -> {
+                    _uiState.update {
+                        it.copy(
+                            mediaSearchSuggestions = emptyList(),
+                            isSearchingMedia = false
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun clearMediaSearch() {
+        mediaSearchJob?.cancel()
+        _uiState.update {
+            it.copy(
+                mediaSearchQuery = "",
+                mediaSearchSuggestions = emptyList(),
+                isSearchingMedia = false
+            )
+        }
     }
 
     fun joinCuratedChallenge(challenge: CinephileChallenge) {
@@ -123,15 +221,18 @@ class BacklogChallengeViewModel @Inject constructor(
         title: String,
         description: String,
         mediaTypeFilter: ChallengeMediaTypeFilter,
-        targetCount: Int
+        targetCount: Int,
+        targetItems: List<ChallengeMediaItem> = emptyList()
     ) {
         viewModelScope.launch {
-            val custom = manageChallengeUseCase.createCustomChallenge(
+            manageChallengeUseCase.createCustomChallenge(
                 title = title,
                 description = description,
                 mediaTypeFilter = mediaTypeFilter,
-                targetCount = targetCount
+                targetCount = targetCount,
+                targetItems = targetItems
             )
+            clearMediaSearch()
             closeCreateCustomGoalSheet()
         }
     }

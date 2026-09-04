@@ -52,15 +52,12 @@ fun ActiveChallengeCard(
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = modifier
-            .width(270.dp)
-            .height(204.dp)
+        modifier = modifier.height(192.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(16.dp)
         ) {
             Column {
                 Row(
@@ -131,22 +128,24 @@ fun ActiveChallengeCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    minLines = 2,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(3.dp))
+                if (progress.challenge.description.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(3.dp))
 
-                Text(
-                    text = progress.challenge.description.ifBlank { "Tracked cinema challenge" },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    minLines = 2,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                    Text(
+                        text = progress.challenge.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.weight(1f))
 
             Column {
                 LinearProgressIndicator(
