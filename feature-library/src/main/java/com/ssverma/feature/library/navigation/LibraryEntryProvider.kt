@@ -112,6 +112,15 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             onOpenTvShowDetails = { tvShowId ->
                 navigator.navigate(TvShowDetailNavKey(tvShowId))
+            },
+            onNavigateToDiary = {
+                navigator.navigate(CinemaDiaryNavKey)
+            },
+            onNavigateToDiscover = {
+                navigator.navigate(SearchNavKey)
+            },
+            onNavigateToTasteProfile = {
+                navigator.navigate(TasteProfileNavKey)
             }
         )
     }

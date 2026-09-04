@@ -51,6 +51,8 @@ import com.ssverma.feature.library.ui.wrapped.component.WrappedMilestonesGrid
 import com.ssverma.feature.library.ui.wrapped.component.WrappedMonthlyTimeline
 import com.ssverma.feature.library.ui.wrapped.component.WrappedTopFavoritesGrid
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.stats.CinephileMilestone
+import com.ssverma.shared.domain.model.stats.MilestoneActionType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +60,9 @@ fun CinephileWrappedScreen(
     onBackPressed: () -> Unit,
     onOpenMovieDetails: (movieId: Int) -> Unit,
     onOpenTvShowDetails: (tvShowId: Int) -> Unit,
+    onNavigateToDiary: () -> Unit,
+    onNavigateToDiscover: () -> Unit,
+    onNavigateToTasteProfile: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CinephileWrappedViewModel = hiltViewModel()
 ) {
@@ -78,6 +83,25 @@ fun CinephileWrappedScreen(
             context.startActivity(shareIntent)
         }
         Unit
+    }
+
+    val handleMilestoneAction = { milestone: CinephileMilestone ->
+        when (milestone.actionType) {
+            MilestoneActionType.DIARY -> onNavigateToDiary()
+            MilestoneActionType.DISCOVERY -> onNavigateToDiscover()
+            MilestoneActionType.TASTE_PROFILE -> onNavigateToTasteProfile()
+        }
+    }
+
+    val handleShareMilestone = { milestone: CinephileMilestone ->
+        val shareText = viewModel.generateMilestoneShareText(milestone)
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            type = "text/plain"
+        }
+        val shareIntent = Intent.createChooser(sendIntent, "Share Milestone Achievement")
+        context.startActivity(shareIntent)
     }
 
     Scaffold(
@@ -236,7 +260,9 @@ fun CinephileWrappedScreen(
     uiState.selectedMilestone?.let { milestone ->
         MilestoneDetailBottomSheet(
             milestone = milestone,
-            onDismiss = { viewModel.onSelectMilestone(null) }
+            onDismiss = { viewModel.onSelectMilestone(null) },
+            onActionClick = handleMilestoneAction,
+            onShareAchievement = handleShareMilestone
         )
     }
 }

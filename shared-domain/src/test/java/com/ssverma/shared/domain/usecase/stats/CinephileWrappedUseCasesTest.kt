@@ -1,5 +1,6 @@
 package com.ssverma.shared.domain.usecase.stats
 
+import com.ssverma.shared.domain.fakes.FakeCinephileMilestoneRepository
 import com.ssverma.shared.domain.fakes.FakeDiaryRepository
 import com.ssverma.shared.domain.fakes.FakeLibraryRepository
 import com.ssverma.shared.domain.model.MediaType
@@ -18,15 +19,18 @@ class CinephileWrappedUseCasesTest {
 
     private lateinit var fakeDiaryRepository: FakeDiaryRepository
     private lateinit var fakeLibraryRepository: FakeLibraryRepository
+    private lateinit var fakeMilestoneRepository: FakeCinephileMilestoneRepository
     private lateinit var getCinephileWrappedUseCase: GetCinephileWrappedUseCase
 
     @Before
     fun setUp() {
         fakeDiaryRepository = FakeDiaryRepository()
         fakeLibraryRepository = FakeLibraryRepository()
+        fakeMilestoneRepository = FakeCinephileMilestoneRepository()
         getCinephileWrappedUseCase = GetCinephileWrappedUseCase(
             diaryRepository = fakeDiaryRepository,
-            libraryRepository = fakeLibraryRepository
+            libraryRepository = fakeLibraryRepository,
+            milestoneRepository = fakeMilestoneRepository
         )
     }
 

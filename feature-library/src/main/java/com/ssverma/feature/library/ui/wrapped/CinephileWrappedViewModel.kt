@@ -75,4 +75,15 @@ class CinephileWrappedViewModel @Inject constructor(
             Tracked with ShowTime 🍿
         """.trimIndent()
     }
+
+    fun generateMilestoneShareText(milestone: CinephileMilestone): String {
+        return """
+            🏆 I just unlocked the "${milestone.title}" milestone on ShowTime!
+            
+            ${milestone.description}
+            Tier: ${milestone.tier.name}
+            
+            Track your cinema journey with ShowTime 🍿
+        """.trimIndent()
+    }
 }

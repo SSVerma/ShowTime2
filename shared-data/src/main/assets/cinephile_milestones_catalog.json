@@ -1,0 +1,122 @@
+[
+  {
+    "id": "first_reel",
+    "title": "First Reel",
+    "iconEmoji": "🎬",
+    "description": "Logged your first cinema diary entry",
+    "category": "General",
+    "tier": "BRONZE",
+    "maxProgress": 1,
+    "metricType": "TOTAL_LOGS",
+    "actionType": "DIARY",
+    "actionLabel": "Log in Cinema Diary"
+  },
+  {
+    "id": "silver_explorer",
+    "title": "Silver Screen Explorer",
+    "iconEmoji": "🥈",
+    "description": "Logged 25 movies or TV shows",
+    "category": "Volume",
+    "tier": "SILVER",
+    "maxProgress": 25,
+    "metricType": "TOTAL_LOGS",
+    "actionType": "DIARY",
+    "actionLabel": "Log in Cinema Diary"
+  },
+  {
+    "id": "century_club",
+    "title": "Century of Cinema",
+    "iconEmoji": "🥇",
+    "description": "Logged 100 movies or TV shows",
+    "category": "Volume",
+    "tier": "GOLD",
+    "maxProgress": 100,
+    "metricType": "TOTAL_LOGS",
+    "actionType": "DIARY",
+    "actionLabel": "Log in Cinema Diary"
+  },
+  {
+    "id": "cinephile_legend",
+    "title": "Cinephile Legend",
+    "iconEmoji": "👑",
+    "description": "Logged 250+ titles in your diary",
+    "category": "Volume",
+    "tier": "DIAMOND",
+    "maxProgress": 250,
+    "metricType": "TOTAL_LOGS",
+    "actionType": "DIARY",
+    "actionLabel": "Log in Cinema Diary"
+  },
+  {
+    "id": "five_star_connoisseur",
+    "title": "Five-Star Connoisseur",
+    "iconEmoji": "🌟",
+    "description": "Awarded 10 masterclass 5-star ratings",
+    "category": "Critical Taste",
+    "tier": "GOLD",
+    "maxProgress": 10,
+    "metricType": "FIVE_STAR_LOGS",
+    "actionType": "DIARY",
+    "actionLabel": "Rate Titles in Diary"
+  },
+  {
+    "id": "nostalgia_junkie",
+    "title": "Nostalgia Junkie",
+    "iconEmoji": "🔁",
+    "description": "Logged 5 comforting rewatches",
+    "category": "Dedication",
+    "tier": "BRONZE",
+    "maxProgress": 5,
+    "metricType": "REWATCHES",
+    "actionType": "DIARY",
+    "actionLabel": "Log a Rewatch"
+  },
+  {
+    "id": "marathon_master",
+    "title": "Marathon Master",
+    "iconEmoji": "⏱️",
+    "description": "Completed 50+ total hours of screen time",
+    "category": "Endurance",
+    "tier": "SILVER",
+    "maxProgress": 50,
+    "metricType": "TOTAL_HOURS",
+    "actionType": "DIARY",
+    "actionLabel": "Log Screen Time"
+  },
+  {
+    "id": "binge_overlord",
+    "title": "TV Binge Overlord",
+    "iconEmoji": "📺",
+    "description": "Logged 10+ TV shows in your diary",
+    "category": "Television",
+    "tier": "SILVER",
+    "maxProgress": 10,
+    "metricType": "TV_SHOWS",
+    "actionType": "DIARY",
+    "actionLabel": "Log TV Shows"
+  },
+  {
+    "id": "decade_hopper",
+    "title": "Decade Hopper",
+    "iconEmoji": "🎞️",
+    "description": "Watched media spanning 4 distinct decades",
+    "category": "Heritage",
+    "tier": "PLATINUM",
+    "maxProgress": 4,
+    "metricType": "DECADE_COUNT",
+    "actionType": "TASTE_PROFILE",
+    "actionLabel": "Explore Cinema Eras"
+  },
+  {
+    "id": "curator_pro",
+    "title": "Vault Curator",
+    "iconEmoji": "💎",
+    "description": "Added 15+ titles to your watchlist or favorites",
+    "category": "Curation",
+    "tier": "BRONZE",
+    "maxProgress": 15,
+    "metricType": "CURATION_COUNT",
+    "actionType": "DISCOVERY",
+    "actionLabel": "Discover & Save Titles"
+  }
+]

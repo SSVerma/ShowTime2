@@ -3,9 +3,12 @@ package com.ssverma.shared.domain.usecase.stats
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
+import com.ssverma.shared.domain.model.stats.CinephileMilestoneDefinition
+import com.ssverma.shared.domain.model.stats.MilestoneMetricType
 import com.ssverma.shared.domain.model.stats.MilestoneTier
 import com.ssverma.shared.domain.model.stats.MonthActivity
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
+import com.ssverma.shared.domain.repository.CinephileMilestoneRepository
 import com.ssverma.shared.domain.repository.DiaryRepository
 import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.utils.DateUtils
@@ -18,15 +21,23 @@ import javax.inject.Inject
 
 class GetCinephileWrappedUseCase @Inject constructor(
     private val diaryRepository: DiaryRepository,
-    private val libraryRepository: LibraryRepository
+    private val libraryRepository: LibraryRepository,
+    private val milestoneRepository: CinephileMilestoneRepository
 ) {
     operator fun invoke(targetYear: Int? = null): Flow<WrappedYearSummary> {
         return combine(
             diaryRepository.getAllDiaryEntries(),
             libraryRepository.getAllFavorites(),
-            libraryRepository.getAllWatchlist()
-        ) { diaryEntries, favorites, watchlist ->
-            buildWrappedSummary(diaryEntries, favorites.size, watchlist.size, targetYear)
+            libraryRepository.getAllWatchlist(),
+            milestoneRepository.milestoneDefinitionsFlow
+        ) { diaryEntries, favorites, watchlist, milestoneDefs ->
+            buildWrappedSummary(
+                diaryEntries,
+                favorites.size,
+                watchlist.size,
+                milestoneDefs,
+                targetYear
+            )
         }
     }
 
@@ -34,6 +45,7 @@ class GetCinephileWrappedUseCase @Inject constructor(
         allEntries: List<DiaryEntry>,
         favoritesCount: Int,
         watchlistCount: Int,
+        milestoneDefs: List<CinephileMilestoneDefinition>,
         targetYear: Int?
     ): WrappedYearSummary {
         // Extract distinct available years from diary entries (sorted descending)
@@ -93,11 +105,12 @@ class GetCinephileWrappedUseCase @Inject constructor(
 
         val mostActive = monthlyDistribution.filter { it.count > 0 }.maxByOrNull { it.count }
 
-        // Evaluate achievement milestones
+        // Evaluate achievement milestones dynamically from repository definitions
         val milestones = calculateMilestones(
             allEntries = allEntries,
             favoritesCount = favoritesCount,
-            watchlistCount = watchlistCount
+            watchlistCount = watchlistCount,
+            milestoneDefs = milestoneDefs
         )
 
         return WrappedYearSummary(
@@ -123,7 +136,8 @@ class GetCinephileWrappedUseCase @Inject constructor(
     private fun calculateMilestones(
         allEntries: List<DiaryEntry>,
         favoritesCount: Int,
-        watchlistCount: Int
+        watchlistCount: Int,
+        milestoneDefs: List<CinephileMilestoneDefinition>
     ): List<CinephileMilestone> {
         val totalCount = allEntries.size
         val movieCount = allEntries.count { it.mediaType == MediaType.Movie }
@@ -140,107 +154,31 @@ class GetCinephileWrappedUseCase @Inject constructor(
             year?.let { (it / 10) * 10 }
         }.distinct().size
 
-        return listOf(
+        val curationCount = favoritesCount + watchlistCount
+
+        return milestoneDefs.map { def ->
+            val progress = when (def.metricType) {
+                MilestoneMetricType.TOTAL_LOGS -> totalCount
+                MilestoneMetricType.FIVE_STAR_LOGS -> fiveStarCount
+                MilestoneMetricType.REWATCHES -> rewatchCount
+                MilestoneMetricType.TOTAL_HOURS -> allHours
+                MilestoneMetricType.TV_SHOWS -> tvCount
+                MilestoneMetricType.DECADE_COUNT -> distinctDecades
+                MilestoneMetricType.CURATION_COUNT -> curationCount
+            }
+
             CinephileMilestone(
-                id = "first_reel",
-                title = "First Reel",
-                iconEmoji = "🎬",
-                description = "Logged your first cinema diary entry",
-                category = "General",
-                tier = MilestoneTier.BRONZE,
-                currentProgress = totalCount.coerceAtMost(1),
-                maxProgress = 1
-            ),
-            CinephileMilestone(
-                id = "silver_explorer",
-                title = "Silver Screen Explorer",
-                iconEmoji = "🥈",
-                description = "Logged 25 movies or TV shows",
-                category = "Volume",
-                tier = MilestoneTier.SILVER,
-                currentProgress = totalCount.coerceAtMost(25),
-                maxProgress = 25
-            ),
-            CinephileMilestone(
-                id = "century_club",
-                title = "Century of Cinema",
-                iconEmoji = "🥇",
-                description = "Logged 100 movies or TV shows",
-                category = "Volume",
-                tier = MilestoneTier.GOLD,
-                currentProgress = totalCount.coerceAtMost(100),
-                maxProgress = 100
-            ),
-            CinephileMilestone(
-                id = "cinephile_legend",
-                title = "Cinephile Legend",
-                iconEmoji = "👑",
-                description = "Logged 250+ titles in your diary",
-                category = "Volume",
-                tier = MilestoneTier.DIAMOND,
-                currentProgress = totalCount.coerceAtMost(250),
-                maxProgress = 250
-            ),
-            CinephileMilestone(
-                id = "five_star_connoisseur",
-                title = "Five-Star Connoisseur",
-                iconEmoji = "🌟",
-                description = "Awarded 10 masterclass 5-star ratings",
-                category = "Critical Taste",
-                tier = MilestoneTier.GOLD,
-                currentProgress = fiveStarCount.coerceAtMost(10),
-                maxProgress = 10
-            ),
-            CinephileMilestone(
-                id = "nostalgia_junkie",
-                title = "Nostalgia Junkie",
-                iconEmoji = "🔁",
-                description = "Logged 5 comforting rewatches",
-                category = "Dedication",
-                tier = MilestoneTier.BRONZE,
-                currentProgress = rewatchCount.coerceAtMost(5),
-                maxProgress = 5
-            ),
-            CinephileMilestone(
-                id = "marathon_master",
-                title = "Marathon Master",
-                iconEmoji = "⏱️",
-                description = "Completed 50+ total hours of screen time",
-                category = "Endurance",
-                tier = MilestoneTier.SILVER,
-                currentProgress = allHours.coerceAtMost(50),
-                maxProgress = 50
-            ),
-            CinephileMilestone(
-                id = "binge_overlord",
-                title = "TV Binge Overlord",
-                iconEmoji = "📺",
-                description = "Logged 10+ TV shows in your diary",
-                category = "Television",
-                tier = MilestoneTier.SILVER,
-                currentProgress = tvCount.coerceAtMost(10),
-                maxProgress = 10
-            ),
-            CinephileMilestone(
-                id = "decade_hopper",
-                title = "Decade Hopper",
-                iconEmoji = "🎞️",
-                description = "Watched media spanning 4 distinct decades",
-                category = "Heritage",
-                tier = MilestoneTier.PLATINUM,
-                currentProgress = distinctDecades.coerceAtMost(4),
-                maxProgress = 4
-            ),
-            CinephileMilestone(
-                id = "curator_pro",
-                title = "Vault Curator",
-                iconEmoji = "💎",
-                description = "Added 15+ titles to your watchlist or favorites",
-                category = "Curation",
-                tier = MilestoneTier.BRONZE,
-                currentProgress = (favoritesCount + watchlistCount).coerceAtMost(15),
-                maxProgress = 15
+                id = def.id,
+                title = def.title,
+                iconEmoji = def.iconEmoji,
+                description = def.description,
+                category = def.category,
+                tier = def.tier,
+                currentProgress = progress.coerceAtMost(def.maxProgress),
+                maxProgress = def.maxProgress,
+                actionType = def.actionType,
+                actionLabel = def.actionLabel
             )
-        )
+        }
     }
 }

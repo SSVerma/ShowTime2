@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -126,11 +127,19 @@ fun WrappedMilestonesGrid(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val sortedMilestones = remember(milestones) {
+                milestones.sortedWith(
+                    compareByDescending<CinephileMilestone> { it.isUnlocked }
+                        .thenByDescending { it.progressPercentage }
+                        .thenBy { it.remainingProgress }
+                )
+            }
+
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                milestones.forEach { milestone ->
+                sortedMilestones.forEach { milestone ->
                     MilestoneCardItem(
                         milestone = milestone,
                         onClick = { onMilestoneClick(milestone) }
@@ -227,7 +236,11 @@ private fun MilestoneCardItem(
                         }
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    TierTag(tier = milestone.tier)
+                    if (milestone.isUnlocked) {
+                        TierTag(tier = milestone.tier)
+                    } else {
+                        CategoryTag(category = milestone.category)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -240,21 +253,23 @@ private fun MilestoneCardItem(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Progress Bar & Count
+                // Progress Info & Count
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    LinearProgressIndicator(
-                        progress = { animatedProgress },
-                        color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.outline,
-                        trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
+                    Text(
+                        text = if (milestone.isUnlocked) {
+                            "Unlocked"
+                        } else {
+                            val remaining = milestone.remainingProgress
+                            if (remaining == 1) "1 more to unlock" else "$remaining more to unlock"
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = if (milestone.isUnlocked) FontWeight.Bold else FontWeight.Medium,
+                        color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "${milestone.currentProgress}/${milestone.maxProgress}",
                         style = MaterialTheme.typography.labelSmall,
@@ -262,6 +277,18 @@ private fun MilestoneCardItem(
                         color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                LinearProgressIndicator(
+                    progress = { animatedProgress },
+                    color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                )
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -309,6 +336,23 @@ private fun TierTag(tier: MilestoneTier) {
             fontWeight = FontWeight.Bold,
             color = tierColor,
             modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+        )
+    }
+}
+
+@Composable
+private fun CategoryTag(category: String) {
+    Surface(
+        shape = RoundedCornerShape(6.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.padding(horizontal = 2.dp)
+    ) {
+        Text(
+            text = category.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
         )
     }
 }

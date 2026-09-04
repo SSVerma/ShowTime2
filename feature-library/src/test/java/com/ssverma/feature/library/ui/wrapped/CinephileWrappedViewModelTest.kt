@@ -5,6 +5,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.usecase.stats.GetCinephileWrappedUseCase
 import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.testing.fakes.FakeCinephileMilestoneRepository
 import com.ssverma.shared.testing.fakes.FakeDiaryRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,16 +29,19 @@ class CinephileWrappedViewModelTest {
 
     private lateinit var fakeDiaryRepository: FakeDiaryRepository
     private lateinit var fakeLibraryRepository: FakeLibraryRepository
+    private lateinit var fakeMilestoneRepository: FakeCinephileMilestoneRepository
     private lateinit var viewModel: CinephileWrappedViewModel
 
     @Before
     fun setUp() {
         fakeDiaryRepository = FakeDiaryRepository()
         fakeLibraryRepository = FakeLibraryRepository()
+        fakeMilestoneRepository = FakeCinephileMilestoneRepository()
 
         val getCinephileWrappedUseCase = GetCinephileWrappedUseCase(
             diaryRepository = fakeDiaryRepository,
-            libraryRepository = fakeLibraryRepository
+            libraryRepository = fakeLibraryRepository,
+            milestoneRepository = fakeMilestoneRepository
         )
 
         viewModel = CinephileWrappedViewModel(
@@ -105,5 +109,19 @@ class CinephileWrappedViewModelTest {
 
         val clearedState = viewModel.uiState.first()
         assertEquals(null, clearedState.selectedMilestone)
+    }
+
+    @Test
+    fun `generateMilestoneShareText contains milestone title and description`() = runTest {
+        advanceUntilIdle()
+        val state = viewModel.uiState.first()
+        val milestone = state.summary?.milestones?.firstOrNull()
+        assertNotNull(milestone)
+
+        val shareText = viewModel.generateMilestoneShareText(milestone!!)
+        assertTrue(shareText.contains(milestone.title))
+        assertTrue(shareText.contains(milestone.description))
+        assertTrue(shareText.contains(milestone.tier.name))
+        assertTrue(shareText.contains("ShowTime"))
     }
 }

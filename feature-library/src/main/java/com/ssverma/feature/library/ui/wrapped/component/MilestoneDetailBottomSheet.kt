@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,16 +25,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +41,8 @@ import com.ssverma.shared.domain.model.stats.CinephileMilestone
 fun MilestoneDetailBottomSheet(
     milestone: CinephileMilestone,
     onDismiss: () -> Unit,
+    onActionClick: (CinephileMilestone) -> Unit,
+    onShareAchievement: (CinephileMilestone) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -96,14 +97,18 @@ fun MilestoneDetailBottomSheet(
             Spacer(modifier = Modifier.height(6.dp))
 
             Surface(
-                color = tierColor.copy(alpha = 0.15f),
+                color = if (milestone.isUnlocked) tierColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = "${milestone.tier.name} TIER • ${milestone.category.uppercase()}",
+                    text = if (milestone.isUnlocked) {
+                        "${milestone.tier.name} TIER • ${milestone.category.uppercase()}"
+                    } else {
+                        "${milestone.category.uppercase()} • GOAL: ${milestone.tier.name} TIER"
+                    },
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = tierColor,
+                    color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                 )
             }
@@ -132,16 +137,16 @@ fun MilestoneDetailBottomSheet(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = if (milestone.isUnlocked) "Achievement Unlocked!" else "Progress",
+                            text = if (milestone.isUnlocked) "🏆 Achievement Unlocked!" else "Milestone Progress",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (milestone.isUnlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "${milestone.currentProgress} / ${milestone.maxProgress}",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurface
                         )
                     }
 
@@ -154,27 +159,90 @@ fun MilestoneDetailBottomSheet(
                         )
                     LinearProgressIndicator(
                         progress = { progressRatio },
-                        color = if (milestone.isUnlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                        color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
                             .clip(RoundedCornerShape(4.dp))
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    if (milestone.isUnlocked) {
+                        Text(
+                            text = milestone.unlockedNote
+                                ?: "Milestone achieved! Excellent viewing dedication.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = "🎯 ${milestone.remainingProgress} more to unlock this milestone.",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = onDismiss,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Awesome")
+            if (milestone.isUnlocked) {
+                Button(
+                    onClick = {
+                        onShareAchievement(milestone)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Share Achievement")
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Done")
+                }
+            } else {
+                Button(
+                    onClick = {
+                        onDismiss()
+                        onActionClick(milestone)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = milestone.actionLabel)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Close")
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
