@@ -9,7 +9,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -155,9 +154,8 @@ private fun UpNextCard(
         modifier = modifier
     ) {
         OutlinedCard(
-            modifier = Modifier
-                .width(300.dp)
-                .clickable(onClick = onClick),
+            onClick = onClick,
+            modifier = Modifier.width(300.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.outlinedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -374,14 +372,15 @@ private fun UpNextCard(
 private fun CelebrationBurst(trigger: Int) {
     if (trigger == 0) return
 
-    val particles = remember(trigger) {
+    val colorScheme = MaterialTheme.colorScheme
+    val particles = remember(trigger, colorScheme) {
         listOf(
             CelebrationParticle(
                 -30f,
                 -60f,
                 -80f,
                 14.dp,
-                Color(0xFFFFD700),
+                colorScheme.primary,
                 0,
                 -25f,
                 Icons.Rounded.Star
@@ -391,7 +390,7 @@ private fun CelebrationBurst(trigger: Int) {
                 10f,
                 -110f,
                 16.dp,
-                Color(0xFF4CAF50),
+                colorScheme.secondary,
                 40,
                 15f,
                 Icons.Rounded.Check
@@ -401,7 +400,7 @@ private fun CelebrationBurst(trigger: Int) {
                 55f,
                 -85f,
                 13.dp,
-                Color(0xFFED1C24),
+                colorScheme.tertiary,
                 80,
                 30f,
                 Icons.Rounded.Favorite
@@ -411,7 +410,7 @@ private fun CelebrationBurst(trigger: Int) {
                 -40f,
                 -100f,
                 12.dp,
-                Color(0xFF2196F3),
+                colorScheme.primaryContainer,
                 20,
                 -15f,
                 Icons.Rounded.Star
@@ -421,7 +420,7 @@ private fun CelebrationBurst(trigger: Int) {
                 40f,
                 -95f,
                 15.dp,
-                Color(0xFFFF9800),
+                colorScheme.secondaryContainer,
                 60,
                 20f,
                 Icons.Rounded.Star
@@ -431,7 +430,7 @@ private fun CelebrationBurst(trigger: Int) {
                 -75f,
                 -70f,
                 11.dp,
-                Color(0xFFE91E63),
+                colorScheme.tertiaryContainer,
                 100,
                 -35f,
                 Icons.Rounded.Check
@@ -441,7 +440,7 @@ private fun CelebrationBurst(trigger: Int) {
                 70f,
                 -75f,
                 12.dp,
-                Color(0xFF9C27B0),
+                colorScheme.inversePrimary,
                 70,
                 40f,
                 Icons.Rounded.Star

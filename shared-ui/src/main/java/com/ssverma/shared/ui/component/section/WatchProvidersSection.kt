@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -35,6 +36,7 @@ import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchBrowserIn
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.component.WatchProviderLogo
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -59,6 +61,13 @@ fun WatchProvidersSection(
     )
 
     Surface(
+        onClick = {
+            val link = watchProvider?.link
+            if (!link.isNullOrEmpty()) {
+                context.dispatchBrowserIntent(link)
+            }
+        },
+        enabled = hasProviders && watchProvider.link.isNotEmpty(),
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
@@ -86,13 +95,6 @@ fun WatchProvidersSection(
                     shape = RoundedCornerShape(24.dp)
                 )
                 .background(gradientBrush)
-                .clickable(enabled = hasProviders && watchProvider?.link?.isNotEmpty() == true) {
-                    watchProvider?.link?.let { link ->
-                        if (link.isNotEmpty()) {
-                            context.dispatchBrowserIntent(link)
-                        }
-                    }
-                }
                 .padding(20.dp)
         ) {
             Column {
@@ -260,14 +262,14 @@ private fun ProviderCategoryRow(
                     adContent()
                 }
 
-                com.ssverma.shared.ui.component.WatchProviderLogo(
+                WatchProviderLogo(
                     provider = provider,
                     onClick = { onProviderClick(provider) },
                     size = 44.dp,
                     modifier = Modifier
                         .graphicsLayer {
                             shadowElevation = 2.dp.toPx()
-                            shape = androidx.compose.foundation.shape.CircleShape
+                            shape = CircleShape
                             clip = true
                         }
                         .border(

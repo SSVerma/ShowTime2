@@ -2,7 +2,6 @@ package com.ssverma.shared.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -186,123 +185,125 @@ fun HeroItem(
     itemShape: Shape = MaterialTheme.shapes.extraLarge,
     overlayContent: (@Composable () -> Unit)? = null
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .clip(itemShape)
-            .clickable(onClick = onClick)
+    Surface(
+        onClick = onClick,
+        shape = itemShape,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = modifier.fillMaxSize()
     ) {
-        NetworkImage(
-            url = imageUrl,
-            contentDescription = title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-            loadingPlaceholder = {
-                ShimmerPlaceholder(
-                    modifier = Modifier.fillMaxSize(),
-                    shape = itemShape
-                )
-            },
-            errorPlaceholder = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                )
-            }
-        )
-
-        // Gradient Scrim
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.85f)
-                        ),
-                        startY = 100f
+        Box(modifier = Modifier.fillMaxSize()) {
+            NetworkImage(
+                url = imageUrl,
+                contentDescription = title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+                loadingPlaceholder = {
+                    ShimmerPlaceholder(
+                        modifier = Modifier.fillMaxSize(),
+                        shape = itemShape
                     )
-                )
-        )
-
-        // Content Info
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                },
+                errorPlaceholder = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    )
+                }
             )
 
-            if (!releaseDate.isNullOrEmpty() || voteAvg > 0f) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(top = 4.dp)
-                ) {
-                    if (!releaseDate.isNullOrEmpty()) {
-                        Text(
-                            text = releaseDate,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.8f)
-                        )
-                    }
-
-                    if (voteAvg > 0f) {
-                        Text(
-                            text = "★ ${String.format("%.1f", voteAvg)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                }
-            }
-        }
-
-        // Format Badge (e.g. Movie / TV)
-        if (formatBadge != null) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                border = BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                ),
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(12.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = formatBadge,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-
-        // Overlay Action (Watchlist/Favorite)
-        if (overlayContent != null) {
+            // Gradient Scrim
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(12.dp)
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.85f)
+                            ),
+                            startY = 100f
+                        )
+                    )
+            )
+
+            // Content Info
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
             ) {
-                overlayContent()
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (!releaseDate.isNullOrEmpty() || voteAvg > 0f) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        if (!releaseDate.isNullOrEmpty()) {
+                            Text(
+                                text = releaseDate,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+
+                        if (voteAvg > 0f) {
+                            Text(
+                                text = "★ ${String.format("%.1f", voteAvg)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Format Badge (e.g. Movie / TV)
+            if (formatBadge != null) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = formatBadge,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            // Overlay Action (Watchlist/Favorite)
+            if (overlayContent != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp)
+                ) {
+                    overlayContent()
+                }
             }
         }
     }

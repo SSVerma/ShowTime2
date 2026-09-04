@@ -1,7 +1,6 @@
 package com.ssverma.feature.library.ui.wrapped.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -124,78 +123,85 @@ private fun TopFavoriteCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = Color.Transparent,
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(2f / 3f)
-                .clip(RoundedCornerShape(12.dp))
+                .padding(4.dp)
         ) {
-            NetworkImage(
-                url = entry.posterImageUrl,
-                contentDescription = entry.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            // Rating chip badge
-            Surface(
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                shape = RoundedCornerShape(8.dp),
+            Box(
                 modifier = Modifier
-                    .padding(6.dp)
-                    .align(Alignment.TopEnd)
+                    .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
+                    .clip(RoundedCornerShape(8.dp))
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                NetworkImage(
+                    url = entry.posterImageUrl,
+                    contentDescription = entry.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Rating chip badge
+                Surface(
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .align(Alignment.TopEnd)
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = "${entry.userRating}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                // Media type tag
+                Surface(
+                    color = MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.8f),
+                    shape = RoundedCornerShape(6.dp),
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .align(Alignment.BottomStart)
+                ) {
                     Text(
-                        text = "${entry.userRating}",
+                        text = if (entry.mediaType == MediaType.Movie) "Movie" else "TV",
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.inverseOnSurface,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                     )
                 }
             }
 
-            // Media type tag
-            Surface(
-                color = MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(6.dp),
-                modifier = Modifier
-                    .padding(6.dp)
-                    .align(Alignment.BottomStart)
-            ) {
-                Text(
-                    text = if (entry.mediaType == MediaType.Movie) "Movie" else "TV",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                )
-            }
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = entry.title,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = entry.title,
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }

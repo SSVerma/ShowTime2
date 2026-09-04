@@ -3,10 +3,11 @@ package com.ssverma.shared.ui.component
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -156,10 +157,10 @@ private fun WatchProviderEntryCard(
                     width = 1.5.dp,
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFF4285F4),
-                            Color(0xFF9B72CB),
-                            Color(0xFFD96570),
-                            Color(0xFFF4AF5F)
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary,
+                            MaterialTheme.colorScheme.tertiary,
+                            MaterialTheme.colorScheme.primaryContainer
                         )
                     )
                 ),
@@ -403,45 +404,48 @@ private fun StreamingUniverseSheet(
                 )
             ) {
                 items(uniqueProviders, key = { it.providerId }) { provider ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable {
-                                onProviderClick(provider)
-                                onDismiss()
-                            }
-                            .padding(4.dp)
+                    Surface(
+                        onClick = {
+                            onProviderClick(provider)
+                            onDismiss()
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color.Transparent
                     ) {
-                        WatchProviderLogo(
-                            provider = provider,
-                            onClick = {
-                                onProviderClick(provider)
-                                onDismiss()
-                            },
-                            size = 64.dp,
-                            enableSharedTransition = false,
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    shadowElevation = 2.dp.toPx()
-                                    shape = CircleShape
-                                    clip = true
-                                }
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outlineVariant,
-                                    CircleShape
-                                )
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = provider.providerName,
-                            style = MaterialTheme.typography.labelSmall,
-                            maxLines = 1,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(4.dp)
+                        ) {
+                            WatchProviderLogo(
+                                provider = provider,
+                                onClick = {
+                                    onProviderClick(provider)
+                                    onDismiss()
+                                },
+                                size = 64.dp,
+                                enableSharedTransition = false,
+                                modifier = Modifier
+                                    .graphicsLayer {
+                                        shadowElevation = 2.dp.toPx()
+                                        shape = CircleShape
+                                        clip = true
+                                    }
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outlineVariant,
+                                        CircleShape
+                                    )
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = provider.providerName,
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }
@@ -529,10 +533,10 @@ private fun WatchProviderShimmer(modifier: Modifier = Modifier) {
                     width = 1.5.dp,
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFF4285F4),
-                            Color(0xFF9B72CB),
-                            Color(0xFFD96570),
-                            Color(0xFFF4AF5F)
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary,
+                            MaterialTheme.colorScheme.tertiary,
+                            MaterialTheme.colorScheme.primaryContainer
                         )
                     )
                 ),
@@ -648,11 +652,11 @@ fun WatchProviderLogo(
         }
 
     Surface(
+        onClick = onClick,
+        shape = CircleShape,
         modifier = modifier
             .then(sharedModifier)
-            .size(size)
-            .clip(CircleShape)
-            .clickable(onClick = onClick),
+            .size(size),
         color = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 2.dp
     ) {

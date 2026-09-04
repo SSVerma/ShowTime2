@@ -34,11 +34,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
@@ -53,21 +53,19 @@ fun TasteRecommendationShelfRow(
 ) {
     if (shelf.items.isEmpty()) return
 
+    val shelfIcon = when (shelf.id) {
+        "top_picks" -> Icons.Rounded.Stars
+        "hidden_gems" -> Icons.Rounded.Explore
+        "critically_acclaimed" -> Icons.Rounded.EmojiEvents
+        "franchise_marathon" -> Icons.Rounded.Movie
+        "binge_worthy" -> Icons.Rounded.Tv
+        else -> Icons.Rounded.Celebration
+    }
+
     val subtitle = shelf.subtitle
     val badge = shelf.badge
 
-    val shelfIcon = when (shelf.id) {
-        "top_picks" -> Icons.Rounded.Stars
-        "masterpieces" -> Icons.Rounded.EmojiEvents
-        "pure_fun" -> Icons.Rounded.Celebration
-        "epic_worlds" -> Icons.Rounded.Explore
-        "tv_spotlight" -> Icons.Rounded.Tv
-        else -> Icons.Rounded.Movie
-    }
-
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -150,62 +148,83 @@ private fun RecommendedMediaCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .width(130.dp)
-            .clickable(onClick = onClick)
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = Color.Transparent,
+        modifier = modifier.width(130.dp)
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(2f / 3f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(4.dp)
         ) {
-            NetworkImage(
-                url = item.posterImageUrl,
-                contentDescription = item.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize()
-            )
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = item.title,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (item.voteAvg > 0f) {
-                Icon(
-                    imageVector = Icons.Rounded.Star,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(12.dp)
-                )
-                Text(
-                    text = String.format(Locale.US, "%.1f", item.voteAvg),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                NetworkImage(
+                    url = item.posterImageUrl,
+                    contentDescription = item.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize()
                 )
             }
 
-            val year = item.releaseDate.take(4)
-            if (year.isNotBlank()) {
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 if (item.voteAvg > 0f) {
+                    Icon(
+                        imageVector = Icons.Rounded.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Text(
+                        text = String.format(Locale.US, "%.1f", item.voteAvg),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                val year = item.releaseDate.take(4)
+                if (year.isNotBlank()) {
+                    if (item.voteAvg > 0f) {
+                        Text(
+                            text = "•",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        text = year,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                val typeLabel = if (item.mediaType == MediaType.Movie) "Movie" else "TV"
+                if (item.voteAvg > 0f || year.isNotBlank()) {
                     Text(
                         text = "•",
                         style = MaterialTheme.typography.labelSmall,
@@ -213,25 +232,11 @@ private fun RecommendedMediaCard(
                     )
                 }
                 Text(
-                    text = year,
+                    text = typeLabel,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            val typeLabel = if (item.mediaType == MediaType.Movie) "Movie" else "TV"
-            if (item.voteAvg > 0f || year.isNotBlank()) {
-                Text(
-                    text = "•",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Text(
-                text = typeLabel,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
