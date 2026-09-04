@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.AutoStories
 import androidx.compose.material.icons.rounded.Delete
@@ -32,14 +34,20 @@ import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,6 +55,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,12 +68,15 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.feature.library.ui.diary.component.DiaryStatsHeader
 import com.ssverma.feature.library.ui.diary.component.DiaryTimelineItemCard
+import com.ssverma.feature.library.ui.diary.component.LogMediaSearchBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,6 +94,8 @@ fun CinemaDiaryScreen(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -108,6 +122,37 @@ fun CinemaDiaryScreen(
                     scrolledContainerColor = MaterialTheme.colorScheme.background
                 )
             )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { viewModel.onOpenLogSearch() },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp),
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 2.dp
+                ),
+                modifier = Modifier.height(42.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 14.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = "Log title to Cinema Diary",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Log",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         },
         containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
@@ -197,7 +242,10 @@ fun CinemaDiaryScreen(
                 // Empty State
                 if (uiState.timelineGroups.isEmpty()) {
                     item {
-                        DiaryEmptyView(activeFilter = uiState.activeFilter)
+                        DiaryEmptyView(
+                            activeFilter = uiState.activeFilter,
+                            onLogClick = { viewModel.onOpenLogSearch() }
+                        )
                     }
                 } else {
                     // Timeline Groups
@@ -237,6 +285,43 @@ fun CinemaDiaryScreen(
                 }
             }
         }
+    }
+
+    // Search Bottom Sheet to Log Title
+    if (uiState.isSearchingToLog) {
+        LogMediaSearchBottomSheet(
+            searchQuery = uiState.mediaSearchQuery,
+            selectedFilter = uiState.mediaSearchFilter,
+            suggestions = uiState.mediaSearchSuggestions,
+            isSearching = uiState.isSearchingMedia,
+            onSearchQueryChange = viewModel::onSearchQueryChange,
+            onClearSearch = viewModel::onClearSearch,
+            onMediaSelected = viewModel::onSelectMediaToLog,
+            onDismiss = viewModel::onDismissLogSearch
+        )
+    }
+
+    // Direct In-Context Log Dialog for Selected Search Title
+    uiState.mediaItemPendingLog?.let { mediaItem ->
+        LogAndRateDialog(
+            mediaId = mediaItem.id,
+            mediaType = mediaItem.mediaType,
+            title = mediaItem.title,
+            posterImageUrl = mediaItem.posterImageUrl,
+            backdropImageUrl = mediaItem.backdropImageUrl,
+            releaseDate = mediaItem.releaseYear,
+            tmdbRating = mediaItem.voteAvg,
+            onDismiss = { viewModel.onDismissLogDialog() },
+            onSave = { entry ->
+                viewModel.onSaveNewEntry(entry)
+                coroutineScope.launch {
+                    snackbarHostState.showImmediateSnackbar(
+                        message = "Logged \"${mediaItem.title}\" to Cinema Diary! ✨",
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        )
     }
 
     // Edit Dialog
@@ -293,6 +378,7 @@ fun CinemaDiaryScreen(
 @Composable
 private fun DiaryEmptyView(
     activeFilter: DiaryFilterType,
+    onLogClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -330,13 +416,32 @@ private fun DiaryEmptyView(
 
         Text(
             text = if (activeFilter == DiaryFilterType.ALL)
-                "Log movies & TV shows from their detail pages to build your personal viewing timeline with star ratings and reviews."
+                "Log movies & TV shows to build your personal viewing timeline with star ratings and reviews."
             else
                 "Try selecting a different filter above to view other diary logs.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+
+        if (activeFilter == DiaryFilterType.ALL) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onLogClick,
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Log Your First Title",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 
