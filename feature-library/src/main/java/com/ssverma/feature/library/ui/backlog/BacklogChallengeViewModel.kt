@@ -76,6 +76,14 @@ class BacklogChallengeViewModel @Inject constructor(
         _uiState.update { it.copy(selectedChallengeDetail = progress) }
     }
 
+    fun openChallengeDetail(challenge: CinephileChallenge) {
+        val activeProgress =
+            _uiState.value.activeChallenges.firstOrNull { it.challenge.id == challenge.id }
+        if (activeProgress != null) {
+            openChallengeDetail(activeProgress)
+        }
+    }
+
     fun closeChallengeDetail() {
         _uiState.update { it.copy(selectedChallengeDetail = null) }
     }

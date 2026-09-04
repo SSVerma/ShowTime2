@@ -26,6 +26,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -33,6 +37,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -66,6 +73,8 @@ fun BacklogChallengeScreen(
     val pullToRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     val handleShare: (String) -> Unit = { text ->
         val intent = Intent(Intent.ACTION_SEND).apply {
@@ -118,6 +127,7 @@ fun BacklogChallengeScreen(
                 )
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier
             .fillMaxSize()
@@ -220,7 +230,22 @@ fun BacklogChallengeScreen(
                         curatedChallenges = uiState.curatedChallenges,
                         activeChallengeIds = uiState.activeChallenges.map { it.challenge.id }
                             .toSet(),
-                        onJoinChallenge = viewModel::joinCuratedChallenge
+                        onJoinChallenge = { challenge ->
+                            viewModel.joinCuratedChallenge(challenge)
+                            coroutineScope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = "Joined \"${challenge.title}\"!",
+                                    actionLabel = "View",
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    listState.animateScrollToItem(0)
+                                }
+                            }
+                        },
+                        onOpenChallengeDetail = { challenge ->
+                            viewModel.openChallengeDetail(challenge)
+                        }
                     )
                 }
             }

@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.shared.data.local.adapter.MediaTypeJsonAdapter
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
@@ -31,7 +33,9 @@ class BacklogRepositoryImpl @Inject constructor(
     keyValueStorageClient: KeyValueStorageClient
 ) : BacklogRepository {
 
-    private val gson = Gson()
+    private val gson: Gson = GsonBuilder()
+        .registerTypeAdapter(MediaType::class.java, MediaTypeJsonAdapter())
+        .create()
 
     private val storage: KeyValueStorage = keyValueStorageClient.createKeyValueStorage(
         context = context,

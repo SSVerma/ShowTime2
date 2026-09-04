@@ -46,6 +46,7 @@ fun CuratedChallengeShelf(
     curatedChallenges: List<CinephileChallenge>,
     activeChallengeIds: Set<String>,
     onJoinChallenge: (CinephileChallenge) -> Unit,
+    onOpenChallengeDetail: ((CinephileChallenge) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -79,7 +80,8 @@ fun CuratedChallengeShelf(
                 CuratedChallengeItemCard(
                     challenge = challenge,
                     isJoined = isJoined,
-                    onJoin = { onJoinChallenge(challenge) }
+                    onJoin = { onJoinChallenge(challenge) },
+                    onOpenDetail = { onOpenChallengeDetail?.invoke(challenge) }
                 )
             }
         }
@@ -91,11 +93,11 @@ fun CuratedChallengeItemCard(
     challenge: CinephileChallenge,
     isJoined: Boolean,
     onJoin: () -> Unit,
+    onOpenDetail: () -> Unit = onJoin,
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { if (!isJoined) onJoin() },
-        enabled = !isJoined,
+        onClick = { if (isJoined) onOpenDetail() else onJoin() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -218,8 +220,8 @@ fun CuratedChallengeItemCard(
             // Join Button
             if (isJoined) {
                 OutlinedButton(
-                    onClick = {},
-                    enabled = false,
+                    onClick = onOpenDetail,
+                    enabled = true,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -231,7 +233,7 @@ fun CuratedChallengeItemCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Active in Library",
+                        text = "Active • View Details",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold

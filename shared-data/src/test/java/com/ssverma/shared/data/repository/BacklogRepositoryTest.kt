@@ -4,12 +4,16 @@ import android.content.Context
 import androidx.datastore.preferences.core.emptyPreferences
 import com.google.common.truth.Truth.assertThat
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
+import com.ssverma.shared.domain.model.challenge.CinephileChallenge
+import com.google.gson.GsonBuilder
+import com.ssverma.shared.data.local.adapter.MediaTypeJsonAdapter
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -22,7 +26,9 @@ class BacklogRepositoryTest {
     private val mockContext: Context = mockk(relaxed = true)
     private val mockKeyValueStorageClient: KeyValueStorageClient = mockk(relaxed = true)
     private val mockStorage: KeyValueStorage = mockk(relaxed = true)
-    private val gson = Gson()
+    private val gson = GsonBuilder()
+        .registerTypeAdapter(MediaType::class.java, MediaTypeJsonAdapter())
+        .create()
 
     private lateinit var repository: BacklogRepositoryImpl
 
@@ -62,5 +68,15 @@ class BacklogRepositoryTest {
         assertThat(custom.isCustom).isTrue()
         assertThat(custom.targetCount).isEqualTo(10)
         assertThat(custom.id).startsWith("custom_")
+    }
+
+    @Test
+    fun `gson serializes and deserializes CinephileChallenge with MediaType`() = runTest {
+        val challenges = repository.getCuratedChallenges()
+        val json = gson.toJson(challenges)
+        val type = object : TypeToken<List<CinephileChallenge>>() {}.type
+        val parsed: List<CinephileChallenge> = gson.fromJson(json, type)
+        assertThat(parsed).isNotEmpty()
+        assertThat(parsed.first().targetMediaItems.first().mediaType).isEqualTo(MediaType.Movie)
     }
 }
