@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
 import com.ssverma.shared.domain.model.stats.MilestoneTier
@@ -79,7 +81,7 @@ fun WrappedMilestonesGrid(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(horizontal = 14.dp, vertical = 16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -172,55 +174,88 @@ private fun MilestoneCardItem(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         color = if (milestone.isUnlocked) {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
         } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            MaterialTheme.colorScheme.surface
         },
         border = BorderStroke(
             width = 1.dp,
             color = if (milestone.isUnlocked) {
                 tierColor.copy(alpha = 0.5f)
             } else {
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
             }
         ),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp)
+                .padding(12.dp)
         ) {
-            // Icon Badge
-            Surface(
-                shape = CircleShape,
-                color = if (milestone.isUnlocked) {
-                    tierColor.copy(alpha = 0.16f)
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                },
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = if (milestone.isUnlocked) tierColor.copy(alpha = 0.4f) else Color.Transparent
-                ),
-                modifier = Modifier.size(44.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = milestoneIcon,
-                        contentDescription = null,
-                        tint = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = 0.5f
-                        ),
-                        modifier = Modifier.size(22.dp)
-                    )
+            // Left Badge Medallion (46.dp) with integrated status overlay (lock / check)
+            Box(modifier = Modifier.size(46.dp)) {
+                Surface(
+                    shape = RoundedCornerShape(13.dp),
+                    color = if (milestone.isUnlocked) {
+                        tierColor.copy(alpha = 0.18f)
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    },
+                    border = BorderStroke(
+                        width = if (milestone.isUnlocked) 1.5.dp else 1.dp,
+                        color = if (milestone.isUnlocked) {
+                            tierColor.copy(alpha = 0.6f)
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        }
+                    ),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = milestoneIcon,
+                            contentDescription = null,
+                            tint = if (milestone.isUnlocked) {
+                                tierColor
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            },
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+
+                // Mini Status Badge Overlay (Bottom-End of the Medallion)
+                Surface(
+                    shape = CircleShape,
+                    color = if (milestone.isUnlocked) {
+                        tierColor
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.surface),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .align(Alignment.BottomEnd)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = if (milestone.isUnlocked) Icons.Rounded.Check else Icons.Rounded.Lock,
+                            contentDescription = if (milestone.isUnlocked) "Unlocked" else "Locked",
+                            tint = if (milestone.isUnlocked) Color.White else MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(9.dp)
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
+            // Main Content Area
             Column(modifier = Modifier.weight(1f)) {
+                // Header Row: Title on the left, TierBadge on the right
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
@@ -232,23 +267,26 @@ private fun MilestoneCardItem(
                         color = if (milestone.isUnlocked) {
                             MaterialTheme.colorScheme.onSurface
                         } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    if (milestone.isUnlocked) {
-                        TierTag(tier = milestone.tier)
-                    } else {
-                        CategoryTag(category = milestone.category)
-                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    TierBadge(tier = milestone.tier, isUnlocked = milestone.isUnlocked)
                 }
 
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(3.dp))
 
                 Text(
                     text = milestone.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -261,17 +299,17 @@ private fun MilestoneCardItem(
                 ) {
                     Text(
                         text = if (milestone.isUnlocked) {
-                            "Unlocked"
+                            "Completed"
                         } else {
                             val remaining = milestone.remainingProgress
                             if (remaining == 1) "1 more to unlock" else "$remaining more to unlock"
                         },
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = if (milestone.isUnlocked) FontWeight.Bold else FontWeight.Medium,
+                        fontWeight = if (milestone.isUnlocked) FontWeight.Bold else FontWeight.SemiBold,
                         color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "${milestone.currentProgress}/${milestone.maxProgress}",
+                        text = "${milestone.currentProgress} / ${milestone.maxProgress}",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant
@@ -283,38 +321,11 @@ private fun MilestoneCardItem(
                 LinearProgressIndicator(
                     progress = { animatedProgress },
                     color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(6.dp)
+                        .height(5.dp)
                         .clip(RoundedCornerShape(3.dp))
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Check or Lock Icon
-            if (milestone.isUnlocked) {
-                Surface(
-                    shape = CircleShape,
-                    color = tierColor,
-                    modifier = Modifier.size(22.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Check,
-                            contentDescription = "Unlocked",
-                            tint = Color.White,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                }
-            } else {
-                Icon(
-                    imageVector = Icons.Rounded.Lock,
-                    contentDescription = "Locked",
-                    tint = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.size(18.dp)
                 )
             }
         }
@@ -322,37 +333,54 @@ private fun MilestoneCardItem(
 }
 
 @Composable
-private fun TierTag(tier: MilestoneTier) {
+private fun TierBadge(
+    tier: MilestoneTier,
+    isUnlocked: Boolean,
+    modifier: Modifier = Modifier
+) {
     val tierColor = MilestonePalette.getTierColor(tier)
-
-    Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = tierColor.copy(alpha = 0.15f),
-        modifier = Modifier.padding(horizontal = 2.dp)
-    ) {
-        Text(
-            text = tier.name,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = tierColor,
-            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-        )
+    val (tierEmoji, tierName) = when (tier) {
+        MilestoneTier.BRONZE -> "🥉" to "Bronze"
+        MilestoneTier.SILVER -> "🥈" to "Silver"
+        MilestoneTier.GOLD -> "🥇" to "Gold"
+        MilestoneTier.PLATINUM -> "💎" to "Platinum"
+        MilestoneTier.DIAMOND -> "👑" to "Diamond"
     }
-}
 
-@Composable
-private fun CategoryTag(category: String) {
     Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        modifier = Modifier.padding(horizontal = 2.dp)
+        shape = RoundedCornerShape(8.dp),
+        color = if (isUnlocked) {
+            tierColor.copy(alpha = 0.16f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        },
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (isUnlocked) {
+                tierColor.copy(alpha = 0.6f)
+            } else {
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            }
+        ),
+        modifier = modifier
     ) {
-        Text(
-            text = category.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-        )
+        ) {
+            Text(
+                text = tierEmoji,
+                style = MaterialTheme.typography.labelSmall
+            )
+            Spacer(modifier = Modifier.width(3.dp))
+            Text(
+                text = tierName,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = if (isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                softWrap = false
+            )
+        }
     }
 }

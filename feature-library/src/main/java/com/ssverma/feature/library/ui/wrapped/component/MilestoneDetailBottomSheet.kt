@@ -102,9 +102,9 @@ fun MilestoneDetailBottomSheet(
             ) {
                 Text(
                     text = if (milestone.isUnlocked) {
-                        "${milestone.tier.name} TIER • ${milestone.category.uppercase()}"
+                        "🏆 ${milestone.tier.name} TIER • ${milestone.category}"
                     } else {
-                        "${milestone.category.uppercase()} • GOAL: ${milestone.tier.name} TIER"
+                        "🎯 ${milestone.tier.name} TIER • ${milestone.category}"
                     },
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
