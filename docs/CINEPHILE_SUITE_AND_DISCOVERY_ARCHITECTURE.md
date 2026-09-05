@@ -237,6 +237,7 @@ systematically.
 ---
 
 ### Feature 6: Pro Gating, Cloud Backup & Auth Architecture (`core-backup`, `core-billing`,
+
 `feature-auth`)
 
 #### **WHAT (Functional Overview)**

@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -71,7 +70,6 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.filter.ui.hub.MediaPreview
 import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
 import com.ssverma.feature.filter.ui.hub.config.TvHubDiscoverConfig
@@ -92,9 +90,11 @@ import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.MediaItemRowShimmer
 import com.ssverma.shared.ui.component.WatchProviderHubBranding
 import com.ssverma.shared.ui.component.WatchProviderLogo
-import com.ssverma.shared.ui.component.media.MovieGridItem
+import com.ssverma.shared.ui.component.media.MediaItemDefaults
 import com.ssverma.shared.ui.component.media.SeeAllCard
-import com.ssverma.shared.ui.component.media.TvShowGridItem
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
+import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.watchProviderSharedContentKey
 import com.ssverma.shared.ui.R as SharedUiR
 
@@ -642,7 +642,7 @@ private fun HeroPagerSection(
                             },
                             overlayContent = {
                                 val isMovie = media is MediaPreview.Movie
-                                MediaStatsAction(
+                                MediaOmniActionMenu(
                                     mediaType = if (isMovie) MediaType.Movie else MediaType.Tv,
                                     mediaId = media.id,
                                     title = media.title,
@@ -650,11 +650,8 @@ private fun HeroPagerSection(
                                     backdropImageUrl = media.backdropImageUrl,
                                     voteAvg = media.voteAvg,
                                     releaseDate = media.displayDate.orEmpty(),
-                                    containerColor = MaterialTheme.colorScheme.surface.copy(
-                                        alpha = 0.85f
-                                    ),
-                                    onShowFeedback = onShowFeedback,
-                                    modifier = Modifier.size(32.dp)
+                                    isOverPoster = true,
+                                    onShowFeedback = onShowFeedback
                                 )
                             }
                         )
@@ -736,48 +733,24 @@ private fun HubSectionRow(
                         is InjectableContent<MediaPreview> -> {
                             when (val media = injectableItem.item) {
                                 is MediaPreview.Movie -> {
-                                    MovieGridItem(
-                                        movie = media.movie,
-                                        onClick = onMovieClick,
-                                        overlayContent = {
-                                            MediaStatsAction(
-                                                mediaType = MediaType.Movie,
-                                                mediaId = media.movie.id,
-                                                title = media.movie.title,
-                                                posterImageUrl = media.movie.posterImageUrl,
-                                                backdropImageUrl = media.movie.backdropImageUrl,
-                                                voteAvg = media.movie.voteAvg,
-                                                releaseDate = media.movie.displayReleaseDate.orEmpty(),
-                                                containerColor = MaterialTheme.colorScheme.surface.copy(
-                                                    alpha = 0.85f
-                                                ),
-                                                onShowFeedback = onShowFeedback,
-                                                modifier = Modifier.size(32.dp)
-                                            )
-                                        }
+                                    UniversalMediaCard(
+                                        item = media.movie.asUniversalMediaItem(),
+                                        onClick = { onMovieClick(media.movie) },
+                                        isGridView = true,
+                                        showMediaType = true,
+                                        onShowFeedback = onShowFeedback,
+                                        modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                                     )
                                 }
 
                                 is MediaPreview.TvShow -> {
-                                    TvShowGridItem(
-                                        tvShow = media.tvShow,
-                                        onClick = onTvShowClick,
-                                        overlayContent = {
-                                            MediaStatsAction(
-                                                mediaType = MediaType.Tv,
-                                                mediaId = media.tvShow.id,
-                                                title = media.tvShow.title,
-                                                posterImageUrl = media.tvShow.posterImageUrl,
-                                                backdropImageUrl = media.tvShow.backdropImageUrl,
-                                                voteAvg = media.tvShow.voteAvg,
-                                                releaseDate = media.tvShow.displayFirstAirDate.orEmpty(),
-                                                containerColor = MaterialTheme.colorScheme.surface.copy(
-                                                    alpha = 0.85f
-                                                ),
-                                                onShowFeedback = onShowFeedback,
-                                                modifier = Modifier.size(32.dp)
-                                            )
-                                        }
+                                    UniversalMediaCard(
+                                        item = media.tvShow.asUniversalMediaItem(),
+                                        onClick = { onTvShowClick(media.tvShow) },
+                                        isGridView = true,
+                                        showMediaType = true,
+                                        onShowFeedback = onShowFeedback,
+                                        modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                                     )
                                 }
                             }

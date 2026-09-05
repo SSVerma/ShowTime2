@@ -112,7 +112,8 @@ class DefaultDiscoveryRepository @Inject constructor(
                         backdropImageUrl = remote.backdropPath.convertToTmdbBackdropUrl(),
                         voteAvg = remote.voteAvg,
                         voteCount = remote.voteCount,
-                        releaseDate = remote.releaseDate.orEmpty()
+                        releaseDate = remote.releaseDate.orEmpty(),
+                        displayYear = remote.releaseDate.orEmpty().take(4)
                     )
                 }
             }
@@ -128,7 +129,8 @@ class DefaultDiscoveryRepository @Inject constructor(
                         backdropImageUrl = remote.backdropPath.convertToTmdbBackdropUrl(),
                         voteAvg = remote.voteAvg,
                         voteCount = remote.voteCount,
-                        releaseDate = remote.firstAirDate.orEmpty()
+                        releaseDate = remote.firstAirDate.orEmpty(),
+                        displayYear = remote.firstAirDate.orEmpty().take(4)
                     )
                 }
             }

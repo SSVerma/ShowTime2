@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +32,6 @@ import com.ssverma.core.ui.StatefulContent
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
 import com.ssverma.shared.ads.injection.AdInjectable
@@ -48,6 +46,7 @@ import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
 import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,17 +68,16 @@ fun HeroSection(
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     overlayContent: (@Composable (MoviePreview) -> Unit)? = { movie ->
-        MediaStatsAction(
-            mediaType = MediaType.Movie,
+        MediaOmniActionMenu(
             mediaId = movie.id,
+            mediaType = MediaType.Movie,
             title = movie.title,
             posterImageUrl = movie.posterImageUrl,
             backdropImageUrl = movie.backdropImageUrl,
             voteAvg = movie.voteAvg,
             releaseDate = movie.displayReleaseDate.orEmpty(),
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-            onShowFeedback = onShowFeedback,
-            modifier = Modifier.size(36.dp)
+            isOverPoster = true,
+            onShowFeedback = onShowFeedback
         )
     }
 ) {

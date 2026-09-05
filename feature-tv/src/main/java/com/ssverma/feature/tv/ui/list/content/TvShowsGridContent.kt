@@ -4,22 +4,20 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedGrid
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
 import com.ssverma.feature.tv.ui.list.component.TvIndicator
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
-import com.ssverma.shared.ui.component.media.TvShowGridItem
+import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -38,26 +36,26 @@ fun TvShowsGridContent(
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
         modifier = modifier
     ) { tvShow ->
-        TvShowGridItem(
-            tvShow = tvShow,
-            showRating = config !is TvShowListingConfig.Filterable.Upcoming && config !is TvShowListingConfig.Filterable.TopRated,
-            indicator = { preview -> TvIndicator(config = config, tvShow = preview) },
-            onClick = openTvShowDetails,
-            overlayContent = {
-                MediaStatsAction(
-                    mediaType = MediaType.Tv,
-                    mediaId = tvShow.id,
-                    title = tvShow.title,
-                    posterImageUrl = tvShow.posterImageUrl,
-                    backdropImageUrl = tvShow.backdropImageUrl,
-                    voteAvg = tvShow.voteAvg,
-                    releaseDate = tvShow.displayFirstAirDate.orEmpty(),
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                    onShowFeedback = onShowFeedback,
-                    modifier = Modifier.size(32.dp)
-                )
+        UniversalMediaCard(
+            item = tvShow.asUniversalMediaItem(),
+            onClick = { openTvShowDetails(tvShow) },
+            isGridView = true,
+            topStartSlot = {
+                val hasIndicator = when (config) {
+                    is TvShowListingConfig.Filterable.Popular,
+                    is TvShowListingConfig.Filterable.TopRated,
+                    is TvShowListingConfig.Filterable.Upcoming -> true
+
+                    else -> false
+                }
+                if (hasIndicator) {
+                    TvIndicator(config = config, tvShow = tvShow)
+                } else if (tvShow.voteAvg > 0f) {
+                    MediaCardRatingBadge(rating = tvShow.voteAvg)
+                }
             },
-            posterModifier = Modifier.fillMaxWidth()
+            onShowFeedback = onShowFeedback,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

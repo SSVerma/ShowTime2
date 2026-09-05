@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
@@ -47,7 +46,6 @@ import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.SectionHeader
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
@@ -62,7 +60,6 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.ShareMediaUtils
-import com.ssverma.shared.ui.component.ActionSize
 import com.ssverma.shared.ui.component.BackdropActionButton
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
@@ -70,6 +67,7 @@ import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
@@ -193,15 +191,15 @@ fun MovieContent(
                             icon = if (diaryEntries.isNotEmpty()) Icons.Rounded.Star else Icons.Rounded.StarBorder,
                             contentDescription = "Log & Rate"
                         )
-                        MediaStatsAction(
-                            mediaType = MediaType.Movie,
+                        MediaOmniActionMenu(
                             mediaId = movie.id,
+                            mediaType = MediaType.Movie,
                             title = movie.title,
                             posterImageUrl = movie.posterImageUrl,
                             backdropImageUrl = movie.backdropImageUrl,
                             voteAvg = movie.voteAvg,
                             releaseDate = movie.releaseDate?.toString().orEmpty(),
-                            triggerIcon = Icons.Rounded.Add,
+                            onLogToDiary = { showLogDialog = true },
                             onShowFeedback = { message, actionLabel, destination ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
@@ -214,15 +212,7 @@ fun MovieContent(
                                     }
                                 }
                             },
-                            modifier = Modifier.size(ActionSize),
-                            onClick = {
-                                analytics.logEvent(
-                                    MovieAnalyticsEvent.AddToStatsClicked(
-                                        movieId = movie.id,
-                                        sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
-                                    )
-                                )
-                            }
+                            isOverPoster = true
                         )
                         BackdropActionButton(
                             onClick = {

@@ -2,7 +2,6 @@ package com.ssverma.feature.library.ui.diary.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +29,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -49,16 +47,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
-import com.ssverma.core.image.NetworkImage
 import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem

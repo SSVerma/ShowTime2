@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.shared.ui.TmdbPosterAspectRatio
 
 @Composable
 fun ShowTimeMediaGridCard(
@@ -52,7 +53,7 @@ fun ShowTimeMediaGridCard(
     border: BorderStroke? = null,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     shape: Shape = RoundedCornerShape(12.dp),
-    aspectRatio: Float = 0.68f
+    aspectRatio: Float = TmdbPosterAspectRatio
 ) {
     Card(
         onClick = onClick,
@@ -165,7 +166,9 @@ fun ShowTimeMediaGridCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                    .height(MediaItemDefaults.GridCardMetadataHeight)
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = title,
@@ -176,12 +179,12 @@ fun ShowTimeMediaGridCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                Spacer(modifier = Modifier.height(2.dp))
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(24.dp)
                 ) {
                     Box(modifier = Modifier.weight(1f, fill = false)) {
                         subtitle?.invoke()

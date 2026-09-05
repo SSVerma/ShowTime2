@@ -2,22 +2,21 @@ package com.ssverma.feature.movie.ui.list.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.ssverma.core.ui.paging.PagedList
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.ui.list.component.MovieIndicator
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
-import com.ssverma.shared.ui.component.media.MovieListItem
+import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 
 @Composable
 fun MoviesListContent(
@@ -34,28 +33,27 @@ fun MoviesListContent(
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
         modifier = modifier
     ) { movie ->
-        val showRating = config !is MovieListingConfig.Filterable.Upcoming &&
-                config !is MovieListingConfig.Filterable.TopRated
+        UniversalMediaCard(
+            item = movie.asUniversalMediaItem(),
+            onClick = { openMovieDetails(movie) },
+            isGridView = false,
+            topStartSlot = {
+                val hasIndicator = when (config) {
+                    is MovieListingConfig.Filterable.Popular,
+                    is MovieListingConfig.Filterable.TopRated,
+                    is MovieListingConfig.Filterable.Upcoming,
+                    is MovieListingConfig.Filterable.NowInCinemas -> true
 
-        MovieListItem(
-            movie = movie,
-            showRating = showRating,
-            indicator = { preview -> MovieIndicator(config = config, movie = preview) },
-            overlayContent = {
-                MediaStatsAction(
-                    mediaType = MediaType.Movie,
-                    mediaId = movie.id,
-                    title = movie.title,
-                    posterImageUrl = movie.posterImageUrl,
-                    backdropImageUrl = movie.backdropImageUrl,
-                    voteAvg = movie.voteAvg,
-                    releaseDate = movie.displayReleaseDate.orEmpty(),
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                    onShowFeedback = onShowFeedback,
-                    modifier = Modifier.size(32.dp)
-                )
+                    else -> false
+                }
+                if (hasIndicator) {
+                    MovieIndicator(config = config, movie = movie)
+                } else if (movie.voteAvg > 0f) {
+                    MediaCardRatingBadge(rating = movie.voteAvg)
+                }
             },
-            onClick = { preview -> openMovieDetails(preview) },
+            onShowFeedback = onShowFeedback,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

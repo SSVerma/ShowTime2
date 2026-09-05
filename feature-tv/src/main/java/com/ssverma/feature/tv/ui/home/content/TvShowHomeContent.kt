@@ -51,7 +51,6 @@ import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.openAppSettings
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
@@ -71,15 +70,16 @@ import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.ads.ui.NativeAdStyle
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.AppSection
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
 import com.ssverma.shared.ui.component.NotificationPermissionBanner
+import com.ssverma.shared.ui.component.SeasonCompletionDialog
 import com.ssverma.shared.ui.component.WatchProviderHubSection
-import com.ssverma.shared.ui.component.media.TvShowListItem
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 
 @Composable
 fun TvShowHomeContent(
@@ -405,41 +405,27 @@ fun TvShowHomeContent(
                             is InjectableContent<*> -> {
                                 val tvShowPreview =
                                     (injectableItem as InjectableContent<TvShowPreview>).item
-                                TvShowListItem(
-                                    tvShow = tvShowPreview,
-                                    showRating = true,
-                                    overlayContent = {
-                                        MediaStatsAction(
-                                            mediaType = MediaType.Tv,
-                                            mediaId = tvShowPreview.id,
-                                            title = tvShowPreview.title,
-                                            posterImageUrl = tvShowPreview.posterImageUrl,
-                                            backdropImageUrl = tvShowPreview.backdropImageUrl,
-                                            voteAvg = tvShowPreview.voteAvg,
-                                            releaseDate = tvShowPreview.displayFirstAirDate.orEmpty(),
-                                            containerColor = MaterialTheme.colorScheme.surface.copy(
-                                                alpha = 0.85f
-                                            ),
-                                            onShowFeedback = onShowFeedback,
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    },
+                                UniversalMediaCard(
+                                    item = tvShowPreview.asUniversalMediaItem(),
                                     onClick = {
                                         analytics.logEvent(
                                             TvAnalyticsEvent.TvShowClicked(
-                                                tvShow = it,
+                                                tvShow = tvShowPreview,
                                                 section = TvAnalyticsValues.SECTION_ON_THE_AIR,
                                                 sourceScreen = TvAnalyticsScreenName.TV_HOME
                                             )
                                         )
-                                        openTvShowDetails(it.id)
+                                        openTvShowDetails(tvShowPreview.id)
                                     },
-                                    indicator = {
+                                    isGridView = false,
+                                    topStartSlot = {
                                         TvIndicator(
                                             config = TvShowListingConfig.Filterable.TodayAiring(),
-                                            tvShow = it
+                                            tvShow = tvShowPreview
                                         )
                                     },
+                                    onShowFeedback = onShowFeedback,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
@@ -491,41 +477,27 @@ fun TvShowHomeContent(
                             is InjectableContent<*> -> {
                                 val tvShowPreview =
                                     (injectableItem as InjectableContent<TvShowPreview>).item
-                                TvShowListItem(
-                                    tvShow = tvShowPreview,
-                                    showRating = true,
-                                    overlayContent = {
-                                        MediaStatsAction(
-                                            mediaType = MediaType.Tv,
-                                            mediaId = tvShowPreview.id,
-                                            title = tvShowPreview.title,
-                                            posterImageUrl = tvShowPreview.posterImageUrl,
-                                            backdropImageUrl = tvShowPreview.backdropImageUrl,
-                                            voteAvg = tvShowPreview.voteAvg,
-                                            releaseDate = tvShowPreview.displayFirstAirDate.orEmpty(),
-                                            containerColor = MaterialTheme.colorScheme.surface.copy(
-                                                alpha = 0.85f
-                                            ),
-                                            onShowFeedback = onShowFeedback,
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    },
+                                UniversalMediaCard(
+                                    item = tvShowPreview.asUniversalMediaItem(),
                                     onClick = {
                                         analytics.logEvent(
                                             TvAnalyticsEvent.TvShowClicked(
-                                                tvShow = it,
+                                                tvShow = tvShowPreview,
                                                 section = TvAnalyticsValues.SECTION_ON_THE_AIR,
                                                 sourceScreen = TvAnalyticsScreenName.TV_HOME
                                             )
                                         )
-                                        openTvShowDetails(it.id)
+                                        openTvShowDetails(tvShowPreview.id)
                                     },
-                                    indicator = {
+                                    isGridView = false,
+                                    topStartSlot = {
                                         TvIndicator(
                                             config = TvShowListingConfig.Filterable.NowAiring(),
-                                            tvShow = it
+                                            tvShow = tvShowPreview
                                         )
                                     },
+                                    onShowFeedback = onShowFeedback,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
@@ -543,7 +515,7 @@ fun TvShowHomeContent(
         }
 
         uiState.completedShowDialog?.let { dialogState ->
-            com.ssverma.shared.ui.component.SeasonCompletionDialog(
+            SeasonCompletionDialog(
                 state = dialogState,
                 onDismiss = viewModel::dismissCompletedShowDialog
             )

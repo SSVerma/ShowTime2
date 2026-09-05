@@ -20,7 +20,6 @@ import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.repository.WatchProviderRepository
 import com.ssverma.shared.domain.usecase.discovery.GetRouletteSurpriseUseCase
 import com.ssverma.shared.domain.usecase.discovery.GetUniversalDiscoveryUseCase
-import com.ssverma.shared.ui.R as SharedUiR
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -35,6 +34,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.ssverma.shared.ui.R as SharedUiR
 
 sealed interface UniversalDiscoveryUiEffect {
     data class ActionFeedback(

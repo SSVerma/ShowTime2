@@ -20,6 +20,86 @@ class MediaOmniMenuViewModel @Inject constructor(
     fun getCustomListIdsForMedia(mediaId: Int): Flow<List<String>> =
         libraryRepository.getCustomListIdsForMediaFlow(mediaId)
 
+    fun isInWatchlist(mediaId: Int): Flow<Boolean> =
+        libraryRepository.isInWatchlistFlow(mediaId)
+
+    fun isFavorite(mediaId: Int): Flow<Boolean> =
+        libraryRepository.isFavoriteFlow(mediaId)
+
+    fun isWatched(mediaId: Int): Flow<Boolean> =
+        libraryRepository.isWatchedFlow(mediaId)
+
+    fun isMediaActionActive(mediaId: Int): Flow<Boolean> =
+        libraryRepository.isMediaActionActiveFlow(mediaId)
+
+    fun toggleWatchlist(
+        mediaId: Int,
+        mediaType: MediaType,
+        title: String,
+        posterImageUrl: String,
+        backdropImageUrl: String,
+        voteAvg: Float,
+        releaseDate: String,
+        onResult: ((added: Boolean) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val added = libraryRepository.toggleWatchlist(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                backdropImageUrl = backdropImageUrl,
+                voteAvg = voteAvg,
+                releaseDate = releaseDate
+            )
+            onResult?.invoke(added)
+        }
+    }
+
+    fun toggleFavorite(
+        mediaId: Int,
+        mediaType: MediaType,
+        title: String,
+        posterImageUrl: String,
+        backdropImageUrl: String,
+        voteAvg: Float,
+        releaseDate: String,
+        onResult: ((added: Boolean) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val added = libraryRepository.toggleFavorite(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                backdropImageUrl = backdropImageUrl,
+                voteAvg = voteAvg,
+                releaseDate = releaseDate
+            )
+            onResult?.invoke(added)
+        }
+    }
+
+    fun toggleWatched(
+        mediaId: Int,
+        mediaType: MediaType,
+        title: String,
+        posterImageUrl: String,
+        voteAvg: Float,
+        onResult: ((added: Boolean) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val added = libraryRepository.toggleWatchHistory(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                voteAvg = voteAvg
+            )
+            onResult?.invoke(added)
+        }
+    }
+
     fun toggleMediaCustomList(
         listId: String,
         mediaId: Int,
@@ -28,11 +108,13 @@ class MediaOmniMenuViewModel @Inject constructor(
         posterImageUrl: String = "",
         backdropImageUrl: String = "",
         voteAvg: Float = 0f,
-        isCurrentlyInList: Boolean
+        isCurrentlyInList: Boolean,
+        onResult: ((added: Boolean) -> Unit)? = null
     ) {
         viewModelScope.launch {
             if (isCurrentlyInList) {
                 libraryRepository.removeMediaFromCustomList(listId, mediaId)
+                onResult?.invoke(false)
             } else {
                 libraryRepository.addMediaToCustomList(
                     listId = listId,
@@ -43,6 +125,7 @@ class MediaOmniMenuViewModel @Inject constructor(
                     backdropImageUrl = backdropImageUrl,
                     voteAvg = voteAvg
                 )
+                onResult?.invoke(true)
             }
         }
     }

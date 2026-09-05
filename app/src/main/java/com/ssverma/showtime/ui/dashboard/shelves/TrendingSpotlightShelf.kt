@@ -5,17 +5,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.carousel.CarouselState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ui.UiState
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.shared.ads.injection.AdInjectable
@@ -25,6 +22,7 @@ import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.HeroItem
+import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.dashboard.TrendingSpotlightItem
 
@@ -80,17 +78,16 @@ fun LazyListScope.trendingSpotlightShelf(
                                 }
                             },
                             overlayContent = {
-                                MediaStatsAction(
-                                    mediaType = spotlightItem.mediaType,
+                                MediaOmniActionMenu(
                                     mediaId = spotlightItem.id,
+                                    mediaType = spotlightItem.mediaType,
                                     title = spotlightItem.title,
                                     posterImageUrl = spotlightItem.posterImageUrl,
                                     backdropImageUrl = spotlightItem.backdropImageUrl,
                                     voteAvg = spotlightItem.voteAvg,
                                     releaseDate = spotlightItem.displayDate.orEmpty(),
-                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                                    onShowFeedback = onShowFeedback,
-                                    modifier = Modifier.size(36.dp)
+                                    isOverPoster = true,
+                                    onShowFeedback = onShowFeedback
                                 )
                             }
                         )

@@ -26,6 +26,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
@@ -40,10 +43,10 @@ fun MediaOmniActionMenu(
     backdropImageUrl: String = "",
     voteAvg: Float = 0f,
     releaseDate: String = "",
-    isActionActive: Boolean = false,
-    isInWatchlist: Boolean = false,
-    isWatched: Boolean = false,
-    isFavorite: Boolean = false,
+    isActionActive: Boolean? = null,
+    isInWatchlist: Boolean? = null,
+    isWatched: Boolean? = null,
+    isFavorite: Boolean? = null,
     onToggleWatchlist: (() -> Unit)? = null,
     onToggleWatched: (() -> Unit)? = null,
     onToggleFavorite: (() -> Unit)? = null,
@@ -51,83 +54,170 @@ fun MediaOmniActionMenu(
     onCustomListClick: (() -> Unit)? = null,
     onOpenDiscussions: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
-    onShowFeedback: ((message: String, actionLabel: String?, targetCustomListId: String?) -> Unit)? = null,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
     config: MediaOmniMenuConfig = MediaOmniMenuConfig.Default,
     customLists: List<CustomListOption>? = null,
     onToggleCustomList: ((CustomListOption) -> Unit)? = null,
     isOverPoster: Boolean = true,
     viewModel: MediaOmniMenuViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     var isMenuExpanded by remember { mutableStateOf(false) }
 
-    val hasTrackingSection = (config.showWatchlist && onToggleWatchlist != null) ||
-            (config.showWatched && onToggleWatched != null) ||
-            (config.showFavorite && onToggleFavorite != null)
+    val effectiveInWatchlist = isInWatchlist
+        ?: viewModel.isInWatchlist(mediaId).collectAsState(initial = false).value
+    val effectiveIsWatched = isWatched
+        ?: viewModel.isWatched(mediaId).collectAsState(initial = false).value
+    val effectiveIsFavorite = isFavorite
+        ?: viewModel.isFavorite(mediaId).collectAsState(initial = false).value
+    val effectiveActionActive = isActionActive
+        ?: viewModel.isMediaActionActive(mediaId).collectAsState(initial = false).value
 
+    val hasTrackingSection = config.showWatchlist || config.showWatched || config.showFavorite
     val hasLoggingSection = (config.showDiaryLog && onLogToDiary != null) || config.showCustomList
-
-    val hasSocialSection = (config.showDiscussions && onOpenDiscussions != null) ||
-            (config.showShare && onShare != null)
+    val hasSocialSection = (config.showDiscussions && onOpenDiscussions != null) || config.showShare
 
     if (!hasTrackingSection && !hasLoggingSection && !hasSocialSection) return
+
+    val viewInLibraryText = stringResource(R.string.media_menu_view_in_library)
+    val mediaTypeStr = if (mediaType == MediaType.Movie) "movie" else "tv"
 
     MediaCardOverflowAction(
         expanded = isMenuExpanded,
         onToggleExpand = { isMenuExpanded = !isMenuExpanded },
         onDismissRequest = { isMenuExpanded = false },
-        showActiveDot = isActionActive,
+        showActiveDot = effectiveActionActive,
         isOverPoster = isOverPoster,
         modifier = modifier
     ) {
         // Group 1: Core Library Tracking (Watchlist, Watched, Favorites)
         if (hasTrackingSection) {
-            if (config.showWatchlist && onToggleWatchlist != null) {
+            if (config.showWatchlist) {
                 ExpressiveMenuItem(
-                    title = if (isInWatchlist) {
+                    title = if (effectiveInWatchlist) {
                         stringResource(R.string.remove_from_watchlist)
                     } else {
                         stringResource(R.string.add_to_watchlist)
                     },
-                    icon = if (isInWatchlist) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
+                    icon = if (effectiveInWatchlist) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    isActive = isInWatchlist,
+                    isActive = effectiveInWatchlist,
                     onClick = {
                         isMenuExpanded = false
-                        onToggleWatchlist()
+                        if (onToggleWatchlist != null) {
+                            onToggleWatchlist()
+                        } else {
+                            val wasInWatchlist = effectiveInWatchlist
+                            viewModel.toggleWatchlist(
+                                mediaId = mediaId,
+                                mediaType = mediaType,
+                                title = title,
+                                posterImageUrl = posterImageUrl,
+                                backdropImageUrl = backdropImageUrl,
+                                voteAvg = voteAvg,
+                                releaseDate = releaseDate
+                            )
+                            val feedbackMsg = if (wasInWatchlist) {
+                                context.getString(R.string.media_menu_removed_from_watchlist)
+                            } else {
+                                context.getString(R.string.media_menu_added_to_watchlist)
+                            }
+                            val destination = if (wasInWatchlist) null else LibraryHomeNavKey(
+                                initialTab = LibraryTabDestination.Watchlist,
+                                initialMediaType = mediaTypeStr
+                            )
+                            onShowFeedback?.invoke(
+                                feedbackMsg,
+                                if (wasInWatchlist) null else viewInLibraryText,
+                                destination
+                            )
+                        }
                     }
                 )
             }
 
-            if (config.showWatched && onToggleWatched != null) {
+            if (config.showWatched) {
                 ExpressiveMenuItem(
-                    title = if (isWatched) {
+                    title = if (effectiveIsWatched) {
                         stringResource(R.string.media_card_action_mark_unwatched)
                     } else {
                         stringResource(R.string.media_card_action_mark_watched)
                     },
-                    icon = if (isWatched) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
+                    icon = if (effectiveIsWatched) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
                     iconTint = MaterialTheme.colorScheme.tertiary,
-                    isActive = isWatched,
+                    isActive = effectiveIsWatched,
                     onClick = {
                         isMenuExpanded = false
-                        onToggleWatched()
+                        if (onToggleWatched != null) {
+                            onToggleWatched()
+                        } else {
+                            val wasWatched = effectiveIsWatched
+                            viewModel.toggleWatched(
+                                mediaId = mediaId,
+                                mediaType = mediaType,
+                                title = title,
+                                posterImageUrl = posterImageUrl,
+                                voteAvg = voteAvg
+                            )
+                            val feedbackMsg = if (wasWatched) {
+                                context.getString(R.string.media_menu_removed_from_watched)
+                            } else {
+                                context.getString(R.string.media_menu_marked_as_watched)
+                            }
+                            val destination = if (wasWatched) null else LibraryHomeNavKey(
+                                initialTab = LibraryTabDestination.History,
+                                initialMediaType = mediaTypeStr
+                            )
+                            onShowFeedback?.invoke(
+                                feedbackMsg,
+                                if (wasWatched) null else viewInLibraryText,
+                                destination
+                            )
+                        }
                     }
                 )
             }
 
-            if (config.showFavorite && onToggleFavorite != null) {
+            if (config.showFavorite) {
                 ExpressiveMenuItem(
-                    title = if (isFavorite) {
+                    title = if (effectiveIsFavorite) {
                         stringResource(R.string.remove_from_favorite)
                     } else {
                         stringResource(R.string.add_to_favorite)
                     },
-                    icon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                    icon = if (effectiveIsFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
                     iconTint = MaterialTheme.colorScheme.error,
-                    isActive = isFavorite,
+                    isActive = effectiveIsFavorite,
                     onClick = {
                         isMenuExpanded = false
-                        onToggleFavorite()
+                        if (onToggleFavorite != null) {
+                            onToggleFavorite()
+                        } else {
+                            val wasFavorite = effectiveIsFavorite
+                            viewModel.toggleFavorite(
+                                mediaId = mediaId,
+                                mediaType = mediaType,
+                                title = title,
+                                posterImageUrl = posterImageUrl,
+                                backdropImageUrl = backdropImageUrl,
+                                voteAvg = voteAvg,
+                                releaseDate = releaseDate
+                            )
+                            val feedbackMsg = if (wasFavorite) {
+                                context.getString(R.string.media_menu_removed_from_favorites)
+                            } else {
+                                context.getString(R.string.media_menu_added_to_favorites)
+                            }
+                            val destination = if (wasFavorite) null else LibraryHomeNavKey(
+                                initialTab = LibraryTabDestination.Favorites,
+                                initialMediaType = mediaTypeStr
+                            )
+                            onShowFeedback?.invoke(
+                                feedbackMsg,
+                                if (wasFavorite) null else viewInLibraryText,
+                                destination
+                            )
+                        }
                     }
                 )
             }
@@ -197,7 +287,7 @@ fun MediaOmniActionMenu(
                 )
             }
 
-            if (config.showShare && onShare != null) {
+            if (config.showShare) {
                 ExpressiveMenuItem(
                     title = stringResource(R.string.share),
                     icon = Icons.Rounded.Share,
@@ -205,7 +295,16 @@ fun MediaOmniActionMenu(
                     isActive = false,
                     onClick = {
                         isMenuExpanded = false
-                        onShare()
+                        if (onShare != null) {
+                            onShare()
+                        } else {
+                            val tmdbType = if (mediaType == MediaType.Movie) "movie" else "tv"
+                            with(IntentDispatcher) {
+                                context.dispatchShareTextIntent(
+                                    "$title\nhttps://www.themoviedb.org/$tmdbType/$mediaId"
+                                )
+                            }
+                        }
                     }
                 )
             }
@@ -225,7 +324,7 @@ private fun CustomListsMenuItems(
     onToggleCustomListOverride: ((CustomListOption) -> Unit)?,
     onCustomListClick: (() -> Unit)?,
     onDismissMenu: () -> Unit,
-    onShowFeedback: ((message: String, actionLabel: String?, targetCustomListId: String?) -> Unit)?,
+    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)?,
     viewModel: MediaOmniMenuViewModel
 ) {
     val context = LocalContext.current
@@ -274,10 +373,14 @@ private fun CustomListsMenuItems(
                     } else {
                         context.getString(R.string.media_menu_added_to_list, option.title)
                     }
+                    val destination = if (option.isContained) null else LibraryHomeNavKey(
+                        initialTab = LibraryTabDestination.CustomLists,
+                        targetCustomListId = option.listId
+                    )
                     onShowFeedback?.invoke(
                         feedbackMessage,
                         if (option.isContained) null else viewInLibraryText,
-                        if (option.isContained) null else option.listId
+                        destination
                     )
                 }
             )

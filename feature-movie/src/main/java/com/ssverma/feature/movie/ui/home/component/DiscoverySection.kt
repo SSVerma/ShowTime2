@@ -1,15 +1,13 @@
 package com.ssverma.feature.movie.ui.home.component
 
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.R
+import com.ssverma.feature.movie.domain.model.MovieListingConfig
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.convertor.asMovieListingConfig
 import com.ssverma.feature.movie.ui.common.MoviePreviewUiState
@@ -17,11 +15,13 @@ import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.DiscoveryCategory
-import com.ssverma.shared.ui.component.media.MovieGridItem
+import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
+import com.ssverma.shared.ui.component.media.MediaItemDefaults
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.DiscoverySection as SharedDiscoverySection
 
 @Composable
@@ -81,31 +81,28 @@ fun DiscoverySection(
             is InjectableContent<*> -> {
                 @Suppress("UNCHECKED_CAST")
                 val moviePreview = (injectableItem as InjectableContent<MoviePreview>).item
-                MovieGridItem(
-                    movie = moviePreview,
-                    onClick = onMovieClicked,
-                    indicator = {
-                        MovieIndicator(
-                            config = categoryPayload.asMovieListingConfig(),
-                            movie = it
-                        )
+                UniversalMediaCard(
+                    item = moviePreview.asUniversalMediaItem(),
+                    onClick = { onMovieClicked(moviePreview) },
+                    isGridView = true,
+                    topStartSlot = {
+                        val config = categoryPayload.asMovieListingConfig()
+                        val hasIndicator = when (config) {
+                            is MovieListingConfig.Filterable.Popular,
+                            is MovieListingConfig.Filterable.TopRated,
+                            is MovieListingConfig.Filterable.Upcoming,
+                            is MovieListingConfig.Filterable.NowInCinemas -> true
+
+                            else -> false
+                        }
+                        if (hasIndicator) {
+                            MovieIndicator(config = config, movie = moviePreview)
+                        } else if (moviePreview.voteAvg > 0f) {
+                            MediaCardRatingBadge(rating = moviePreview.voteAvg)
+                        }
                     },
-                    overlayContent = {
-                        MediaStatsAction(
-                            mediaType = MediaType.Movie,
-                            mediaId = moviePreview.id,
-                            title = moviePreview.title,
-                            posterImageUrl = moviePreview.posterImageUrl,
-                            backdropImageUrl = moviePreview.backdropImageUrl,
-                            voteAvg = moviePreview.voteAvg,
-                            releaseDate = moviePreview.displayReleaseDate.orEmpty(),
-                            containerColor = MaterialTheme.colorScheme.surface.copy(
-                                alpha = 0.85f
-                            ),
-                            onShowFeedback = onShowFeedback,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                    onShowFeedback = onShowFeedback,
+                    modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                 )
             }
         }

@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +25,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -281,52 +286,61 @@ private fun NativeAdListContent(
     onAdClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Card(
+        onClick = onAdClicked,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        ),
         modifier = modifier
             .fillMaxWidth()
             .height(MediaItemDefaults.ListItemHeight)
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surface)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = MaterialTheme.shapes.large
-            )
-            .clickable(onClick = onAdClicked)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             AdPoster(
                 nativeAd,
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .aspectRatio(TmdbPosterAspectRatio)
+                    .width(84.dp)
+                    .fillMaxHeight(),
+                showAttribution = true
             )
 
             Column(
                 modifier = Modifier
-                    .padding(MaterialTheme.spacing.medium)
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = nativeAd.headline ?: "",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = nativeAd.headline ?: "",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-                AdStats(nativeAd)
+                    Spacer(modifier = Modifier.height(2.dp))
 
-                Text(
-                    text = nativeAd.body ?: "",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 20.sp,
-                    modifier = Modifier.weight(1f)
-                )
+                    AdStats(nativeAd)
+
+                    if (!nativeAd.body.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = nativeAd.body ?: "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
 
                 AdCTA(nativeAd, modifier = Modifier.align(Alignment.End))
             }
@@ -340,50 +354,100 @@ private fun NativeAdGridContent(
     onAdClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .width(MediaItemDefaults.PosterWidth)
-            .clickable(onClick = onAdClicked)
+    Card(
+        onClick = onAdClicked,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        ),
+        modifier = modifier.width(MediaItemDefaults.PosterWidth)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(TmdbPosterAspectRatio)
-                .clip(MaterialTheme.shapes.large)
-                .background(MaterialTheme.colorScheme.surface)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    shape = MaterialTheme.shapes.large
-                )
-        ) {
-            AdPoster(nativeAd, modifier = Modifier.fillMaxSize())
-
-            AdCTA(
-                nativeAd = nativeAd,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(MaterialTheme.spacing.small)
                     .fillMaxWidth()
-                    .padding(horizontal = MaterialTheme.spacing.small)
-            )
-        }
+                    .aspectRatio(TmdbPosterAspectRatio)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            ) {
+                AdPoster(nativeAd, modifier = Modifier.fillMaxSize(), showAttribution = false)
 
-        Column(
-            modifier = Modifier.padding(vertical = MaterialTheme.spacing.small),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(
-                text = nativeAd.headline ?: "",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+                // Top gradient scrim for high-contrast badge readability
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent)
+                            )
+                        )
+                )
 
-            AdStats(nativeAd)
+                AdAttribution(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                )
+
+                AdCTA(
+                    nativeAd = nativeAd,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(MaterialTheme.spacing.small)
+                        .fillMaxWidth()
+                        .padding(horizontal = MaterialTheme.spacing.small)
+                )
+            }
+
+            // Card Body (Headline, Subtitle/Advertiser, Trailing Action)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(MediaItemDefaults.GridCardMetadataHeight)
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = nativeAd.headline ?: "",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(24.dp)
+                ) {
+                    Box(modifier = Modifier.weight(1f, fill = false)) {
+                        AdStats(nativeAd)
+                    }
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .padding(start = 4.dp)
+                            .size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -463,7 +527,11 @@ private fun NativeAdCarouselContent(
 }
 
 @Composable
-private fun AdPoster(nativeAd: NativeAd, modifier: Modifier = Modifier) {
+private fun AdPoster(
+    nativeAd: NativeAd,
+    modifier: Modifier = Modifier,
+    showAttribution: Boolean = true
+) {
     Box(modifier = modifier) {
         val imageUrl = nativeAd.images.firstOrNull()?.uri?.toString()
             ?: nativeAd.icon?.uri?.toString()
@@ -490,30 +558,36 @@ private fun AdPoster(nativeAd: NativeAd, modifier: Modifier = Modifier) {
             }
         }
 
-        AdAttribution(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(MaterialTheme.spacing.small)
-        )
+        if (showAttribution) {
+            AdAttribution(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(MaterialTheme.spacing.small)
+            )
+        }
     }
 }
 
 @Composable
 private fun AdAttribution(modifier: Modifier = Modifier) {
-    Box(
+    Surface(
+        shape = RoundedCornerShape(6.dp),
+        color = Color.Black.copy(alpha = 0.75f),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.2f)),
         modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f))
-            .padding(horizontal = 4.dp, vertical = 2.dp)
     ) {
-        Text(
-            text = "Ad",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold
-            ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Box(
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+        ) {
+            Text(
+                text = "Ad",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.White
+            )
+        }
     }
 }
 
@@ -534,7 +608,7 @@ private fun AdStats(nativeAd: NativeAd) {
             )
             Text(
                 text = "%.1f".format(rating),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -544,14 +618,15 @@ private fun AdStats(nativeAd: NativeAd) {
             if (nativeAd.starRating != null) {
                 Text(
                     text = "•",
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
                 text = nativeAd.advertiser ?: "",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

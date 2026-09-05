@@ -80,9 +80,9 @@ import com.ssverma.feature.filter.ui.discovery.component.UniversalMediaCard
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.ui.R as SharedUiR
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import kotlinx.coroutines.launch
+import com.ssverma.shared.ui.R as SharedUiR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -467,7 +467,7 @@ fun UniversalDiscoveryScreen(
                                     )
                                 }
                             },
-                            onShowFeedback = { message, actionLabel, targetCustomListId ->
+                            onShowFeedback = { message, actionLabel, destination ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
                                         message = message,
@@ -475,12 +475,7 @@ fun UniversalDiscoveryScreen(
                                         duration = SnackbarDuration.Short
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
-                                        openLibraryPage(
-                                            LibraryHomeNavKey(
-                                                initialTab = LibraryTabDestination.CustomLists,
-                                                targetCustomListId = targetCustomListId
-                                            )
-                                        )
+                                        openLibraryPage(destination ?: LibraryHomeNavKey.Default)
                                     }
                                 }
                             }

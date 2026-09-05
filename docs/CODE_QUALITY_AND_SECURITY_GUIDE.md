@@ -196,6 +196,28 @@ the checklist in this guide before being merged into development or release bran
   )
   ```
 
+### D. Separation of Concerns: Zero Calculations in UI / Composables
+
+* **Strict Invariant**: Composables and UI-layer functions must **never** perform data
+  transformations,
+  business logic, date arithmetic, string slicing (`.take(...)`), regex parsing, or mathematical
+  operations.
+* **Rule**: All fields displayed in the UI must be pre-calculated, formatted, and exposed by upper
+  layers
+  (Data Mappers, Domain Models, or ViewModels).
+* **Standard**:
+  ```kotlin
+  // ❌ FORBIDDEN IN COMPOSABLES
+  val year = item.releaseDate.take(4)
+  val parsedDate = SimpleDateFormat(...).parse(...)
+  val formattedRating = "${(item.voteAvg * 10).toInt()}%"
+
+  // ✅ CORRECT
+  // Formatted in Mapper / ViewModel / Domain Model:
+  Text(text = item.displayYear)
+  Text(text = item.displayRating)
+  ```
+
 ---
 
 ## 6. Security, Secrets & Privacy Standards
@@ -268,6 +290,9 @@ Before pushing any commit or opening a PR, run through this validation gate:
 
 ### Manual Review Checklist:
 
+- [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
+  in
+  upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
 - [ ] **No Hardcoded Data**: Are all mock data, stubs, and sandbox tools strictly quarantined to
   debug-only modes with zero mock data leakage to production/end users?
 - [ ] **Strings**: Are all new user-facing texts extracted to `strings.xml`?

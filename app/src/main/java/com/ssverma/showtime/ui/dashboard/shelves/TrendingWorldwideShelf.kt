@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -45,7 +45,6 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ui.StatefulContent
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.layout.SectionHeader
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
@@ -53,13 +52,13 @@ import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.MediaItemShimmer
-import com.ssverma.shared.ui.component.media.MovieGridItem
+import com.ssverma.shared.ui.component.media.MediaItemDefaults
 import com.ssverma.shared.ui.component.media.SeeAllCard
-import com.ssverma.shared.ui.component.media.TvShowGridItem
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.showtime.R
 
 fun LazyListScope.trendingWorldwideShelf(
@@ -186,25 +185,12 @@ fun LazyListScope.trendingWorldwideShelf(
                                     is InjectableContent<*> -> {
                                         val movie =
                                             (injectableItem as InjectableContent<MoviePreview>).item
-                                        MovieGridItem(
-                                            movie = movie,
-                                            onClick = onMovieClick,
-                                            overlayContent = {
-                                                MediaStatsAction(
-                                                    mediaType = MediaType.Movie,
-                                                    mediaId = movie.id,
-                                                    title = movie.title,
-                                                    posterImageUrl = movie.posterImageUrl,
-                                                    backdropImageUrl = movie.backdropImageUrl,
-                                                    voteAvg = movie.voteAvg,
-                                                    releaseDate = movie.displayReleaseDate.orEmpty(),
-                                                    containerColor = MaterialTheme.colorScheme.surface.copy(
-                                                        alpha = 0.85f
-                                                    ),
-                                                    onShowFeedback = onShowFeedback,
-                                                    modifier = Modifier.size(32.dp)
-                                                )
-                                            }
+                                        UniversalMediaCard(
+                                            item = movie.asUniversalMediaItem(),
+                                            onClick = { onMovieClick(movie) },
+                                            isGridView = true,
+                                            onShowFeedback = onShowFeedback,
+                                            modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                                         )
                                     }
                                 }
@@ -257,25 +243,12 @@ fun LazyListScope.trendingWorldwideShelf(
                                     is InjectableContent<*> -> {
                                         val tvShow =
                                             (injectableItem as InjectableContent<TvShowPreview>).item
-                                        TvShowGridItem(
-                                            tvShow = tvShow,
-                                            onClick = onTvShowClick,
-                                            overlayContent = {
-                                                MediaStatsAction(
-                                                    mediaType = MediaType.Tv,
-                                                    mediaId = tvShow.id,
-                                                    title = tvShow.title,
-                                                    posterImageUrl = tvShow.posterImageUrl,
-                                                    backdropImageUrl = tvShow.backdropImageUrl,
-                                                    voteAvg = tvShow.voteAvg,
-                                                    releaseDate = tvShow.displayFirstAirDate.orEmpty(),
-                                                    containerColor = MaterialTheme.colorScheme.surface.copy(
-                                                        alpha = 0.85f
-                                                    ),
-                                                    onShowFeedback = onShowFeedback,
-                                                    modifier = Modifier.size(32.dp)
-                                                )
-                                            }
+                                        UniversalMediaCard(
+                                            item = tvShow.asUniversalMediaItem(),
+                                            onClick = { onTvShowClick(tvShow) },
+                                            isGridView = true,
+                                            onShowFeedback = onShowFeedback,
+                                            modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                                         )
                                     }
                                 }

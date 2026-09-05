@@ -141,6 +141,7 @@ data class UniversalMediaItem(
     val voteAvg: Float,
     val voteCount: Int,
     val releaseDate: String,
+    val displayYear: String = "",
     val genreNames: List<String> = emptyList(),
     val isWatched: Boolean = false,
     val isFavorite: Boolean = false,

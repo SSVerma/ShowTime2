@@ -1,13 +1,10 @@
 package com.ssverma.feature.tv.ui.home.component
 
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
@@ -18,11 +15,13 @@ import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.DiscoveryCategory
-import com.ssverma.shared.ui.component.media.TvShowGridItem
+import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
+import com.ssverma.shared.ui.component.media.MediaItemDefaults
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.DiscoverySection as SharedDiscoverySection
 
 @Composable
@@ -99,29 +98,26 @@ fun DiscoverySection(
             is InjectableContent<*> -> {
                 @Suppress("UNCHECKED_CAST")
                 val tvShowPreview = (injectableItem as InjectableContent<TvShowPreview>).item
-                TvShowGridItem(
-                    tvShow = tvShowPreview,
-                    showRating = config !is TvShowListingConfig.Filterable.Upcoming && config !is TvShowListingConfig.Filterable.TopRated,
-                    indicator = { preview ->
-                        TvIndicator(config = config, tvShow = preview)
+                UniversalMediaCard(
+                    item = tvShowPreview.asUniversalMediaItem(),
+                    onClick = { onTvShowClicked(tvShowPreview) },
+                    isGridView = true,
+                    topStartSlot = {
+                        val hasIndicator = when (config) {
+                            is TvShowListingConfig.Filterable.Popular,
+                            is TvShowListingConfig.Filterable.TopRated,
+                            is TvShowListingConfig.Filterable.Upcoming -> true
+
+                            else -> false
+                        }
+                        if (hasIndicator) {
+                            TvIndicator(config = config, tvShow = tvShowPreview)
+                        } else if (tvShowPreview.voteAvg > 0f) {
+                            MediaCardRatingBadge(rating = tvShowPreview.voteAvg)
+                        }
                     },
-                    onClick = { preview -> onTvShowClicked(preview) },
-                    overlayContent = {
-                        MediaStatsAction(
-                            mediaType = MediaType.Tv,
-                            mediaId = tvShowPreview.id,
-                            title = tvShowPreview.title,
-                            posterImageUrl = tvShowPreview.posterImageUrl,
-                            backdropImageUrl = tvShowPreview.backdropImageUrl,
-                            voteAvg = tvShowPreview.voteAvg,
-                            releaseDate = tvShowPreview.displayFirstAirDate.orEmpty(),
-                            containerColor = MaterialTheme.colorScheme.surface.copy(
-                                alpha = 0.85f
-                            ),
-                            onShowFeedback = onShowFeedback,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                    onShowFeedback = onShowFeedback,
+                    modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                 )
             }
         }

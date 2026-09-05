@@ -43,7 +43,6 @@ import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.openAppSettings
-import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
@@ -61,7 +60,6 @@ import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.ads.ui.NativeAdStyle
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppSection
@@ -69,7 +67,8 @@ import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
 import com.ssverma.shared.ui.component.NotificationPermissionBanner
 import com.ssverma.shared.ui.component.WatchProviderHubSection
-import com.ssverma.shared.ui.component.media.MovieListItem
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 
 @Composable
 fun MovieHomeContent(
@@ -386,41 +385,27 @@ fun MovieHomeContent(
                             is InjectableContent<*> -> {
                                 val moviePreview =
                                     (injectableItem as InjectableContent<MoviePreview>).item
-                                MovieListItem(
-                                    movie = moviePreview,
-                                    showRating = true,
+                                UniversalMediaCard(
+                                    item = moviePreview.asUniversalMediaItem(),
                                     onClick = {
                                         analytics.logEvent(
                                             MovieAnalyticsEvent.MovieClicked(
-                                                movie = it,
+                                                movie = moviePreview,
                                                 section = MovieAnalyticsValues.SECTION_IN_CINEMAS,
                                                 sourceScreen = MovieAnalyticsScreenName.MOVIE_HOME,
                                             )
                                         )
-                                        openMovieDetails(it.id)
+                                        openMovieDetails(moviePreview.id)
                                     },
-                                    overlayContent = {
-                                        MediaStatsAction(
-                                            mediaType = MediaType.Movie,
-                                            mediaId = moviePreview.id,
-                                            title = moviePreview.title,
-                                            posterImageUrl = moviePreview.posterImageUrl,
-                                            backdropImageUrl = moviePreview.backdropImageUrl,
-                                            voteAvg = moviePreview.voteAvg,
-                                            releaseDate = moviePreview.displayReleaseDate.orEmpty(),
-                                            containerColor = MaterialTheme.colorScheme.surface.copy(
-                                                alpha = 0.85f
-                                            ),
-                                            onShowFeedback = onShowFeedback,
-                                            modifier = Modifier.size(32.dp)
-                                        )
-                                    },
-                                    indicator = {
+                                    isGridView = false,
+                                    topStartSlot = {
                                         MovieIndicator(
                                             config = MovieListingConfig.Filterable.NowInCinemas(),
-                                            movie = it
+                                            movie = moviePreview
                                         )
                                     },
+                                    onShowFeedback = onShowFeedback,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }

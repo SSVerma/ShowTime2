@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.coreImage)
     implementation(projects.coreDi)
     implementation(projects.coreNavigation)
+    implementation(projects.featureLibraryNavigation)
     implementation(projects.coreBilling)
     implementation(projects.coreBackup)
 
