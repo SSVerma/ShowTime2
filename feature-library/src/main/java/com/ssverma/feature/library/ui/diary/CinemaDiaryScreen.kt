@@ -182,7 +182,7 @@ fun CinemaDiaryScreen(
             ) {
                 // Header Stats
                 if (uiState.stats.totalLogged > 0) {
-                    item {
+                    item(key = "diary_stats_header", contentType = "header") {
                         DiaryStatsHeader(
                             stats = uiState.stats,
                             onOpenTasteProfile = onOpenTasteProfile,
@@ -193,7 +193,7 @@ fun CinemaDiaryScreen(
                 }
 
                 // Filter Row
-                item {
+                item(key = "diary_filters", contentType = "filters") {
                     val filterScrollState = rememberScrollState()
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -241,7 +241,7 @@ fun CinemaDiaryScreen(
 
                 // Empty State
                 if (uiState.timelineGroups.isEmpty()) {
-                    item {
+                    item(key = "diary_empty_view", contentType = "empty") {
                         DiaryEmptyView(
                             activeFilter = uiState.activeFilter,
                             onLogClick = { viewModel.onOpenLogSearch() }
@@ -250,7 +250,7 @@ fun CinemaDiaryScreen(
                 } else {
                     // Timeline Groups
                     uiState.timelineGroups.forEach { group ->
-                        item {
+                        item(key = "header_${group.monthYearLabel}", contentType = "month_header") {
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -266,7 +266,11 @@ fun CinemaDiaryScreen(
                             }
                         }
 
-                        items(group.entries, key = { it.id }) { entry ->
+                        items(
+                            items = group.entries,
+                            key = { "entry_${it.id}" },
+                            contentType = { "diary_entry" }
+                        ) { entry ->
                             DiaryTimelineItemCard(
                                 entry = entry,
                                 onClick = {

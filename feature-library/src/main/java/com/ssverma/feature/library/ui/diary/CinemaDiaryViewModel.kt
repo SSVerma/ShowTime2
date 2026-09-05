@@ -19,11 +19,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -91,32 +93,37 @@ class CinemaDiaryViewModel @Inject constructor(
         )
     }
 
-    val uiState: StateFlow<CinemaDiaryUiState> = combine(
-        _activeFilter.flatMapLatest { filter ->
+    private val diaryTimelineFlow: Flow<Pair<Int, List<DiaryTimelineGroup>>> = _activeFilter
+        .flatMapLatest { filter ->
             getDiaryEntriesUseCase(filter)
-        },
+        }
+        .map { entries ->
+            val groups = entries
+                .groupBy { entry ->
+                    monthYearFormatter.format(Date(entry.loggedAt))
+                }
+                .map { (monthYear, groupEntries) ->
+                    DiaryTimelineGroup(
+                        monthYearLabel = monthYear,
+                        entries = groupEntries
+                    )
+                }
+            Pair(entries.size, groups)
+        }
+
+    val uiState: StateFlow<CinemaDiaryUiState> = combine(
+        diaryTimelineFlow,
         getDiarySummaryStatsUseCase(),
         _activeFilter,
         combine(_entryPendingEdit, _entryPendingDelete) { edit, delete -> Pair(edit, delete) },
         searchToLogStateFlow
-    ) { entries, stats, filter, (pendingEdit, pendingDelete), searchState ->
-        val groups = entries
-            .groupBy { entry ->
-                monthYearFormatter.format(Date(entry.loggedAt))
-            }
-            .map { (monthYear, groupEntries) ->
-                DiaryTimelineGroup(
-                    monthYearLabel = monthYear,
-                    entries = groupEntries
-                )
-            }
-
+    ) { (totalCount, groups), stats, filter, (pendingEdit, pendingDelete), searchState ->
         CinemaDiaryUiState(
             isLoading = false,
             stats = stats,
             activeFilter = filter,
             timelineGroups = groups,
-            totalEntriesCount = entries.size,
+            totalEntriesCount = totalCount,
             entryPendingEdit = pendingEdit,
             entryPendingDelete = pendingDelete,
             isSearchingToLog = searchState.isSearchingToLog,
