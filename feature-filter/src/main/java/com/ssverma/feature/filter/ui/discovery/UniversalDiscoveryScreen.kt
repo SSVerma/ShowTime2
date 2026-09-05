@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -94,6 +95,7 @@ fun UniversalDiscoveryScreen(
     navKey: UniversalDiscoveryNavKey? = null,
     openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
     onOpenCinemaDiary: (() -> Unit)? = null,
+    openDiscussions: ((mediaType: MediaType, id: Int, title: String, posterImageUrl: String?, backdropImageUrl: String?) -> Unit)? = null,
     viewModel: UniversalDiscoveryViewModel = hiltViewModel()
 ) {
     LaunchedEffect(navKey) {
@@ -426,7 +428,10 @@ fun UniversalDiscoveryScreen(
                         }
                     }
 
-                    items(uiState.items, key = { "${it.mediaType}_${it.id}" }) { item ->
+                    itemsIndexed(
+                        items = uiState.items,
+                        key = { index, item -> "${item.mediaType}_${item.id}_$index" }
+                    ) { _, item ->
                         UniversalMediaCard(
                             item = item,
                             isGridView = uiState.isGridView,
@@ -440,22 +445,30 @@ fun UniversalDiscoveryScreen(
                             onToggleWatchlist = { viewModel.toggleWatchlist(item) },
                             onToggleFavorite = { viewModel.toggleFavorite(item) },
                             onToggleWatched = { viewModel.toggleWatchHistory(item) },
-                            onLogToDiary = onOpenCinemaDiary,
                             onCustomListClick = {
                                 val mediaTypeStr =
                                     if (item.mediaType == MediaType.Movie) "movie" else "tv"
                                 openLibraryPage(
                                     LibraryHomeNavKey(
                                         initialTab = LibraryTabDestination.CustomLists,
-                                        initialMediaType = mediaTypeStr
+                                        initialMediaType = mediaTypeStr,
+                                        openCreateCustomList = true,
+                                        attachMediaId = item.id,
+                                        attachMediaType = mediaTypeStr,
+                                        attachMediaTitle = item.title,
+                                        attachMediaPosterUrl = item.posterImageUrl
                                     )
                                 )
                             },
-                            onOpenDiscussions = {
-                                if (item.mediaType == MediaType.Movie) {
-                                    onOpenMovieDetails(item.id)
-                                } else {
-                                    onOpenTvShowDetails(item.id)
+                            onOpenDiscussions = openDiscussions?.let { action ->
+                                {
+                                    action(
+                                        item.mediaType,
+                                        item.id,
+                                        item.title,
+                                        item.posterImageUrl,
+                                        item.backdropImageUrl
+                                    )
                                 }
                             },
                             onShare = {

@@ -39,7 +39,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -232,6 +236,7 @@ fun MediaCardOverflowAction(
         )
 
         val scrollState = rememberScrollState()
+        val scrollbarColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         LaunchedEffect(expanded) {
             if (expanded) {
                 scrollState.scrollTo(0)
@@ -251,8 +256,26 @@ fun MediaCardOverflowAction(
                 MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
             ),
             modifier = Modifier
-                .widthIn(min = 220.dp, max = 280.dp)
-                .heightIn(max = 380.dp),
+                .widthIn(min = 230.dp, max = 290.dp)
+                .heightIn(max = 420.dp)
+                .drawWithContent {
+                    drawContent()
+                    if (scrollState.maxValue > 0) {
+                        val viewHeight = size.height
+                        val totalHeight = scrollState.maxValue + viewHeight
+                        val scrollBarHeight =
+                            (viewHeight * (viewHeight / totalHeight)).coerceAtLeast(28.dp.toPx())
+                        val scrollBarOffset =
+                            (scrollState.value.toFloat() / scrollState.maxValue) * (viewHeight - scrollBarHeight)
+
+                        drawRoundRect(
+                            color = scrollbarColor,
+                            topLeft = Offset(size.width - 5.dp.toPx(), scrollBarOffset),
+                            size = Size(3.dp.toPx(), scrollBarHeight),
+                            cornerRadius = CornerRadius(2.dp.toPx())
+                        )
+                    }
+                },
             content = menuContent
         )
     }

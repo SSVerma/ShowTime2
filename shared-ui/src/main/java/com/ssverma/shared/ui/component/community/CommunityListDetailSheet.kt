@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -383,7 +384,9 @@ fun CommunityListDetailSheet(
                     }
                 } else {
                     // Grid of Media Items in Curated List
-                    items(communityList.items, key = { "${it.mediaType}_${it.mediaId}" }) { item ->
+                    itemsIndexed(
+                        communityList.items,
+                        key = { index, item -> "${item.mediaType}_${item.mediaId}_$index" }) { _, item ->
                         CommunityCuratedGridItem(
                             item = item,
                             onClick = { onItemClick(item.mediaType, item.mediaId) }

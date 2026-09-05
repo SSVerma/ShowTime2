@@ -8,8 +8,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 
-val LocalNavigator = staticCompositionLocalOf<Navigator> {
-    error("No Navigator provided")
+val LocalNavigator = staticCompositionLocalOf<Navigator?> {
+    null
 }
 
 val LocalNavigationState = staticCompositionLocalOf<NavigationState> {

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -255,7 +256,9 @@ fun ChallengeDetailScreen(
 
                     // 4. Media Items
                     if (progress.challenge.targetMediaItems.isNotEmpty()) {
-                        items(displayedItems, key = { "${it.mediaType}_${it.id}" }) { item ->
+                        itemsIndexed(
+                            displayedItems,
+                            key = { index, item -> "${item.mediaType}_${item.id}_$index" }) { _, item ->
                             val isWatched = watchedIdSet.contains(item.id to item.mediaType)
 
                             ChallengeMediaListItem(

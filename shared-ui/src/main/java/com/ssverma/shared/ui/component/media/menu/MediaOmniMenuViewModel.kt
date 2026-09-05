@@ -3,8 +3,10 @@ package com.ssverma.shared.ui.component.media.menu
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.repository.LibraryRepository
+import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -12,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MediaOmniMenuViewModel @Inject constructor(
-    private val libraryRepository: LibraryRepository
+    private val libraryRepository: LibraryRepository,
+    private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase
 ) : ViewModel() {
 
     val customLists: Flow<List<CustomList>> = libraryRepository.getCustomListsFlow()
@@ -127,6 +130,16 @@ class MediaOmniMenuViewModel @Inject constructor(
                 )
                 onResult?.invoke(true)
             }
+        }
+    }
+
+    fun saveDiaryEntry(
+        entry: DiaryEntry,
+        onComplete: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            saveDiaryEntryUseCase(entry)
+            onComplete?.invoke()
         }
     }
 }

@@ -10,7 +10,12 @@ import kotlinx.serialization.Serializable
 data class LibraryHomeNavKey(
     val initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     val initialMediaType: String? = null,
-    val targetCustomListId: String? = null
+    val targetCustomListId: String? = null,
+    val openCreateCustomList: Boolean = false,
+    val attachMediaId: Int? = null,
+    val attachMediaType: String? = null,
+    val attachMediaTitle: String? = null,
+    val attachMediaPosterUrl: String? = null
 ) : NavKey, Parcelable {
     companion object {
         val Default = LibraryHomeNavKey()

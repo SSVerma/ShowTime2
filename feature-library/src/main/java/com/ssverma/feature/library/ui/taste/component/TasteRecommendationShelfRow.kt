@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Celebration
@@ -140,10 +141,10 @@ fun TasteRecommendationShelfRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(
+            itemsIndexed(
                 items = shelf.items,
-                key = { "${it.mediaType}_${it.id}" }
-            ) { item ->
+                key = { index, it -> "${it.mediaType}_${it.id}_$index" }
+            ) { _, item ->
                 UniversalMediaCard(
                     item = item,
                     onClick = { onMediaClick(item) },

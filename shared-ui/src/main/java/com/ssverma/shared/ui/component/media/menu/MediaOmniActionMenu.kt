@@ -1,6 +1,17 @@
 package com.ssverma.shared.ui.component.media.menu
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Comment
 import androidx.compose.material.icons.rounded.Bookmark
@@ -14,24 +25,42 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
+import com.ssverma.core.navigation.nav3.LocalNavigator
+import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
+import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
+
+private data class QuickActionItem(
+    val label: String,
+    val icon: ImageVector,
+    val onClick: () -> Unit
+)
 
 @Composable
 fun MediaOmniActionMenu(
@@ -62,7 +91,9 @@ fun MediaOmniActionMenu(
     viewModel: MediaOmniMenuViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val navigator = LocalNavigator.current
     var isMenuExpanded by remember { mutableStateOf(false) }
+    var showLogDialog by remember { mutableStateOf(false) }
 
     val effectiveInWatchlist = isInWatchlist
         ?: viewModel.isInWatchlist(mediaId).collectAsState(initial = false).value
@@ -73,14 +104,98 @@ fun MediaOmniActionMenu(
     val effectiveActionActive = isActionActive
         ?: viewModel.isMediaActionActive(mediaId).collectAsState(initial = false).value
 
-    val hasTrackingSection = config.showWatchlist || config.showWatched || config.showFavorite
-    val hasLoggingSection = (config.showDiaryLog && onLogToDiary != null) || config.showCustomList
-    val hasSocialSection = (config.showDiscussions && onOpenDiscussions != null) || config.showShare
+    val canOpenDiscussions =
+        config.showDiscussions && (onOpenDiscussions != null || navigator != null)
+    val canLogToDiary = config.showDiaryLog
+    val canShare = config.showShare
 
-    if (!hasTrackingSection && !hasLoggingSection && !hasSocialSection) return
+    val hasTrackingSection = config.showWatchlist || config.showWatched || config.showFavorite
+    val hasCustomListSection = config.showCustomList
+    val hasQuickActionsSection = canOpenDiscussions || canLogToDiary || canShare
+
+    if (!hasTrackingSection && !hasCustomListSection && !hasQuickActionsSection) return
 
     val viewInLibraryText = stringResource(R.string.media_menu_view_in_library)
     val mediaTypeStr = if (mediaType == MediaType.Movie) "movie" else "tv"
+
+    val quickActionTint = MaterialTheme.colorScheme.primary
+    val quickActionContainer = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+
+    val quickActions = buildList {
+        if (canOpenDiscussions) {
+            add(
+                QuickActionItem(
+                    label = stringResource(R.string.media_menu_quick_discuss),
+                    icon = Icons.AutoMirrored.Rounded.Comment,
+                    onClick = {
+                        isMenuExpanded = false
+                        if (onOpenDiscussions != null) {
+                            onOpenDiscussions()
+                        } else if (navigator != null) {
+                            if (mediaType == MediaType.Movie) {
+                                navigator.navigate(
+                                    MovieDiscussionsNavKey(
+                                        movieId = mediaId,
+                                        movieTitle = title,
+                                        posterImageUrl = posterImageUrl,
+                                        backdropImageUrl = backdropImageUrl
+                                    )
+                                )
+                            } else {
+                                navigator.navigate(
+                                    TvShowDiscussionsNavKey(
+                                        tvShowId = mediaId,
+                                        tvShowTitle = title,
+                                        posterImageUrl = posterImageUrl,
+                                        backdropImageUrl = backdropImageUrl
+                                    )
+                                )
+                            }
+                        }
+                    }
+                )
+            )
+        }
+
+        if (canLogToDiary) {
+            add(
+                QuickActionItem(
+                    label = stringResource(R.string.media_menu_quick_diary),
+                    icon = Icons.Rounded.EditCalendar,
+                    onClick = {
+                        isMenuExpanded = false
+                        if (onLogToDiary != null) {
+                            onLogToDiary()
+                        } else {
+                            showLogDialog = true
+                        }
+                    }
+                )
+            )
+        }
+
+        if (canShare) {
+            add(
+                QuickActionItem(
+                    label = stringResource(R.string.share),
+                    icon = Icons.Rounded.Share,
+                    onClick = {
+                        isMenuExpanded = false
+                        if (onShare != null) {
+                            onShare()
+                        } else {
+                            val tmdbType = if (mediaType == MediaType.Movie) "movie" else "tv"
+                            with(IntentDispatcher) {
+                                context.dispatchShareTextIntent(
+                                    "$title\nhttps://www.themoviedb.org/$tmdbType/$mediaId"
+                                )
+                            }
+                        }
+                    }
+                )
+            )
+        }
+    }
 
     MediaCardOverflowAction(
         expanded = isMenuExpanded,
@@ -90,7 +205,55 @@ fun MediaOmniActionMenu(
         isOverPoster = isOverPoster,
         modifier = modifier
     ) {
-        // Group 1: Core Library Tracking (Watchlist, Watched, Favorites)
+        // Group 1: Static Actions Bar (- - -)
+        if (quickActions.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                quickActions.forEach { action ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable(onClick = action.onClick)
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = quickActionContainer,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = action.icon,
+                                    contentDescription = action.label,
+                                    tint = quickActionTint,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = action.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+            )
+        }
+
+        // Group 2: Core Library Tracking (Watchlist, Watched, Favorites)
         if (hasTrackingSection) {
             if (config.showWatchlist) {
                 ExpressiveMenuItem(
@@ -223,92 +386,52 @@ fun MediaOmniActionMenu(
             }
         }
 
-        // Section Divider between Tracking and Logging
-        if (hasTrackingSection && (hasLoggingSection || hasSocialSection)) {
+        // Section Divider between Tracking and Custom Collections
+        if (hasTrackingSection && hasCustomListSection) {
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 4.dp),
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
             )
         }
 
-        // Group 2: Cinephile Logging & Custom Lists
-        if (hasLoggingSection) {
-            if (config.showDiaryLog && onLogToDiary != null) {
-                ExpressiveMenuItem(
-                    title = stringResource(R.string.media_card_action_log_diary),
-                    icon = Icons.Rounded.EditCalendar,
-                    iconTint = MaterialTheme.colorScheme.primary,
-                    isActive = false,
-                    onClick = {
-                        isMenuExpanded = false
-                        onLogToDiary()
-                    }
-                )
-            }
-
-            if (config.showCustomList) {
-                CustomListsMenuItems(
-                    mediaId = mediaId,
-                    mediaType = mediaType,
-                    title = title,
-                    posterImageUrl = posterImageUrl,
-                    backdropImageUrl = backdropImageUrl,
-                    voteAvg = voteAvg,
-                    customListsOverride = customLists,
-                    onToggleCustomListOverride = onToggleCustomList,
-                    onCustomListClick = onCustomListClick,
-                    onDismissMenu = { isMenuExpanded = false },
-                    onShowFeedback = onShowFeedback,
-                    viewModel = viewModel
-                )
-            }
-        }
-
-        // Section Divider between Logging and Social/Share
-        if (hasLoggingSection && hasSocialSection) {
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 4.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        // Group 3: Cinephile Custom Lists / Collections
+        if (hasCustomListSection) {
+            CustomListsMenuItems(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                backdropImageUrl = backdropImageUrl,
+                voteAvg = voteAvg,
+                customListsOverride = customLists,
+                onToggleCustomListOverride = onToggleCustomList,
+                onCustomListClick = onCustomListClick,
+                onDismissMenu = { isMenuExpanded = false },
+                onShowFeedback = onShowFeedback,
+                viewModel = viewModel
             )
         }
+    }
 
-        // Group 3: Community Discussions & Social Share
-        if (hasSocialSection) {
-            if (config.showDiscussions && onOpenDiscussions != null) {
-                ExpressiveMenuItem(
-                    title = stringResource(R.string.media_menu_discussions),
-                    icon = Icons.AutoMirrored.Rounded.Comment,
-                    iconTint = MaterialTheme.colorScheme.primary,
-                    isActive = false,
-                    onClick = {
-                        isMenuExpanded = false
-                        onOpenDiscussions()
-                    }
-                )
+    if (showLogDialog) {
+        LogAndRateDialog(
+            mediaId = mediaId,
+            mediaType = mediaType,
+            title = title,
+            posterImageUrl = posterImageUrl,
+            backdropImageUrl = backdropImageUrl,
+            releaseDate = releaseDate,
+            tmdbRating = voteAvg,
+            onDismiss = { showLogDialog = false },
+            onSave = { entry ->
+                showLogDialog = false
+                viewModel.saveDiaryEntry(entry)
+                val feedbackMsg = context.getString(R.string.media_menu_diary_logged_success, title)
+                val viewInDiaryText = context.getString(R.string.media_menu_view_in_diary)
+                val destination = LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
+                onShowFeedback?.invoke(feedbackMsg, viewInDiaryText, destination)
             }
-
-            if (config.showShare) {
-                ExpressiveMenuItem(
-                    title = stringResource(R.string.share),
-                    icon = Icons.Rounded.Share,
-                    iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    isActive = false,
-                    onClick = {
-                        isMenuExpanded = false
-                        if (onShare != null) {
-                            onShare()
-                        } else {
-                            val tmdbType = if (mediaType == MediaType.Movie) "movie" else "tv"
-                            with(IntentDispatcher) {
-                                context.dispatchShareTextIntent(
-                                    "$title\nhttps://www.themoviedb.org/$tmdbType/$mediaId"
-                                )
-                            }
-                        }
-                    }
-                )
-            }
-        }
+        )
     }
 }
 
@@ -344,6 +467,10 @@ private fun CustomListsMenuItems(
             )
         }
     }
+
+    val navigator = LocalNavigator.current
+    val canHandleNewCollection = onCustomListClick != null || navigator != null
+    val mediaTypeStr = if (mediaType == MediaType.Movie) "movie" else "tv"
 
     if (options.isNotEmpty()) {
         options.forEach { option ->
@@ -386,7 +513,17 @@ private fun CustomListsMenuItems(
             )
         }
 
-        if (onCustomListClick != null) {
+        val targetNavKey = LibraryHomeNavKey(
+            initialTab = LibraryTabDestination.CustomLists,
+            initialMediaType = mediaTypeStr,
+            openCreateCustomList = true,
+            attachMediaId = mediaId,
+            attachMediaType = mediaTypeStr,
+            attachMediaTitle = title,
+            attachMediaPosterUrl = posterImageUrl
+        )
+
+        if (canHandleNewCollection) {
             ExpressiveMenuItem(
                 title = stringResource(R.string.media_menu_new_collection),
                 icon = Icons.Rounded.CreateNewFolder,
@@ -394,11 +531,24 @@ private fun CustomListsMenuItems(
                 isActive = false,
                 onClick = {
                     onDismissMenu()
-                    onCustomListClick()
+                    if (onCustomListClick != null) {
+                        onCustomListClick()
+                    } else if (navigator != null) {
+                        navigator.navigate(targetNavKey)
+                    }
                 }
             )
         }
-    } else if (onCustomListClick != null) {
+    } else if (canHandleNewCollection) {
+        val targetNavKey = LibraryHomeNavKey(
+            initialTab = LibraryTabDestination.CustomLists,
+            initialMediaType = mediaTypeStr,
+            openCreateCustomList = true,
+            attachMediaId = mediaId,
+            attachMediaType = mediaTypeStr,
+            attachMediaTitle = title,
+            attachMediaPosterUrl = posterImageUrl
+        )
         ExpressiveMenuItem(
             title = stringResource(R.string.media_menu_add_to_collection),
             icon = Icons.Rounded.FolderSpecial,
@@ -406,7 +556,11 @@ private fun CustomListsMenuItems(
             isActive = false,
             onClick = {
                 onDismissMenu()
-                onCustomListClick()
+                if (onCustomListClick != null) {
+                    onCustomListClick()
+                } else if (navigator != null) {
+                    navigator.navigate(targetNavKey)
+                }
             }
         )
     }

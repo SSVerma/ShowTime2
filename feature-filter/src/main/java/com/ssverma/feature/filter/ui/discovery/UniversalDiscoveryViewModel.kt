@@ -234,11 +234,12 @@ class UniversalDiscoveryViewModel @Inject constructor(
 
             when (result) {
                 is Result.Success -> {
+                    val distinctItems = result.data.distinctBy { "${it.mediaType}_${it.id}" }
                     _uiState.update {
                         it.copy(
-                            items = result.data,
+                            items = distinctItems,
                             isLoading = false,
-                            hasReachedEnd = result.data.isEmpty()
+                            hasReachedEnd = distinctItems.isEmpty()
                         )
                     }
                 }
@@ -272,9 +273,13 @@ class UniversalDiscoveryViewModel @Inject constructor(
                         }
                     } else {
                         currentPage = nextPage
-                        _uiState.update {
-                            it.copy(
-                                items = it.items + result.data,
+                        _uiState.update { current ->
+                            val existingKeys =
+                                current.items.map { "${it.mediaType}_${it.id}" }.toHashSet()
+                            val uniqueNewItems =
+                                result.data.filter { existingKeys.add("${it.mediaType}_${it.id}") }
+                            current.copy(
+                                items = current.items + uniqueNewItems,
                                 isLoadingMore = false
                             )
                         }

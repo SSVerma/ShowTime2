@@ -253,4 +253,19 @@
     <string name="media_menu_added_to_list">Added to %1$s</string>
     <string name="media_menu_removed_from_list">Removed from %1$s</string>
     <string name="media_menu_new_collection">+ New Collection</string>
+    <string name="media_menu_quick_discuss">Discuss</string>
+    <string name="media_menu_quick_diary">Diary</string>
+    <string name="media_menu_diary_logged_success">Logged \"%1$s\" to Cinema Diary</string>
+    <string name="media_menu_view_in_diary">View in Diary</string>
+    <string name="media_menu_collection_created_and_added">Created \"%1$s\" and added \"%2$s\"</string>
+
+    <!-- Discussion Badges & Quotes -->
+    <string name="discussion_badge_episode">EPISODE S%1$dE%2$d</string>
+    <string name="discussion_badge_tv">TV SHOW</string>
+    <string name="discussion_badge_movie">MOVIE</string>
+    <string name="discussion_comment_quote">\"%1$s\"</string>
+
+    <!-- General Media Types -->
+    <string name="media_type_movie">Movie</string>
+    <string name="media_type_tv">TV Show</string>
 </resources>

@@ -11,6 +11,7 @@ import com.ssverma.feature.library.ui.home.component.LibraryBackupBannerState
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
 import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CloneCommunityListParams
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityListCategories
@@ -286,6 +287,28 @@ class LibraryHomeViewModel @Inject constructor(
     fun removeItemFromCustomList(listId: String, mediaId: Int) {
         viewModelScope.launch {
             libraryRepository.removeMediaFromCustomList(listId, mediaId)
+        }
+    }
+
+    fun addMediaToCustomList(
+        listId: String,
+        mediaId: Int,
+        mediaType: MediaType,
+        title: String,
+        posterImageUrl: String,
+        backdropImageUrl: String = "",
+        voteAvg: Float = 0f
+    ) {
+        viewModelScope.launch {
+            libraryRepository.addMediaToCustomList(
+                listId = listId,
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                backdropImageUrl = backdropImageUrl,
+                voteAvg = voteAvg
+            )
         }
     }
 

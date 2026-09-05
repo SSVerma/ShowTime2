@@ -10,11 +10,14 @@ import com.ssverma.feature.filter.ui.hub.WatchProviderHubScreen
 import com.ssverma.feature.filter.ui.hub.WatchProviderHubViewModel
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
+import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
+import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 
@@ -94,6 +97,27 @@ fun EntryProviderScope<NavKey>.filterEntries(
             onBackClick = { navigator.goBack() },
             onOpenMovieDetails = { movieId -> navigator.navigate(MovieDetailNavKey(movieId)) },
             onOpenTvShowDetails = { tvShowId -> navigator.navigate(TvShowDetailNavKey(tvShowId)) },
+            openDiscussions = { mediaType, id, title, posterImageUrl, backdropImageUrl ->
+                if (mediaType == MediaType.Movie) {
+                    navigator.navigate(
+                        MovieDiscussionsNavKey(
+                            movieId = id,
+                            movieTitle = title,
+                            posterImageUrl = posterImageUrl,
+                            backdropImageUrl = backdropImageUrl
+                        )
+                    )
+                } else {
+                    navigator.navigate(
+                        TvShowDiscussionsNavKey(
+                            tvShowId = id,
+                            tvShowTitle = title,
+                            posterImageUrl = posterImageUrl,
+                            backdropImageUrl = backdropImageUrl
+                        )
+                    )
+                }
+            },
             openLibraryPage = { libraryNavKey -> navigator.navigate(libraryNavKey) },
             onOpenCinemaDiary = { navigator.navigate(CinemaDiaryNavKey) }
         )

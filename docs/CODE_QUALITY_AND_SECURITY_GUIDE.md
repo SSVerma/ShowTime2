@@ -131,12 +131,16 @@ the checklist in this guide before being merged into development or release bran
 
 ### B. Named Arguments Standard
 
-* **Rule**: Always use named arguments when invoking composables, domain use-cases, repository
-  methods, and public functions with more than 1 argument.
+* **Strict Rule**: Wherever possible, always use named arguments when invoking composables, domain use-cases,
+  repository methods, data class constructors, and functions (especially those with more than 1 argument,
+  or with boolean/numeric/nullable parameters).
+* **Rationale**: Named arguments make call sites self-documenting, eliminate parameter transposition bugs
+  (such as accidentally swapping flags, dimensions, or IDs), and guarantee resilience against signature changes.
 * **Standard**:
   ```kotlin
   // ❌ FORBIDDEN / DISCOURAGED
   PlanOptionCard(product, true, false, { onSelect() })
+  Modifier.padding(16.dp, 8.dp)
 
   // ✅ CORRECT
   PlanOptionCard(
@@ -145,6 +149,7 @@ the checklist in this guide before being merged into development or release bran
       isBestValue = false,
       onClick = { onSelect() }
   )
+  Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
   ```
 
 ---
@@ -299,5 +304,6 @@ Before pushing any commit or opening a PR, run through this validation gate:
 - [ ] **Colors & Spacing**: Are there zero hardcoded `Color(0x...)` or raw un-tokenized `dp` values?
 - [ ] **Imports**: Are there zero wildcard imports (`*`) and zero unused imports?
 - [ ] **Lazy Lists**: Do all Lazy lists have explicit `key = { ... }` defined?
+- [ ] **Named Arguments**: Are named arguments used wherever possible across composable calls, function invocations, and constructor instantiations to maximize readability and eliminate parameter transposition bugs?
 - [ ] **Secrets**: Did any sensitive key or token leak into the commit diff?
 - [ ] **Device Test**: Did the APK install and run smoothly without UI jank or crash on device?

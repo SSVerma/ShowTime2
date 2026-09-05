@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -382,7 +383,9 @@ fun CreateChallengeBottomSheet(
                     contentPadding = PaddingValues(horizontal = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(selectedTitles, key = { "${it.mediaType}_${it.id}" }) { item ->
+                    itemsIndexed(
+                        selectedTitles,
+                        key = { index, item -> "${item.mediaType}_${item.id}_$index" }) { _, item ->
                         Surface(
                             shape = RoundedCornerShape(10.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),

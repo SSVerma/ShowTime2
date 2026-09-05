@@ -39,7 +39,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -184,6 +186,11 @@ fun LibraryScreen(
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
+    openCreateCustomList: Boolean = false,
+    attachMediaId: Int? = null,
+    attachMediaType: String? = null,
+    attachMediaTitle: String? = null,
+    attachMediaPosterUrl: String? = null,
     viewModel: LibraryHomeViewModel = hiltViewModel()
 ) {
     val watchlistItems by viewModel.watchlistItems.collectAsState()
@@ -324,12 +331,13 @@ fun LibraryScreen(
     var hasHandledInitialArgs by rememberSaveable(
         initialTab,
         initialMediaType,
-        targetCustomListId
+        targetCustomListId,
+        openCreateCustomList
     ) {
         mutableStateOf(false)
     }
 
-    LaunchedEffect(initialTab, initialMediaType, targetCustomListId) {
+    LaunchedEffect(initialTab, initialMediaType, targetCustomListId, openCreateCustomList) {
         if (!hasHandledInitialArgs) {
             hasHandledInitialArgs = true
             val targetPage = when (initialTab) {
@@ -342,6 +350,10 @@ fun LibraryScreen(
             if (targetPage in 0 until tabs.size && (targetPage != 0 || targetPage != pagerState.currentPage)) {
                 pagerState.scrollToPage(targetPage)
                 viewModel.setSelectedTabIndex(targetPage)
+            }
+
+            if (openCreateCustomList) {
+                viewModel.onAttemptCreateList()
             }
 
             val initialFilter = when (initialMediaType?.lowercase()) {
@@ -717,15 +729,37 @@ fun LibraryScreen(
             onDismiss = { viewModel.dismissCreateListDialog() },
             onCreate = { title, desc ->
                 viewModel.createCustomList(title, desc) { id ->
+                    if (attachMediaId != null && attachMediaType != null) {
+                        viewModel.addMediaToCustomList(
+                            listId = id,
+                            mediaId = attachMediaId,
+                            mediaType = if (attachMediaType.equals(
+                                    "tv",
+                                    ignoreCase = true
+                                )
+                            ) MediaType.Tv else MediaType.Movie,
+                            title = attachMediaTitle.orEmpty(),
+                            posterImageUrl = attachMediaPosterUrl.orEmpty()
+                        )
+                    }
                     coroutineScope.launch {
                         if (pagerState.currentPage != 3) {
                             pagerState.animateScrollToPage(3)
                         }
-                        snackbarHostState.showImmediateSnackbar(
-                            message = context.getString(
+                        val successMessage = if (attachMediaTitle != null) {
+                            context.getString(
+                                SharedR.string.media_menu_collection_created_and_added,
+                                title,
+                                attachMediaTitle
+                            )
+                        } else {
+                            context.getString(
                                 SharedR.string.list_created_success,
                                 title
                             )
+                        }
+                        snackbarHostState.showImmediateSnackbar(
+                            message = successMessage
                         )
                     }
                 }
@@ -1500,11 +1534,11 @@ private fun MediaCollectionTabContent(
                         }
                     }
                 } else {
-                    items(
+                    itemsIndexed(
                         items = items,
-                        key = { "${it.mediaType}_${it.mediaId}" },
-                        contentType = { "saved_media" }
-                    ) { item ->
+                        key = { index, item -> "${item.mediaType}_${item.mediaId}_$index" },
+                        contentType = { _, _ -> "saved_media" }
+                    ) { _, item ->
                         val badgeScale = remember { Animatable(1f) }
                         val haptic = LocalHapticFeedback.current
                         val coroutineScope = rememberCoroutineScope()
@@ -2427,10 +2461,10 @@ private fun CustomListDetailSheet(
                         .weight(1f, fill = false)
                         .padding(bottom = 32.dp)
                 ) {
-                    items(
+                    itemsIndexed(
                         items = customList.items,
-                        key = { "${it.mediaType}_${it.mediaId}" }
-                    ) { item ->
+                        key = { index, item -> "${item.mediaType}_${item.mediaId}_$index" }
+                    ) { _, item ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -2478,7 +2512,11 @@ private fun CustomListDetailSheet(
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = if (item.mediaType == MediaType.Tv) "TV Show" else "Movie",
+                                        text = if (item.mediaType == MediaType.Tv) {
+                                            stringResource(id = SharedR.string.media_type_tv)
+                                        } else {
+                                            stringResource(id = SharedR.string.media_type_movie)
+                                        },
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

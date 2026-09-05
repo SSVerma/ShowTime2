@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
@@ -85,9 +85,10 @@ fun LazyListScope.trendingDiscussionsShelf(
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(
-                        discussions,
-                        key = { "${it.mediaType}_${it.mediaId}_${it.seasonNumber}_${it.episodeNumber}" }) { item ->
+                    itemsIndexed(
+                        items = discussions,
+                        key = { index, item -> "${item.mediaType}_${item.mediaId}_${item.seasonNumber}_${item.episodeNumber}_$index" }
+                    ) { _, item ->
                         TrendingDiscussionCard(
                             discussion = item,
                             onClick = {
@@ -174,13 +175,27 @@ private fun TrendingDiscussionCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(6.dp),
+                        shape = RoundedCornerShape(size = 6.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     ) {
+                        val seasonNumber = discussion.seasonNumber
+                        val episodeNumber = discussion.episodeNumber
                         val badgeText = when {
-                            discussion.seasonNumber != null && discussion.episodeNumber != null -> "EPISODE S${discussion.seasonNumber}E${discussion.episodeNumber}"
-                            discussion.mediaType == MediaType.Tv -> "TV SHOW"
-                            else -> "MOVIE"
+                            seasonNumber != null && episodeNumber != null -> {
+                                stringResource(
+                                    id = R.string.discussion_badge_episode,
+                                    seasonNumber,
+                                    episodeNumber
+                                )
+                            }
+
+                            discussion.mediaType == MediaType.Tv -> {
+                                stringResource(id = R.string.discussion_badge_tv)
+                            }
+
+                            else -> {
+                                stringResource(id = R.string.discussion_badge_movie)
+                            }
                         }
                         Text(
                             text = badgeText,
@@ -192,7 +207,7 @@ private fun TrendingDiscussionCard(
                     }
 
                     Surface(
-                        shape = RoundedCornerShape(6.dp),
+                        shape = RoundedCornerShape(size = 6.dp),
                         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
                     ) {
                         Row(
@@ -207,7 +222,7 @@ private fun TrendingDiscussionCard(
                             )
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = "${discussion.discussionCount}",
+                                text = discussion.discussionCount.toString(),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -228,13 +243,17 @@ private fun TrendingDiscussionCard(
 
                 // Comment Snippet Bubble
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(size = 8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = discussion.latestCommentSnippet?.let { "\"$it\"" }
-                            ?: stringResource(id = R.string.join_the_discussion),
+                        text = discussion.latestCommentSnippet?.let {
+                            stringResource(
+                                id = R.string.discussion_comment_quote,
+                                it
+                            )
+                        } ?: stringResource(id = R.string.join_the_discussion),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,

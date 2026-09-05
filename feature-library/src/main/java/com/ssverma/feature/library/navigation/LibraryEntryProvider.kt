@@ -53,7 +53,12 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             initialTab = navKey.initialTab,
             initialMediaType = navKey.initialMediaType,
-            targetCustomListId = navKey.targetCustomListId
+            targetCustomListId = navKey.targetCustomListId,
+            openCreateCustomList = navKey.openCreateCustomList,
+            attachMediaId = navKey.attachMediaId,
+            attachMediaType = navKey.attachMediaType,
+            attachMediaTitle = navKey.attachMediaTitle,
+            attachMediaPosterUrl = navKey.attachMediaPosterUrl
         )
     }
 

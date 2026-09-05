@@ -17,6 +17,8 @@ dependencies {
     implementation(projects.coreDi)
     implementation(projects.coreNavigation)
     implementation(projects.featureLibraryNavigation)
+    implementation(projects.featureMovieNavigation)
+    implementation(projects.featureTvNavigation)
     implementation(projects.coreBilling)
     implementation(projects.coreBackup)
 
