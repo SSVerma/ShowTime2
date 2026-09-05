@@ -242,7 +242,17 @@ fun LogAndRateDialog(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
+                                        Text(
+                                            text = if (mediaType == MediaType.Tv) "TV Series" else "Movie",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                         if (releaseDate.isNotBlank()) {
+                                            Text(
+                                                text = "•",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
                                             Text(
                                                 text = releaseDate.take(4),
                                                 style = MaterialTheme.typography.bodySmall,

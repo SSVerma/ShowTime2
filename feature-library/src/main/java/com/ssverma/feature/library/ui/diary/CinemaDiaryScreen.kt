@@ -62,6 +62,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -71,7 +76,7 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.feature.library.ui.diary.component.DiaryStatsHeader
 import com.ssverma.feature.library.ui.diary.component.DiaryTimelineItemCard
-import com.ssverma.feature.library.ui.diary.component.LogMediaSearchBottomSheet
+import com.ssverma.feature.library.ui.diary.component.LogMediaSearchView
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
@@ -97,212 +102,226 @@ fun CinemaDiaryScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            ShowTimeTopAppBar(
-                title = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Cinema Diary",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Personal ratings & viewing log",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                onBackPressed = onBackClick,
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                ShowTimeTopAppBar(
+                    title = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Cinema Diary",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Personal ratings & viewing log",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    onBackPressed = onBackClick,
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        scrolledContainerColor = MaterialTheme.colorScheme.background
+                    )
                 )
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.onOpenLogSearch() },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp),
-                elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 4.dp,
-                    pressedElevation = 2.dp
-                ),
-                modifier = Modifier.height(42.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 14.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = "Log title to Cinema Diary",
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Log",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.background,
-        modifier = modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-    ) { paddingValues ->
-        if (uiState.isLoading) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
-                    top = paddingValues.calculateTopPadding() + 4.dp,
-                    bottom = paddingValues.calculateBottomPadding() + 24.dp,
-                    start = 16.dp,
-                    end = 16.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Header Stats
-                if (uiState.stats.totalLogged > 0) {
-                    item(key = "diary_stats_header", contentType = "header") {
-                        DiaryStatsHeader(
-                            stats = uiState.stats,
-                            onOpenTasteProfile = onOpenTasteProfile,
-                            onOpenWrapped = onOpenWrapped,
-                            onOpenChallenges = onOpenChallenges
-                        )
-                    }
-                }
-
-                // Filter Row
-                item(key = "diary_filters", contentType = "filters") {
-                    val filterScrollState = rememberScrollState()
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(filterScrollState)
-                            .padding(vertical = 4.dp)
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            floatingActionButton = {
+                if (!uiState.isSearchingToLog) {
+                    FloatingActionButton(
+                        onClick = { viewModel.onOpenLogSearch() },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 2.dp
+                        ),
+                        modifier = Modifier.height(42.dp)
                     ) {
-                        DiaryFilterType.entries.forEach { filter ->
-                            val (label, icon) = when (filter) {
-                                DiaryFilterType.ALL -> "All" to Icons.Rounded.AutoAwesome
-                                DiaryFilterType.MOVIES_ONLY -> "Movies" to Icons.Rounded.Movie
-                                DiaryFilterType.TV_ONLY -> "TV Shows" to Icons.Rounded.Tv
-                                DiaryFilterType.REWATCHES_ONLY -> "Rewatches" to Icons.Rounded.Replay
-                                DiaryFilterType.FIVE_STARS_ONLY -> "5-Stars" to Icons.Rounded.Star
-                            }
-                            val isSelected = uiState.activeFilter == filter
-
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { viewModel.setFilter(filter) },
-                                label = {
-                                    Text(
-                                        text = label,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = icon,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                },
-                                shape = RoundedCornerShape(20.dp),
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
-                                )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 14.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = "Log title to Cinema Diary",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Log",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
-
-                // Empty State
-                if (uiState.timelineGroups.isEmpty()) {
-                    item(key = "diary_empty_view", contentType = "empty") {
-                        DiaryEmptyView(
-                            activeFilter = uiState.activeFilter,
-                            onLogClick = { viewModel.onOpenLogSearch() }
-                        )
+            },
+            containerColor = MaterialTheme.colorScheme.background,
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+        ) { paddingValues ->
+            if (uiState.isLoading) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(
+                        top = paddingValues.calculateTopPadding() + 4.dp,
+                        bottom = paddingValues.calculateBottomPadding() + 24.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // Header Stats
+                    if (uiState.stats.totalLogged > 0) {
+                        item(key = "diary_stats_header", contentType = "header") {
+                            DiaryStatsHeader(
+                                stats = uiState.stats,
+                                onOpenTasteProfile = onOpenTasteProfile,
+                                onOpenWrapped = onOpenWrapped,
+                                onOpenChallenges = onOpenChallenges
+                            )
+                        }
                     }
-                } else {
-                    // Timeline Groups
-                    uiState.timelineGroups.forEach { group ->
-                        item(key = "header_${group.monthYearLabel}", contentType = "month_header") {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                            ) {
-                                Text(
-                                    text = group.monthYearLabel.uppercase(),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+
+                    // Filter Row
+                    item(key = "diary_filters", contentType = "filters") {
+                        val filterScrollState = rememberScrollState()
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(filterScrollState)
+                                .padding(vertical = 4.dp)
+                        ) {
+                            DiaryFilterType.entries.forEach { filter ->
+                                val (label, icon) = when (filter) {
+                                    DiaryFilterType.ALL -> "All" to Icons.Rounded.AutoAwesome
+                                    DiaryFilterType.MOVIES_ONLY -> "Movies" to Icons.Rounded.Movie
+                                    DiaryFilterType.TV_ONLY -> "TV Shows" to Icons.Rounded.Tv
+                                    DiaryFilterType.REWATCHES_ONLY -> "Rewatches" to Icons.Rounded.Replay
+                                    DiaryFilterType.FIVE_STARS_ONLY -> "5-Stars" to Icons.Rounded.Star
+                                }
+                                val isSelected = uiState.activeFilter == filter
+
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { viewModel.setFilter(filter) },
+                                    label = {
+                                        Text(
+                                            text = label,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                                    )
                                 )
                             }
                         }
+                    }
 
-                        items(
-                            items = group.entries,
-                            key = { "entry_${it.id}" },
-                            contentType = { "diary_entry" }
-                        ) { entry ->
-                            DiaryTimelineItemCard(
-                                entry = entry,
-                                onClick = {
-                                    if (entry.mediaType == MediaType.Tv) {
-                                        onOpenTvShowDetails(entry.mediaId)
-                                    } else {
-                                        onOpenMovieDetails(entry.mediaId)
-                                    }
-                                },
-                                onEdit = { viewModel.onEditEntry(entry) },
-                                onDelete = { viewModel.onRequestDeleteEntry(entry) },
-                                onShare = { shareDiaryEntry(context, entry) }
+                    // Empty State
+                    if (uiState.timelineGroups.isEmpty()) {
+                        item(key = "diary_empty_view", contentType = "empty") {
+                            DiaryEmptyView(
+                                activeFilter = uiState.activeFilter,
+                                onLogClick = { viewModel.onOpenLogSearch() }
                             )
+                        }
+                    } else {
+                        // Timeline Groups
+                        uiState.timelineGroups.forEach { group ->
+                            item(
+                                key = "header_${group.monthYearLabel}",
+                                contentType = "month_header"
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                ) {
+                                    Text(
+                                        text = group.monthYearLabel.uppercase(),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(
+                                            horizontal = 10.dp,
+                                            vertical = 4.dp
+                                        )
+                                    )
+                                }
+                            }
+
+                            items(
+                                items = group.entries,
+                                key = { "entry_${it.id}" },
+                                contentType = { "diary_entry" }
+                            ) { entry ->
+                                DiaryTimelineItemCard(
+                                    entry = entry,
+                                    onClick = {
+                                        if (entry.mediaType == MediaType.Tv) {
+                                            onOpenTvShowDetails(entry.mediaId)
+                                        } else {
+                                            onOpenMovieDetails(entry.mediaId)
+                                        }
+                                    },
+                                    onEdit = { viewModel.onEditEntry(entry) },
+                                    onDelete = { viewModel.onRequestDeleteEntry(entry) },
+                                    onShare = { shareDiaryEntry(context, entry) }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    // Search Bottom Sheet to Log Title
-    if (uiState.isSearchingToLog) {
-        LogMediaSearchBottomSheet(
-            searchQuery = uiState.mediaSearchQuery,
-            selectedFilter = uiState.mediaSearchFilter,
-            suggestions = uiState.mediaSearchSuggestions,
-            isSearching = uiState.isSearchingMedia,
-            onSearchQueryChange = viewModel::onSearchQueryChange,
-            onClearSearch = viewModel::onClearSearch,
-            onMediaSelected = viewModel::onSelectMediaToLog,
-            onDismiss = viewModel::onDismissLogSearch
-        )
+        // Full-Screen Search View to Log Title
+        AnimatedVisibility(
+            visible = uiState.isSearchingToLog,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 6 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 6 })
+        ) {
+            LogMediaSearchView(
+                searchQuery = uiState.mediaSearchQuery,
+                selectedFilter = uiState.mediaSearchFilter,
+                suggestions = uiState.mediaSearchSuggestions,
+                isSearching = uiState.isSearchingMedia,
+                onSearchQueryChange = viewModel::onSearchQueryChange,
+                onClearSearch = viewModel::onClearSearch,
+                onMediaSelected = viewModel::onSelectMediaToLog,
+                onDismiss = viewModel::onDismissLogSearch
+            )
+        }
     }
 
     // Direct In-Context Log Dialog for Selected Search Title
