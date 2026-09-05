@@ -3,7 +3,9 @@ package com.ssverma.shared.ui.component.media
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
+import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 
 fun MoviePreview.asUniversalMediaItem(): UniversalMediaItem {
@@ -33,6 +35,36 @@ fun TvShowPreview.asUniversalMediaItem(): UniversalMediaItem {
         voteCount = voteCount,
         releaseDate = displayFirstAirDate.orEmpty(),
         displayYear = displayYear
+    )
+}
+
+fun Movie.asUniversalMediaItem(): UniversalMediaItem {
+    return UniversalMediaItem(
+        id = id,
+        mediaType = MediaType.Movie,
+        title = title,
+        overview = overview,
+        posterImageUrl = posterImageUrl,
+        backdropImageUrl = backdropImageUrl,
+        voteAvg = voteAvg,
+        voteCount = voteCount,
+        releaseDate = displayReleaseDate.orEmpty(),
+        displayYear = releaseDate?.year?.toString().orEmpty()
+    )
+}
+
+fun TvShow.asUniversalMediaItem(): UniversalMediaItem {
+    return UniversalMediaItem(
+        id = id,
+        mediaType = MediaType.Tv,
+        title = title,
+        overview = overview,
+        posterImageUrl = posterImageUrl,
+        backdropImageUrl = backdropImageUrl,
+        voteAvg = voteAvg,
+        voteCount = voteCount,
+        releaseDate = displayFirstAirDate.orEmpty(),
+        displayYear = firstAirDate?.year?.toString().orEmpty()
     )
 }
 

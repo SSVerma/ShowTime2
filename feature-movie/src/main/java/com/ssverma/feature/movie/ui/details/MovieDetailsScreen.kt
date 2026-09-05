@@ -66,7 +66,9 @@ import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
-import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.shared.ui.component.media.MediaItemDefaults
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
@@ -471,6 +473,18 @@ fun MovieContent(
                         )
                         openMovieDetails(moviePreview.id)
                     },
+                    onShowFeedback = { message, actionLabel, destination ->
+                        coroutineScope.launch {
+                            val result = snackbarHostState.showImmediateSnackbar(
+                                message = message,
+                                actionLabel = actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                            }
+                        }
+                    },
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
                 )
             }
@@ -489,6 +503,18 @@ fun MovieContent(
                             )
                         )
                         openMovieDetails(moviePreview.id)
+                    },
+                    onShowFeedback = { message, actionLabel, destination ->
+                        coroutineScope.launch {
+                            val result = snackbarHostState.showImmediateSnackbar(
+                                message = message,
+                                actionLabel = actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                            }
+                        }
                     },
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
                 )
@@ -549,6 +575,7 @@ fun RelevantMoviesSection(
     movies: List<Movie>,
     @StringRes sectionTitleRes: Int,
     onMovieClick: (movie: Movie) -> Unit,
+    onShowFeedback: (message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier
 ) {
     HorizontalLazyListSection(
@@ -561,11 +588,12 @@ fun RelevantMoviesSection(
             )
         },
         itemContent = {
-            MediaItem(
-                title = it.title,
-                posterImageUrl = it.posterImageUrl,
-                modifier = Modifier.width(100.dp),
-                onClick = { onMovieClick(it) }
+            UniversalMediaCard(
+                item = it.asUniversalMediaItem(),
+                isGridView = true,
+                onShowFeedback = onShowFeedback,
+                onClick = { onMovieClick(it) },
+                modifier = Modifier.width(MediaItemDefaults.PosterWidth)
             )
         },
         hideIf = movies.isEmpty(),

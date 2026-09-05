@@ -76,7 +76,9 @@ import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
-import com.ssverma.shared.ui.component.media.MediaItem
+import com.ssverma.shared.ui.component.media.MediaItemDefaults
+import com.ssverma.shared.ui.component.media.UniversalMediaCard
+import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
@@ -528,6 +530,18 @@ private fun TvShowContent(
                         )
                         openTvShowDetails(tvShowPreview.id)
                     },
+                    onShowFeedback = { message, actionLabel, destination ->
+                        coroutineScope.launch {
+                            val result = snackbarHostState.showImmediateSnackbar(
+                                message = message,
+                                actionLabel = actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                            }
+                        }
+                    },
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
                 )
             }
@@ -547,6 +561,18 @@ private fun TvShowContent(
                             )
                         )
                         openTvShowDetails(tvShowPreview.id)
+                    },
+                    onShowFeedback = { message, actionLabel, destination ->
+                        coroutineScope.launch {
+                            val result = snackbarHostState.showImmediateSnackbar(
+                                message = message,
+                                actionLabel = actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                            }
+                        }
                     },
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
                 )
@@ -613,6 +639,7 @@ private fun SimilarTvShowsSection(
     tvShows: List<TvShow>,
     @StringRes sectionTitleRes: Int,
     onTvShowClick: (tvShow: TvShow) -> Unit,
+    onShowFeedback: (message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier
 ) {
     HorizontalLazyListSection(
@@ -625,13 +652,12 @@ private fun SimilarTvShowsSection(
             )
         },
         itemContent = {
-            MediaItem(
-                title = it.title,
-                posterImageUrl = it.posterImageUrl,
-                modifier = Modifier.width(100.dp),
-                onClick = {
-                    onTvShowClick(it)
-                }
+            UniversalMediaCard(
+                item = it.asUniversalMediaItem(),
+                isGridView = true,
+                onShowFeedback = onShowFeedback,
+                onClick = { onTvShowClick(it) },
+                modifier = Modifier.width(MediaItemDefaults.PosterWidth)
             )
         },
         hideIf = tvShows.isEmpty(),
