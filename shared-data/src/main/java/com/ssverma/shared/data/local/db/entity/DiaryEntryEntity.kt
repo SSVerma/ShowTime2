@@ -1,9 +1,16 @@
 package com.ssverma.shared.data.local.db.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "diary_entries")
+@Entity(
+    tableName = "diary_entries",
+    indices = [
+        Index(value = ["loggedAt"]),
+        Index(value = ["mediaId", "mediaType"])
+    ]
+)
 data class DiaryEntryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,

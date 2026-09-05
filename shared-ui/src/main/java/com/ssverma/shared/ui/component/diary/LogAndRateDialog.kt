@@ -21,12 +21,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.StarHalf
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
-import androidx.compose.material.icons.rounded.StarHalf
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -127,7 +127,8 @@ fun LogAndRateDialog(
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 6.dp,
+                tonalElevation = 0.dp,
+                shadowElevation = 8.dp,
                 modifier = modifier
                     .fillMaxWidth()
                     .clickable(
@@ -153,13 +154,13 @@ fun LogAndRateDialog(
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.primaryContainer,
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
                                 modifier = Modifier.size(36.dp)
                             ) {
                                 Icon(
                                     imageVector = if (mediaType == MediaType.Tv) Icons.Rounded.Tv else Icons.Rounded.Movie,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier
                                         .padding(8.dp)
                                         .size(20.dp)
@@ -201,7 +202,13 @@ fun LogAndRateDialog(
                         // Media preview snippet
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+                                    alpha = 0.5f
+                                )
+                            ),
+                            border = BorderStroke(
+                                0.5.dp,
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
                             ),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -299,7 +306,7 @@ fun LogAndRateDialog(
 
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
                             ) {
                                 Text(
                                     text = String.format(
@@ -321,10 +328,10 @@ fun LogAndRateDialog(
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                0.5.dp,
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
                             ),
-                            color = MaterialTheme.colorScheme.surface,
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -388,8 +395,16 @@ fun LogAndRateDialog(
                             maxLines = 5,
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+                                    alpha = 0.5f
+                                ),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+                                    alpha = 0.5f
+                                ),
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(
+                                    alpha = 0.35f
+                                )
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -462,7 +477,7 @@ private fun InteractiveStarRatingBar(
             val starValue = i.toFloat()
             val icon = when {
                 rating >= starValue -> Icons.Rounded.Star
-                rating >= starValue - 0.5f -> Icons.Rounded.StarHalf
+                rating >= starValue - 0.5f -> Icons.AutoMirrored.Rounded.StarHalf
                 else -> Icons.Rounded.StarBorder
             }
 
