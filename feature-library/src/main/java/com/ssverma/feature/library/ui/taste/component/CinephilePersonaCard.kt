@@ -32,8 +32,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.stats.CinephilePersona
 
 @Composable
@@ -90,7 +92,7 @@ fun CinephilePersonaCard(
                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                     ) {
                         Text(
-                            text = "YOUR CINEPHILE PERSONA",
+                            text = stringResource(R.string.taste_persona_badge),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -130,12 +132,12 @@ fun CinephilePersonaCard(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Share,
-                    contentDescription = "Share Profile",
+                    contentDescription = stringResource(R.string.taste_share_cd),
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Share Taste Card",
+                    text = stringResource(R.string.taste_share_card_action),
                     fontWeight = FontWeight.SemiBold
                 )
             }

@@ -1,45 +1,26 @@
 package com.ssverma.feature.library.ui.taste
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Movie
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -49,23 +30,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.feature.library.R
+import com.ssverma.feature.library.ui.diary.component.DiaryFilterRow
 import com.ssverma.feature.library.ui.taste.component.CinephilePersonaCard
 import com.ssverma.feature.library.ui.taste.component.TasteEraDistributionCard
 import com.ssverma.feature.library.ui.taste.component.TasteKeyMetricsRow
 import com.ssverma.feature.library.ui.taste.component.TasteRatingHistogram
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationShelfRow
+import com.ssverma.feature.library.ui.taste.component.TasteRecommendationsHeroCard
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.diary.DiaryFilterType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,13 +70,13 @@ fun TasteProfileScreen(
                 title = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Taste Profile & Picks",
+                            text = stringResource(R.string.taste_profile_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Your personal cinema stats & insights",
+                            text = stringResource(R.string.taste_profile_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -103,11 +86,13 @@ fun TasteProfileScreen(
                 actions = {
                     IconButton(onClick = {
                         val shareText = viewModel.getShareTasteText(uiState.stats)
-                        context.dispatchShareTextIntent(text = shareText)
+                        with(IntentDispatcher) {
+                            context.dispatchShareTextIntent(text = shareText)
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
-                            contentDescription = "Share Profile"
+                            contentDescription = stringResource(R.string.taste_share_cd)
                         )
                     }
                 },
@@ -133,9 +118,9 @@ fun TasteProfileScreen(
         ) {
             // Filter Chips Row
             item {
-                TasteFilterChipsRow(
-                    selectedFilter = uiState.selectedFilter,
-                    onFilterSelected = { viewModel.setFilter(it) },
+                DiaryFilterRow(
+                    activeFilter = uiState.selectedFilter,
+                    onFilterSelected = viewModel::setFilter,
                     modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
                 )
             }
@@ -164,7 +149,9 @@ fun TasteProfileScreen(
                         persona = uiState.stats.persona,
                         onShareClick = {
                             val shareText = viewModel.getShareTasteText(uiState.stats)
-                            context.dispatchShareTextIntent(text = shareText)
+                            with(IntentDispatcher) {
+                                context.dispatchShareTextIntent(text = shareText)
+                            }
                         },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                     )
@@ -199,158 +186,41 @@ fun TasteProfileScreen(
                 }
             }
 
-            // Recommendations Section Header
-            item {
-                Spacer(modifier = Modifier.height(14.dp))
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.AutoAwesome,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Tailored Recommendations",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Fresh picks based on your cinema taste",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { viewModel.refreshRecommendations() },
-                        enabled = !uiState.isRefreshingRecommendations
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Refresh,
-                            contentDescription = "Refresh Recommendations",
-                            tint = if (uiState.isRefreshingRecommendations)
-                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                            else MaterialTheme.colorScheme.primary
-                        )
-                    }
+            // Recommendations Hero Banner
+            if (uiState.recommendationShelves.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    TasteRecommendationsHeroCard(
+                        isRefreshing = uiState.isRefreshingRecommendations,
+                        onRefreshClick = viewModel::refreshRecommendations,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                AnimatedVisibility(
-                    visible = uiState.isRefreshingRecommendations,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .height(3.dp)
-                            .clip(RoundedCornerShape(1.5.dp)),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                // Recommendation Shelves
+                items(
+                    count = uiState.recommendationShelves.size,
+                    key = { uiState.recommendationShelves[it].id }
+                ) { index ->
+                    val shelf = uiState.recommendationShelves[index]
+                    TasteRecommendationShelfRow(
+                        shelf = shelf,
+                        onMediaClick = { mediaItem ->
+                            if (mediaItem.mediaType == MediaType.Movie) {
+                                onOpenMovieDetails(mediaItem.id)
+                            } else {
+                                onOpenTvShowDetails(mediaItem.id)
+                            }
+                        },
+                        modifier = Modifier.padding(vertical = 10.dp)
                     )
                 }
-            }
-
-            // Recommendation Shelves
-            items(
-                count = uiState.recommendationShelves.size,
-                key = { uiState.recommendationShelves[it].id }
-            ) { index ->
-                val shelf = uiState.recommendationShelves[index]
-                TasteRecommendationShelfRow(
-                    shelf = shelf,
-                    onMediaClick = { mediaItem ->
-                        if (mediaItem.mediaType == MediaType.Movie) {
-                            onOpenMovieDetails(mediaItem.id)
-                        } else {
-                            onOpenTvShowDetails(mediaItem.id)
-                        }
-                    },
-                    modifier = Modifier.padding(vertical = 12.dp)
-                )
             }
 
             item {
                 Spacer(modifier = Modifier.height(48.dp))
             }
-        }
-    }
-}
-
-
-@Composable
-private fun TasteFilterChipsRow(
-    selectedFilter: DiaryFilterType,
-    onFilterSelected: (DiaryFilterType) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val scrollState = rememberScrollState()
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(scrollState)
-            .padding(horizontal = 16.dp)
-    ) {
-        val filters = listOf(
-            Triple(DiaryFilterType.ALL, "All", Icons.Rounded.AutoAwesome),
-            Triple(DiaryFilterType.MOVIES_ONLY, "Movies", Icons.Rounded.Movie),
-            Triple(DiaryFilterType.TV_ONLY, "TV Shows", Icons.Rounded.Tv),
-            Triple(DiaryFilterType.REWATCHES_ONLY, "Rewatches", Icons.Rounded.Replay),
-            Triple(DiaryFilterType.FIVE_STARS_ONLY, "5-Stars", Icons.Rounded.Star)
-        )
-
-        filters.forEach { (filterType, label, icon) ->
-            val isSelected = selectedFilter == filterType
-            FilterChip(
-                selected = isSelected,
-                onClick = { onFilterSelected(filterType) },
-                label = {
-                    Text(
-                        text = label,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    labelColor = MaterialTheme.colorScheme.onSurface
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = MaterialTheme.colorScheme.outlineVariant,
-                    selectedBorderColor = MaterialTheme.colorScheme.primary,
-                    enabled = true,
-                    selected = isSelected
-                ),
-                shape = RoundedCornerShape(20.dp)
-            )
         }
     }
 }
@@ -387,7 +257,7 @@ private fun EmptyTasteProfileState(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Discover & Log to Unlock Your Taste Profile",
+                text = stringResource(R.string.taste_empty_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -397,7 +267,7 @@ private fun EmptyTasteProfileState(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Log ratings and reviews for movies & TV shows from their detail pages to generate your personalized cinephile persona, watch time analytics, and tailored recommendations.",
+                text = stringResource(R.string.taste_empty_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

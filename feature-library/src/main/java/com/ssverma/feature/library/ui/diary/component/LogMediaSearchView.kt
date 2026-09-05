@@ -63,7 +63,8 @@ import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
-import java.util.Locale
+import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
+import com.ssverma.shared.ui.component.media.ShowTimeMediaListCard
 
 @Composable
 fun LogMediaSearchView(
@@ -264,117 +265,33 @@ fun LogMediaSearchView(
                         .weight(1f)
                 ) {
                     items(suggestions, key = { "${it.mediaType}_${it.id}" }) { item ->
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
-                            border = BorderStroke(
-                                width = 0.5.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onMediaSelected(item) }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(10.dp)
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    modifier = Modifier.size(width = 44.dp, height = 64.dp)
-                                ) {
-                                    NetworkImage(
-                                        url = item.posterImageUrl.convertToTmdbPosterUrl(),
-                                        contentDescription = item.title,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
+                        ShowTimeMediaListCard(
+                            title = item.title,
+                            posterImageUrl = item.posterImageUrl.convertToTmdbPosterUrl(),
+                            onClick = { onMediaSelected(item) },
+                            cardHeight = 104.dp,
+                            topStartBadge = if (item.voteAvg > 0f) {
+                                { MediaCardRatingBadge(rating = item.voteAvg) }
+                            } else null,
+                            subtitle = {
+                                val typeLabel = if (item.mediaType == MediaType.Tv) {
+                                    stringResource(R.string.media_type_tv_short)
+                                } else {
+                                    stringResource(R.string.media_type_movie)
                                 }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = item.title,
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.SemiBold,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-
-                                    Spacer(modifier = Modifier.height(4.dp))
-
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Surface(
-                                            shape = RoundedCornerShape(4.dp),
-                                            color = MaterialTheme.colorScheme.surfaceVariant
-                                        ) {
-                                            Text(
-                                                text = if (item.mediaType == MediaType.Tv) {
-                                                    stringResource(R.string.media_type_tv_short)
-                                                } else {
-                                                    stringResource(R.string.media_type_movie)
-                                                },
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontWeight = FontWeight.Medium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.padding(
-                                                    horizontal = 4.dp,
-                                                    vertical = 1.dp
-                                                )
-                                            )
-                                        }
-
-                                        if (item.releaseYear.isNotBlank()) {
-                                            Text(
-                                                text = "•",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Text(
-                                                text = item.releaseYear,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-
-                                        if (item.voteAvg > 0f) {
-                                            Text(
-                                                text = "•",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Star,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(12.dp)
-                                                )
-                                                Text(
-                                                    text = String.format(
-                                                        Locale.getDefault(),
-                                                        "%.1f",
-                                                        item.voteAvg
-                                                    ),
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            }
-                                        }
-                                    }
+                                val meta = if (item.releaseYear.isNotBlank()) {
+                                    "$typeLabel • ${item.releaseYear}"
+                                } else {
+                                    typeLabel
                                 }
-                            }
-                        }
+                                Text(
+                                    text = meta,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            overview = item.overview.ifEmpty { null }
+                        )
                     }
                 }
             } else if (searchQuery.isNotBlank() && !isSearching) {

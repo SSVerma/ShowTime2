@@ -82,5 +82,10 @@
     <string name="vote_count_1000">1000+</string>
     <string name="vote_count_5000">5000+</string>
     <string name="no_items_found">No items found</string>
-
+    <string name="discover_and_browse">Discover &amp; Browse</string>
+    <string name="toggle_view">Toggle View</string>
+    <string name="roulette">Roulette</string>
+    <string name="empty_discovery_title">No titles found matching your criteria</string>
+    <string name="empty_discovery_desc">Try switching vibes, adjusting streaming filters, or changing decade.</string>
+    <string name="reset_filters">Reset Filters</string>
 </resources>

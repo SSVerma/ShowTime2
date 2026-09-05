@@ -35,8 +35,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,6 +47,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +55,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -61,16 +65,24 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.common.ui.region.RegionSelectionBottomSheet
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
+import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.component.scrolledBottomElevation
+import com.ssverma.core.ui.component.showImmediateSnackbar
+import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.ui.discovery.component.DiscoveryFilterSheet
 import com.ssverma.feature.filter.ui.discovery.component.QuickVibesRow
 import com.ssverma.feature.filter.ui.discovery.component.SpinTheReelDialog
 import com.ssverma.feature.filter.ui.discovery.component.StreamingFilterRow
 import com.ssverma.feature.filter.ui.discovery.component.UniversalMediaCard
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.ui.R as SharedUiR
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,6 +92,8 @@ fun UniversalDiscoveryScreen(
     onOpenTvShowDetails: (Int) -> Unit,
     modifier: Modifier = Modifier,
     navKey: UniversalDiscoveryNavKey? = null,
+    openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    onOpenCinemaDiary: (() -> Unit)? = null,
     viewModel: UniversalDiscoveryViewModel = hiltViewModel()
 ) {
     LaunchedEffect(navKey) {
@@ -88,6 +102,8 @@ fun UniversalDiscoveryScreen(
         }
     }
 
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val gridState = rememberLazyGridState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -96,8 +112,23 @@ fun UniversalDiscoveryScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-        viewModel.uiEffect.collect { message ->
-            snackbarHostState.showSnackbar(message = message, withDismissAction = true)
+        viewModel.uiEffect.collect { effect ->
+            when (effect) {
+                is UniversalDiscoveryUiEffect.ActionFeedback -> {
+                    coroutineScope.launch {
+                        val message = context.getString(effect.messageRes)
+                        val actionLabel = effect.actionLabelRes?.let { context.getString(it) }
+                        val result = snackbarHostState.showImmediateSnackbar(
+                            message = message,
+                            actionLabel = actionLabel,
+                            duration = SnackbarDuration.Short
+                        )
+                        if (result == SnackbarResult.ActionPerformed && effect.destination != null) {
+                            openLibraryPage(effect.destination)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -136,13 +167,13 @@ fun UniversalDiscoveryScreen(
                     .scrolledBottomElevation(isScrolled = isScrolled)
             ) {
                 ShowTimeTopAppBar(
-                    title = "Discover & Browse",
+                    title = stringResource(R.string.discover_and_browse),
                     onBackPressed = onBackClick,
                     actions = {
                         IconButton(onClick = { viewModel.toggleViewMode() }) {
                             Icon(
                                 imageVector = if (uiState.isGridView) Icons.AutoMirrored.Rounded.ViewList else Icons.Rounded.GridView,
-                                contentDescription = "Toggle View"
+                                contentDescription = stringResource(R.string.toggle_view)
                             )
                         }
                     },
@@ -185,7 +216,7 @@ fun UniversalDiscoveryScreen(
                 }
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { ShowTimeSnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.spinRoulette() },
@@ -200,12 +231,12 @@ fun UniversalDiscoveryScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Casino,
-                        contentDescription = "Roulette",
+                        contentDescription = stringResource(R.string.roulette),
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Roulette",
+                        text = stringResource(R.string.roulette),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -263,7 +294,7 @@ fun UniversalDiscoveryScreen(
                                 }
                             }
                         ) {
-                            Text("Movies")
+                            Text(stringResource(SharedUiR.string.movies))
                         }
 
                         SegmentedButton(
@@ -280,7 +311,7 @@ fun UniversalDiscoveryScreen(
                                 }
                             }
                         ) {
-                            Text("TV Shows")
+                            Text(stringResource(SharedUiR.string.tv_series))
                         }
                     }
 
@@ -300,21 +331,21 @@ fun UniversalDiscoveryScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "No titles found matching your criteria",
+                            text = stringResource(R.string.empty_discovery_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Try switching vibes, adjusting streaming filters, or changing decade.",
+                            text = stringResource(R.string.empty_discovery_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { viewModel.resetFilters() }) {
-                            Text("Reset Filters")
+                            Text(stringResource(R.string.reset_filters))
                         }
                     }
 
@@ -364,7 +395,7 @@ fun UniversalDiscoveryScreen(
                                         }
                                     }
                                 ) {
-                                    Text("Movies")
+                                    Text(stringResource(SharedUiR.string.movies))
                                 }
 
                                 SegmentedButton(
@@ -381,7 +412,7 @@ fun UniversalDiscoveryScreen(
                                         }
                                     }
                                 ) {
-                                    Text("TV Shows")
+                                    Text(stringResource(SharedUiR.string.tv_series))
                                 }
                             }
 
@@ -408,7 +439,51 @@ fun UniversalDiscoveryScreen(
                             },
                             onToggleWatchlist = { viewModel.toggleWatchlist(item) },
                             onToggleFavorite = { viewModel.toggleFavorite(item) },
-                            onToggleWatched = { viewModel.toggleWatchHistory(item) }
+                            onToggleWatched = { viewModel.toggleWatchHistory(item) },
+                            onLogToDiary = onOpenCinemaDiary,
+                            onCustomListClick = {
+                                val mediaTypeStr =
+                                    if (item.mediaType == MediaType.Movie) "movie" else "tv"
+                                openLibraryPage(
+                                    LibraryHomeNavKey(
+                                        initialTab = LibraryTabDestination.CustomLists,
+                                        initialMediaType = mediaTypeStr
+                                    )
+                                )
+                            },
+                            onOpenDiscussions = {
+                                if (item.mediaType == MediaType.Movie) {
+                                    onOpenMovieDetails(item.id)
+                                } else {
+                                    onOpenTvShowDetails(item.id)
+                                }
+                            },
+                            onShare = {
+                                val tmdbType =
+                                    if (item.mediaType == MediaType.Movie) "movie" else "tv"
+                                with(IntentDispatcher) {
+                                    context.dispatchShareTextIntent(
+                                        "${item.title}\nhttps://www.themoviedb.org/$tmdbType/${item.id}"
+                                    )
+                                }
+                            },
+                            onShowFeedback = { message, actionLabel, targetCustomListId ->
+                                coroutineScope.launch {
+                                    val result = snackbarHostState.showImmediateSnackbar(
+                                        message = message,
+                                        actionLabel = actionLabel,
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        openLibraryPage(
+                                            LibraryHomeNavKey(
+                                                initialTab = LibraryTabDestination.CustomLists,
+                                                targetCustomListId = targetCustomListId
+                                            )
+                                        )
+                                    }
+                                }
+                            }
                         )
                     }
 

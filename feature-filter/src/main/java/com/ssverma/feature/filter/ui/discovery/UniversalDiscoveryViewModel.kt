@@ -1,8 +1,11 @@
 package com.ssverma.feature.filter.ui.discovery
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.discovery.DiscoveryDecade
@@ -17,6 +20,7 @@ import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.repository.WatchProviderRepository
 import com.ssverma.shared.domain.usecase.discovery.GetRouletteSurpriseUseCase
 import com.ssverma.shared.domain.usecase.discovery.GetUniversalDiscoveryUseCase
+import com.ssverma.shared.ui.R as SharedUiR
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -32,6 +36,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed interface UniversalDiscoveryUiEffect {
+    data class ActionFeedback(
+        @StringRes val messageRes: Int,
+        @StringRes val actionLabelRes: Int? = null,
+        val destination: LibraryHomeNavKey? = null
+    ) : UniversalDiscoveryUiEffect
+}
+
 @HiltViewModel
 class UniversalDiscoveryViewModel @Inject constructor(
     private val getUniversalDiscoveryUseCase: GetUniversalDiscoveryUseCase,
@@ -46,8 +58,8 @@ class UniversalDiscoveryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(UniversalDiscoveryUiState())
     val uiState: StateFlow<UniversalDiscoveryUiState> = _uiState.asStateFlow()
 
-    private val _uiEffect = MutableSharedFlow<String>()
-    val uiEffect: SharedFlow<String> = _uiEffect.asSharedFlow()
+    private val _uiEffect = MutableSharedFlow<UniversalDiscoveryUiEffect>()
+    val uiEffect: SharedFlow<UniversalDiscoveryUiEffect> = _uiEffect.asSharedFlow()
 
     private var searchJob: Job? = null
     private var currentPage = 1
@@ -415,8 +427,23 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 releaseDate = item.releaseDate
             )
             updateItemInState(item.id) { it.copy(isFavorite = isFav) }
-            val message = if (isFav) "Added to Favorites" else "Removed from Favorites"
-            _uiEffect.emit(message)
+            val mediaTypeStr = if (item.mediaType == MediaType.Movie) "movie" else "tv"
+            _uiEffect.emit(
+                if (isFav) {
+                    UniversalDiscoveryUiEffect.ActionFeedback(
+                        messageRes = SharedUiR.string.media_menu_added_to_favorites,
+                        actionLabelRes = SharedUiR.string.media_menu_view_in_library,
+                        destination = LibraryHomeNavKey(
+                            initialTab = LibraryTabDestination.Favorites,
+                            initialMediaType = mediaTypeStr
+                        )
+                    )
+                } else {
+                    UniversalDiscoveryUiEffect.ActionFeedback(
+                        messageRes = SharedUiR.string.media_menu_removed_from_favorites
+                    )
+                }
+            )
         }
     }
 
@@ -432,8 +459,23 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 releaseDate = item.releaseDate
             )
             updateItemInState(item.id) { it.copy(isInWatchlist = inWatchlist) }
-            val message = if (inWatchlist) "Added to Watchlist" else "Removed from Watchlist"
-            _uiEffect.emit(message)
+            val mediaTypeStr = if (item.mediaType == MediaType.Movie) "movie" else "tv"
+            _uiEffect.emit(
+                if (inWatchlist) {
+                    UniversalDiscoveryUiEffect.ActionFeedback(
+                        messageRes = SharedUiR.string.media_menu_added_to_watchlist,
+                        actionLabelRes = SharedUiR.string.media_menu_view_in_library,
+                        destination = LibraryHomeNavKey(
+                            initialTab = LibraryTabDestination.Watchlist,
+                            initialMediaType = mediaTypeStr
+                        )
+                    )
+                } else {
+                    UniversalDiscoveryUiEffect.ActionFeedback(
+                        messageRes = SharedUiR.string.media_menu_removed_from_watchlist
+                    )
+                }
+            )
         }
     }
 
@@ -447,8 +489,23 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 voteAvg = item.voteAvg
             )
             updateItemInState(item.id) { it.copy(isWatched = watched) }
-            val message = if (watched) "Marked as Watched" else "Removed from Watched"
-            _uiEffect.emit(message)
+            val mediaTypeStr = if (item.mediaType == MediaType.Movie) "movie" else "tv"
+            _uiEffect.emit(
+                if (watched) {
+                    UniversalDiscoveryUiEffect.ActionFeedback(
+                        messageRes = SharedUiR.string.media_menu_marked_as_watched,
+                        actionLabelRes = SharedUiR.string.media_menu_view_in_library,
+                        destination = LibraryHomeNavKey(
+                            initialTab = LibraryTabDestination.History,
+                            initialMediaType = mediaTypeStr
+                        )
+                    )
+                } else {
+                    UniversalDiscoveryUiEffect.ActionFeedback(
+                        messageRes = SharedUiR.string.media_menu_removed_from_watched
+                    )
+                }
+            )
         }
     }
 

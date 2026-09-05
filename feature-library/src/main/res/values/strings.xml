@@ -158,4 +158,16 @@
     <string name="diary_share_rating">Personal Rating: %1$.1f / 5.0</string>
     <string name="diary_share_rewatch">(Rewatch)</string>
     <string name="diary_share_footer">Shared via ShowTime</string>
+
+    <!-- Taste Profile Recommendations -->
+    <string name="taste_hero_title">Tailored For You</string>
+    <string name="taste_hero_subtitle">Picks matched to your cinema taste</string>
+    <string name="taste_refresh_cd">Refresh recommendations</string>
+    <string name="taste_profile_title">Taste Profile &amp; Picks</string>
+    <string name="taste_profile_subtitle">Your personal cinema stats &amp; insights</string>
+    <string name="taste_share_cd">Share Profile</string>
+    <string name="taste_empty_title">Discover &amp; Log to Unlock Your Taste Profile</string>
+    <string name="taste_empty_desc">Log ratings and reviews for movies &amp; TV shows from their detail pages to generate your personalized cinephile persona, watch time analytics, and tailored recommendations.</string>
+    <string name="taste_persona_badge">YOUR CINEPHILE PERSONA</string>
+    <string name="taste_share_card_action">Share Taste Card</string>
 </resources>
