@@ -10,6 +10,7 @@ import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
+import com.ssverma.feature.movie.ui.game.CinemaGameScreen
 import com.ssverma.feature.movie.ui.details.MovieDetailsViewModel
 import com.ssverma.feature.movie.ui.details.MovieDiscussionsScreen
 import com.ssverma.feature.movie.ui.details.MovieDiscussionsViewModel
@@ -85,7 +86,7 @@ fun EntryProviderScope<NavKey>.movieEntries(
     }
 
     showTimeEntry<CinemaGameNavKey> {
-        com.ssverma.feature.movie.ui.game.CinemaGameScreen(
+        CinemaGameScreen(
             viewModel = hiltViewModel(),
             onBackPress = { navigator.goBack() }
         )
@@ -109,13 +110,13 @@ fun EntryProviderScope<NavKey>.movieEntries(
             openReviewsList = { movieId ->
                 navigator.navigate(MovieReviewsNavKey(movieId))
             },
-            openDiscussionsList = { movieId, movieTitle, posterImageUrl, backdropImageUrl ->
+            openDiscussionsList = { args ->
                 navigator.navigate(
                     MovieDiscussionsNavKey(
-                        movieId = movieId,
-                        movieTitle = movieTitle,
-                        posterImageUrl = posterImageUrl,
-                        backdropImageUrl = backdropImageUrl
+                        movieId = args.mediaId,
+                        movieTitle = args.title,
+                        posterImageUrl = args.posterImageUrl,
+                        backdropImageUrl = args.backdropImageUrl
                     )
                 )
             },

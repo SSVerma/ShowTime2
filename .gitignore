@@ -49,7 +49,7 @@ buildSrc/.gradle
 buildSrc/.kotlin
 
 .artifacts/
-config/
+/config/
 **/daily_polls_catalog.json
 
 # Private Development, Strategy, & Milestone Docs

@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
@@ -188,7 +189,7 @@ fun UniversalMediaCard(
             val typeLabel = if (item.mediaType == MediaType.Movie) {
                 stringResource(R.string.movie_badge)
             } else {
-                stringResource(R.string.tv_badge)
+                stringResource(R.string.media_type_tv_short)
             }
             if (yearText.isNotEmpty()) "$typeLabel • $yearText" else typeLabel
         } else {
@@ -198,7 +199,9 @@ fun UniversalMediaCard(
         Text(
             text = text,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 

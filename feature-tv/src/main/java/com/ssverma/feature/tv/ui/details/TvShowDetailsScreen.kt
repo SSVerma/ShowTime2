@@ -67,6 +67,7 @@ import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
@@ -102,7 +103,7 @@ fun TvShowDetailsScreen(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (tvShowId: Int) -> Unit,
-    openDiscussionsList: (tvShowId: Int, tvShowTitle: String?, posterImageUrl: String?, backdropImageUrl: String?) -> Unit = { _, _, _, _ -> },
+    openDiscussionsList: (DiscussionNavArgs) -> Unit = {},
     openPersonDetails: (Cast) -> Unit,
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
@@ -130,10 +131,13 @@ fun TvShowDetailsScreen(
                 openReviewsList = { openReviewsList(data.tvShow.id) },
                 openDiscussionsList = {
                     openDiscussionsList(
-                        data.tvShow.id,
-                        data.tvShow.title,
-                        data.tvShow.posterImageUrl,
-                        data.tvShow.backdropImageUrl
+                        DiscussionNavArgs(
+                            mediaType = MediaType.Tv,
+                            mediaId = data.tvShow.id,
+                            title = data.tvShow.title,
+                            posterImageUrl = data.tvShow.posterImageUrl,
+                            backdropImageUrl = data.tvShow.backdropImageUrl
+                        )
                     )
                 },
                 openYoutube = { videoId -> viewModel.openYoutubeApp(videoId = videoId) },

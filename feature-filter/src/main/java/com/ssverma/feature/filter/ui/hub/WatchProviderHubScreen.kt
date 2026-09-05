@@ -15,13 +15,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.core.ui.DriveCompose
+import com.ssverma.core.ui.DefaultCoreErrorIndicator
+import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.feature.filter.ui.hub.component.WatchProviderHubContent
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.TvDiscoverConfig
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
 import kotlinx.coroutines.launch
@@ -59,38 +61,23 @@ fun WatchProviderHubScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            DriveCompose(
-                uiState = uiState.hubContentState,
-                onRetry = { viewModel.fetchHubContent() },
-                loading = {
-                    WatchProviderHubContent(
-                        provider = uiState.provider,
-                        heroItems = emptyList(),
-                        newItems = emptyList(),
-                        upcomingItems = emptyList(),
-                        topRatedItems = emptyList(),
-                        genres = emptyList(),
-                        isMovieMode = uiState.isMovieMode,
-                        onToggleMode = viewModel::toggleMode,
-                        onMovieClick = {},
-                        onTvShowClick = {},
-                        onGenreClick = {},
-                        onBackClick = onBackClick,
-                        onMovieSeeAllClick = {},
-                        onTvSeeAllClick = {},
-                        onAdLoaded = viewModel::onCarouselNativeAdLoaded,
-                        source = source,
-                        isLoading = true
-                    )
-                }
-            ) { hubContent ->
+            val hubContentState = uiState.hubContentState
+            val currentContent = (hubContentState as? UiState.Success)?.data
+            val isLoading = hubContentState is UiState.Loading
+
+            if (hubContentState is UiState.Error && currentContent == null) {
+                DefaultCoreErrorIndicator(
+                    failure = hubContentState.failure as Failure.CoreFailure,
+                    onRetry = { viewModel.fetchHubContent() }
+                )
+            } else {
                 WatchProviderHubContent(
                     provider = uiState.provider,
-                    heroItems = hubContent.heroItems,
-                    newItems = hubContent.newItems,
-                    upcomingItems = hubContent.upcomingItems,
-                    topRatedItems = hubContent.topRatedItems,
-                    genres = hubContent.genres,
+                    heroItems = currentContent?.heroItems.orEmpty(),
+                    newItems = currentContent?.newItems.orEmpty(),
+                    upcomingItems = currentContent?.upcomingItems.orEmpty(),
+                    topRatedItems = currentContent?.topRatedItems.orEmpty(),
+                    genres = currentContent?.genres.orEmpty(),
                     isMovieMode = uiState.isMovieMode,
                     onToggleMode = viewModel::toggleMode,
                     onMovieClick = { movie -> onMovieClick(movie.id) },
@@ -117,7 +104,7 @@ fun WatchProviderHubScreen(
                             }
                         }
                     },
-                    isLoading = false
+                    isLoading = isLoading
                 )
             }
         }

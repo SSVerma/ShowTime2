@@ -19,19 +19,23 @@ fun TvShowDiscussionsScreen(
         discussions = discussions,
         currentUserId = null,
         onBackPressed = onBackPressed,
-        onPostComment = { content, isSpoiler, parentId, replyToAuthorName ->
+        onPostComment = { args ->
             viewModel.postComment(
-                content = content,
-                isSpoiler = isSpoiler,
-                parentId = parentId,
-                replyToAuthorName = replyToAuthorName
+                content = args.content,
+                isSpoiler = args.isSpoiler,
+                parentId = args.parentId,
+                replyToAuthorName = args.replyToAuthor
             )
         },
         onToggleUpvote = { commentId ->
             viewModel.toggleCommentUpvote(commentId)
         },
-        onEditComment = { commentId, newContent, isSpoiler ->
-            viewModel.editComment(commentId, newContent, isSpoiler)
+        onEditComment = { args ->
+            viewModel.editComment(
+                commentId = args.commentId,
+                newContent = args.newContent,
+                isSpoiler = args.isSpoiler
+            )
         },
         onReportComment = { commentId, reason ->
             viewModel.reportComment(commentId, reason)
@@ -56,19 +60,23 @@ fun TvEpisodeDiscussionsScreen(
         discussions = discussions,
         currentUserId = null,
         onBackPressed = onBackPressed,
-        onPostComment = { content, isSpoiler, parentId, replyToAuthorName ->
+        onPostComment = { args ->
             viewModel.postComment(
-                content = content,
-                isSpoiler = isSpoiler,
-                parentId = parentId,
-                replyToAuthorName = replyToAuthorName
+                content = args.content,
+                isSpoiler = args.isSpoiler,
+                parentId = args.parentId,
+                replyToAuthorName = args.replyToAuthor
             )
         },
         onToggleUpvote = { commentId ->
             viewModel.toggleCommentUpvote(commentId)
         },
-        onEditComment = { commentId, newContent, isSpoiler ->
-            viewModel.editComment(commentId, newContent, isSpoiler)
+        onEditComment = { args ->
+            viewModel.editComment(
+                commentId = args.commentId,
+                newContent = args.newContent,
+                isSpoiler = args.isSpoiler
+            )
         },
         onReportComment = { commentId, reason ->
             viewModel.reportComment(commentId, reason)

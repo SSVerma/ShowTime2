@@ -57,6 +57,7 @@ import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.ShareMediaUtils
@@ -91,7 +92,7 @@ fun MovieDetailsScreen(
     openImageShotsList: () -> Unit,
     openImageShot: (pageIndex: Int) -> Unit,
     openReviewsList: (movieId: Int) -> Unit,
-    openDiscussionsList: (movieId: Int, movieTitle: String?, posterImageUrl: String?, backdropImageUrl: String?) -> Unit = { _, _, _, _ -> },
+    openDiscussionsList: (DiscussionNavArgs) -> Unit = {},
     openPersonDetails: (Cast) -> Unit,
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
@@ -117,10 +118,13 @@ fun MovieDetailsScreen(
                 openReviewsList = { openReviewsList(data.movie.id) },
                 openDiscussionsList = {
                     openDiscussionsList(
-                        data.movie.id,
-                        data.movie.title,
-                        data.movie.posterImageUrl,
-                        data.movie.backdropImageUrl
+                        DiscussionNavArgs(
+                            mediaType = MediaType.Movie,
+                            mediaId = data.movie.id,
+                            title = data.movie.title,
+                            posterImageUrl = data.movie.posterImageUrl,
+                            backdropImageUrl = data.movie.backdropImageUrl
+                        )
                     )
                 },
                 openYoutube = { videoId ->

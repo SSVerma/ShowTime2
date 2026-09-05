@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
@@ -65,6 +64,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.region.RegionSelectionBottomSheet
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
@@ -80,7 +80,9 @@ import com.ssverma.feature.filter.ui.discovery.component.StreamingFilterRow
 import com.ssverma.feature.filter.ui.discovery.component.UniversalMediaCard
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import kotlinx.coroutines.launch
 import com.ssverma.shared.ui.R as SharedUiR
@@ -93,9 +95,9 @@ fun UniversalDiscoveryScreen(
     onOpenTvShowDetails: (Int) -> Unit,
     modifier: Modifier = Modifier,
     navKey: UniversalDiscoveryNavKey? = null,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    openLibraryPage: (NavKey) -> Unit = {},
     onOpenCinemaDiary: (() -> Unit)? = null,
-    openDiscussions: ((mediaType: MediaType, id: Int, title: String, posterImageUrl: String?, backdropImageUrl: String?) -> Unit)? = null,
+    openDiscussions: ((DiscussionNavArgs) -> Unit)? = null,
     viewModel: UniversalDiscoveryViewModel = hiltViewModel()
 ) {
     LaunchedEffect(navKey) {
@@ -449,7 +451,7 @@ fun UniversalDiscoveryScreen(
                                 val mediaTypeStr =
                                     if (item.mediaType == MediaType.Movie) "movie" else "tv"
                                 openLibraryPage(
-                                    LibraryHomeNavKey(
+                                    StandaloneLibraryNavKey(
                                         initialTab = LibraryTabDestination.CustomLists,
                                         initialMediaType = mediaTypeStr,
                                         openCreateCustomList = true,
@@ -463,11 +465,13 @@ fun UniversalDiscoveryScreen(
                             onOpenDiscussions = openDiscussions?.let { action ->
                                 {
                                     action(
-                                        item.mediaType,
-                                        item.id,
-                                        item.title,
-                                        item.posterImageUrl,
-                                        item.backdropImageUrl
+                                        DiscussionNavArgs(
+                                            mediaType = item.mediaType,
+                                            mediaId = item.id,
+                                            title = item.title,
+                                            posterImageUrl = item.posterImageUrl,
+                                            backdropImageUrl = item.backdropImageUrl
+                                        )
                                     )
                                 }
                             },

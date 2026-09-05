@@ -41,20 +41,13 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.community.TrendingDiscussion
 import com.ssverma.shared.ui.R
 
 fun LazyListScope.trendingDiscussionsShelf(
     discussions: List<TrendingDiscussion>,
-    onDiscussionClick: (
-        mediaType: MediaType,
-        mediaId: Int,
-        seasonNumber: Int?,
-        episodeNumber: Int?,
-        mediaTitle: String,
-        posterImageUrl: String?,
-        backdropImageUrl: String?
-    ) -> Unit
+    onDiscussionClick: (DiscussionNavArgs) -> Unit
 ) {
     if (discussions.isNotEmpty()) {
         item(key = "trending_discussions_shelf") {
@@ -93,13 +86,15 @@ fun LazyListScope.trendingDiscussionsShelf(
                             discussion = item,
                             onClick = {
                                 onDiscussionClick(
-                                    item.mediaType,
-                                    item.mediaId,
-                                    item.seasonNumber,
-                                    item.episodeNumber,
-                                    item.title,
-                                    item.posterImageUrl,
-                                    item.backdropImageUrl
+                                    DiscussionNavArgs(
+                                        mediaType = item.mediaType,
+                                        mediaId = item.mediaId,
+                                        title = item.title,
+                                        posterImageUrl = item.posterImageUrl,
+                                        backdropImageUrl = item.backdropImageUrl,
+                                        seasonNumber = item.seasonNumber,
+                                        episodeNumber = item.episodeNumber
+                                    )
                                 )
                             },
                             modifier = if (discussions.size == 1) {

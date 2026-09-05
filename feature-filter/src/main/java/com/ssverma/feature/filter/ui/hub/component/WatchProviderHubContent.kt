@@ -1,5 +1,6 @@
 package com.ssverma.feature.filter.ui.hub.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -121,13 +123,13 @@ fun WatchProviderHubContent(
     onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
 ) {
     val scrollState = rememberLazyListState()
-    val brandingColor = WatchProviderHubBranding.getBrandingColor(provider.providerId)
+    val brandingColor = WatchProviderHubBranding.getBrandingColor(providerId = provider.providerId)
     val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         // 1. Parallax Fixed Header (Cinematic Backdrop)
         ParallaxHeader(
@@ -146,7 +148,7 @@ fun WatchProviderHubContent(
         ) {
             // Parallax Spacing Spacer: positions brand logo smoothly across the backdrop
             item(key = "parallax_spacer") {
-                Spacer(modifier = Modifier.height(140.dp))
+                Spacer(modifier = Modifier.height(130.dp))
             }
 
             // Brand Identity Section with Movie / TV Switcher
@@ -160,10 +162,11 @@ fun WatchProviderHubContent(
                 )
             }
 
-            // Hero Pager Section ("Featured Originals")
+            // Hero Pager Section ("Featured Originals") with Home Page Carousel architecture
             item(key = "hero_pager") {
                 HeroPagerSection(
                     items = heroItems,
+                    isMovieMode = isMovieMode,
                     isLoading = isLoading,
                     onMovieClick = onMovieClick,
                     onTvShowClick = onTvShowClick,
@@ -176,7 +179,7 @@ fun WatchProviderHubContent(
             // Curated Row: New This Week
             item(key = "new_this_week") {
                 HubSectionRow(
-                    title = stringResource(SharedUiR.string.new_this_week),
+                    title = stringResource(id = SharedUiR.string.new_this_week),
                     items = newItems,
                     isLoading = isLoading,
                     onMovieClick = onMovieClick,
@@ -201,7 +204,7 @@ fun WatchProviderHubContent(
             // Curated Row: Upcoming
             item(key = "upcoming") {
                 HubSectionRow(
-                    title = stringResource(SharedUiR.string.upcoming),
+                    title = stringResource(id = SharedUiR.string.upcoming),
                     items = upcomingItems,
                     isLoading = isLoading,
                     onMovieClick = onMovieClick,
@@ -226,7 +229,7 @@ fun WatchProviderHubContent(
             // Curated Row: Top Rated (Hidden Gems)
             item(key = "top_rated") {
                 HubSectionRow(
-                    title = stringResource(SharedUiR.string.top_rated_gems),
+                    title = stringResource(id = SharedUiR.string.top_rated_gems),
                     items = topRatedItems,
                     isLoading = isLoading,
                     onMovieClick = onMovieClick,
@@ -261,7 +264,7 @@ fun WatchProviderHubContent(
             }
         }
 
-        // 3. Sticky Glass Top Bar
+        // 3. Sticky Glass Top Bar (fades in on scroll)
         StickyGlassBar(
             provider = provider,
             scrollState = scrollState,
@@ -303,79 +306,77 @@ private fun StickyGlassBar(
         label = "SurfaceAlpha"
     )
 
-    val backButtonContainerColor by androidx.compose.animation.animateColorAsState(
+    val backButtonContainerColor by animateColorAsState(
         targetValue = if (isScrolled) Color.Transparent else Color.Black.copy(alpha = 0.35f),
         animationSpec = tween(durationMillis = 250),
         label = "BackButtonContainerColor"
     )
 
-    val backButtonContentColor by androidx.compose.animation.animateColorAsState(
+    val backButtonContentColor by animateColorAsState(
         targetValue = if (isScrolled) MaterialTheme.colorScheme.onSurface else Color.White,
         animationSpec = tween(durationMillis = 250),
         label = "BackButtonContentColor"
     )
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = surfaceAlpha),
-            shadowElevation = elevation,
-            tonalElevation = if (isScrolled) 2.dp else 0.dp
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = surfaceAlpha),
+        shadowElevation = elevation,
+        tonalElevation = if (isScrolled) 2.dp else 0.dp
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-            ) {
-                CenterAlignedTopAppBar(
-                    title = {
-                        androidx.compose.animation.AnimatedVisibility(
-                            visible = isScrolled,
-                            enter = fadeIn(animationSpec = tween(220)),
-                            exit = fadeOut(animationSpec = tween(180))
+            CenterAlignedTopAppBar(
+                title = {
+                    AnimatedVisibility(
+                        visible = isScrolled,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 220)),
+                        exit = fadeOut(animationSpec = tween(durationMillis = 180))
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                WatchProviderLogo(
-                                    provider = provider,
-                                    onClick = { },
-                                    size = 28.dp,
-                                    enableSharedTransition = false,
-                                    modifier = Modifier.clip(CircleShape)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = provider.providerName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = onBackClick,
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = backButtonContainerColor,
-                                contentColor = backButtonContentColor
-                            ),
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(SharedUiR.string.close)
+                            WatchProviderLogo(
+                                provider = provider,
+                                onClick = { },
+                                size = 28.dp,
+                                enableSharedTransition = false,
+                                modifier = Modifier.clip(shape = CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = provider.providerName,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent
-                    )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = onBackClick,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = backButtonContainerColor,
+                            contentColor = backButtonContentColor
+                        ),
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(id = SharedUiR.string.close)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
                 )
-            }
+            )
         }
     }
 }
@@ -391,7 +392,7 @@ private fun ParallaxHeader(
     val backdropUrl = firstContent?.item?.backdropImageUrl.orEmpty()
 
     val density = LocalDensity.current
-    val headerHeight = 360.dp
+    val headerHeight = 380.dp
     val headerHeightPx = with(density) { headerHeight.toPx() }
 
     Box(
@@ -422,15 +423,16 @@ private fun ParallaxHeader(
             )
         }
 
-        // Darkened gradient overlay for smooth blend into background
+        // Cinematic multi-stop gradient overlay for smooth contrast and seamless blend
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.verticalGradient(
+                    brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.6f),
-                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.65f),
+                            Color.Black.copy(alpha = 0.25f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.75f),
                             MaterialTheme.colorScheme.background
                         ),
                         startY = 0f,
@@ -453,7 +455,7 @@ private fun BrandIdentitySection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = MaterialTheme.spacing.medium)
-            .padding(bottom = MaterialTheme.spacing.small),
+            .padding(bottom = MaterialTheme.spacing.medium),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WatchProviderLogo(
@@ -462,7 +464,7 @@ private fun BrandIdentitySection(
             size = 80.dp,
             enableSharedTransition = true,
             sharedContentKey = watchProviderSharedContentKey(
-                provider.providerId,
+                providerId = provider.providerId,
                 source = source
             ),
             modifier = Modifier
@@ -471,19 +473,19 @@ private fun BrandIdentitySection(
                     shape = CircleShape
                     clip = true
                 }
-                .background(Color.White, CircleShape)
+                .background(color = Color.White, shape = CircleShape)
                 .padding(3.dp)
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
         Text(
-            text = stringResource(SharedUiR.string.provider_universe, provider.providerName),
-            style = MaterialTheme.typography.titleLarge.copy(
-                letterSpacing = 2.sp,
-                lineHeight = 28.sp
+            text = stringResource(id = SharedUiR.string.provider_universe, provider.providerName),
+            style = MaterialTheme.typography.headlineSmall.copy(
+                letterSpacing = 2.5.sp,
+                lineHeight = 32.sp
             ),
-            fontWeight = FontWeight.Black,
+            fontWeight = FontWeight.ExtraBold,
             color = brandingColor,
             textAlign = TextAlign.Center
         )
@@ -491,41 +493,61 @@ private fun BrandIdentitySection(
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
 
         Text(
-            text = stringResource(SharedUiR.string.streaming_exclusively_on, provider.providerName),
-            style = MaterialTheme.typography.bodySmall,
+            text = stringResource(
+                id = SharedUiR.string.streaming_exclusively_on,
+                provider.providerName
+            ),
+            style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-        // Mode Switcher: [ 🎬 Movies | 📺 TV Shows ]
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                    shape = CircleShape
-                )
-        ) {
-            Row(
-                modifier = Modifier.padding(2.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HubSegmentItem(
-                    title = stringResource(id = SharedUiR.string.movies),
-                    selected = isMovieMode,
-                    onClick = { onToggleMode(true) }
-                )
+        // Mode Switcher: [ Movies | TV Series ]
+        HubSegmentSwitcher(
+            isMovieMode = isMovieMode,
+            onToggleMode = onToggleMode
+        )
+    }
+}
 
-                HubSegmentItem(
-                    title = stringResource(id = SharedUiR.string.tv_series),
-                    selected = !isMovieMode,
-                    onClick = { onToggleMode(false) }
-                )
-            }
+@Composable
+private fun HubSegmentSwitcher(
+    isMovieMode: Boolean,
+    onToggleMode: (isMovie: Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = modifier.border(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+            shape = CircleShape
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .width(188.dp)
+                .height(34.dp)
+                .padding(3.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HubSegmentItem(
+                title = stringResource(id = SharedUiR.string.movies),
+                selected = isMovieMode,
+                onClick = { onToggleMode(true) },
+                modifier = Modifier.weight(1f)
+            )
+
+            HubSegmentItem(
+                title = stringResource(id = SharedUiR.string.tv_series),
+                selected = !isMovieMode,
+                onClick = { onToggleMode(false) },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -534,34 +556,40 @@ private fun BrandIdentitySection(
 private fun HubSegmentItem(
     title: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val backgroundColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
-        animationSpec = tween(200),
+        animationSpec = tween(durationMillis = 200),
         label = "hub_segment_bg"
     )
 
     val textColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = tween(200),
+        animationSpec = tween(durationMillis = 200),
         label = "hub_segment_text"
     )
 
     Surface(
         onClick = onClick,
         shape = CircleShape,
-        color = backgroundColor
+        color = backgroundColor,
+        modifier = modifier.fillMaxHeight()
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp)
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                color = textColor
+                color = textColor,
+                textAlign = TextAlign.Center,
+                maxLines = 1
             )
         }
     }
@@ -571,6 +599,7 @@ private fun HubSegmentItem(
 @Composable
 private fun HeroPagerSection(
     items: List<AdInjectable<MediaPreview>>,
+    isMovieMode: Boolean,
     isLoading: Boolean,
     onMovieClick: (MoviePreview) -> Unit,
     onTvShowClick: (TvShowPreview) -> Unit,
@@ -580,7 +609,7 @@ private fun HeroPagerSection(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         SectionHeader(
-            title = stringResource(SharedUiR.string.featured_originals),
+            title = stringResource(id = SharedUiR.string.featured_originals),
             titleTextStyle = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -601,13 +630,13 @@ private fun HeroPagerSection(
                 ShimmerPlaceholder(
                     modifier = Modifier
                         .weight(1f)
-                        .height(200.dp),
+                        .height(220.dp),
                     shape = MaterialTheme.shapes.large
                 )
                 ShimmerPlaceholder(
                     modifier = Modifier
                         .weight(0.3f)
-                        .height(200.dp),
+                        .height(220.dp),
                     shape = MaterialTheme.shapes.large
                 )
             }
@@ -617,7 +646,6 @@ private fun HeroPagerSection(
                 items = items,
                 carouselState = carouselState,
                 itemHeight = 220.dp,
-                maxItemWidth = 340.dp,
                 contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium)
             ) { injectableItem ->
                 when (injectableItem) {
@@ -625,7 +653,8 @@ private fun HeroPagerSection(
                         ShowTimeNativeAd(
                             ad = injectableItem.ad,
                             onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
-                            style = injectableItem.style
+                            style = injectableItem.style,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
 
@@ -633,7 +662,12 @@ private fun HeroPagerSection(
                         val media = injectableItem.item
                         HeroItem(
                             title = media.title,
-                            imageUrl = media.backdropImageUrl,
+                            imageUrl = media.backdropImageUrl.ifEmpty { media.posterImageUrl },
+                            formatBadge = stringResource(
+                                id = if (isMovieMode) SharedUiR.string.movie_badge else SharedUiR.string.tv_badge
+                            ),
+                            releaseDate = media.displayDate,
+                            voteAvg = media.voteAvg,
                             onClick = {
                                 when (media) {
                                     is MediaPreview.Movie -> onMovieClick(media.movie)
@@ -641,9 +675,8 @@ private fun HeroPagerSection(
                                 }
                             },
                             overlayContent = {
-                                val isMovie = media is MediaPreview.Movie
                                 MediaOmniActionMenu(
-                                    mediaType = if (isMovie) MediaType.Movie else MediaType.Tv,
+                                    mediaType = if (isMovieMode) MediaType.Movie else MediaType.Tv,
                                     mediaId = media.id,
                                     title = media.title,
                                     posterImageUrl = media.posterImageUrl,
@@ -715,10 +748,12 @@ private fun HubSectionRow(
                 items(
                     items = items,
                     key = { item ->
-                        when (item) {
-                            is InjectableAd -> item.id
-                            is InjectableContent<MediaPreview> -> item.item.id
-                        }
+                        "${title}_${
+                            when (item) {
+                                is InjectableAd -> item.id
+                                is InjectableContent<MediaPreview> -> item.item.id
+                            }
+                        }"
                     }
                 ) { injectableItem ->
                     when (injectableItem) {
@@ -737,7 +772,7 @@ private fun HubSectionRow(
                                         item = media.movie.asUniversalMediaItem(),
                                         onClick = { onMovieClick(media.movie) },
                                         isGridView = true,
-                                        showMediaType = true,
+                                        showMediaType = false,
                                         onShowFeedback = onShowFeedback,
                                         modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                                     )
@@ -748,7 +783,7 @@ private fun HubSectionRow(
                                         item = media.tvShow.asUniversalMediaItem(),
                                         onClick = { onTvShowClick(media.tvShow) },
                                         isGridView = true,
-                                        showMediaType = true,
+                                        showMediaType = false,
                                         onShowFeedback = onShowFeedback,
                                         modifier = Modifier.width(MediaItemDefaults.PosterWidth)
                                     )

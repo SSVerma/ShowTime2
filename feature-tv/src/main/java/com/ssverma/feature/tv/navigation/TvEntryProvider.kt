@@ -108,13 +108,13 @@ fun EntryProviderScope<NavKey>.tvEntries(
             openReviewsList = { tvShowId ->
                 navigator.navigate(TvShowReviewsNavKey(tvShowId))
             },
-            openDiscussionsList = { tvShowId, tvShowTitle, posterImageUrl, backdropImageUrl ->
+            openDiscussionsList = { args ->
                 navigator.navigate(
                     TvShowDiscussionsNavKey(
-                        tvShowId = tvShowId,
-                        tvShowTitle = tvShowTitle,
-                        posterImageUrl = posterImageUrl,
-                        backdropImageUrl = backdropImageUrl
+                        tvShowId = args.mediaId,
+                        tvShowTitle = args.title,
+                        posterImageUrl = args.posterImageUrl,
+                        backdropImageUrl = args.backdropImageUrl
                     )
                 )
             },
@@ -263,15 +263,15 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     tvShowPosterPath = key.tvShowPosterPath
                 )
             },
-            openDiscussionsList = { tvShowId, seasonNumber, episodeNumber, episodeTitle, posterImageUrl, backdropImageUrl ->
+            openDiscussionsList = { args ->
                 navigator.navigate(
                     TvEpisodeDiscussionsNavKey(
-                        tvShowId = tvShowId,
-                        seasonNumber = seasonNumber,
-                        episodeNumber = episodeNumber,
-                        episodeTitle = episodeTitle,
-                        posterImageUrl = posterImageUrl,
-                        backdropImageUrl = backdropImageUrl
+                        tvShowId = args.mediaId,
+                        seasonNumber = args.seasonNumber ?: 0,
+                        episodeNumber = args.episodeNumber ?: 0,
+                        episodeTitle = args.title,
+                        posterImageUrl = args.posterImageUrl,
+                        backdropImageUrl = args.backdropImageUrl
                     )
                 )
             },

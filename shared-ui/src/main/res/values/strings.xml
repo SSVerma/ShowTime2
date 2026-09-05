@@ -96,6 +96,7 @@
     <string name="cinema_stats_streak">Streak</string>
     <string name="movie_badge">Movie</string>
     <string name="tv_badge">TV Series</string>
+    <string name="media_type_tv_short">TV</string>
 
     <!-- Season Completion Celebration Dialog -->
     <string name="season_complete_dialog_title">Season Complete! 🎉</string>

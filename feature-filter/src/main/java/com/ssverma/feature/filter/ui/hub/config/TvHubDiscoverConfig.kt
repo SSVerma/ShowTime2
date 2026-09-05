@@ -21,11 +21,11 @@ object TvHubDiscoverConfig {
         val watchProvider = DiscoverOption.WatchProvider(providerId = providerId)
 
         val today = DateUtils.currentDate()
-        val lastWeek = today.minusWeeks(1)
+        val threeMonthsAgo = today.minusMonths(3)
 
         return TvDiscoverConfig.builder()
             .with(watchProvider)
-            .with(DiscoverOption.AirDate.From(lastWeek))
+            .with(DiscoverOption.AirDate.From(threeMonthsAgo))
             .with(DiscoverOption.AirDate.To(today))
             .sortBy(SortBy.AirDate(Order.Descending))
             .build()
@@ -35,13 +35,12 @@ object TvHubDiscoverConfig {
         val watchProvider = DiscoverOption.WatchProvider(providerId = providerId)
 
         val tomorrow = DateUtils.currentDate().plusDays(1)
+        val oneYearAhead = tomorrow.plusYears(1)
 
         return TvDiscoverConfig.builder()
             .with(watchProvider)
-            .with(
-                DiscoverOption.AirDate.From(tomorrow),
-                DiscoverOption.AirDate.From(tomorrow),
-            )
+            .with(DiscoverOption.AirDate.From(tomorrow))
+            .with(DiscoverOption.AirDate.To(oneYearAhead))
             .sortBy(SortBy.AirDate(Order.Ascending))
             .build()
     }
@@ -49,7 +48,7 @@ object TvHubDiscoverConfig {
     fun topRated(
         providerId: Int,
         atLeastRating: Int = 7,
-        atLeastVoteCount: Int = 100,
+        atLeastVoteCount: Int = 50,
     ): TvDiscoverConfig {
         val watchProvider = DiscoverOption.WatchProvider(providerId = providerId)
 

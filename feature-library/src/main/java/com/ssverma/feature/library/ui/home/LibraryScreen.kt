@@ -389,7 +389,7 @@ fun LibraryScreen(
         snackbarHost = {
             ShowTimeSnackbarHost(
                 hostState = snackbarHostState,
-                floatingBottomBar = true
+                floatingBottomBar = isTopLevel
             )
         },
         topBar = {
@@ -401,7 +401,7 @@ fun LibraryScreen(
                 label = "LibraryHeaderColor"
             )
 
-            val isFloatingBarsVisible = LocalFloatingBarsVisible.current
+            val isFloatingBarsVisible = isTopLevel && LocalFloatingBarsVisible.current
             val topPadding by animateDpAsState(
                 targetValue = if (isFloatingBarsVisible) 64.dp else 0.dp,
                 animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),

@@ -1,5 +1,6 @@
 package com.ssverma.feature.library.navigation
 
+import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
@@ -21,44 +22,22 @@ fun EntryProviderScope<NavKey>.libraryEntries(
     navigator: Navigator
 ) {
     showTimeEntry<LibraryHomeNavKey> { navKey ->
-        LibraryScreen(
+        LibraryNavScreen(
+            args = navKey,
             onBackPressed = null,
             isTopLevel = true,
-            onMovieClicked = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
+            navigator = navigator
+        )
+    }
+
+    showTimeEntry<StandaloneLibraryNavKey> { navKey ->
+        LibraryNavScreen(
+            args = navKey,
+            onBackPressed = {
+                navigator.goBack()
             },
-            onTvShowClicked = { tvShowId ->
-                navigator.navigate(TvShowDetailNavKey(tvShowId))
-            },
-            openSearchPage = {
-                navigator.navigate(SearchNavKey)
-            },
-            onNavigateToProPaywall = {
-                navigator.navigate(ProPaywallNavKey)
-            },
-            onOpenBackup = {
-                navigator.navigate(BackupSyncNavKey)
-            },
-            onOpenDiary = {
-                navigator.navigate(CinemaDiaryNavKey)
-            },
-            onOpenTasteProfile = {
-                navigator.navigate(TasteProfileNavKey)
-            },
-            onOpenWrapped = {
-                navigator.navigate(CinephileWrappedNavKey)
-            },
-            onOpenChallenges = {
-                navigator.navigate(BacklogChallengeNavKey)
-            },
-            initialTab = navKey.initialTab,
-            initialMediaType = navKey.initialMediaType,
-            targetCustomListId = navKey.targetCustomListId,
-            openCreateCustomList = navKey.openCreateCustomList,
-            attachMediaId = navKey.attachMediaId,
-            attachMediaType = navKey.attachMediaType,
-            attachMediaTitle = navKey.attachMediaTitle,
-            attachMediaPosterUrl = navKey.attachMediaPosterUrl
+            isTopLevel = false,
+            navigator = navigator
         )
     }
 
@@ -161,4 +140,52 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             }
         )
     }
+}
+
+@Composable
+private fun LibraryNavScreen(
+    args: LibraryNavArgs,
+    onBackPressed: (() -> Unit)?,
+    isTopLevel: Boolean,
+    navigator: Navigator
+) {
+    LibraryScreen(
+        onBackPressed = onBackPressed,
+        isTopLevel = isTopLevel,
+        onMovieClicked = { movieId ->
+            navigator.navigate(MovieDetailNavKey(movieId))
+        },
+        onTvShowClicked = { tvShowId ->
+            navigator.navigate(TvShowDetailNavKey(tvShowId))
+        },
+        openSearchPage = {
+            navigator.navigate(SearchNavKey)
+        },
+        onNavigateToProPaywall = {
+            navigator.navigate(ProPaywallNavKey)
+        },
+        onOpenBackup = {
+            navigator.navigate(BackupSyncNavKey)
+        },
+        onOpenDiary = {
+            navigator.navigate(CinemaDiaryNavKey)
+        },
+        onOpenTasteProfile = {
+            navigator.navigate(TasteProfileNavKey)
+        },
+        onOpenWrapped = {
+            navigator.navigate(CinephileWrappedNavKey)
+        },
+        onOpenChallenges = {
+            navigator.navigate(BacklogChallengeNavKey)
+        },
+        initialTab = args.initialTab,
+        initialMediaType = args.initialMediaType,
+        targetCustomListId = args.targetCustomListId,
+        openCreateCustomList = args.openCreateCustomList,
+        attachMediaId = args.attachMediaId,
+        attachMediaType = args.attachMediaType,
+        attachMediaTitle = args.attachMediaTitle,
+        attachMediaPosterUrl = args.attachMediaPosterUrl
+    )
 }

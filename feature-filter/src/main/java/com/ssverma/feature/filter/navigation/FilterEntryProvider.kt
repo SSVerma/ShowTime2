@@ -97,23 +97,23 @@ fun EntryProviderScope<NavKey>.filterEntries(
             onBackClick = { navigator.goBack() },
             onOpenMovieDetails = { movieId -> navigator.navigate(MovieDetailNavKey(movieId)) },
             onOpenTvShowDetails = { tvShowId -> navigator.navigate(TvShowDetailNavKey(tvShowId)) },
-            openDiscussions = { mediaType, id, title, posterImageUrl, backdropImageUrl ->
-                if (mediaType == MediaType.Movie) {
+            openDiscussions = { args ->
+                if (args.mediaType == MediaType.Movie) {
                     navigator.navigate(
                         MovieDiscussionsNavKey(
-                            movieId = id,
-                            movieTitle = title,
-                            posterImageUrl = posterImageUrl,
-                            backdropImageUrl = backdropImageUrl
+                            movieId = args.mediaId,
+                            movieTitle = args.title,
+                            posterImageUrl = args.posterImageUrl,
+                            backdropImageUrl = args.backdropImageUrl
                         )
                     )
                 } else {
                     navigator.navigate(
                         TvShowDiscussionsNavKey(
-                            tvShowId = id,
-                            tvShowTitle = title,
-                            posterImageUrl = posterImageUrl,
-                            backdropImageUrl = backdropImageUrl
+                            tvShowId = args.mediaId,
+                            tvShowTitle = args.title,
+                            posterImageUrl = args.posterImageUrl,
+                            backdropImageUrl = args.backdropImageUrl
                         )
                     )
                 }

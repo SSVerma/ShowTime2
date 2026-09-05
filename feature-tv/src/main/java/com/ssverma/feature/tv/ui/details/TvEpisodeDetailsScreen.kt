@@ -42,7 +42,9 @@ import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.shared.domain.model.Cast
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
@@ -63,7 +65,7 @@ fun TvEpisodeDetailsScreen(
     onBackPress: () -> Unit,
     openPersonDetails: (Cast) -> Unit,
     viewModel: TvEpisodeDetailsViewModel,
-    openDiscussionsList: (tvShowId: Int, seasonNumber: Int, episodeNumber: Int, episodeTitle: String?, posterImageUrl: String?, backdropImageUrl: String?) -> Unit = { _, _, _, _, _, _ -> }
+    openDiscussionsList: (DiscussionNavArgs) -> Unit = {}
 ) {
     val imageSheetState = rememberImageShotBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
@@ -90,12 +92,15 @@ fun TvEpisodeDetailsScreen(
                     onToggleWatched = { viewModel.toggleWatched() },
                     onDiscussionsViewAllClick = {
                         openDiscussionsList(
-                            viewModel.tvShowId,
-                            episode.seasonNumber,
-                            episode.episodeNumber,
-                            episode.title,
-                            episode.posterImageUrl,
-                            null
+                            DiscussionNavArgs(
+                                mediaType = MediaType.Tv,
+                                mediaId = viewModel.tvShowId,
+                                seasonNumber = episode.seasonNumber,
+                                episodeNumber = episode.episodeNumber,
+                                title = episode.title,
+                                posterImageUrl = episode.posterImageUrl,
+                                backdropImageUrl = null
+                            )
                         )
                     },
                     onPostComment = viewModel::postComment,

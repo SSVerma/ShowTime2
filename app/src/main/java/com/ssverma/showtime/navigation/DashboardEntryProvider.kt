@@ -36,34 +36,36 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             openTvShowDetails = { tvShowId ->
                 navigator.navigate(TvShowDetailNavKey(tvShowId))
             },
-            openDiscussions = { mediaType, mediaId, seasonNumber, episodeNumber, mediaTitle, posterImageUrl, backdropImageUrl ->
-                if (mediaType == MediaType.Movie) {
+            openDiscussions = { args ->
+                val season = args.seasonNumber
+                val episode = args.episodeNumber
+                if (args.mediaType == MediaType.Movie) {
                     navigator.navigate(
                         MovieDiscussionsNavKey(
-                            movieId = mediaId,
-                            movieTitle = mediaTitle,
-                            posterImageUrl = posterImageUrl,
-                            backdropImageUrl = backdropImageUrl
+                            movieId = args.mediaId,
+                            movieTitle = args.title,
+                            posterImageUrl = args.posterImageUrl,
+                            backdropImageUrl = args.backdropImageUrl
                         )
                     )
-                } else if (seasonNumber != null && episodeNumber != null) {
+                } else if (season != null && episode != null) {
                     navigator.navigate(
                         TvEpisodeDiscussionsNavKey(
-                            tvShowId = mediaId,
-                            seasonNumber = seasonNumber,
-                            episodeNumber = episodeNumber,
-                            episodeTitle = mediaTitle,
-                            posterImageUrl = posterImageUrl,
-                            backdropImageUrl = backdropImageUrl
+                            tvShowId = args.mediaId,
+                            seasonNumber = season,
+                            episodeNumber = episode,
+                            episodeTitle = args.title,
+                            posterImageUrl = args.posterImageUrl,
+                            backdropImageUrl = args.backdropImageUrl
                         )
                     )
                 } else {
                     navigator.navigate(
                         TvShowDiscussionsNavKey(
-                            tvShowId = mediaId,
-                            tvShowTitle = mediaTitle,
-                            posterImageUrl = posterImageUrl,
-                            backdropImageUrl = backdropImageUrl
+                            tvShowId = args.mediaId,
+                            tvShowTitle = args.title,
+                            posterImageUrl = args.posterImageUrl,
+                            backdropImageUrl = args.backdropImageUrl
                         )
                     )
                 }

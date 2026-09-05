@@ -44,8 +44,8 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.shared.ads.injection.InjectableContent
-import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.SeasonCompletionDialog
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
 fun DashboardScreen(
     openMovieDetails: (Int) -> Unit,
     openTvShowDetails: (Int) -> Unit,
-    openDiscussions: (MediaType, Int, Int?, Int?, String, String?, String?) -> Unit,
+    openDiscussions: (DiscussionNavArgs) -> Unit,
     openCinemaGame: () -> Unit,
     openWatchProviderHub: (ProviderInfo, Boolean) -> Unit,
     openStudioPortal: (StudioPortalItem) -> Unit,

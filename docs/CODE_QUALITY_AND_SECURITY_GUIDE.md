@@ -131,11 +131,15 @@ the checklist in this guide before being merged into development or release bran
 
 ### B. Named Arguments Standard
 
-* **Strict Rule**: Wherever possible, always use named arguments when invoking composables, domain use-cases,
-  repository methods, data class constructors, and functions (especially those with more than 1 argument,
+* **Strict Rule**: Wherever possible, always use named arguments when invoking composables, domain
+  use-cases,
+  repository methods, data class constructors, and functions (especially those with more than 1
+  argument,
   or with boolean/numeric/nullable parameters).
-* **Rationale**: Named arguments make call sites self-documenting, eliminate parameter transposition bugs
-  (such as accidentally swapping flags, dimensions, or IDs), and guarantee resilience against signature changes.
+* **Rationale**: Named arguments make call sites self-documenting, eliminate parameter transposition
+  bugs
+  (such as accidentally swapping flags, dimensions, or IDs), and guarantee resilience against
+  signature changes.
 * **Standard**:
   ```kotlin
   // ❌ FORBIDDEN / DISCOURAGED
@@ -150,6 +154,34 @@ the checklist in this guide before being merged into development or release bran
       onClick = { onSelect() }
   )
   Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+  ```
+
+### C. Parameter Encapsulation (`*Args` Standard)
+
+* **Rule**: When function signatures, navigation callbacks, or lambdas require large parameter
+  lists (typically 3 or more related parameters), encapsulate them into a strongly-typed data
+  class (e.g. `*Args` pattern).
+* **Rationale**: Prevents unwieldy callback types (such as
+  `((mediaType, id, title, poster, backdrop) -> Unit)`), eliminates positional parameter
+  transposition errors, improves binary and API compatibility when adding optional parameters, and
+  simplifies call site readability.
+* **Standard**:
+  ```kotlin
+  // ❌ DISCOURAGED: Unwieldy callback signatures
+  openDiscussions: ((mediaType: MediaType, id: Int, title: String, posterImageUrl: String?, backdropImageUrl: String?) -> Unit)? = null
+
+  // ✅ CORRECT: Encapsulate into a dedicated Args data class
+  data class DiscussionNavArgs(
+      val mediaType: MediaType,
+      val mediaId: Int,
+      val title: String,
+      val posterImageUrl: String? = null,
+      val backdropImageUrl: String? = null,
+      val seasonNumber: Int? = null,
+      val episodeNumber: Int? = null
+  )
+
+  openDiscussions: ((DiscussionNavArgs) -> Unit)? = null
   ```
 
 ---
@@ -304,6 +336,10 @@ Before pushing any commit or opening a PR, run through this validation gate:
 - [ ] **Colors & Spacing**: Are there zero hardcoded `Color(0x...)` or raw un-tokenized `dp` values?
 - [ ] **Imports**: Are there zero wildcard imports (`*`) and zero unused imports?
 - [ ] **Lazy Lists**: Do all Lazy lists have explicit `key = { ... }` defined?
-- [ ] **Named Arguments**: Are named arguments used wherever possible across composable calls, function invocations, and constructor instantiations to maximize readability and eliminate parameter transposition bugs?
+- [ ] **Named Arguments**: Are named arguments used wherever possible across composable calls,
+  function invocations, and constructor instantiations to maximize readability and eliminate
+  parameter transposition bugs?
+- [ ] **Parameter Encapsulation (`*Args`)**: Are callback and lambda signatures with large or
+  expanding parameter sets encapsulated into dedicated `*Args` data classes?
 - [ ] **Secrets**: Did any sensitive key or token leak into the commit diff?
 - [ ] **Device Test**: Did the APK install and run smoothly without UI jank or crash on device?

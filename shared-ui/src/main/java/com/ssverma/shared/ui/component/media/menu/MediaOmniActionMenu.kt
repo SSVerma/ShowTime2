@@ -38,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -46,9 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.navigation.nav3.LocalNavigator
-import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
 import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
 import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
 import com.ssverma.shared.domain.model.MediaType
@@ -513,7 +512,7 @@ private fun CustomListsMenuItems(
             )
         }
 
-        val targetNavKey = LibraryHomeNavKey(
+        val targetNavKey = StandaloneLibraryNavKey(
             initialTab = LibraryTabDestination.CustomLists,
             initialMediaType = mediaTypeStr,
             openCreateCustomList = true,
@@ -540,7 +539,7 @@ private fun CustomListsMenuItems(
             )
         }
     } else if (canHandleNewCollection) {
-        val targetNavKey = LibraryHomeNavKey(
+        val targetNavKey = StandaloneLibraryNavKey(
             initialTab = LibraryTabDestination.CustomLists,
             initialMediaType = mediaTypeStr,
             openCreateCustomList = true,

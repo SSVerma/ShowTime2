@@ -21,11 +21,11 @@ object MovieHubDiscoverConfig {
         val watchProvider = DiscoverOption.WatchProvider(providerId = providerId)
 
         val today = DateUtils.currentDate()
-        val lastWeek = today.minusWeeks(1)
+        val sixMonthsAgo = today.minusMonths(6)
 
         return MovieDiscoverConfig.builder()
             .with(watchProvider)
-            .with(DiscoverOption.PrimaryReleaseDate.From(lastWeek))
+            .with(DiscoverOption.PrimaryReleaseDate.From(sixMonthsAgo))
             .with(DiscoverOption.PrimaryReleaseDate.To(today))
             .sortBy(SortBy.ReleaseDate(Order.Descending))
             .build()
@@ -34,11 +34,13 @@ object MovieHubDiscoverConfig {
     fun upcoming(providerId: Int): MovieDiscoverConfig {
         val watchProvider = DiscoverOption.WatchProvider(providerId = providerId)
 
-        val tomorrow = DateUtils.currentDate().plusDays(1)
+        val today = DateUtils.currentDate()
+        val oneYearAhead = today.plusYears(1)
 
         return MovieDiscoverConfig.builder()
             .with(watchProvider)
-            .with(DiscoverOption.PrimaryReleaseDate.From(tomorrow))
+            .with(DiscoverOption.PrimaryReleaseDate.From(today))
+            .with(DiscoverOption.PrimaryReleaseDate.To(oneYearAhead))
             .sortBy(SortBy.ReleaseDate(Order.Ascending))
             .build()
     }
@@ -46,7 +48,7 @@ object MovieHubDiscoverConfig {
     fun topRated(
         providerId: Int,
         atLeastRating: Int = 7,
-        atLeastVoteCount: Int = 100,
+        atLeastVoteCount: Int = 50,
     ): MovieDiscoverConfig {
         val watchProvider = DiscoverOption.WatchProvider(providerId = providerId)
 

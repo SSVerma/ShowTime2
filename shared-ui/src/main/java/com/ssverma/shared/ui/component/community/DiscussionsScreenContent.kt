@@ -77,6 +77,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.model.community.EditCommentArgs
+import com.ssverma.shared.domain.model.community.PostCommentArgs
 import com.ssverma.shared.domain.utils.ContentSafetyFilter
 import com.ssverma.shared.domain.utils.ContentSafetyResult
 import com.ssverma.shared.ui.R
@@ -97,8 +99,8 @@ fun DiscussionsScreenContent(
     discussions: List<Comment>,
     mediaTitle: String?,
     onBackPressed: () -> Unit,
-    onPostComment: (content: String, isSpoiler: Boolean, parentId: String?, replyToAuthor: String?) -> Unit,
-    onEditComment: (commentId: String, newContent: String, isSpoiler: Boolean) -> Unit = { _, _, _ -> },
+    onPostComment: (PostCommentArgs) -> Unit,
+    onEditComment: (EditCommentArgs) -> Unit = {},
     onReportComment: (commentId: String, reason: String) -> Unit = { _, _ -> },
     onToggleUpvote: (commentId: String) -> Unit,
     onDeleteComment: (commentId: String) -> Unit,
@@ -448,7 +450,13 @@ fun DiscussionsScreenContent(
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     val editTarget = editingComment
                                     if (editTarget != null) {
-                                        onEditComment(editTarget.id, contentToSend, isSpoiler)
+                                        onEditComment(
+                                            EditCommentArgs(
+                                                commentId = editTarget.id,
+                                                newContent = contentToSend,
+                                                isSpoiler = isSpoiler
+                                            )
+                                        )
                                         editingComment = null
                                     } else {
                                         val parent = replyingToComment
@@ -456,10 +464,12 @@ fun DiscussionsScreenContent(
                                             if (parent?.parentId != null) parent.parentId else parent?.id
                                         val effectiveReplyToAuthorName = parent?.authorName
                                         onPostComment(
-                                            contentToSend,
-                                            isSpoiler,
-                                            effectiveParentId,
-                                            effectiveReplyToAuthorName
+                                            PostCommentArgs(
+                                                content = contentToSend,
+                                                isSpoiler = isSpoiler,
+                                                parentId = effectiveParentId,
+                                                replyToAuthor = effectiveReplyToAuthorName
+                                            )
                                         )
                                         replyingToComment = null
                                         coroutineScope.launch {

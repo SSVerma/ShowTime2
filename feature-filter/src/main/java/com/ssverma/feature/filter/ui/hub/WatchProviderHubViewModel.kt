@@ -187,8 +187,10 @@ class WatchProviderHubViewModel @AssistedInject constructor(
 
         val genres = genresResult.getOrDefault(emptyList())
 
-        // Show error only if all primary sections fail
-        if (rawHero.isEmpty() && rawNew.isEmpty() && rawUpcoming.isEmpty() && rawRated.isEmpty()) {
+        // Show error only if all primary sections failed with an error
+        val allPrimaryErrored = listOf(heroResult, newResult, upcomingResult, ratedResult)
+            .all { it is Result.Error }
+        if (allPrimaryErrored && rawHero.isEmpty() && rawNew.isEmpty() && rawUpcoming.isEmpty() && rawRated.isEmpty()) {
             val error = listOf(heroResult, newResult, upcomingResult, ratedResult)
                 .filterIsInstance<Result.Error<Failure.CoreFailure>>()
                 .firstOrNull()?.error ?: Failure.CoreFailure.UnexpectedFailure
@@ -265,7 +267,10 @@ class WatchProviderHubViewModel @AssistedInject constructor(
 
         val genres = genresResult.getOrDefault(emptyList())
 
-        if (rawHero.isEmpty() && rawNew.isEmpty() && rawUpcoming.isEmpty() && rawRated.isEmpty()) {
+        // Show error only if all primary sections failed with an error
+        val allPrimaryErrored = listOf(heroResult, newResult, upcomingResult, ratedResult)
+            .all { it is Result.Error }
+        if (allPrimaryErrored && rawHero.isEmpty() && rawNew.isEmpty() && rawUpcoming.isEmpty() && rawRated.isEmpty()) {
             val error = listOf(heroResult, newResult, upcomingResult, ratedResult)
                 .filterIsInstance<Result.Error<Failure.CoreFailure>>()
                 .firstOrNull()?.error ?: Failure.CoreFailure.UnexpectedFailure
