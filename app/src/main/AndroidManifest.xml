@@ -42,14 +42,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="https"
-                    android:host="showtime.ssverma.in" />
+                    android:host="showtime.ssverma.in"
+                    android:scheme="https" />
                 <data
-                    android:scheme="https"
-                    android:host="www.ssverma.in" />
+                    android:host="www.ssverma.in"
+                    android:scheme="https" />
                 <data
-                    android:scheme="https"
-                    android:host="ssverma.in" />
+                    android:host="ssverma.in"
+                    android:scheme="https" />
             </intent-filter>
         </activity>
 

@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material3.AlertDialog
@@ -40,7 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -53,12 +51,10 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.feature.library.ui.backlog.component.ActiveChallengeCard
 import com.ssverma.feature.library.ui.backlog.component.BacklogHeroIntroCard
 import com.ssverma.feature.library.ui.backlog.component.BlindspotRadarSection
-import com.ssverma.feature.library.ui.backlog.component.ChallengeHeroProgressCard
 import com.ssverma.feature.library.ui.backlog.component.CreateChallengeBottomSheet
 import com.ssverma.feature.library.ui.backlog.component.CuratedChallengeShelf
-import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.challenge.ChallengeCategory
 import com.ssverma.shared.domain.model.challenge.CinephileChallenge
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

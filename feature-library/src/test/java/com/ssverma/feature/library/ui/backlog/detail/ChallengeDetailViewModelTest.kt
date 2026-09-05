@@ -10,7 +10,6 @@ import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
 import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk

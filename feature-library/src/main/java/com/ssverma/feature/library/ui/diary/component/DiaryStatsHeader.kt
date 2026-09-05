@@ -28,8 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.diary.DiarySummaryStats
 
 @Composable
@@ -68,7 +70,7 @@ fun DiaryStatsHeader(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Your Cinephile Journey",
+                    text = stringResource(R.string.diary_stats_journey_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -83,26 +85,26 @@ fun DiaryStatsHeader(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 StatTile(
-                    label = "Logged",
+                    label = stringResource(R.string.diary_stat_logged),
                     value = stats.totalLogged.toString(),
                     icon = Icons.Rounded.Movie,
                     modifier = Modifier.weight(1f)
                 )
                 StatTile(
-                    label = "Avg Rating",
+                    label = stringResource(R.string.diary_stat_avg_rating),
                     value = if (stats.averageUserRating > 0f) "%.1f".format(stats.averageUserRating) else "—",
                     icon = Icons.Rounded.Star,
                     iconTint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
                 StatTile(
-                    label = "Rewatches",
+                    label = stringResource(R.string.diary_stat_rewatches),
                     value = "${stats.rewatchCount}",
                     icon = Icons.Rounded.Replay,
                     modifier = Modifier.weight(1f)
                 )
                 StatTile(
-                    label = "5-Stars",
+                    label = stringResource(R.string.diary_stat_five_stars),
                     value = "${stats.fiveStarCount}",
                     icon = Icons.Rounded.Stars,
                     iconTint = MaterialTheme.colorScheme.primary,
@@ -127,7 +129,7 @@ fun DiaryStatsHeader(
                 ) {
                     if (onOpenTasteProfile != null) {
                         QuickNavButton(
-                            label = "Taste Profile",
+                            label = stringResource(R.string.diary_quick_taste_profile),
                             icon = Icons.Rounded.AutoAwesome,
                             onClick = onOpenTasteProfile,
                             modifier = Modifier.weight(1f)
@@ -136,7 +138,7 @@ fun DiaryStatsHeader(
 
                     if (onOpenWrapped != null) {
                         QuickNavButton(
-                            label = "Wrapped",
+                            label = stringResource(R.string.diary_quick_wrapped),
                             icon = Icons.Rounded.Stars,
                             onClick = onOpenWrapped,
                             modifier = Modifier.weight(1f)
@@ -145,7 +147,7 @@ fun DiaryStatsHeader(
 
                     if (onOpenChallenges != null) {
                         QuickNavButton(
-                            label = "Goals",
+                            label = stringResource(R.string.diary_quick_challenges),
                             icon = Icons.Rounded.EmojiEvents,
                             onClick = onOpenChallenges,
                             modifier = Modifier.weight(1f)

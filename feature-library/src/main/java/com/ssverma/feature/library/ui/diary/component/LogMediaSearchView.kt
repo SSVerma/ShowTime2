@@ -51,6 +51,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
@@ -107,7 +109,7 @@ fun LogMediaSearchView(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -144,7 +146,7 @@ fun LogMediaSearchView(
                         ) {
                             if (searchQuery.isEmpty()) {
                                 Text(
-                                    text = "Search movies or TV shows...",
+                                    text = stringResource(R.string.diary_search_placeholder),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 )
@@ -179,7 +181,7 @@ fun LogMediaSearchView(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Clear,
-                                    contentDescription = "Clear search",
+                                    contentDescription = stringResource(R.string.cd_clear_search),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -199,7 +201,7 @@ fun LogMediaSearchView(
                 FilterChip(
                     selected = selectedFilter == ChallengeMediaTypeFilter.ALL,
                     onClick = { onSearchQueryChange(searchQuery, ChallengeMediaTypeFilter.ALL) },
-                    label = { Text("All") },
+                    label = { Text(stringResource(R.string.filter_all)) },
                     shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -217,7 +219,7 @@ fun LogMediaSearchView(
                             modifier = Modifier.size(16.dp)
                         )
                     },
-                    label = { Text("Movies") },
+                    label = { Text(stringResource(R.string.filter_movies)) },
                     shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -236,7 +238,7 @@ fun LogMediaSearchView(
                             modifier = Modifier.size(16.dp)
                         )
                     },
-                    label = { Text("TV Shows") },
+                    label = { Text(stringResource(R.string.filter_tv_shows)) },
                     shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -313,7 +315,11 @@ fun LogMediaSearchView(
                                             color = MaterialTheme.colorScheme.surfaceVariant
                                         ) {
                                             Text(
-                                                text = if (item.mediaType == MediaType.Tv) "TV" else "Movie",
+                                                text = if (item.mediaType == MediaType.Tv) {
+                                                    stringResource(R.string.media_type_tv_short)
+                                                } else {
+                                                    stringResource(R.string.media_type_movie)
+                                                },
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Medium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -354,7 +360,11 @@ fun LogMediaSearchView(
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                                 Text(
-                                                    text = String.format(Locale.getDefault(), "%.1f", item.voteAvg),
+                                                    text = String.format(
+                                                        Locale.getDefault(),
+                                                        "%.1f",
+                                                        item.voteAvg
+                                                    ),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     fontWeight = FontWeight.Bold,
                                                     color = MaterialTheme.colorScheme.primary
@@ -377,7 +387,7 @@ fun LogMediaSearchView(
                         .padding(horizontal = 32.dp)
                 ) {
                     Text(
-                        text = "No titles found for \"$searchQuery\"",
+                        text = stringResource(R.string.diary_search_no_results, searchQuery),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -408,14 +418,14 @@ fun LogMediaSearchView(
                     }
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = "Search movies & TV shows",
+                        text = stringResource(R.string.diary_search_initial_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Search any title to rate & log to your Cinema Diary",
+                        text = stringResource(R.string.diary_search_initial_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center

@@ -29,7 +29,6 @@ import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.ProductType
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.payment.R

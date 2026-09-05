@@ -1,9 +1,9 @@
 package com.ssverma.feature.library.ui.diary
 
 import com.ssverma.api.service.tmdb.TmdbApiService
-import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.api.service.tmdb.response.PagedPayload
 import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
+import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem

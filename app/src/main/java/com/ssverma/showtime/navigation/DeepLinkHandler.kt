@@ -1,7 +1,6 @@
 package com.ssverma.showtime.navigation
 
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
 import com.ssverma.feature.library.navigation.ChallengeDetailNavKey

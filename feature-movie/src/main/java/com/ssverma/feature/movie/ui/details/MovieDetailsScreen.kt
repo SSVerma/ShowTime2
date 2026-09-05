@@ -62,8 +62,6 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.ShareMediaUtils
-import com.ssverma.shared.ui.R as SharedR
-import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.ActionSize
 import com.ssverma.shared.ui.component.BackdropActionButton
 import com.ssverma.shared.ui.component.BackdropHeader
@@ -74,6 +72,7 @@ import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaItem
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
+import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.section.MediaReactionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.shared.ui.component.section.ReviewsSection
@@ -83,6 +82,7 @@ import com.ssverma.shared.ui.component.section.VideoShotsSection
 import com.ssverma.shared.ui.component.section.WatchProvidersSection
 import com.ssverma.shared.ui.emptyIfAbsent
 import kotlinx.coroutines.launch
+import com.ssverma.shared.ui.R as SharedR
 
 @Composable
 fun MovieDetailsScreen(

@@ -110,4 +110,52 @@
     <string name="library_backup_banner_backup_desc">Back up your library to Google Cloud</string>
     <string name="library_backup_banner_backup_cta">Back Up</string>
     <string name="dismiss_banner_cd">Dismiss banner</string>
+
+    <!-- Cinema Diary & Personal Reviews -->
+    <string name="cinema_diary">Cinema Diary</string>
+    <string name="cinema_diary_subtitle">Personal ratings &amp; viewing log</string>
+    <string name="diary_fab_log">Log</string>
+    <string name="diary_fab_log_cd">Log title to Cinema Diary</string>
+    <string name="diary_filter_rewatches">Rewatches</string>
+    <string name="diary_filter_five_stars">5-Stars</string>
+
+    <string name="diary_empty_title">Your Cinema Diary is Empty</string>
+    <string name="diary_empty_filter_title">No Matching Diary Logs</string>
+    <string name="diary_empty_subtitle">Log movies &amp; TV shows to build your personal viewing timeline with star ratings and reviews.</string>
+    <string name="diary_empty_filter_subtitle">Try selecting a different filter above to view other diary logs.</string>
+    <string name="diary_log_first_title">Log Your First Title</string>
+
+    <string name="diary_delete_dialog_title">Delete Diary Entry?</string>
+    <string name="diary_delete_dialog_msg">Are you sure you want to remove \"%1$s\" from your Cinema Diary?</string>
+    <string name="diary_delete_action">Delete</string>
+    <string name="diary_logged_success">Logged \"%1$s\" to Cinema Diary</string>
+
+    <string name="diary_stats_journey_title">Your Cinephile Journey</string>
+    <string name="diary_stat_logged">Logged</string>
+    <string name="diary_stat_avg_rating">Avg Rating</string>
+    <string name="diary_stat_rewatches">Rewatches</string>
+    <string name="diary_stat_five_stars">5-Stars</string>
+    <string name="diary_quick_taste_profile">Taste Profile</string>
+    <string name="diary_quick_wrapped">Wrapped</string>
+    <string name="diary_quick_challenges">Challenges</string>
+
+    <string name="diary_menu_edit">Edit Log</string>
+    <string name="diary_menu_share">Share Review</string>
+    <string name="diary_menu_delete">Delete Entry</string>
+    <string name="diary_badge_rewatch">Rewatch</string>
+    <string name="diary_watched_on">Watched %1$s</string>
+    <string name="media_type_movie">Movie</string>
+    <string name="media_type_tv">TV Series</string>
+    <string name="media_type_tv_short">TV</string>
+
+    <string name="diary_search_placeholder">Search movies or TV shows...</string>
+    <string name="diary_search_no_results">No titles found for \"%1$s\"</string>
+    <string name="diary_search_initial_title">Search movies &amp; TV shows</string>
+    <string name="diary_search_initial_subtitle">Search any title to rate &amp; log to your Cinema Diary</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="cd_back">Back</string>
+
+    <string name="diary_share_rating">Personal Rating: %1$.1f / 5.0</string>
+    <string name="diary_share_rewatch">(Rewatch)</string>
+    <string name="diary_share_footer">Shared via ShowTime</string>
 </resources>

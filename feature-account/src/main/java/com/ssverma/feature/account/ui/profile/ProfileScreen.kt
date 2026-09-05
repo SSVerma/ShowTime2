@@ -36,7 +36,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -69,14 +68,15 @@ import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.ScreenLoadingIndicator
 import com.ssverma.core.ui.asString
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.account.BuildConfig
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
-import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion

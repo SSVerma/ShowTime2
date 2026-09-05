@@ -1,5 +1,6 @@
 package com.ssverma.feature.account.ui.trakt
 
+import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +26,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -55,15 +55,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.asString
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.showImmediateSnackbar
-import android.app.Activity
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.account.R
-import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
-import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.auth.domain.model.TraktUser
 import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
+import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

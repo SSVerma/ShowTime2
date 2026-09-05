@@ -58,7 +58,6 @@ import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.account.ui.stats.MediaStatsAction
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
-import com.ssverma.shared.ui.R as SharedR
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.analytics.TvAnalyticsValues
@@ -94,6 +93,7 @@ import com.ssverma.shared.ui.component.section.VideoShotsSection
 import com.ssverma.shared.ui.component.section.WatchProvidersSection
 import com.ssverma.shared.ui.emptyIfAbsent
 import kotlinx.coroutines.launch
+import com.ssverma.shared.ui.R as SharedR
 
 @Composable
 fun TvShowDetailsScreen(

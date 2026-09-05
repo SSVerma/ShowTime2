@@ -8,14 +8,12 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.shared.data.local.adapter.MediaTypeJsonAdapter
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
 import com.ssverma.shared.domain.model.challenge.CinephileChallenge

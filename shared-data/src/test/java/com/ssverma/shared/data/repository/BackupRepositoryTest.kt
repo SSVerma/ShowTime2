@@ -2,8 +2,8 @@ package com.ssverma.shared.data.repository
 
 import android.content.Context
 import androidx.datastore.preferences.core.emptyPreferences
-import com.google.common.truth.Truth.assertThat
 import com.google.android.gms.tasks.Tasks
+import com.google.common.truth.Truth.assertThat
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot

@@ -9,10 +9,10 @@ import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.feature.account.navigation.accountEntries
 import com.ssverma.feature.auth.navigation.authEntries
 import com.ssverma.feature.filter.navigation.filterEntries
-import com.ssverma.feature.payment.navigation.paymentEntries
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.libraryEntries
 import com.ssverma.feature.movie.navigation.movieEntries
+import com.ssverma.feature.payment.navigation.paymentEntries
 import com.ssverma.feature.person.navigation.personEntries
 import com.ssverma.feature.search.navigation.searchEntries
 import com.ssverma.feature.tv.navigation.tvEntries

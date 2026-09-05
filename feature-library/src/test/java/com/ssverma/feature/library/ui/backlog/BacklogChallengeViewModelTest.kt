@@ -1,5 +1,9 @@
 package com.ssverma.feature.library.ui.backlog
 
+import com.ssverma.api.service.tmdb.TmdbApiService
+import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
+import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
@@ -13,10 +17,6 @@ import com.ssverma.shared.domain.repository.BacklogRepository
 import com.ssverma.shared.domain.repository.DiaryRepository
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
 import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
-import com.ssverma.api.service.tmdb.TmdbApiService
-import com.ssverma.api.service.tmdb.response.PagedPayload
-import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
-import com.ssverma.core.networking.adapter.ApiResponse
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -24,7 +24,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals

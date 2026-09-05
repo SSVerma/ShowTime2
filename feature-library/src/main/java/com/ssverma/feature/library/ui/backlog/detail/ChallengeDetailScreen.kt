@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.DeleteOutline
@@ -73,7 +72,6 @@ import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
-import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
 import com.ssverma.shared.domain.model.challenge.ChallengeProgress
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 

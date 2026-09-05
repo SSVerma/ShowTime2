@@ -8,24 +8,23 @@ import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.shared.data.mapper.GenresMapper
 import com.ssverma.shared.data.mapper.ListMapper
 import com.ssverma.shared.data.mapper.asDomainResult
+import com.ssverma.shared.data.mapper.asProviderInfos
 import com.ssverma.shared.data.mapper.asQueryMap
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
-import com.ssverma.shared.domain.model.movie.Movie
-import com.ssverma.shared.domain.model.tv.TvShow
-import com.ssverma.shared.domain.repository.DiscoveryRepository
-import javax.inject.Inject
-
-import com.ssverma.shared.data.mapper.asProviderInfos
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
+import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.repository.DiscoveryRepository
 import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 
 class DefaultDiscoveryRepository @Inject constructor(
     private val tmdbApiService: TmdbApiService,

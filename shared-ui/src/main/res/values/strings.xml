@@ -213,4 +213,19 @@
     <string name="publish_first_collection">Publish a Collection</string>
     <string name="tab_my_lists">My Lists</string>
     <string name="tab_community">Community</string>
+
+    <!-- Cinema Diary Log and Rate Dialog -->
+    <string name="diary_dialog_edit_title">Edit Diary Log</string>
+    <string name="diary_dialog_log_title">Log to Cinema Diary</string>
+    <string name="diary_dialog_subtitle">Personal rating &amp; review</string>
+    <string name="diary_dialog_your_rating">YOUR RATING</string>
+    <string name="diary_dialog_rating_format">%1$.1f / 5.0</string>
+    <string name="diary_dialog_star_cd">Rating %1$d</string>
+    <string name="diary_dialog_mark_rewatch">Mark as Rewatch</string>
+    <string name="diary_dialog_review_title">PERSONAL REVIEW &amp; THOUGHTS</string>
+    <string name="diary_dialog_review_placeholder">What made this memorable or unique?</string>
+    <string name="diary_dialog_save_action">Save to Diary</string>
+    <string name="diary_dialog_update_action">Update Log</string>
+    <string name="diary_dialog_tmdb_rating">%1$.1f TMDB</string>
+    <string name="cancel">Cancel</string>
 </resources>

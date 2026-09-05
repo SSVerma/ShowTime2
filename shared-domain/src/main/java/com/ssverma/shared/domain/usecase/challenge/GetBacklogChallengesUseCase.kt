@@ -1,7 +1,6 @@
 package com.ssverma.shared.domain.usecase.challenge
 
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.challenge.ChallengeCategory
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
 import com.ssverma.shared.domain.model.challenge.ChallengeProgress

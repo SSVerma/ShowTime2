@@ -5,8 +5,6 @@ import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityCuratedListItem
 import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.community.PublishCustomListParams
-import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
-import com.ssverma.shared.domain.model.community.UnpublishCustomListParams
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.utils.ShareMediaUtils

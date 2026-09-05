@@ -5,7 +5,6 @@ import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
 import com.ssverma.shared.domain.model.stats.CinephileMilestoneDefinition
 import com.ssverma.shared.domain.model.stats.MilestoneMetricType
-import com.ssverma.shared.domain.model.stats.MilestoneTier
 import com.ssverma.shared.domain.model.stats.MonthActivity
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
 import com.ssverma.shared.domain.repository.CinephileMilestoneRepository

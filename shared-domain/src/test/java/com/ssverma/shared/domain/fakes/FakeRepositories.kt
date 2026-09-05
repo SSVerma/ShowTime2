@@ -15,11 +15,11 @@ import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.model.movie.Movie
-import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.stats.CinephileMilestoneDefinition
 import com.ssverma.shared.domain.model.stats.MilestoneActionType
 import com.ssverma.shared.domain.model.stats.MilestoneMetricType
 import com.ssverma.shared.domain.model.stats.MilestoneTier
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.repository.CinephileMilestoneRepository
 import com.ssverma.shared.domain.repository.DiaryRepository
 import com.ssverma.shared.domain.repository.DiscoveryRepository

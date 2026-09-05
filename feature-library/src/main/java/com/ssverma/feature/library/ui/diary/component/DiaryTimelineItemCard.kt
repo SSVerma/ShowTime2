@@ -36,13 +36,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import java.text.SimpleDateFormat
@@ -110,7 +111,7 @@ fun DiaryTimelineItemCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.MoreVert,
-                                    contentDescription = "Options",
+                                    contentDescription = stringResource(R.string.more_options),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -131,7 +132,7 @@ fun DiaryTimelineItemCard(
                                 DropdownMenuItem(
                                     text = {
                                         Text(
-                                            text = "Edit Log",
+                                            text = stringResource(R.string.diary_menu_edit),
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Medium
                                         )
@@ -152,7 +153,7 @@ fun DiaryTimelineItemCard(
                                 DropdownMenuItem(
                                     text = {
                                         Text(
-                                            text = "Share Review",
+                                            text = stringResource(R.string.diary_menu_share),
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Medium
                                         )
@@ -173,7 +174,7 @@ fun DiaryTimelineItemCard(
                                 DropdownMenuItem(
                                     text = {
                                         Text(
-                                            text = "Delete Entry",
+                                            text = stringResource(R.string.diary_menu_delete),
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Medium,
                                             color = MaterialTheme.colorScheme.error
@@ -203,7 +204,11 @@ fun DiaryTimelineItemCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = if (entry.mediaType == MediaType.Tv) "TV Series" else "Movie",
+                            text = if (entry.mediaType == MediaType.Tv) {
+                                stringResource(R.string.media_type_tv)
+                            } else {
+                                stringResource(R.string.media_type_movie)
+                            },
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -215,7 +220,12 @@ fun DiaryTimelineItemCard(
                             )
                         }
                         Text(
-                            text = "•  Watched ${dateFormatter.format(Date(entry.loggedAt))}",
+                            text = "•  ${
+                                stringResource(
+                                    R.string.diary_watched_on,
+                                    dateFormatter.format(Date(entry.loggedAt))
+                                )
+                            }",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -269,7 +279,7 @@ fun DiaryTimelineItemCard(
                                         modifier = Modifier.size(12.dp)
                                     )
                                     Text(
-                                        text = "Rewatch",
+                                        text = stringResource(R.string.diary_badge_rewatch),
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.onSecondaryContainer

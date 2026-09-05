@@ -1,520 +1,544 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShowTime — Discover Movies & TV Shows</title>
-  
-  <!-- Primary Meta Tags -->
-  <meta name="title" content="ShowTime — Discover Movies & TV Shows">
-  <meta name="description" content="Discover movies, TV shows, explore curated community collections, generate cinema receipts, and sync your watch history. Built with Jetpack Compose.">
-  <meta name="theme-color" content="#0d1117">
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>ShowTime — Discover Movies & TV Shows</title>
 
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://showtime.ssverma.in/">
-  <meta property="og:title" content="ShowTime — The Ultimate Cinema Companion">
-  <meta property="og:description" content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, and sync with Trakt.tv.">
-  <meta property="og:image" content="https://showtime.ssverma.in/assets/og-cover.png">
+    <!-- Primary Meta Tags -->
+    <meta content="ShowTime — Discover Movies & TV Shows" name="title">
+    <meta content="Discover movies, TV shows, explore curated community collections, generate cinema receipts, and sync your watch history. Built with Jetpack Compose."
+          name="description">
+    <meta content="#0d1117" name="theme-color">
 
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://showtime.ssverma.in/">
-  <meta property="twitter:title" content="ShowTime — The Ultimate Cinema Companion">
-  <meta property="twitter:description" content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, and sync with Trakt.tv.">
-  <meta property="twitter:image" content="https://showtime.ssverma.in/assets/og-cover.png">
+    <!-- Open Graph / Facebook -->
+    <meta content="website" property="og:type">
+    <meta content="https://showtime.ssverma.in/" property="og:url">
+    <meta content="ShowTime — The Ultimate Cinema Companion" property="og:title">
+    <meta content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, and sync with Trakt.tv."
+          property="og:description">
+    <meta content="https://showtime.ssverma.in/assets/og-cover.png" property="og:image">
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Twitter -->
+    <meta content="summary_large_image" property="twitter:card">
+    <meta content="https://showtime.ssverma.in/" property="twitter:url">
+    <meta content="ShowTime — The Ultimate Cinema Companion" property="twitter:title">
+    <meta content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, and sync with Trakt.tv."
+          property="twitter:description">
+    <meta content="https://showtime.ssverma.in/assets/og-cover.png" property="twitter:image">
 
-  <style>
-    :root {
-      --bg: #0B0F19;
-      --surface: rgba(255, 255, 255, 0.04);
-      --surface-hover: rgba(255, 255, 255, 0.08);
-      --border: rgba(255, 255, 255, 0.08);
-      --primary: #6366F1;
-      --primary-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
-      --accent-glow: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.25) 0%, rgba(11, 15, 25, 0) 70%);
-      --text: #F8FAFC;
-      --text-muted: #94A3B8;
-    }
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
+    <style>
+        :root {
+          --bg: #0B0F19;
+          --surface: rgba(255, 255, 255, 0.04);
+          --surface-hover: rgba(255, 255, 255, 0.08);
+          --border: rgba(255, 255, 255, 0.08);
+          --primary: #6366F1;
+          --primary-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+          --accent-glow: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.25) 0%, rgba(11, 15, 25, 0) 70%);
+          --text: #F8FAFC;
+          --text-muted: #94A3B8;
+        }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      overflow-x: hidden;
-    }
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
 
-    .ambient-glow {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100vw;
-      height: 600px;
-      background: var(--accent-glow);
-      pointer-events: none;
-      z-index: 0;
-    }
+        body {
+          background-color: var(--bg);
+          color: var(--text);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+          overflow-x: hidden;
+        }
 
-    .container {
-      max-width: 1000px;
-      width: 100%;
-      padding: 32px 24px;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        .ambient-glow {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100vw;
+          height: 600px;
+          background: var(--accent-glow);
+          pointer-events: none;
+          z-index: 0;
+        }
 
-    /* Dynamic Deep Link Banner */
-    #deep-link-banner {
-      display: none;
-      width: 100%;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: 16px;
-      padding: 16px 20px;
-      margin-bottom: 28px;
-      align-items: center;
-      justify-content: space-between;
-      backdrop-filter: blur(12px);
-      animation: fadeIn 0.4s ease;
-    }
+        .container {
+          max-width: 1000px;
+          width: 100%;
+          padding: 32px 24px;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
 
-    #deep-link-banner.active {
-      display: flex;
-    }
+        /* Dynamic Deep Link Banner */
+        #deep-link-banner {
+          display: none;
+          width: 100%;
+          background: rgba(99, 102, 241, 0.12);
+          border: 1px solid rgba(99, 102, 241, 0.3);
+          border-radius: 16px;
+          padding: 16px 20px;
+          margin-bottom: 28px;
+          align-items: center;
+          justify-content: space-between;
+          backdrop-filter: blur(12px);
+          animation: fadeIn 0.4s ease;
+        }
 
-    .banner-text {
-      font-size: 14px;
-      font-weight: 500;
-      color: #E2E8F0;
-    }
+        #deep-link-banner.active {
+          display: flex;
+        }
 
-    .banner-btn {
-      background: var(--primary);
-      color: white;
-      text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
+        .banner-text {
+          font-size: 14px;
+          font-weight: 500;
+          color: #E2E8F0;
+        }
 
-    .banner-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
+        .banner-btn {
+          background: var(--primary);
+          color: white;
+          text-decoration: none;
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
 
-    /* Header / Nav */
-    header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 48px;
-    }
+        .banner-btn:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+        }
 
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: white;
-    }
+        /* Header / Nav */
+        header {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 48px;
+        }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: var(--primary-gradient);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
-      font-size: 20px;
-    }
+        .logo-container {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-decoration: none;
+          color: white;
+        }
 
-    .logo-title {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
+        .logo-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          background: var(--primary-gradient);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+          font-size: 20px;
+        }
 
-    .github-link {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 8px 16px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      transition: all 0.2s;
-    }
+        .logo-title {
+          font-size: 20px;
+          font-weight: 800;
+          letter-spacing: -0.5px;
+        }
 
-    .github-link:hover {
-      color: white;
-      background: var(--surface);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
+        .github-link {
+          color: var(--text-muted);
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 600;
+          padding: 8px 16px;
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          transition: all 0.2s;
+        }
 
-    /* Hero Section */
-    .hero {
-      text-align: center;
-      max-width: 720px;
-      margin-bottom: 56px;
-    }
+        .github-link:hover {
+          color: white;
+          background: var(--surface);
+          border-color: rgba(255, 255, 255, 0.2);
+        }
 
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      padding: 6px 14px;
-      border-radius: 24px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #A5B4FC;
-      margin-bottom: 20px;
-    }
+        /* Hero Section */
+        .hero {
+          text-align: center;
+          max-width: 720px;
+          margin-bottom: 56px;
+        }
 
-    .hero h1 {
-      font-size: 46px;
-      font-weight: 800;
-      line-height: 1.15;
-      letter-spacing: -1px;
-      margin-bottom: 20px;
-    }
+        .hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border);
+          padding: 6px 14px;
+          border-radius: 24px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #A5B4FC;
+          margin-bottom: 20px;
+        }
 
-    .hero h1 span {
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+        .hero h1 {
+          font-size: 46px;
+          font-weight: 800;
+          line-height: 1.15;
+          letter-spacing: -1px;
+          margin-bottom: 20px;
+        }
 
-    .hero p {
-      font-size: 18px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 36px;
-    }
+        .hero h1 span {
+          background: var(--primary-gradient);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
 
-    .cta-group {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+        .hero p {
+          font-size: 18px;
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin-bottom: 36px;
+        }
 
-    .btn-playstore {
-      background: var(--primary-gradient);
-      color: white;
-      text-decoration: none;
-      padding: 14px 28px;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 12px 28px rgba(99, 102, 241, 0.35);
-      transition: all 0.2s;
-    }
+        .cta-group {
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
 
-    .btn-playstore:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 36px rgba(99, 102, 241, 0.45);
-    }
+        .btn-playstore {
+          background: var(--primary-gradient);
+          color: white;
+          text-decoration: none;
+          padding: 14px 28px;
+          border-radius: 14px;
+          font-size: 15px;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 12px 28px rgba(99, 102, 241, 0.35);
+          transition: all 0.2s;
+        }
 
-    /* Features Grid */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      width: 100%;
-      margin-bottom: 64px;
-    }
+        .btn-playstore:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 16px 36px rgba(99, 102, 241, 0.45);
+        }
 
-    .feature-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px;
-      transition: all 0.25s ease;
-      backdrop-filter: blur(8px);
-    }
+        /* Features Grid */
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 20px;
+          width: 100%;
+          margin-bottom: 64px;
+        }
 
-    .feature-card:hover {
-      background: var(--surface-hover);
-      border-color: rgba(255, 255, 255, 0.16);
-      transform: translateY(-3px);
-    }
+        .feature-card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 28px;
+          transition: all 0.25s ease;
+          backdrop-filter: blur(8px);
+        }
 
-    .feature-icon {
-      font-size: 28px;
-      margin-bottom: 16px;
-    }
+        .feature-card:hover {
+          background: var(--surface-hover);
+          border-color: rgba(255, 255, 255, 0.16);
+          transform: translateY(-3px);
+        }
 
-    .feature-card h3 {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: white;
-    }
+        .feature-icon {
+          font-size: 28px;
+          margin-bottom: 16px;
+        }
 
-    .feature-card p {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.55;
-    }
+        .feature-card h3 {
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 8px;
+          color: white;
+        }
 
-    /* Developer Profile Section */
-    .developer-section {
-      width: 100%;
-      margin-bottom: 64px;
-    }
+        .feature-card p {
+          font-size: 14px;
+          color: var(--text-muted);
+          line-height: 1.55;
+        }
 
-    .developer-card {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.05) 100%);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 24px;
-      padding: 32px;
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-    }
+        /* Developer Profile Section */
+        .developer-section {
+          width: 100%;
+          margin-bottom: 64px;
+        }
 
-    .dev-avatar {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid rgba(99, 102, 241, 0.5);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
-      flex-shrink: 0;
-    }
+        .developer-card {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.05) 100%);
+          border: 1px solid rgba(99, 102, 241, 0.2);
+          border-radius: 24px;
+          padding: 32px;
+          display: flex;
+          align-items: center;
+          gap: 28px;
+          backdrop-filter: blur(12px);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
 
-    .dev-info {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+        .dev-avatar {
+          width: 90px;
+          height: 90px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 3px solid rgba(99, 102, 241, 0.5);
+          box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+          flex-shrink: 0;
+        }
 
-    .dev-badge {
-      display: inline-flex;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: #A5B4FC;
-    }
+        .dev-info {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
 
-    .dev-name {
-      font-size: 22px;
-      font-weight: 800;
-      color: white;
-      letter-spacing: -0.3px;
-    }
+        .dev-badge {
+          display: inline-flex;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          color: #A5B4FC;
+        }
 
-    .dev-bio {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      max-width: 600px;
-    }
+        .dev-name {
+          font-size: 22px;
+          font-weight: 800;
+          color: white;
+          letter-spacing: -0.3px;
+        }
 
-    .dev-links {
-      display: flex;
-      gap: 12px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
+        .dev-bio {
+          font-size: 14px;
+          color: var(--text-muted);
+          line-height: 1.5;
+          max-width: 600px;
+        }
 
-    .dev-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: #E2E8F0;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 20px;
-      transition: all 0.2s;
-    }
+        .dev-links {
+          display: flex;
+          gap: 12px;
+          margin-top: 10px;
+          flex-wrap: wrap;
+        }
 
-    .dev-link:hover {
-      background: rgba(99, 102, 241, 0.2);
-      border-color: rgba(99, 102, 241, 0.4);
-      color: white;
-      transform: translateY(-1px);
-    }
+        .dev-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid var(--border);
+          color: #E2E8F0;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 6px 14px;
+          border-radius: 20px;
+          transition: all 0.2s;
+        }
 
-    /* Footer */
-    footer {
-      width: 100%;
-      border-top: 1px solid var(--border);
-      padding: 32px 0 16px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 13px;
-    }
+        .dev-link:hover {
+          background: rgba(99, 102, 241, 0.2);
+          border-color: rgba(99, 102, 241, 0.4);
+          color: white;
+          transform: translateY(-1px);
+        }
 
-    .tmdb-notice {
-      font-size: 11px;
-      color: #64748B;
-      margin-top: 8px;
-    }
+        /* Footer */
+        footer {
+          width: 100%;
+          border-top: 1px solid var(--border);
+          padding: 32px 0 16px;
+          text-align: center;
+          color: var(--text-muted);
+          font-size: 13px;
+        }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+        .tmdb-notice {
+          font-size: 11px;
+          color: #64748B;
+          margin-top: 8px;
+        }
 
-    @media (max-width: 640px) {
-      .hero h1 { font-size: 34px; }
-      .hero p { font-size: 16px; }
-      #deep-link-banner { flex-direction: column; gap: 12px; text-align: center; }
-      .developer-card { flex-direction: column; text-align: center; align-items: center; }
-      .dev-links { justify-content: center; }
-    }
-  </style>
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+          .hero h1 { font-size: 34px; }
+          .hero p { font-size: 16px; }
+          #deep-link-banner { flex-direction: column; gap: 12px; text-align: center; }
+          .developer-card { flex-direction: column; text-align: center; align-items: center; }
+          .dev-links { justify-content: center; }
+        }
+    </style>
 </head>
 <body>
 
-  <div class="ambient-glow"></div>
+<div class="ambient-glow"></div>
 
-  <div class="container">
-    
+<div class="container">
+
     <!-- Dynamic In-App Redirect Banner -->
     <div id="deep-link-banner">
-      <span class="banner-text" id="banner-msg">🍿 Opening shared content in ShowTime...</span>
-      <a href="#" id="banner-action-btn" class="banner-btn">Open in App</a>
+        <span class="banner-text" id="banner-msg">🍿 Opening shared content in ShowTime...</span>
+        <a class="banner-btn" href="#" id="banner-action-btn">Open in App</a>
     </div>
 
     <header>
-      <a href="/" class="logo-container">
-        <div class="logo-icon">🎬</div>
-        <span class="logo-title">ShowTime</span>
-      </a>
-      <a href="https://github.com/SSVerma/ShowTime" target="_blank" class="github-link">
-        GitHub ★
-      </a>
+        <a class="logo-container" href="/">
+            <div class="logo-icon">🎬</div>
+            <span class="logo-title">ShowTime</span>
+        </a>
+        <a class="github-link" href="https://github.com/SSVerma/ShowTime" target="_blank">
+            GitHub ★
+        </a>
     </header>
 
     <main class="hero">
-      <div class="hero-badge">✨ 100% Jetpack Compose • Open Source</div>
-      <h1>The Ultimate <span>Cinema Companion</span> & Movie Tracker</h1>
-      <p>
-        Explore movies & TV shows, curate custom community lists, generate stylish cinema receipts, and sync seamlessly with Trakt.tv.
-      </p>
+        <div class="hero-badge">✨ 100% Jetpack Compose • Open Source</div>
+        <h1>The Ultimate <span>Cinema Companion</span> & Movie Tracker</h1>
+        <p>
+            Explore movies & TV shows, curate custom community lists, generate stylish cinema
+            receipts, and sync seamlessly with Trakt.tv.
+        </p>
 
-      <div class="cta-group">
-        <a href="https://play.google.com/store/apps/details?id=com.ssverma.showtime" class="btn-playstore" id="main-download-btn">
-          <span>📲 Get on Google Play</span>
-        </a>
-      </div>
+        <div class="cta-group">
+            <a class="btn-playstore"
+               href="https://play.google.com/store/apps/details?id=com.ssverma.showtime" id="main-download-btn">
+                <span>📲 Get on Google Play</span>
+            </a>
+        </div>
     </main>
 
     <section class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🍿</div>
-        <h3>Community Collections</h3>
-        <p>Curate themed movie & TV collections, publish them to the community, and clone curated lists created by fellow cinephiles.</p>
-      </div>
+        <div class="feature-card">
+            <div class="feature-icon">🍿</div>
+            <h3>Community Collections</h3>
+            <p>Curate themed movie & TV collections, publish them to the community, and clone
+                curated lists created by fellow cinephiles.</p>
+        </div>
 
-      <div class="feature-card">
-        <div class="feature-icon">🧾</div>
-        <h3>Cinema Receipts</h3>
-        <p>Generate retro styled cinema receipts for your watched movies, favorite gems, and custom curated collections.</p>
-      </div>
+        <div class="feature-card">
+            <div class="feature-icon">🧾</div>
+            <h3>Cinema Receipts</h3>
+            <p>Generate retro styled cinema receipts for your watched movies, favorite gems, and
+                custom curated collections.</p>
+        </div>
 
-      <div class="feature-card">
-        <div class="feature-icon">☁️</div>
-        <h3>Trakt & Cloud Backup</h3>
-        <p>Two-way sync with Trakt.tv and encrypted Google Drive cloud backup keeps your watch history preserved across devices.</p>
-      </div>
+        <div class="feature-card">
+            <div class="feature-icon">☁️</div>
+            <h3>Trakt & Cloud Backup</h3>
+            <p>Two-way sync with Trakt.tv and encrypted Google Drive cloud backup keeps your watch
+                history preserved across devices.</p>
+        </div>
 
-      <div class="feature-card">
-        <div class="feature-icon">🎮</div>
-        <h3>Daily Cinema Challenges</h3>
-        <p>Test your film knowledge with daily movie trivia puzzles, streak tracking, and shareable score grids.</p>
-      </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎮</div>
+            <h3>Daily Cinema Challenges</h3>
+            <p>Test your film knowledge with daily movie trivia puzzles, streak tracking, and
+                shareable score grids.</p>
+        </div>
 
-      <div class="feature-card">
-        <div class="feature-icon">🎨</div>
-        <h3>Material You & OLED Dark</h3>
-        <p>Stunning dynamic theming adapting to your wallpaper palette with pure AMOLED OLED Midnight black mode.</p>
-      </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>Material You & OLED Dark</h3>
+            <p>Stunning dynamic theming adapting to your wallpaper palette with pure AMOLED OLED
+                Midnight black mode.</p>
+        </div>
 
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h3>Blazing Fast & Fluid</h3>
-        <p>Engineered with Compose multiplatform architecture, Navigation3 backstacks, and offline-first Room database.</p>
-      </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Blazing Fast & Fluid</h3>
+            <p>Engineered with Compose multiplatform architecture, Navigation3 backstacks, and
+                offline-first Room database.</p>
+        </div>
     </section>
 
     <!-- Developer Section -->
     <section class="developer-section">
-      <div class="developer-card">
-        <img src="https://pbs.twimg.com/profile_images/1807349302164934656/xELoSQEH_400x400.jpg" alt="SS Verma" class="dev-avatar">
-        <div class="dev-info">
-          <span class="dev-badge">Crafted with passion by</span>
-          <h3 class="dev-name">SS Verma</h3>
-          <p class="dev-bio">Android & System Software Engineer. Building beautiful, fluid, high-performance apps and open-source software.</p>
-          <div class="dev-links">
-            <a href="https://x.com/ssverma1916" target="_blank" class="dev-link">
-              <span>𝕏 @ssverma1916</span>
-            </a>
-            <a href="https://github.com/SSVerma" target="_blank" class="dev-link">
-              <span>GitHub</span>
-            </a>
-            <a href="https://ssverma.in" target="_blank" class="dev-link">
-              <span>ssverma.in ↗</span>
-            </a>
-          </div>
+        <div class="developer-card">
+            <img alt="SS Verma"
+                 class="dev-avatar" src="https://pbs.twimg.com/profile_images/1807349302164934656/xELoSQEH_400x400.jpg">
+            <div class="dev-info">
+                <span class="dev-badge">Crafted with passion by</span>
+                <h3 class="dev-name">SS Verma</h3>
+                <p class="dev-bio">Android & System Software Engineer. Building beautiful, fluid,
+                    high-performance apps and open-source software.</p>
+                <div class="dev-links">
+                    <a class="dev-link" href="https://x.com/ssverma1916" target="_blank">
+                        <span>𝕏 @ssverma1916</span>
+                    </a>
+                    <a class="dev-link" href="https://github.com/SSVerma" target="_blank">
+                        <span>GitHub</span>
+                    </a>
+                    <a class="dev-link" href="https://ssverma.in" target="_blank">
+                        <span>ssverma.in ↗</span>
+                    </a>
+                </div>
+            </div>
         </div>
-      </div>
     </section>
 
     <footer>
-      <p>© 2026 ShowTime • Built with ❤️ for Cinema Lovers</p>
-      <div style="margin: 14px 0; display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
-        <a href="/privacy" style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#818CF8'" onmouseout="this.style.color='var(--text-muted)'">Privacy Policy</a>
-        <span style="color: var(--border);">•</span>
-        <a href="https://github.com/SSVerma/ShowTime" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#818CF8'" onmouseout="this.style.color='var(--text-muted)'">GitHub</a>
-        <span style="color: var(--border);">•</span>
-        <a href="mailto:ssvermahmh@gmail.com" style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='#818CF8'" onmouseout="this.style.color='var(--text-muted)'">Contact Us</a>
-      </div>
-      <p class="tmdb-notice">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+        <p>© 2026 ShowTime • Built with ❤️ for Cinema Lovers</p>
+        <div style="margin: 14px 0; display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <a href="/privacy"
+               onmouseout="this.style.color='var(--text-muted)'"
+               onmouseover="this.style.color='#818CF8'"
+               style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;">Privacy Policy</a>
+            <span style="color: var(--border);">•</span>
+            <a href="https://github.com/SSVerma/ShowTime" onmouseout="this.style.color='var(--text-muted)'" onmouseover="this.style.color='#818CF8'"
+               rel="noopener noreferrer"
+               style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;"
+               target="_blank">GitHub</a>
+            <span style="color: var(--border);">•</span>
+            <a href="mailto:ssvermahmh@gmail.com"
+               onmouseout="this.style.color='var(--text-muted)'"
+               onmouseover="this.style.color='#818CF8'"
+               style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;">Contact Us</a>
+        </div>
+        <p class="tmdb-notice">This product uses the TMDB API but is not endorsed or certified by
+            TMDB.</p>
     </footer>
 
-  </div>
+</div>
 
-  <script>
+<script>
     // Handle dynamic deep links (e.g. /lists/{id}, /movie/{id}, /tv/{id})
     (function() {
       const path = window.location.pathname;
@@ -547,7 +571,7 @@
         }
       }
     })();
-  </script>
+</script>
 
 </body>
 </html>

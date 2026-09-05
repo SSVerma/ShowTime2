@@ -16,17 +16,14 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.StarHalf
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -51,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,7 +57,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
-import java.util.Locale
+import com.ssverma.shared.ui.R
 
 @Composable
 fun LogAndRateDialog(
@@ -168,13 +166,17 @@ fun LogAndRateDialog(
                             }
                             Column {
                                 Text(
-                                    text = if (existingEntry != null) "Edit Diary Log" else "Log to Cinema Diary",
+                                    text = if (existingEntry != null) {
+                                        stringResource(R.string.diary_dialog_edit_title)
+                                    } else {
+                                        stringResource(R.string.diary_dialog_log_title)
+                                    },
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "Personal rating & review",
+                                    text = stringResource(R.string.diary_dialog_subtitle),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -184,7 +186,7 @@ fun LogAndRateDialog(
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
-                                contentDescription = "Close",
+                                contentDescription = stringResource(R.string.close),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -243,7 +245,11 @@ fun LogAndRateDialog(
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
                                         Text(
-                                            text = if (mediaType == MediaType.Tv) "TV Series" else "Movie",
+                                            text = if (mediaType == MediaType.Tv) {
+                                                stringResource(R.string.tv_badge)
+                                            } else {
+                                                stringResource(R.string.movie_badge)
+                                            },
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -276,9 +282,8 @@ fun LogAndRateDialog(
                                                     modifier = Modifier.size(13.dp)
                                                 )
                                                 Text(
-                                                    text = String.format(
-                                                        Locale.getDefault(),
-                                                        "%.1f TMDB",
+                                                    text = stringResource(
+                                                        R.string.diary_dialog_tmdb_rating,
                                                         tmdbRating
                                                     ),
                                                     style = MaterialTheme.typography.bodySmall,
@@ -296,7 +301,7 @@ fun LogAndRateDialog(
 
                         // Star rating
                         Text(
-                            text = "YOUR RATING",
+                            text = stringResource(R.string.diary_dialog_your_rating),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -318,17 +323,27 @@ fun LogAndRateDialog(
                                 shape = RoundedCornerShape(8.dp),
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
                             ) {
-                                Text(
-                                    text = String.format(
-                                        Locale.getDefault(),
-                                        "★ %.1f / 5.0",
-                                        userRating
-                                    ),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Star,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            R.string.diary_dialog_rating_format,
+                                            userRating
+                                        ),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
 
@@ -362,7 +377,7 @@ fun LogAndRateDialog(
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Text(
-                                        text = "Mark as Rewatch",
+                                        text = stringResource(R.string.diary_dialog_mark_rewatch),
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -383,7 +398,7 @@ fun LogAndRateDialog(
 
                         // Personal Review / Notes
                         Text(
-                            text = "PERSONAL REVIEW & THOUGHTS",
+                            text = stringResource(R.string.diary_dialog_review_title),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -396,7 +411,7 @@ fun LogAndRateDialog(
                             onValueChange = { review = it },
                             placeholder = {
                                 Text(
-                                    text = "What made this memorable or unique?",
+                                    text = stringResource(R.string.diary_dialog_review_placeholder),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -432,7 +447,7 @@ fun LogAndRateDialog(
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(text = "Cancel")
+                            Text(text = stringResource(R.string.cancel))
                         }
 
                         Button(
@@ -461,54 +476,17 @@ fun LogAndRateDialog(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = if (existingEntry != null) "Update Log" else "Save to Diary",
+                                text = if (existingEntry != null) {
+                                    stringResource(R.string.diary_dialog_update_action)
+                                } else {
+                                    stringResource(R.string.diary_dialog_save_action)
+                                },
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun InteractiveStarRatingBar(
-    rating: Float,
-    onRatingChanged: (Float) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier
-    ) {
-        for (i in 1..5) {
-            val starValue = i.toFloat()
-            val icon = when {
-                rating >= starValue -> Icons.Rounded.Star
-                rating >= starValue - 0.5f -> Icons.AutoMirrored.Rounded.StarHalf
-                else -> Icons.Rounded.StarBorder
-            }
-
-            Icon(
-                imageVector = icon,
-                contentDescription = "Rating $i",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        val newRating = if (rating == starValue) {
-                            starValue - 0.5f
-                        } else {
-                            starValue
-                        }
-                        onRatingChanged(newRating)
-                    }
-            )
         }
     }
 }

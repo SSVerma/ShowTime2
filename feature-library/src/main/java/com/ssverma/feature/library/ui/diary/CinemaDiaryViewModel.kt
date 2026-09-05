@@ -3,6 +3,7 @@ package com.ssverma.feature.library.ui.diary
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.api.service.tmdb.TmdbApiService
+import com.ssverma.api.service.tmdb.TmdbApiTiedConstants
 import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.networking.adapter.ApiResponse
@@ -212,15 +213,25 @@ class CinemaDiaryViewModel @Inject constructor(
                         .filter { item ->
                             val type = item.mediaType?.lowercase().orEmpty()
                             when (filter) {
-                                ChallengeMediaTypeFilter.ALL -> type == "movie" || type == "tv"
-                                ChallengeMediaTypeFilter.MOVIE -> type == "movie"
-                                ChallengeMediaTypeFilter.TV -> type == "tv"
+                                ChallengeMediaTypeFilter.ALL ->
+                                    type == TmdbApiTiedConstants.AvailableMediaTypes.Movie ||
+                                            type == TmdbApiTiedConstants.AvailableMediaTypes.Tv
+
+                                ChallengeMediaTypeFilter.MOVIE ->
+                                    type == TmdbApiTiedConstants.AvailableMediaTypes.Movie
+
+                                ChallengeMediaTypeFilter.TV ->
+                                    type == TmdbApiTiedConstants.AvailableMediaTypes.Tv
                             }
                         }
                         .distinctBy { it.id }
                         .take(10)
                         .map { item ->
-                            val mediaType = if (item.mediaType.equals("tv", ignoreCase = true)) {
+                            val mediaType = if (item.mediaType.equals(
+                                    TmdbApiTiedConstants.AvailableMediaTypes.Tv,
+                                    ignoreCase = true
+                                )
+                            ) {
                                 MediaType.Tv
                             } else {
                                 MediaType.Movie

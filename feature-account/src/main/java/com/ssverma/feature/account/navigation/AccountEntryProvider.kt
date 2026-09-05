@@ -8,9 +8,8 @@ import com.ssverma.feature.account.ui.backup.BackupSyncScreen
 import com.ssverma.feature.account.ui.profile.ProfileScreen
 import com.ssverma.feature.account.ui.trakt.TraktSyncScreen
 import com.ssverma.feature.auth.navigation.AuthNavKey
-import com.ssverma.shared.ui.LocalAppInfoTrigger
-
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
+import com.ssverma.shared.ui.LocalAppInfoTrigger
 
 fun EntryProviderScope<NavKey>.accountEntries(
     navigator: Navigator
