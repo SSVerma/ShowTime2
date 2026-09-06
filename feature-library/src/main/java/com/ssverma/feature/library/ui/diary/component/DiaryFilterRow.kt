@@ -2,6 +2,7 @@ package com.ssverma.feature.library.ui.diary.component
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,7 +32,8 @@ import com.ssverma.shared.domain.model.diary.DiaryFilterType
 fun DiaryFilterRow(
     activeFilter: DiaryFilterType,
     onFilterSelected: (DiaryFilterType) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
 ) {
     val filterScrollState = rememberScrollState()
 
@@ -40,7 +42,7 @@ fun DiaryFilterRow(
         modifier = modifier
             .fillMaxWidth()
             .horizontalScroll(filterScrollState)
-            .padding(vertical = 4.dp)
+            .padding(contentPadding)
     ) {
         DiaryFilterType.entries.forEach { filter ->
             val labelRes = when (filter) {

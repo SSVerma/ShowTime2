@@ -121,6 +121,7 @@ fun TasteProfileScreen(
                 DiaryFilterRow(
                     activeFilter = uiState.selectedFilter,
                     onFilterSelected = viewModel::setFilter,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
                 )
             }

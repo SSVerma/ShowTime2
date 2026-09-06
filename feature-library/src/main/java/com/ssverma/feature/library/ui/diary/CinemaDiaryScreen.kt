@@ -184,7 +184,8 @@ fun CinemaDiaryScreen(
                     item(key = "diary_filters", contentType = "filters") {
                         DiaryFilterRow(
                             activeFilter = uiState.activeFilter,
-                            onFilterSelected = viewModel::setFilter
+                            onFilterSelected = viewModel::setFilter,
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)
                         )
                     }
 
