@@ -87,6 +87,7 @@ fun MediaOmniActionMenu(
     customLists: List<CustomListOption>? = null,
     onToggleCustomList: ((CustomListOption) -> Unit)? = null,
     isOverPoster: Boolean = true,
+    actionContent: (@Composable (onClick: () -> Unit) -> Unit)? = null,
     viewModel: MediaOmniMenuViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -202,6 +203,7 @@ fun MediaOmniActionMenu(
         onDismissRequest = { isMenuExpanded = false },
         showActiveDot = effectiveActionActive,
         isOverPoster = isOverPoster,
+        actionContent = actionContent,
         modifier = modifier
     ) {
         // Group 1: Static Actions Bar (- - -)

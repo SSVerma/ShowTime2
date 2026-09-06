@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
@@ -232,7 +233,13 @@ private fun TvShowContent(
                                     }
                                 }
                             },
-                            isOverPoster = true
+                            actionContent = { onClick ->
+                                BackdropActionButton(
+                                    onClick = onClick,
+                                    icon = Icons.Rounded.Add,
+                                    contentDescription = stringResource(id = SharedR.string.more_options_cd)
+                                )
+                            }
                         )
                         BackdropActionButton(
                             onClick = {

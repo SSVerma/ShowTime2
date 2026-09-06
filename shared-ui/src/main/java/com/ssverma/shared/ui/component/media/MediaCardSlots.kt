@@ -223,17 +223,22 @@ fun MediaCardOverflowAction(
     modifier: Modifier = Modifier,
     showActiveDot: Boolean = false,
     isOverPoster: Boolean = true,
+    actionContent: (@Composable (onClick: () -> Unit) -> Unit)? = null,
     menuContent: @Composable ColumnScope.() -> Unit
 ) {
     Box(modifier = modifier) {
-        MediaCardFrostedActionButton(
-            icon = Icons.Rounded.MoreVert,
-            contentDescription = stringResource(R.string.media_card_overflow_cd),
-            onClick = onToggleExpand,
-            showActiveDot = showActiveDot,
-            tint = if (isOverPoster) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-            hasShadow = isOverPoster
-        )
+        if (actionContent != null) {
+            actionContent(onToggleExpand)
+        } else {
+            MediaCardFrostedActionButton(
+                icon = Icons.Rounded.MoreVert,
+                contentDescription = stringResource(R.string.media_card_overflow_cd),
+                onClick = onToggleExpand,
+                showActiveDot = showActiveDot,
+                tint = if (isOverPoster) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                hasShadow = isOverPoster
+            )
+        }
 
         val scrollState = rememberScrollState()
         val scrollbarColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
