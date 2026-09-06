@@ -98,4 +98,17 @@ class AppStateHolderTest {
             assertThat(awaitItem()).isTrue()
         }
     }
+
+    @Test
+    fun `preferredOriginalLanguage updates and resets successfully`() = runTest {
+        appStateHolder.preferredOriginalLanguage.test {
+            assertThat(awaitItem()).isEqualTo("en")
+
+            appStateHolder.updatePreferredOriginalLanguage("hi")
+            assertThat(awaitItem()).isEqualTo("hi")
+
+            appStateHolder.resetPreferredOriginalLanguage()
+            assertThat(awaitItem()).isEqualTo("")
+        }
+    }
 }

@@ -78,13 +78,13 @@ fun DiscoveryFilterSheet(
 
                 TextButton(
                     onClick = {
-                        draftFilter = UniversalDiscoveryFilter(
-                            mediaType = draftFilter.mediaType,
+                        draftFilter = draftFilter.copy(
                             vibePreset = DiscoveryVibePreset.ALL,
                             decade = DiscoveryDecade.ALL_TIME,
                             sortOrder = DiscoverySortOrder.POPULARITY_DESC,
                             studioHub = null,
                             selectedGenreIds = emptySet(),
+                            selectedProviderIds = emptySet(),
                             minRating = null,
                             hideWatched = true
                         )

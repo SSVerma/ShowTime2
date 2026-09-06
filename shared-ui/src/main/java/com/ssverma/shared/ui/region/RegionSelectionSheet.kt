@@ -1,10 +1,11 @@
 package com.ssverma.shared.ui.region
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +51,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -241,25 +246,98 @@ fun RegionSelectionContent(
         }
     }
 
+    val density = LocalDensity.current
+    var headerHeightPx by remember { mutableStateOf(0) }
+    val headerHeightDp = with(density) { headerHeightPx.toDp() }
+
     val isListScrolled by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0 }
     }
-    val headerElevation by animateDpAsState(
-        targetValue = if (isListScrolled) 4.dp else 0.dp,
-        label = "region_header_elevation"
+    val shadowAlpha by animateFloatAsState(
+        targetValue = if (isListScrolled) 1f else 0f,
+        label = "region_header_shadow_alpha"
     )
 
-    Column(modifier = modifier) {
-        // Sticky Header & Search Bar Surface with dynamic elevation on scroll
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            shadowElevation = headerElevation,
-            tonalElevation = headerElevation,
-            modifier = Modifier.fillMaxWidth()
+    Box(modifier = modifier.fillMaxWidth()) {
+        // Region List / Empty State
+        if (filteredRegions.isEmpty()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = if (headerHeightDp > 0.dp) headerHeightDp else 140.dp)
+                    .fillMaxHeight()
+                    .padding(24.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(id = R.string.no_regions_found),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(id = R.string.no_regions_found_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = if (headerHeightDp > 0.dp) headerHeightDp + 8.dp else 140.dp,
+                    bottom = 32.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(
+                    items = filteredRegions,
+                    key = { it.iso31661 }
+                ) { region ->
+                    val isSelected = region.iso31661.equals(selectedRegionCode, ignoreCase = true)
+                    RegionItemRow(
+                        region = region,
+                        isSelected = isSelected,
+                        onClick = { onRegionSelected(region) }
+                    )
+                }
+            }
+        }
+
+        // Sticky Header & Search Bar with downward shadow overlay
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                    .onGloballyPositioned { coordinates ->
+                        headerHeightPx = coordinates.size.height
+                    }
                     .padding(horizontal = 20.dp)
                     .padding(top = 4.dp, bottom = 12.dp)
             ) {
@@ -271,7 +349,7 @@ fun RegionSelectionContent(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Premium Search Bar with Shadow & High-Contrast Icons
+                // Premium Search Bar with High-Contrast Icons
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -323,73 +401,22 @@ fun RegionSelectionContent(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-        }
 
-        // Region List / Empty State
-        if (filteredRegions.isEmpty()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+            // Downward-only gradient shadow separator overlay when scrolled
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(24.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    modifier = Modifier.size(64.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Search,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(28.dp)
+                    .height(6.dp)
+                    .graphicsLayer { alpha = shadowAlpha }
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                Color.Transparent
+                            )
                         )
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(id = R.string.no_regions_found),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = stringResource(id = R.string.no_regions_found_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 8.dp,
-                    bottom = 32.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                items(
-                    items = filteredRegions,
-                    key = { it.iso31661 }
-                ) { region ->
-                    val isSelected = region.iso31661.equals(selectedRegionCode, ignoreCase = true)
-                    RegionItemRow(
-                        region = region,
-                        isSelected = isSelected,
-                        onClick = { onRegionSelected(region) }
                     )
-                }
-            }
+            )
         }
     }
 }

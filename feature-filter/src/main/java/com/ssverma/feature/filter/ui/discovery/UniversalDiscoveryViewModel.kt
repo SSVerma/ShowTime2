@@ -147,6 +147,12 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            appConfigRepository.preferredOriginalLanguage.collectLatest {
+                scheduleQuery(debounceMs = 0)
+            }
+        }
     }
 
     fun initFromNavKey(navKey: UniversalDiscoveryNavKey) {
@@ -329,6 +335,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
                     sortOrder = DiscoverySortOrder.POPULARITY_DESC,
                     studioHub = null,
                     selectedGenreIds = emptySet(),
+                    selectedProviderIds = emptySet(),
                     minRating = null,
                     hideWatched = true
                 )

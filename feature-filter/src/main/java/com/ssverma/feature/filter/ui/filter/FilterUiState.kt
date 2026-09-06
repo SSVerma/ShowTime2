@@ -14,7 +14,8 @@ import java.time.LocalDate
 data class FilterUiState(
     val filters: List<FilterGroup>,
     val isLoading: Boolean = false,
-    val isSearching: Boolean = false
+    val isSearching: Boolean = false,
+    val selectedRegion: String = "US"
 )
 
 data class FilterGroup(

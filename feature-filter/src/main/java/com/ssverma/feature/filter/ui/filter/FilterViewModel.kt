@@ -10,6 +10,7 @@ import com.ssverma.feature.filter.domain.model.FilterId
 import com.ssverma.shared.domain.DiscoverConfig
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -26,6 +27,7 @@ import javax.inject.Inject
 class FilterViewModel @Inject constructor(
     @param:MovieFilter private val movieFilterProvider: FilterProvider,
     @param:TvFilter private val tvShowFilterProvider: FilterProvider,
+    private val appConfigRepository: AppConfigRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FilterUiState(filters = emptyList(), isLoading = true))
@@ -39,6 +41,15 @@ class FilterViewModel @Inject constructor(
 
     init {
         observeSearchQuery()
+        observeWatchRegion()
+    }
+
+    private fun observeWatchRegion() {
+        viewModelScope.launch {
+            appConfigRepository.watchProviderRegion.collectLatest { region ->
+                _uiState.update { it.copy(selectedRegion = region) }
+            }
+        }
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)

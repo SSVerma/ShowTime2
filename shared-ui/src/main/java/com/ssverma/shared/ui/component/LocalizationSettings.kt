@@ -310,6 +310,14 @@ fun LocalizationSettingsBottomSheet(
                     // Content Language Filter (Quick Select)
                     item {
                         SettingsSectionHeader(stringResource(R.string.preferred_content_language))
+                        Text(
+                            text = stringResource(R.string.preferred_content_language_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .padding(horizontal = MaterialTheme.spacing.large)
+                                .padding(bottom = MaterialTheme.spacing.small)
+                        )
                     }
 
                     item {

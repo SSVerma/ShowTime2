@@ -40,6 +40,7 @@ class UniversalDiscoveryViewModelTest {
 
     private val watchRegionFlow = MutableStateFlow("US")
     private val streamingSubscriptionsFlow = MutableStateFlow(setOf(8, 9))
+    private val preferredOriginalLanguageFlow = MutableStateFlow("")
 
     private lateinit var viewModel: UniversalDiscoveryViewModel
 
@@ -47,6 +48,7 @@ class UniversalDiscoveryViewModelTest {
     fun setUp() {
         coEvery { mockAppConfigRepository.watchProviderRegion } returns watchRegionFlow
         coEvery { mockAppConfigRepository.userStreamingSubscriptions } returns streamingSubscriptionsFlow
+        coEvery { mockAppConfigRepository.preferredOriginalLanguage } returns preferredOriginalLanguageFlow
         coEvery {
             mockGetUniversalDiscoveryUseCase(
                 any(),
@@ -160,6 +162,7 @@ class UniversalDiscoveryViewModelTest {
         assertThat(filter.vibePreset).isEqualTo(DiscoveryVibePreset.ALL)
         assertThat(filter.decade).isEqualTo(DiscoveryDecade.ALL_TIME)
         assertThat(filter.sortOrder).isEqualTo(DiscoverySortOrder.POPULARITY_DESC)
+        assertThat(filter.selectedProviderIds).isEmpty()
     }
 
     @Test

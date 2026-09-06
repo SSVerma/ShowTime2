@@ -11,23 +11,30 @@ import javax.inject.Inject
 class RegionInterceptor @Inject constructor(
     private val appConfigRepository: AppConfigRepository
 ) : ApplicationInterceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val region = appConfigRepository.watchProviderRegion.value
-
         val original = chain.request()
         val url = original.url
         val urlString = url.toString()
 
         val newUrlBuilder = url.newBuilder()
 
-        // Inject watch_region for discover APIs
         if (urlString.contains("discover/")) {
-            newUrlBuilder.setQueryParameter("watch_region", region)
-            newUrlBuilder.setQueryParameter("region", region)
+            // For discover APIs, only inject watch_region if not already provided and non-blank
+            val existingWatchRegion = url.queryParameter("watch_region")
+            if (existingWatchRegion == null && region.isNotBlank()) {
+                newUrlBuilder.setQueryParameter("watch_region", region)
+            } else if (existingWatchRegion != null && existingWatchRegion.isBlank()) {
+                newUrlBuilder.removeAllQueryParameters("watch_region")
+            }
         } else {
             // Inject region for other APIs (movie, tv, search, etc.)
-            newUrlBuilder.setQueryParameter("region", region)
+            val existingRegion = url.queryParameter("region")
+            if (existingRegion == null && region.isNotBlank()) {
+                newUrlBuilder.setQueryParameter("region", region)
+            } else if (existingRegion != null && existingRegion.isBlank()) {
+                newUrlBuilder.removeAllQueryParameters("region")
+            }
         }
 
         val request = original.newBuilder()

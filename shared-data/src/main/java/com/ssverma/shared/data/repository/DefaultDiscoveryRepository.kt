@@ -17,6 +17,7 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
 import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
 import com.ssverma.shared.domain.model.movie.Movie
@@ -56,9 +57,18 @@ class DefaultDiscoveryRepository @Inject constructor(
 
         queryMap["sort_by"] = filter.sortOrder.apiValue
 
-        val minVoteAvg = filter.minRating ?: filter.vibePreset.minVoteAverage
-        queryMap["vote_average.gte"] = minVoteAvg.toString()
-        queryMap["vote_count.gte"] = filter.vibePreset.minVoteCount.toString()
+        val minVoteAvg = filter.minRating
+            ?: if (filter.vibePreset != DiscoveryVibePreset.ALL) filter.vibePreset.minVoteAverage else null
+        if (minVoteAvg != null && minVoteAvg > 0f) {
+            queryMap["vote_average.gte"] = minVoteAvg.toString()
+        }
+
+        val minVoteCount = if (filter.vibePreset == DiscoveryVibePreset.ALL) {
+            if (filter.minRating != null) 50 else 20
+        } else {
+            filter.vibePreset.minVoteCount
+        }
+        queryMap["vote_count.gte"] = minVoteCount.toString()
 
         val combinedGenreIds = if (filter.mediaType == MediaType.Movie) {
             (filter.vibePreset.movieGenreIds + filter.selectedGenreIds).distinct()

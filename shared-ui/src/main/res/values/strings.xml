@@ -59,6 +59,8 @@
     <string name="translate_app_content">Translate App Content</string>
     <string name="translate_app_desc">Fetch titles &amp; overviews in selected language</string>
     <string name="preferred_content_language">Preferred Original Language</string>
+    <string name="preferred_content_language_desc">Filters feeds across the app to titles originally in this language. Select \u2018Global / Trending\u2019 for all international releases.</string>
+    <string name="reset_to_global">Reset to Global</string>
     <string name="global_trending">Global / Trending</string>
     <string name="watch_providers">Watch Providers</string>
     <string name="movies">Movies</string>

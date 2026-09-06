@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -40,12 +41,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ui.MultiSelectableState
+import com.ssverma.core.ui.Toggleable
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.RangeSliderScale
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
@@ -55,6 +57,7 @@ import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.domain.model.FilterId
 import com.ssverma.feature.filter.domain.processor.DiscoverFilterState
 import com.ssverma.feature.filter.domain.processor.asDiscoverOptions
+import com.ssverma.feature.filter.ui.filter.component.FilterPickerBottomSheet
 import com.ssverma.feature.filter.ui.filter.component.FilterPickerChip
 import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterFlowRow
 import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterRow
@@ -63,12 +66,12 @@ import com.ssverma.feature.filter.ui.filter.component.SelectedFilterChip
 import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterFlowRow
 import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterRow
 import com.ssverma.shared.domain.DiscoverConfig
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.shared.ui.component.ClickThroughFilterChip
 import com.ssverma.shared.ui.component.WatchProviderLogo
 import java.time.LocalDate
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +93,7 @@ fun FiltersScreen(
         )
     }
 
-    val selectedCountry = remember { Locale.getDefault().country }
+    val selectedCountry = uiState.selectedRegion
 
     val isAnyFilterSelected by remember(uiState.filters) {
         derivedStateOf {
@@ -390,7 +393,7 @@ fun FilterContent(
 @Composable
 fun WatchProviderFilterRow(
     items: List<FilterItem>,
-    selectableState: com.ssverma.core.ui.MultiSelectableState<FilterItem>,
+    selectableState: MultiSelectableState<FilterItem>,
     onPickerOpened: () -> Unit,
     modifier: Modifier = Modifier,
     isSearching: Boolean = false,
@@ -399,7 +402,7 @@ fun WatchProviderFilterRow(
     val selectedItems = selectableState.selected()
     var showPicker by remember { mutableStateOf(false) }
 
-    androidx.compose.foundation.lazy.LazyRow(
+    LazyRow(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -416,10 +419,10 @@ fun WatchProviderFilterRow(
                     width = 1.dp,
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFF4285F4),
-                            Color(0xFF9B72CB),
-                            Color(0xFFD96570),
-                            Color(0xFFF4AF5F)
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary,
+                            MaterialTheme.colorScheme.tertiary,
+                            MaterialTheme.colorScheme.primaryContainer
                         )
                     )
                 ),
@@ -436,7 +439,7 @@ fun WatchProviderFilterRow(
             val dynamicItem = item as? FilterItem.Dynamic
             if (dynamicItem != null) {
                 WatchProviderLogo(
-                    provider = com.ssverma.shared.domain.model.ProviderInfo(
+                    provider = ProviderInfo(
                         logoPath = dynamicItem.iconUrl.orEmpty(),
                         providerId = dynamicItem.id.toIntOrNull() ?: 0,
                         providerName = dynamicItem.text.asString(),
@@ -452,7 +455,7 @@ fun WatchProviderFilterRow(
                         )
                 )
             } else {
-                com.ssverma.core.ui.Toggleable(
+                Toggleable(
                     item = item,
                     modifier = Modifier,
                     selectableState = selectableState,
@@ -464,7 +467,7 @@ fun WatchProviderFilterRow(
     }
 
     if (showPicker) {
-        com.ssverma.feature.filter.ui.filter.component.FilterPickerBottomSheet(
+        FilterPickerBottomSheet(
             items = items,
             selectableState = selectableState,
             groupId = FilterId.CollectionTypeId.Dynamic.WatchProviders,

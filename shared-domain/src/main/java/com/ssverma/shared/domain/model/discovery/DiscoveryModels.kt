@@ -14,8 +14,8 @@ enum class DiscoveryVibePreset(
     ALL(
         label = "All Vibes",
         emoji = "✨",
-        minVoteAverage = 6.5f,
-        minVoteCount = 100
+        minVoteAverage = 0.0f,
+        minVoteCount = 20
     ),
     MIND_BENDING(
         label = "Mind-Bending",

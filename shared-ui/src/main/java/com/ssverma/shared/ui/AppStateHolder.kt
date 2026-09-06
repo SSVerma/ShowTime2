@@ -1,8 +1,10 @@
 package com.ssverma.shared.ui
 
+import android.app.Activity
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.di.AppScoped
 import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.Result
@@ -27,7 +29,7 @@ class AppStateHolder @Inject constructor(
     private val configurationRepository: ConfigurationRepository,
     private val billingRepository: BillingRepository,
     private val backupRepository: BackupRepository,
-    @AppScoped private val coroutineScope: CoroutineScope
+    @param:AppScoped private val coroutineScope: CoroutineScope
 ) {
     val isProActive: StateFlow<Boolean> = billingRepository.isProActive
 
@@ -56,6 +58,7 @@ class AppStateHolder @Inject constructor(
 
     val watchProviderRegion: StateFlow<String> = appConfigRepository.watchProviderRegion
     val contentLanguage: StateFlow<String> = appConfigRepository.contentLanguage
+    val preferredOriginalLanguage: StateFlow<String> = appConfigRepository.preferredOriginalLanguage
 
     private val _availableRegions = MutableStateFlow<List<WatchProviderRegion>>(emptyList())
     val availableRegions: StateFlow<List<WatchProviderRegion>> = _availableRegions.asStateFlow()
@@ -64,8 +67,8 @@ class AppStateHolder @Inject constructor(
     val availableLanguages: StateFlow<List<Language>> = _availableLanguages.asStateFlow()
 
     private val _availableProducts =
-        MutableStateFlow<List<com.ssverma.core.billing.model.BillingProduct>>(emptyList())
-    val availableProducts: StateFlow<List<com.ssverma.core.billing.model.BillingProduct>> =
+        MutableStateFlow<List<BillingProduct>>(emptyList())
+    val availableProducts: StateFlow<List<BillingProduct>> =
         _availableProducts.asStateFlow()
 
     init {
@@ -98,6 +101,16 @@ class AppStateHolder @Inject constructor(
         }
     }
 
+    fun updatePreferredOriginalLanguage(languageCode: String) {
+        coroutineScope.launch {
+            appConfigRepository.updatePreferredOriginalLanguage(languageCode)
+        }
+    }
+
+    fun resetPreferredOriginalLanguage() {
+        updatePreferredOriginalLanguage("")
+    }
+
     fun updateAppTheme(theme: AppTheme) {
         if (theme == AppTheme.OledMidnight && !isProActive.value) {
             return
@@ -122,8 +135,8 @@ class AppStateHolder @Inject constructor(
     }
 
     fun purchaseProduct(
-        activity: android.app.Activity,
-        product: com.ssverma.core.billing.model.BillingProduct
+        activity: Activity,
+        product: BillingProduct
     ) {
         coroutineScope.launch {
             billingRepository.purchaseProduct(activity, product)

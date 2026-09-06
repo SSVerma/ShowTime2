@@ -26,13 +26,24 @@ class LanguageInterceptor @Inject constructor(
         }
 
         val original = chain.request()
-        val url = original.url.newBuilder()
+        val url = original.url
+        val urlString = url.toString()
+        val urlBuilder = url.newBuilder()
             .setQueryParameter("language", languageCode)
-            .setQueryParameter("with_original_language", originalLanguage)
-            .build()
+
+        val existingWithOriginalLanguage = url.queryParameter("with_original_language")
+        if (existingWithOriginalLanguage != null) {
+            if (existingWithOriginalLanguage.isBlank()) {
+                urlBuilder.removeAllQueryParameters("with_original_language")
+            }
+        } else if (urlString.contains("discover/") && originalLanguage.isNotBlank()) {
+            urlBuilder.setQueryParameter("with_original_language", originalLanguage)
+        } else {
+            urlBuilder.removeAllQueryParameters("with_original_language")
+        }
 
         val request = original.newBuilder()
-            .url(url)
+            .url(urlBuilder.build())
             .build()
 
         return chain.proceed(request)

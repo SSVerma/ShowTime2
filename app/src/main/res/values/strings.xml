@@ -81,7 +81,7 @@
     <string name="guest_appearance">Guest Appearance</string>
 
     <string name="home">Home</string>
-    <string name="search_hint">Search movies, TV shows, people…</string>
+    <string name="search_hint">Search movies, shows…</string>
     <string name="navigation_drawer">Navigation drawer</string>
     <string name="open_navigation_drawer">Open navigation drawer</string>
     <string name="explore_section">Explore &amp; Discovery</string>
@@ -127,6 +127,8 @@
     <string name="content_language_desc">Default language for movie &amp; TV show metadata</string>
     <string name="localization_settings">Region &amp; Language</string>
     <string name="localization_settings_desc">Content country, translation and preferred language</string>
+    <string name="reset_to_global">Reset to Global</string>
+    <string name="reset_to_global_desc">Show all international releases</string>
     <string name="popular_section">Popular Worldwide</string>
 
     <!-- Studio & Network Hubs -->

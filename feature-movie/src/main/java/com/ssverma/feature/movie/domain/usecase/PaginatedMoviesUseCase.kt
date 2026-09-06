@@ -11,6 +11,7 @@ import com.ssverma.shared.domain.usecase.FlowUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
@@ -24,7 +25,12 @@ class PaginatedMoviesUseCase @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun execute(params: MovieListingConfig): Flow<PagingData<Movie>> {
-        return appConfigRepository.preferredOriginalLanguage.flatMapLatest { preferredLang ->
+        return combine(
+            appConfigRepository.preferredOriginalLanguage,
+            appConfigRepository.watchProviderRegion
+        ) { preferredLang, _ ->
+            preferredLang
+        }.flatMapLatest { preferredLang ->
             executeInternal(params, preferredLang)
         }
     }

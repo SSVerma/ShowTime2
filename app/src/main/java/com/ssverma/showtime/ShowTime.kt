@@ -122,6 +122,8 @@ fun ShowTime(
     val isDynamicColorEnabled by appStateHolder.isDynamicColorEnabled.collectAsState(initial = false)
     val isProActive by appStateHolder.isProActive.collectAsState(initial = false)
     val googleUser by appStateHolder.googleUser.collectAsState(initial = null)
+    val watchProviderRegion by appStateHolder.watchProviderRegion.collectAsState()
+    val preferredOriginalLanguage by appStateHolder.preferredOriginalLanguage.collectAsState()
 
     ShowTimeTheme(
         appTheme = appTheme,
@@ -446,6 +448,14 @@ fun ShowTime(
                                         ShowTimeTopSearchBar(
                                             googleUser = googleUser,
                                             isProActive = isProActive,
+                                            watchProviderRegion = watchProviderRegion,
+                                            preferredOriginalLanguage = preferredOriginalLanguage,
+                                            onLocalizationClick = {
+                                                showLocalizationSettingsSheet = true
+                                            },
+                                            onResetLanguageFilter = {
+                                                appStateHolder.resetPreferredOriginalLanguage()
+                                            },
                                             onMenuClick = {
                                                 coroutineScope.launch { drawerState.open() }
                                             },
