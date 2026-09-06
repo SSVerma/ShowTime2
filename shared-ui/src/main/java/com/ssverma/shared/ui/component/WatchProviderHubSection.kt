@@ -57,9 +57,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
@@ -123,18 +120,6 @@ private fun WatchProviderEntryCard(
     modifier: Modifier = Modifier
 ) {
     var showAllSheet by remember { mutableStateOf(false) }
-
-    val sheetGestureState = rememberNavigationEventState(
-        currentInfo = remember { object : NavigationEventInfo() {} }
-    )
-
-    NavigationBackHandler(
-        state = sheetGestureState,
-        isBackEnabled = showAllSheet,
-        onBackCompleted = {
-            showAllSheet = false
-        }
-    )
 
     val uniqueProviders = remember(providers) {
         providers.distinctBy { it.providerId }

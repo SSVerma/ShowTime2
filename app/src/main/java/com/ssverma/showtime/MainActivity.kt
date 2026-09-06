@@ -29,6 +29,7 @@ import com.ssverma.core.notifications.ShowTimeNotificationManager
 import com.ssverma.shared.ui.AppStateHolder
 import com.ssverma.shared.ui.LocalAppStateHolder
 import com.ssverma.showtime.navigation.ShowTimeDeepLinkHandler
+import com.ssverma.showtime.widget.WidgetUpdateHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -92,13 +93,15 @@ class MainActivity : AppCompatActivity() {
         deepLinkKey.value = extractNavKey(intent)
 
         setContent {
-            val backInput = remember { DirectNavigationEventInput() }
-            BackHandler {
-                backInput.backCompleted()
-            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                val backInput = remember { DirectNavigationEventInput() }
+                BackHandler {
+                    backInput.backCompleted()
+                }
 
-            LaunchedEffect(backInput) {
-                navigationEventDispatcherOwner.navigationEventDispatcher.addInput(backInput)
+                LaunchedEffect(backInput) {
+                    navigationEventDispatcherOwner.navigationEventDispatcher.addInput(backInput)
+                }
             }
 
             CompositionLocalProvider(
@@ -116,7 +119,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         appScope.launch {
-            com.ssverma.showtime.widget.WidgetUpdateHelper.updateAllWidgets(this@MainActivity)
+            WidgetUpdateHelper.updateAllWidgets(this@MainActivity)
         }
     }
 

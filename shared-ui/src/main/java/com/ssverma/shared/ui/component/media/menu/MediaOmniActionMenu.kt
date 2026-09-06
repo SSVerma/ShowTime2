@@ -574,9 +574,7 @@ private fun CustomListsMenuItems(
                 onDismissMenu()
                 if (onCustomListClick != null) {
                     onCustomListClick()
-                } else if (navigator != null) {
-                    navigator.navigate(targetNavKey)
-                }
+                } else navigator?.navigate(targetNavKey)
             }
         )
     }

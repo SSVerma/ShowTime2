@@ -1,7 +1,6 @@
 package com.ssverma.feature.library.ui.home
 
 import android.app.Activity
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
@@ -2069,7 +2068,6 @@ private fun CustomListDetailSheet(
         )
     }
 
-    BackHandler { onDismiss() }
     var showMenu by remember { mutableStateOf(false) }
 
     ShowTimeBottomSheet(

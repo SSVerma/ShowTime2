@@ -29,9 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState.InProgress
 import androidx.navigationevent.OnBackInvokedDefaultInput
@@ -74,6 +77,7 @@ fun ShowTimeBottomSheet(
     properties: ModalBottomSheetProperties = ModalBottomSheetProperties(
         shouldDismissOnBackPress = false
     ),
+    isBackEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -93,6 +97,23 @@ fun ShowTimeBottomSheet(
         }
     }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var isResumed by remember {
+        mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, _ ->
+            isResumed = lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val isSheetBackEnabled = isBackEnabled && !isClosing && isResumed &&
+            (sheetState.isVisible || sheetState.targetValue != SheetValue.Hidden)
+
     val navEventOwner = LocalNavigationEventDispatcherOwner.current
     val sheetGestureState = rememberNavigationEventState(
         currentInfo = remember { object : NavigationEventInfo() {} }
@@ -101,7 +122,7 @@ fun ShowTimeBottomSheet(
     if (navEventOwner != null) {
         NavigationBackHandler(
             state = sheetGestureState,
-            isBackEnabled = true,
+            isBackEnabled = isSheetBackEnabled,
             onBackCompleted = {
                 animateDismiss()
             }
@@ -148,7 +169,7 @@ fun ShowTimeBottomSheet(
             }
         }
 
-        BackHandler(enabled = true) {
+        BackHandler(enabled = isSheetBackEnabled) {
             animateDismiss()
         }
 

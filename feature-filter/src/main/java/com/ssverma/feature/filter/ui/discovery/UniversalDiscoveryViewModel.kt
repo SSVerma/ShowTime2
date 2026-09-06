@@ -62,6 +62,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
     val uiEffect: SharedFlow<UniversalDiscoveryUiEffect> = _uiEffect.asSharedFlow()
 
     private var searchJob: Job? = null
+    private var rouletteJob: Job? = null
     private var currentPage = 1
 
     init {
@@ -389,7 +390,8 @@ class UniversalDiscoveryViewModel @Inject constructor(
     }
 
     fun spinRoulette() {
-        viewModelScope.launch {
+        rouletteJob?.cancel()
+        rouletteJob = viewModelScope.launch {
             _uiState.update { it.copy(isRouletteSpinning = true, rouletteItem = null) }
             delay(1200) // Cinematic spin delay
             val result = getRouletteSurpriseUseCase(_uiState.value.filter)
@@ -410,6 +412,8 @@ class UniversalDiscoveryViewModel @Inject constructor(
     }
 
     fun dismissRoulette() {
+        rouletteJob?.cancel()
+        rouletteJob = null
         _uiState.update { it.copy(rouletteItem = null, isRouletteSpinning = false) }
     }
 
