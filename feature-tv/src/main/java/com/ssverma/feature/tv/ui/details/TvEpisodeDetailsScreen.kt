@@ -44,6 +44,9 @@ import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.model.community.EditCommentArgs
+import com.ssverma.shared.domain.model.community.PostCommentArgs
+import com.ssverma.shared.domain.model.community.ReportCommentArgs
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
@@ -135,9 +138,9 @@ private fun TvEpisodeContent(
     discussions: List<Comment>,
     onToggleWatched: () -> Unit,
     onDiscussionsViewAllClick: () -> Unit,
-    onPostComment: (content: String, isSpoiler: Boolean) -> Unit,
-    onEditComment: (commentId: String, newContent: String, isSpoiler: Boolean) -> Unit,
-    onReportComment: (commentId: String, reason: String) -> Unit,
+    onPostComment: (PostCommentArgs) -> Unit,
+    onEditComment: (EditCommentArgs) -> Unit,
+    onReportComment: (ReportCommentArgs) -> Unit,
     onToggleUpvote: (commentId: String) -> Unit,
     onDeleteComment: (commentId: String) -> Unit,
     onBackPress: () -> Unit,

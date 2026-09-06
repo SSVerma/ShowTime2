@@ -10,7 +10,6 @@ import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
-import com.ssverma.feature.movie.ui.game.CinemaGameScreen
 import com.ssverma.feature.movie.ui.details.MovieDetailsViewModel
 import com.ssverma.feature.movie.ui.details.MovieDiscussionsScreen
 import com.ssverma.feature.movie.ui.details.MovieDiscussionsViewModel
@@ -18,6 +17,7 @@ import com.ssverma.feature.movie.ui.details.MovieImagePagerScreen
 import com.ssverma.feature.movie.ui.details.MovieImageShotsScreen
 import com.ssverma.feature.movie.ui.details.MovieReviewsScreen
 import com.ssverma.feature.movie.ui.details.MovieReviewsViewModel
+import com.ssverma.feature.movie.ui.game.CinemaGameScreen
 import com.ssverma.feature.movie.ui.home.MovieScreen
 import com.ssverma.feature.movie.ui.list.MovieListScreen
 import com.ssverma.feature.movie.ui.list.MovieListViewModel

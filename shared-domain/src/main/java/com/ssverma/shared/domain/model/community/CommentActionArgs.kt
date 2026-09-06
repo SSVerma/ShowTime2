@@ -12,3 +12,8 @@ data class EditCommentArgs(
     val newContent: String,
     val isSpoiler: Boolean = false
 )
+
+data class ReportCommentArgs(
+    val commentId: String,
+    val reason: String
+)

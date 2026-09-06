@@ -64,6 +64,7 @@
     <string name="movies">Movies</string>
     <string name="tv_shows">TV Shows</string>
     <string name="see_all">See All</string>
+    <string name="see_all_with_count">See All (%1$d)</string>
     <string name="discover">Discover</string>
     <string name="popular">Popular</string>
     <string name="top_rated">Top Rated</string>
@@ -169,9 +170,32 @@
     <string name="report_reason_spoiler">Untagged spoiler</string>
     <string name="report_reason_inappropriate">Inappropriate content</string>
     <string name="report_submitted_msg">Thank you. This thought has been reported for review.</string>
+    <string name="report_submitted_and_hidden_msg">Thank you. This thought has been reported and hidden.</string>
+    <string name="community_flagged_warning">Flagged by community</string>
+    <string name="show_flagged_content">Show anyway</string>
+    <string name="hide_flagged_content">Hide</string>
+    <string name="expand_input_cd">Expand input</string>
+    <string name="collapse_input_cd">Collapse input</string>
     <string name="editing_thought_hint">Editing thought</string>
     <string name="save_action">Save</string>
     <string name="hide_replies">Hide replies</string>
+    <string name="time_just_now">Just now</string>
+    <string name="time_minutes_ago">%1$dm</string>
+    <string name="time_hours_ago">%1$dh</string>
+    <string name="time_days_ago">%1$dd</string>
+    <string name="time_weeks_ago">%1$dw</string>
+    <string name="view_replies_count">View %1$d replies</string>
+    <string name="view_reply_singular">View 1 reply</string>
+    <string name="you_badge">You</string>
+    <string name="op_badge">Author</string>
+    <string name="filter_newest">Newest</string>
+    <string name="spoiler_alert_title">Spoiler Alert</string>
+    <string name="media_context_thoughts_count">%1$d thoughts shared</string>
+    <string name="media_context_tagline">Join the cinephile conversation</string>
+    <string name="view_all_replies_cta">View all %1$d replies in Discussions →</string>
+    <string name="discussions_section_empty">No thoughts shared yet. Be the first to start the discussion!</string>
+    <string name="view_thread_cta">View thread →</string>
+    <string name="bullet_separator">·</string>
 
     <!-- Community Curated Lists -->
     <string name="cd_favorite_button">Favorite button</string>

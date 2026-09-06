@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.shared.domain.model.community.PostCommentArgs
 import com.ssverma.shared.ui.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +39,7 @@ import com.ssverma.shared.ui.R
 fun PostCommentBottomSheet(
     sheetState: SheetState,
     onDismissRequest: () -> Unit,
-    onPostComment: (content: String, isSpoiler: Boolean) -> Unit,
+    onPostComment: (PostCommentArgs) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var text by remember { mutableStateOf("") }
@@ -125,7 +126,12 @@ fun PostCommentBottomSheet(
                 Button(
                     onClick = {
                         if (text.isNotBlank()) {
-                            onPostComment(text.trim(), isSpoiler)
+                            onPostComment(
+                                PostCommentArgs(
+                                    content = text.trim(),
+                                    isSpoiler = isSpoiler
+                                )
+                            )
                             text = ""
                             isSpoiler = false
                             onDismissRequest()
@@ -135,7 +141,7 @@ fun PostCommentBottomSheet(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Send,
+                        imageVector = Icons.AutoMirrored.Rounded.Send,
                         contentDescription = null,
                         modifier = Modifier.padding(end = 6.dp)
                     )

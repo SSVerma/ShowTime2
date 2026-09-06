@@ -14,10 +14,13 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.DeleteCommentParams
 import com.ssverma.shared.domain.model.community.DiscussionTarget
+import com.ssverma.shared.domain.model.community.EditCommentArgs
 import com.ssverma.shared.domain.model.community.EditCommentParams
 import com.ssverma.shared.domain.model.community.MediaReactionTag
 import com.ssverma.shared.domain.model.community.MediaReactions
+import com.ssverma.shared.domain.model.community.PostCommentArgs
 import com.ssverma.shared.domain.model.community.PostCommentParams
+import com.ssverma.shared.domain.model.community.ReportCommentArgs
 import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
 import com.ssverma.shared.domain.model.diary.DiaryEntry
@@ -171,6 +174,8 @@ class MovieDetailsViewModel @AssistedInject constructor(
         }
     }
 
+    fun postComment(args: PostCommentArgs) = postComment(args.content, args.isSpoiler)
+
     fun editComment(commentId: String, newContent: String, isSpoiler: Boolean) {
         viewModelScope.launch {
             editCommentUseCase(
@@ -184,6 +189,9 @@ class MovieDetailsViewModel @AssistedInject constructor(
         }
     }
 
+    fun editComment(args: EditCommentArgs) =
+        editComment(args.commentId, args.newContent, args.isSpoiler)
+
     fun reportComment(commentId: String, reason: String) {
         viewModelScope.launch {
             reportCommentUseCase(
@@ -195,6 +203,8 @@ class MovieDetailsViewModel @AssistedInject constructor(
             )
         }
     }
+
+    fun reportComment(args: ReportCommentArgs) = reportComment(args.commentId, args.reason)
 
     fun toggleCommentUpvote(commentId: String) {
         viewModelScope.launch {

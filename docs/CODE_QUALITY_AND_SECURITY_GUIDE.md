@@ -233,26 +233,55 @@ the checklist in this guide before being merged into development or release bran
   )
   ```
 
-### D. Separation of Concerns: Zero Calculations in UI / Composables
+### D. Separation of Concerns: Zero Calculations in UI / Composables (Dumb UI Principle)
 
 * **Strict Invariant**: Composables and UI-layer functions must **never** perform data
-  transformations,
-  business logic, date arithmetic, string slicing (`.take(...)`), regex parsing, or mathematical
-  operations.
-* **Rule**: All fields displayed in the UI must be pre-calculated, formatted, and exposed by upper
-  layers
-  (Data Mappers, Domain Models, or ViewModels).
+  transformations, business logic, date arithmetic, string slicing (`.take(...)`), regex parsing,
+  mathematical operations, list filtering (`.filter`), or list sorting (`.sortedBy`, `.sortedWith`).
+* **Rule**: All state displayed in the UI must be pre-calculated, formatted, sorted, filtered, and
+  exposed by upper layers (Domain UseCases, Data Mappers, or ViewModels) using background
+  dispatchers
+  (e.g. `Dispatchers.Default`).
 * **Standard**:
   ```kotlin
   // ❌ FORBIDDEN IN COMPOSABLES
   val year = item.releaseDate.take(4)
   val parsedDate = SimpleDateFormat(...).parse(...)
   val formattedRating = "${(item.voteAvg * 10).toInt()}%"
+  val sortedComments = remember(comments, filter) {
+      comments.filter { !it.isSpoiler }.sortedByDescending { it.createdAt }
+  }
 
   // ✅ CORRECT
   // Formatted in Mapper / ViewModel / Domain Model:
   Text(text = item.displayYear)
   Text(text = item.displayRating)
+
+  // Handled in ViewModel / UseCase on Dispatchers.Default:
+  val uiComments: StateFlow<List<CommentUiModel>> = combine(commentsFlow, filterFlow) { comments, filter ->
+      filterAndSortCommentsUseCase(comments, filter).map { it.toUiModel(...) }
+  }.flowOn(Dispatchers.Default).stateIn(...)
+  ```
+
+### E. Lambda Parameter Encapsulation (`*Args` Data Classes)
+
+* **Rule**: Kotlin lambdas **do not support named arguments** at call sites. Whenever a callback or lambda parameter accepts more than 1 argument (or has an expanding parameter set), wrap the parameters into a dedicated `*Args` data class (e.g. `PostCommentArgs`, `EditCommentArgs`, `ReportCommentArgs`).
+* **Why**:
+  - **Zero Transposition Bugs**: Positional lambdas allow callers to accidentally swap same-typed arguments (e.g., swapping `(commentId, reason)` or `(content, isSpoiler)`) without any compiler warning.
+  - **Refactor Resilient**: Adding, removing, or providing defaults for arguments does not break callback signatures across nested composable trees.
+  - **Idiomatic Method References**: Enables clean method references (e.g., `onEditComment = viewModel::editComment`, `onReportComment = viewModel::reportComment`).
+* **Standard**:
+  ```kotlin
+  // ❌ FORBIDDEN: Raw multiple positional parameters in callbacks
+  onEditComment: (commentId: String, newContent: String, isSpoiler: Boolean) -> Unit = { _, _, _ -> }
+  onReportComment: (commentId: String, reason: String) -> Unit = { _, _ -> }
+
+  // ✅ CORRECT: Encapsulated into dedicated *Args data class
+  data class EditCommentArgs(val commentId: String, val newContent: String, val isSpoiler: Boolean = false)
+  data class ReportCommentArgs(val commentId: String, val reason: String)
+
+  onEditComment: (EditCommentArgs) -> Unit = {}
+  onReportComment: (ReportCommentArgs) -> Unit = {}
   ```
 
 ---
@@ -328,8 +357,10 @@ Before pushing any commit or opening a PR, run through this validation gate:
 ### Manual Review Checklist:
 
 - [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
-  in
-  upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
+  in upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
+- [ ] **Dumb UI & Passive Presentation**: Are all list filterings, sortings, and domain-to-UI data
+  mappings performed in the ViewModel/Domain layer on background dispatchers (e.g.
+  `Dispatchers.Default`) rather than via `remember { ... }` in composables?
 - [ ] **No Hardcoded Data**: Are all mock data, stubs, and sandbox tools strictly quarantined to
   debug-only modes with zero mock data leakage to production/end users?
 - [ ] **Strings**: Are all new user-facing texts extracted to `strings.xml`?
@@ -339,7 +370,8 @@ Before pushing any commit or opening a PR, run through this validation gate:
 - [ ] **Named Arguments**: Are named arguments used wherever possible across composable calls,
   function invocations, and constructor instantiations to maximize readability and eliminate
   parameter transposition bugs?
-- [ ] **Parameter Encapsulation (`*Args`)**: Are callback and lambda signatures with large or
-  expanding parameter sets encapsulated into dedicated `*Args` data classes?
+- [ ] **Parameter Encapsulation (`*Args`)**: Are callback and lambda signatures with more than 1
+  parameter encapsulated into dedicated `*Args` data classes (e.g. `PostCommentArgs`, `EditCommentArgs`,
+  `ReportCommentArgs`) to prevent transposition bugs since Kotlin lambdas lack named arguments?
 - [ ] **Secrets**: Did any sensitive key or token leak into the commit diff?
 - [ ] **Device Test**: Did the APK install and run smoothly without UI jank or crash on device?

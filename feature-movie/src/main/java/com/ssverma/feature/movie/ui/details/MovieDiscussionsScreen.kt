@@ -12,37 +12,21 @@ fun MovieDiscussionsScreen(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val discussions by viewModel.discussions.collectAsState()
+    val comments by viewModel.uiComments.collectAsState()
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
 
     DiscussionsScreenContent(
+        comments = comments,
+        selectedFilter = selectedFilter,
+        onFilterSelected = viewModel::onFilterSelected,
         mediaTitle = viewModel.title,
-        discussions = discussions,
-        currentUserId = null,
+        posterImageUrl = viewModel.poster,
         onBackPressed = onBackPressed,
-        onPostComment = { args ->
-            viewModel.postComment(
-                content = args.content,
-                isSpoiler = args.isSpoiler,
-                parentId = args.parentId,
-                replyToAuthorName = args.replyToAuthor
-            )
-        },
-        onToggleUpvote = { commentId ->
-            viewModel.toggleCommentUpvote(commentId)
-        },
-        onEditComment = { args ->
-            viewModel.editComment(
-                commentId = args.commentId,
-                newContent = args.newContent,
-                isSpoiler = args.isSpoiler
-            )
-        },
-        onReportComment = { commentId, reason ->
-            viewModel.reportComment(commentId, reason)
-        },
-        onDeleteComment = { commentId ->
-            viewModel.deleteComment(commentId)
-        },
+        onPostComment = viewModel::postComment,
+        onToggleUpvote = viewModel::toggleCommentUpvote,
+        onEditComment = viewModel::editComment,
+        onReportComment = viewModel::reportComment,
+        onDeleteComment = viewModel::deleteComment,
         modifier = modifier
     )
 }

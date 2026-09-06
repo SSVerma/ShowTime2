@@ -26,6 +26,7 @@ import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityCuratedListItem
 import com.ssverma.shared.domain.model.community.CommunityListCategories
+import com.ssverma.shared.domain.model.community.CommunityModerationConfig
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.DailyPollQuestion
 import com.ssverma.shared.domain.model.community.DailyPollQuestionBank
@@ -50,7 +51,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.util.UUID
@@ -138,6 +142,11 @@ class CommunityRepositoryImpl @Inject constructor(
 
     private val optimisticCommentOverrides =
         ConcurrentHashMap<String, MutableStateFlow<Map<String, CommentOverride>>>()
+
+    private val latestCommentsCache =
+        ConcurrentHashMap<String, Map<String, Comment>>()
+
+    private val upvoteLocks = ConcurrentHashMap<String, Mutex>()
 
     private data class ListOverride(
         val upvotesCount: Long? = null,
@@ -790,8 +799,12 @@ class CommunityRepositoryImpl @Inject constructor(
                             ?: doc.getTimestamp("createdAt")?.toDate()?.time
                             ?: System.currentTimeMillis()
 
-                        // Filter out reported content if report count >= 5
-                        if (reportCount < 5) {
+                        // Filter out reported content if report count >= maxReportThreshold (configurable via Remote Config)
+                        val maxReportThreshold = appConfigProvider.getLong(
+                            REMOTE_KEY_COMMUNITY_MAX_REPORT_THRESHOLD,
+                            CommunityModerationConfig.DEFAULT_MAX_REPORT_THRESHOLD
+                        ).toInt()
+                        if (reportCount < maxReportThreshold) {
                             Comment(
                                 id = id,
                                 authorId = authorId,
@@ -854,6 +867,8 @@ class CommunityRepositoryImpl @Inject constructor(
                     comment
                 }
             }
+
+            latestCommentsCache[pathKey] = allFlat.associateBy { it.id }
 
             val allIds = allFlat.map { it.id }.toSet()
             // Direct roots have parentId == null. If parentId points to an ID not in allFlat, treat as root so it's not lost.
@@ -1062,67 +1077,65 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
-        return try {
-            val pathKey = getDiscussionPathKey(params.target)
-            val userId = getEffectiveUserId()
+        val lock = upvoteLocks.getOrPut(params.commentId) { Mutex() }
+        return lock.withLock {
+            try {
+                val pathKey = getDiscussionPathKey(params.target)
+                val userId = getEffectiveUserId()
 
-            val commentDocRef = firestore
-                .collection(colMediaDiscussions)
-                .document(pathKey)
-                .collection("comments")
-                .document(params.commentId)
+                val commentDocRef = firestore
+                    .collection(colMediaDiscussions)
+                    .document(pathKey)
+                    .collection("comments")
+                    .document(params.commentId)
 
-            val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
-                MutableStateFlow(emptyMap())
+                val overridesFlow = optimisticCommentOverrides.getOrPut(pathKey) {
+                    MutableStateFlow(emptyMap())
+                }
+                val currentOverrides = overridesFlow.value
+                val existingOverride = currentOverrides[params.commentId]
+                val cachedComment = latestCommentsCache[pathKey]?.get(params.commentId)
+
+                val currentIsUpvoted =
+                    existingOverride?.isUpvotedByMe ?: cachedComment?.isUpvotedByMe ?: false
+                val currentCount =
+                    existingOverride?.upvotesCount ?: cachedComment?.upvotesCount ?: 0
+
+                val newIsUpvoted = !currentIsUpvoted
+                val newCount =
+                    if (newIsUpvoted) currentCount + 1 else (currentCount - 1).coerceAtLeast(0)
+
+                // 1. Instant 0ms Optimistic UI update (NO NETWORK WAIT!)
+                overridesFlow.update { current ->
+                    current + (params.commentId to CommentOverride(
+                        upvotesCount = newCount,
+                        isUpvotedByMe = newIsUpvoted
+                    ))
+                }
+
+                // 2. Resilient Firestore update (0 extra reads, serialized)
+                if (newIsUpvoted) {
+                    commentDocRef.set(
+                        mapOf(
+                            "upvotesCount" to FieldValue.increment(1L),
+                            "upvoterIds" to FieldValue.arrayUnion(userId)
+                        ),
+                        SetOptions.merge()
+                    ).await()
+                } else {
+                    commentDocRef.set(
+                        mapOf(
+                            "upvotesCount" to FieldValue.increment(-1L),
+                            "upvoterIds" to FieldValue.arrayRemove(userId)
+                        ),
+                        SetOptions.merge()
+                    ).await()
+                }
+
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                Result.Error(Failure.CoreFailure.UnexpectedFailure)
             }
-            val currentOverrides = overridesFlow.value
-            val existingOverride = currentOverrides[params.commentId]
-
-            val docSnapshot = try {
-                commentDocRef.get().await()
-            } catch (_: Exception) {
-                null
-            }
-            val upvoterIds =
-                (docSnapshot?.get("upvoterIds") as? List<*>)?.map { it.toString() } ?: emptyList()
-            val isAlreadyUpvotedInDb = upvoterIds.contains(userId)
-            val currentCountInDb = docSnapshot?.getLong("upvotesCount")?.toInt() ?: 0
-
-            val currentIsUpvoted = existingOverride?.isUpvotedByMe ?: isAlreadyUpvotedInDb
-            val currentCount = existingOverride?.upvotesCount ?: currentCountInDb
-
-            val newIsUpvoted = !currentIsUpvoted
-            val newCount =
-                if (newIsUpvoted) currentCount + 1 else (currentCount - 1).coerceAtLeast(0)
-
-            // 0ms Optimistic local update
-            overridesFlow.value = currentOverrides + (params.commentId to CommentOverride(
-                upvotesCount = newCount,
-                isUpvotedByMe = newIsUpvoted
-            ))
-
-            // Resilient Firestore update
-            if (newIsUpvoted) {
-                commentDocRef.set(
-                    mapOf(
-                        "upvotesCount" to FieldValue.increment(1L),
-                        "upvoterIds" to FieldValue.arrayUnion(userId)
-                    ),
-                    SetOptions.merge()
-                ).await()
-            } else {
-                commentDocRef.set(
-                    mapOf(
-                        "upvotesCount" to FieldValue.increment(-1L),
-                        "upvoterIds" to FieldValue.arrayRemove(userId)
-                    ),
-                    SetOptions.merge()
-                ).await()
-            }
-
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
 
@@ -1607,5 +1620,7 @@ class CommunityRepositoryImpl @Inject constructor(
         const val REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED = "remote_discussions_enabled"
         const val REMOTE_KEY_COMMUNITY_REACTIONS_ENABLED = "remote_reactions_enabled"
         const val REMOTE_KEY_DAILY_POLLS_ENABLED = "remote_daily_polls_enabled"
+        const val REMOTE_KEY_COMMUNITY_MAX_REPORT_THRESHOLD =
+            "remote_discussions_max_report_threshold"
     }
 }

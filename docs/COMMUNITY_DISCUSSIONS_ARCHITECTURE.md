@@ -69,6 +69,7 @@ graph TD
         
         GTDU[GetTrendingDiscussionsUseCase]
         GDU[GetDiscussionsUseCase]
+        FSCU[FilterAndSortCommentsUseCase - Off-Thread Filtering & Sorting]
         PCU[PostCommentUseCase - PostCommentParams]
         ECU[EditCommentUseCase - EditCommentParams]
         TCU[ToggleCommentUpvoteUseCase - ToggleCommentUpvoteParams]
