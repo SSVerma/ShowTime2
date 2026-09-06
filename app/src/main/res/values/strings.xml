@@ -129,7 +129,9 @@
     <string name="localization_settings_desc">Content country, translation and preferred language</string>
     <string name="popular_section">Popular Worldwide</string>
 
-    <!-- Studio & Network Hub Names -->
+    <!-- Studio & Network Hubs -->
+    <string name="movie_studios">Movie Studios</string>
+    <string name="tv_networks">TV Networks</string>
     <string name="studio_a24">A24</string>
     <string name="studio_hbo">HBO</string>
     <string name="studio_ghibli">Ghibli</string>
@@ -142,4 +144,15 @@
     <string name="studio_disney">Disney</string>
     <string name="studio_sony">Sony</string>
     <string name="studio_netflix">Netflix</string>
+    <string name="studio_blumhouse">Blumhouse</string>
+    <string name="studio_neon">Neon</string>
+    <string name="studio_lucasfilm">Lucasfilm</string>
+    <string name="network_fx">FX</string>
+    <string name="network_amc">AMC</string>
+    <string name="network_bbc">BBC</string>
+    <string name="network_showtime">Showtime</string>
+    <string name="network_hulu">Hulu</string>
+    <string name="network_disney_plus">Disney+</string>
+    <string name="network_amazon">Prime Video</string>
+    <string name="network_cw">The CW</string>
 </resources>

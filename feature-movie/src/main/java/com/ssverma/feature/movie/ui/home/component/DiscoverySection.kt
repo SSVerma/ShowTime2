@@ -20,6 +20,7 @@ import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.DiscoveryCategory
 import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
 import com.ssverma.shared.ui.component.media.MediaItemDefaults
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.DiscoverySection as SharedDiscoverySection
@@ -38,7 +39,7 @@ fun DiscoverySection(
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     modifier: Modifier = Modifier,
     showHeader: Boolean = false,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
     val categories = remember(popularMoviesState, topRatedMoviesState, upcomingMoviesState) {
         listOf(

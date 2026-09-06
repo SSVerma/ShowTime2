@@ -54,6 +54,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 
 private data class QuickActionItem(
     val label: String,
@@ -82,7 +83,7 @@ fun MediaOmniActionMenu(
     onCustomListClick: (() -> Unit)? = null,
     onOpenDiscussions: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
     config: MediaOmniMenuConfig = MediaOmniMenuConfig.Default,
     customLists: List<CustomListOption>? = null,
     onToggleCustomList: ((CustomListOption) -> Unit)? = null,
@@ -291,9 +292,11 @@ fun MediaOmniActionMenu(
                                 initialMediaType = mediaTypeStr
                             )
                             onShowFeedback?.invoke(
-                                feedbackMsg,
-                                if (wasInWatchlist) null else viewInLibraryText,
-                                destination
+                                ShowFeedbackArgs(
+                                    message = feedbackMsg,
+                                    actionLabel = if (wasInWatchlist) null else viewInLibraryText,
+                                    destination = destination
+                                )
                             )
                         }
                     }
@@ -333,9 +336,11 @@ fun MediaOmniActionMenu(
                                 initialMediaType = mediaTypeStr
                             )
                             onShowFeedback?.invoke(
-                                feedbackMsg,
-                                if (wasWatched) null else viewInLibraryText,
-                                destination
+                                ShowFeedbackArgs(
+                                    message = feedbackMsg,
+                                    actionLabel = if (wasWatched) null else viewInLibraryText,
+                                    destination = destination
+                                )
                             )
                         }
                     }
@@ -377,9 +382,11 @@ fun MediaOmniActionMenu(
                                 initialMediaType = mediaTypeStr
                             )
                             onShowFeedback?.invoke(
-                                feedbackMsg,
-                                if (wasFavorite) null else viewInLibraryText,
-                                destination
+                                ShowFeedbackArgs(
+                                    message = feedbackMsg,
+                                    actionLabel = if (wasFavorite) null else viewInLibraryText,
+                                    destination = destination
+                                )
                             )
                         }
                     }
@@ -430,7 +437,13 @@ fun MediaOmniActionMenu(
                 val feedbackMsg = context.getString(R.string.media_menu_diary_logged_success, title)
                 val viewInDiaryText = context.getString(R.string.media_menu_view_in_diary)
                 val destination = LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
-                onShowFeedback?.invoke(feedbackMsg, viewInDiaryText, destination)
+                onShowFeedback?.invoke(
+                    ShowFeedbackArgs(
+                        message = feedbackMsg,
+                        actionLabel = viewInDiaryText,
+                        destination = destination
+                    )
+                )
             }
         )
     }
@@ -448,7 +461,7 @@ private fun CustomListsMenuItems(
     onToggleCustomListOverride: ((CustomListOption) -> Unit)?,
     onCustomListClick: (() -> Unit)?,
     onDismissMenu: () -> Unit,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)?,
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)?,
     viewModel: MediaOmniMenuViewModel
 ) {
     val context = LocalContext.current
@@ -506,9 +519,11 @@ private fun CustomListsMenuItems(
                         targetCustomListId = option.listId
                     )
                     onShowFeedback?.invoke(
-                        feedbackMessage,
-                        if (option.isContained) null else viewInLibraryText,
-                        destination
+                        ShowFeedbackArgs(
+                            message = feedbackMessage,
+                            actionLabel = if (option.isContained) null else viewInLibraryText,
+                            destination = destination
+                        )
                     )
                 }
             )

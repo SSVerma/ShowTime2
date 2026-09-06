@@ -1,10 +1,5 @@
 package com.ssverma.feature.movie.ui.home.content
 
-import android.Manifest
-import android.app.Activity
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,31 +13,21 @@ import androidx.compose.material.icons.rounded.Theaters
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.core.ui.util.openAppSettings
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
@@ -65,8 +50,8 @@ import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppSection
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.MediaListItemShimmer
-import com.ssverma.shared.ui.component.NotificationPermissionBanner
 import com.ssverma.shared.ui.component.WatchProviderHubSection
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 
@@ -81,51 +66,10 @@ fun MovieHomeContent(
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
     openCinemaGame: () -> Unit,
     modifier: Modifier = Modifier,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val analytics = LocalAnalytics.current
-
-    val notificationManager = LocalNotificationManager.current
-    var isPermissionBannerDismissed by remember { mutableStateOf(false) }
-
-    var hasNotificationPermission by remember {
-        mutableStateOf(notificationManager.hasNotificationPermission())
-    }
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                hasNotificationPermission = notificationManager.hasNotificationPermission()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
-    val context = LocalContext.current
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            val activity = context as? Activity
-            if (activity != null &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                !ActivityCompat.shouldShowRequestPermissionRationale(
-                    activity,
-                    Manifest.permission.POST_NOTIFICATIONS
-                )
-            ) {
-                // Permanently denied or user dismissed it twice, open settings
-                context.openAppSettings()
-            }
-        }
-    }
-
 
     val bottomBarHeight = rememberFloatingBottomBarHeight()
     val lazyListState = rememberLazyListState()
@@ -210,37 +154,6 @@ fun MovieHomeContent(
                 )
             }
 
-            if (!hasNotificationPermission && !isPermissionBannerDismissed) {
-                item {
-                    NotificationPermissionBanner(
-                        onEnableClicked = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                val activity = context as? Activity
-                                if (activity != null &&
-                                    !ActivityCompat.shouldShowRequestPermissionRationale(
-                                        activity,
-                                        Manifest.permission.POST_NOTIFICATIONS
-                                    )
-                                ) {
-                                    // If we've already shown it and they said no, or if they permanently denied, go to settings
-                                    // But on first click, shouldShowRequestPermissionRationale is usually false.
-                                    // Actually, let's just launch it and handle the "nothing happened" via the result if we can.
-                                    // Or check if it's the first time.
-                                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                } else {
-                                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                }
-                            }
-                        },
-                        onDismissClicked = { isPermissionBannerDismissed = true },
-                        modifier = Modifier.padding(
-                            top = MaterialTheme.spacing.medium,
-                            start = MaterialTheme.spacing.medium,
-                            end = MaterialTheme.spacing.medium
-                        )
-                    )
-                }
-            }
 
             item {
                 MovieGenres(

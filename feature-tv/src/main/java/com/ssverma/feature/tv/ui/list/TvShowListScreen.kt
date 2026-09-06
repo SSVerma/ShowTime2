@@ -37,6 +37,7 @@ import com.ssverma.feature.tv.ui.list.component.TvShowListTopBar
 import com.ssverma.feature.tv.ui.list.content.TvShowsGridContent
 import com.ssverma.feature.tv.ui.list.content.TvShowsListContent
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -92,16 +93,16 @@ fun TvShowListScreen(
 
             PagedContent(pagingItems = tvShowPagingItems) { items ->
                 Crossfade(uiState.isGridView, label = "TvShowListViewModeTransition") { isGrid ->
-                    val onShowFeedback: (String, String?, LibraryHomeNavKey?) -> Unit =
-                        { message, actionLabel, destination ->
+                    val onShowFeedback: (ShowFeedbackArgs) -> Unit =
+                        { args ->
                             coroutineScope.launch {
                                 val result = snackbarHostState.showImmediateSnackbar(
-                                    message = message,
-                                    actionLabel = actionLabel,
+                                    message = args.message,
+                                    actionLabel = args.actionLabel,
                                     duration = SnackbarDuration.Short
                                 )
                                 if (result == SnackbarResult.ActionPerformed) {
-                                    openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                    openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                                 }
                             }
                         }

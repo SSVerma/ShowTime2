@@ -40,7 +40,7 @@ fun UniversalMediaCard(
     onCustomListClick: (() -> Unit)? = null,
     onOpenDiscussions: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
     menuConfig: MediaOmniMenuConfig = MediaOmniMenuConfig.Default,
     topStartSlot: (@Composable () -> Unit)? = null,
     topEndSlot: (@Composable () -> Unit)? = null,
@@ -94,9 +94,11 @@ fun UniversalMediaCard(
                 initialMediaType = mediaTypeStr
             )
             onShowFeedback?.invoke(
-                feedbackMsg,
-                if (wasFavorite) null else viewInLibraryText,
-                destination
+                ShowFeedbackArgs(
+                    message = feedbackMsg,
+                    actionLabel = if (wasFavorite) null else viewInLibraryText,
+                    destination = destination
+                )
             )
         }
     }
@@ -123,9 +125,11 @@ fun UniversalMediaCard(
                 initialMediaType = mediaTypeStr
             )
             onShowFeedback?.invoke(
-                feedbackMsg,
-                if (wasWatched) null else viewInLibraryText,
-                destination
+                ShowFeedbackArgs(
+                    message = feedbackMsg,
+                    actionLabel = if (wasWatched) null else viewInLibraryText,
+                    destination = destination
+                )
             )
         }
     }

@@ -484,15 +484,17 @@ fun UniversalDiscoveryScreen(
                                     )
                                 }
                             },
-                            onShowFeedback = { message, actionLabel, destination ->
+                            onShowFeedback = { args ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
-                                        message = message,
-                                        actionLabel = actionLabel,
+                                        message = args.message,
+                                        actionLabel = args.actionLabel,
                                         duration = SnackbarDuration.Short
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
-                                        openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                        openLibraryPage(
+                                            args.destination ?: LibraryHomeNavKey.Default
+                                        )
                                     }
                                 }
                             }

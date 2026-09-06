@@ -22,6 +22,7 @@ import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.HeroItem
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.dashboard.TrendingSpotlightItem
@@ -34,7 +35,7 @@ fun LazyListScope.trendingSpotlightShelf(
     onTvShowClick: (TrendingSpotlightItem) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     onRetry: () -> Unit,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
     item(key = "trending_spotlight_shelf") {
         Column(

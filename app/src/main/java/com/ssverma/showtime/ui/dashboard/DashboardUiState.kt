@@ -5,6 +5,8 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.shared.ads.injection.AdInjectable
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.community.DailyPoll
@@ -32,11 +34,16 @@ data class DashboardUiState(
     val popularTvShows: UiState<List<AdInjectable<TvShowPreview>>, TvShowFailure> = UiState.Loading,
     val movieProviders: UiState<List<ProviderInfo>, Nothing> = UiState.Loading,
     val tvProviders: UiState<List<ProviderInfo>, Nothing> = UiState.Loading,
+    val movieGenres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Loading,
+    val tvGenres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Loading,
+    val isMovieGenreSelected: Boolean = true,
     val gameStats: CinemaGameStats = CinemaGameStats(),
     val isTodayGameCompleted: Boolean = false,
     val dailyPoll: DailyPoll = DailyPoll.empty(LocalDate.now()),
+    val showDailyPollSheet: Boolean = false,
     val trendingDiscussions: List<TrendingDiscussion> = emptyList(),
     val isMovieStreamingSelected: Boolean = true,
+    val isMovieStudioSelected: Boolean = true,
     val isMoviePopularSelected: Boolean = true,
     val upNextQueue: List<TraktUpNextEpisode> = emptyList(),
     val isTraktConnected: Boolean = false,

@@ -9,10 +9,12 @@ import com.ssverma.core.ui.asSuccessOrErrorUiState
 import com.ssverma.core.ui.mapSuccess
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase
 import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
+import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.shared.ads.injection.AdInjectionConfig
 import com.ssverma.shared.ads.injection.AdPlacement
 import com.ssverma.shared.ads.injection.InjectableAd
@@ -23,12 +25,14 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.movie.asMoviePreview
+import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
+import com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +58,9 @@ class DashboardViewModel @Inject constructor(
     private val traktSyncRepository: TraktSyncRepository,
     private val getDailyPollUseCase: GetDailyPollUseCase,
     private val voteDailyPollUseCase: VoteDailyPollUseCase,
-    private val getTrendingDiscussionsUseCase: com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
+    private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase,
+    private val movieGenresUseCase: MovieGenresUseCase,
+    private val tvGenresUseCase: TvGenresUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -121,10 +127,14 @@ class DashboardViewModel @Inject constructor(
 
     fun fetchAllDashboardData() {
         fetchAllWatchProvidersUseCase.invalidateCache()
+        movieGenresUseCase.invalidateCache()
+        tvGenresUseCase.invalidateCache()
         fetchTrendingMedia()
         fetchPopularMovies()
         fetchPopularTvShows()
         fetchWatchProviders()
+        fetchMovieGenres()
+        fetchTvGenres()
     }
 
     fun fetchTrendingMedia() = viewModelScope.launch {
@@ -228,8 +238,36 @@ class DashboardViewModel @Inject constructor(
         _uiState.update { it.copy(isMovieStreamingSelected = selected) }
     }
 
+    fun setMovieStudioSelected(selected: Boolean) {
+        _uiState.update { it.copy(isMovieStudioSelected = selected) }
+    }
+
     fun setMoviePopularSelected(selected: Boolean) {
         _uiState.update { it.copy(isMoviePopularSelected = selected) }
+    }
+
+    fun setMovieGenreSelected(selected: Boolean) {
+        _uiState.update { it.copy(isMovieGenreSelected = selected) }
+    }
+
+    fun fetchMovieGenres() = viewModelScope.launch {
+        _uiState.update { it.copy(movieGenres = UiState.Loading) }
+        val result = movieGenresUseCase()
+        _uiState.update { it.copy(movieGenres = result.asSuccessOrErrorUiState()) }
+    }
+
+    fun fetchTvGenres() = viewModelScope.launch {
+        _uiState.update { it.copy(tvGenres = UiState.Loading) }
+        val result = tvGenresUseCase()
+        _uiState.update { it.copy(tvGenres = result.asSuccessOrErrorUiState()) }
+    }
+
+    fun openDailyPollSheet() {
+        _uiState.update { it.copy(showDailyPollSheet = true) }
+    }
+
+    fun dismissDailyPollSheet() {
+        _uiState.update { it.copy(showDailyPollSheet = false) }
     }
 
     fun onNativeAdLoaded(nativeAd: NativeAd) {
@@ -320,7 +358,7 @@ class DashboardViewModel @Inject constructor(
         if (targetItem != null && (targetItem.totalCompleted + 1 >= targetItem.totalAired)) {
             _uiState.update {
                 it.copy(
-                    completedShowDialog = com.ssverma.shared.domain.model.trakt.CompletedShowDialogState(
+                    completedShowDialog = CompletedShowDialogState(
                         showTmdbId = targetItem.showTmdbId,
                         showTitle = targetItem.showTitle,
                         showPosterPath = targetItem.showPosterPath,

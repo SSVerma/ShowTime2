@@ -56,6 +56,7 @@ import com.ssverma.feature.account.R
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import kotlinx.coroutines.launch
 import com.ssverma.core.ui.R as CoreUiR
 
@@ -72,7 +73,7 @@ fun MediaStatsAction(
     triggerIcon: ImageVector = Icons.Rounded.FavoriteBorder,
     containerColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
     onClick: () -> Unit = {},
     viewModel: MediaStatsViewModel = hiltViewModel()
 ) {
@@ -239,18 +240,20 @@ fun MediaStatsAction(
                         val wasFavorite = mediaStats.favorite
                         if (wasFavorite) {
                             onShowFeedback?.invoke(
-                                removedFromFavoritesText,
-                                null,
-                                null
+                                ShowFeedbackArgs(
+                                    message = removedFromFavoritesText
+                                )
                             )
                         } else {
                             burstTrigger++
                             onShowFeedback?.invoke(
-                                addedToFavoritesText,
-                                viewInLibraryText,
-                                LibraryHomeNavKey(
-                                    initialTab = LibraryTabDestination.Favorites,
-                                    initialMediaType = mediaTypeStr
+                                ShowFeedbackArgs(
+                                    message = addedToFavoritesText,
+                                    actionLabel = viewInLibraryText,
+                                    destination = LibraryHomeNavKey(
+                                        initialTab = LibraryTabDestination.Favorites,
+                                        initialMediaType = mediaTypeStr
+                                    )
                                 )
                             )
                         }
@@ -279,18 +282,20 @@ fun MediaStatsAction(
                         val wasInWatchlist = mediaStats.inWatchlist
                         if (wasInWatchlist) {
                             onShowFeedback?.invoke(
-                                removedFromWatchlistText,
-                                null,
-                                null
+                                ShowFeedbackArgs(
+                                    message = removedFromWatchlistText
+                                )
                             )
                         } else {
                             burstTrigger++
                             onShowFeedback?.invoke(
-                                addedToWatchlistText,
-                                viewInLibraryText,
-                                LibraryHomeNavKey(
-                                    initialTab = LibraryTabDestination.Watchlist,
-                                    initialMediaType = mediaTypeStr
+                                ShowFeedbackArgs(
+                                    message = addedToWatchlistText,
+                                    actionLabel = viewInLibraryText,
+                                    destination = LibraryHomeNavKey(
+                                        initialTab = LibraryTabDestination.Watchlist,
+                                        initialMediaType = mediaTypeStr
+                                    )
                                 )
                             )
                         }
@@ -324,18 +329,20 @@ fun MediaStatsAction(
                         val wasWatched = mediaStats.isWatched
                         if (wasWatched) {
                             onShowFeedback?.invoke(
-                                removedFromWatchedText,
-                                null,
-                                null
+                                ShowFeedbackArgs(
+                                    message = removedFromWatchedText
+                                )
                             )
                         } else {
                             burstTrigger++
                             onShowFeedback?.invoke(
-                                markedAsWatchedText,
-                                viewInLibraryText,
-                                LibraryHomeNavKey(
-                                    initialTab = LibraryTabDestination.History,
-                                    initialMediaType = mediaTypeStr
+                                ShowFeedbackArgs(
+                                    message = markedAsWatchedText,
+                                    actionLabel = viewInLibraryText,
+                                    destination = LibraryHomeNavKey(
+                                        initialTab = LibraryTabDestination.History,
+                                        initialMediaType = mediaTypeStr
+                                    )
                                 )
                             )
                         }
@@ -378,11 +385,13 @@ fun MediaStatsAction(
                                     isCurrentlyInList = isContained
                                 )
                                 onShowFeedback?.invoke(
-                                    if (isContained) "Removed from ${customList.title}" else "Added to ${customList.title}",
-                                    if (isContained) null else viewInLibraryText,
-                                    if (isContained) null else LibraryHomeNavKey(
-                                        initialTab = LibraryTabDestination.CustomLists,
-                                        targetCustomListId = customList.listId
+                                    ShowFeedbackArgs(
+                                        message = if (isContained) "Removed from ${customList.title}" else "Added to ${customList.title}",
+                                        actionLabel = if (isContained) null else viewInLibraryText,
+                                        destination = if (isContained) null else LibraryHomeNavKey(
+                                            initialTab = LibraryTabDestination.CustomLists,
+                                            targetCustomListId = customList.listId
+                                        )
                                     )
                                 )
                             }

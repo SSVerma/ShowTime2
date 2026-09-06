@@ -16,6 +16,7 @@ import com.ssverma.feature.movie.ui.list.component.MovieIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 
@@ -27,7 +28,7 @@ fun MoviesGridContent(
     openMovieDetails: (movie: MoviePreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     modifier: Modifier = Modifier,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
     PagedGrid(
         pagingItems = moviePagingItems,

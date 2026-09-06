@@ -33,6 +33,7 @@ import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
 import com.ssverma.feature.movie.analytics.MovieAnalyticsValues
 import com.ssverma.feature.movie.analytics.asAnalyticsListingType
 import com.ssverma.feature.movie.ui.filter.MovieFiltersScreen
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.feature.movie.ui.list.component.MovieListTopBar
 import com.ssverma.feature.movie.ui.list.content.MoviesGridContent
 import com.ssverma.feature.movie.ui.list.content.MoviesListContent
@@ -92,16 +93,16 @@ fun MovieListScreen(
 
             PagedContent(pagingItems = moviePagingItems) { items ->
                 Crossfade(uiState.isGridView, label = "MovieListViewModeTransition") { isGrid ->
-                    val onShowFeedback: (String, String?, LibraryHomeNavKey?) -> Unit =
-                        { message, actionLabel, destination ->
+                    val onShowFeedback: (ShowFeedbackArgs) -> Unit =
+                        { args ->
                             coroutineScope.launch {
                                 val result = snackbarHostState.showImmediateSnackbar(
-                                    message = message,
-                                    actionLabel = actionLabel,
+                                    message = args.message,
+                                    actionLabel = args.actionLabel,
                                     duration = SnackbarDuration.Short
                                 )
                                 if (result == SnackbarResult.ActionPerformed) {
-                                    openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                    openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                                 }
                             }
                         }

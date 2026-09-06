@@ -48,6 +48,10 @@ class DashboardViewModelTest {
         mockk(relaxed = true)
     private val getTrendingDiscussionsUseCase: com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase =
         mockk(relaxed = true)
+    private val movieGenresUseCase: com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase =
+        mockk(relaxed = true)
+    private val tvGenresUseCase: com.ssverma.feature.tv.domain.usecase.TvGenresUseCase =
+        mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
 
@@ -88,6 +92,8 @@ class DashboardViewModelTest {
         coEvery { fetchAllWatchProvidersUseCase.fetchTvWatchProviders() } returns Result.Success(
             emptyList()
         )
+        coEvery { movieGenresUseCase() } returns Result.Success(emptyList())
+        coEvery { tvGenresUseCase() } returns Result.Success(emptyList())
 
         viewModel = DashboardViewModel(
             trendingMoviesUseCase = trendingMoviesUseCase,
@@ -102,7 +108,9 @@ class DashboardViewModelTest {
             traktSyncRepository = fakeTraktSyncRepository,
             getDailyPollUseCase = getDailyPollUseCase,
             voteDailyPollUseCase = voteDailyPollUseCase,
-            getTrendingDiscussionsUseCase = getTrendingDiscussionsUseCase
+            getTrendingDiscussionsUseCase = getTrendingDiscussionsUseCase,
+            movieGenresUseCase = movieGenresUseCase,
+            tvGenresUseCase = tvGenresUseCase
         )
     }
 
@@ -176,4 +184,38 @@ class DashboardViewModelTest {
             assertThat(stateAfterDismiss.completedShowDialog).isNull()
             assertThat(stateAfterDismiss.upNextQueue).isEmpty()
         }
+
+    @Test
+    fun `setMovieGenreSelected updates genre selection state`() {
+        assertThat(viewModel.uiState.value.isMovieGenreSelected).isTrue()
+
+        viewModel.setMovieGenreSelected(false)
+        assertThat(viewModel.uiState.value.isMovieGenreSelected).isFalse()
+
+        viewModel.setMovieGenreSelected(true)
+        assertThat(viewModel.uiState.value.isMovieGenreSelected).isTrue()
+    }
+
+    @Test
+    fun `openDailyPollSheet and dismissDailyPollSheet toggle sheet visibility`() {
+        assertThat(viewModel.uiState.value.showDailyPollSheet).isFalse()
+
+        viewModel.openDailyPollSheet()
+        assertThat(viewModel.uiState.value.showDailyPollSheet).isTrue()
+
+        viewModel.dismissDailyPollSheet()
+        assertThat(viewModel.uiState.value.showDailyPollSheet).isFalse()
+    }
+
+    @Test
+    fun `setMovieStudioSelected updates studio selection state`() {
+        assertThat(viewModel.uiState.value.isMovieStudioSelected).isTrue()
+
+        viewModel.setMovieStudioSelected(false)
+        assertThat(viewModel.uiState.value.isMovieStudioSelected).isFalse()
+
+        viewModel.setMovieStudioSelected(true)
+        assertThat(viewModel.uiState.value.isMovieStudioSelected).isTrue()
+    }
 }
+

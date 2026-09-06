@@ -58,6 +58,7 @@ import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
@@ -207,15 +208,17 @@ fun MovieContent(
                             voteAvg = movie.voteAvg,
                             releaseDate = movie.releaseDate?.toString().orEmpty(),
                             onLogToDiary = { showLogDialog = true },
-                            onShowFeedback = { message, actionLabel, destination ->
+                            onShowFeedback = { args ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
-                                        message = message,
-                                        actionLabel = actionLabel,
+                                        message = args.message,
+                                        actionLabel = args.actionLabel,
                                         duration = SnackbarDuration.Short
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
-                                        openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                        openLibraryPage(
+                                            args.destination ?: LibraryHomeNavKey.Default
+                                        )
                                     }
                                 }
                             },
@@ -484,15 +487,15 @@ fun MovieContent(
                         )
                         openMovieDetails(moviePreview.id)
                     },
-                    onShowFeedback = { message, actionLabel, destination ->
+                    onShowFeedback = { args ->
                         coroutineScope.launch {
                             val result = snackbarHostState.showImmediateSnackbar(
-                                message = message,
-                                actionLabel = actionLabel,
+                                message = args.message,
+                                actionLabel = args.actionLabel,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                             }
                         }
                     },
@@ -515,15 +518,15 @@ fun MovieContent(
                         )
                         openMovieDetails(moviePreview.id)
                     },
-                    onShowFeedback = { message, actionLabel, destination ->
+                    onShowFeedback = { args ->
                         coroutineScope.launch {
                             val result = snackbarHostState.showImmediateSnackbar(
-                                message = message,
-                                actionLabel = actionLabel,
+                                message = args.message,
+                                actionLabel = args.actionLabel,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                             }
                         }
                     },
@@ -586,7 +589,7 @@ fun RelevantMoviesSection(
     movies: List<Movie>,
     @StringRes sectionTitleRes: Int,
     onMovieClick: (movie: Movie) -> Unit,
-    onShowFeedback: (message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit = { _, _, _ -> },
+    onShowFeedback: (ShowFeedbackArgs) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     HorizontalLazyListSection(

@@ -73,6 +73,7 @@ import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.shared.ui.component.BackdropActionButton
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
 import com.ssverma.shared.ui.component.Highlight
@@ -221,15 +222,17 @@ private fun TvShowContent(
                             voteAvg = tvShow.voteAvg,
                             releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
                             onLogToDiary = { showLogDialog = true },
-                            onShowFeedback = { message, actionLabel, destination ->
+                            onShowFeedback = { args ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
-                                        message = message,
-                                        actionLabel = actionLabel,
+                                        message = args.message,
+                                        actionLabel = args.actionLabel,
                                         duration = SnackbarDuration.Short
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
-                                        openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                        openLibraryPage(
+                                            args.destination ?: LibraryHomeNavKey.Default
+                                        )
                                     }
                                 }
                             },
@@ -541,15 +544,15 @@ private fun TvShowContent(
                         )
                         openTvShowDetails(tvShowPreview.id)
                     },
-                    onShowFeedback = { message, actionLabel, destination ->
+                    onShowFeedback = { args ->
                         coroutineScope.launch {
                             val result = snackbarHostState.showImmediateSnackbar(
-                                message = message,
-                                actionLabel = actionLabel,
+                                message = args.message,
+                                actionLabel = args.actionLabel,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                             }
                         }
                     },
@@ -573,15 +576,15 @@ private fun TvShowContent(
                         )
                         openTvShowDetails(tvShowPreview.id)
                     },
-                    onShowFeedback = { message, actionLabel, destination ->
+                    onShowFeedback = { args ->
                         coroutineScope.launch {
                             val result = snackbarHostState.showImmediateSnackbar(
-                                message = message,
-                                actionLabel = actionLabel,
+                                message = args.message,
+                                actionLabel = args.actionLabel,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                             }
                         }
                     },
@@ -650,7 +653,7 @@ private fun SimilarTvShowsSection(
     tvShows: List<TvShow>,
     @StringRes sectionTitleRes: Int,
     onTvShowClick: (tvShow: TvShow) -> Unit,
-    onShowFeedback: (message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit = { _, _, _ -> },
+    onShowFeedback: (ShowFeedbackArgs) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     HorizontalLazyListSection(

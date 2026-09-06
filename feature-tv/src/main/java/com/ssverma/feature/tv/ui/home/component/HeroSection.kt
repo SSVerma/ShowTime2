@@ -43,8 +43,10 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
+import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.shared.ui.component.HeroItem
 import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,11 +59,11 @@ fun HeroSection(
     onTvShowClicked: (TvShowPreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     onRetry: () -> Unit,
-    onAdLoaded: (InjectableAd, com.google.android.gms.ads.nativead.NativeAd) -> Unit,
+    onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     modifier: Modifier = Modifier,
     carouselState: androidx.compose.material3.carousel.CarouselState? = null,
     showBackdrop: Boolean = false,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null,
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
     showAppBar: Boolean = false,
     maxItemWidth: Dp = CarouselDefaults.HeroMaxItemWidth,
     itemHeight: Dp = CarouselDefaults.HeroItemHeight,

@@ -94,6 +94,7 @@ import com.ssverma.shared.ui.component.WatchProviderHubBranding
 import com.ssverma.shared.ui.component.WatchProviderLogo
 import com.ssverma.shared.ui.component.media.MediaItemDefaults
 import com.ssverma.shared.ui.component.media.SeeAllCard
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
@@ -120,7 +121,7 @@ fun WatchProviderHubContent(
     isLoading: Boolean = false,
     modifier: Modifier = Modifier,
     source: String = "default",
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
     val scrollState = rememberLazyListState()
     val brandingColor = WatchProviderHubBranding.getBrandingColor(providerId = provider.providerId)
@@ -604,7 +605,7 @@ private fun HeroPagerSection(
     onMovieClick: (MoviePreview) -> Unit,
     onTvShowClick: (TvShowPreview) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)?,
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -705,7 +706,7 @@ private fun HubSectionRow(
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
     if (isLoading) {
         Column(modifier = modifier) {

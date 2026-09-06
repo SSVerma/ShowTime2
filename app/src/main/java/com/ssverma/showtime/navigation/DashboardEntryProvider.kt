@@ -5,12 +5,18 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
+import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
+import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
+import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
+import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.library.navigation.TasteProfileNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
+import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.tv.navigation.TvEpisodeDiscussionsNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
@@ -128,6 +134,44 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             openLibraryPage = openLibraryPage,
             openUniversalDiscovery = { navKey ->
                 navigator.navigate(navKey)
+            },
+            openCinemaDiary = {
+                navigator.navigate(CinemaDiaryNavKey)
+            },
+            openTasteProfile = {
+                navigator.navigate(TasteProfileNavKey)
+            },
+            openWrapped = {
+                navigator.navigate(CinephileWrappedNavKey)
+            },
+            openBacklogChallenges = {
+                navigator.navigate(BacklogChallengeNavKey)
+            },
+            openReceipt = {
+                navigator.navigate(CinemaReceiptNavKey)
+            },
+            openPeople = {
+                navigator.navigate(PersonHomeNavKey)
+            },
+            openMovieGenreListing = { genre ->
+                navigator.navigate(
+                    MovieListingRoute(
+                        MovieListingArgs.ByGenre(
+                            genreId = genre.id,
+                            title = genre.name
+                        )
+                    )
+                )
+            },
+            openTvGenreListing = { genre ->
+                navigator.navigate(
+                    TvShowListingRoute(
+                        TvShowListingArgs.ByGenre(
+                            genreId = genre.id,
+                            title = genre.name
+                        )
+                    )
+                )
             }
         )
     }

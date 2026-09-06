@@ -16,6 +16,7 @@ import com.ssverma.feature.tv.ui.list.component.TvIndicator
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 
@@ -27,7 +28,7 @@ fun TvShowsGridContent(
     openTvShowDetails: (TvShowPreview) -> Unit,
     onWatchProviderClick: (ProviderInfo) -> Unit,
     modifier: Modifier = Modifier,
-    onShowFeedback: ((message: String, actionLabel: String?, destination: LibraryHomeNavKey?) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
     PagedGrid(
         pagingItems = tvShowPagingItems,

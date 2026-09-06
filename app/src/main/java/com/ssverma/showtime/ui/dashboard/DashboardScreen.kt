@@ -42,17 +42,22 @@ import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.shared.ads.injection.InjectableContent
+import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.SeasonCompletionDialog
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
+import com.ssverma.showtime.ui.dashboard.shelves.DailyPollBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
-import com.ssverma.showtime.ui.dashboard.shelves.dailyHabitShelf
-import com.ssverma.showtime.ui.dashboard.shelves.dailyPollShelf
+import com.ssverma.showtime.ui.dashboard.shelves.cinephileQuickAccessHub
+import com.ssverma.showtime.ui.dashboard.shelves.dashboardGenreShelf
 import com.ssverma.showtime.ui.dashboard.shelves.inViewportNativeAdShelf
+import com.ssverma.showtime.ui.dashboard.shelves.notificationPermissionShelf
+import com.ssverma.showtime.ui.dashboard.shelves.rateShowTimeShelf
 import com.ssverma.showtime.ui.dashboard.shelves.streamingUniverseShelf
 import com.ssverma.showtime.ui.dashboard.shelves.studioPortalsShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingDiscussionsShelf
@@ -74,6 +79,14 @@ fun DashboardScreen(
     openTvListing: () -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit,
     openUniversalDiscovery: (UniversalDiscoveryNavKey) -> Unit,
+    openCinemaDiary: () -> Unit = {},
+    openTasteProfile: () -> Unit = {},
+    openWrapped: () -> Unit = {},
+    openBacklogChallenges: () -> Unit = {},
+    openReceipt: () -> Unit = {},
+    openPeople: () -> Unit = {},
+    openMovieGenreListing: (Genre) -> Unit = {},
+    openTvGenreListing: (Genre) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -152,21 +165,51 @@ fun DashboardScreen(
                     onTvShowClick = { openTvShowDetails(it.id) },
                     onAdLoaded = viewModel::onCarouselNativeAdLoaded,
                     onRetry = { viewModel.fetchTrendingMedia() },
-                    onShowFeedback = { message, actionLabel, destination ->
+                    onShowFeedback = { args ->
                         coroutineScope.launch {
                             val result = snackbarHostState.showImmediateSnackbar(
-                                message = message,
-                                actionLabel = actionLabel,
+                                message = args.message,
+                                actionLabel = args.actionLabel,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                             }
                         }
                     }
                 )
 
-                // 2. Up Next to Watch (Personalized continue watching queue)
+                // 2. Cinephile Quick Access Hub (All drawer & list entry points)
+                cinephileQuickAccessHub(
+                    gameStats = uiState.gameStats,
+                    isTodayGameCompleted = uiState.isTodayGameCompleted,
+                    isPollVoted = uiState.dailyPoll.hasVoted,
+                    onOpenMyLists = {
+                        openLibraryPage(LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists))
+                    },
+                    onOpenCommunityLists = {
+                        openLibraryPage(LibraryHomeNavKey(initialTab = LibraryTabDestination.Community))
+                    },
+                    onOpenCinemaDiary = openCinemaDiary,
+                    onOpenCinemaGame = openCinemaGame,
+                    onOpenDailyPoll = viewModel::openDailyPollSheet,
+                    onOpenTasteProfile = openTasteProfile,
+                    onOpenBacklogChallenges = openBacklogChallenges,
+                    onOpenReceipt = openReceipt,
+                    onOpenPeople = openPeople,
+                    onOpenDiscovery = { openUniversalDiscovery(UniversalDiscoveryNavKey()) }
+                )
+
+                // 3. In-Viewport Native Ad Showcase (Guaranteed initial viewport viewability & high CPM)
+                inViewportNativeAdShelf(
+                    nativeAd = uiState.nativeAd,
+                    onAdLoaded = viewModel::onNativeAdLoaded
+                )
+
+                // 4. Notification Permission Shelf (Conditional, Android 13+)
+                notificationPermissionShelf()
+
+                // 5. Up Next to Watch (Personalized continue watching queue)
                 item(key = "dashboard_up_next_section") {
                     AnimatedVisibility(
                         visible = uiState.upNextQueue.isNotEmpty(),
@@ -200,52 +243,34 @@ fun DashboardScreen(
                     }
                 }
 
-                // 3. Compact Daily Habit Hub (Cinema Challenge #690 & Streak)
-                dailyHabitShelf(
-                    gameStats = uiState.gameStats,
-                    isTodayCompleted = uiState.isTodayGameCompleted,
-                    onOpenGame = openCinemaGame
-                )
-
-                // 3.1 Universal Discovery & Browse Hub ("What to Watch Tonight")
+                // 6. Universal Discovery & Browse Hub ("What to Watch Tonight")
                 universalDiscoveryShelf(
                     onOpenDiscovery = openUniversalDiscovery
                 )
 
-                // 3. In-Viewport Native Ad Showcase (Guaranteed viewability & high CPM)
-                inViewportNativeAdShelf(
-                    nativeAd = uiState.nativeAd,
-                    onAdLoaded = viewModel::onNativeAdLoaded
+                // 7. Explore Genres (Segmented: [ 🎬 Movies | 📺 TV Shows ])
+                dashboardGenreShelf(
+                    movieGenres = uiState.movieGenres,
+                    tvGenres = uiState.tvGenres,
+                    isMovieSelected = uiState.isMovieGenreSelected,
+                    onToggleGenreType = viewModel::setMovieGenreSelected,
+                    onGenreClicked = { genre, isMovie ->
+                        if (isMovie) {
+                            openMovieGenreListing(genre)
+                        } else {
+                            openTvGenreListing(genre)
+                        }
+                    },
+                    onRetry = {
+                        if (uiState.isMovieGenreSelected) {
+                            viewModel.fetchMovieGenres()
+                        } else {
+                            viewModel.fetchTvGenres()
+                        }
+                    }
                 )
 
-                // 4. Daily Community Cinema Poll & Debate
-                dailyPollShelf(
-                    poll = uiState.dailyPoll,
-                    onOptionClick = viewModel::voteDailyPoll
-                )
-
-                // 5. Trending Community Discussions & Cinephile Buzz
-                trendingDiscussionsShelf(
-                    discussions = uiState.trendingDiscussions,
-                    onDiscussionClick = openDiscussions
-                )
-
-                // 6. Streaming Universe Hub (Segmented: [ 🎬 Movies | 📺 TV Shows ])
-                streamingUniverseShelf(
-                    movieProviders = uiState.movieProviders,
-                    tvProviders = uiState.tvProviders,
-                    isMovieSelected = uiState.isMovieStreamingSelected,
-                    onToggleStreamingType = viewModel::setMovieStreamingSelected,
-                    onProviderClick = openWatchProviderHub,
-                    onRetry = { viewModel.fetchWatchProviders() }
-                )
-
-                // 5. Cinephile Studio & Network Hubs (A24, HBO, Studio Ghibli, Pixar)
-                studioPortalsShelf(
-                    onPortalClick = openStudioPortal
-                )
-
-                // 6. Popular Media Worldwide Shelf (Segmented: [ 🎬 Movies | 📺 TV Shows ])
+                // 8. Popular Media Worldwide Shelf (Segmented: [ 🎬 Movies | 📺 TV Shows ])
                 trendingWorldwideShelf(
                     isMoviePopularSelected = uiState.isMoviePopularSelected,
                     popularMoviesState = uiState.popularMovies,
@@ -268,21 +293,47 @@ fun DashboardScreen(
                             viewModel.fetchPopularTvShows()
                         }
                     },
-                    onShowFeedback = { message, actionLabel, destination ->
+                    onShowFeedback = { args ->
                         coroutineScope.launch {
                             val result = snackbarHostState.showImmediateSnackbar(
-                                message = message,
-                                actionLabel = actionLabel,
+                                message = args.message,
+                                actionLabel = args.actionLabel,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(destination ?: LibraryHomeNavKey.Default)
+                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                             }
                         }
                     }
                 )
 
-                // 7. TMDB Attribution Footer (Edge-to-edge till bottom end)
+                // 9. Streaming Universe Hub (Segmented: [ 🎬 Movies | 📺 TV Shows ])
+                streamingUniverseShelf(
+                    movieProviders = uiState.movieProviders,
+                    tvProviders = uiState.tvProviders,
+                    isMovieSelected = uiState.isMovieStreamingSelected,
+                    onToggleStreamingType = viewModel::setMovieStreamingSelected,
+                    onProviderClick = openWatchProviderHub,
+                    onRetry = { viewModel.fetchWatchProviders() }
+                )
+
+                // 10. Cinephile Studio & Network Hubs (A24, HBO, Studio Ghibli, Pixar)
+                studioPortalsShelf(
+                    isMovieSelected = uiState.isMovieStudioSelected,
+                    onToggleStudioType = viewModel::setMovieStudioSelected,
+                    onPortalClick = openStudioPortal
+                )
+
+                // 11. Trending Community Discussions & Cinephile Buzz
+                trendingDiscussionsShelf(
+                    discussions = uiState.trendingDiscussions,
+                    onDiscussionClick = openDiscussions
+                )
+
+                // 12. Rate Us & Share Showcase
+                rateShowTimeShelf()
+
+                // 13. TMDB Attribution Footer (Edge-to-edge till bottom end)
                 item(key = "dashboard_tmdb_attribution") {
                     AttributionFooter(
                         bottomPadding = bottomBarHeight,
@@ -304,6 +355,14 @@ fun DashboardScreen(
                 SeasonCompletionDialog(
                     state = dialogState,
                     onDismiss = viewModel::dismissCompletedShowDialog
+                )
+            }
+
+            if (uiState.showDailyPollSheet) {
+                DailyPollBottomSheet(
+                    poll = uiState.dailyPoll,
+                    onOptionClick = viewModel::voteDailyPoll,
+                    onDismiss = viewModel::dismissDailyPollSheet
                 )
             }
         }
