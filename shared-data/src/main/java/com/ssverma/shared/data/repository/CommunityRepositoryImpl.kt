@@ -146,7 +146,54 @@ class CommunityRepositoryImpl @Inject constructor(
     private val latestCommentsCache =
         ConcurrentHashMap<String, Map<String, Comment>>()
 
+    private val latestCommunityListsCache =
+        ConcurrentHashMap<String, CommunityCuratedList>()
+
     private val upvoteLocks = ConcurrentHashMap<String, Mutex>()
+    private val listUpvoteLocks = ConcurrentHashMap<String, Mutex>()
+
+    /**
+     * Encapsulates session-stable ordering for community lists to prevent
+     * visual fluctuation and jumping when users like/unlike or clone lists.
+     */
+    private class StableListOrderTracker {
+        private val rankMap = ConcurrentHashMap<String, Int>()
+
+        fun updateRanks(
+            rawLists: List<CommunityCuratedList>,
+            currentUserId: String
+        ) {
+            if (rankMap.isEmpty()) {
+                // Initial baseline sort by popularity score, then recency
+                val initialSorted = rawLists.sortedWith(
+                    compareByDescending<CommunityCuratedList> { it.upvotesCount * 2 + it.clonesCount }
+                        .thenByDescending { it.createdAtEpochMs }
+                )
+                initialSorted.forEachIndexed { index, list ->
+                    rankMap[list.listId] = index
+                }
+            } else {
+                // Incorporate any newly discovered lists without disturbing existing item ranks
+                rawLists.forEach { list ->
+                    if (!rankMap.containsKey(list.listId)) {
+                        val newRank = if (list.authorId == currentUserId) {
+                            -1 // Anchor user's newly published list at the top
+                        } else {
+                            rankMap.size
+                        }
+                        rankMap[list.listId] = newRank
+                    }
+                }
+            }
+        }
+
+        fun sortByStableOrder(lists: List<CommunityCuratedList>): List<CommunityCuratedList> {
+            return lists.sortedWith(
+                compareBy<CommunityCuratedList> { rankMap[it.listId] ?: Int.MAX_VALUE }
+                    .thenByDescending { it.createdAtEpochMs }
+            )
+        }
+    }
 
     private data class ListOverride(
         val upvotesCount: Long? = null,
@@ -1236,6 +1283,8 @@ class CommunityRepositoryImpl @Inject constructor(
         val remoteEnabledFlow =
             appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)
 
+        val orderTracker = StableListOrderTracker()
+
         return callbackFlow {
             val currentUserId = getEffectiveUserId()
             val upvotedSet = getCachedUpvotedListIds()
@@ -1264,13 +1313,17 @@ class CommunityRepositoryImpl @Inject constructor(
 
             awaitClose { listener.remove() }
         }.combine(optimisticListOverrides) { rawList, overrides ->
-            // Sort raw snapshot lists first so optimistic like/clone interactions don't jump card positions
-            val sortedRaw = rawList.sortedWith(
-                compareByDescending<CommunityCuratedList> { it.upvotesCount * 2 + it.clonesCount }
-                    .thenByDescending { it.createdAtEpochMs }
-            )
+            val currentUserId = getEffectiveUserId()
 
-            sortedRaw.mapNotNull { list ->
+            // Update in-memory cache for latest community curated lists
+            rawList.forEach { list ->
+                latestCommunityListsCache[list.listId] = list
+            }
+
+            // Update session stable order without disturbing existing item positions
+            orderTracker.updateRanks(rawLists = rawList, currentUserId = currentUserId)
+
+            val mergedLists = rawList.mapNotNull { list ->
                 val override = overrides[list.listId]
                 if (override?.isPublished == false) {
                     null
@@ -1289,6 +1342,8 @@ class CommunityRepositoryImpl @Inject constructor(
                     list.categoryTag.equals(category, ignoreCase = true)
                 }
             }
+
+            orderTracker.sortByStableOrder(mergedLists)
         }.combine(remoteEnabledFlow) { list, isRemotelyEnabled ->
             if (!isRemotelyEnabled) emptyList() else list
         }
@@ -1419,64 +1474,69 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
-        return try {
-            val currentUserId = getEffectiveUserId()
-            val upvotedSet = getCachedUpvotedListIds()
-            val isAlreadyUpvoted = optimisticListOverrides.value[params.listId]?.isUpvotedByMe
-                ?: upvotedSet.contains(params.listId)
-            val newUpvoted = !isAlreadyUpvoted
+        val lock = listUpvoteLocks.getOrPut(params.listId) { Mutex() }
+        return lock.withLock {
+            try {
+                val currentUserId = getEffectiveUserId()
+                val upvotedSet = getCachedUpvotedListIds()
+                val isAlreadyUpvoted = optimisticListOverrides.value[params.listId]?.isUpvotedByMe
+                    ?: upvotedSet.contains(params.listId)
+                val newUpvoted = !isAlreadyUpvoted
 
-            if (newUpvoted) {
-                upvotedSet.add(params.listId)
-            } else {
-                upvotedSet.remove(params.listId)
-            }
-            storage.write(key = keyUpvotedLists, value = gson.toJson(upvotedSet))
-
-            // 0ms Optimistic UI update
-            val currentOverrides = optimisticListOverrides.value.toMutableMap()
-            val existingOverride = currentOverrides[params.listId]
-            val currentUpvotes = existingOverride?.upvotesCount
-            val delta = if (newUpvoted) 1L else -1L
-            val nextUpvotes = currentUpvotes?.let { (it + delta).coerceAtLeast(0L) }
-            currentOverrides[params.listId] = (existingOverride ?: ListOverride()).copy(
-                isUpvotedByMe = newUpvoted,
-                upvotesCount = nextUpvotes
-            )
-            optimisticListOverrides.value = currentOverrides
-
-            repositoryScope.launch {
-                try {
-                    val listRef =
-                        firestore.collection(colCommunityCuratedLists).document(params.listId)
-                    val userInteractionRef = firestore.collection(colUserListInteractions)
-                        .document("${currentUserId}_${params.listId}")
-                    val batch = firestore.batch()
-                    batch.set(
-                        userInteractionRef,
-                        mapOf(
-                            "userId" to currentUserId,
-                            "listId" to params.listId,
-                            "isUpvoted" to newUpvoted,
-                            "updatedAt" to System.currentTimeMillis()
-                        ),
-                        SetOptions.merge()
-                    )
-
-                    batch.update(
-                        listRef,
-                        "upvotesCount",
-                        FieldValue.increment(delta)
-                    )
-
-                    batch.commit().await()
-                } catch (_: Exception) {
-                    // Non-blocking firestore sync
+                if (newUpvoted) {
+                    upvotedSet.add(params.listId)
+                } else {
+                    upvotedSet.remove(params.listId)
                 }
+                storage.write(key = keyUpvotedLists, value = gson.toJson(upvotedSet))
+
+                // 0ms Optimistic UI update
+                val currentOverrides = optimisticListOverrides.value.toMutableMap()
+                val existingOverride = currentOverrides[params.listId]
+                val currentUpvotes = existingOverride?.upvotesCount
+                    ?: latestCommunityListsCache[params.listId]?.upvotesCount
+                    ?: 0L
+                val delta = if (newUpvoted) 1L else -1L
+                val nextUpvotes = (currentUpvotes + delta).coerceAtLeast(0L)
+                currentOverrides[params.listId] = (existingOverride ?: ListOverride()).copy(
+                    isUpvotedByMe = newUpvoted,
+                    upvotesCount = nextUpvotes
+                )
+                optimisticListOverrides.value = currentOverrides
+
+                repositoryScope.launch {
+                    try {
+                        val listRef =
+                            firestore.collection(colCommunityCuratedLists).document(params.listId)
+                        val userInteractionRef = firestore.collection(colUserListInteractions)
+                            .document("${currentUserId}_${params.listId}")
+                        val batch = firestore.batch()
+                        batch.set(
+                            userInteractionRef,
+                            mapOf(
+                                "userId" to currentUserId,
+                                "listId" to params.listId,
+                                "isUpvoted" to newUpvoted,
+                                "updatedAt" to System.currentTimeMillis()
+                            ),
+                            SetOptions.merge()
+                        )
+
+                        batch.set(
+                            listRef,
+                            mapOf("upvotesCount" to FieldValue.increment(delta)),
+                            SetOptions.merge()
+                        )
+
+                        batch.commit().await()
+                    } catch (_: Exception) {
+                        // Non-blocking firestore sync
+                    }
+                }
+                Result.Success(Unit)
+            } catch (e: Exception) {
+                Result.Error(Failure.CoreFailure.UnexpectedFailure)
             }
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
 
@@ -1494,7 +1554,9 @@ class CommunityRepositoryImpl @Inject constructor(
             val currentOverrides = optimisticListOverrides.value.toMutableMap()
             val existingOverride = currentOverrides[listId]
             val currentClones = existingOverride?.clonesCount
-            val nextClones = currentClones?.let { it + 1L }
+                ?: latestCommunityListsCache[listId]?.clonesCount
+                ?: 0L
+            val nextClones = currentClones + 1L
             currentOverrides[listId] = (existingOverride ?: ListOverride()).copy(
                 isClonedByMe = true,
                 clonesCount = nextClones
@@ -1516,10 +1578,10 @@ class CommunityRepositoryImpl @Inject constructor(
                         ),
                         SetOptions.merge()
                     )
-                    batch.update(
+                    batch.set(
                         firestore.collection(colCommunityCuratedLists).document(listId),
-                        "clonesCount",
-                        FieldValue.increment(1L)
+                        mapOf("clonesCount" to FieldValue.increment(1L)),
+                        SetOptions.merge()
                     )
                     batch.commit().await()
                 } catch (_: Exception) {

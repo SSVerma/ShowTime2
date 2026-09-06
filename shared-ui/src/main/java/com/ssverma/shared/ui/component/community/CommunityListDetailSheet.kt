@@ -3,9 +3,13 @@ package com.ssverma.shared.ui.component.community
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,11 +54,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -80,6 +91,19 @@ fun CommunityListDetailSheet(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+    var isHeartPopped by remember { mutableStateOf(false) }
+    var lastUpvoteClickTime by remember { mutableLongStateOf(0L) }
+
+    val heartScale by animateFloatAsState(
+        targetValue = if (isHeartPopped) 1.25f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        finishedListener = { isHeartPopped = false },
+        label = "DetailHeartScaleAnimation"
+    )
 
     val heartTint by animateColorAsState(
         targetValue = if (communityList.isUpvotedByMe) {
@@ -236,7 +260,15 @@ fun CommunityListDetailSheet(
                         ) {
                             // Upvote Button
                             FilledTonalButton(
-                                onClick = onToggleUpvote,
+                                onClick = {
+                                    val now = System.currentTimeMillis()
+                                    if (now - lastUpvoteClickTime >= 350L) {
+                                        lastUpvoteClickTime = now
+                                        isHeartPopped = true
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onToggleUpvote()
+                                    }
+                                },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.filledTonalButtonColors(
                                     containerColor = if (communityList.isUpvotedByMe) {
@@ -258,7 +290,9 @@ fun CommunityListDetailSheet(
                                     },
                                     contentDescription = stringResource(id = R.string.cd_favorite_button),
                                     tint = heartTint,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .scale(heartScale)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
@@ -413,7 +447,12 @@ private fun CommunityCuratedGridItem(
                 .fillMaxWidth()
                 .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
         ) {
             if (item.posterImageUrl.isNotBlank()) {
                 NetworkImage(
@@ -427,7 +466,7 @@ private fun CommunityCuratedGridItem(
                     Icon(
                         imageVector = Icons.Rounded.Movie,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                         modifier = Modifier.size(32.dp)
                     )
                 }

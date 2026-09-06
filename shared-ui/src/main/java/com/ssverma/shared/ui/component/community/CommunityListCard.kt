@@ -2,9 +2,13 @@ package com.ssverma.shared.ui.component.community
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,10 +38,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +65,20 @@ fun CommunityListCard(
     onCloneList: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = LocalHapticFeedback.current
+    var isHeartPopped by remember { mutableStateOf(false) }
+    var lastUpvoteClickTime by remember { mutableLongStateOf(0L) }
+
+    val heartScale by animateFloatAsState(
+        targetValue = if (isHeartPopped) 1.25f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        finishedListener = { isHeartPopped = false },
+        label = "ListHeartScaleAnimation"
+    )
+
     val heartTint by animateColorAsState(
         targetValue = if (communityList.isUpvotedByMe) {
             MaterialTheme.colorScheme.primary
@@ -135,51 +160,54 @@ fun CommunityListCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             // Poster Collage Mosaic (up to 4 items)
-            if (communityList.previewPosters.isNotEmpty()) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp)
-                ) {
-                    val posters = communityList.previewPosters.take(4)
-                    posters.forEach { posterUrl ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
-                        ) {
-                            NetworkImage(
-                                url = posterUrl,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-                    // Fill remaining slots if fewer than 4 posters
-                    repeat(4 - posters.size) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.FolderSpecial,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp)
+            ) {
+                val posters = communityList.previewPosters.take(4)
+                posters.forEach { posterUrl ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    ) {
+                        NetworkImage(
+                            url = posterUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                // Fill remaining slots if fewer than 4 posters
+                repeat(4 - posters.size) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FolderSpecial,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
+            Spacer(modifier = Modifier.height(10.dp))
 
             // List Title
             Text(
@@ -260,7 +288,15 @@ fun CommunityListCard(
                 ) {
                     // Upvote Button
                     Surface(
-                        onClick = onToggleUpvote,
+                        onClick = {
+                            val now = System.currentTimeMillis()
+                            if (now - lastUpvoteClickTime >= 350L) {
+                                lastUpvoteClickTime = now
+                                isHeartPopped = true
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onToggleUpvote()
+                            }
+                        },
                         shape = RoundedCornerShape(8.dp),
                         color = if (communityList.isUpvotedByMe) {
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
@@ -280,7 +316,9 @@ fun CommunityListCard(
                                 },
                                 contentDescription = stringResource(id = R.string.cd_favorite_button),
                                 tint = heartTint,
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .scale(heartScale)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
