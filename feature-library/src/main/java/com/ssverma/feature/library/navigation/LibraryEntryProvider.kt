@@ -11,6 +11,7 @@ import com.ssverma.feature.library.ui.backlog.detail.ChallengeDetailScreen
 import com.ssverma.feature.library.ui.diary.CinemaDiaryScreen
 import com.ssverma.feature.library.ui.home.LibraryScreen
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptScreen
+import com.ssverma.feature.library.ui.share.SecretSharedListScreen
 import com.ssverma.feature.library.ui.taste.TasteProfileScreen
 import com.ssverma.feature.library.ui.wrapped.CinephileWrappedScreen
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
@@ -138,6 +139,21 @@ fun EntryProviderScope<NavKey>.libraryEntries(
     showTimeEntry<ChallengeDetailNavKey> { navKey ->
         ChallengeDetailScreen(
             challengeId = navKey.challengeId,
+            onBackClick = {
+                navigator.goBack()
+            },
+            onOpenMovieDetails = { movieId ->
+                navigator.navigate(MovieDetailNavKey(movieId))
+            },
+            onOpenTvShowDetails = { tvShowId ->
+                navigator.navigate(TvShowDetailNavKey(tvShowId))
+            }
+        )
+    }
+
+    showTimeEntry<SecretSharedListNavKey> { navKey ->
+        SecretSharedListScreen(
+            shareCode = navKey.shareCode,
             onBackClick = {
                 navigator.goBack()
             },

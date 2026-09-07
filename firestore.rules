@@ -116,6 +116,14 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Secret Shared Lists & Watchlists (Unlisted Private Sharing & Collaborative Co-Curators)
+    match /secret_shared_lists/{shareCode} {
+      allow read, write: if true;
+    }
+    match /dev_secret_shared_lists/{shareCode} {
+      allow read, write: if true;
+    }
+
     // Default fallback
     match /{document=**} {
       allow read, write: if request.auth != null;

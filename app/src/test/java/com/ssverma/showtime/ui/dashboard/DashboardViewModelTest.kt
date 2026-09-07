@@ -13,6 +13,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
+import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import com.ssverma.shared.testing.fakes.FakeTraktSyncRepository
 import io.mockk.coEvery
@@ -52,6 +53,7 @@ class DashboardViewModelTest {
         mockk(relaxed = true)
     private val tvGenresUseCase: com.ssverma.feature.tv.domain.usecase.TvGenresUseCase =
         mockk(relaxed = true)
+    private val reminderRepository: ReminderRepository = mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
 
@@ -110,7 +112,8 @@ class DashboardViewModelTest {
             voteDailyPollUseCase = voteDailyPollUseCase,
             getTrendingDiscussionsUseCase = getTrendingDiscussionsUseCase,
             movieGenresUseCase = movieGenresUseCase,
-            tvGenresUseCase = tvGenresUseCase
+            tvGenresUseCase = tvGenresUseCase,
+            reminderRepository = reminderRepository
         )
     }
 

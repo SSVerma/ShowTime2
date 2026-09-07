@@ -6,6 +6,7 @@ import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.navigation.SecretSharedListNavKey
 import com.ssverma.feature.library.navigation.TasteProfileNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
@@ -190,6 +191,18 @@ class ShowTimeDeepLinkHandlerTest {
     fun parse_invalidHost_returnsNull() {
         val navKey = ShowTimeDeepLinkHandler.parse("https://www.google.com/tv/1399")
         assertNull(navKey)
+    }
+
+    @Test
+    fun parse_secretListShortDeepLink_returnsSecretSharedListNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/l/4821")
+        assertEquals(SecretSharedListNavKey("4821"), navKey)
+    }
+
+    @Test
+    fun parse_secretListPrefixedDeepLink_returnsSecretSharedListNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/list/SL-4821")
+        assertEquals(SecretSharedListNavKey("SL-4821"), navKey)
     }
 }
 

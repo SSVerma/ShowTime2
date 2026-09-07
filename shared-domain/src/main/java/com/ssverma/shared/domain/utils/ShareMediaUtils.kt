@@ -1,5 +1,7 @@
 package com.ssverma.shared.domain.utils
 
+import java.util.Locale
+
 object ShareMediaUtils {
     const val DeepLinkDomain = "showtime.ssverma.in"
     const val UniversalWebBaseUrl = "https://$DeepLinkDomain"
@@ -78,6 +80,45 @@ object ShareMediaUtils {
 
         builder.append("\nExplore & Clone in ShowTime:\n")
             .append(shareUrl)
+
+        return builder.toString()
+    }
+
+    fun buildSecretListUrl(shareCode: String): String {
+        return "$UniversalWebBaseUrl/l/$shareCode"
+    }
+
+    fun buildFormattedSecretListMarkdown(
+        title: String,
+        description: String?,
+        authorName: String,
+        shareCode: String,
+        itemTitlesWithRating: List<Pair<String, Float>>
+    ): String {
+        val builder = StringBuilder()
+            .append("🎬 Cinephile Collection: \"$title\"\n")
+            .append("Curated by $authorName • ${itemTitlesWithRating.size} Titles\n")
+
+        if (!description.isNullOrBlank()) {
+            builder.append("\n\"$description\"\n")
+        }
+
+        if (itemTitlesWithRating.isNotEmpty()) {
+            builder.append("\nTitles:\n")
+            itemTitlesWithRating.forEachIndexed { index, pair ->
+                val ratingStr = if (pair.second > 0f) " — ${
+                    String.format(
+                        Locale.US,
+                        "%.1f",
+                        pair.second
+                    )
+                } ★" else ""
+                builder.append("${index + 1}. ${pair.first}$ratingStr\n")
+            }
+        }
+
+        builder.append("\nView, Clone or Co-Curate in ShowTime:\n")
+            .append(buildSecretListUrl(shareCode))
 
         return builder.toString()
     }

@@ -9,6 +9,7 @@ import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.navigation.SecretSharedListNavKey
 import com.ssverma.feature.library.navigation.TasteProfileNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
@@ -98,12 +99,29 @@ object ShowTimeDeepLinkHandler {
 
                 "diary" -> CinemaDiaryNavKey
 
+                "l", "secret_list", "shared_list" -> {
+                    if (effectiveSegments.size >= 2) {
+                        SecretSharedListNavKey(shareCode = effectiveSegments[1].uppercase())
+                    } else {
+                        LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists)
+                    }
+                }
+
                 "lists", "list" -> {
                     if (effectiveSegments.size >= 2) {
-                        LibraryHomeNavKey(
-                            initialTab = LibraryTabDestination.Community,
-                            targetCustomListId = effectiveSegments[1]
-                        )
+                        val segment = effectiveSegments[1]
+                        if (segment.startsWith(
+                                "SL-",
+                                ignoreCase = true
+                            ) || segment.startsWith("sl-", ignoreCase = true)
+                        ) {
+                            SecretSharedListNavKey(shareCode = segment.uppercase())
+                        } else {
+                            LibraryHomeNavKey(
+                                initialTab = LibraryTabDestination.Community,
+                                targetCustomListId = segment
+                            )
+                        }
                     } else {
                         LibraryHomeNavKey(initialTab = LibraryTabDestination.Community)
                     }

@@ -1,0 +1,182 @@
+package com.ssverma.feature.library.ui.share
+
+import android.app.Activity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.billing.BillingRepository
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.library.ListShareCardFormat
+import com.ssverma.shared.domain.model.library.ListShareTheme
+import com.ssverma.shared.domain.model.library.SecretSharedList
+import com.ssverma.shared.domain.model.library.SecretSharedListItem
+import com.ssverma.shared.domain.repository.SecretSharedListRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class ListShareExportUiState(
+    val selectedTheme: ListShareTheme = ListShareTheme.CLASSIC_SHOWTIME,
+    val selectedFormat: ListShareCardFormat = ListShareCardFormat.STORY_9_16,
+    val isCollaborative: Boolean = false,
+    val isCreatingLink: Boolean = false,
+    val shareCode: String? = null,
+    val secretSharedList: SecretSharedList? = null,
+    val isProActive: Boolean = false,
+    val isPassActive: Boolean = false,
+    val isWatermarkFree: Boolean = false,
+    val isProPaymentEnabled: Boolean = true,
+    val isExportingImage: Boolean = false,
+    val isGateOpen: Boolean = false,
+    val pendingTheme: ListShareTheme? = null,
+    val errorMessage: String? = null
+)
+
+@HiltViewModel
+class ListShareExportViewModel @Inject constructor(
+    private val secretSharedListRepository: SecretSharedListRepository,
+    private val billingRepository: BillingRepository,
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ListShareExportUiState())
+    val uiState: StateFlow<ListShareExportUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            billingRepository.isProActive.collectLatest { isPro ->
+                _uiState.update { current ->
+                    val unlocked = isPro || current.isPassActive
+                    current.copy(
+                        isProActive = isPro,
+                        isWatermarkFree = unlocked
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            billingRepository.isBillingEnabled.collectLatest { isEnabled ->
+                _uiState.update { it.copy(isProPaymentEnabled = isEnabled) }
+            }
+        }
+
+        viewModelScope.launch {
+            rewardManager.passStatus.collectLatest { status ->
+                val passUnlocked = status.isListShareThemesUnlocked
+                _uiState.update { current ->
+                    val unlocked = current.isProActive || passUnlocked
+                    current.copy(
+                        isPassActive = passUnlocked,
+                        isWatermarkFree = unlocked
+                    )
+                }
+            }
+        }
+    }
+
+    fun selectTheme(theme: ListShareTheme) {
+        if (theme == ListShareTheme.CLASSIC_SHOWTIME || _uiState.value.isProActive || _uiState.value.isPassActive) {
+            _uiState.update {
+                it.copy(
+                    selectedTheme = theme,
+                    isGateOpen = false,
+                    pendingTheme = null
+                )
+            }
+        } else {
+            _uiState.update { it.copy(isGateOpen = true, pendingTheme = theme) }
+        }
+    }
+
+    fun selectFormat(format: ListShareCardFormat) {
+        _uiState.update { it.copy(selectedFormat = format) }
+    }
+
+    fun setCollaborative(allow: Boolean) {
+        _uiState.update { it.copy(isCollaborative = allow) }
+    }
+
+    fun setExportingImage(isExporting: Boolean) {
+        _uiState.update { it.copy(isExportingImage = isExporting) }
+    }
+
+    fun closeGate() {
+        _uiState.update { it.copy(isGateOpen = false, pendingTheme = null) }
+    }
+
+    fun generateSecretLink(
+        title: String,
+        description: String?,
+        items: List<SecretSharedListItem>,
+        ownerName: String,
+        onSuccess: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCreatingLink = true, errorMessage = null) }
+            val result = secretSharedListRepository.createSecretShare(
+                title = title,
+                description = description,
+                items = items,
+                isCollaborative = _uiState.value.isCollaborative,
+                ownerName = ownerName
+            )
+            when (result) {
+                is Result.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isCreatingLink = false,
+                            shareCode = result.data.shareCode,
+                            secretSharedList = result.data
+                        )
+                    }
+                    onSuccess(result.data.shareCode)
+                }
+
+                is Result.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isCreatingLink = false,
+                            errorMessage = "Failed to generate secret share link"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun revokeSecretShare(onRevoked: () -> Unit) {
+        val code = _uiState.value.shareCode ?: return
+        viewModelScope.launch {
+            secretSharedListRepository.revokeSecretShare(code)
+            _uiState.update { it.copy(shareCode = null, secretSharedList = null) }
+            onRevoked()
+        }
+    }
+
+    fun unlockThemesWithRewardedAd(activity: Activity) {
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.LIST_SHARE_THEMES)
+                val pending = _uiState.value.pendingTheme ?: ListShareTheme.VINTAGE_35MM
+                _uiState.update {
+                    it.copy(
+                        isPassActive = true,
+                        isWatermarkFree = true,
+                        isGateOpen = false,
+                        selectedTheme = pending,
+                        pendingTheme = null
+                    )
+                }
+            }
+        }
+    }
+}

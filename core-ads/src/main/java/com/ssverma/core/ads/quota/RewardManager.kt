@@ -34,7 +34,8 @@ enum class RewardPassType {
     WATERMARK_FREE_RECEIPT,
     CINEMA_WRAPPED_STORY,
     AIRING_REMINDERS,
-    MATCH_ROOM
+    MATCH_ROOM,
+    LIST_SHARE_THEMES
 }
 
 data class RewardPassStatus(
@@ -56,7 +57,9 @@ data class RewardPassStatus(
     val isAiringRemindersUnlocked: Boolean = false,
     val airingRemindersExpiryTimestamp: Long = 0L,
     val isMatchRoomUnlocked: Boolean = false,
-    val matchRoomExpiryTimestamp: Long = 0L
+    val matchRoomExpiryTimestamp: Long = 0L,
+    val isListShareThemesUnlocked: Boolean = false,
+    val listShareThemesExpiryTimestamp: Long = 0L
 )
 
 interface RewardManager {
@@ -75,6 +78,7 @@ interface RewardManager {
     suspend fun canScheduleReminder(currentActiveCount: Int, isProActive: Boolean): Boolean
     suspend fun isExtraRemindersAllowed(isProActive: Boolean): Boolean
     suspend fun isMatchRoomAllowed(isProActive: Boolean): Boolean
+    suspend fun isListShareThemesAllowed(isProActive: Boolean): Boolean
     suspend fun useCinemaGameRevive(): Boolean
 }
 
@@ -115,6 +119,7 @@ class RewardManagerImpl @Inject constructor(
             val wrappedStoryExpiry = prefs[KEY_WRAPPED_STORY_EXPIRY] ?: 0L
             val airingRemindersExpiry = prefs[KEY_AIRING_REMINDERS_EXPIRY] ?: 0L
             val matchRoomExpiry = prefs[KEY_MATCH_ROOM_EXPIRY] ?: 0L
+            val listShareThemesExpiry = prefs[KEY_LIST_SHARE_THEMES_EXPIRY] ?: 0L
 
             RewardPassStatus(
                 isAutoBackupUnlocked = autoBackupExpiry > now,
@@ -135,7 +140,9 @@ class RewardManagerImpl @Inject constructor(
                 isAiringRemindersUnlocked = airingRemindersExpiry > now,
                 airingRemindersExpiryTimestamp = if (airingRemindersExpiry > now) airingRemindersExpiry else 0L,
                 isMatchRoomUnlocked = matchRoomExpiry > now,
-                matchRoomExpiryTimestamp = if (matchRoomExpiry > now) matchRoomExpiry else 0L
+                matchRoomExpiryTimestamp = if (matchRoomExpiry > now) matchRoomExpiry else 0L,
+                isListShareThemesUnlocked = listShareThemesExpiry > now,
+                listShareThemesExpiryTimestamp = if (listShareThemesExpiry > now) listShareThemesExpiry else 0L
             )
         }.first()
         _passStatus.value = status
@@ -158,6 +165,8 @@ class RewardManagerImpl @Inject constructor(
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_AIRING_REMINDERS_HOURS, 24L)
         val matchRoomDurationHours =
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_MATCH_ROOM_HOURS, 24L)
+        val listShareThemesDurationHours =
+            appConfigProvider.getLong(KEY_CONFIG_REWARDED_LIST_SHARE_THEMES_HOURS, 24L)
 
         storage.edit { prefs ->
             when (passType) {
@@ -242,6 +251,13 @@ class RewardManagerImpl @Inject constructor(
                     prefs[KEY_MATCH_ROOM_EXPIRY] =
                         baseTime + TimeUnit.HOURS.toMillis(matchRoomDurationHours)
                 }
+
+                RewardPassType.LIST_SHARE_THEMES -> {
+                    val currentExpiry = prefs[KEY_LIST_SHARE_THEMES_EXPIRY] ?: 0L
+                    val baseTime = if (currentExpiry > now) currentExpiry else now
+                    prefs[KEY_LIST_SHARE_THEMES_EXPIRY] =
+                        baseTime + TimeUnit.HOURS.toMillis(listShareThemesDurationHours)
+                }
             }
         }
         refreshPassStatus()
@@ -323,6 +339,11 @@ class RewardManagerImpl @Inject constructor(
         return _passStatus.value.isMatchRoomUnlocked
     }
 
+    override suspend fun isListShareThemesAllowed(isProActive: Boolean): Boolean {
+        if (isProActive) return true
+        return _passStatus.value.isListShareThemesUnlocked
+    }
+
     override suspend fun useCinemaGameRevive(): Boolean {
         val current = _passStatus.value.cinemaGameRevivesRemaining
         if (current <= 0) return false
@@ -348,6 +369,8 @@ class RewardManagerImpl @Inject constructor(
             longPreferencesKey("reward_airing_reminders_expiry")
         private val KEY_MATCH_ROOM_EXPIRY =
             longPreferencesKey("reward_match_room_expiry")
+        private val KEY_LIST_SHARE_THEMES_EXPIRY =
+            longPreferencesKey("reward_list_share_themes_expiry")
         private val KEY_EXTRA_LIST_SLOTS = intPreferencesKey("reward_extra_list_slots")
         private val KEY_EXTRA_PUBLISH_SLOTS = intPreferencesKey("reward_extra_publish_slots")
         private val KEY_GAME_REVIVES = intPreferencesKey("reward_game_revives")
@@ -370,6 +393,8 @@ class RewardManagerImpl @Inject constructor(
             "rewarded_airing_reminders_duration_hours"
         const val KEY_CONFIG_REWARDED_MATCH_ROOM_HOURS =
             "rewarded_match_room_duration_hours"
+        const val KEY_CONFIG_REWARDED_LIST_SHARE_THEMES_HOURS =
+            "rewarded_list_share_themes_duration_hours"
         const val KEY_CONFIG_AUTO_BACKUP_PRO_REQUIRED = "auto_backup_pro_required"
         const val KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED = "trakt_sync_pro_required"
     }

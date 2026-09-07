@@ -209,4 +209,27 @@ class RewardManagerTest {
         val allowed = rewardManager.isMatchRoomAllowed(isProActive = false)
         assertThat(allowed).isTrue()
     }
+
+    @Test
+    fun `isListShareThemesAllowed returns true for pro user`() = runTest {
+        val allowed = rewardManager.isListShareThemesAllowed(isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isListShareThemesAllowed returns false for free user without pass`() = runTest {
+        val allowed = rewardManager.isListShareThemesAllowed(isProActive = false)
+        assertThat(allowed).isFalse()
+    }
+
+    @Test
+    fun `grantRewardPass for LIST_SHARE_THEMES unlocks list share themes pass`() = runTest {
+        rewardManager.grantRewardPass(RewardPassType.LIST_SHARE_THEMES)
+        val status = rewardManager.passStatus.value
+        assertThat(status.isListShareThemesUnlocked).isTrue()
+        assertThat(status.listShareThemesExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
+
+        val allowed = rewardManager.isListShareThemesAllowed(isProActive = false)
+        assertThat(allowed).isTrue()
+    }
 }

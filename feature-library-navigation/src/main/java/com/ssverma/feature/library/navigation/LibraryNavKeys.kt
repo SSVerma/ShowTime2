@@ -83,3 +83,7 @@ data object BacklogChallengeNavKey : NavKey, Parcelable
 @Parcelize
 data class ChallengeDetailNavKey(val challengeId: String) : NavKey, Parcelable
 
+@Serializable
+@Parcelize
+data class SecretSharedListNavKey(val shareCode: String) : NavKey, Parcelable
+

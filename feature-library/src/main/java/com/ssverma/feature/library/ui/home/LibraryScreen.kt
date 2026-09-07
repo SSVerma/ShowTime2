@@ -144,6 +144,8 @@ import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.ui.share.ListShareExportBottomSheet
+import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBanner
 import com.ssverma.feature.library.ui.home.component.LibraryTab
 import com.ssverma.feature.library.ui.home.component.LibraryTabType
@@ -223,6 +225,7 @@ fun LibraryScreen(
     var receiptStyle by remember { mutableStateOf(ReceiptStyle.THERMAL) }
     var receiptSource by remember { mutableStateOf(ReceiptSource.HISTORY) }
     var customListForReceipt by remember { mutableStateOf<CustomList?>(null) }
+    var secretSharePayload by remember { mutableStateOf<SecretSharePayload?>(null) }
 
     val activeReceiptSnapshot = remember(
         receiptSource,
@@ -618,7 +621,17 @@ fun LibraryScreen(
                             ) else onMovieClicked(item.mediaId)
                         },
                         onActionClick = { viewModel.removeFromWatchlist(it.mediaId) },
-                        onExploreClick = openSearchPage
+                        onExploreClick = openSearchPage,
+                        onSecretShare = if (watchlistItems.isNotEmpty()) {
+                            {
+                                secretSharePayload = SecretSharePayload(
+                                    title = "My Watchlist",
+                                    description = "Movies and TV shows I'm planning to watch",
+                                    ownerName = "Me",
+                                    items = watchlistItems.map { it.toSecretSharedListItem() }
+                                )
+                            }
+                        } else null
                     )
                 }
 
@@ -911,7 +924,16 @@ fun LibraryScreen(
                 showReceiptSheet = true
             },
             onPublishClick = { listPendingPublish = selectedCustomList },
-            onUnpublishClick = { listPendingUnpublish = selectedCustomList }
+            onUnpublishClick = { listPendingUnpublish = selectedCustomList },
+            onSecretShare = {
+                val target = selectedCustomList!!
+                secretSharePayload = SecretSharePayload(
+                    title = target.title,
+                    description = target.description,
+                    ownerName = "Me",
+                    items = target.items.map { it.toSecretSharedListItem() }
+                )
+            }
         )
     }
 
@@ -1146,6 +1168,17 @@ fun LibraryScreen(
             isCustomCollection = customListForReceipt != null
         )
     }
+
+    secretSharePayload?.let { payload ->
+        ListShareExportBottomSheet(
+            title = payload.title,
+            description = payload.description,
+            ownerName = payload.ownerName,
+            items = payload.items,
+            onDismissRequest = { secretSharePayload = null },
+            onOpenProPaywall = onNavigateToProPaywall
+        )
+    }
 }
 
 private fun filterItems(
@@ -1177,6 +1210,7 @@ private fun MediaCollectionTabContent(
     onActionClick: (SavedMediaItem) -> Unit,
     onExploreClick: () -> Unit,
     onClearAll: (() -> Unit)? = null,
+    onSecretShare: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var itemPendingRemoval by remember { mutableStateOf<SavedMediaItem?>(null) }
@@ -1352,51 +1386,70 @@ private fun MediaCollectionTabContent(
                             )
                         }
 
-                        if (onClearAll != null) {
-                            var showClearMenu by remember { mutableStateOf(false) }
-                            Box {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (onSecretShare != null && items.isNotEmpty()) {
                                 IconButton(
-                                    onClick = { showClearMenu = true },
+                                    onClick = onSecretShare,
                                     modifier = Modifier.size(36.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Rounded.MoreVert,
-                                        contentDescription = stringResource(R.string.more_options),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        imageVector = Icons.Rounded.Share,
+                                        contentDescription = stringResource(R.string.secret_share_action),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
-                                DropdownMenu(
-                                    expanded = showClearMenu,
-                                    onDismissRequest = { showClearMenu = false },
-                                    shape = RoundedCornerShape(16.dp),
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                    tonalElevation = 3.dp,
-                                    shadowElevation = 6.dp,
-                                    border = BorderStroke(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                                    )
-                                ) {
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = stringResource(R.string.clear_history),
-                                                color = MaterialTheme.colorScheme.error,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Rounded.DeleteOutline,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.error
-                                            )
-                                        },
-                                        onClick = {
-                                            showClearMenu = false
-                                            onClearAll()
-                                        }
-                                    )
+                            }
+
+                            if (onClearAll != null) {
+                                var showClearMenu by remember { mutableStateOf(false) }
+                                Box {
+                                    IconButton(
+                                        onClick = { showClearMenu = true },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.MoreVert,
+                                            contentDescription = stringResource(R.string.more_options),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showClearMenu,
+                                        onDismissRequest = { showClearMenu = false },
+                                        shape = RoundedCornerShape(16.dp),
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                        tonalElevation = 3.dp,
+                                        shadowElevation = 6.dp,
+                                        border = BorderStroke(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                        )
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = stringResource(R.string.clear_history),
+                                                    color = MaterialTheme.colorScheme.error,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.DeleteOutline,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.error
+                                                )
+                                            },
+                                            onClick = {
+                                                showClearMenu = false
+                                                onClearAll()
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -2016,7 +2069,8 @@ private fun CustomListDetailSheet(
     onExploreClick: () -> Unit,
     onShareReceipt: () -> Unit,
     onPublishClick: () -> Unit,
-    onUnpublishClick: () -> Unit
+    onUnpublishClick: () -> Unit,
+    onSecretShare: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -2362,6 +2416,31 @@ private fun CustomListDetailSheet(
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
+
+                    Surface(
+                        onClick = onSecretShare,
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.AutoAwesome,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.secret_share_action),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.tertiary
                             )
                         }
                     }
@@ -2857,3 +2936,35 @@ private fun formatRelativeDate(timestamp: Long, prefix: String = "Added "): Stri
         }
     }
 }
+
+private data class SecretSharePayload(
+    val title: String,
+    val description: String? = null,
+    val ownerName: String = "Me",
+    val items: List<SecretSharedListItem>
+)
+
+private fun SavedMediaItem.toSecretSharedListItem(): SecretSharedListItem = SecretSharedListItem(
+    mediaId = mediaId,
+    mediaType = mediaType,
+    title = title,
+    posterImageUrl = posterImageUrl,
+    backdropImageUrl = backdropImageUrl,
+    voteAvg = voteAvg,
+    releaseYear = releaseDate.take(4),
+    addedByName = "Curator",
+    addedAtEpochMs = addedAt
+)
+
+private fun CustomListItem.toSecretSharedListItem(): SecretSharedListItem = SecretSharedListItem(
+    mediaId = mediaId,
+    mediaType = mediaType,
+    title = title,
+    posterImageUrl = posterImageUrl,
+    backdropImageUrl = backdropImageUrl,
+    voteAvg = voteAvg,
+    releaseYear = null,
+    addedByName = "Curator",
+    addedAtEpochMs = addedAt
+)
+
