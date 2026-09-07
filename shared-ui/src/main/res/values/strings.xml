@@ -295,4 +295,23 @@
     <!-- General Media Types -->
     <string name="media_type_movie">Movie</string>
     <string name="media_type_tv">TV Show</string>
+
+    <!-- Streaming Subscriptions -->
+    <string name="streaming_subscriptions_title">My Streaming Services</string>
+    <string name="streaming_subscriptions_desc">Select the services you subscribe to. ShowTime will aggregate content across your providers.</string>
+    <string name="streaming_subscriptions_search_hint">Search streaming services…</string>
+    <string name="streaming_subscriptions_save">Save Subscriptions</string>
+    <string name="streaming_subscriptions_save_count">Save Subscriptions (%1$d)</string>
+    <string name="streaming_subscriptions_clear_all">Clear All</string>
+    <string name="streaming_subscriptions_free_tier_hint">Free: 1 service • Pro: Combine unlimited</string>
+    <string name="streaming_subscriptions_pro_badge">PRO UNLIMITED</string>
+    <string name="streaming_subscriptions_pass_badge">PASS ACTIVE (24H)</string>
+    <string name="streaming_multi_service_gate_title">Multi-Service Streaming</string>
+    <string name="streaming_multi_service_gate_desc">Combine Netflix, Prime Video, Disney+, Apple TV+, and more into a single unified discovery feed with ShowTime Pro.</string>
+    <string name="streaming_multi_service_unlock_pro">Upgrade to Pro</string>
+    <string name="streaming_multi_service_switch_service">Switch to %1$s</string>
+    <string name="streaming_multi_service_pass_reward">Watch Video for 24h Pass</string>
+    <string name="streaming_subscriptions_empty_services">No streaming services found</string>
+    <string name="streaming_subscriptions_my_services_chip">My Services</string>
+    <string name="streaming_subscriptions_my_services_chip_count">My Services (%1$d)</string>
 </resources>

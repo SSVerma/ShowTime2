@@ -30,6 +30,8 @@ dependencies {
     implementation(projects.featureLibraryNavigation)
     implementation(projects.sharedAds)
     implementation(projects.coreAds)
+    implementation(projects.coreBilling)
+    implementation(projects.featurePaymentNavigation)
 
     implementation(projects.coreNetworking)
     implementation(projects.corePaging)

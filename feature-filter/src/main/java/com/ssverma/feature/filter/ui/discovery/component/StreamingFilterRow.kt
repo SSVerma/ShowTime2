@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.LiveTv
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,17 +28,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.feature.filter.R
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.ui.R as SharedUiR
 
 @Composable
 fun StreamingFilterRow(
     watchRegion: String,
     availableProviders: List<ProviderInfo>,
     selectedProviderIds: Set<Int>,
+    userSubscriptions: Set<Int> = emptySet(),
     onToggleProvider: (Int) -> Unit,
+    onToggleMyServices: () -> Unit = {},
     onOpenRegionSheet: () -> Unit,
     onOpenFilterSheet: () -> Unit,
     modifier: Modifier = Modifier
@@ -94,17 +100,82 @@ fun StreamingFilterRow(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Tune,
-                        contentDescription = "Filters",
+                        contentDescription = stringResource(R.string.filter),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Filters",
+                        text = stringResource(R.string.filter),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                }
+            }
+        }
+
+        // My Services Quick Filter Chip
+        item(key = "my_services_chip") {
+            val isMyServicesActive = userSubscriptions.isNotEmpty() &&
+                    (selectedProviderIds == userSubscriptions ||
+                            (userSubscriptions.size > 1 && selectedProviderIds == userSubscriptions.take(
+                                1
+                            ).toSet()))
+
+            val containerColor by animateColorAsState(
+                targetValue = if (isMyServicesActive) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                label = "my_services_bg"
+            )
+
+            val borderColor by animateColorAsState(
+                targetValue = if (isMyServicesActive) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                label = "my_services_border"
+            )
+
+            Surface(
+                onClick = onToggleMyServices,
+                shape = RoundedCornerShape(16.dp),
+                color = containerColor,
+                border = BorderStroke(1.dp, borderColor)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.LiveTv,
+                        contentDescription = null,
+                        tint = if (isMyServicesActive) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (userSubscriptions.isEmpty()) {
+                            stringResource(SharedUiR.string.streaming_subscriptions_my_services_chip)
+                        } else {
+                            stringResource(
+                                SharedUiR.string.streaming_subscriptions_my_services_chip_count,
+                                userSubscriptions.size
+                            )
+                        },
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (isMyServicesActive) FontWeight.Bold else FontWeight.SemiBold,
+                        color = if (isMyServicesActive) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onSurface
+                    )
+                    if (isMyServicesActive) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 }
             }
         }

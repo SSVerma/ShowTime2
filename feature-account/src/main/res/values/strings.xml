@@ -162,4 +162,9 @@
     <string name="manual_backup_gate_desc">Save a complete snapshot of your favorites, watchlists, custom lists, and history to your private cloud storage. Watch a short video to create this snapshot or upgrade to ShowTime Pro for silent automatic background sync.</string>
     <string name="watch_ad_to_backup_now">Watch Video to Back Up Now</string>
     <string name="auto_backup_pro_only_notice">Automatic background sync requires ShowTime Pro.</string>
+
+    <!-- Streaming Subscriptions Preferences -->
+    <string name="streaming_subscriptions_title">My Streaming Services</string>
+    <string name="streaming_subscriptions_select_hint">Select your streaming services</string>
+    <string name="streaming_subscriptions_count_format">%1$d services selected</string>
 </resources>

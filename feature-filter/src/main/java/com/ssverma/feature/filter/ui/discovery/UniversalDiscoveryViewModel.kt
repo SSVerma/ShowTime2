@@ -6,8 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import android.app.Activity
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.discovery.DiscoveryDecade
 import com.ssverma.shared.domain.model.discovery.DiscoverySortOrder
 import com.ssverma.shared.domain.model.discovery.DiscoveryStudioHub
@@ -31,6 +37,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -52,6 +59,9 @@ class UniversalDiscoveryViewModel @Inject constructor(
     private val watchProviderRepository: WatchProviderRepository,
     private val appConfigRepository: AppConfigRepository,
     private val libraryRepository: LibraryRepository,
+    private val billingRepository: BillingRepository,
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -138,10 +148,27 @@ class UniversalDiscoveryViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            combine(
+                billingRepository.isProActive,
+                rewardManager.passStatus
+            ) { isPro, passStatus ->
+                isPro to passStatus.isMultiServiceUnlocked
+            }.collectLatest { (isPro, isPass) ->
+                _uiState.update { it.copy(isProActive = isPro, isPassActive = isPass) }
+            }
+        }
+
+        viewModelScope.launch {
             appConfigRepository.userStreamingSubscriptions.collectLatest { subscriptions ->
-                if (initialProviders.isEmpty()) {
+                _uiState.update { it.copy(userStreamingSubscriptions = subscriptions) }
+                if (initialProviders.isEmpty() && subscriptions.isNotEmpty()) {
+                    val allowed = if (_uiState.value.isProActive || _uiState.value.isPassActive) {
+                        subscriptions
+                    } else {
+                        subscriptions.take(1).toSet()
+                    }
                     _uiState.update {
-                        it.copy(filter = it.filter.copy(selectedProviderIds = subscriptions))
+                        it.copy(filter = it.filter.copy(selectedProviderIds = allowed))
                     }
                     scheduleQuery(debounceMs = 150)
                 }
@@ -367,14 +394,122 @@ class UniversalDiscoveryViewModel @Inject constructor(
 
     fun toggleStreamingProvider(providerId: Int) {
         val current = _uiState.value.filter.selectedProviderIds
-        val updated = if (current.contains(providerId)) {
-            current - providerId
+        if (current.contains(providerId)) {
+            _uiState.update {
+                it.copy(filter = it.filter.copy(selectedProviderIds = current - providerId))
+            }
+            scheduleQuery(debounceMs = 150)
         } else {
-            current + providerId
+            val isMultiAllowed = _uiState.value.isProActive || _uiState.value.isPassActive
+            if (current.isEmpty() || isMultiAllowed) {
+                _uiState.update {
+                    it.copy(filter = it.filter.copy(selectedProviderIds = current + providerId))
+                }
+                scheduleQuery(debounceMs = 150)
+            } else {
+                val provider =
+                    _uiState.value.availableProviders.find { it.providerId == providerId }
+                _uiState.update {
+                    it.copy(
+                        isMultiServiceGateOpen = true,
+                        pendingProviderToSwitch = provider
+                    )
+                }
+            }
         }
-        viewModelScope.launch {
-            appConfigRepository.updateStreamingSubscriptions(updated)
+    }
+
+    fun toggleMyServicesFilter() {
+        val subscriptions = _uiState.value.userStreamingSubscriptions
+        val current = _uiState.value.filter.selectedProviderIds
+
+        if (subscriptions.isEmpty()) {
+            _uiState.update { it.copy(isSubscriptionsSheetOpen = true) }
+            return
         }
+
+        val isCurrentlyActive = current.isNotEmpty() &&
+                (current == subscriptions || (subscriptions.size > 1 && current == subscriptions.take(
+                    1
+                ).toSet()))
+        if (isCurrentlyActive) {
+            _uiState.update {
+                it.copy(filter = it.filter.copy(selectedProviderIds = emptySet()))
+            }
+            scheduleQuery(debounceMs = 0)
+        } else {
+            val isMultiAllowed = _uiState.value.isProActive || _uiState.value.isPassActive
+            if (subscriptions.size == 1 || isMultiAllowed) {
+                _uiState.update {
+                    it.copy(filter = it.filter.copy(selectedProviderIds = subscriptions))
+                }
+                scheduleQuery(debounceMs = 0)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        filter = it.filter.copy(
+                            selectedProviderIds = subscriptions.take(1).toSet()
+                        ),
+                        isMultiServiceGateOpen = true,
+                        pendingProviderToSwitch = null
+                    )
+                }
+                scheduleQuery(debounceMs = 0)
+            }
+        }
+    }
+
+    fun watchAdForMultiServicePass(activity: Activity) {
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.MULTI_SERVICE_FILTER)
+                val pending = _uiState.value.pendingProviderToSwitch
+                if (pending != null) {
+                    _uiState.update {
+                        it.copy(
+                            filter = it.filter.copy(selectedProviderIds = it.filter.selectedProviderIds + pending.providerId),
+                            isMultiServiceGateOpen = false,
+                            pendingProviderToSwitch = null
+                        )
+                    }
+                    scheduleQuery(debounceMs = 0)
+                } else {
+                    val subscriptions = _uiState.value.userStreamingSubscriptions
+                    _uiState.update {
+                        it.copy(
+                            filter = it.filter.copy(selectedProviderIds = subscriptions),
+                            isMultiServiceGateOpen = false,
+                            pendingProviderToSwitch = null
+                        )
+                    }
+                    scheduleQuery(debounceMs = 0)
+                }
+            }
+        }
+    }
+
+    fun switchToProvider(providerId: Int) {
+        _uiState.update {
+            it.copy(
+                filter = it.filter.copy(selectedProviderIds = setOf(providerId)),
+                isMultiServiceGateOpen = false,
+                pendingProviderToSwitch = null
+            )
+        }
+        scheduleQuery(debounceMs = 0)
+    }
+
+    fun dismissMultiServiceGate() {
+        _uiState.update {
+            it.copy(
+                isMultiServiceGateOpen = false,
+                pendingProviderToSwitch = null
+            )
+        }
+    }
+
+    fun openSubscriptionsSheet(open: Boolean) {
+        _uiState.update { it.copy(isSubscriptionsSheetOpen = open) }
     }
 
     fun toggleHideWatched(hideWatched: Boolean) {

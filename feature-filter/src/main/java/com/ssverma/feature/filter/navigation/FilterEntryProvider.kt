@@ -13,6 +13,7 @@ import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
@@ -119,7 +120,8 @@ fun EntryProviderScope<NavKey>.filterEntries(
                 }
             },
             openLibraryPage = { libraryNavKey -> navigator.navigate(libraryNavKey) },
-            onOpenCinemaDiary = { navigator.navigate(CinemaDiaryNavKey) }
+            onOpenCinemaDiary = { navigator.navigate(CinemaDiaryNavKey) },
+            onOpenProUpgrade = { navigator.navigate(ProPaywallNavKey) }
         )
     }
 }

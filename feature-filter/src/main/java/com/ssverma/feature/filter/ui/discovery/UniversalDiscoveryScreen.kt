@@ -88,6 +88,10 @@ import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import kotlinx.coroutines.launch
 import com.ssverma.shared.ui.R as SharedUiR
 
+import android.app.Activity
+import com.ssverma.feature.filter.ui.discovery.component.StreamingMultiServiceGateDialog
+import com.ssverma.shared.ui.subscription.StreamingSubscriptionsBottomSheet
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UniversalDiscoveryScreen(
@@ -99,6 +103,7 @@ fun UniversalDiscoveryScreen(
     openLibraryPage: (NavKey) -> Unit = {},
     onOpenCinemaDiary: (() -> Unit)? = null,
     openDiscussions: ((DiscussionNavArgs) -> Unit)? = null,
+    onOpenProUpgrade: () -> Unit = {},
     viewModel: UniversalDiscoveryViewModel = hiltViewModel()
 ) {
     var hasHandledInitialArgs by rememberSaveable(navKey) {
@@ -206,7 +211,9 @@ fun UniversalDiscoveryScreen(
                             watchRegion = uiState.filter.watchRegion,
                             availableProviders = uiState.availableProviders,
                             selectedProviderIds = uiState.filter.selectedProviderIds,
+                            userSubscriptions = uiState.userStreamingSubscriptions,
                             onToggleProvider = { viewModel.toggleStreamingProvider(it) },
+                            onToggleMyServices = { viewModel.toggleMyServicesFilter() },
                             onOpenRegionSheet = { viewModel.openRegionSheet(true) },
                             onOpenFilterSheet = { viewModel.openFilterSheet(true) }
                         )
@@ -569,6 +576,36 @@ fun UniversalDiscoveryScreen(
             onDismissRequest = {
                 viewModel.openRegionSheet(false)
             }
+        )
+    }
+
+    if (uiState.isSubscriptionsSheetOpen) {
+        StreamingSubscriptionsBottomSheet(
+            onDismissRequest = { viewModel.openSubscriptionsSheet(false) },
+            onUpgradeToPro = {
+                viewModel.openSubscriptionsSheet(false)
+                onOpenProUpgrade()
+            }
+        )
+    }
+
+    if (uiState.isMultiServiceGateOpen) {
+        StreamingMultiServiceGateDialog(
+            pendingProvider = uiState.pendingProviderToSwitch,
+            onSwitchToProvider = { providerId ->
+                viewModel.switchToProvider(providerId)
+            },
+            onUpgradeToPro = {
+                viewModel.dismissMultiServiceGate()
+                onOpenProUpgrade()
+            },
+            onWatchRewardAd = {
+                val activity = context as? Activity
+                if (activity != null) {
+                    viewModel.watchAdForMultiServicePass(activity)
+                }
+            },
+            onDismiss = { viewModel.dismissMultiServiceGate() }
         )
     }
 }

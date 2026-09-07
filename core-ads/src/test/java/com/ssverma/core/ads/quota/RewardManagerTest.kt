@@ -86,4 +86,16 @@ class RewardManagerTest {
             val allowed = rewardManager.isTraktSyncAllowed(isProActive = false)
             assertThat(allowed).isFalse()
         }
+
+    @Test
+    fun `isMultiServiceFilterAllowed returns true for pro user`() = runTest {
+        val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isMultiServiceFilterAllowed returns false for free user with no active pass`() = runTest {
+        val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = false)
+        assertThat(allowed).isFalse()
+    }
 }

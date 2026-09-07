@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.LiveTv
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Star
@@ -83,6 +84,7 @@ import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.shared.ui.component.ProfileAvatarSharedKey
+import com.ssverma.shared.ui.subscription.StreamingSubscriptionsBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,6 +132,7 @@ fun ProfileScreen(
                     availableRegions = uiState.availableRegions,
                     contentLanguage = uiState.contentLanguage,
                     availableLanguages = uiState.availableLanguages,
+                    userStreamingSubscriptions = uiState.userStreamingSubscriptions,
                     googleUser = uiState.googleUser,
                     guestPseudonym = uiState.guestPseudonym,
                     isSigningIn = uiState.isSigningIn,
@@ -141,6 +144,7 @@ fun ProfileScreen(
                     onOpenTrakt = onOpenTrakt,
                     onOpenTheme = { viewModel.openThemeSheet() },
                     onOpenLocalization = { viewModel.openLocalizationSheet() },
+                    onOpenStreamingSubscriptions = { viewModel.openStreamingSubscriptionsSheet() },
                     onOpenAbout = onOpenAbout,
                     onLogoutClick = { showSignOutConfirmDialog = true },
                     onGoogleSignInClick = { activity?.let { viewModel.signInWithGoogle(it) } },
@@ -228,6 +232,17 @@ fun ProfileScreen(
             )
         }
 
+        // Streaming Subscriptions Bottom Sheet
+        if (uiState.isStreamingSubscriptionsSheetVisible) {
+            StreamingSubscriptionsBottomSheet(
+                onDismissRequest = { viewModel.closeStreamingSubscriptionsSheet() },
+                onUpgradeToPro = {
+                    viewModel.closeStreamingSubscriptionsSheet()
+                    viewModel.openPaywall()
+                }
+            )
+        }
+
         // Pro Paywall Bottom Sheet
         if (uiState.isPaywallVisible) {
             ProPaywallBottomSheet(
@@ -278,6 +293,7 @@ private fun ProfileContent(
     availableRegions: List<WatchProviderRegion>,
     contentLanguage: String,
     availableLanguages: List<Language>,
+    userStreamingSubscriptions: Set<Int>,
     googleUser: GoogleUser?,
     guestPseudonym: String,
     isSigningIn: Boolean,
@@ -289,6 +305,7 @@ private fun ProfileContent(
     onOpenTrakt: () -> Unit,
     onOpenTheme: () -> Unit,
     onOpenLocalization: () -> Unit,
+    onOpenStreamingSubscriptions: () -> Unit,
     onOpenAbout: () -> Unit,
     onLogoutClick: () -> Unit,
     onGoogleSignInClick: () -> Unit,
@@ -352,6 +369,7 @@ private fun ProfileContent(
             availableRegions = availableRegions,
             contentLanguage = contentLanguage,
             availableLanguages = availableLanguages,
+            userStreamingSubscriptions = userStreamingSubscriptions,
             googleUser = googleUser,
             traktAuthState = traktAuthState,
             isMockTraktEnabled = isMockTraktEnabled,
@@ -359,6 +377,7 @@ private fun ProfileContent(
             onOpenTrakt = onOpenTrakt,
             onOpenTheme = onOpenTheme,
             onOpenLocalization = onOpenLocalization,
+            onOpenStreamingSubscriptions = onOpenStreamingSubscriptions,
             onOpenAbout = onOpenAbout,
             onOpenDeveloperPanelClick = onOpenDeveloperPanelClick
         )
@@ -640,6 +659,7 @@ private fun SettingsNavGroup(
     availableRegions: List<WatchProviderRegion>,
     contentLanguage: String,
     availableLanguages: List<Language>,
+    userStreamingSubscriptions: Set<Int>,
     googleUser: GoogleUser?,
     traktAuthState: TraktAuthState,
     isMockTraktEnabled: Boolean,
@@ -647,6 +667,7 @@ private fun SettingsNavGroup(
     onOpenTrakt: () -> Unit,
     onOpenTheme: () -> Unit,
     onOpenLocalization: () -> Unit,
+    onOpenStreamingSubscriptions: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenDeveloperPanelClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -736,6 +757,21 @@ private fun SettingsNavGroup(
             subtitle = "$currentRegionName • $currentLanguageName",
             icon = Icons.Rounded.Public,
             onClick = onOpenLocalization
+        )
+
+        val streamingSubtitle = if (userStreamingSubscriptions.isEmpty()) {
+            stringResource(R.string.streaming_subscriptions_select_hint)
+        } else {
+            stringResource(
+                R.string.streaming_subscriptions_count_format,
+                userStreamingSubscriptions.size
+            )
+        }
+        SettingsNavTile(
+            title = stringResource(R.string.streaming_subscriptions_title),
+            subtitle = streamingSubtitle,
+            icon = Icons.Rounded.LiveTv,
+            onClick = onOpenStreamingSubscriptions
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))

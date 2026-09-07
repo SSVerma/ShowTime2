@@ -3,8 +3,13 @@ package com.ssverma.feature.filter.ui.discovery
 import androidx.lifecycle.SavedStateHandle
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassStatus
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.discovery.DiscoveryDecade
 import com.ssverma.shared.domain.model.discovery.DiscoverySortOrder
 import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
@@ -37,15 +42,22 @@ class UniversalDiscoveryViewModelTest {
     private val mockWatchProviderRepository: WatchProviderRepository = mockk(relaxed = true)
     private val mockAppConfigRepository: AppConfigRepository = mockk(relaxed = true)
     private val mockLibraryRepository: LibraryRepository = mockk(relaxed = true)
+    private val mockBillingRepository: BillingRepository = mockk(relaxed = true)
+    private val mockRewardManager: RewardManager = mockk(relaxed = true)
+    private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
 
     private val watchRegionFlow = MutableStateFlow("US")
     private val streamingSubscriptionsFlow = MutableStateFlow(setOf(8, 9))
     private val preferredOriginalLanguageFlow = MutableStateFlow("")
+    private val isProUserFlow = MutableStateFlow(false)
+    private val passStatusFlow = MutableStateFlow(RewardPassStatus(isMultiServiceUnlocked = false))
 
     private lateinit var viewModel: UniversalDiscoveryViewModel
 
     @Before
     fun setUp() {
+        coEvery { mockBillingRepository.isProActive } returns isProUserFlow
+        coEvery { mockRewardManager.passStatus } returns passStatusFlow
         coEvery { mockAppConfigRepository.watchProviderRegion } returns watchRegionFlow
         coEvery { mockAppConfigRepository.userStreamingSubscriptions } returns streamingSubscriptionsFlow
         coEvery { mockAppConfigRepository.preferredOriginalLanguage } returns preferredOriginalLanguageFlow
@@ -63,6 +75,9 @@ class UniversalDiscoveryViewModelTest {
             watchProviderRepository = mockWatchProviderRepository,
             appConfigRepository = mockAppConfigRepository,
             libraryRepository = mockLibraryRepository,
+            billingRepository = mockBillingRepository,
+            rewardManager = mockRewardManager,
+            rewardedAdManager = mockRewardedAdManager,
             savedStateHandle = SavedStateHandle(
                 mapOf(
                     "initialMediaType" to "Movie",
@@ -73,13 +88,14 @@ class UniversalDiscoveryViewModelTest {
     }
 
     @Test
-    fun `initial state has correct default values`() = runTest {
+    fun `initial state has correct default values for free user`() = runTest {
         advanceUntilIdle()
         val state = viewModel.uiState.value
         assertThat(state.filter.mediaType).isEqualTo(MediaType.Movie)
         assertThat(state.filter.vibePreset).isEqualTo(DiscoveryVibePreset.ALL)
         assertThat(state.filter.watchRegion).isEqualTo("US")
-        assertThat(state.filter.selectedProviderIds).containsExactly(8, 9)
+        // Free user with multiple subscriptions only has first service active
+        assertThat(state.filter.selectedProviderIds).containsExactly(8)
     }
 
     @Test
@@ -109,6 +125,9 @@ class UniversalDiscoveryViewModelTest {
             watchProviderRepository = mockWatchProviderRepository,
             appConfigRepository = mockAppConfigRepository,
             libraryRepository = mockLibraryRepository,
+            billingRepository = mockBillingRepository,
+            rewardManager = mockRewardManager,
+            rewardedAdManager = mockRewardedAdManager,
             savedStateHandle = SavedStateHandle(
                 mapOf(
                     "initialMediaType" to "Tv",
@@ -193,5 +212,103 @@ class UniversalDiscoveryViewModelTest {
         val state = viewModel.uiState.value
         assertThat(state.isRouletteSpinning).isFalse()
         assertThat(state.rouletteItem).isEqualTo(surpriseItem)
+    }
+
+    @Test
+    fun `free user selecting second provider triggers multi-service gate`() = runTest {
+        coEvery { mockDiscoveryRepository.fetchWatchProviders(any()) } returns Result.Success(
+            listOf(
+                ProviderInfo(
+                    providerId = 8,
+                    providerName = "Netflix",
+                    logoPath = "/netflix.png",
+                    displayPriority = 1
+                ),
+                ProviderInfo(
+                    providerId = 119,
+                    providerName = "Amazon Prime",
+                    logoPath = "/prime.png",
+                    displayPriority = 2
+                )
+            )
+        )
+        advanceUntilIdle()
+
+        // 8 is already selected for free user
+        assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(8)
+
+        // Attempt to select second provider 119
+        viewModel.toggleStreamingProvider(119)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.isMultiServiceGateOpen).isTrue()
+        assertThat(state.filter.selectedProviderIds).containsExactly(8)
+    }
+
+    @Test
+    fun `switchToProvider replaces single provider and dismisses gate`() = runTest {
+        advanceUntilIdle()
+        viewModel.toggleStreamingProvider(119)
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.isMultiServiceGateOpen).isTrue()
+
+        viewModel.switchToProvider(119)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.isMultiServiceGateOpen).isFalse()
+        assertThat(state.pendingProviderToSwitch).isNull()
+        assertThat(state.filter.selectedProviderIds).containsExactly(119)
+    }
+
+    @Test
+    fun `pro user can select multiple providers without gate`() = runTest {
+        isProUserFlow.value = true
+        advanceUntilIdle()
+
+        val proVm = UniversalDiscoveryViewModel(
+            getUniversalDiscoveryUseCase = mockGetUniversalDiscoveryUseCase,
+            getRouletteSurpriseUseCase = mockGetRouletteSurpriseUseCase,
+            discoveryRepository = mockDiscoveryRepository,
+            watchProviderRepository = mockWatchProviderRepository,
+            appConfigRepository = mockAppConfigRepository,
+            libraryRepository = mockLibraryRepository,
+            billingRepository = mockBillingRepository,
+            rewardManager = mockRewardManager,
+            rewardedAdManager = mockRewardedAdManager,
+            savedStateHandle = SavedStateHandle()
+        )
+        advanceUntilIdle()
+
+        // Pro user gets all configured subscriptions by default
+        assertThat(proVm.uiState.value.filter.selectedProviderIds).containsExactly(8, 9)
+
+        // Select 3rd provider 337
+        proVm.toggleStreamingProvider(337)
+        advanceUntilIdle()
+
+        val state = proVm.uiState.value
+        assertThat(state.isMultiServiceGateOpen).isFalse()
+        assertThat(state.filter.selectedProviderIds).containsExactly(8, 9, 337)
+    }
+
+    @Test
+    fun `toggleMyServicesFilter toggles subscriptions on and off`() = runTest {
+        advanceUntilIdle()
+        // Reset providers
+        viewModel.toggleStreamingProvider(8)
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.filter.selectedProviderIds).isEmpty()
+
+        // Toggle My Services on (free user gets 1st service)
+        viewModel.toggleMyServicesFilter()
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(8)
+
+        // Toggle My Services off
+        viewModel.toggleMyServicesFilter()
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.filter.selectedProviderIds).isEmpty()
     }
 }

@@ -29,6 +29,8 @@ data class ProfileScreenState(
     val contentLanguage: String = "en",
     val availableLanguages: List<Language> = emptyList(),
     val isLocalizationSheetVisible: Boolean = false,
+    val userStreamingSubscriptions: Set<Int> = emptySet(),
+    val isStreamingSubscriptionsSheetVisible: Boolean = false,
     val googleUser: GoogleUser? = null,
     val guestPseudonym: String = "Cinephile",
     val isSigningIn: Boolean = false,

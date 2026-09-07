@@ -18,5 +18,11 @@ data class UniversalDiscoveryUiState(
     val isFilterSheetOpen: Boolean = false,
     val isRegionSheetOpen: Boolean = false,
     val rouletteItem: UniversalMediaItem? = null,
-    val isRouletteSpinning: Boolean = false
+    val isRouletteSpinning: Boolean = false,
+    val userStreamingSubscriptions: Set<Int> = emptySet(),
+    val isProActive: Boolean = false,
+    val isPassActive: Boolean = false,
+    val isSubscriptionsSheetOpen: Boolean = false,
+    val isMultiServiceGateOpen: Boolean = false,
+    val pendingProviderToSwitch: ProviderInfo? = null
 )

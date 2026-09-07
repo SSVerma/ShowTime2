@@ -158,6 +158,12 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            appConfigRepository.userStreamingSubscriptions.collectLatest { subscriptions ->
+                _uiState.update { it.copy(userStreamingSubscriptions = subscriptions) }
+            }
+        }
+
+        viewModelScope.launch {
             appConfigRepository.contentLanguage.collectLatest { language ->
                 _uiState.update { it.copy(contentLanguage = language) }
             }
@@ -298,6 +304,14 @@ class ProfileViewModel @Inject constructor(
 
     fun closeLocalizationSheet() {
         _uiState.update { it.copy(isLocalizationSheetVisible = false) }
+    }
+
+    fun openStreamingSubscriptionsSheet() {
+        _uiState.update { it.copy(isStreamingSubscriptionsSheetVisible = true) }
+    }
+
+    fun closeStreamingSubscriptionsSheet() {
+        _uiState.update { it.copy(isStreamingSubscriptionsSheetVisible = false) }
     }
 
     fun signInWithGoogle(activity: Activity) {
