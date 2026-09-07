@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.UiState
@@ -43,6 +44,7 @@ fun WatchProviderHubScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         snackbarHost = {
@@ -104,7 +106,8 @@ fun WatchProviderHubScreen(
                             }
                         }
                     },
-                    isLoading = isLoading
+                    isLoading = isLoading,
+                    onOpenProviderClick = { viewModel.openProviderAppOrSite(context) }
                 )
             }
         }

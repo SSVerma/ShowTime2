@@ -6,7 +6,15 @@ import kotlinx.serialization.Serializable
 data class AffiliateConfig(
     val appleTv: PartnerConfig = PartnerConfig(),
     val amazonPrime: AmazonPartnerConfig = AmazonPartnerConfig(),
-    val tickets: TicketingPartnerConfig = TicketingPartnerConfig()
+    val tickets: TicketingPartnerConfig = TicketingPartnerConfig(),
+    val justWatch: JustWatchPartnerConfig = JustWatchPartnerConfig()
+)
+
+@Serializable
+data class JustWatchPartnerConfig(
+    val enabled: Boolean = false,
+    val partnerToken: String = "",
+    val campaignId: String = ""
 )
 
 @Serializable

@@ -94,6 +94,7 @@ import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSp
 import com.ssverma.shared.ui.component.section.TagsSection
 import com.ssverma.shared.ui.component.section.VideoShotsSection
 import com.ssverma.shared.ui.component.section.WatchProvidersSection
+import com.ssverma.shared.ui.component.section.WhereToWatchActionBottomSheet
 import com.ssverma.shared.ui.emptyIfAbsent
 import kotlinx.coroutines.launch
 import com.ssverma.shared.ui.R as SharedR
@@ -174,6 +175,7 @@ private fun TvShowContent(
 ) {
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
+    val selectedProviderPayload by viewModel.selectedProviderForAction.collectAsStateWithLifecycle()
     val seasonWatchCounts by viewModel.seasonWatchCounts.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
@@ -336,6 +338,15 @@ private fun TvShowContent(
                                 )
                             )
                             openWatchHub(it)
+                        },
+                        onWatchProviderWithCategoryClick = { providerInfo, category ->
+                            analytics.logEvent(
+                                TvAnalyticsEvent.WatchProviderClicked(
+                                    providerInfo = providerInfo,
+                                    sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                                )
+                            )
+                            viewModel.onProviderSelectedForAction(providerInfo, category)
                         },
                         onJustWatchClick = {
                             analytics.logEvent(
@@ -642,6 +653,22 @@ private fun TvShowContent(
                             duration = SnackbarDuration.Short
                         )
                     }
+                }
+            )
+        }
+
+        selectedProviderPayload?.let { payload ->
+            val currentWatchProvider = tvShow.watchProviders[watchProviderRegion]
+            WhereToWatchActionBottomSheet(
+                provider = payload.provider,
+                mediaTitle = tvShow.title,
+                categoryName = payload.category,
+                watchProviderLink = currentWatchProvider?.link,
+                region = watchProviderRegion,
+                affiliateRepository = viewModel.affiliateRepository,
+                onDismissRequest = viewModel::dismissProviderAction,
+                onBrowseHubClick = { provider ->
+                    openWatchHub(provider)
                 }
             )
         }

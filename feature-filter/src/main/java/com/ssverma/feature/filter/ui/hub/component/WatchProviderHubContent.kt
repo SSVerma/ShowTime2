@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -38,10 +39,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -121,7 +124,8 @@ fun WatchProviderHubContent(
     isLoading: Boolean = false,
     modifier: Modifier = Modifier,
     source: String = "default",
-    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
+    onOpenProviderClick: (() -> Unit)? = null
 ) {
     val scrollState = rememberLazyListState()
     val brandingColor = WatchProviderHubBranding.getBrandingColor(providerId = provider.providerId)
@@ -159,7 +163,8 @@ fun WatchProviderHubContent(
                     brandingColor = brandingColor,
                     isMovieMode = isMovieMode,
                     source = source,
-                    onToggleMode = onToggleMode
+                    onToggleMode = onToggleMode,
+                    onOpenProviderClick = onOpenProviderClick
                 )
             }
 
@@ -450,7 +455,8 @@ private fun BrandIdentitySection(
     brandingColor: Color,
     isMovieMode: Boolean,
     source: String,
-    onToggleMode: (isMovie: Boolean) -> Unit
+    onToggleMode: (isMovie: Boolean) -> Unit,
+    onOpenProviderClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -503,6 +509,30 @@ private fun BrandIdentitySection(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+
+        if (onOpenProviderClick != null) {
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            FilledTonalButton(
+                onClick = onOpenProviderClick,
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.OpenInNew,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                Text(
+                    text = stringResource(
+                        id = SharedUiR.string.open_provider_action,
+                        provider.providerName
+                    ),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 

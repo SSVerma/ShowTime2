@@ -30,7 +30,8 @@ fun WatchProvidersBottomSheet(
     watchProviderUiState: UiState<WatchProvider?, Any?>,
     onDismissRequest: () -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onWatchProviderWithCategoryClick: ((ProviderInfo, String) -> Unit)? = null
 ) {
     ShowTimeBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -86,6 +87,7 @@ fun WatchProvidersBottomSheet(
                                 watchProvider = watchProvider,
                                 modifier = Modifier.fillMaxWidth(),
                                 onWatchProviderClick = onWatchProviderClick,
+                                onWatchProviderWithCategoryClick = onWatchProviderWithCategoryClick,
                                 showTitle = false
                             )
                         }

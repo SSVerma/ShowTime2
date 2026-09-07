@@ -314,4 +314,14 @@
     <string name="streaming_subscriptions_empty_services">No streaming services found</string>
     <string name="streaming_subscriptions_my_services_chip">My Services</string>
     <string name="streaming_subscriptions_my_services_chip_count">My Services (%1$d)</string>
+
+    <!-- OTT Streaming Affiliate & Deep Link Strings -->
+    <string name="watch_on_provider">Watch on %1$s</string>
+    <string name="browse_provider_in_showtime">Browse %1$s in ShowTime</string>
+    <string name="stream_now_desc">Launch streaming app or official site</string>
+    <string name="browse_catalog_desc">Explore movies &amp; TV series on this service</string>
+    <string name="open_provider_action">Open %1$s</string>
+    <string name="launch_service_desc">Launch app or stream online</string>
+    <string name="check_on_justwatch">Check on JustWatch</string>
+    <string name="justwatch_attribution_tag">Streaming data, pricing &amp; 4K availability powered by JustWatch</string>
 </resources>

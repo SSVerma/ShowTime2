@@ -23,9 +23,11 @@ import com.ssverma.shared.domain.model.community.PostCommentParams
 import com.ssverma.shared.domain.model.community.ReportCommentArgs
 import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.movie.imageShots
+import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.usecase.community.DeleteCommentUseCase
 import com.ssverma.shared.domain.usecase.community.EditCommentUseCase
@@ -55,6 +57,11 @@ data class MovieDetailsData(
     val imageShots: List<ImageShot>
 )
 
+data class ProviderActionPayload(
+    val provider: ProviderInfo,
+    val category: String
+)
+
 @HiltViewModel(assistedFactory = MovieDetailsViewModel.Factory::class)
 class MovieDetailsViewModel @AssistedInject constructor(
     private val application: Application,
@@ -70,12 +77,26 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val deleteCommentUseCase: DeleteCommentUseCase,
     private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
     private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
-    val appConfigRepository: AppConfigRepository
+    val appConfigRepository: AppConfigRepository,
+    val affiliateRepository: AffiliateRepository
 ) : ViewModel() {
 
     @AssistedFactory
     interface Factory {
         fun create(movieId: Int): MovieDetailsViewModel
+    }
+
+    private val _selectedProviderForAction = MutableStateFlow<ProviderActionPayload?>(null)
+    val selectedProviderForAction: StateFlow<ProviderActionPayload?> =
+        _selectedProviderForAction.asStateFlow()
+
+    fun onProviderSelectedForAction(provider: ProviderInfo, category: String) {
+        _selectedProviderForAction.value =
+            ProviderActionPayload(provider = provider, category = category)
+    }
+
+    fun dismissProviderAction() {
+        _selectedProviderForAction.value = null
     }
 
     private val _uiState = MutableStateFlow<UiState<MovieDetailsData, MovieFailure>>(UiState.Idle)

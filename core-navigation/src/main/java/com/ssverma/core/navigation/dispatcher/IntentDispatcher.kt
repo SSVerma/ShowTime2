@@ -12,8 +12,7 @@ fun Context.dispatchImplicitIntent(
 ) {
     try {
         startActivity(intent)
-    } catch (e: ActivityNotFoundException) {
-        e.printStackTrace()
+    } catch (_: ActivityNotFoundException) {
         onDestinationNotFound()
     }
 }
@@ -51,6 +50,43 @@ object IntentDispatcher {
         dispatchImplicitIntent(
             intent = CommonIntent.shareTextIntent(text = text),
             onDestinationNotFound = onNoDestinationFound
+        )
+    }
+
+    fun Context.dispatchStreamingIntent(
+        watchUrl: String,
+        packageName: String? = null,
+        onNoDestinationFound: () -> Unit = {}
+    ) {
+        if (!packageName.isNullOrBlank()) {
+            try {
+                val deepLinkIntent = Intent(Intent.ACTION_VIEW, Uri.parse(watchUrl)).apply {
+                    setPackage(packageName)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                if (deepLinkIntent.resolveActivity(packageManager) != null) {
+                    startActivity(deepLinkIntent)
+                    return
+                }
+            } catch (e: Exception) {
+                // fall through
+            }
+
+            try {
+                val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                if (launchIntent != null) {
+                    launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(launchIntent)
+                    return
+                }
+            } catch (e: Exception) {
+                // fall through
+            }
+        }
+
+        dispatchBrowserIntent(
+            webUrl = watchUrl,
+            onNoDestinationFound = onNoDestinationFound
         )
     }
 }

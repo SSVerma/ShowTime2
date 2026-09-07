@@ -25,10 +25,12 @@ import com.ssverma.shared.domain.model.community.PostCommentParams
 import com.ssverma.shared.domain.model.community.ReportCommentArgs
 import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
+import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.model.tv.imageShots
+import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
 import com.ssverma.shared.domain.usecase.community.DeleteCommentUseCase
@@ -59,6 +61,11 @@ data class TvShowDetailsData(
     val imageShots: List<ImageShot>
 )
 
+data class TvProviderActionPayload(
+    val provider: ProviderInfo,
+    val category: String
+)
+
 @HiltViewModel(assistedFactory = TvShowDetailsViewModel.Factory::class)
 class TvShowDetailsViewModel @AssistedInject constructor(
     private val application: Application,
@@ -75,6 +82,7 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
     private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
     val appConfigRepository: AppConfigRepository,
+    val affiliateRepository: AffiliateRepository,
     private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository
 ) : ViewModel() {
@@ -82,6 +90,19 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(tvShowId: Int): TvShowDetailsViewModel
+    }
+
+    private val _selectedProviderForAction = MutableStateFlow<TvProviderActionPayload?>(null)
+    val selectedProviderForAction: StateFlow<TvProviderActionPayload?> =
+        _selectedProviderForAction.asStateFlow()
+
+    fun onProviderSelectedForAction(provider: ProviderInfo, category: String) {
+        _selectedProviderForAction.value =
+            TvProviderActionPayload(provider = provider, category = category)
+    }
+
+    fun dismissProviderAction() {
+        _selectedProviderForAction.value = null
     }
 
     private val _uiState = MutableStateFlow<UiState<TvShowDetailsData, TvShowFailure>>(UiState.Idle)

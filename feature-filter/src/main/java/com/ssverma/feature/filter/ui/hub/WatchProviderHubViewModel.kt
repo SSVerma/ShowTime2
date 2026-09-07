@@ -20,6 +20,10 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.DiscoveryRepository
+import android.content.Context
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchStreamingIntent
+import com.ssverma.shared.domain.repository.AffiliateRepository
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -34,6 +38,8 @@ import kotlinx.coroutines.launch
 class WatchProviderHubViewModel @AssistedInject constructor(
     private val discoveryRepository: DiscoveryRepository,
     private val adConfigProvider: AdConfigProvider,
+    private val affiliateRepository: AffiliateRepository,
+    private val appConfigRepository: AppConfigRepository,
     @Assisted("providerId") val providerId: Int,
     @Assisted("providerName") val providerName: String,
     @Assisted("logoPath") private val logoPath: String,
@@ -288,6 +294,18 @@ class WatchProviderHubViewModel @AssistedInject constructor(
         )
         cachedTvHub = content
         _uiState.update { it.copy(hubContentState = UiState.Success(content)) }
+    }
+
+    fun openProviderAppOrSite(context: Context) {
+        val region = appConfigRepository.watchProviderRegion.value
+        val hubUrl =
+            affiliateRepository.buildProviderHubUrl(providerId = providerId, region = region)
+        val packageName = affiliateRepository.getProviderPackageName(providerId)
+
+        context.dispatchStreamingIntent(
+            watchUrl = hubUrl,
+            packageName = packageName
+        )
     }
 
     private fun <T> Result<T, Failure.CoreFailure>.getOrDefault(default: T): T {

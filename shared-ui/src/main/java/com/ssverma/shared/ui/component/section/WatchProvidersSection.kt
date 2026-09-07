@@ -47,6 +47,7 @@ fun WatchProvidersSection(
     adSlotIndex: Int? = 2,
     adContent: (@Composable () -> Unit)? = null,
     onWatchProviderClick: (ProviderInfo) -> Unit = {},
+    onWatchProviderWithCategoryClick: ((ProviderInfo, String) -> Unit)? = null,
     onJustWatchClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -128,56 +129,76 @@ fun WatchProvidersSection(
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         if (watchProvider.flatrate.isNotEmpty()) {
                             val isAdTarget = primaryAdCategory == stringResource(R.string.stream)
+                            val category = stringResource(R.string.stream)
                             ProviderCategoryRow(
-                                categoryName = stringResource(R.string.stream),
+                                categoryName = category,
                                 providers = watchProvider.flatrate,
                                 adSlotIndex = if (isAdTarget) adSlotIndex else null,
                                 adContent = if (isAdTarget) adContent else null,
-                                onProviderClick = onWatchProviderClick
+                                onProviderClick = {
+                                    onWatchProviderWithCategoryClick?.invoke(it, category)
+                                        ?: onWatchProviderClick(it)
+                                }
                             )
                         }
 
                         if (watchProvider.free.isNotEmpty()) {
                             val isAdTarget = primaryAdCategory == stringResource(R.string.free)
+                            val category = stringResource(R.string.free)
                             ProviderCategoryRow(
-                                categoryName = stringResource(R.string.free),
+                                categoryName = category,
                                 providers = watchProvider.free,
                                 adSlotIndex = if (isAdTarget) adSlotIndex else null,
                                 adContent = if (isAdTarget) adContent else null,
-                                onProviderClick = onWatchProviderClick
+                                onProviderClick = {
+                                    onWatchProviderWithCategoryClick?.invoke(it, category)
+                                        ?: onWatchProviderClick(it)
+                                }
                             )
                         }
 
                         if (watchProvider.rent.isNotEmpty()) {
                             val isAdTarget = primaryAdCategory == stringResource(R.string.rent)
+                            val category = stringResource(R.string.rent)
                             ProviderCategoryRow(
-                                categoryName = stringResource(R.string.rent),
+                                categoryName = category,
                                 providers = watchProvider.rent,
                                 adSlotIndex = if (isAdTarget) adSlotIndex else null,
                                 adContent = if (isAdTarget) adContent else null,
-                                onProviderClick = onWatchProviderClick
+                                onProviderClick = {
+                                    onWatchProviderWithCategoryClick?.invoke(it, category)
+                                        ?: onWatchProviderClick(it)
+                                }
                             )
                         }
 
                         if (watchProvider.buy.isNotEmpty()) {
                             val isAdTarget = primaryAdCategory == stringResource(R.string.buy)
+                            val category = stringResource(R.string.buy)
                             ProviderCategoryRow(
-                                categoryName = stringResource(R.string.buy),
+                                categoryName = category,
                                 providers = watchProvider.buy,
                                 adSlotIndex = if (isAdTarget) adSlotIndex else null,
                                 adContent = if (isAdTarget) adContent else null,
-                                onProviderClick = onWatchProviderClick
+                                onProviderClick = {
+                                    onWatchProviderWithCategoryClick?.invoke(it, category)
+                                        ?: onWatchProviderClick(it)
+                                }
                             )
                         }
 
                         if (watchProvider.ads.isNotEmpty()) {
                             val isAdTarget = primaryAdCategory == stringResource(R.string.ads)
+                            val category = stringResource(R.string.ads)
                             ProviderCategoryRow(
-                                categoryName = stringResource(R.string.ads),
+                                categoryName = category,
                                 providers = watchProvider.ads,
                                 adSlotIndex = if (isAdTarget) adSlotIndex else null,
                                 adContent = if (isAdTarget) adContent else null,
-                                onProviderClick = onWatchProviderClick
+                                onProviderClick = {
+                                    onWatchProviderWithCategoryClick?.invoke(it, category)
+                                        ?: onWatchProviderClick(it)
+                                }
                             )
                         }
                     }
