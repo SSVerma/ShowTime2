@@ -4,6 +4,7 @@ import android.content.Context
 import com.ssverma.core.storage.StorageClient
 import com.ssverma.core.storage.db.DatabaseConfig
 import com.ssverma.shared.data.local.db.ShowTimeDatabase
+import com.ssverma.shared.data.local.db.dao.AiringReminderDao
 import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.DiaryDao
 import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
@@ -77,5 +78,11 @@ object DatabaseModule {
     @Singleton
     fun provideDiaryDao(database: ShowTimeDatabase): DiaryDao {
         return database.diaryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAiringReminderDao(database: ShowTimeDatabase): AiringReminderDao {
+        return database.airingReminderDao()
     }
 }

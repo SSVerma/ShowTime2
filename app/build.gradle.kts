@@ -142,6 +142,7 @@ dependencies {
 
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)
+    implementation(projects.sharedData)
     implementation(projects.sharedAds)
     implementation(projects.commonUi)
 

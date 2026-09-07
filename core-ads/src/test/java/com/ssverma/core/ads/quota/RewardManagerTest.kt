@@ -156,4 +156,34 @@ class RewardManagerTest {
         val allowed = rewardManager.isWrappedStoryAllowed(isProActive = false)
         assertThat(allowed).isTrue()
     }
+
+    @Test
+    fun `canScheduleReminder returns true for pro user regardless of count`() = runTest {
+        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L)
+        val allowed = rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `canScheduleReminder respects free limit for free user`() = runTest {
+        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L)
+        val underLimit =
+            rewardManager.canScheduleReminder(currentActiveCount = 2, isProActive = false)
+        assertThat(underLimit).isTrue()
+
+        val atLimit = rewardManager.canScheduleReminder(currentActiveCount = 3, isProActive = false)
+        assertThat(atLimit).isFalse()
+    }
+
+    @Test
+    fun `grantRewardPass for AIRING_REMINDERS unlocks airing reminders pass`() = runTest {
+        rewardManager.grantRewardPass(RewardPassType.AIRING_REMINDERS)
+        val status = rewardManager.passStatus.value
+        assertThat(status.isAiringRemindersUnlocked).isTrue()
+        assertThat(status.airingRemindersExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
+
+        val allowed =
+            rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = false)
+        assertThat(allowed).isTrue()
+    }
 }

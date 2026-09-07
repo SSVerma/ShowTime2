@@ -17,6 +17,7 @@ dependencies {
     implementation(projects.coreBackup)
     implementation(projects.corePaging)
     implementation(projects.coreCcm)
+    implementation(projects.coreNotifications)
 
     implementation(projects.apiService.tmdb)
 

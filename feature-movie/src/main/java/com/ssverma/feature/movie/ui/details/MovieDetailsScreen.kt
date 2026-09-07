@@ -13,10 +13,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -24,6 +28,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -100,6 +105,7 @@ fun MovieDetailsScreen(
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    openProPaywall: () -> Unit = {},
     viewModel: MovieDetailsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -137,11 +143,13 @@ fun MovieDetailsScreen(
                 openMovieList = openMovieList,
                 openWatchHub = openWatchHub,
                 openLibraryPage = openLibraryPage,
+                openProPaywall = openProPaywall
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieContent(
     data: MovieDetailsData,
@@ -157,6 +165,7 @@ fun MovieContent(
     openMovieList: (listingArgs: MovieListingArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    openProPaywall: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val movie = data.movie
@@ -166,11 +175,21 @@ fun MovieContent(
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
     val diaryEntries by viewModel.diaryEntries.collectAsStateWithLifecycle()
+    val hasReminder by viewModel.hasReminder.collectAsStateWithLifecycle()
+    val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
+    val reminderSnackbarEvent by viewModel.reminderSnackbarEvent.collectAsStateWithLifecycle()
     var showLogDialog by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "movie_details_watch_provider")
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(reminderSnackbarEvent) {
+        reminderSnackbarEvent?.let { message ->
+            snackbarHostState.showImmediateSnackbar(message)
+            viewModel.clearReminderSnackbarEvent()
+        }
+    }
 
     Scaffold(
         snackbarHost = { ShowTimeSnackbarHost(hostState = snackbarHostState) },
@@ -257,6 +276,13 @@ fun MovieContent(
                             onClick = openDiscussionsList,
                             icon = Icons.Rounded.ChatBubbleOutline,
                             contentDescription = stringResource(id = SharedR.string.discussions)
+                        )
+                        BackdropActionButton(
+                            onClick = { viewModel.toggleReminder(movie) },
+                            icon = if (hasReminder) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
+                            containerColor = if (hasReminder) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                            contentColor = if (hasReminder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            contentDescription = stringResource(id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me)
                         )
                     }
                 )
@@ -606,6 +632,21 @@ fun MovieContent(
                 onBrowseHubClick = { provider ->
                     openWatchHub(provider)
                 }
+            )
+        }
+
+        if (isQuotaGateVisible) {
+            FeatureQuotaGateBottomSheet(
+                title = stringResource(id = SharedR.string.reminder_quota_title),
+                description = stringResource(id = SharedR.string.reminder_quota_desc),
+                rewardActionLabel = stringResource(id = SharedR.string.reminder_quota_reward_label),
+                onWatchAdClick = { viewModel.onWatchAdForReminderPass(movie) },
+                onUpgradeProClick = {
+                    viewModel.dismissQuotaGate()
+                    openProPaywall()
+                },
+                onDismissRequest = { viewModel.dismissQuotaGate() },
+                isProPaymentEnabled = viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle().value
             )
         }
     }

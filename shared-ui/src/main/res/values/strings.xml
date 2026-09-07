@@ -324,4 +324,22 @@
     <string name="launch_service_desc">Launch app or stream online</string>
     <string name="check_on_justwatch">Check on JustWatch</string>
     <string name="justwatch_attribution_tag">Streaming data, pricing &amp; 4K availability powered by JustWatch</string>
+
+    <!-- Smart Airing Reminders & Calendar Sync -->
+    <string name="remind_me">Remind Me</string>
+    <string name="reminder_set">Reminder Set</string>
+    <string name="reminder_removed">Reminder Removed</string>
+    <string name="reminder_added_snackbar">Reminder set for %1$s!</string>
+    <string name="reminder_removed_snackbar">Reminder removed for %1$s</string>
+    <string name="active_reminders_title">Airing Reminders</string>
+    <string name="active_reminders_subtitle">Upcoming episodes &amp; releases</string>
+    <string name="export_calendar">Export to Calendar</string>
+    <string name="export_calendar_success">Calendar schedule exported!</string>
+    <string name="add_to_calendar">Add to Calendar</string>
+    <string name="reminder_quota_title">Unlock Unlimited Reminders</string>
+    <string name="reminder_quota_desc">Free accounts can track up to 3 active airing reminders. Upgrade to ShowTime Pro for unlimited reminders and calendar synchronization.</string>
+    <string name="reminder_quota_reward_label">Watch Video for 24h Pass</string>
+    <string name="reminder_dismiss_cd">Dismiss reminder</string>
+    <string name="reminder_badge_today">TODAY</string>
+    <string name="reminder_free_quota_label">%1$d of %2$d free reminders</string>
 </resources>

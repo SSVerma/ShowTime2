@@ -3,9 +3,15 @@ package com.ssverma.feature.movie.ui.details
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.failure.MovieFailure
+import com.ssverma.shared.domain.model.reminder.AiringReminder
+import com.ssverma.shared.domain.model.reminder.ReminderType
+import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
 import com.ssverma.shared.domain.Result
@@ -78,12 +84,79 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
     private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
     val appConfigRepository: AppConfigRepository,
-    val affiliateRepository: AffiliateRepository
+    val affiliateRepository: AffiliateRepository,
+    val reminderRepository: ReminderRepository,
+    val billingRepository: BillingRepository,
+    val rewardManager: RewardManager
 ) : ViewModel() {
 
     @AssistedFactory
     interface Factory {
         fun create(movieId: Int): MovieDetailsViewModel
+    }
+
+    val hasReminder: StateFlow<Boolean> = reminderRepository
+        .getReminderForMedia(movieId, MediaType.Movie)
+        .map { it != null }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    private val _isQuotaGateVisible = MutableStateFlow(false)
+    val isQuotaGateVisible: StateFlow<Boolean> = _isQuotaGateVisible.asStateFlow()
+
+    private val _reminderSnackbarEvent = MutableStateFlow<String?>(null)
+    val reminderSnackbarEvent: StateFlow<String?> = _reminderSnackbarEvent.asStateFlow()
+
+    fun dismissQuotaGate() {
+        _isQuotaGateVisible.value = false
+    }
+
+    fun clearReminderSnackbarEvent() {
+        _reminderSnackbarEvent.value = null
+    }
+
+    fun toggleReminder(movie: Movie) {
+        viewModelScope.launch {
+            if (hasReminder.value) {
+                reminderRepository.removeReminder(movie.id, MediaType.Movie)
+                _reminderSnackbarEvent.value = "Reminder removed for ${movie.title}"
+            } else {
+                val activeCount = reminderRepository.getActiveReminderCount()
+                val isPro = billingRepository.isProActive.value
+                val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
+                if (!canSchedule) {
+                    _isQuotaGateVisible.value = true
+                    return@launch
+                }
+
+                val airDateStr =
+                    movie.displayReleaseDate ?: movie.releaseDate?.toString() ?: "Upcoming"
+                val reminderTime = System.currentTimeMillis() + 86400000L
+
+                val reminder = AiringReminder(
+                    mediaId = movie.id,
+                    mediaType = MediaType.Movie,
+                    reminderType = ReminderType.MOVIE_RELEASE,
+                    mediaTitle = movie.title,
+                    posterImageUrl = movie.posterImageUrl,
+                    airDate = airDateStr,
+                    reminderTimeMillis = reminderTime
+                )
+                reminderRepository.addReminder(reminder)
+                _reminderSnackbarEvent.value = "Reminder set for ${movie.title}!"
+            }
+        }
+    }
+
+    fun onWatchAdForReminderPass(movie: Movie) {
+        viewModelScope.launch {
+            rewardManager.grantRewardPass(RewardPassType.AIRING_REMINDERS)
+            _isQuotaGateVisible.value = false
+            toggleReminder(movie)
+        }
     }
 
     private val _selectedProviderForAction = MutableStateFlow<ProviderActionPayload?>(null)

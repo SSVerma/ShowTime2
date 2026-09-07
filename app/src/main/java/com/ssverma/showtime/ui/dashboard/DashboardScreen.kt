@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -46,10 +47,12 @@ import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.SeasonCompletionDialog
+import com.ssverma.shared.ui.component.section.ActiveRemindersSection
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.ui.dashboard.shelves.DailyPollBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
@@ -92,6 +95,7 @@ fun DashboardScreen(
 ) {
     TrackScreenView(screenName = "dashboard_home")
 
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -238,6 +242,38 @@ fun DashboardScreen(
                                     episode = episodeNumber
                                 )
                             },
+                            modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
+                        )
+                    }
+                }
+
+                // 5b. Airing Reminders Shelf (Episodes & releases with calendar sync)
+                item(key = "dashboard_airing_reminders_section") {
+                    AnimatedVisibility(
+                        visible = uiState.activeReminders.isNotEmpty(),
+                        enter = fadeIn(animationSpec = tween(300)) + expandVertically(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        ),
+                        exit = fadeOut(animationSpec = tween(250)) + shrinkVertically(
+                            animationSpec = tween(
+                                durationMillis = 250,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    ) {
+                        ActiveRemindersSection(
+                            reminders = uiState.activeReminders,
+                            onReminderClick = { reminder ->
+                                when (reminder.mediaType) {
+                                    MediaType.Tv -> openTvShowDetails(reminder.mediaId)
+                                    else -> openMovieDetails(reminder.mediaId)
+                                }
+                            },
+                            onRemoveReminderClick = viewModel::removeReminder,
+                            onExportCalendarClick = { viewModel.exportRemindersToIcs(context) },
                             modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                         )
                     }

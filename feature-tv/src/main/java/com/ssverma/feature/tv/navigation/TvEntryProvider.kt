@@ -17,6 +17,7 @@ import com.ssverma.feature.tv.ui.details.TvEpisodeDiscussionsScreen
 import com.ssverma.feature.tv.ui.details.TvEpisodeDiscussionsViewModel
 import com.ssverma.feature.tv.ui.details.TvSeasonDetailsScreen
 import com.ssverma.feature.tv.ui.details.TvSeasonDetailsViewModel
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.tv.ui.details.TvShowDetailsScreen
 import com.ssverma.feature.tv.ui.details.TvShowDetailsViewModel
 import com.ssverma.feature.tv.ui.details.TvShowDiscussionsScreen
@@ -152,7 +153,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     )
                 )
             },
-            openLibraryPage = openLibraryPage
+            openLibraryPage = openLibraryPage,
+            openProPaywall = { navigator.navigate(ProPaywallNavKey) }
         )
     }
 

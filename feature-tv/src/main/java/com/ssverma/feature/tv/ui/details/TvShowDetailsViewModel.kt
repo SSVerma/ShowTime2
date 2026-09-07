@@ -3,11 +3,17 @@ package com.ssverma.feature.tv.ui.details
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
+import com.ssverma.shared.domain.model.reminder.AiringReminder
+import com.ssverma.shared.domain.model.reminder.ReminderType
+import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.feature.tv.domain.model.TvShowDetailsConfig
 import com.ssverma.feature.tv.domain.usecase.TvShowDetailsUseCase
 import com.ssverma.shared.domain.Result
@@ -84,12 +90,79 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     val appConfigRepository: AppConfigRepository,
     val affiliateRepository: AffiliateRepository,
     private val traktAuthManager: TraktAuthManager,
-    private val traktSyncRepository: TraktSyncRepository
+    private val traktSyncRepository: TraktSyncRepository,
+    val reminderRepository: ReminderRepository,
+    val billingRepository: BillingRepository,
+    val rewardManager: RewardManager
 ) : ViewModel() {
 
     @AssistedFactory
     interface Factory {
         fun create(tvShowId: Int): TvShowDetailsViewModel
+    }
+
+    val hasReminder: StateFlow<Boolean> = reminderRepository
+        .getReminderForMedia(tvShowId, MediaType.Tv)
+        .map { it != null }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    private val _isQuotaGateVisible = MutableStateFlow(false)
+    val isQuotaGateVisible: StateFlow<Boolean> = _isQuotaGateVisible.asStateFlow()
+
+    private val _reminderSnackbarEvent = MutableStateFlow<String?>(null)
+    val reminderSnackbarEvent: StateFlow<String?> = _reminderSnackbarEvent.asStateFlow()
+
+    fun dismissQuotaGate() {
+        _isQuotaGateVisible.value = false
+    }
+
+    fun clearReminderSnackbarEvent() {
+        _reminderSnackbarEvent.value = null
+    }
+
+    fun toggleReminder(tvShow: TvShow) {
+        viewModelScope.launch {
+            if (hasReminder.value) {
+                reminderRepository.removeReminder(tvShow.id, MediaType.Tv)
+                _reminderSnackbarEvent.value = "Reminder removed for ${tvShow.title}"
+            } else {
+                val activeCount = reminderRepository.getActiveReminderCount()
+                val isPro = billingRepository.isProActive.value
+                val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
+                if (!canSchedule) {
+                    _isQuotaGateVisible.value = true
+                    return@launch
+                }
+
+                val airDateStr =
+                    tvShow.displayFirstAirDate ?: tvShow.firstAirDate?.toString() ?: "Upcoming"
+                val reminderTime = System.currentTimeMillis() + 86400000L
+
+                val reminder = AiringReminder(
+                    mediaId = tvShow.id,
+                    mediaType = MediaType.Tv,
+                    reminderType = ReminderType.TV_EPISODE,
+                    mediaTitle = tvShow.title,
+                    posterImageUrl = tvShow.posterImageUrl,
+                    airDate = airDateStr,
+                    reminderTimeMillis = reminderTime
+                )
+                reminderRepository.addReminder(reminder)
+                _reminderSnackbarEvent.value = "Reminder set for ${tvShow.title}!"
+            }
+        }
+    }
+
+    fun onWatchAdForReminderPass(tvShow: TvShow) {
+        viewModelScope.launch {
+            rewardManager.grantRewardPass(RewardPassType.AIRING_REMINDERS)
+            _isQuotaGateVisible.value = false
+            toggleReminder(tvShow)
+        }
     }
 
     private val _selectedProviderForAction = MutableStateFlow<TvProviderActionPayload?>(null)

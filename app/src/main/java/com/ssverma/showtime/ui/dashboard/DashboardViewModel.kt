@@ -27,8 +27,12 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
+import android.content.Context
+import android.content.Intent
+import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
+import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
@@ -60,7 +64,8 @@ class DashboardViewModel @Inject constructor(
     private val voteDailyPollUseCase: VoteDailyPollUseCase,
     private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase,
     private val movieGenresUseCase: MovieGenresUseCase,
-    private val tvGenresUseCase: TvGenresUseCase
+    private val tvGenresUseCase: TvGenresUseCase,
+    private val reminderRepository: ReminderRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -77,6 +82,12 @@ class DashboardViewModel @Inject constructor(
     )
 
     init {
+        viewModelScope.launch {
+            reminderRepository.getActiveReminders().collectLatest { reminders ->
+                _uiState.update { it.copy(activeReminders = reminders) }
+            }
+        }
+
         viewModelScope.launch {
             combine(
                 appConfigRepository.watchProviderRegion,
@@ -382,6 +393,29 @@ class DashboardViewModel @Inject constructor(
                     state.upNextQueue
                 }
             )
+        }
+    }
+
+    fun removeReminder(reminder: AiringReminder) = viewModelScope.launch {
+        reminderRepository.removeReminder(reminder.mediaId, reminder.mediaType)
+    }
+
+    fun exportRemindersToIcs(context: Context) = viewModelScope.launch {
+        val icsContent = reminderRepository.exportToIcs()
+        if (icsContent.isNotBlank()) {
+            try {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/calendar"
+                    putExtra(Intent.EXTRA_TEXT, icsContent)
+                    putExtra(Intent.EXTRA_SUBJECT, "ShowTime Airing Reminders")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(
+                    Intent.createChooser(intent, "Export Airing Reminders").apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    })
+            } catch (_: Exception) {
+            }
         }
     }
 }

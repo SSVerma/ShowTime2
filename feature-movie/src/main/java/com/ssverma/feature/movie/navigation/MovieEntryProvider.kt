@@ -9,6 +9,7 @@ import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
 import com.ssverma.feature.movie.ui.details.MovieDetailsViewModel
 import com.ssverma.feature.movie.ui.details.MovieDiscussionsScreen
@@ -144,7 +145,8 @@ fun EntryProviderScope<NavKey>.movieEntries(
                     )
                 )
             },
-            openLibraryPage = openLibraryPage
+            openLibraryPage = openLibraryPage,
+            openProPaywall = { navigator.navigate(ProPaywallNavKey) }
         )
     }
 

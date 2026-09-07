@@ -4,6 +4,7 @@ import android.app.Application
 import com.ssverma.core.ads.AdInitializer
 import com.ssverma.core.ads.manager.AppOpenAdManager
 import com.ssverma.core.ccm.AppConfigProvider
+import com.ssverma.shared.data.worker.AiringReminderRefreshWorker
 import com.ssverma.showtime.analytics.AnalyticsSyncManager
 import com.ssverma.showtime.notifications.NotificationSyncManager
 import dagger.hilt.android.HiltAndroidApp
@@ -33,5 +34,6 @@ class ShowTimeApp : Application() {
         adInitializer.initialize()
         appOpenAdManager.loadAd()
         notificationSyncManager.startSync()
+        AiringReminderRefreshWorker.schedule(this)
     }
 }

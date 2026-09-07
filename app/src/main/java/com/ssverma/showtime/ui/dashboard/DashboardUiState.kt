@@ -13,6 +13,7 @@ import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.TrendingDiscussion
 import com.ssverma.shared.domain.model.game.CinemaGameStats
 import com.ssverma.shared.domain.model.movie.MoviePreview
+import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShowPreview
@@ -46,6 +47,7 @@ data class DashboardUiState(
     val isMovieStudioSelected: Boolean = true,
     val isMoviePopularSelected: Boolean = true,
     val upNextQueue: List<TraktUpNextEpisode> = emptyList(),
+    val activeReminders: List<AiringReminder> = emptyList(),
     val isTraktConnected: Boolean = false,
     val nativeAd: NativeAd? = null,
     val completedShowDialog: CompletedShowDialogState? = null

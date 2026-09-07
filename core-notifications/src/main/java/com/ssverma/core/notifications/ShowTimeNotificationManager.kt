@@ -28,6 +28,7 @@ class ShowTimeNotificationManager @Inject constructor(
 
     companion object {
         const val CHANNEL_ID_GENERAL = "general_notifications"
+        const val CHANNEL_ID_REMINDERS = "airing_reminders"
     }
 
     fun createNotificationChannels() {
@@ -40,7 +41,17 @@ class ShowTimeNotificationManager @Inject constructor(
                 description = "General notifications from ShowTime"
             }
 
+            val remindersChannel = NotificationChannel(
+                CHANNEL_ID_REMINDERS,
+                "Releases & Airing Reminders",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Reminders for new TV episodes and movie releases"
+                enableVibration(true)
+            }
+
             notificationManager.createNotificationChannel(generalChannel)
+            notificationManager.createNotificationChannel(remindersChannel)
         }
     }
 
@@ -53,6 +64,73 @@ class ShowTimeNotificationManager @Inject constructor(
         } else {
             true
         }
+    }
+
+    fun showReminderNotification(
+        title: String?,
+        message: String?,
+        imageUrl: String? = null,
+        deepLink: String? = null
+    ) {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID_REMINDERS)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+
+        if (!imageUrl.isNullOrBlank()) {
+            val bitmap = fetchBitmap(imageUrl)
+            if (bitmap != null) {
+                builder.setLargeIcon(bitmap)
+                builder.setStyle(
+                    NotificationCompat.BigPictureStyle()
+                        .bigPicture(bitmap)
+                        .bigLargeIcon(null as Bitmap?)
+                )
+            }
+        }
+
+        if (!deepLink.isNullOrBlank()) {
+            try {
+                val intent = Intent(
+                    Intent.ACTION_VIEW,
+                    deepLink.toUri()
+                ).apply {
+                    setPackage(context.packageName)
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+
+                val pendingIntent = android.app.PendingIntent.getActivity(
+                    context,
+                    0,
+                    intent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                )
+                builder.setContentIntent(pendingIntent)
+            } catch (e: Exception) {
+                val launchIntent =
+                    context.packageManager.getLaunchIntentForPackage(context.packageName)
+                val pendingIntent = android.app.PendingIntent.getActivity(
+                    context,
+                    0,
+                    launchIntent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                )
+                builder.setContentIntent(pendingIntent)
+            }
+        } else {
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            val pendingIntent = android.app.PendingIntent.getActivity(
+                context,
+                0,
+                launchIntent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.setContentIntent(pendingIntent)
+        }
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 
     fun showNotification(
