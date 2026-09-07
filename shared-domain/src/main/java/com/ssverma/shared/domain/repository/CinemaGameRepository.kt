@@ -15,4 +15,5 @@ interface CinemaGameRepository {
     suspend fun saveTodayAttemptNumber(attemptNumber: Int)
     suspend fun isTodayPuzzleCompleted(): Boolean
     suspend fun resetGameData()
+    suspend fun restoreGameStats(stats: CinemaGameStats)
 }

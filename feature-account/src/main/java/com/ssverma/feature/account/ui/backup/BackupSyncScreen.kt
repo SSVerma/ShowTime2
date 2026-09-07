@@ -475,6 +475,23 @@ private fun BackupOperationsCard(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 2.dp)
                 )
+
+                if (lastBackupMetadata.diaryEntriesCount > 0 ||
+                    lastBackupMetadata.showProgressCount > 0 ||
+                    lastBackupMetadata.challengesCount > 0
+                ) {
+                    Text(
+                        text = stringResource(
+                            id = R.string.backup_includes_cinephile_summary,
+                            lastBackupMetadata.diaryEntriesCount,
+                            lastBackupMetadata.showProgressCount,
+                            lastBackupMetadata.challengesCount
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 1.dp)
+                    )
+                }
             } else {
                 Text(
                     text = stringResource(R.string.no_backup_found),

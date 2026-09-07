@@ -19,8 +19,14 @@ interface DiaryDao {
     @Query("SELECT * FROM diary_entries WHERE id = :id LIMIT 1")
     suspend fun getDiaryEntryById(id: Long): DiaryEntryEntity?
 
+    @Query("SELECT * FROM diary_entries ORDER BY loggedAt DESC")
+    suspend fun getAllDiaryEntriesList(): List<DiaryEntryEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDiaryEntry(entry: DiaryEntryEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entries: List<DiaryEntryEntity>)
 
     @Query("DELETE FROM diary_entries WHERE id = :id")
     suspend fun deleteDiaryEntryById(id: Long): Int

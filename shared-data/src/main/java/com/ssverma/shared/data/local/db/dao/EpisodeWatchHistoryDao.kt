@@ -29,6 +29,9 @@ interface EpisodeWatchHistoryDao {
     @Query("SELECT COUNT(*) FROM episode_watch_history WHERE showId = :showId")
     suspend fun getWatchedCount(showId: Int): Int
 
+    @Query("SELECT * FROM episode_watch_history")
+    suspend fun getAllHistory(): List<EpisodeWatchHistoryEntity>
+
     @Query("SELECT * FROM episode_watch_history WHERE showId = :showId")
     suspend fun getAllWatchedEpisodes(showId: Int): List<EpisodeWatchHistoryEntity>
 

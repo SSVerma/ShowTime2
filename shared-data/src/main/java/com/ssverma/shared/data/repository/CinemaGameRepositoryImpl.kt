@@ -189,4 +189,21 @@ class CinemaGameRepositoryImpl @Inject constructor(
             prefs.clear()
         }
     }
+
+    override suspend fun restoreGameStats(stats: CinemaGameStats): Unit =
+        withContext(Dispatchers.IO) {
+            storage.edit { prefs ->
+                prefs[KEY_CURRENT_STREAK] = stats.currentStreak
+                prefs[KEY_MAX_STREAK] = stats.maxStreak
+                prefs[KEY_GAMES_PLAYED] = stats.gamesPlayed
+                prefs[KEY_GAMES_WON] = stats.gamesWon
+                prefs[KEY_LAST_PLAYED_EPOCH] = stats.lastPlayedEpochDay
+                prefs[KEY_LAST_WON_EPOCH] = stats.lastWonEpochDay
+                prefs[KEY_GUESS_DIST_1] = stats.guessDistribution[1] ?: 0
+                prefs[KEY_GUESS_DIST_2] = stats.guessDistribution[2] ?: 0
+                prefs[KEY_GUESS_DIST_3] = stats.guessDistribution[3] ?: 0
+                prefs[KEY_GUESS_DIST_4] = stats.guessDistribution[4] ?: 0
+                prefs[KEY_GUESS_DIST_5] = stats.guessDistribution[5] ?: 0
+            }
+        }
 }

@@ -99,6 +99,7 @@
     <string name="backup_over_wifi">Back up over Wi-Fi only</string>
     <string name="backup_over_wifi_desc">Backs up silently only when connected to Wi-Fi</string>
     <string name="backup_includes_summary">%1$d Favorites • %2$d Watchlist • %3$d History • %4$d Lists</string>
+    <string name="backup_includes_cinephile_summary">%1$d Diary • %2$d Shows • %3$d Challenges</string>
     <string name="pro_badge">PRO</string>
     <string name="free_badge">FREE</string>
     <string name="never">Never</string>

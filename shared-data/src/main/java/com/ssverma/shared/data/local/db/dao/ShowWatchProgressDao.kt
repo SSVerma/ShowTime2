@@ -15,11 +15,17 @@ interface ShowWatchProgressDao {
     @Query("SELECT * FROM show_watch_progress WHERE totalAired == 0 OR totalCompleted < totalAired ORDER BY lastWatchedAt DESC")
     suspend fun getUpNextQueue(): List<ShowWatchProgressEntity>
 
+    @Query("SELECT * FROM show_watch_progress")
+    suspend fun getAllProgress(): List<ShowWatchProgressEntity>
+
     @Query("SELECT * FROM show_watch_progress WHERE showId = :showId")
     suspend fun getProgress(showId: Int): ShowWatchProgressEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(item: ShowWatchProgressEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(items: List<ShowWatchProgressEntity>)
 
     @Query("DELETE FROM show_watch_progress WHERE showId = :showId")
     suspend fun deleteByShowId(showId: Int)

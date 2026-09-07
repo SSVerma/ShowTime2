@@ -290,4 +290,18 @@ class BacklogRepositoryImpl @Inject constructor(
             val current = blindspotsFlow.first()
             current.any { it.mediaId == mediaId && it.mediaType == mediaType }
         }
+
+    override suspend fun restoreBacklog(
+        activeChallenges: List<CinephileChallenge>,
+        blindspots: List<BlindspotPriorityItem>
+    ): Unit = withContext(Dispatchers.IO) {
+        storage.edit { prefs ->
+            if (activeChallenges.isNotEmpty()) {
+                prefs[KEY_ACTIVE_CHALLENGES] = gson.toJson(activeChallenges)
+            }
+            if (blindspots.isNotEmpty()) {
+                prefs[KEY_BLINDSPOTS] = gson.toJson(blindspots)
+            }
+        }
+    }
 }

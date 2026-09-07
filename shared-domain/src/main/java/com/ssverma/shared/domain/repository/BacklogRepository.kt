@@ -27,4 +27,8 @@ interface BacklogRepository {
     suspend fun addBlindspot(item: BlindspotPriorityItem)
     suspend fun removeBlindspot(mediaId: Int, mediaType: MediaType)
     suspend fun isBlindspot(mediaId: Int, mediaType: MediaType): Boolean
+    suspend fun restoreBacklog(
+        activeChallenges: List<CinephileChallenge>,
+        blindspots: List<BlindspotPriorityItem>
+    )
 }

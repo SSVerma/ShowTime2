@@ -10,5 +10,9 @@ data class BackupMetadata(
     val watchlistCount: Int,
     val historyCount: Int,
     val customListsCount: Int = 0,
-    val customListItemsCount: Int = 0
+    val customListItemsCount: Int = 0,
+    val diaryEntriesCount: Int = 0,
+    val showProgressCount: Int = 0,
+    val episodeHistoryCount: Int = 0,
+    val challengesCount: Int = 0
 )
