@@ -13,6 +13,7 @@ import com.ssverma.feature.library.navigation.TasteProfileNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieHomeNavKey
+import com.ssverma.feature.movie.navigation.MovieMatchRoomNavKey
 import com.ssverma.feature.person.navigation.PersonDetailNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
@@ -160,10 +161,23 @@ object ShowTimeDeepLinkHandler {
                     }
                 }
 
+                "match", "matchroom", "swipenight" -> {
+                    val code = if (effectiveSegments.size >= 2) effectiveSegments[1] else null
+                    MovieMatchRoomNavKey(roomCode = code)
+                }
+
                 "movie" -> {
                     if (effectiveSegments.size >= 2) {
-                        val id = effectiveSegments[1].toIntOrNull()
-                        if (id != null) MovieDetailNavKey(id) else MovieHomeNavKey
+                        if (effectiveSegments[1].equals("match", ignoreCase = true) ||
+                            effectiveSegments[1].equals("matchroom", ignoreCase = true)
+                        ) {
+                            val code =
+                                if (effectiveSegments.size >= 3) effectiveSegments[2] else null
+                            MovieMatchRoomNavKey(roomCode = code)
+                        } else {
+                            val id = effectiveSegments[1].toIntOrNull()
+                            if (id != null) MovieDetailNavKey(id) else MovieHomeNavKey
+                        }
                     } else {
                         MovieHomeNavKey
                     }

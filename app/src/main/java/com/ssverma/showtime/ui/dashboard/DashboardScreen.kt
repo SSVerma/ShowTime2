@@ -88,6 +88,7 @@ fun DashboardScreen(
     openBacklogChallenges: () -> Unit = {},
     openReceipt: () -> Unit = {},
     openPeople: () -> Unit = {},
+    openMovieMatch: () -> Unit = {},
     openMovieGenreListing: (Genre) -> Unit = {},
     openTvGenreListing: (Genre) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -201,6 +202,7 @@ fun DashboardScreen(
                     onOpenBacklogChallenges = openBacklogChallenges,
                     onOpenReceipt = openReceipt,
                     onOpenPeople = openPeople,
+                    onOpenMovieMatch = openMovieMatch,
                     onOpenDiscovery = { openUniversalDiscovery(UniversalDiscoveryNavKey()) }
                 )
 

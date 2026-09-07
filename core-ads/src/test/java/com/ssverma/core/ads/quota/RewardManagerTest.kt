@@ -186,4 +186,27 @@ class RewardManagerTest {
             rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = false)
         assertThat(allowed).isTrue()
     }
+
+    @Test
+    fun `isMatchRoomAllowed returns true for pro user`() = runTest {
+        val allowed = rewardManager.isMatchRoomAllowed(isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isMatchRoomAllowed returns false for free user without pass`() = runTest {
+        val allowed = rewardManager.isMatchRoomAllowed(isProActive = false)
+        assertThat(allowed).isFalse()
+    }
+
+    @Test
+    fun `grantRewardPass for MATCH_ROOM unlocks match room pass`() = runTest {
+        rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM)
+        val status = rewardManager.passStatus.value
+        assertThat(status.isMatchRoomUnlocked).isTrue()
+        assertThat(status.matchRoomExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
+
+        val allowed = rewardManager.isMatchRoomAllowed(isProActive = false)
+        assertThat(allowed).isTrue()
+    }
 }

@@ -119,4 +119,38 @@
     <string name="cinema_stats_movie_details">(%1$s) • Directed by %2$s</string>
     <string name="cinema_stats_footer_brand">Play daily on ShowTime • Available on Google Play</string>
     <string name="cinema_stats_streak_count">%1$d Days</string>
+
+    <!-- Movie Match Room (Swipe Night) -->
+    <string name="match_room_title">Movie Match Room</string>
+    <string name="match_room_subtitle">Swipe movies with friends &amp; find what to watch tonight</string>
+    <string name="match_room_mode_couch">Pass &amp; Play (Couch Mode)</string>
+    <string name="match_room_mode_couch_desc">2 people, 1 phone. Swipe together on the couch.</string>
+    <string name="match_room_mode_remote">Remote Room (Invite a Friend)</string>
+    <string name="match_room_mode_remote_desc">Create a code and swipe simultaneously on two phones.</string>
+    <string name="match_room_create">Create Room</string>
+    <string name="match_room_join">Join Room</string>
+    <string name="match_room_enter_code">Enter Room Code</string>
+    <string name="match_room_code_hint">e.g. ST-4829</string>
+    <string name="match_room_share_invite">Share Invite</string>
+    <string name="match_room_its_a_match">IT\'S A MATCH!</string>
+    <string name="match_room_both_loved">You both want to watch</string>
+    <string name="match_room_keep_swiping">Keep Swiping</string>
+    <string name="match_room_view_matches">View All Matches</string>
+    <string name="match_room_pass_to_player2">Hand phone to %1$s!</string>
+    <string name="match_room_player2_prompt">Swipe right on movies you\'d like to watch tonight.</string>
+    <string name="match_room_player_ready">I\'m Ready to Swipe</string>
+    <string name="match_room_no_matches">No mutual matches found this round.</string>
+    <string name="match_room_no_matches_desc">Try another deck or unlock custom streaming filters!</string>
+    <string name="match_room_free_quota_exceeded">Daily Free Match Room Used</string>
+    <string name="match_room_unlock_with_pass">Unlock unlimited rooms &amp; custom streaming filters with Pro or watch a quick video for a 24h pass.</string>
+    <string name="match_room_deck_trending">Trending Tonight</string>
+    <string name="match_room_deck_subscriptions">My Subscriptions Only</string>
+    <string name="match_room_deck_genre">Genre Spotlight</string>
+    <string name="match_room_card_count">%1$d of %2$d</string>
+    <string name="match_room_start_deck">Start Swiping</string>
+    <string name="match_room_rewind">Rewind</string>
+    <string name="match_room_watchlist_added">Added to Watchlist</string>
+    <string name="match_room_watch_now">Watch Now</string>
+    <string name="match_room_finish">Finish</string>
+    <string name="match_room_invite_text">Join my ShowTime Movie Match Room: %1$s. Let\'s pick tonight\'s movie together!</string>
 </resources>

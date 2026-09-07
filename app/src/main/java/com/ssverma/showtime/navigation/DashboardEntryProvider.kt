@@ -14,6 +14,7 @@ import com.ssverma.feature.library.navigation.TasteProfileNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
+import com.ssverma.feature.movie.navigation.MovieMatchRoomNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
@@ -152,6 +153,9 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             },
             openPeople = {
                 navigator.navigate(PersonHomeNavKey)
+            },
+            openMovieMatch = {
+                navigator.navigate(MovieMatchRoomNavKey())
             },
             openMovieGenreListing = { genre ->
                 navigator.navigate(

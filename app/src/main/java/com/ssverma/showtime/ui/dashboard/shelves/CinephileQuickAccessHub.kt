@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Diversity3
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Poll
 import androidx.compose.material.icons.rounded.SportsEsports
@@ -53,6 +54,7 @@ fun LazyListScope.cinephileQuickAccessHub(
     onOpenCinemaDiary: () -> Unit,
     onOpenCinemaGame: () -> Unit,
     onOpenDailyPoll: () -> Unit,
+    onOpenMovieMatch: () -> Unit,
     onOpenTasteProfile: () -> Unit,
     onOpenBacklogChallenges: () -> Unit,
     onOpenReceipt: () -> Unit,
@@ -69,6 +71,7 @@ fun LazyListScope.cinephileQuickAccessHub(
             onOpenCinemaDiary = onOpenCinemaDiary,
             onOpenCinemaGame = onOpenCinemaGame,
             onOpenDailyPoll = onOpenDailyPoll,
+            onOpenMovieMatch = onOpenMovieMatch,
             onOpenTasteProfile = onOpenTasteProfile,
             onOpenBacklogChallenges = onOpenBacklogChallenges,
             onOpenReceipt = onOpenReceipt,
@@ -91,6 +94,7 @@ fun CinephileQuickAccessHub(
     onOpenCinemaDiary: () -> Unit,
     onOpenCinemaGame: () -> Unit,
     onOpenDailyPoll: () -> Unit,
+    onOpenMovieMatch: () -> Unit,
     onOpenTasteProfile: () -> Unit,
     onOpenBacklogChallenges: () -> Unit,
     onOpenReceipt: () -> Unit,
@@ -191,6 +195,19 @@ fun CinephileQuickAccessHub(
                         badgeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                         badgeTextColor = MaterialTheme.colorScheme.secondary,
                         onClick = onOpenDailyPoll
+                    )
+
+                    // 5b. Movie Match (Swipe Night)
+                    QuickAccessTile(
+                        title = "Movie Match",
+                        subtitle = "Swipe Night",
+                        icon = Icons.Rounded.Favorite,
+                        iconContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                        iconTint = MaterialTheme.colorScheme.primary,
+                        badge = "New",
+                        badgeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        badgeTextColor = MaterialTheme.colorScheme.primary,
+                        onClick = onOpenMovieMatch
                     )
                 }
 
