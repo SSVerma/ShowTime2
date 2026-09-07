@@ -45,6 +45,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
         CinemaReceiptScreen(
             onBackPressed = {
                 navigator.goBack()
+            },
+            onOpenProPaywall = {
+                navigator.navigate(ProPaywallNavKey)
             }
         )
     }
@@ -82,6 +85,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             onOpenTvShowDetails = { tvShowId ->
                 navigator.navigate(TvShowDetailNavKey(tvShowId))
+            },
+            onOpenProPaywall = {
+                navigator.navigate(ProPaywallNavKey)
             }
         )
     }

@@ -1,7 +1,12 @@
 package com.ssverma.feature.library.ui.taste
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.domain.model.stats.RecommendationShelf
@@ -13,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -23,32 +29,73 @@ import javax.inject.Inject
 @HiltViewModel
 class TasteProfileViewModel @Inject constructor(
     private val getTasteProfileUseCase: GetTasteProfileUseCase,
-    private val getSmartRecommendationsUseCase: GetSmartRecommendationsUseCase
+    private val getSmartRecommendationsUseCase: GetSmartRecommendationsUseCase,
+    private val billingRepository: BillingRepository,
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _selectedFilter = MutableStateFlow(DiaryFilterType.ALL)
     private val _recommendationShelves =
         MutableStateFlow<List<RecommendationShelf>>(emptyList())
     private val _isRefreshing = MutableStateFlow(false)
+    private val _isProActive = MutableStateFlow(false)
+    private val _isPassActive = MutableStateFlow(false)
+    private val _isProPaymentEnabled = MutableStateFlow(true)
+    private val _isGateOpen = MutableStateFlow(false)
 
     init {
         loadRecommendations(DiaryFilterType.ALL)
+
+        viewModelScope.launch {
+            combine(
+                billingRepository.isProActive,
+                rewardManager.passStatus
+            ) { isPro, passStatus ->
+                isPro to passStatus.isTasteAnalyticsUnlocked
+            }.collectLatest { (isPro, isPass) ->
+                _isProActive.value = isPro
+                _isPassActive.value = isPass
+            }
+        }
+
+        viewModelScope.launch {
+            billingRepository.isBillingEnabled.collectLatest { isEnabled ->
+                _isProPaymentEnabled.value = isEnabled
+            }
+        }
     }
 
     val uiState: StateFlow<TasteProfileUiState> = combine(
-        _selectedFilter.flatMapLatest { filter ->
-            getTasteProfileUseCase(filter)
+        combine(
+            _selectedFilter.flatMapLatest { filter ->
+                getTasteProfileUseCase(filter)
+            },
+            _recommendationShelves,
+            _selectedFilter,
+            _isRefreshing
+        ) { stats, shelves, filter, isRefreshing ->
+            TasteDataState(stats, shelves, filter, isRefreshing)
         },
-        _recommendationShelves,
-        _selectedFilter,
-        _isRefreshing
-    ) { stats, shelves, filter, isRefreshing ->
+        combine(
+            _isProActive,
+            _isPassActive,
+            _isProPaymentEnabled,
+            _isGateOpen
+        ) { isPro, isPass, isProPaymentEnabled, isGateOpen ->
+            TasteAuthState(isPro, isPass, isProPaymentEnabled, isGateOpen)
+        }
+    ) { dataState, authState ->
         TasteProfileUiState(
             isLoading = false,
-            selectedFilter = filter,
-            stats = stats,
-            recommendationShelves = shelves,
-            isRefreshingRecommendations = isRefreshing
+            selectedFilter = dataState.filter,
+            stats = dataState.stats,
+            recommendationShelves = dataState.shelves,
+            isRefreshingRecommendations = dataState.isRefreshing,
+            isProActive = authState.isPro,
+            isPassActive = authState.isPass,
+            isProPaymentEnabled = authState.isProPaymentEnabled,
+            isGateOpen = authState.isGateOpen
         )
     }.stateIn(
         scope = viewModelScope,
@@ -57,6 +104,23 @@ class TasteProfileViewModel @Inject constructor(
     )
 
     private var recommendationPage = 1
+
+    fun openGate() {
+        _isGateOpen.value = true
+    }
+
+    fun dismissGate() {
+        _isGateOpen.value = false
+    }
+
+    fun watchAdForTasteRadarPass(activity: Activity) {
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.TASTE_ANALYTICS_RADAR)
+                _isGateOpen.value = false
+            }
+        }
+    }
 
     fun setFilter(filter: DiaryFilterType) {
         if (_selectedFilter.value == filter) return
@@ -103,3 +167,17 @@ class TasteProfileViewModel @Inject constructor(
         return builder.toString()
     }
 }
+
+private data class TasteDataState(
+    val stats: TasteProfileStats,
+    val shelves: List<RecommendationShelf>,
+    val filter: DiaryFilterType,
+    val isRefreshing: Boolean
+)
+
+private data class TasteAuthState(
+    val isPro: Boolean,
+    val isPass: Boolean,
+    val isProPaymentEnabled: Boolean,
+    val isGateOpen: Boolean
+)

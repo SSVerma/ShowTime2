@@ -170,4 +170,20 @@
     <string name="taste_empty_desc">Log ratings and reviews for movies &amp; TV shows from their detail pages to generate your personalized cinephile persona, watch time analytics, and tailored recommendations.</string>
     <string name="taste_persona_badge">YOUR CINEPHILE PERSONA</string>
     <string name="taste_share_card_action">Share Taste Card</string>
+
+    <!-- Receipt Freemium Monetization -->
+    <string name="receipt_watermark_free_title">Watermark-Free Export</string>
+    <string name="receipt_watermark_free_active">Pro / Pass active • Pristine HD receipt without app branding</string>
+    <string name="receipt_watermark_free_hint">Remove app branding with ShowTime Pro or 24h Pass</string>
+    <string name="receipt_gate_title">Unlock Luxury Styles &amp; HD Export</string>
+    <string name="receipt_gate_desc">Exclusive receipt styles (Golden VIP Pass, Cyberpunk Neon) and watermark-free exports are unlocked with ShowTime Pro or a 24-Hour Pass.</string>
+    <string name="receipt_watch_ad_pass">Watch Video for 24h Pass</string>
+
+    <!-- Taste Profile Freemium Monetization -->
+    <string name="taste_gate_title">Unlock Deep Taste Analytics</string>
+    <string name="taste_gate_desc">Explore your full Decades Time Machine and tailored AI recommendations with ShowTime Pro or a 24-Hour Pass.</string>
+    <string name="taste_locked_title">Decades Time Machine &amp; AI Recommendations</string>
+    <string name="taste_locked_desc">Unlock era breakdown and tailored recommendations powered by your diary ratings.</string>
+    <string name="taste_unlock_cta">Unlock with Pro or 24h Pass</string>
+    <string name="taste_watch_ad_pass">Watch Video for 24h Pass</string>
 </resources>

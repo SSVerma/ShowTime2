@@ -1,9 +1,9 @@
 package com.ssverma.feature.library.domain.model
 
-enum class ReceiptStyle {
-    THERMAL,
-    GOLDEN_PASS,
-    CYBERPUNK
+enum class ReceiptStyle(val isProOnly: Boolean = false) {
+    THERMAL(isProOnly = false),
+    GOLDEN_PASS(isProOnly = true),
+    CYBERPUNK(isProOnly = true)
 }
 
 enum class ReceiptSource {

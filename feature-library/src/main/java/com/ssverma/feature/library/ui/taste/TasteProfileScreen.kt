@@ -1,5 +1,6 @@
 package com.ssverma.feature.library.ui.taste
 
+import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,6 +19,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,6 +53,7 @@ import com.ssverma.feature.library.ui.taste.component.TasteKeyMetricsRow
 import com.ssverma.feature.library.ui.taste.component.TasteRatingHistogram
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationShelfRow
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationsHeroCard
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,6 +63,7 @@ fun TasteProfileScreen(
     onOpenMovieDetails: (Int) -> Unit,
     onOpenTvShowDetails: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenProPaywall: () -> Unit = {},
     viewModel: TasteProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -176,46 +183,57 @@ fun TasteProfileScreen(
                     }
                 }
 
-                // Era Spectrum
-                if (uiState.stats.eraDistribution.isNotEmpty()) {
+                val isTasteUnlocked = uiState.isProActive || uiState.isPassActive
+                if (isTasteUnlocked) {
+                    // Era Spectrum
+                    if (uiState.stats.eraDistribution.isNotEmpty()) {
+                        item {
+                            TasteEraDistributionCard(
+                                eras = uiState.stats.eraDistribution,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+
+                    // Recommendations Hero Banner
+                    if (uiState.recommendationShelves.isNotEmpty()) {
+                        item {
+                            Spacer(modifier = Modifier.height(14.dp))
+                            TasteRecommendationsHeroCard(
+                                isRefreshing = uiState.isRefreshingRecommendations,
+                                onRefreshClick = viewModel::refreshRecommendations,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        // Recommendation Shelves
+                        items(
+                            count = uiState.recommendationShelves.size,
+                            key = { uiState.recommendationShelves[it].id }
+                        ) { index ->
+                            val shelf = uiState.recommendationShelves[index]
+                            TasteRecommendationShelfRow(
+                                shelf = shelf,
+                                onMediaClick = { mediaItem ->
+                                    if (mediaItem.mediaType == MediaType.Movie) {
+                                        onOpenMovieDetails(mediaItem.id)
+                                    } else {
+                                        onOpenTvShowDetails(mediaItem.id)
+                                    }
+                                },
+                                modifier = Modifier.padding(vertical = 10.dp)
+                            )
+                        }
+                    }
+                } else {
                     item {
-                        TasteEraDistributionCard(
-                            eras = uiState.stats.eraDistribution,
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TasteLockedTeaserCard(
+                            onUnlockClick = viewModel::openGate,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                         )
                     }
-                }
-            }
-
-            // Recommendations Hero Banner
-            if (uiState.recommendationShelves.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(14.dp))
-                    TasteRecommendationsHeroCard(
-                        isRefreshing = uiState.isRefreshingRecommendations,
-                        onRefreshClick = viewModel::refreshRecommendations,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                // Recommendation Shelves
-                items(
-                    count = uiState.recommendationShelves.size,
-                    key = { uiState.recommendationShelves[it].id }
-                ) { index ->
-                    val shelf = uiState.recommendationShelves[index]
-                    TasteRecommendationShelfRow(
-                        shelf = shelf,
-                        onMediaClick = { mediaItem ->
-                            if (mediaItem.mediaType == MediaType.Movie) {
-                                onOpenMovieDetails(mediaItem.id)
-                            } else {
-                                onOpenTvShowDetails(mediaItem.id)
-                            }
-                        },
-                        modifier = Modifier.padding(vertical = 10.dp)
-                    )
                 }
             }
 
@@ -223,6 +241,27 @@ fun TasteProfileScreen(
                 Spacer(modifier = Modifier.height(48.dp))
             }
         }
+    }
+
+    if (uiState.isGateOpen) {
+        FeatureQuotaGateBottomSheet(
+            title = stringResource(R.string.taste_gate_title),
+            description = stringResource(R.string.taste_gate_desc),
+            rewardActionLabel = stringResource(R.string.taste_watch_ad_pass),
+            onWatchAdClick = {
+                val activity = context as? Activity
+                if (activity != null) {
+                    viewModel.watchAdForTasteRadarPass(activity)
+                }
+            },
+            onUpgradeProClick = {
+                viewModel.dismissGate()
+                onOpenProPaywall()
+            },
+            onDismissRequest = { viewModel.dismissGate() },
+            isProPaymentEnabled = uiState.isProPaymentEnabled,
+            icon = Icons.Rounded.AutoAwesome
+        )
     }
 }
 
@@ -273,6 +312,80 @@ private fun EmptyTasteProfileState(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+@Composable
+private fun TasteLockedTeaserCard(
+    onUnlockClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(52.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = stringResource(R.string.taste_locked_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = stringResource(R.string.taste_locked_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onUnlockClick,
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.taste_unlock_cta),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

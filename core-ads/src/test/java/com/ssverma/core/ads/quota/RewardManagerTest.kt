@@ -98,4 +98,29 @@ class RewardManagerTest {
         val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = false)
         assertThat(allowed).isFalse()
     }
+
+    @Test
+    fun `isTasteAnalyticsAllowed returns true for pro user`() = runTest {
+        val allowed = rewardManager.isTasteAnalyticsAllowed(isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isTasteAnalyticsAllowed returns false for free user with no active pass`() = runTest {
+        val allowed = rewardManager.isTasteAnalyticsAllowed(isProActive = false)
+        assertThat(allowed).isFalse()
+    }
+
+    @Test
+    fun `isReceiptWatermarkFreeAllowed returns true for pro user`() = runTest {
+        val allowed = rewardManager.isReceiptWatermarkFreeAllowed(isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isReceiptWatermarkFreeAllowed returns false for free user with no active pass`() =
+        runTest {
+            val allowed = rewardManager.isReceiptWatermarkFreeAllowed(isProActive = false)
+            assertThat(allowed).isFalse()
+        }
 }

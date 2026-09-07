@@ -1,5 +1,6 @@
 package com.ssverma.feature.library.ui.receipt
 
+import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,7 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
@@ -52,6 +55,7 @@ import com.ssverma.feature.library.R
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.util.ShareImageHelper
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +63,7 @@ import kotlinx.coroutines.launch
 fun CinemaReceiptScreen(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenProPaywall: () -> Unit = {},
     viewModel: CinemaReceiptViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -171,16 +176,76 @@ fun CinemaReceiptScreen(
                 FilterChip(
                     selected = uiState.selectedStyle == ReceiptStyle.GOLDEN_PASS,
                     onClick = { viewModel.selectStyle(ReceiptStyle.GOLDEN_PASS) },
-                    label = { Text(stringResource(R.string.receipt_style_gold)) }
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.receipt_style_gold))
+                            if (!uiState.isProActive && !uiState.isPassActive) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Rounded.Star,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+                    }
                 )
                 FilterChip(
                     selected = uiState.selectedStyle == ReceiptStyle.CYBERPUNK,
                     onClick = { viewModel.selectStyle(ReceiptStyle.CYBERPUNK) },
-                    label = { Text(stringResource(R.string.receipt_style_cyberpunk)) }
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.receipt_style_cyberpunk))
+                            if (!uiState.isProActive && !uiState.isPassActive) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Rounded.Star,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+                    }
                 )
             }
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+            // Watermark-Free Export Toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.spacing.medium, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.receipt_watermark_free_title),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = if (uiState.isWatermarkFree) {
+                            stringResource(R.string.receipt_watermark_free_active)
+                        } else {
+                            stringResource(R.string.receipt_watermark_free_hint)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                Switch(
+                    checked = uiState.isWatermarkFree,
+                    onCheckedChange = { viewModel.toggleWatermarkFree() }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
             // Receipt Canvas / Card Preview
             val snapshot = uiState.snapshot
@@ -199,6 +264,7 @@ fun CinemaReceiptScreen(
                     CinemaReceiptView(
                         snapshot = snapshot,
                         style = uiState.selectedStyle,
+                        showWatermark = !uiState.isWatermarkFree,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -326,5 +392,26 @@ fun CinemaReceiptScreen(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
         }
+    }
+
+    if (uiState.isGateOpen) {
+        FeatureQuotaGateBottomSheet(
+            title = stringResource(R.string.receipt_gate_title),
+            description = stringResource(R.string.receipt_gate_desc),
+            rewardActionLabel = stringResource(R.string.receipt_watch_ad_pass),
+            onWatchAdClick = {
+                val activity = context as? Activity
+                if (activity != null) {
+                    viewModel.watchAdForWatermarkFreePass(activity)
+                }
+            },
+            onUpgradeProClick = {
+                viewModel.dismissGate()
+                onOpenProPaywall()
+            },
+            onDismissRequest = { viewModel.dismissGate() },
+            isProPaymentEnabled = uiState.isProPaymentEnabled,
+            icon = Icons.Rounded.Star
+        )
     }
 }

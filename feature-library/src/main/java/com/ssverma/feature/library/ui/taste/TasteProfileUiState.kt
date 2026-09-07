@@ -9,5 +9,9 @@ data class TasteProfileUiState(
     val selectedFilter: DiaryFilterType = DiaryFilterType.ALL,
     val stats: TasteProfileStats = TasteProfileStats(),
     val recommendationShelves: List<RecommendationShelf> = emptyList(),
-    val isRefreshingRecommendations: Boolean = false
+    val isRefreshingRecommendations: Boolean = false,
+    val isProActive: Boolean = false,
+    val isPassActive: Boolean = false,
+    val isProPaymentEnabled: Boolean = true,
+    val isGateOpen: Boolean = false
 )

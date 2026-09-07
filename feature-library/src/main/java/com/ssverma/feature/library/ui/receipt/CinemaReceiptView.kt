@@ -43,12 +43,27 @@ import com.ssverma.feature.library.domain.model.ReceiptStyle
 fun CinemaReceiptView(
     snapshot: ReceiptSnapshot,
     style: ReceiptStyle,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showWatermark: Boolean = true
 ) {
     when (style) {
-        ReceiptStyle.THERMAL -> ThermalReceiptCard(snapshot = snapshot, modifier = modifier)
-        ReceiptStyle.GOLDEN_PASS -> GoldenVipPassCard(snapshot = snapshot, modifier = modifier)
-        ReceiptStyle.CYBERPUNK -> CyberpunkNeonCard(snapshot = snapshot, modifier = modifier)
+        ReceiptStyle.THERMAL -> ThermalReceiptCard(
+            snapshot = snapshot,
+            showWatermark = showWatermark,
+            modifier = modifier
+        )
+
+        ReceiptStyle.GOLDEN_PASS -> GoldenVipPassCard(
+            snapshot = snapshot,
+            showWatermark = showWatermark,
+            modifier = modifier
+        )
+
+        ReceiptStyle.CYBERPUNK -> CyberpunkNeonCard(
+            snapshot = snapshot,
+            showWatermark = showWatermark,
+            modifier = modifier
+        )
     }
 }
 
@@ -59,11 +74,12 @@ fun CinemaReceiptView(
 @Composable
 private fun ThermalReceiptCard(
     snapshot: ReceiptSnapshot,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showWatermark: Boolean = true
 ) {
-    val paperColor = Color(0xFFF9F8F3)
-    val inkColor = Color(0xFF1E1E1E)
-    val secondaryInk = Color(0xFF4A4A4A)
+    val paperColor = CinemaReceiptPalette.ThermalPaper
+    val inkColor = CinemaReceiptPalette.ThermalInk
+    val secondaryInk = CinemaReceiptPalette.ThermalSecondaryInk
 
     Column(
         modifier = modifier
@@ -256,14 +272,15 @@ private fun ThermalReceiptCard(
             color = secondaryInk
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "ShowTime • Track & Share your Cinema Journey",
-            fontFamily = FontFamily.Monospace,
-            fontSize = 9.sp,
-            color = secondaryInk
-        )
+        if (showWatermark) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "ShowTime • Track & Share your Cinema Journey",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 9.sp,
+                color = secondaryInk
+            )
+        }
     }
 }
 
@@ -274,18 +291,19 @@ private fun ThermalReceiptCard(
 @Composable
 private fun GoldenVipPassCard(
     snapshot: ReceiptSnapshot,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showWatermark: Boolean = true
 ) {
     val goldGradient = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF2A210D),
-            Color(0xFF191409),
-            Color(0xFF100D05)
+            CinemaReceiptPalette.GoldGradientStart,
+            CinemaReceiptPalette.GoldGradientMiddle,
+            CinemaReceiptPalette.GoldGradientEnd
         )
     )
-    val goldAccent = Color(0xFFFFD54F)
-    val goldLight = Color(0xFFFFF8E1)
-    val goldMuted = Color(0xFFC5A859)
+    val goldAccent = CinemaReceiptPalette.GoldAccent
+    val goldLight = CinemaReceiptPalette.GoldLight
+    val goldMuted = CinemaReceiptPalette.GoldMuted
 
     Column(
         modifier = modifier
@@ -443,13 +461,14 @@ private fun GoldenVipPassCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "ShowTime App • VIP Cinephile Pass",
-            fontSize = 9.sp,
-            color = goldMuted.copy(alpha = 0.6f)
-        )
+        if (showWatermark) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "ShowTime App • VIP Cinephile Pass",
+                fontSize = 9.sp,
+                color = goldMuted.copy(alpha = 0.6f)
+            )
+        }
     }
 }
 
@@ -460,13 +479,14 @@ private fun GoldenVipPassCard(
 @Composable
 private fun CyberpunkNeonCard(
     snapshot: ReceiptSnapshot,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showWatermark: Boolean = true
 ) {
-    val neonCyan = Color(0xFF00E5FF)
-    val neonAmber = Color(0xFFFF6D00)
-    val neonBg = Color(0xFF07090E)
-    val textWhite = Color(0xFFECEFF1)
-    val textMuted = Color(0xFF78909C)
+    val neonCyan = CinemaReceiptPalette.NeonCyan
+    val neonAmber = CinemaReceiptPalette.NeonAmber
+    val neonBg = CinemaReceiptPalette.NeonBg
+    val textWhite = CinemaReceiptPalette.NeonTextWhite
+    val textMuted = CinemaReceiptPalette.NeonTextMuted
 
     Column(
         modifier = modifier
@@ -584,14 +604,15 @@ private fun CyberpunkNeonCard(
                 .height(30.dp)
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = "NEO-SHOWTIME • ShowTime App",
-            fontFamily = FontFamily.Monospace,
-            fontSize = 9.sp,
-            color = textMuted
-        )
+        if (showWatermark) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "NEO-SHOWTIME • ShowTime App",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 9.sp,
+                color = textMuted
+            )
+        }
     }
 }
 
