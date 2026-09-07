@@ -46,6 +46,7 @@ import com.ssverma.feature.library.ui.wrapped.component.MilestoneDetailBottomShe
 import com.ssverma.feature.library.ui.wrapped.component.WrappedHeroCard
 import com.ssverma.feature.library.ui.wrapped.component.WrappedMilestonesGrid
 import com.ssverma.feature.library.ui.wrapped.component.WrappedMonthlyTimeline
+import com.ssverma.feature.library.ui.wrapped.component.WrappedStoryExportBottomSheet
 import com.ssverma.feature.library.ui.wrapped.component.WrappedTopFavoritesGrid
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
@@ -61,6 +62,7 @@ fun CinephileWrappedScreen(
     onNavigateToDiscover: () -> Unit,
     onNavigateToTasteProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenProPaywall: () -> Unit = {},
     viewModel: CinephileWrappedViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,17 +71,7 @@ fun CinephileWrappedScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val onShareWrapped = {
-        uiState.summary?.let { summary ->
-            val shareText = viewModel.generateWrappedShareText(summary)
-            val sendIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, shareText)
-                type = "text/plain"
-            }
-            val shareIntent = Intent.createChooser(sendIntent, "Share Cinema Wrapped")
-            context.startActivity(shareIntent)
-        }
-        Unit
+        viewModel.openExportSheet()
     }
 
     val handleMilestoneAction = { milestone: CinephileMilestone ->
@@ -260,6 +252,32 @@ fun CinephileWrappedScreen(
             onDismiss = { viewModel.onSelectMilestone(null) },
             onActionClick = handleMilestoneAction,
             onShareAchievement = handleShareMilestone
+        )
+    }
+
+    // Story Card Export Bottom Sheet
+    val summary = uiState.summary
+    if (uiState.isExportSheetOpen && summary != null) {
+        WrappedStoryExportBottomSheet(
+            summary = summary,
+            selectedStyle = uiState.selectedStyle,
+            isWatermarkFree = uiState.isWatermarkFree,
+            isProActive = uiState.isProActive,
+            isPassActive = uiState.isPassActive,
+            isExporting = uiState.isExporting,
+            isProPaymentEnabled = uiState.isProPaymentEnabled,
+            isGateOpen = uiState.isGateOpen,
+            onStyleSelected = viewModel::selectStyle,
+            onToggleWatermark = viewModel::toggleWatermarkFree,
+            onDismissGate = viewModel::dismissGate,
+            onWatchAdForPass = viewModel::watchAdForWrappedPass,
+            onOpenProPaywall = {
+                viewModel.dismissGate()
+                viewModel.dismissExportSheet()
+                onOpenProPaywall()
+            },
+            onDismissRequest = viewModel::dismissExportSheet,
+            onSetExporting = viewModel::setExporting
         )
     }
 }

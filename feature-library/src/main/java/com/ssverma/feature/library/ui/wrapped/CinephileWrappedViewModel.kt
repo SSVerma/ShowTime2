@@ -1,7 +1,13 @@
 package com.ssverma.feature.library.ui.wrapped
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.billing.BillingRepository
+import com.ssverma.feature.library.ui.wrapped.component.WrappedStoryStyle
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
 import com.ssverma.shared.domain.usecase.stats.GetCinephileWrappedUseCase
@@ -10,33 +16,101 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CinephileWrappedViewModel @Inject constructor(
-    private val getCinephileWrappedUseCase: GetCinephileWrappedUseCase
+    private val getCinephileWrappedUseCase: GetCinephileWrappedUseCase,
+    private val billingRepository: BillingRepository,
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _selectedYear = MutableStateFlow(0) // 0 = All-Time
     private val _selectedMilestone = MutableStateFlow<CinephileMilestone?>(null)
+    private val _selectedStyle = MutableStateFlow(WrappedStoryStyle.CLASSIC_VELVET)
+    private val _isWatermarkFree = MutableStateFlow(false)
+    private val _isExporting = MutableStateFlow(false)
+    private val _isProActive = MutableStateFlow(false)
+    private val _isPassActive = MutableStateFlow(false)
+    private val _isProPaymentEnabled = MutableStateFlow(true)
+    private val _isGateOpen = MutableStateFlow(false)
+    private val _isExportSheetOpen = MutableStateFlow(false)
+    private val _pendingStyle = MutableStateFlow<WrappedStoryStyle?>(null)
+
+    init {
+        viewModelScope.launch {
+            combine(
+                billingRepository.isProActive,
+                rewardManager.passStatus
+            ) { isPro, passStatus ->
+                isPro to passStatus.isWrappedStoryUnlocked
+            }.collectLatest { (isPro, isPass) ->
+                _isProActive.value = isPro
+                _isPassActive.value = isPass
+                if (isPro || isPass) {
+                    _isWatermarkFree.value = true
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            billingRepository.isBillingEnabled.collectLatest { isEnabled ->
+                _isProPaymentEnabled.value = isEnabled
+            }
+        }
+    }
 
     val uiState: StateFlow<CinephileWrappedUiState> = combine(
-        _selectedYear.flatMapLatest { year ->
-            getCinephileWrappedUseCase(year)
+        combine(
+            _selectedYear.flatMapLatest { year ->
+                getCinephileWrappedUseCase(year)
+            },
+            _selectedYear,
+            _selectedMilestone
+        ) { summary, year, milestone ->
+            WrappedBaseState(summary, year, milestone)
         },
-        _selectedYear,
-        _selectedMilestone
-    ) { summary, year, milestone ->
+        combine(
+            _selectedStyle,
+            _isWatermarkFree,
+            _isProActive,
+            _isPassActive,
+            _isExporting
+        ) { style, isWatermarkFree, isPro, isPass, isExporting ->
+            WrappedStoryState1(style, isWatermarkFree, isPro, isPass, isExporting)
+        },
+        combine(
+            _isProPaymentEnabled,
+            _isGateOpen,
+            _isExportSheetOpen,
+            _pendingStyle
+        ) { isProPaymentEnabled, isGateOpen, isExportSheetOpen, pendingStyle ->
+            WrappedStoryState2(isProPaymentEnabled, isGateOpen, isExportSheetOpen, pendingStyle)
+        }
+    ) { base, story1, story2 ->
         CinephileWrappedUiState(
-            summary = summary,
-            selectedYear = year,
-            availableYears = listOf(0) + summary.availableYears,
-            selectedMilestone = milestone,
-            isLoading = false
+            summary = base.summary,
+            selectedYear = base.year,
+            availableYears = listOf(0) + base.summary.availableYears,
+            selectedMilestone = base.milestone,
+            isLoading = false,
+            selectedStyle = story1.style,
+            isWatermarkFree = story1.isWatermarkFree,
+            isProActive = story1.isPro,
+            isPassActive = story1.isPass,
+            isExporting = story1.isExporting,
+            isProPaymentEnabled = story2.isProPaymentEnabled,
+            isGateOpen = story2.isGateOpen,
+            isExportSheetOpen = story2.isExportSheetOpen,
+            pendingStyle = story2.pendingStyle
         )
     }.stateIn(
         scope = viewModelScope,
@@ -50,6 +124,57 @@ class CinephileWrappedViewModel @Inject constructor(
 
     fun onSelectMilestone(milestone: CinephileMilestone?) {
         _selectedMilestone.value = milestone
+    }
+
+    fun openExportSheet() {
+        _isExportSheetOpen.value = true
+    }
+
+    fun dismissExportSheet() {
+        _isExportSheetOpen.value = false
+    }
+
+    fun selectStyle(style: WrappedStoryStyle) {
+        val isUnlocked = _isProActive.value || _isPassActive.value
+        if (style.isProOnly && !isUnlocked) {
+            _pendingStyle.value = style
+            _isGateOpen.value = true
+        } else {
+            _selectedStyle.update { style }
+        }
+    }
+
+    fun toggleWatermarkFree() {
+        val isUnlocked = _isProActive.value || _isPassActive.value
+        if (!isUnlocked) {
+            _isGateOpen.value = true
+        } else {
+            _isWatermarkFree.update { !it }
+        }
+    }
+
+    fun dismissGate() {
+        _isGateOpen.value = false
+        _pendingStyle.value = null
+    }
+
+    fun watchAdForWrappedPass(activity: Activity) {
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.CINEMA_WRAPPED_STORY)
+                _isWatermarkFree.value = true
+                val pending = _pendingStyle.value
+                if (pending != null) {
+                    _selectedStyle.update { pending }
+                    _pendingStyle.value = null
+                }
+                _isGateOpen.value = false
+            }
+        }
+    }
+
+    fun setExporting(exporting: Boolean) {
+        _isExporting.value = exporting
     }
 
     fun generateWrappedShareText(summary: WrappedYearSummary): String {
@@ -87,3 +212,24 @@ class CinephileWrappedViewModel @Inject constructor(
         """.trimIndent()
     }
 }
+
+private data class WrappedBaseState(
+    val summary: WrappedYearSummary,
+    val year: Int,
+    val milestone: CinephileMilestone?
+)
+
+private data class WrappedStoryState1(
+    val style: WrappedStoryStyle,
+    val isWatermarkFree: Boolean,
+    val isPro: Boolean,
+    val isPass: Boolean,
+    val isExporting: Boolean
+)
+
+private data class WrappedStoryState2(
+    val isProPaymentEnabled: Boolean,
+    val isGateOpen: Boolean,
+    val isExportSheetOpen: Boolean,
+    val pendingStyle: WrappedStoryStyle?
+)

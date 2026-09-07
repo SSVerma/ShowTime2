@@ -6,9 +6,10 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -19,13 +20,22 @@ class RewardManagerTest {
     private val fakeAppConfigProvider = FakeAppConfigProvider()
     private val mockKeyValueStorageClient: KeyValueStorageClient = mockk(relaxed = true)
     private val mockStorage: KeyValueStorage = mockk(relaxed = true)
+    private val preferencesFlow = MutableStateFlow(emptyPreferences())
 
     private lateinit var rewardManager: RewardManagerImpl
 
     @Before
     fun setUp() {
+        preferencesFlow.value = emptyPreferences()
         every { mockKeyValueStorageClient.createKeyValueStorage(any(), any()) } returns mockStorage
-        every { mockStorage.data } returns flowOf(emptyPreferences())
+        every { mockStorage.data } returns preferencesFlow
+        coEvery { mockStorage.updateData(any()) } coAnswers {
+            val transform =
+                firstArg<suspend (androidx.datastore.preferences.core.Preferences) -> androidx.datastore.preferences.core.Preferences>()
+            val updated = transform(preferencesFlow.value)
+            preferencesFlow.value = updated
+            updated
+        }
 
         rewardManager = RewardManagerImpl(
             context = mockContext,
@@ -123,4 +133,27 @@ class RewardManagerTest {
             val allowed = rewardManager.isReceiptWatermarkFreeAllowed(isProActive = false)
             assertThat(allowed).isFalse()
         }
+
+    @Test
+    fun `isWrappedStoryAllowed returns true for pro user`() = runTest {
+        val allowed = rewardManager.isWrappedStoryAllowed(isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isWrappedStoryAllowed returns false for free user with no active pass`() = runTest {
+        val allowed = rewardManager.isWrappedStoryAllowed(isProActive = false)
+        assertThat(allowed).isFalse()
+    }
+
+    @Test
+    fun `grantRewardPass for CINEMA_WRAPPED_STORY unlocks wrapped story pass`() = runTest {
+        rewardManager.grantRewardPass(RewardPassType.CINEMA_WRAPPED_STORY)
+        val status = rewardManager.passStatus.value
+        assertThat(status.isWrappedStoryUnlocked).isTrue()
+        assertThat(status.wrappedStoryExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
+
+        val allowed = rewardManager.isWrappedStoryAllowed(isProActive = false)
+        assertThat(allowed).isTrue()
+    }
 }

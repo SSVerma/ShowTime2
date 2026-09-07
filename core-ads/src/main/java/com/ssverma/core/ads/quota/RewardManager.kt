@@ -31,7 +31,8 @@ enum class RewardPassType {
     CINEMA_GAME_REVIVE,
     MULTI_SERVICE_FILTER,
     TASTE_ANALYTICS_RADAR,
-    WATERMARK_FREE_RECEIPT
+    WATERMARK_FREE_RECEIPT,
+    CINEMA_WRAPPED_STORY
 }
 
 data class RewardPassStatus(
@@ -47,7 +48,9 @@ data class RewardPassStatus(
     val isTasteAnalyticsUnlocked: Boolean = false,
     val tasteAnalyticsExpiryTimestamp: Long = 0L,
     val isReceiptWatermarkFreeUnlocked: Boolean = false,
-    val receiptWatermarkFreeExpiryTimestamp: Long = 0L
+    val receiptWatermarkFreeExpiryTimestamp: Long = 0L,
+    val isWrappedStoryUnlocked: Boolean = false,
+    val wrappedStoryExpiryTimestamp: Long = 0L
 )
 
 interface RewardManager {
@@ -62,6 +65,7 @@ interface RewardManager {
     suspend fun isMultiServiceFilterAllowed(isProActive: Boolean): Boolean
     suspend fun isTasteAnalyticsAllowed(isProActive: Boolean): Boolean
     suspend fun isReceiptWatermarkFreeAllowed(isProActive: Boolean): Boolean
+    suspend fun isWrappedStoryAllowed(isProActive: Boolean): Boolean
     suspend fun useCinemaGameRevive(): Boolean
 }
 
@@ -99,6 +103,7 @@ class RewardManagerImpl @Inject constructor(
             val multiServiceExpiry = prefs[KEY_MULTI_SERVICE_EXPIRY] ?: 0L
             val tasteAnalyticsExpiry = prefs[KEY_TASTE_ANALYTICS_EXPIRY] ?: 0L
             val receiptWatermarkExpiry = prefs[KEY_RECEIPT_WATERMARK_FREE_EXPIRY] ?: 0L
+            val wrappedStoryExpiry = prefs[KEY_WRAPPED_STORY_EXPIRY] ?: 0L
 
             RewardPassStatus(
                 isAutoBackupUnlocked = autoBackupExpiry > now,
@@ -113,7 +118,9 @@ class RewardManagerImpl @Inject constructor(
                 isTasteAnalyticsUnlocked = tasteAnalyticsExpiry > now,
                 tasteAnalyticsExpiryTimestamp = if (tasteAnalyticsExpiry > now) tasteAnalyticsExpiry else 0L,
                 isReceiptWatermarkFreeUnlocked = receiptWatermarkExpiry > now,
-                receiptWatermarkFreeExpiryTimestamp = if (receiptWatermarkExpiry > now) receiptWatermarkExpiry else 0L
+                receiptWatermarkFreeExpiryTimestamp = if (receiptWatermarkExpiry > now) receiptWatermarkExpiry else 0L,
+                isWrappedStoryUnlocked = wrappedStoryExpiry > now,
+                wrappedStoryExpiryTimestamp = if (wrappedStoryExpiry > now) wrappedStoryExpiry else 0L
             )
         }.first()
         _passStatus.value = status
@@ -130,6 +137,8 @@ class RewardManagerImpl @Inject constructor(
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_TASTE_ANALYTICS_HOURS, 24L)
         val receiptWatermarkDurationHours =
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_RECEIPT_WATERMARK_HOURS, 24L)
+        val wrappedStoryDurationHours =
+            appConfigProvider.getLong(KEY_CONFIG_REWARDED_WRAPPED_STORY_HOURS, 24L)
 
         storage.edit { prefs ->
             when (passType) {
@@ -193,6 +202,13 @@ class RewardManagerImpl @Inject constructor(
                     prefs[KEY_RECEIPT_WATERMARK_FREE_EXPIRY] =
                         baseTime + TimeUnit.HOURS.toMillis(receiptWatermarkDurationHours)
                 }
+
+                RewardPassType.CINEMA_WRAPPED_STORY -> {
+                    val currentExpiry = prefs[KEY_WRAPPED_STORY_EXPIRY] ?: 0L
+                    val baseTime = if (currentExpiry > now) currentExpiry else now
+                    prefs[KEY_WRAPPED_STORY_EXPIRY] =
+                        baseTime + TimeUnit.HOURS.toMillis(wrappedStoryDurationHours)
+                }
             }
         }
         refreshPassStatus()
@@ -249,6 +265,11 @@ class RewardManagerImpl @Inject constructor(
         return _passStatus.value.isReceiptWatermarkFreeUnlocked
     }
 
+    override suspend fun isWrappedStoryAllowed(isProActive: Boolean): Boolean {
+        if (isProActive) return true
+        return _passStatus.value.isWrappedStoryUnlocked
+    }
+
     override suspend fun useCinemaGameRevive(): Boolean {
         val current = _passStatus.value.cinemaGameRevivesRemaining
         if (current <= 0) return false
@@ -268,6 +289,8 @@ class RewardManagerImpl @Inject constructor(
         private val KEY_TASTE_ANALYTICS_EXPIRY = longPreferencesKey("reward_taste_analytics_expiry")
         private val KEY_RECEIPT_WATERMARK_FREE_EXPIRY =
             longPreferencesKey("reward_receipt_watermark_expiry")
+        private val KEY_WRAPPED_STORY_EXPIRY =
+            longPreferencesKey("reward_wrapped_story_expiry")
         private val KEY_EXTRA_LIST_SLOTS = intPreferencesKey("reward_extra_list_slots")
         private val KEY_EXTRA_PUBLISH_SLOTS = intPreferencesKey("reward_extra_publish_slots")
         private val KEY_GAME_REVIVES = intPreferencesKey("reward_game_revives")
@@ -283,6 +306,8 @@ class RewardManagerImpl @Inject constructor(
             "rewarded_taste_analytics_duration_hours"
         const val KEY_CONFIG_REWARDED_RECEIPT_WATERMARK_HOURS =
             "rewarded_receipt_watermark_duration_hours"
+        const val KEY_CONFIG_REWARDED_WRAPPED_STORY_HOURS =
+            "rewarded_wrapped_story_duration_hours"
         const val KEY_CONFIG_AUTO_BACKUP_PRO_REQUIRED = "auto_backup_pro_required"
         const val KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED = "trakt_sync_pro_required"
     }

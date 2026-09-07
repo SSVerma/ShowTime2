@@ -111,6 +111,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             onNavigateToTasteProfile = {
                 navigator.navigate(TasteProfileNavKey)
+            },
+            onOpenProPaywall = {
+                navigator.navigate(ProPaywallNavKey)
             }
         )
     }

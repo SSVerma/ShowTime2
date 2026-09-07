@@ -186,4 +186,23 @@
     <string name="taste_locked_desc">Unlock era breakdown and tailored recommendations powered by your diary ratings.</string>
     <string name="taste_unlock_cta">Unlock with Pro or 24h Pass</string>
     <string name="taste_watch_ad_pass">Watch Video for 24h Pass</string>
+
+    <!-- Cinephile Wrapped Story Freemium Monetization -->
+    <string name="wrapped_style_label">Story Card Style</string>
+    <string name="wrapped_style_classic">Classic Velvet</string>
+    <string name="wrapped_style_oled">OLED Noir</string>
+    <string name="wrapped_style_cyberpunk">Cyberpunk Neon</string>
+    <string name="wrapped_style_gold">Golden VIP</string>
+    <string name="wrapped_share_story_card">Share Story Card</string>
+    <string name="wrapped_save_story_card">Save Card</string>
+    <string name="wrapped_watermark_free_title">Watermark-Free Export</string>
+    <string name="wrapped_watermark_free_active">Pro / Pass active • Pristine HD story card without app branding</string>
+    <string name="wrapped_watermark_free_hint">Remove app branding with ShowTime Pro or 24h Pass</string>
+    <string name="wrapped_gate_title">Unlock Luxury Story Styles &amp; HD Export</string>
+    <string name="wrapped_gate_desc">Exclusive Wrapped story styles (OLED Noir, Cyberpunk Neon, Golden VIP) and watermark-free exports are unlocked with ShowTime Pro or a 24-Hour Pass.</string>
+    <string name="wrapped_watch_ad_pass">Watch Video for 24h Pass</string>
+    <string name="wrapped_watermark_label">Shared via ShowTime • Cinephile Wrapped</string>
+    <string name="wrapped_save_success">Story card saved to gallery!</string>
+    <string name="wrapped_save_failed">Failed to save story card</string>
+    <string name="wrapped_share_chooser">Share Cinephile Wrapped Story</string>
 </resources>
