@@ -24,5 +24,6 @@ data class UniversalDiscoveryUiState(
     val isPassActive: Boolean = false,
     val isSubscriptionsSheetOpen: Boolean = false,
     val isMultiServiceGateOpen: Boolean = false,
-    val pendingProviderToSwitch: ProviderInfo? = null
+    val pendingProviderToSwitch: ProviderInfo? = null,
+    val isProPaymentEnabled: Boolean = true
 )

@@ -50,6 +50,7 @@ class UniversalDiscoveryViewModelTest {
     private val streamingSubscriptionsFlow = MutableStateFlow(setOf(8, 9))
     private val preferredOriginalLanguageFlow = MutableStateFlow("")
     private val isProUserFlow = MutableStateFlow(false)
+    private val isBillingEnabledFlow = MutableStateFlow(true)
     private val passStatusFlow = MutableStateFlow(RewardPassStatus(isMultiServiceUnlocked = false))
 
     private lateinit var viewModel: UniversalDiscoveryViewModel
@@ -57,6 +58,7 @@ class UniversalDiscoveryViewModelTest {
     @Before
     fun setUp() {
         coEvery { mockBillingRepository.isProActive } returns isProUserFlow
+        coEvery { mockBillingRepository.isBillingEnabled } returns isBillingEnabledFlow
         coEvery { mockRewardManager.passStatus } returns passStatusFlow
         coEvery { mockAppConfigRepository.watchProviderRegion } returns watchRegionFlow
         coEvery { mockAppConfigRepository.userStreamingSubscriptions } returns streamingSubscriptionsFlow

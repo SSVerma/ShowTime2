@@ -6,6 +6,7 @@ import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.BillingState
 import com.ssverma.core.billing.model.ProStatus
 import com.ssverma.core.billing.model.PurchaseResult
+import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.debug.DebugConfigManager
 import com.ssverma.core.storage.debug.DebugProOverride
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +23,7 @@ import javax.inject.Singleton
 interface BillingRepository {
     val proStatus: StateFlow<ProStatus>
     val isProActive: StateFlow<Boolean>
+    val isBillingEnabled: StateFlow<Boolean>
     val billingState: StateFlow<BillingState>
     val purchaseEvents: Flow<PurchaseResult>
 
@@ -33,8 +35,13 @@ interface BillingRepository {
 @Singleton
 class BillingRepositoryImpl @Inject constructor(
     private val billingClientWrapper: BillingClientWrapper,
-    private val debugConfigManager: DebugConfigManager
+    private val debugConfigManager: DebugConfigManager,
+    private val appConfigProvider: AppConfigProvider
 ) : BillingRepository {
+
+    companion object {
+        const val REMOTE_KEY_BILLING_ENABLED = "remote_billing_enabled"
+    }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -55,15 +62,32 @@ class BillingRepositoryImpl @Inject constructor(
         initialValue = false
     )
 
+    override val isBillingEnabled: StateFlow<Boolean> = appConfigProvider
+        .observeBoolean(REMOTE_KEY_BILLING_ENABLED, defaultValue = true)
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = appConfigProvider.getBoolean(
+                REMOTE_KEY_BILLING_ENABLED,
+                defaultValue = true
+            )
+        )
+
     override val billingState: StateFlow<BillingState> = billingClientWrapper.billingState
 
     override val purchaseEvents: Flow<PurchaseResult> = billingClientWrapper.purchaseEvents
 
     override suspend fun getAvailableProducts(): List<BillingProduct> {
+        if (!isBillingEnabled.value) {
+            return emptyList()
+        }
         return billingClientWrapper.queryAvailableProducts()
     }
 
     override suspend fun purchaseProduct(activity: Activity, product: BillingProduct): Boolean {
+        if (!isBillingEnabled.value) {
+            return false
+        }
         val result = billingClientWrapper.launchBillingFlow(activity, product)
         return result.responseCode == BillingClient.BillingResponseCode.OK
     }

@@ -39,7 +39,8 @@ fun StreamingMultiServiceGateDialog(
     onUpgradeToPro: () -> Unit,
     onWatchRewardAd: () -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isProPaymentEnabled: Boolean = true
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -73,42 +74,62 @@ fun StreamingMultiServiceGateDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Action: Upgrade to Pro (Primary)
-                Button(
-                    onClick = onUpgradeToPro,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(SharedUiR.string.streaming_multi_service_unlock_pro),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                if (isProPaymentEnabled) {
+                    // Action: Upgrade to Pro (Primary)
+                    Button(
+                        onClick = onUpgradeToPro,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(SharedUiR.string.streaming_multi_service_unlock_pro),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // Action: Watch Rewarded Video Ad (24h pass)
-                FilledTonalButton(
-                    onClick = onWatchRewardAd,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Tv,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(SharedUiR.string.streaming_multi_service_pass_reward),
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    // Action: Watch Rewarded Video Ad (24h pass)
+                    FilledTonalButton(
+                        onClick = onWatchRewardAd,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Tv,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(SharedUiR.string.streaming_multi_service_pass_reward),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                } else {
+                    // When Pro payments are disabled remotely, make Rewarded Ad the Primary Filled Button
+                    Button(
+                        onClick = onWatchRewardAd,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Tv,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(SharedUiR.string.streaming_multi_service_pass_reward),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 if (pendingProvider != null) {

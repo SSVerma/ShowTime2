@@ -159,6 +159,12 @@ class UniversalDiscoveryViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            billingRepository.isBillingEnabled.collectLatest { isEnabled ->
+                _uiState.update { it.copy(isProPaymentEnabled = isEnabled) }
+            }
+        }
+
+        viewModelScope.launch {
             appConfigRepository.userStreamingSubscriptions.collectLatest { subscriptions ->
                 _uiState.update { it.copy(userStreamingSubscriptions = subscriptions) }
                 if (initialProviders.isEmpty() && subscriptions.isNotEmpty()) {

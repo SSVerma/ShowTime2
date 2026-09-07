@@ -605,7 +605,8 @@ fun UniversalDiscoveryScreen(
                     viewModel.watchAdForMultiServicePass(activity)
                 }
             },
-            onDismiss = { viewModel.dismissMultiServiceGate() }
+            onDismiss = { viewModel.dismissMultiServiceGate() },
+            isProPaymentEnabled = uiState.isProPaymentEnabled
         )
     }
 }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,13 +34,25 @@ class PaymentViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val isPaywallEnabled = appConfigProvider.getBoolean(KEY_CONFIG_SHOW_PRO_PAYWALL, true)
-            _uiState.update { it.copy(isPaywallRemoteEnabled = isPaywallEnabled) }
+            combine(
+                appConfigProvider.observeBoolean(KEY_CONFIG_SHOW_PRO_PAYWALL, true),
+                billingRepository.isBillingEnabled
+            ) { isPaywallEnabled, isBillingEnabled ->
+                isPaywallEnabled && isBillingEnabled
+            }.collectLatest { isEnabled ->
+                _uiState.update { it.copy(isPaywallRemoteEnabled = isEnabled) }
+            }
         }
 
         viewModelScope.launch {
-            val products = billingRepository.getAvailableProducts()
-            _uiState.update { it.copy(products = products) }
+            billingRepository.isBillingEnabled.collectLatest { isEnabled ->
+                if (isEnabled) {
+                    val products = billingRepository.getAvailableProducts()
+                    _uiState.update { it.copy(products = products) }
+                } else {
+                    _uiState.update { it.copy(products = emptyList()) }
+                }
+            }
         }
 
         viewModelScope.launch {

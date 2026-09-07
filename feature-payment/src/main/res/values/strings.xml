@@ -23,4 +23,7 @@
     <string name="restore_purchases">Restore Purchases</string>
     <string name="best_value">BEST VALUE</string>
     <string name="save_percent">SAVE %d%%</string>
+    <string name="pro_purchases_temporarily_disabled">Purchases Temporarily Paused</string>
+    <string name="pro_purchases_disabled_desc">In-app purchases are currently paused. You can continue unlocking premium features using free 24-hour passes by watching short videos!</string>
+    <string name="pro_purchases_unavailable_cta">Purchases Unavailable</string>
 </resources>

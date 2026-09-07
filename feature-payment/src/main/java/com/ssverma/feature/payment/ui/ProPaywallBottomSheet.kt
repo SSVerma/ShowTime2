@@ -71,6 +71,7 @@ fun ProPaywallBottomSheet(
     onRestoreClick: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    isPaywallRemoteEnabled: Boolean = true,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
     val context = LocalContext.current
@@ -171,57 +172,84 @@ fun ProPaywallBottomSheet(
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
             if (!isProActive) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val displayProducts = if (products.isNotEmpty()) {
-                        products
-                    } else {
-                        listOf(
-                            BillingProduct(
-                                id = BillingConstants.SKU_PRO_LIFETIME,
-                                name = stringResource(R.string.plan_lifetime),
-                                description = stringResource(R.string.plan_one_time),
-                                formattedPrice = "$9.99",
-                                priceAmountMicros = 9990000,
-                                priceCurrencyCode = "USD",
-                                productType = ProductType.INAPP,
-                                rawProductDetails = null
+                if (!isPaywallRemoteEnabled || products.isEmpty()) {
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(MaterialTheme.spacing.medium)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.pro_purchases_temporarily_disabled),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                        )
-                    }
-
-                    displayProducts.forEach { product ->
-                        val isSelected = product.id == selectedProductId
-                        PlanOptionCard(
-                            product = product,
-                            isSelected = isSelected,
-                            isBestValue = product.id == BillingConstants.SKU_PRO_LIFETIME,
-                            onClick = { selectedProductId = product.id }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-                Button(
-                    onClick = {
-                        val selectedProduct = products.firstOrNull { it.id == selectedProductId }
-                        if (activity != null && selectedProduct != null) {
-                            onPurchaseClick(activity, selectedProduct)
+                            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
+                            Text(
+                                text = stringResource(R.string.pro_purchases_disabled_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
                         }
-                    },
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.upgrade_to_pro),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    }
+
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+                    Button(
+                        onClick = onDismissRequest,
+                        shape = MaterialTheme.shapes.large,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.pro_purchases_unavailable_cta),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        products.forEach { product ->
+                            val isSelected = product.id == selectedProductId
+                            PlanOptionCard(
+                                product = product,
+                                isSelected = isSelected,
+                                isBestValue = product.id == BillingConstants.SKU_PRO_LIFETIME,
+                                onClick = { selectedProductId = product.id }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+                    Button(
+                        onClick = {
+                            val selectedProduct =
+                                products.firstOrNull { it.id == selectedProductId }
+                            if (activity != null && selectedProduct != null) {
+                                onPurchaseClick(activity, selectedProduct)
+                            }
+                        },
+                        shape = MaterialTheme.shapes.large,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.upgrade_to_pro),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             } else {
                 Surface(

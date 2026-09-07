@@ -1,8 +1,11 @@
 package com.ssverma.shared.ui.subscription
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.asSuccessOrErrorUiState
@@ -29,7 +32,8 @@ data class StreamingSubscriptionsUiState(
     val isProActive: Boolean = false,
     val isPassActive: Boolean = false,
     val searchQuery: String = "",
-    val showMultiServiceGate: Boolean = false
+    val showMultiServiceGate: Boolean = false,
+    val isProPaymentEnabled: Boolean = true
 )
 
 sealed interface StreamingSubscriptionsUiEffect {
@@ -42,7 +46,8 @@ class StreamingSubscriptionsViewModel @Inject constructor(
     private val watchProviderRepository: WatchProviderRepository,
     private val appConfigRepository: AppConfigRepository,
     private val billingRepository: BillingRepository,
-    private val rewardManager: RewardManager
+    private val rewardManager: RewardManager,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StreamingSubscriptionsUiState())
@@ -50,6 +55,8 @@ class StreamingSubscriptionsViewModel @Inject constructor(
 
     private val _uiEffect = MutableSharedFlow<StreamingSubscriptionsUiEffect>()
     val uiEffect: SharedFlow<StreamingSubscriptionsUiEffect> = _uiEffect.asSharedFlow()
+
+    private var pendingProviderToToggle: Int? = null
 
     init {
         viewModelScope.launch {
@@ -60,6 +67,12 @@ class StreamingSubscriptionsViewModel @Inject constructor(
                 isPro to passStatus.isMultiServiceUnlocked
             }.collectLatest { (isPro, isPass) ->
                 _uiState.update { it.copy(isProActive = isPro, isPassActive = isPass) }
+            }
+        }
+
+        viewModelScope.launch {
+            billingRepository.isBillingEnabled.collectLatest { enabled ->
+                _uiState.update { it.copy(isProPaymentEnabled = enabled) }
             }
         }
 
@@ -103,6 +116,7 @@ class StreamingSubscriptionsViewModel @Inject constructor(
             if (currentCount == 0 || isMultiAllowed) {
                 _uiState.update { it.copy(selectedProviderIds = it.selectedProviderIds + providerId) }
             } else {
+                pendingProviderToToggle = providerId
                 _uiState.update { it.copy(showMultiServiceGate = true) }
                 viewModelScope.launch {
                     _uiEffect.emit(StreamingSubscriptionsUiEffect.ShowMultiServiceGate)
@@ -112,7 +126,28 @@ class StreamingSubscriptionsViewModel @Inject constructor(
     }
 
     fun dismissMultiServiceGate() {
+        pendingProviderToToggle = null
         _uiState.update { it.copy(showMultiServiceGate = false) }
+    }
+
+    fun watchAdForMultiServicePass(activity: Activity) {
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.MULTI_SERVICE_FILTER)
+                val pending = pendingProviderToToggle
+                if (pending != null) {
+                    _uiState.update {
+                        it.copy(
+                            selectedProviderIds = it.selectedProviderIds + pending,
+                            showMultiServiceGate = false
+                        )
+                    }
+                    pendingProviderToToggle = null
+                } else {
+                    _uiState.update { it.copy(showMultiServiceGate = false) }
+                }
+            }
+        }
     }
 
     fun clearAll() {

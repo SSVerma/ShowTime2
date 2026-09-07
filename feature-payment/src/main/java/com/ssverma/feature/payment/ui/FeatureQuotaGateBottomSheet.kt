@@ -47,6 +47,7 @@ fun FeatureQuotaGateBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     isAdLoading: Boolean = false,
+    isProPaymentEnabled: Boolean = true,
     icon: ImageVector = Icons.Rounded.Lock,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
@@ -99,56 +100,87 @@ fun FeatureQuotaGateBottomSheet(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-            // Action 1: Upgrade to Pro (Primary)
-            Button(
-                onClick = onUpgradeProClick,
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Star,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Text(
-                    text = stringResource(R.string.upgrade_to_pro),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            // Action 2: Watch Rewarded Video Ad
-            OutlinedButton(
-                onClick = onWatchAdClick,
-                enabled = !isAdLoading,
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                if (isAdLoading) {
-                    ShowTimeLoadingIndicator(
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                } else {
+            if (isProPaymentEnabled) {
+                // Action 1: Upgrade to Pro (Primary)
+                Button(
+                    onClick = onUpgradeProClick,
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Rounded.PlayCircle,
+                        imageVector = Icons.Rounded.Star,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    Text(
+                        text = stringResource(R.string.upgrade_to_pro),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-                Text(
-                    text = rewardActionLabel,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                // Action 2: Watch Rewarded Video Ad
+                OutlinedButton(
+                    onClick = onWatchAdClick,
+                    enabled = !isAdLoading,
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    if (isAdLoading) {
+                        ShowTimeLoadingIndicator(
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.PlayCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    }
+                    Text(
+                        text = rewardActionLabel,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            } else {
+                // When Pro payments are disabled remotely, elevate Rewarded Ad to Primary
+                Button(
+                    onClick = onWatchAdClick,
+                    enabled = !isAdLoading,
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    if (isAdLoading) {
+                        ShowTimeLoadingIndicator(
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.PlayCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    }
+                    Text(
+                        text = rewardActionLabel,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))

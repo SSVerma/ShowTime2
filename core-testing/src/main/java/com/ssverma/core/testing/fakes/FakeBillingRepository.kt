@@ -35,6 +35,13 @@ class FakeBillingRepository(
     private val _isProActive = MutableStateFlow(initialProActive)
     override val isProActive: StateFlow<Boolean> = _isProActive.asStateFlow()
 
+    private val _isBillingEnabled = MutableStateFlow(true)
+    override val isBillingEnabled: StateFlow<Boolean> = _isBillingEnabled.asStateFlow()
+
+    fun setBillingEnabled(enabled: Boolean) {
+        _isBillingEnabled.value = enabled
+    }
+
     private val _billingState = MutableStateFlow<BillingState>(BillingState.Connected)
     override val billingState: StateFlow<BillingState> = _billingState.asStateFlow()
 

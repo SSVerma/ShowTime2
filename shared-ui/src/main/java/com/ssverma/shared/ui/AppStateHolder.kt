@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,6 +33,7 @@ class AppStateHolder @Inject constructor(
     @param:AppScoped private val coroutineScope: CoroutineScope
 ) {
     val isProActive: StateFlow<Boolean> = billingRepository.isProActive
+    val isBillingEnabled: StateFlow<Boolean> = billingRepository.isBillingEnabled
 
     val googleUser: StateFlow<GoogleUser?> = backupRepository.googleUser
 
@@ -73,7 +75,13 @@ class AppStateHolder @Inject constructor(
 
     init {
         coroutineScope.launch {
-            _availableProducts.value = billingRepository.getAvailableProducts()
+            billingRepository.isBillingEnabled.collectLatest { enabled ->
+                if (enabled) {
+                    _availableProducts.value = billingRepository.getAvailableProducts()
+                } else {
+                    _availableProducts.value = emptyList()
+                }
+            }
         }
         coroutineScope.launch {
             when (val result = configurationRepository.fetchCountries()) {
