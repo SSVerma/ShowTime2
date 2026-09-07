@@ -25,7 +25,6 @@ import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Policy
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -162,11 +161,6 @@ fun ShowTimeDrawerContent(
                 label = stringResource(id = R.string.google_drive_backup),
                 icon = Icons.Rounded.CloudSync,
                 onClick = onOpenBackup
-            )
-            DrawerItem(
-                label = stringResource(id = R.string.trakt_sync),
-                icon = Icons.Rounded.Tv,
-                onClick = onOpenTrakt
             )
 
             HorizontalDivider(

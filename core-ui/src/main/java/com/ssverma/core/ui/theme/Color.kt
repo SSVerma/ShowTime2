@@ -40,37 +40,39 @@ internal val DarkColorScheme = darkColorScheme(
 )
 
 internal val OledMidnightColorScheme = darkColorScheme(
-    primary = Color(0xFFFF7A00),
+    primary = Color(0xFFFFFFFF),
     onPrimary = Color(0xFF000000),
-    primaryContainer = Color(0xFF331500),
-    onPrimaryContainer = Color(0xFFFFDBC7),
+    primaryContainer = Color(0xFF1E1E1E),
+    onPrimaryContainer = Color(0xFFFFFFFF),
 
-    secondary = Color(0xFF8E9196),
+    secondary = Color(0xFFB0B0B0),
     onSecondary = Color(0xFF000000),
-    secondaryContainer = Color(0xFF141416),
-    onSecondaryContainer = Color(0xFFE8EAED),
+    secondaryContainer = Color(0xFF181818),
+    onSecondaryContainer = Color(0xFFEEEEEE),
 
-    tertiary = Color(0xFFFFFFFF),
+    tertiary = Color(0xFFE0E0E0),
     onTertiary = Color(0xFF000000),
+    tertiaryContainer = Color(0xFF242424),
+    onTertiaryContainer = Color(0xFFFFFFFF),
 
     background = Color(0xFF000000),
     onBackground = Color(0xFFFFFFFF),
 
     surface = Color(0xFF000000),
     onSurface = Color(0xFFFFFFFF),
-    surfaceVariant = Color(0xFF0D0E10),
-    onSurfaceVariant = Color(0xFF8E9196),
+    surfaceVariant = Color(0xFF0D0D0D),
+    onSurfaceVariant = Color(0xFF9E9E9E),
 
     surfaceContainerLowest = Color(0xFF000000),
-    surfaceContainerLow = Color(0xFF050507),
-    surfaceContainer = Color(0xFF0A0B0E),
-    surfaceContainerHigh = Color(0xFF121317),
-    surfaceContainerHighest = Color(0xFF1B1C22),
+    surfaceContainerLow = Color(0xFF050505),
+    surfaceContainer = Color(0xFF0A0A0A),
+    surfaceContainerHigh = Color(0xFF141414),
+    surfaceContainerHighest = Color(0xFF1E1E1E),
     surfaceDim = Color(0xFF000000),
-    surfaceBright = Color(0xFF22242B),
+    surfaceBright = Color(0xFF282828),
 
-    outline = Color(0xFF3C3E44),
-    outlineVariant = Color(0xFF1A1B20)
+    outline = Color(0xFF2C2C2C),
+    outlineVariant = Color(0xFF1A1A1A)
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

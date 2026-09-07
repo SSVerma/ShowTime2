@@ -23,12 +23,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -172,16 +173,16 @@ fun ProPaywallScreen(
                     modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)
                 )
                 FeatureHighlightRow(
-                    icon = Icons.Rounded.Star,
-                    title = stringResource(R.string.pro_feature_icons),
-                    subtitle = stringResource(R.string.pro_feature_icons_desc)
+                    icon = Icons.Rounded.AutoAwesome,
+                    title = stringResource(R.string.pro_feature_analytics),
+                    subtitle = stringResource(R.string.pro_feature_analytics_desc)
                 )
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
                     modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)
                 )
                 FeatureHighlightRow(
-                    icon = Icons.Rounded.Sync,
+                    icon = Icons.Rounded.CloudSync,
                     title = stringResource(R.string.pro_feature_sync),
                     subtitle = stringResource(R.string.pro_feature_sync_desc)
                 )

@@ -675,7 +675,7 @@ private fun SettingsNavGroup(
             onClick = onOpenBackup
         )
 
-        if (isMockTraktEnabled || traktAuthState is TraktAuthState.Connected) {
+        if (BuildConfig.DEBUG && (isMockTraktEnabled || traktAuthState is TraktAuthState.Connected)) {
             SettingsNavTile(
                 title = stringResource(R.string.trakt_cloud_sync),
                 subtitle = when (traktAuthState) {
