@@ -319,4 +319,9 @@
     <string name="challenges_search_item_added">Added</string>
     <string name="challenges_search_item_add">Add title</string>
     <string name="challenges_detail_default_title">Challenge</string>
+
+    <string name="challenges_clear_all_confirm_title">Clear All Titles?</string>
+    <string name="challenges_clear_all_confirm_msg">Are you sure you want to remove all %1$d selected titles from this challenge?</string>
+    <string name="challenges_remove_title_confirm_title">Remove Title?</string>
+    <string name="challenges_remove_title_confirm_msg">Are you sure you want to remove \"%1$s\" from this challenge?</string>
 </resources>

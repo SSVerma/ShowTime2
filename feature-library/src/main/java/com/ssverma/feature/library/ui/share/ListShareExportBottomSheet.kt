@@ -112,12 +112,13 @@ fun ListShareExportBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             // Header
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -145,7 +146,9 @@ fun ListShareExportBottomSheet(
 
             // Format Selection Chips
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -174,7 +177,8 @@ fun ListShareExportBottomSheet(
                 text = stringResource(R.string.secret_share_theme_label),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -182,7 +186,8 @@ fun ListShareExportBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ThemeOptionChip(
@@ -253,7 +258,9 @@ fun ListShareExportBottomSheet(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -286,7 +293,9 @@ fun ListShareExportBottomSheet(
 
             // Primary Share Actions
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // Generate & Copy / Share Secret Link
@@ -411,7 +420,7 @@ fun ListShareExportBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {

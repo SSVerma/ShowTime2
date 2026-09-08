@@ -229,9 +229,7 @@ fun ChallengeDetailScreen(
                 LazyColumn(
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding() + 8.dp,
-                        bottom = innerPadding.calculateBottomPadding() + 24.dp,
-                        start = 16.dp,
-                        end = 16.dp
+                        bottom = innerPadding.calculateBottomPadding() + 24.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                     modifier = Modifier.fillMaxSize()
@@ -240,14 +238,16 @@ fun ChallengeDetailScreen(
                     item(key = "hero_progress") {
                         ChallengeDetailHeroCard(
                             progress = progress,
-                            isJoined = uiState.isJoined
+                            isJoined = uiState.isJoined,
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
 
                     // 2. Explainer Guide Banner: How to Make Progress
                     item(key = "guide_explainer") {
                         ChallengeProgressGuideCard(
-                            hasMediaItems = progress.challenge.targetMediaItems.isNotEmpty()
+                            hasMediaItems = progress.challenge.targetMediaItems.isNotEmpty(),
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
 
@@ -283,7 +283,8 @@ fun ChallengeDetailScreen(
                                 },
                                 onLogClick = {
                                     viewModel.openLogDialog(item)
-                                }
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
                     }
@@ -586,6 +587,7 @@ private fun ChallengeFilterRow(
         modifier = modifier
             .fillMaxWidth()
             .horizontalScroll(scrollState)
+            .padding(horizontal = 16.dp)
     ) {
         FilterChip(
             selected = selectedIndex == 0,

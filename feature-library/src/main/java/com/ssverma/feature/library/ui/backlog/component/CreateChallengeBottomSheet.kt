@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,7 +27,9 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -38,6 +41,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -87,6 +91,9 @@ fun CreateChallengeBottomSheet(
     var mediaTypeFilter by remember { mutableStateOf(ChallengeMediaTypeFilter.ALL) }
     var targetCount by remember { mutableFloatStateOf(25f) }
 
+    var showClearAllConfirmation by remember { mutableStateOf(false) }
+    var itemPendingRemoval by remember { mutableStateOf<ChallengeMediaItem?>(null) }
+
     ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -96,7 +103,6 @@ fun CreateChallengeBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
                 .navigationBarsPadding()
                 .imePadding()
                 .padding(bottom = 24.dp)
@@ -104,7 +110,9 @@ fun CreateChallengeBottomSheet(
         ) {
             // Header Row (Standard ShowTime Sheet header, no oversized emoji)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -141,7 +149,9 @@ fun CreateChallengeBottomSheet(
                 placeholder = { Text(stringResource(R.string.challenges_create_goal_name_placeholder)) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -154,7 +164,9 @@ fun CreateChallengeBottomSheet(
                 placeholder = { Text(stringResource(R.string.challenges_create_goal_desc_placeholder)) },
                 maxLines = 2,
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -164,14 +176,18 @@ fun CreateChallengeBottomSheet(
                 text = stringResource(R.string.challenges_create_goal_media_focus),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
             ) {
                 FilterChip(
                     selected = mediaTypeFilter == ChallengeMediaTypeFilter.ALL,
@@ -227,7 +243,8 @@ fun CreateChallengeBottomSheet(
                 text = stringResource(R.string.challenges_create_goal_titles_label),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -235,7 +252,8 @@ fun CreateChallengeBottomSheet(
             Text(
                 text = stringResource(R.string.challenges_create_goal_titles_desc),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -251,6 +269,7 @@ fun CreateChallengeBottomSheet(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
                     .height(48.dp)
             ) {
                 Row(
@@ -289,7 +308,9 @@ fun CreateChallengeBottomSheet(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -307,7 +328,7 @@ fun CreateChallengeBottomSheet(
                         text = stringResource(R.string.challenges_create_goal_clear_all),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.clickable { onClearSelectedTitles() }
+                        modifier = Modifier.clickable { showClearAllConfirmation = true }
                     )
                 }
 
@@ -315,7 +336,7 @@ fun CreateChallengeBottomSheet(
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 2.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     itemsIndexed(
@@ -366,7 +387,7 @@ fun CreateChallengeBottomSheet(
                                 }
 
                                 IconButton(
-                                    onClick = { onRemoveSelectedTitle(item) },
+                                    onClick = { itemPendingRemoval = item },
                                     modifier = Modifier.size(22.dp)
                                 ) {
                                     Icon(
@@ -387,7 +408,9 @@ fun CreateChallengeBottomSheet(
             // Target Count Slider or Summary
             val effectiveTargetCount = maxOf(targetCount.toInt(), selectedTitles.size, 1)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -415,7 +438,9 @@ fun CreateChallengeBottomSheet(
                     onValueChange = { targetCount = it },
                     valueRange = 5f..100f,
                     steps = 18,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
                 )
             }
 
@@ -436,7 +461,9 @@ fun CreateChallengeBottomSheet(
                 },
                 enabled = title.isNotBlank(),
                 shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             ) {
                 Text(
                     text = if (selectedTitles.isNotEmpty()) {
@@ -453,5 +480,88 @@ fun CreateChallengeBottomSheet(
                 )
             }
         }
+    }
+
+    // Clear All Confirmation Dialog
+    if (showClearAllConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showClearAllConfirmation = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(stringResource(R.string.challenges_clear_all_confirm_title))
+            },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.challenges_clear_all_confirm_msg,
+                        selectedTitles.size
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showClearAllConfirmation = false
+                        onClearSelectedTitles()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(stringResource(R.string.challenges_create_goal_clear_all))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearAllConfirmation = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Remove Single Title Confirmation Dialog
+    itemPendingRemoval?.let { item ->
+        AlertDialog(
+            onDismissRequest = { itemPendingRemoval = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(stringResource(R.string.challenges_remove_title_confirm_title))
+            },
+            text = {
+                Text(stringResource(R.string.challenges_remove_title_confirm_msg, item.title))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        itemPendingRemoval = null
+                        onRemoveSelectedTitle(item)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(stringResource(R.string.remove_item))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { itemPendingRemoval = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }

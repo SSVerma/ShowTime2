@@ -2143,15 +2143,15 @@ private fun CustomListDetailSheet(
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.spacing.medium)
+            modifier = Modifier.fillMaxWidth()
         ) {
             // Header Info Row
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.spacing.medium)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(
@@ -2318,6 +2318,7 @@ private fun CustomListDetailSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = MaterialTheme.spacing.medium)
             ) {
                 if (customList.isPublic) {
                     val context = androidx.compose.ui.platform.LocalContext.current
@@ -2461,7 +2462,10 @@ private fun CustomListDetailSheet(
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = MaterialTheme.spacing.medium),
+                modifier = Modifier.padding(
+                    vertical = MaterialTheme.spacing.medium,
+                    horizontal = MaterialTheme.spacing.medium
+                ),
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
@@ -2546,6 +2550,7 @@ private fun CustomListDetailSheet(
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                    contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f, fill = false)

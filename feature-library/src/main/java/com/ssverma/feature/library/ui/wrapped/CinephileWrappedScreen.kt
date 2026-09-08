@@ -148,9 +148,7 @@ fun CinephileWrappedScreen(
                 state = listState,
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + 4.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 24.dp,
-                    start = 16.dp,
-                    end = 16.dp
+                    bottom = innerPadding.calculateBottomPadding() + 24.dp
                 ),
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -165,6 +163,7 @@ fun CinephileWrappedScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp)
                             .padding(bottom = 16.dp)
                     ) {
                         uiState.availableYears.forEach { year ->
@@ -203,7 +202,9 @@ fun CinephileWrappedScreen(
                     WrappedHeroCard(
                         summary = summary,
                         onShareClick = onShareWrapped,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp)
                     )
                 }
 
@@ -218,7 +219,9 @@ fun CinephileWrappedScreen(
                                 onOpenTvShowDetails(entry.mediaId)
                             }
                         },
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp)
                     )
                 }
 
@@ -227,7 +230,9 @@ fun CinephileWrappedScreen(
                     WrappedMonthlyTimeline(
                         monthlyDistribution = summary.monthlyDistribution,
                         mostActiveMonth = summary.mostActiveMonth,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp)
                     )
                 }
 
@@ -238,7 +243,9 @@ fun CinephileWrappedScreen(
                         onMilestoneClick = { milestone ->
                             viewModel.onSelectMilestone(milestone)
                         },
-                        modifier = Modifier.padding(bottom = 32.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 32.dp)
                     )
                 }
             }

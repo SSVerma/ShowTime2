@@ -161,9 +161,7 @@ fun CinemaDiaryScreen(
                     state = listState,
                     contentPadding = PaddingValues(
                         top = paddingValues.calculateTopPadding() + 4.dp,
-                        bottom = paddingValues.calculateBottomPadding() + 24.dp,
-                        start = 16.dp,
-                        end = 16.dp
+                        bottom = paddingValues.calculateBottomPadding() + 24.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
@@ -175,7 +173,8 @@ fun CinemaDiaryScreen(
                                 stats = uiState.stats,
                                 onOpenTasteProfile = onOpenTasteProfile,
                                 onOpenWrapped = onOpenWrapped,
-                                onOpenChallenges = onOpenChallenges
+                                onOpenChallenges = onOpenChallenges,
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
                     }
@@ -185,7 +184,7 @@ fun CinemaDiaryScreen(
                         DiaryFilterRow(
                             activeFilter = uiState.activeFilter,
                             onFilterSelected = viewModel::setFilter,
-                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
                         )
                     }
 
@@ -194,7 +193,8 @@ fun CinemaDiaryScreen(
                         item(key = "diary_empty_view", contentType = "empty") {
                             DiaryEmptyView(
                                 activeFilter = uiState.activeFilter,
-                                onLogClick = { viewModel.onOpenLogSearch() }
+                                onLogClick = { viewModel.onOpenLogSearch() },
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
                     } else {
@@ -207,7 +207,12 @@ fun CinemaDiaryScreen(
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
                                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 8.dp,
+                                        bottom = 4.dp
+                                    )
                                 ) {
                                     Text(
                                         text = group.monthYearLabel.uppercase(),
@@ -238,7 +243,8 @@ fun CinemaDiaryScreen(
                                     },
                                     onEdit = { viewModel.onEditEntry(entry) },
                                     onDelete = { viewModel.onRequestDeleteEntry(entry) },
-                                    onShare = { DiaryShareHelper.shareDiaryEntry(context, entry) }
+                                    onShare = { DiaryShareHelper.shareDiaryEntry(context, entry) },
+                                    modifier = Modifier.padding(horizontal = 16.dp)
                                 )
                             }
                         }
