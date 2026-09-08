@@ -19,8 +19,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,14 +31,17 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -128,6 +133,24 @@ fun CinemaReceiptScreen(
                     colors = FilterChipDefaults.filterChipColors()
                 )
                 FilterChip(
+                    selected = uiState.selectedSource == ReceiptSource.THIS_MONTH && uiState.selectedCustomList == null,
+                    onClick = { viewModel.selectSource(ReceiptSource.THIS_MONTH) },
+                    label = { Text(stringResource(R.string.receipt_period_this_month)) },
+                    colors = FilterChipDefaults.filterChipColors()
+                )
+                FilterChip(
+                    selected = uiState.selectedSource == ReceiptSource.THIS_YEAR && uiState.selectedCustomList == null,
+                    onClick = { viewModel.selectSource(ReceiptSource.THIS_YEAR) },
+                    label = { Text(stringResource(R.string.receipt_period_this_year)) },
+                    colors = FilterChipDefaults.filterChipColors()
+                )
+                FilterChip(
+                    selected = uiState.selectedSource == ReceiptSource.LAST_90_DAYS && uiState.selectedCustomList == null,
+                    onClick = { viewModel.selectSource(ReceiptSource.LAST_90_DAYS) },
+                    label = { Text(stringResource(R.string.receipt_period_last_90_days)) },
+                    colors = FilterChipDefaults.filterChipColors()
+                )
+                FilterChip(
                     selected = uiState.selectedSource == ReceiptSource.FAVORITES && uiState.selectedCustomList == null,
                     onClick = { viewModel.selectSource(ReceiptSource.FAVORITES) },
                     label = { Text(stringResource(R.string.receipt_period_favorites)) },
@@ -213,36 +236,50 @@ fun CinemaReceiptScreen(
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-            // Watermark-Free Export Toggle
-            Row(
+            // Personalize Ticket Section
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainer,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = MaterialTheme.spacing.medium, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = MaterialTheme.spacing.medium, vertical = 4.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.receipt_watermark_free_title),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = if (uiState.isWatermarkFree) {
-                            stringResource(R.string.receipt_watermark_free_active)
-                        } else {
-                            stringResource(R.string.receipt_watermark_free_hint)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = uiState.theaterName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = uiState.collectorName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.setEditPersonalizationOpen(true) },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Edit,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.receipt_personalize_ticket),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Switch(
-                    checked = uiState.isWatermarkFree,
-                    onCheckedChange = { viewModel.toggleWatermarkFree() }
-                )
             }
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
@@ -264,7 +301,7 @@ fun CinemaReceiptScreen(
                     CinemaReceiptView(
                         snapshot = snapshot,
                         style = uiState.selectedStyle,
-                        showWatermark = !uiState.isWatermarkFree,
+                        showWatermark = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -281,28 +318,30 @@ fun CinemaReceiptScreen(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            coroutineScope.launch {
-                                viewModel.setExporting(true)
-                                try {
-                                    val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                    val success = ShareImageHelper.saveBitmapToGallery(
-                                        context = context,
-                                        bitmap = bitmap,
-                                        title = "ShowTime_Receipt_${
-                                            snapshot.title.replace(
-                                                " ",
-                                                "_"
-                                            )
-                                        }"
-                                    )
-                                    Toast.makeText(
-                                        context,
-                                        if (success) saveSuccess else saveFailed,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } catch (_: Exception) {
-                                } finally {
-                                    viewModel.setExporting(false)
+                            viewModel.attemptExport {
+                                coroutineScope.launch {
+                                    viewModel.setExporting(true)
+                                    try {
+                                        val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+                                        val success = ShareImageHelper.saveBitmapToGallery(
+                                            context = context,
+                                            bitmap = bitmap,
+                                            title = "ShowTime_Receipt_${
+                                                snapshot.title.replace(
+                                                    " ",
+                                                    "_"
+                                                )
+                                            }"
+                                        )
+                                        Toast.makeText(
+                                            context,
+                                            if (success) saveSuccess else saveFailed,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } catch (_: Exception) {
+                                    } finally {
+                                        viewModel.setExporting(false)
+                                    }
                                 }
                             }
                         },
@@ -323,18 +362,20 @@ fun CinemaReceiptScreen(
 
                     Button(
                         onClick = {
-                            coroutineScope.launch {
-                                viewModel.setExporting(true)
-                                try {
-                                    val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                    ShareImageHelper.shareBitmap(
-                                        context = context,
-                                        bitmap = bitmap,
-                                        chooserTitle = shareChooserTitle
-                                    )
-                                } catch (_: Exception) {
-                                } finally {
-                                    viewModel.setExporting(false)
+                            viewModel.attemptExport {
+                                coroutineScope.launch {
+                                    viewModel.setExporting(true)
+                                    try {
+                                        val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+                                        ShareImageHelper.shareBitmap(
+                                            context = context,
+                                            bitmap = bitmap,
+                                            chooserTitle = shareChooserTitle
+                                        )
+                                    } catch (_: Exception) {
+                                    } finally {
+                                        viewModel.setExporting(false)
+                                    }
                                 }
                             }
                         },
@@ -412,6 +453,53 @@ fun CinemaReceiptScreen(
             onDismissRequest = { viewModel.dismissGate() },
             isProPaymentEnabled = uiState.isProPaymentEnabled,
             icon = Icons.Rounded.Star
+        )
+    }
+
+    if (uiState.isEditPersonalizationOpen) {
+        var tempTheater by remember { mutableStateOf(uiState.theaterName) }
+        var tempCollector by remember { mutableStateOf(uiState.collectorName) }
+
+        AlertDialog(
+            onDismissRequest = { viewModel.setEditPersonalizationOpen(false) },
+            title = { Text(stringResource(R.string.receipt_personalize_ticket)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = stringResource(R.string.receipt_personalize_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = tempTheater,
+                        onValueChange = { tempTheater = it },
+                        label = { Text(stringResource(R.string.receipt_theater_name_label)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = tempCollector,
+                        onValueChange = { tempCollector = it },
+                        label = { Text(stringResource(R.string.receipt_collector_name_label)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updatePersonalization(tempTheater, tempCollector)
+                    }
+                ) {
+                    Text(stringResource(R.string.receipt_save_personalization))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { viewModel.setEditPersonalizationOpen(false) }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
         )
     }
 }

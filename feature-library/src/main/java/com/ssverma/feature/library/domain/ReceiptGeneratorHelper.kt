@@ -13,6 +13,7 @@ object ReceiptGeneratorHelper {
         title: String,
         collectorName: String,
         items: List<ReceiptItem>,
+        theaterName: String = "SHOWTIME CINEMA",
         date: Date = Date()
     ): ReceiptSnapshot {
         val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
@@ -41,13 +42,15 @@ object ReceiptGeneratorHelper {
         val topGenre = genreCounts.maxByOrNull { it.value }?.key?.uppercase(Locale.US) ?: "CINEMA"
 
         val receiptCode = SimpleDateFormat("yyyyMMdd", Locale.US).format(date)
-        val hash = abs((items.hashCode() + collectorName.hashCode()) % 9000) + 1000
+        val hash =
+            abs((items.hashCode() + collectorName.hashCode() + theaterName.hashCode()) % 9000) + 1000
         val receiptNumber = "ST-$receiptCode-$hash"
         val barcodeNumber = "978${abs(items.hashCode() % 1000000000L).toString().padStart(9, '0')}"
 
         return ReceiptSnapshot(
             title = title,
             collectorName = collectorName.ifBlank { "SHOWTIME CINEPHILE" }.uppercase(Locale.US),
+            theaterName = theaterName.ifBlank { "SHOWTIME CINEMA" }.uppercase(Locale.US),
             formattedDate = formattedDate,
             receiptNumber = receiptNumber,
             items = items,

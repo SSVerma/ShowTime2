@@ -8,9 +8,11 @@ enum class ReceiptStyle(val isProOnly: Boolean = false) {
 
 enum class ReceiptSource {
     HISTORY,
+    THIS_MONTH,
+    THIS_YEAR,
+    LAST_90_DAYS,
     FAVORITES,
-    WATCHLIST,
-    THIS_MONTH
+    WATCHLIST
 }
 
 data class ReceiptItem(
@@ -26,6 +28,7 @@ data class ReceiptItem(
 data class ReceiptSnapshot(
     val title: String,
     val collectorName: String,
+    val theaterName: String = "SHOWTIME CINEMA",
     val formattedDate: String,
     val receiptNumber: String,
     val items: List<ReceiptItem>,

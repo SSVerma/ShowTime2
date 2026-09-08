@@ -75,9 +75,16 @@
     <string name="receipt_style_cyberpunk">Cyberpunk Neon</string>
     <string name="receipt_source">Source</string>
     <string name="receipt_period_history">Watch History</string>
+    <string name="receipt_period_this_month">This Month</string>
+    <string name="receipt_period_this_year">This Year</string>
+    <string name="receipt_period_last_90_days">Last 90 Days</string>
     <string name="receipt_period_favorites">Favorites</string>
     <string name="receipt_period_watchlist">Watchlist</string>
-    <string name="receipt_period_this_month">This Month</string>
+    <string name="receipt_personalize_ticket">Personalize Ticket</string>
+    <string name="receipt_personalize_desc">Customize your cinema name and ticket holder handle</string>
+    <string name="receipt_theater_name_label">Cinema / Screening Room</string>
+    <string name="receipt_collector_name_label">Ticket Holder / Cinephile</string>
+    <string name="receipt_save_personalization">Apply</string>
     <string name="receipt_share">Share</string>
     <string name="receipt_save">Save Image</string>
     <string name="receipt_total_movies">TOTAL TITLES</string>

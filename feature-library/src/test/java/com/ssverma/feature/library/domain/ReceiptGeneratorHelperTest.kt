@@ -81,5 +81,18 @@ class ReceiptGeneratorHelperTest {
         assertThat(snapshot.totalMinutes).isEqualTo(115) // fallback default
         assertThat(snapshot.topGenre).isEqualTo("CINEMA") // fallback genre
         assertThat(snapshot.collectorName).isEqualTo("SHOWTIME CINEPHILE")
+        assertThat(snapshot.theaterName).isEqualTo("SHOWTIME CINEMA")
+    }
+
+    @Test
+    fun `generateSnapshot uses custom theaterName when provided`() {
+        val snapshot = ReceiptGeneratorHelper.generateSnapshot(
+            title = "Nolan Festival",
+            collectorName = "Shyam",
+            items = emptyList(),
+            theaterName = "Shyam's Midnight Cinema"
+        )
+        assertThat(snapshot.theaterName).isEqualTo("SHYAM'S MIDNIGHT CINEMA")
+        assertThat(snapshot.collectorName).isEqualTo("SHYAM")
     }
 }

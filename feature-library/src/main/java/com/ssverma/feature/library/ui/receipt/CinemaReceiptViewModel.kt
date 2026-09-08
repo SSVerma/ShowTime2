@@ -12,6 +12,7 @@ import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSnapshot
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
+import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
@@ -36,10 +37,12 @@ data class CinemaReceiptUiState(
     val isExporting: Boolean = false,
     val isProActive: Boolean = false,
     val isPassActive: Boolean = false,
-    val isWatermarkFree: Boolean = false,
     val isProPaymentEnabled: Boolean = true,
     val isGateOpen: Boolean = false,
-    val pendingStyle: ReceiptStyle? = null
+    val pendingStyle: ReceiptStyle? = null,
+    val theaterName: String = "SHOWTIME CINEMA",
+    val collectorName: String = "SHOWTIME CINEPHILE",
+    val isEditPersonalizationOpen: Boolean = false
 )
 
 @HiltViewModel
@@ -47,7 +50,8 @@ class CinemaReceiptViewModel @Inject constructor(
     libraryRepository: LibraryRepository,
     private val billingRepository: BillingRepository,
     private val rewardManager: RewardManager,
-    private val rewardedAdManager: RewardedAdManager
+    private val rewardedAdManager: RewardedAdManager,
+    backupRepository: BackupRepository
 ) : ViewModel() {
 
     private val _selectedStyle = MutableStateFlow(ReceiptStyle.THERMAL)
@@ -56,12 +60,23 @@ class CinemaReceiptViewModel @Inject constructor(
     private val _isExporting = MutableStateFlow(false)
     private val _isProActive = MutableStateFlow(false)
     private val _isPassActive = MutableStateFlow(false)
-    private val _isWatermarkFree = MutableStateFlow(false)
     private val _isProPaymentEnabled = MutableStateFlow(true)
     private val _isGateOpen = MutableStateFlow(false)
     private val _pendingStyle = MutableStateFlow<ReceiptStyle?>(null)
+    private val _theaterName = MutableStateFlow("SHOWTIME CINEMA")
+    private val _collectorName = MutableStateFlow("SHOWTIME CINEPHILE")
+    private val _isEditPersonalizationOpen = MutableStateFlow(false)
 
     init {
+        viewModelScope.launch {
+            backupRepository.googleUser.collectLatest { googleUser ->
+                val name = googleUser?.displayName?.ifBlank { null }
+                if (name != null && _collectorName.value == "SHOWTIME CINEPHILE") {
+                    _collectorName.value = name
+                }
+            }
+        }
+
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
@@ -71,9 +86,6 @@ class CinemaReceiptViewModel @Inject constructor(
             }.collectLatest { (isPro, isPass) ->
                 _isProActive.value = isPro
                 _isPassActive.value = isPass
-                if (isPro || isPass) {
-                    _isWatermarkFree.value = true
-                }
             }
         }
 
@@ -108,18 +120,23 @@ class CinemaReceiptViewModel @Inject constructor(
         },
         combine(
             _isPassActive,
-            _isWatermarkFree,
             _isProPaymentEnabled,
             _isGateOpen,
             _pendingStyle
-        ) { isPass, isWatermarkFree, isProPaymentEnabled, isGateOpen, pendingStyle ->
+        ) { isPass, isProPaymentEnabled, isGateOpen, pendingStyle ->
             ReceiptControlState2(
                 isPass,
-                isWatermarkFree,
                 isProPaymentEnabled,
                 isGateOpen,
                 pendingStyle
             )
+        },
+        combine(
+            _theaterName,
+            _collectorName,
+            _isEditPersonalizationOpen
+        ) { theaterName, collectorName, isEditOpen ->
+            ReceiptPersonalizationState(theaterName, collectorName, isEditOpen)
         },
         combine(
             historyItems,
@@ -129,7 +146,7 @@ class CinemaReceiptViewModel @Inject constructor(
         ) { history, favorites, watchlist, lists ->
             ReceiptMediaState(history, favorites, watchlist, lists)
         }
-    ) { ctrl1, ctrl2, media ->
+    ) { ctrl1, ctrl2, personal, media ->
         val snapshot = if (ctrl1.customList != null) {
             val mappedItems = ctrl1.customList.items.map { item ->
                 ReceiptItem(
@@ -142,7 +159,8 @@ class CinemaReceiptViewModel @Inject constructor(
             }
             ReceiptGeneratorHelper.generateSnapshot(
                 title = ctrl1.customList.title,
-                collectorName = "ShowTime Cinephile",
+                collectorName = personal.collectorName,
+                theaterName = personal.theaterName,
                 items = mappedItems
             )
         } else {
@@ -154,12 +172,24 @@ class CinemaReceiptViewModel @Inject constructor(
                     val oneMonthAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
                     media.history.filter { it.addedAt >= oneMonthAgo }
                 }
+
+                ReceiptSource.THIS_YEAR -> {
+                    val oneYearAgo = System.currentTimeMillis() - (365L * 24 * 60 * 60 * 1000)
+                    media.history.filter { it.addedAt >= oneYearAgo }
+                }
+
+                ReceiptSource.LAST_90_DAYS -> {
+                    val ninetyDaysAgo = System.currentTimeMillis() - (90L * 24 * 60 * 60 * 1000)
+                    media.history.filter { it.addedAt >= ninetyDaysAgo }
+                }
             }
             val title = when (ctrl1.source) {
                 ReceiptSource.HISTORY -> "Watch History"
                 ReceiptSource.FAVORITES -> "Favorites"
                 ReceiptSource.WATCHLIST -> "Watchlist"
                 ReceiptSource.THIS_MONTH -> "This Month"
+                ReceiptSource.THIS_YEAR -> "This Year"
+                ReceiptSource.LAST_90_DAYS -> "Last 90 Days"
             }
             val mappedItems = itemsToMap.map { item ->
                 ReceiptItem(
@@ -172,7 +202,8 @@ class CinemaReceiptViewModel @Inject constructor(
             }
             ReceiptGeneratorHelper.generateSnapshot(
                 title = title,
-                collectorName = "ShowTime Cinephile",
+                collectorName = personal.collectorName,
+                theaterName = personal.theaterName,
                 items = mappedItems
             )
         }
@@ -186,10 +217,12 @@ class CinemaReceiptViewModel @Inject constructor(
             isExporting = ctrl1.isExporting,
             isProActive = ctrl1.isPro,
             isPassActive = ctrl2.isPass,
-            isWatermarkFree = ctrl2.isWatermarkFree,
             isProPaymentEnabled = ctrl2.isProPaymentEnabled,
             isGateOpen = ctrl2.isGateOpen,
-            pendingStyle = ctrl2.pendingStyle
+            pendingStyle = ctrl2.pendingStyle,
+            theaterName = personal.theaterName,
+            collectorName = personal.collectorName,
+            isEditPersonalizationOpen = personal.isEditOpen
         )
     }.stateIn(
         scope = viewModelScope,
@@ -198,22 +231,7 @@ class CinemaReceiptViewModel @Inject constructor(
     )
 
     fun selectStyle(style: ReceiptStyle) {
-        val isUnlocked = _isProActive.value || _isPassActive.value
-        if (style.isProOnly && !isUnlocked) {
-            _pendingStyle.value = style
-            _isGateOpen.value = true
-        } else {
-            _selectedStyle.update { style }
-        }
-    }
-
-    fun toggleWatermarkFree() {
-        val isUnlocked = _isProActive.value || _isPassActive.value
-        if (!isUnlocked) {
-            _isGateOpen.value = true
-        } else {
-            _isWatermarkFree.update { !it }
-        }
+        _selectedStyle.update { style }
     }
 
     fun dismissGate() {
@@ -221,11 +239,22 @@ class CinemaReceiptViewModel @Inject constructor(
         _pendingStyle.value = null
     }
 
+    fun attemptExport(onAllowed: () -> Unit) {
+        val currentStyle = _selectedStyle.value
+        val isUnlocked = _isProActive.value || _isPassActive.value
+        if (currentStyle.isProOnly && !isUnlocked) {
+            _pendingStyle.value = currentStyle
+            _isGateOpen.value = true
+        } else {
+            onAllowed()
+        }
+    }
+
     fun watchAdForWatermarkFreePass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
                 rewardManager.grantRewardPass(RewardPassType.WATERMARK_FREE_RECEIPT)
-                _isWatermarkFree.value = true
+                _isPassActive.value = true
                 val pending = _pendingStyle.value
                 if (pending != null) {
                     _selectedStyle.update { pending }
@@ -234,6 +263,16 @@ class CinemaReceiptViewModel @Inject constructor(
                 _isGateOpen.value = false
             }
         }
+    }
+
+    fun updatePersonalization(theaterName: String, collectorName: String) {
+        _theaterName.update { theaterName.ifBlank { "SHOWTIME CINEMA" } }
+        _collectorName.update { collectorName.ifBlank { "SHOWTIME CINEPHILE" } }
+        _isEditPersonalizationOpen.update { false }
+    }
+
+    fun setEditPersonalizationOpen(isOpen: Boolean) {
+        _isEditPersonalizationOpen.update { isOpen }
     }
 
     fun selectSource(source: ReceiptSource) {
@@ -260,10 +299,15 @@ private data class ReceiptControlState1(
 
 private data class ReceiptControlState2(
     val isPass: Boolean,
-    val isWatermarkFree: Boolean,
     val isProPaymentEnabled: Boolean,
     val isGateOpen: Boolean,
     val pendingStyle: ReceiptStyle?
+)
+
+private data class ReceiptPersonalizationState(
+    val theaterName: String,
+    val collectorName: String,
+    val isEditOpen: Boolean
 )
 
 private data class ReceiptMediaState(

@@ -97,7 +97,7 @@ private fun ThermalReceiptCard(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = stringResource(R.string.receipt_showtime_cinema),
+            text = snapshot.theaterName,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
@@ -353,6 +353,17 @@ private fun GoldenVipPassCard(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
+            text = snapshot.theaterName,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.5.sp,
+            color = goldMuted,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
             text = snapshot.collectorName,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
@@ -406,17 +417,18 @@ private fun GoldenVipPassCard(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Featured Titles list
+        // Titles list
         Column(modifier = Modifier.fillMaxWidth()) {
-            snapshot.items.take(8).forEachIndexed { idx, item ->
+            snapshot.items.take(12).forEach { item ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 2.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "• ${item.title}",
+                        text = "★ ${item.title}",
                         fontSize = 11.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -424,9 +436,11 @@ private fun GoldenVipPassCard(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "${item.runtimeMinutes} min",
-                        fontSize = 11.sp,
-                        color = goldMuted
+                        text = if (item.year.isNotBlank()) "${item.year}  ${item.runtimeMinutes}m" else "${item.runtimeMinutes}m",
+                        fontSize = 10.sp,
+                        color = goldMuted,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
             }
@@ -434,20 +448,16 @@ private fun GoldenVipPassCard(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Barcode & Stamp
+        DashedDivider(color = goldAccent.copy(alpha = 0.4f))
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Luxury Barcode Footer
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BarcodeCanvas(
-                barcodeNumber = snapshot.barcodeNumber,
-                color = goldAccent,
-                modifier = Modifier
-                    .width(160.dp)
-                    .height(30.dp)
-            )
-
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = Color.Transparent,
@@ -455,18 +465,27 @@ private fun GoldenVipPassCard(
             ) {
                 Text(
                     text = stringResource(R.string.receipt_admit_one),
-                    fontSize = 10.sp,
+                    fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp,
                     color = goldAccent,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }
+
+            BarcodeCanvas(
+                barcodeNumber = snapshot.barcodeNumber,
+                color = goldAccent,
+                modifier = Modifier
+                    .width(130.dp)
+                    .height(30.dp)
+            )
         }
 
         if (showWatermark) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "ShowTime App • VIP Cinephile Pass",
+                text = "ShowTime • Track & Share your Cinema Journey",
                 fontSize = 9.sp,
                 color = goldMuted.copy(alpha = 0.6f)
             )
@@ -493,10 +512,10 @@ private fun CyberpunkNeonCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(neonBg)
-            .border(1.5.dp, neonCyan.copy(alpha = 0.7f), RoundedCornerShape(16.dp))
-            .padding(20.dp),
+            .border(1.5.dp, neonCyan.copy(alpha = 0.8f), RoundedCornerShape(8.dp))
+            .padding(horizontal = 20.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
@@ -505,11 +524,11 @@ private fun CyberpunkNeonCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "⚡ SHOWTIME HUD",
+                text = "⚡ ${snapshot.theaterName}",
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                letterSpacing = 2.sp,
+                fontSize = 13.sp,
+                letterSpacing = 1.5.sp,
                 color = neonCyan
             )
             Surface(

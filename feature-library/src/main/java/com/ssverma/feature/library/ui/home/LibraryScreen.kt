@@ -259,12 +259,24 @@ fun LibraryScreen(
                     val oneMonthAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
                     historyItems.filter { it.addedAt >= oneMonthAgo }
                 }
+
+                ReceiptSource.THIS_YEAR -> {
+                    val oneYearAgo = System.currentTimeMillis() - (365L * 24 * 60 * 60 * 1000)
+                    historyItems.filter { it.addedAt >= oneYearAgo }
+                }
+
+                ReceiptSource.LAST_90_DAYS -> {
+                    val ninetyDaysAgo = System.currentTimeMillis() - (90L * 24 * 60 * 60 * 1000)
+                    historyItems.filter { it.addedAt >= ninetyDaysAgo }
+                }
             }
             val title = when (receiptSource) {
                 ReceiptSource.HISTORY -> "Watch History"
                 ReceiptSource.FAVORITES -> "Favorites"
                 ReceiptSource.WATCHLIST -> "Watchlist"
                 ReceiptSource.THIS_MONTH -> "This Month"
+                ReceiptSource.THIS_YEAR -> "This Year"
+                ReceiptSource.LAST_90_DAYS -> "Last 90 Days"
             }
             val mappedItems = itemsToMap.map { item ->
                 ReceiptItem(
