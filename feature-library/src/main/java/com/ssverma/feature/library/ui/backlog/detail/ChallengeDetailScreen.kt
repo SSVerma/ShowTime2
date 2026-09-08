@@ -139,6 +139,17 @@ fun ChallengeDetailScreen(
                                 )
                             }
                         }
+                        if (progress.challenge.isCustom) {
+                            IconButton(
+                                onClick = { viewModel.requestLeaveConfirmation() }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.DeleteOutline,
+                                    contentDescription = stringResource(R.string.challenges_delete_goal_btn),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -161,45 +172,55 @@ fun ChallengeDetailScreen(
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                     ) {
                         if (uiState.isJoined) {
-                            OutlinedButton(
-                                onClick = { viewModel.requestLeaveConfirmation() },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.error
-                                ),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.DeleteOutline,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = if (progress.challenge.isCustom) {
-                                        stringResource(R.string.challenges_delete_goal_btn)
-                                    } else {
-                                        stringResource(R.string.challenges_leave_action)
-                                    }
-                                )
-                            }
+                            if (progress.challenge.isCustom) {
+                                Button(
+                                    onClick = { isShareSheetOpen = true },
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Share,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(stringResource(R.string.challenges_share_card_btn))
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = { viewModel.requestLeaveConfirmation() },
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.error
+                                    ),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.DeleteOutline,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(stringResource(R.string.challenges_leave_action))
+                                }
 
-                            Button(
-                                onClick = { isShareSheetOpen = true },
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.weight(1.5f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Share,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(R.string.challenges_share_card_btn))
+                                Button(
+                                    onClick = { isShareSheetOpen = true },
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.weight(1.5f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Share,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(stringResource(R.string.challenges_share_card_btn))
+                                }
                             }
                         } else {
                             Button(
