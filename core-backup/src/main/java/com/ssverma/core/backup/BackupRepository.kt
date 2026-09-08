@@ -1,4 +1,4 @@
-package com.ssverma.shared.data.repository
+package com.ssverma.core.backup
 
 import android.app.Activity
 import com.ssverma.core.backup.model.BackupFrequency

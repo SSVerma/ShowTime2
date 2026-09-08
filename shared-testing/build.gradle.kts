@@ -12,4 +12,5 @@ dependencies {
     api(projects.sharedDomain)
     api(projects.sharedData)
     api(projects.sharedUi)
+    api(projects.coreBackup)
 }

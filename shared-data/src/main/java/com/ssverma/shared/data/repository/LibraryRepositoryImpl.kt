@@ -2,9 +2,7 @@ package com.ssverma.shared.data.repository
 
 import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.CustomListWithItems
-import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
-import com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao
 import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
 import com.ssverma.shared.data.local.db.entity.CustomListEntity
@@ -32,8 +30,6 @@ class LibraryRepositoryImpl @Inject constructor(
     private val watchlistDao: WatchlistDao,
     private val watchHistoryDao: WatchHistoryDao,
     private val customListDao: CustomListDao,
-    private val episodeWatchHistoryDao: EpisodeWatchHistoryDao,
-    private val showWatchProgressDao: ShowWatchProgressDao,
     private val widgetSyncNotifier: WidgetSyncNotifier? = null
 ) : LibraryRepository {
 
@@ -217,8 +213,6 @@ class LibraryRepositoryImpl @Inject constructor(
         watchHistoryDao.clearHistory()
         customListDao.clearAllListItems()
         customListDao.clearAllLists()
-        episodeWatchHistoryDao.clearAll()
-        showWatchProgressDao.clearAll()
         widgetSyncNotifier?.notifyWidgetDataChanged()
     }
 

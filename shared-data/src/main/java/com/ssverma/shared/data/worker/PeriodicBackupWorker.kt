@@ -8,17 +8,31 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.ssverma.shared.data.repository.BackupRepository
+import com.ssverma.core.backup.BackupRepository
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface BackupWorkerEntryPoint {
+    fun backupRepository(): BackupRepository
+}
 
 class PeriodicBackupWorker(
     appContext: Context,
-    workerParams: WorkerParameters,
-    private val backupRepository: BackupRepository
+    workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         return try {
+            val entryPoint = EntryPointAccessors.fromApplication(
+                applicationContext,
+                BackupWorkerEntryPoint::class.java
+            )
+            val backupRepository = entryPoint.backupRepository()
             val result = backupRepository.backupNow()
             if (result.isSuccess) {
                 Result.success()

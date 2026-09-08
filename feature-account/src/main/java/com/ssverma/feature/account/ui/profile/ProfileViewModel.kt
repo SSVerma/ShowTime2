@@ -18,7 +18,7 @@ import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthState
 import com.ssverma.feature.auth.domain.sessionIdOrNull
-import com.ssverma.shared.data.repository.BackupRepository
+import com.ssverma.core.backup.BackupRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.repository.AppConfigRepository

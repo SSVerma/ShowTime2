@@ -5,8 +5,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
+import com.ssverma.core.backup.BackupRepository
 import com.ssverma.core.di.AppScoped
-import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language

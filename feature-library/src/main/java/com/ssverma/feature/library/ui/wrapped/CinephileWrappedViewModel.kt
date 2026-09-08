@@ -7,8 +7,8 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.ads.quota.RewardManager
 import com.ssverma.core.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.core.backup.BackupRepository
 import com.ssverma.feature.library.ui.wrapped.component.WrappedStoryStyle
-import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
 import com.ssverma.shared.domain.usecase.stats.GetCinephileWrappedUseCase

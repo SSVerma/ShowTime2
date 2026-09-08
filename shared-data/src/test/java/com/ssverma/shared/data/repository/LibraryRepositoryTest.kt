@@ -19,10 +19,6 @@ class LibraryRepositoryTest {
     private val mockWatchlistDao: WatchlistDao = mockk(relaxed = true)
     private val mockWatchHistoryDao: WatchHistoryDao = mockk(relaxed = true)
     private val mockCustomListDao: CustomListDao = mockk(relaxed = true)
-    private val mockEpisodeWatchHistoryDao: com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao =
-        mockk(relaxed = true)
-    private val mockShowWatchProgressDao: com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao =
-        mockk(relaxed = true)
 
     private lateinit var repository: LibraryRepositoryImpl
 
@@ -32,9 +28,7 @@ class LibraryRepositoryTest {
             favoriteDao = mockFavoriteDao,
             watchlistDao = mockWatchlistDao,
             watchHistoryDao = mockWatchHistoryDao,
-            customListDao = mockCustomListDao,
-            episodeWatchHistoryDao = mockEpisodeWatchHistoryDao,
-            showWatchProgressDao = mockShowWatchProgressDao
+            customListDao = mockCustomListDao
         )
     }
 
@@ -156,7 +150,7 @@ class LibraryRepositoryTest {
     }
 
     @Test
-    fun `clearAllLibrary wipes all tables including episode history and up next progress`() =
+    fun `clearAllLibrary wipes all library tables`() =
         runTest {
             repository.clearAllLibrary()
 
@@ -165,7 +159,5 @@ class LibraryRepositoryTest {
             coVerify { mockWatchHistoryDao.clearHistory() }
             coVerify { mockCustomListDao.clearAllListItems() }
             coVerify { mockCustomListDao.clearAllLists() }
-            coVerify { mockEpisodeWatchHistoryDao.clearAll() }
-            coVerify { mockShowWatchProgressDao.clearAll() }
         }
 }

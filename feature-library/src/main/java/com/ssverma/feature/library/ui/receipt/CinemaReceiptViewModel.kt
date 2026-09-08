@@ -12,7 +12,7 @@ import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSnapshot
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
-import com.ssverma.shared.data.repository.BackupRepository
+import com.ssverma.core.backup.BackupRepository
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
