@@ -262,4 +262,34 @@
     <string name="secret_share_not_found">Secret list not found or link has expired.</string>
     <string name="secret_share_chooser_title">Share Secret List</string>
     <string name="secret_share_added_by">Added by %1$s</string>
+
+    <!-- Feature #6: Cinephile Challenges & Backlog -->
+    <string name="challenges_screen_title">Challenges &amp; Backlog</string>
+    <string name="challenges_active_section_title">Active Quests</string>
+    <string name="challenges_curated_section_title">Curated Challenges</string>
+    <string name="challenges_blindspots_section_title">Watchlist Blindspots</string>
+    <string name="challenges_next_badge">NEXT</string>
+    <string name="challenges_progress_completed">%1$d of %2$d completed</string>
+    <string name="challenges_join_cta">Join Challenge</string>
+    <string name="challenges_active_status">Active</string>
+    <string name="challenges_view_details">View Details</string>
+    <string name="challenges_explore_cta">Explore</string>
+    <string name="challenges_titles_count">%1$d titles</string>
+    <string name="challenges_create_custom_goal_cd">Create custom goal</string>
+    <string name="challenges_completed_label">Completed</string>
+    <string name="challenges_category_essential">Essential</string>
+    <string name="challenges_category_director">Director Spotlight</string>
+    <string name="challenges_category_decade">Decade Classics</string>
+    <string name="challenges_category_genre">Genre Sprint</string>
+    <string name="challenges_category_goal">Personal Goal</string>
+    <string name="challenges_join_dialog_title">Join Challenge?</string>
+    <string name="challenges_join_dialog_msg">Start tracking your progress for \"%1$s\". You can log titles via your Cinema Diary to complete this challenge.</string>
+    <string name="challenges_joined_snackbar">Joined \"%1$s\"!</string>
+    <string name="challenges_action_view">View</string>
+    <string name="challenges_action_cancel">Cancel</string>
+    <string name="challenges_intro_title">Cinema Challenges &amp; Goals</string>
+    <string name="challenges_intro_sprints_count">%1$d Curated Sprints Available</string>
+    <string name="challenges_intro_desc">Tackle iconic watchlist blindspots, join auteur director retrospectives, or set personal watch count goals for the year.</string>
+    <string name="challenges_intro_create_btn">Create Personal Goal</string>
+    <string name="challenges_blindspots_remove_cd">Remove blindspot</string>
 </resources>

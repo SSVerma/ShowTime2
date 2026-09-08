@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui.backlog
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,11 +42,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.feature.library.R
 import com.ssverma.feature.library.ui.backlog.component.ActiveChallengeCard
 import com.ssverma.feature.library.ui.backlog.component.BacklogHeroIntroCard
 import com.ssverma.feature.library.ui.backlog.component.BlindspotRadarSection
@@ -74,47 +75,16 @@ fun BacklogChallengeScreen(
     val coroutineScope = rememberCoroutineScope()
     var challengeToJoin by remember { mutableStateOf<CinephileChallenge?>(null) }
 
-    val handleShare: (String) -> Unit = { text ->
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, text)
-        }
-        context.startActivity(Intent.createChooser(intent, "Share Challenge Progress"))
-    }
-
     Scaffold(
         topBar = {
             ShowTimeTopAppBar(
-                title = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.EmojiEvents,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Backlog & Challenges",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Text(
-                            text = "Track goals, retrospectives & blindspots",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
+                title = stringResource(R.string.challenges_screen_title),
                 onBackPressed = onBackPressed,
                 actions = {
                     IconButton(onClick = viewModel::openCreateCustomGoalSheet) {
                         Icon(
                             imageVector = Icons.Rounded.Add,
-                            contentDescription = "Create Custom Goal"
+                            contentDescription = stringResource(R.string.challenges_create_custom_goal_cd)
                         )
                     }
                 },
@@ -145,8 +115,8 @@ fun BacklogChallengeScreen(
                 item(key = "active_challenges_section") {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Active Challenges (${uiState.activeChallenges.size})",
-                            style = MaterialTheme.typography.titleMedium,
+                            text = stringResource(R.string.challenges_active_section_title),
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -220,6 +190,9 @@ fun BacklogChallengeScreen(
 
     // Join Challenge Confirmation Dialog
     challengeToJoin?.let { challenge ->
+        val joinedMsg = stringResource(R.string.challenges_joined_snackbar, challenge.title)
+        val viewAction = stringResource(R.string.challenges_action_view)
+
         AlertDialog(
             onDismissRequest = { challengeToJoin = null },
             icon = {
@@ -230,11 +203,11 @@ fun BacklogChallengeScreen(
                 )
             },
             title = {
-                Text(text = "Join Challenge?")
+                Text(text = stringResource(R.string.challenges_join_dialog_title))
             },
             text = {
                 Text(
-                    text = "Start tracking your progress for \"${challenge.title}\". You can log titles via your Cinema Diary to complete this challenge."
+                    text = stringResource(R.string.challenges_join_dialog_msg, challenge.title)
                 )
             },
             confirmButton = {
@@ -245,8 +218,8 @@ fun BacklogChallengeScreen(
                         viewModel.joinCuratedChallenge(toJoin)
                         coroutineScope.launch {
                             val result = snackbarHostState.showSnackbar(
-                                message = "Joined \"${toJoin.title}\"!",
-                                actionLabel = "View",
+                                message = joinedMsg,
+                                actionLabel = viewAction,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
@@ -255,12 +228,12 @@ fun BacklogChallengeScreen(
                         }
                     }
                 ) {
-                    Text(text = "Join Challenge")
+                    Text(text = stringResource(R.string.challenges_join_cta))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { challengeToJoin = null }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(R.string.challenges_action_cancel))
                 }
             }
         )

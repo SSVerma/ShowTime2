@@ -56,7 +56,7 @@ class ChallengeDetailViewModelTest {
         isCompleted = false,
         watchedItems = emptyList(),
         remainingItems = emptyList(),
-        milestoneTitle = "Silver Cinephile 🥈"
+        milestoneTitle = "Silver Cinephile"
     )
 
     @Before

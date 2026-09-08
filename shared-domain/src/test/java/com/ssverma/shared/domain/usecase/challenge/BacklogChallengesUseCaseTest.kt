@@ -119,7 +119,7 @@ class BacklogChallengesUseCaseTest {
             assertEquals(2, progress.watchedCount)
             assertEquals(50, progress.progressPercentage)
             assertFalse(progress.isCompleted)
-            assertEquals("Silver Connoisseur 🥈", progress.milestoneTitle)
+            assertEquals("Silver Connoisseur", progress.milestoneTitle)
             assertEquals(2, progress.watchedItems.size)
             assertEquals(2, progress.remainingItems.size)
             assertTrue(progress.watchedItems.any { it.id == 101 && it.mediaType == MediaType.Movie })
@@ -165,7 +165,7 @@ class BacklogChallengesUseCaseTest {
         val progress = getBacklogChallengesUseCase().first().first()
         assertEquals(100, progress.progressPercentage)
         assertTrue(progress.isCompleted)
-        assertEquals("Master Cinephile 🏆", progress.milestoneTitle)
+        assertEquals("Master Cinephile", progress.milestoneTitle)
     }
 
     @Test

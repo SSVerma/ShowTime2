@@ -165,11 +165,11 @@ class GetBacklogChallengesUseCase @Inject constructor(
 
     private fun calculateMilestoneTitle(percentage: Int, isCompleted: Boolean): String {
         return when {
-            isCompleted || percentage >= 100 -> "Master Cinephile 🏆"
-            percentage >= 75 -> "Gold Maestro 🥇"
-            percentage >= 50 -> "Silver Connoisseur 🥈"
-            percentage >= 25 -> "Bronze Scholar 🥉"
-            else -> "Cinephile Initiate 🌱"
+            isCompleted || percentage >= 100 -> "Master Cinephile"
+            percentage >= 75 -> "Gold Maestro"
+            percentage >= 50 -> "Silver Connoisseur"
+            percentage >= 25 -> "Bronze Scholar"
+            else -> "Cinephile Initiate"
         }
     }
 }

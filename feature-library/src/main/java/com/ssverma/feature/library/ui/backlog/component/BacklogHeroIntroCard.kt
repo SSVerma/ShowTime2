@@ -25,8 +25,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.feature.library.R
 
 @Composable
 fun BacklogHeroIntroCard(
@@ -77,13 +79,16 @@ fun BacklogHeroIntroCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Cinema Challenges & Goals",
+                        text = stringResource(R.string.challenges_intro_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "$curatedCount Curated Sprints Available",
+                        text = stringResource(
+                            R.string.challenges_intro_sprints_count,
+                            curatedCount
+                        ),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
@@ -94,7 +99,7 @@ fun BacklogHeroIntroCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Tackle iconic watchlist blindspots, join auteur director retrospectives, or set personal watch count goals for the year.",
+                text = stringResource(R.string.challenges_intro_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -113,7 +118,7 @@ fun BacklogHeroIntroCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Create Personal Goal",
+                    text = stringResource(R.string.challenges_intro_create_btn),
                     fontWeight = FontWeight.Bold
                 )
             }

@@ -125,7 +125,7 @@ class BacklogChallengeViewModelTest {
             isCompleted = false,
             watchedItems = emptyList(),
             remainingItems = emptyList(),
-            milestoneTitle = "Bronze Scholar 🥉"
+            milestoneTitle = "Bronze Scholar"
         )
 
         viewModel.openChallengeDetail(dummyProgress)
