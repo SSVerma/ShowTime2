@@ -38,13 +38,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -78,20 +74,6 @@ fun TastePersonaShareBottomSheet(
     val graphicsLayer = rememberGraphicsLayer()
     val scrollState = rememberScrollState()
 
-    // Consume unconsumed vertical deltas to prevent overscroll from leaking
-    // into ModalBottomSheet's drag handler, keeping the sheet rock-solid during scroll.
-    val stopFluctuationNestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                return Offset(x = 0f, y = available.y)
-            }
-        }
-    }
-
     val saveSuccess = stringResource(R.string.taste_share_save_success)
     val saveFailed = stringResource(R.string.taste_share_save_failed)
     val chooserTitle = stringResource(R.string.taste_share_chooser)
@@ -105,7 +87,6 @@ fun TastePersonaShareBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .nestedScroll(stopFluctuationNestedScrollConnection)
                 .verticalScroll(scrollState)
                 .navigationBarsPadding()
                 .padding(bottom = 12.dp)

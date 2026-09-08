@@ -59,9 +59,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ssverma.feature.library.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
@@ -96,7 +98,16 @@ fun ChallengeDetailScreen(
     Scaffold(
         topBar = {
             ShowTimeTopAppBar(
-                title = uiState.progress?.challenge?.title ?: "Challenge",
+                title = {
+                    Text(
+                        text = uiState.progress?.challenge?.title
+                            ?: stringResource(R.string.challenges_detail_default_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 onBackPressed = onBackClick,
                 actions = {
                     uiState.progress?.let { progress ->

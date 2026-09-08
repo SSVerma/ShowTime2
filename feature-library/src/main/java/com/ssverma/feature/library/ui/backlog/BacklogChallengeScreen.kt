@@ -1,5 +1,10 @@
 package com.ssverma.feature.library.ui.backlog
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,6 +57,7 @@ import com.ssverma.feature.library.R
 import com.ssverma.feature.library.ui.backlog.component.ActiveChallengeCard
 import com.ssverma.feature.library.ui.backlog.component.BacklogHeroIntroCard
 import com.ssverma.feature.library.ui.backlog.component.BlindspotRadarSection
+import com.ssverma.feature.library.ui.backlog.component.ChallengeMediaSearchView
 import com.ssverma.feature.library.ui.backlog.component.CreateChallengeBottomSheet
 import com.ssverma.feature.library.ui.backlog.component.CuratedChallengeShelf
 import com.ssverma.shared.domain.model.challenge.CinephileChallenge
@@ -75,180 +81,208 @@ fun BacklogChallengeScreen(
     val coroutineScope = rememberCoroutineScope()
     var challengeToJoin by remember { mutableStateOf<CinephileChallenge?>(null) }
 
-    Scaffold(
-        topBar = {
-            ShowTimeTopAppBar(
-                title = stringResource(R.string.challenges_screen_title),
-                onBackPressed = onBackPressed,
-                actions = {
-                    IconButton(onClick = viewModel::openCreateCustomGoalSheet) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = stringResource(R.string.challenges_create_custom_goal_cd)
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background,
-        modifier = modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-    ) { innerPadding ->
-        LazyColumn(
-            state = listState,
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + 8.dp,
-                bottom = innerPadding.calculateBottomPadding() + 24.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // 1. Active Challenges Section or Intro Banner
-            if (uiState.activeChallenges.isNotEmpty()) {
-                item(key = "active_challenges_section") {
-                    Column(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                ShowTimeTopAppBar(
+                    title = {
                         Text(
-                            text = stringResource(R.string.challenges_active_section_title),
-                            style = MaterialTheme.typography.titleLarge,
+                            text = stringResource(R.string.challenges_screen_title),
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
+                    },
+                    onBackPressed = onBackPressed,
+                    actions = {
+                        IconButton(onClick = viewModel::openCreateCustomGoalSheet) {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = stringResource(R.string.challenges_create_custom_goal_cd)
+                            )
+                        }
+                    },
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        scrolledContainerColor = MaterialTheme.colorScheme.background
+                    )
+                )
+            },
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            containerColor = MaterialTheme.colorScheme.background,
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+        ) { innerPadding ->
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 8.dp,
+                    bottom = innerPadding.calculateBottomPadding() + 24.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // 1. Active Challenges Section or Intro Banner
+                if (uiState.activeChallenges.isNotEmpty()) {
+                    item(key = "active_challenges_section") {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = stringResource(R.string.challenges_active_section_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            items(
-                                items = uiState.activeChallenges,
-                                key = { it.challenge.id }
-                            ) { progress ->
-                                val cardModifier = if (uiState.activeChallenges.size == 1) {
-                                    Modifier.fillParentMaxWidth()
-                                } else {
-                                    Modifier.width(285.dp)
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(
+                                    items = uiState.activeChallenges,
+                                    key = { it.challenge.id }
+                                ) { progress ->
+                                    val cardModifier = if (uiState.activeChallenges.size == 1) {
+                                        Modifier.fillParentMaxWidth()
+                                    } else {
+                                        Modifier.width(285.dp)
+                                    }
+                                    ActiveChallengeCard(
+                                        progress = progress,
+                                        onClick = {
+                                            viewModel.openChallengeDetail(progress)
+                                            onOpenChallengeDetail(progress.challenge.id)
+                                        },
+                                        modifier = cardModifier
+                                    )
                                 }
-                                ActiveChallengeCard(
-                                    progress = progress,
-                                    onClick = {
-                                        viewModel.openChallengeDetail(progress)
-                                        onOpenChallengeDetail(progress.challenge.id)
-                                    },
-                                    modifier = cardModifier
-                                )
                             }
                         }
                     }
-                }
-            } else {
-                item(key = "intro_hero_card") {
-                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        BacklogHeroIntroCard(
-                            curatedCount = uiState.curatedChallenges.size,
-                            onCreateGoalClick = viewModel::openCreateCustomGoalSheet
-                        )
+                } else {
+                    item(key = "intro_hero_card") {
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            BacklogHeroIntroCard(
+                                curatedCount = uiState.curatedChallenges.size,
+                                onCreateGoalClick = viewModel::openCreateCustomGoalSheet
+                            )
+                        }
                     }
                 }
-            }
 
-            // 2. Priority Blindspots Radar
-            item(key = "blindspots_radar") {
-                BlindspotRadarSection(
-                    blindspots = uiState.blindspots,
-                    onOpenMovieDetails = onOpenMovieDetails,
-                    onOpenTvShowDetails = onOpenTvShowDetails,
-                    onRemoveBlindspot = viewModel::removeBlindspot
-                )
-            }
+                // 2. Priority Blindspots Radar
+                item(key = "blindspots_radar") {
+                    BlindspotRadarSection(
+                        blindspots = uiState.blindspots,
+                        onOpenMovieDetails = onOpenMovieDetails,
+                        onOpenTvShowDetails = onOpenTvShowDetails,
+                        onRemoveBlindspot = viewModel::removeBlindspot
+                    )
+                }
 
-            // 3. Curated Challenges Shelf
-            item(key = "curated_challenges_shelf") {
-                CuratedChallengeShelf(
-                    curatedChallenges = uiState.curatedChallenges,
-                    activeChallengeIds = uiState.activeChallenges.map { it.challenge.id }
-                        .toSet(),
-                    onJoinChallenge = { challenge ->
-                        challengeToJoin = challenge
-                    },
-                    onOpenChallengeDetail = { challenge ->
-                        onOpenChallengeDetail(challenge.id)
-                    }
-                )
+                // 3. Curated Challenges Shelf
+                item(key = "curated_challenges_shelf") {
+                    CuratedChallengeShelf(
+                        curatedChallenges = uiState.curatedChallenges,
+                        activeChallengeIds = uiState.activeChallenges.map { it.challenge.id }
+                            .toSet(),
+                        onJoinChallenge = { challenge ->
+                            challengeToJoin = challenge
+                        },
+                        onOpenChallengeDetail = { challenge ->
+                            onOpenChallengeDetail(challenge.id)
+                        }
+                    )
+                }
             }
         }
-    }
 
-    // Join Challenge Confirmation Dialog
-    challengeToJoin?.let { challenge ->
-        val joinedMsg = stringResource(R.string.challenges_joined_snackbar, challenge.title)
-        val viewAction = stringResource(R.string.challenges_action_view)
+        // Join Challenge Confirmation Dialog
+        challengeToJoin?.let { challenge ->
+            val joinedMsg = stringResource(R.string.challenges_joined_snackbar, challenge.title)
+            val viewAction = stringResource(R.string.challenges_action_view)
 
-        AlertDialog(
-            onDismissRequest = { challengeToJoin = null },
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.EmojiEvents,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            title = {
-                Text(text = stringResource(R.string.challenges_join_dialog_title))
-            },
-            text = {
-                Text(
-                    text = stringResource(R.string.challenges_join_dialog_msg, challenge.title)
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val toJoin = challenge
-                        challengeToJoin = null
-                        viewModel.joinCuratedChallenge(toJoin)
-                        coroutineScope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = joinedMsg,
-                                actionLabel = viewAction,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                onOpenChallengeDetail(toJoin.id)
+            AlertDialog(
+                onDismissRequest = { challengeToJoin = null },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Rounded.EmojiEvents,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                title = {
+                    Text(text = stringResource(R.string.challenges_join_dialog_title))
+                },
+                text = {
+                    Text(
+                        text = stringResource(R.string.challenges_join_dialog_msg, challenge.title)
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val toJoin = challenge
+                            challengeToJoin = null
+                            viewModel.joinCuratedChallenge(toJoin)
+                            coroutineScope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = joinedMsg,
+                                    actionLabel = viewAction,
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    onOpenChallengeDetail(toJoin.id)
+                                }
                             }
                         }
+                    ) {
+                        Text(text = stringResource(R.string.challenges_join_cta))
                     }
-                ) {
-                    Text(text = stringResource(R.string.challenges_join_cta))
+                },
+                dismissButton = {
+                    TextButton(onClick = { challengeToJoin = null }) {
+                        Text(text = stringResource(R.string.challenges_action_cancel))
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { challengeToJoin = null }) {
-                    Text(text = stringResource(R.string.challenges_action_cancel))
-                }
-            }
-        )
-    }
+            )
+        }
 
-    // Modal Sheet: Create Personal Goal
-    if (uiState.isCreatingCustomGoal) {
-        CreateChallengeBottomSheet(
-            searchQuery = uiState.mediaSearchQuery,
-            searchSuggestions = uiState.mediaSearchSuggestions,
-            isSearching = uiState.isSearchingMedia,
-            onSearchQueryChange = viewModel::onMediaSearchQueryChange,
-            onClearSearch = viewModel::clearMediaSearch,
-            onDismiss = viewModel::closeCreateCustomGoalSheet,
-            onCreateGoal = viewModel::createCustomGoal
-        )
+        // Modal Sheet: Create Personal Goal
+        if (uiState.isCreatingCustomGoal) {
+            CreateChallengeBottomSheet(
+                selectedTitles = uiState.selectedTitlesForCustomGoal,
+                onOpenSearch = viewModel::openTitleSearchForGoal,
+                onRemoveSelectedTitle = viewModel::removeTitleForCustomGoal,
+                onClearSelectedTitles = viewModel::clearTitlesForCustomGoal,
+                onDismiss = viewModel::closeCreateCustomGoalSheet,
+                onCreateGoal = viewModel::createCustomGoal
+            )
+        }
+
+        // Full-Screen Search View to Add Titles to Goal
+        AnimatedVisibility(
+            visible = uiState.isSearchingTitlesForGoal,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 6 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 6 })
+        ) {
+            ChallengeMediaSearchView(
+                searchQuery = uiState.mediaSearchQuery,
+                selectedFilter = uiState.mediaSearchFilter,
+                suggestions = uiState.mediaSearchSuggestions,
+                selectedTitles = uiState.selectedTitlesForCustomGoal,
+                isSearching = uiState.isSearchingMedia,
+                onSearchQueryChange = viewModel::onMediaSearchQueryChange,
+                onFilterChange = viewModel::onMediaSearchFilterChange,
+                onClearSearch = viewModel::clearMediaSearch,
+                onToggleMedia = viewModel::toggleTitleForCustomGoal,
+                onDismiss = viewModel::closeTitleSearchForGoal
+            )
+        }
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
+import com.ssverma.core.ui.modifier.preventSheetFluctuation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -74,6 +75,7 @@ fun ShowTimeBottomSheet(
         WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
     },
     sheetGesturesEnabled: Boolean = true,
+    preventScrollFluctuation: Boolean = true,
     properties: ModalBottomSheetProperties = ModalBottomSheetProperties(
         shouldDismissOnBackPress = false
     ),
@@ -173,9 +175,16 @@ fun ShowTimeBottomSheet(
             animateDismiss()
         }
 
+        val fluctuationModifier = if (preventScrollFluctuation) {
+            Modifier.preventSheetFluctuation()
+        } else {
+            Modifier
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(fluctuationModifier)
                 .graphicsLayer {
                     if (inPredictiveBack) {
                         val scale = 1f - (progress * 0.08f)

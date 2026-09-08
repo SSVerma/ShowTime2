@@ -112,7 +112,58 @@ class BacklogChallengeViewModel @Inject constructor(
 
     fun closeCreateCustomGoalSheet() {
         clearMediaSearch()
-        _uiState.update { it.copy(isCreatingCustomGoal = false) }
+        _uiState.update {
+            it.copy(
+                isCreatingCustomGoal = false,
+                isSearchingTitlesForGoal = false,
+                selectedTitlesForCustomGoal = emptyList(),
+                mediaSearchFilter = ChallengeMediaTypeFilter.ALL
+            )
+        }
+    }
+
+    fun openTitleSearchForGoal() {
+        _uiState.update { it.copy(isSearchingTitlesForGoal = true) }
+    }
+
+    fun closeTitleSearchForGoal() {
+        clearMediaSearch()
+        _uiState.update { it.copy(isSearchingTitlesForGoal = false) }
+    }
+
+    fun toggleTitleForCustomGoal(item: ChallengeMediaItem) {
+        _uiState.update { current ->
+            val exists =
+                current.selectedTitlesForCustomGoal.any { it.id == item.id && it.mediaType == item.mediaType }
+            val updated = if (exists) {
+                current.selectedTitlesForCustomGoal.filterNot { it.id == item.id && it.mediaType == item.mediaType }
+            } else {
+                current.selectedTitlesForCustomGoal + item
+            }
+            current.copy(selectedTitlesForCustomGoal = updated)
+        }
+    }
+
+    fun removeTitleForCustomGoal(item: ChallengeMediaItem) {
+        _uiState.update { current ->
+            current.copy(
+                selectedTitlesForCustomGoal = current.selectedTitlesForCustomGoal.filterNot {
+                    it.id == item.id && it.mediaType == item.mediaType
+                }
+            )
+        }
+    }
+
+    fun clearTitlesForCustomGoal() {
+        _uiState.update { it.copy(selectedTitlesForCustomGoal = emptyList()) }
+    }
+
+    fun onMediaSearchFilterChange(filter: ChallengeMediaTypeFilter) {
+        _uiState.update { it.copy(mediaSearchFilter = filter) }
+        val currentQuery = _uiState.value.mediaSearchQuery
+        if (currentQuery.isNotBlank()) {
+            onMediaSearchQueryChange(currentQuery, filter)
+        }
     }
 
     fun onMediaSearchQueryChange(
