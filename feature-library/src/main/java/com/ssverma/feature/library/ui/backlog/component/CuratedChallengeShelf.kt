@@ -116,13 +116,17 @@ fun CuratedChallengeItemCard(
         ) {
             // 1. Poster Collage Banner Header
             if (challenge.targetMediaItems.isNotEmpty()) {
+                val maxCuratedSlots = 3
+                val displayItems = challenge.targetMediaItems.take(maxCuratedSlots)
+                val placeholderCount = (maxCuratedSlots - displayItems.size).coerceAtLeast(0)
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(104.dp)
                 ) {
-                    challenge.targetMediaItems.take(3).forEach { item ->
+                    displayItems.forEach { item ->
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
@@ -140,6 +144,36 @@ fun CuratedChallengeItemCard(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )
+                        }
+                    }
+
+                    repeat(placeholderCount) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                            border = BorderStroke(
+                                width = 0.5.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    imageVector = if (challenge.mediaTypeFilter == ChallengeMediaTypeFilter.TV) {
+                                        Icons.Rounded.Tv
+                                    } else {
+                                        Icons.Rounded.Movie
+                                    },
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }

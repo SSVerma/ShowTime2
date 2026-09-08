@@ -159,64 +159,94 @@ fun ActiveChallengeCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Visual Upcoming Quest Movie Posters
+            // Visual Upcoming Quest Movie Posters (always 4 slots for even alignment)
+            val maxSlots = 4
             val displayItems = if (progress.remainingItems.isNotEmpty()) {
-                progress.remainingItems.take(4)
+                progress.remainingItems.take(maxSlots)
             } else if (progress.watchedItems.isNotEmpty()) {
-                progress.watchedItems.take(4)
+                progress.watchedItems.take(maxSlots)
             } else {
-                progress.challenge.targetMediaItems.take(4)
+                progress.challenge.targetMediaItems.take(maxSlots)
             }
+            val placeholderCount = (maxSlots - displayItems.size).coerceAtLeast(0)
 
-            if (displayItems.isNotEmpty()) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    displayItems.forEachIndexed { index, item ->
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            border = BorderStroke(
-                                width = 0.5.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                            ),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(92.dp)
-                        ) {
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                NetworkImage(
-                                    url = item.posterImageUrl.convertToTmdbPosterUrl(),
-                                    contentDescription = item.title,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                if (index == 0 && progress.remainingItems.isNotEmpty() && !progress.isCompleted) {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.primary,
-                                        shape = RoundedCornerShape(bottomEnd = 6.dp),
-                                        modifier = Modifier.align(Alignment.TopStart)
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.challenges_next_badge),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Black,
-                                            fontSize = 9.sp,
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.padding(
-                                                horizontal = 4.dp,
-                                                vertical = 1.dp
-                                            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                displayItems.forEachIndexed { index, item ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        border = BorderStroke(
+                            width = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(92.dp)
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            NetworkImage(
+                                url = item.posterImageUrl.convertToTmdbPosterUrl(),
+                                contentDescription = item.title,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            if (index == 0 && progress.remainingItems.isNotEmpty() && !progress.isCompleted) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(bottomEnd = 6.dp),
+                                    modifier = Modifier.align(Alignment.TopStart)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.challenges_next_badge),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 9.sp,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.padding(
+                                            horizontal = 4.dp,
+                                            vertical = 1.dp
                                         )
-                                    }
+                                    )
                                 }
                             }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+
+                repeat(placeholderCount) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        border = BorderStroke(
+                            width = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(92.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = if (progress.challenge.mediaTypeFilter == ChallengeMediaTypeFilter.TV) {
+                                    Icons.Rounded.Tv
+                                } else {
+                                    Icons.Rounded.Movie
+                                },
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
             }
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Progress Bar & Counter
             LinearProgressIndicator(
