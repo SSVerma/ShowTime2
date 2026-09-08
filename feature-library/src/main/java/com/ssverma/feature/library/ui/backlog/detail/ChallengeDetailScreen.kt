@@ -53,8 +53,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.ssverma.feature.library.ui.backlog.component.ChallengeShareExportBottomSheet
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -90,6 +94,7 @@ fun ChallengeDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var isShareSheetOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(challengeId) {
         viewModel.initChallenge(challengeId)
@@ -113,14 +118,11 @@ fun ChallengeDetailScreen(
                     uiState.progress?.let { progress ->
                         if (uiState.isJoined) {
                             IconButton(
-                                onClick = {
-                                    val text = viewModel.generateShareableChallengeText(progress)
-                                    context.dispatchShareTextIntent(text)
-                                }
+                                onClick = { isShareSheetOpen = true }
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Share,
-                                    contentDescription = "Share Progress"
+                                    contentDescription = stringResource(R.string.challenges_share_card_btn)
                                 )
                             }
                         }
@@ -168,10 +170,7 @@ fun ChallengeDetailScreen(
                             }
 
                             Button(
-                                onClick = {
-                                    val text = viewModel.generateShareableChallengeText(progress)
-                                    context.dispatchShareTextIntent(text)
-                                },
+                                onClick = { isShareSheetOpen = true },
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.weight(1.5f)
                             ) {
@@ -181,7 +180,7 @@ fun ChallengeDetailScreen(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Share Progress")
+                                Text(stringResource(R.string.challenges_share_card_btn))
                             }
                         } else {
                             Button(
@@ -393,6 +392,19 @@ fun ChallengeDetailScreen(
             onDismiss = { viewModel.dismissLogDialog() },
             onSave = { entry -> viewModel.saveDiaryEntry(entry) }
         )
+    }
+
+    // Aesthetic Visual Share Bottom Sheet
+    if (isShareSheetOpen) {
+        uiState.progress?.let { progress ->
+            val shareText =
+                remember(progress) { viewModel.generateShareableChallengeText(progress) }
+            ChallengeShareExportBottomSheet(
+                progress = progress,
+                shareText = shareText,
+                onDismissRequest = { isShareSheetOpen = false }
+            )
+        }
     }
 }
 

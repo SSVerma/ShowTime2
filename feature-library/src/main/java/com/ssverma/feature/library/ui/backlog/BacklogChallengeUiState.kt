@@ -20,5 +20,7 @@ data class BacklogChallengeUiState(
     val mediaSearchFilter: ChallengeMediaTypeFilter = ChallengeMediaTypeFilter.ALL,
     val mediaSearchQuery: String = "",
     val mediaSearchSuggestions: List<ChallengeMediaItem> = emptyList(),
-    val isSearchingMedia: Boolean = false
+    val isSearchingMedia: Boolean = false,
+    val isQuotaGateVisible: Boolean = false,
+    val isAdLoading: Boolean = false
 )

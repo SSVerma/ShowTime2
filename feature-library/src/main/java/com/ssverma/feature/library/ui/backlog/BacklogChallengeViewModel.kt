@@ -16,12 +16,18 @@ import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
 import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import android.app.Activity
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.billing.BillingRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,7 +36,10 @@ import javax.inject.Inject
 class BacklogChallengeViewModel @Inject constructor(
     private val getBacklogChallengesUseCase: GetBacklogChallengesUseCase,
     private val manageChallengeUseCase: ManageChallengeUseCase,
-    private val tmdbApiService: TmdbApiService
+    private val tmdbApiService: TmdbApiService,
+    private val rewardManager: RewardManager,
+    private val billingRepository: BillingRepository,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BacklogChallengeUiState())
@@ -107,7 +116,37 @@ class BacklogChallengeViewModel @Inject constructor(
     private var mediaSearchJob: Job? = null
 
     fun openCreateCustomGoalSheet() {
-        _uiState.update { it.copy(isCreatingCustomGoal = true) }
+        viewModelScope.launch {
+            val currentCustomCount = _uiState.value.activeChallenges.count { it.challenge.isCustom }
+            val isPro = billingRepository.isProActive.first()
+            val canCreate = rewardManager.canCreateCustomGoal(currentCustomCount, isPro)
+            if (canCreate) {
+                _uiState.update { it.copy(isCreatingCustomGoal = true) }
+            } else {
+                _uiState.update { it.copy(isQuotaGateVisible = true) }
+                rewardedAdManager.loadAd()
+            }
+        }
+    }
+
+    fun dismissQuotaGate() {
+        _uiState.update { it.copy(isQuotaGateVisible = false, isAdLoading = false) }
+    }
+
+    fun watchAdForGoalSlot(activity: Activity) {
+        _uiState.update { it.copy(isAdLoading = true) }
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.EXTRA_CUSTOM_GOAL)
+                _uiState.update {
+                    it.copy(
+                        isQuotaGateVisible = false,
+                        isAdLoading = false,
+                        isCreatingCustomGoal = true
+                    )
+                }
+            }
+        }
     }
 
     fun closeCreateCustomGoalSheet() {

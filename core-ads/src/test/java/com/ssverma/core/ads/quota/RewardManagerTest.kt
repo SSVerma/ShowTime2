@@ -251,4 +251,42 @@ class RewardManagerTest {
         val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = false)
         assertThat(allowed).isTrue()
     }
+
+    @Test
+    fun `canCreateCustomGoal returns true for pro user regardless of limit`() = runTest {
+        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L)
+
+        val allowed = rewardManager.canCreateCustomGoal(currentActiveCount = 10, isProActive = true)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `canCreateCustomGoal respects free limit for free user`() = runTest {
+        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L)
+
+        val allowedUnderLimit =
+            rewardManager.canCreateCustomGoal(currentActiveCount = 1, isProActive = false)
+        assertThat(allowedUnderLimit).isTrue()
+
+        val allowedAtLimit =
+            rewardManager.canCreateCustomGoal(currentActiveCount = 2, isProActive = false)
+        assertThat(allowedAtLimit).isFalse()
+    }
+
+    @Test
+    fun `grantRewardPass for EXTRA_CUSTOM_GOAL increments custom goal slots`() = runTest {
+        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L)
+
+        rewardManager.grantRewardPass(RewardPassType.EXTRA_CUSTOM_GOAL)
+        val status = rewardManager.passStatus.value
+        assertThat(status.extraCustomGoalSlots).isEqualTo(1)
+
+        val allowedWithBonus =
+            rewardManager.canCreateCustomGoal(currentActiveCount = 2, isProActive = false)
+        assertThat(allowedWithBonus).isTrue()
+
+        val blockedAboveBonus =
+            rewardManager.canCreateCustomGoal(currentActiveCount = 3, isProActive = false)
+        assertThat(blockedAboveBonus).isFalse()
+    }
 }

@@ -132,6 +132,9 @@ fun EntryProviderScope<NavKey>.libraryEntries(
             },
             onOpenChallengeDetail = { challengeId ->
                 navigator.navigate(ChallengeDetailNavKey(challengeId))
+            },
+            onNavigateToProPaywall = {
+                navigator.navigate(ProPaywallNavKey)
             }
         )
     }

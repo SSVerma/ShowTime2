@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.ui.backlog.component.ActiveChallengeCard
 import com.ssverma.feature.library.ui.backlog.component.BacklogHeroIntroCard
@@ -57,6 +58,7 @@ import com.ssverma.feature.library.ui.backlog.component.BlindspotRadarSection
 import com.ssverma.feature.library.ui.backlog.component.ChallengeMediaSearchView
 import com.ssverma.feature.library.ui.backlog.component.CreateChallengeBottomSheet
 import com.ssverma.feature.library.ui.backlog.component.CuratedChallengeShelf
+import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import kotlinx.coroutines.launch
 
@@ -68,6 +70,7 @@ fun BacklogChallengeScreen(
     onOpenTvShowDetails: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onOpenChallengeDetail: (String) -> Unit = {},
+    onNavigateToProPaywall: () -> Unit = {},
     viewModel: BacklogChallengeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -284,6 +287,27 @@ fun BacklogChallengeScreen(
                     onDismiss = viewModel::closeTitleSearchForGoal
                 )
             }
+        }
+
+        // Quota Gate Bottom Sheet
+        if (uiState.isQuotaGateVisible) {
+            val activity = context.findActivity()
+            FeatureQuotaGateBottomSheet(
+                title = stringResource(R.string.challenges_quota_reached_title),
+                description = stringResource(R.string.challenges_quota_reached_desc),
+                rewardActionLabel = stringResource(R.string.challenges_watch_ad_for_extra_goal_slot),
+                isAdLoading = uiState.isAdLoading,
+                onWatchAdClick = {
+                    if (activity != null) {
+                        viewModel.watchAdForGoalSlot(activity)
+                    }
+                },
+                onUpgradeProClick = {
+                    viewModel.dismissQuotaGate()
+                    onNavigateToProPaywall()
+                },
+                onDismissRequest = viewModel::dismissQuotaGate
+            )
         }
     }
 }

@@ -324,4 +324,20 @@
     <string name="challenges_clear_all_confirm_msg">Are you sure you want to remove all %1$d selected titles from this challenge?</string>
     <string name="challenges_remove_title_confirm_title">Remove Title?</string>
     <string name="challenges_remove_title_confirm_msg">Are you sure you want to remove \"%1$s\" from this challenge?</string>
+
+    <string name="challenges_share_header_completed">Share Achievement</string>
+    <string name="challenges_share_header_progress">Share Challenge Progress</string>
+    <string name="challenges_share_subtitle">Export an aesthetic visual card for Instagram, WhatsApp &amp; Twitter</string>
+    <string name="challenges_share_save_btn">Save Card</string>
+    <string name="challenges_share_card_btn">Share Card</string>
+    <string name="challenges_share_as_text_btn">Share as Plain Text</string>
+    <string name="challenges_share_save_success">Card saved to Pictures/ShowTime</string>
+    <string name="challenges_share_save_failed">Failed to export card image</string>
+    <string name="challenges_share_chooser">Share Challenge Achievement</string>
+    <string name="challenges_share_certificate_badge">OFFICIAL COMPLETION CERTIFICATE</string>
+    <string name="challenges_share_watermark">ShowTime • Cinephile Challenges</string>
+
+    <string name="challenges_quota_reached_title">Personal Goal Limit Reached</string>
+    <string name="challenges_quota_reached_desc">Free tier includes up to 2 active custom goals. Watch a quick ad to unlock an extra goal slot, or upgrade to ShowTime Pro for unlimited goals.</string>
+    <string name="challenges_watch_ad_for_extra_goal_slot">Watch Ad for +1 Goal Slot</string>
 </resources>

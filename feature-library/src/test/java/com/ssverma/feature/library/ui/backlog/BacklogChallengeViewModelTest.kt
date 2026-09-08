@@ -17,6 +17,9 @@ import com.ssverma.shared.domain.repository.BacklogRepository
 import com.ssverma.shared.domain.repository.DiaryRepository
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
 import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.core.billing.BillingRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -42,11 +45,15 @@ class BacklogChallengeViewModelTest {
     private val backlogRepository: BacklogRepository = mockk(relaxed = true)
     private val diaryRepository: DiaryRepository = mockk(relaxed = true)
     private val tmdbApiService: TmdbApiService = mockk(relaxed = true)
+    private val rewardManager: RewardManager = mockk(relaxed = true)
+    private val billingRepository: BillingRepository = mockk(relaxed = true)
+    private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
 
     private val activeChallengesFlow = MutableStateFlow<List<CinephileChallenge>>(emptyList())
     private val curatedChallengesFlow = MutableStateFlow<List<CinephileChallenge>>(emptyList())
     private val blindspotsFlow = MutableStateFlow<List<BlindspotPriorityItem>>(emptyList())
     private val diaryEntriesFlow = MutableStateFlow<List<DiaryEntry>>(emptyList())
+    private val isProActiveFlow = MutableStateFlow(false)
 
     private lateinit var getBacklogChallengesUseCase: GetBacklogChallengesUseCase
     private lateinit var manageChallengeUseCase: ManageChallengeUseCase
@@ -58,6 +65,8 @@ class BacklogChallengeViewModelTest {
         every { backlogRepository.curatedChallengesFlow } returns curatedChallengesFlow
         every { backlogRepository.blindspotsFlow } returns blindspotsFlow
         every { diaryRepository.getAllDiaryEntries() } returns diaryEntriesFlow
+        every { billingRepository.isProActive } returns isProActiveFlow
+        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns true
 
         getBacklogChallengesUseCase = GetBacklogChallengesUseCase(
             backlogRepository = backlogRepository,
@@ -70,7 +79,10 @@ class BacklogChallengeViewModelTest {
         viewModel = BacklogChallengeViewModel(
             getBacklogChallengesUseCase = getBacklogChallengesUseCase,
             manageChallengeUseCase = manageChallengeUseCase,
-            tmdbApiService = tmdbApiService
+            tmdbApiService = tmdbApiService,
+            rewardManager = rewardManager,
+            billingRepository = billingRepository,
+            rewardedAdManager = rewardedAdManager
         )
     }
 
@@ -267,5 +279,41 @@ class BacklogChallengeViewModelTest {
         val updatedState = viewModel.uiState.first()
         assertEquals(1, updatedState.activeChallenges.size)
         assertEquals("Marvel", updatedState.activeChallenges.first().challenge.title)
+    }
+
+    @Test
+    fun `openCreateCustomGoalSheet opens sheet when quota allowed`() = runTest {
+        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns true
+
+        viewModel.openCreateCustomGoalSheet()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.first()
+        assertTrue(state.isCreatingCustomGoal)
+        org.junit.Assert.assertFalse(state.isQuotaGateVisible)
+    }
+
+    @Test
+    fun `openCreateCustomGoalSheet displays quota gate when quota exceeded`() = runTest {
+        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns false
+
+        viewModel.openCreateCustomGoalSheet()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.first()
+        org.junit.Assert.assertFalse(state.isCreatingCustomGoal)
+        assertTrue(state.isQuotaGateVisible)
+        coVerify(exactly = 1) { rewardedAdManager.loadAd() }
+    }
+
+    @Test
+    fun `dismissQuotaGate hides quota gate`() = runTest {
+        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns false
+        viewModel.openCreateCustomGoalSheet()
+        advanceUntilIdle()
+
+        viewModel.dismissQuotaGate()
+        val state = viewModel.uiState.first()
+        org.junit.Assert.assertFalse(state.isQuotaGateVisible)
     }
 }

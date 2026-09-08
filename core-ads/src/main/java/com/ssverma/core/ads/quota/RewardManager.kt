@@ -35,7 +35,8 @@ enum class RewardPassType {
     CINEMA_WRAPPED_STORY,
     AIRING_REMINDERS,
     MATCH_ROOM,
-    LIST_SHARE_THEMES
+    LIST_SHARE_THEMES,
+    EXTRA_CUSTOM_GOAL
 }
 
 data class RewardPassStatus(
@@ -45,6 +46,7 @@ data class RewardPassStatus(
     val isTraktSyncUnlocked: Boolean = false,
     val extraCustomListSlots: Int = 0,
     val extraCommunityPublishSlots: Int = 0,
+    val extraCustomGoalSlots: Int = 0,
     val cinemaGameRevivesRemaining: Int = 0,
     val isMultiServiceUnlocked: Boolean = false,
     val multiServiceExpiryTimestamp: Long = 0L,
@@ -68,6 +70,7 @@ interface RewardManager {
     suspend fun grantRewardPass(passType: RewardPassType)
     suspend fun canCreateCustomList(currentCount: Int, isProActive: Boolean): Boolean
     suspend fun canPublishCommunityList(currentActiveCount: Int, isProActive: Boolean): Boolean
+    suspend fun canCreateCustomGoal(currentActiveCount: Int, isProActive: Boolean): Boolean
     suspend fun isAutoBackupAllowed(isProActive: Boolean): Boolean
     suspend fun isThemeUnlocked(isProActive: Boolean): Boolean
     suspend fun isTraktSyncAllowed(isProActive: Boolean): Boolean
@@ -112,6 +115,7 @@ class RewardManagerImpl @Inject constructor(
             val traktSyncExpiry = prefs[KEY_TRAKT_SYNC_EXPIRY] ?: 0L
             val extraListSlots = prefs[KEY_EXTRA_LIST_SLOTS] ?: 0
             val extraPublishSlots = prefs[KEY_EXTRA_PUBLISH_SLOTS] ?: 0
+            val extraGoalSlots = prefs[KEY_EXTRA_GOAL_SLOTS] ?: 0
             val revives = prefs[KEY_GAME_REVIVES] ?: 0
             val multiServiceExpiry = prefs[KEY_MULTI_SERVICE_EXPIRY] ?: 0L
             val tasteAnalyticsExpiry = prefs[KEY_TASTE_ANALYTICS_EXPIRY] ?: 0L
@@ -128,6 +132,7 @@ class RewardManagerImpl @Inject constructor(
                 isTraktSyncUnlocked = traktSyncExpiry > now,
                 extraCustomListSlots = extraListSlots,
                 extraCommunityPublishSlots = extraPublishSlots,
+                extraCustomGoalSlots = extraGoalSlots,
                 cinemaGameRevivesRemaining = revives,
                 isMultiServiceUnlocked = multiServiceExpiry > now,
                 multiServiceExpiryTimestamp = if (multiServiceExpiry > now) multiServiceExpiry else 0L,
@@ -203,6 +208,11 @@ class RewardManagerImpl @Inject constructor(
                 RewardPassType.EXTRA_CUSTOM_LIST -> {
                     val current = prefs[KEY_EXTRA_LIST_SLOTS] ?: 0
                     prefs[KEY_EXTRA_LIST_SLOTS] = current + 1
+                }
+
+                RewardPassType.EXTRA_CUSTOM_GOAL -> {
+                    val current = prefs[KEY_EXTRA_GOAL_SLOTS] ?: 0
+                    prefs[KEY_EXTRA_GOAL_SLOTS] = current + 1
                 }
 
                 RewardPassType.COMMUNITY_PUBLISH -> {
@@ -282,6 +292,16 @@ class RewardManagerImpl @Inject constructor(
         if (isProActive) return true
         val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_PUBLISH_LIMIT, 2L).toInt()
         val bonusSlots = _passStatus.value.extraCommunityPublishSlots
+        return currentActiveCount < (freeLimit + bonusSlots)
+    }
+
+    override suspend fun canCreateCustomGoal(
+        currentActiveCount: Int,
+        isProActive: Boolean
+    ): Boolean {
+        if (isProActive) return true
+        val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L).toInt()
+        val bonusSlots = _passStatus.value.extraCustomGoalSlots
         return currentActiveCount < (freeLimit + bonusSlots)
     }
 
@@ -378,10 +398,12 @@ class RewardManagerImpl @Inject constructor(
             longPreferencesKey("reward_list_share_themes_expiry")
         private val KEY_EXTRA_LIST_SLOTS = intPreferencesKey("reward_extra_list_slots")
         private val KEY_EXTRA_PUBLISH_SLOTS = intPreferencesKey("reward_extra_publish_slots")
+        private val KEY_EXTRA_GOAL_SLOTS = intPreferencesKey("reward_extra_goal_slots")
         private val KEY_GAME_REVIVES = intPreferencesKey("reward_game_revives")
 
         const val KEY_CONFIG_FREE_CUSTOM_LIST_LIMIT = "free_custom_list_limit"
         const val KEY_CONFIG_FREE_PUBLISH_LIMIT = "free_community_publish_limit"
+        const val KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT = "free_custom_goal_limit"
         const val KEY_CONFIG_FREE_REMINDERS_LIMIT = "free_airing_reminders_limit"
         const val KEY_CONFIG_REWARDED_BACKUP_DAYS = "rewarded_backup_duration_days"
         const val KEY_CONFIG_MAX_BACKUP_STACK_DAYS = "rewarded_backup_max_stack_days"
