@@ -8,6 +8,7 @@ import com.ssverma.core.ads.quota.RewardManager
 import com.ssverma.core.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.feature.library.ui.wrapped.component.WrappedStoryStyle
+import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
 import com.ssverma.shared.domain.usecase.stats.GetCinephileWrappedUseCase
@@ -30,7 +31,8 @@ class CinephileWrappedViewModel @Inject constructor(
     private val getCinephileWrappedUseCase: GetCinephileWrappedUseCase,
     private val billingRepository: BillingRepository,
     private val rewardManager: RewardManager,
-    private val rewardedAdManager: RewardedAdManager
+    private val rewardedAdManager: RewardedAdManager,
+    backupRepository: BackupRepository
 ) : ViewModel() {
 
     private val _selectedYear = MutableStateFlow(0) // 0 = All-Time
@@ -44,8 +46,15 @@ class CinephileWrappedViewModel @Inject constructor(
     private val _isGateOpen = MutableStateFlow(false)
     private val _isExportSheetOpen = MutableStateFlow(false)
     private val _pendingStyle = MutableStateFlow<WrappedStoryStyle?>(null)
+    private val _userName = MutableStateFlow<String?>(null)
 
     init {
+        viewModelScope.launch {
+            backupRepository.googleUser.collectLatest { googleUser ->
+                _userName.value = googleUser?.displayName?.ifBlank { null }
+            }
+        }
+
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
@@ -66,6 +75,8 @@ class CinephileWrappedViewModel @Inject constructor(
                 _isProPaymentEnabled.value = isEnabled
             }
         }
+
+        rewardedAdManager.loadAd()
     }
 
     val uiState: StateFlow<CinephileWrappedUiState> = combine(
@@ -91,9 +102,16 @@ class CinephileWrappedViewModel @Inject constructor(
             _isProPaymentEnabled,
             _isGateOpen,
             _isExportSheetOpen,
-            _pendingStyle
-        ) { isProPaymentEnabled, isGateOpen, isExportSheetOpen, pendingStyle ->
-            WrappedStoryState2(isProPaymentEnabled, isGateOpen, isExportSheetOpen, pendingStyle)
+            _pendingStyle,
+            _userName
+        ) { isProPaymentEnabled, isGateOpen, isExportSheetOpen, pendingStyle, userName ->
+            WrappedStoryState2(
+                isProPaymentEnabled,
+                isGateOpen,
+                isExportSheetOpen,
+                pendingStyle,
+                userName
+            )
         }
     ) { base, story1, story2 ->
         CinephileWrappedUiState(
@@ -110,7 +128,8 @@ class CinephileWrappedViewModel @Inject constructor(
             isProPaymentEnabled = story2.isProPaymentEnabled,
             isGateOpen = story2.isGateOpen,
             isExportSheetOpen = story2.isExportSheetOpen,
-            pendingStyle = story2.pendingStyle
+            pendingStyle = story2.pendingStyle,
+            userName = story2.userName
         )
     }.stateIn(
         scope = viewModelScope,
@@ -128,6 +147,7 @@ class CinephileWrappedViewModel @Inject constructor(
 
     fun openExportSheet() {
         _isExportSheetOpen.value = true
+        rewardedAdManager.loadAd()
     }
 
     fun dismissExportSheet() {
@@ -135,12 +155,18 @@ class CinephileWrappedViewModel @Inject constructor(
     }
 
     fun selectStyle(style: WrappedStoryStyle) {
+        _selectedStyle.update { style }
+    }
+
+    fun attemptExport(onAllowed: () -> Unit) {
+        val currentStyle = _selectedStyle.value
         val isUnlocked = _isProActive.value || _isPassActive.value
-        if (style.isProOnly && !isUnlocked) {
-            _pendingStyle.value = style
+        if (currentStyle.isProOnly && !isUnlocked) {
+            _pendingStyle.value = currentStyle
             _isGateOpen.value = true
+            rewardedAdManager.loadAd()
         } else {
-            _selectedStyle.update { style }
+            onAllowed()
         }
     }
 
@@ -148,6 +174,7 @@ class CinephileWrappedViewModel @Inject constructor(
         val isUnlocked = _isProActive.value || _isPassActive.value
         if (!isUnlocked) {
             _isGateOpen.value = true
+            rewardedAdManager.loadAd()
         } else {
             _isWatermarkFree.update { !it }
         }
@@ -162,6 +189,7 @@ class CinephileWrappedViewModel @Inject constructor(
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
                 rewardManager.grantRewardPass(RewardPassType.CINEMA_WRAPPED_STORY)
+                _isPassActive.value = true
                 _isWatermarkFree.value = true
                 val pending = _pendingStyle.value
                 if (pending != null) {
@@ -231,5 +259,6 @@ private data class WrappedStoryState2(
     val isProPaymentEnabled: Boolean,
     val isGateOpen: Boolean,
     val isExportSheetOpen: Boolean,
-    val pendingStyle: WrappedStoryStyle?
+    val pendingStyle: WrappedStoryStyle?,
+    val userName: String?
 )

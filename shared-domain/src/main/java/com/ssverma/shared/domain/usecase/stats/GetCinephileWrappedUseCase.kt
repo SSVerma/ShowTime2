@@ -81,9 +81,10 @@ class GetCinephileWrappedUseCase @Inject constructor(
         val rewatchCount = yearEntries.count { it.isRewatch }
         val fiveStarCount = yearEntries.count { it.userRating >= 5.0f }
 
-        // Top 4 rated media (highest user rating first, tie-break by most recent log)
+        // Top 4 rated media (highest user rating first, tie-break by most recent log, deduplicated by mediaId)
         val topRated = yearEntries
             .sortedWith(compareByDescending<DiaryEntry> { it.userRating }.thenByDescending { it.loggedAt })
+            .distinctBy { it.mediaId }
             .take(4)
 
         // Monthly distribution

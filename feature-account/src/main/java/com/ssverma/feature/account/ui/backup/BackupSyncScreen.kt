@@ -71,6 +71,7 @@ import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.account.R
 import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 
@@ -84,7 +85,7 @@ fun BackupSyncScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val activity = context as? Activity
+    val activity = context.findActivity()
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var showRestoreConfirmDialog by remember { mutableStateOf(false) }

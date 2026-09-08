@@ -12,6 +12,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.usecase.stats.GetCinephileWrappedUseCase
 import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import com.ssverma.shared.testing.fakes.FakeCinephileMilestoneRepository
 import com.ssverma.shared.testing.fakes.FakeDiaryRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
@@ -43,6 +44,7 @@ class CinephileWrappedViewModelTest {
     private lateinit var fakeLibraryRepository: FakeLibraryRepository
     private lateinit var fakeMilestoneRepository: FakeCinephileMilestoneRepository
     private lateinit var fakeBillingRepository: FakeBillingRepository
+    private lateinit var fakeBackupRepository: FakeBackupRepository
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
     private val passStatusFlow = MutableStateFlow(RewardPassStatus())
@@ -54,6 +56,7 @@ class CinephileWrappedViewModelTest {
         fakeLibraryRepository = FakeLibraryRepository()
         fakeMilestoneRepository = FakeCinephileMilestoneRepository()
         fakeBillingRepository = FakeBillingRepository(initialProActive = false)
+        fakeBackupRepository = FakeBackupRepository()
         every { mockRewardManager.passStatus } returns passStatusFlow
 
         val getCinephileWrappedUseCase = GetCinephileWrappedUseCase(
@@ -66,7 +69,8 @@ class CinephileWrappedViewModelTest {
             getCinephileWrappedUseCase = getCinephileWrappedUseCase,
             billingRepository = fakeBillingRepository,
             rewardManager = mockRewardManager,
-            rewardedAdManager = mockRewardedAdManager
+            rewardedAdManager = mockRewardedAdManager,
+            backupRepository = fakeBackupRepository
         )
     }
 
@@ -173,36 +177,60 @@ class CinephileWrappedViewModelTest {
     }
 
     @Test
-    fun `selecting pro style as free user opens gate and remembers pending style`() = runTest {
+    fun `selecting style updates selectedStyle directly for free preview`() = runTest {
         viewModel.selectStyle(WrappedStoryStyle.OLED_NOIR)
         advanceUntilIdle()
 
         val state = viewModel.uiState.first()
-        assertTrue(state.isGateOpen)
-        assertEquals(WrappedStoryStyle.OLED_NOIR, state.pendingStyle)
-        assertEquals(WrappedStoryStyle.CLASSIC_VELVET, state.selectedStyle)
+        assertFalse(state.isGateOpen)
+        assertEquals(WrappedStoryStyle.OLED_NOIR, state.selectedStyle)
     }
 
     @Test
-    fun `selecting pro style as pro user updates selectedStyle directly`() = runTest {
+    fun `attemptExport with pro style as free user opens gate and remembers pending style`() =
+        runTest {
+            viewModel.selectStyle(WrappedStoryStyle.GOLDEN_VIP)
+            advanceUntilIdle()
+
+            var exportCalled = false
+            viewModel.attemptExport { exportCalled = true }
+            advanceUntilIdle()
+
+            val state = viewModel.uiState.first()
+            assertTrue(state.isGateOpen)
+            assertEquals(WrappedStoryStyle.GOLDEN_VIP, state.pendingStyle)
+            assertFalse(exportCalled)
+        }
+
+    @Test
+    fun `attemptExport with pro style as pro user allows export without gate`() = runTest {
         fakeBillingRepository.setProActive(true)
         advanceUntilIdle()
 
         viewModel.selectStyle(WrappedStoryStyle.GOLDEN_VIP)
         advanceUntilIdle()
 
-        val state = viewModel.uiState.first()
-        assertFalse(state.isGateOpen)
-        assertEquals(WrappedStoryStyle.GOLDEN_VIP, state.selectedStyle)
-    }
-
-    @Test
-    fun `toggling watermark-free as free user opens gate`() = runTest {
-        viewModel.toggleWatermarkFree()
+        var exportCalled = false
+        viewModel.attemptExport { exportCalled = true }
         advanceUntilIdle()
 
         val state = viewModel.uiState.first()
-        assertTrue(state.isGateOpen)
+        assertFalse(state.isGateOpen)
+        assertTrue(exportCalled)
+    }
+
+    @Test
+    fun `attemptExport with classic style as free user allows export without gate`() = runTest {
+        viewModel.selectStyle(WrappedStoryStyle.CLASSIC_VELVET)
+        advanceUntilIdle()
+
+        var exportCalled = false
+        viewModel.attemptExport { exportCalled = true }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.first()
+        assertFalse(state.isGateOpen)
+        assertTrue(exportCalled)
     }
 
     @Test
@@ -219,6 +247,7 @@ class CinephileWrappedViewModelTest {
         }
 
         viewModel.selectStyle(WrappedStoryStyle.NEON_CYBERPUNK)
+        viewModel.attemptExport {}
         advanceUntilIdle()
         assertTrue(viewModel.uiState.first().isGateOpen)
 
@@ -229,7 +258,24 @@ class CinephileWrappedViewModelTest {
         val state = viewModel.uiState.first()
         assertFalse(state.isGateOpen)
         assertEquals(WrappedStoryStyle.NEON_CYBERPUNK, state.selectedStyle)
-        assertTrue(state.isWatermarkFree)
+        assertTrue(state.isPassActive)
+    }
+
+    @Test
+    fun `google user updates userName in uiState`() = runTest {
+        fakeBackupRepository.setGoogleUser(
+            com.ssverma.core.backup.model.GoogleUser(
+                displayName = "Alex",
+                email = "alex@test.com",
+                photoUrl = null,
+                idToken = "token_123",
+                uid = "123"
+            )
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.first()
+        assertEquals("Alex", state.userName)
     }
 
     @Test

@@ -43,6 +43,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ssverma.core.notifications.LocalNotificationManager
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.core.ui.util.openAppSettings
 
 fun LazyListScope.notificationPermissionShelf(
@@ -84,7 +85,7 @@ fun NotificationPermissionShelf(
     ) { isGranted ->
         hasPermission = isGranted
         if (!isGranted) {
-            val activity = context as? Activity
+            val activity = context.findActivity()
             if (activity != null &&
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 !ActivityCompat.shouldShowRequestPermissionRationale(

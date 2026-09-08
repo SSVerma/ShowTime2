@@ -66,6 +66,7 @@ import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.ProductType
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.payment.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,7 +78,7 @@ fun ProPaywallScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val activity = context as? Activity
+    val activity = context.findActivity()
 
     var selectedProductId by remember(uiState.products) {
         mutableStateOf(

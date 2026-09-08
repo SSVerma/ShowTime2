@@ -90,6 +90,7 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.component.GameFeedbackParticles
 import com.ssverma.core.ui.component.GameParticleType
 import com.ssverma.core.ui.component.ScratchCard
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.movie.R
 import com.ssverma.shared.domain.model.game.DailyCinemaPuzzle
 import com.ssverma.shared.domain.model.game.GameClue
@@ -108,7 +109,7 @@ fun CinemaGameScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val context = LocalContext.current
-    val activity = context as? Activity
+    val activity = context.findActivity()
 
     var particleEffect by remember { mutableStateOf(GameParticleType.SUCCESS_CONFETTI) }
     var particleTriggerKey by remember { mutableStateOf(0L) }
@@ -172,13 +173,13 @@ fun CinemaGameScreen(
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Surface(
                                         shape = RoundedCornerShape(6.dp),
-                                        color = Color(0xFFFF9800).copy(alpha = 0.2f)
+                                        color = CinemaGameColor.StreakAmber.copy(alpha = 0.2f)
                                     ) {
                                         Text(
                                             text = stringResource(id = R.string.cinema_challenge_bonus_reel_badge),
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFFFF9800),
+                                            color = CinemaGameColor.StreakAmber,
                                             modifier = Modifier.padding(
                                                 horizontal = 5.dp,
                                                 vertical = 1.5.dp
@@ -212,7 +213,7 @@ fun CinemaGameScreen(
                         // Streak Pill
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFFF9800).copy(alpha = 0.15f),
+                            color = CinemaGameColor.StreakAmber.copy(alpha = 0.15f),
                             modifier = Modifier.padding(end = 4.dp)
                         ) {
                             Row(
@@ -223,14 +224,14 @@ fun CinemaGameScreen(
                                     imageVector = Icons.Rounded.LocalFireDepartment,
                                     contentDescription = stringResource(id = R.string.cinema_stats_streak),
                                     modifier = Modifier.size(16.dp),
-                                    tint = Color(0xFFFF9800)
+                                    tint = CinemaGameColor.StreakAmber
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = "${uiState.stats.currentStreak}",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFF9800)
+                                    color = CinemaGameColor.StreakAmber
                                 )
                             }
                         }
@@ -511,14 +512,14 @@ private fun ClueCard(
                         .fillMaxWidth()
                         .aspectRatio(16f / 9f)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFF181818))
+                        .background(CinemaGameColor.ScratchDark)
                 ) {
                     if (isFirstClue && !isGameOver) {
                         ScratchCard(
                             modifier = Modifier.fillMaxSize(),
                             enabled = true,
                             scratchThresholdFraction = 0.30f,
-                            overlayColor = Color(0xFF1F1F23),
+                            overlayColor = CinemaGameColor.ScratchOverlay,
                             brushStrokeWidth = 90f,
                             overlayContent = {
                                 Column(
@@ -531,7 +532,7 @@ private fun ClueCard(
                                     Icon(
                                         imageVector = Icons.Rounded.Movie,
                                         contentDescription = null,
-                                        tint = Color(0xFFFF9800),
+                                        tint = CinemaGameColor.StreakAmber,
                                         modifier = Modifier.size(32.dp)
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
@@ -602,10 +603,10 @@ private fun GuessProgressTracker(
 
             val (bgColor, borderColor) = when {
                 guess != null && isMatchingTitleNormalized(guess, targetTitle) ->
-                    Color(0xFF4CAF50) to Color(0xFF388E3C)
+                    CinemaGameColor.SuccessGreen to CinemaGameColor.SuccessGreenDark
 
                 guess != null && guess.equals("Skipped", ignoreCase = true) ->
-                    Color(0xFF78909C) to Color(0xFF546E7A)
+                    CinemaGameColor.SkipGrey to CinemaGameColor.SkipGreyDark
 
                 guess != null ->
                     MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.error
@@ -651,7 +652,7 @@ private fun GuessHistoryList(
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = when {
-                    isCorrect -> Color(0xFF4CAF50).copy(alpha = 0.15f)
+                    isCorrect -> CinemaGameColor.SuccessGreen.copy(alpha = 0.15f)
                     isSkipped -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     else -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
                 },
@@ -660,7 +661,7 @@ private fun GuessHistoryList(
                     .border(
                         width = 1.dp,
                         color = when {
-                            isCorrect -> Color(0xFF4CAF50).copy(alpha = 0.5f)
+                            isCorrect -> CinemaGameColor.SuccessGreen.copy(alpha = 0.5f)
                             isSkipped -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                             else -> MaterialTheme.colorScheme.error.copy(alpha = 0.3f)
                         },
@@ -679,7 +680,7 @@ private fun GuessHistoryList(
                         },
                         contentDescription = null,
                         tint = when {
-                            isCorrect -> Color(0xFF4CAF50)
+                            isCorrect -> CinemaGameColor.SuccessGreen
                             isSkipped -> MaterialTheme.colorScheme.onSurfaceVariant
                             else -> MaterialTheme.colorScheme.error
                         },
@@ -927,7 +928,7 @@ private fun GameOverBanner(
                 // Second Chance Option
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFFFF9800).copy(alpha = 0.15f)
+                    color = CinemaGameColor.StreakAmber.copy(alpha = 0.15f)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -936,7 +937,7 @@ private fun GameOverBanner(
                         Icon(
                             imageVector = Icons.Rounded.Movie,
                             contentDescription = null,
-                            tint = Color(0xFFFF9800),
+                            tint = CinemaGameColor.StreakAmber,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -944,7 +945,7 @@ private fun GameOverBanner(
                             text = stringResource(id = R.string.cinema_challenge_second_chance_tag),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFF9800),
+                            color = CinemaGameColor.StreakAmber,
                             letterSpacing = 0.5.sp
                         )
                     }
@@ -975,7 +976,7 @@ private fun GameOverBanner(
                     enabled = !isUnlockingSecondChance,
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFF6D00)
+                        containerColor = CinemaGameColor.SecondChanceOrange
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1067,13 +1068,13 @@ private fun BonusReelScratchDialog(
         Card(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF1E1700)
+                containerColor = CinemaGameColor.GoldCardBackground
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .border(
                     width = 2.dp,
-                    color = Color(0xFFFFD700),
+                    color = CinemaGameColor.GoldAccent,
                     shape = RoundedCornerShape(24.dp)
                 )
         ) {
@@ -1087,7 +1088,7 @@ private fun BonusReelScratchDialog(
                     Icon(
                         imageVector = Icons.Rounded.EmojiEvents,
                         contentDescription = null,
-                        tint = Color(0xFFFFD700),
+                        tint = CinemaGameColor.GoldAccent,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -1095,7 +1096,7 @@ private fun BonusReelScratchDialog(
                         text = stringResource(id = R.string.cinema_challenge_bonus_reel_scratch_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFFFFD700),
+                        color = CinemaGameColor.GoldAccent,
                         letterSpacing = 1.sp
                     )
                 }
@@ -1118,7 +1119,7 @@ private fun BonusReelScratchDialog(
                         .height(170.dp)
                         .clip(RoundedCornerShape(16.dp)),
                     scratchThresholdFraction = 0.30f,
-                    overlayColor = Color(0xFFD4AF37),
+                    overlayColor = CinemaGameColor.GoldTicketOverlay,
                     brushStrokeWidth = 90f,
                     onRevealed = onDismiss,
                     overlayContent = {
@@ -1132,7 +1133,7 @@ private fun BonusReelScratchDialog(
                             Icon(
                                 imageVector = Icons.Rounded.Movie,
                                 contentDescription = null,
-                                tint = Color(0xFF1A1A1A),
+                                tint = CinemaGameColor.GoldDarkText,
                                 modifier = Modifier.size(36.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -1140,7 +1141,7 @@ private fun BonusReelScratchDialog(
                                 text = stringResource(id = R.string.cinema_challenge_golden_ticket_label),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Black,
-                                color = Color(0xFF1A1A1A),
+                                color = CinemaGameColor.GoldDarkText,
                                 letterSpacing = 1.sp
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -1148,7 +1149,7 @@ private fun BonusReelScratchDialog(
                                 text = stringResource(id = R.string.cinema_challenge_scratch_here_start),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF333333)
+                                color = CinemaGameColor.GoldMediumText
                             )
                         }
                     },
@@ -1156,7 +1157,7 @@ private fun BonusReelScratchDialog(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(Color(0xFF2C1E00))
+                                .background(CinemaGameColor.GoldRevealedBackground)
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -1165,7 +1166,7 @@ private fun BonusReelScratchDialog(
                                     text = stringResource(id = R.string.cinema_challenge_fresh_mystery_loaded),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFFD700)
+                                    color = CinemaGameColor.GoldAccent
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -1184,7 +1185,7 @@ private fun BonusReelScratchDialog(
                     onClick = onDismiss,
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFFD700),
+                        containerColor = CinemaGameColor.GoldAccent,
                         contentColor = Color.Black
                     ),
                     modifier = Modifier

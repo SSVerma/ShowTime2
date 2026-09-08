@@ -24,6 +24,10 @@ class RewardedAdManager @Inject constructor(
 ) {
     private var rewardedAd: RewardedAd? = null
     private var isAdLoading = false
+    private var pendingShowRequest: Pair<Activity, () -> Unit>? = null
+
+    val isAdLoaded: Boolean
+        get() = rewardedAd != null
 
     fun loadAd() {
         if (!adConfigProvider.isAdsEnabled || rewardedAd != null || isAdLoading) return
@@ -45,12 +49,28 @@ class RewardedAdManager @Inject constructor(
                             params = mapOf("message" to adError.message)
                         )
                     )
+                    // If a user was waiting for the ad to show, fall back gracefully to grant reward
+                    val pending = pendingShowRequest
+                    pendingShowRequest = null
+                    pending?.second?.invoke()
                 }
 
                 override fun onAdLoaded(ad: RewardedAd) {
                     rewardedAd = ad
                     isAdLoading = false
                     analytics.logEvent(AdAnalyticsEvent("rewarded_loaded"))
+
+                    // If a user clicked "Watch Ad" while loading, immediately display it now!
+                    val pending = pendingShowRequest
+                    if (pending != null) {
+                        pendingShowRequest = null
+                        val (activity, onReward) = pending
+                        if (!activity.isFinishing && !activity.isDestroyed) {
+                            showLoadedAd(ad, activity, onReward)
+                        } else {
+                            onReward()
+                        }
+                    }
                 }
             }
         )
@@ -60,58 +80,71 @@ class RewardedAdManager @Inject constructor(
         activity: Activity,
         onUserEarnedReward: () -> Unit
     ) {
+        if (!adConfigProvider.isAdsEnabled) {
+            onUserEarnedReward()
+            return
+        }
+
         val ad = rewardedAd
-        if (ad != null && adConfigProvider.isAdsEnabled) {
-            var isRewardEarned = false
+        if (ad != null) {
+            showLoadedAd(ad, activity, onUserEarnedReward)
+        } else if (isAdLoading) {
+            pendingShowRequest = activity to onUserEarnedReward
+        } else {
+            pendingShowRequest = activity to onUserEarnedReward
+            loadAd()
+        }
+    }
 
-            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                override fun onAdDismissedFullScreenContent() {
-                    rewardedAd = null
-                    analytics.logEvent(AdAnalyticsEvent("rewarded_dismissed"))
-                    if (isRewardEarned) {
-                        onUserEarnedReward()
-                    }
-                    loadAd() // Preload the next rewarded ad
-                }
+    private fun showLoadedAd(
+        ad: RewardedAd,
+        activity: Activity,
+        onUserEarnedReward: () -> Unit
+    ) {
+        rewardedAd = null
+        var isRewardEarned = false
 
-                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                    rewardedAd = null
-                    analytics.logEvent(
-                        AdAnalyticsEvent(
-                            eventName = "rewarded_show_failed",
-                            params = mapOf("message" to adError.message)
-                        )
-                    )
-                    // If ad failed to display, gracefully grant reward so user flow isn't broken
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                analytics.logEvent(AdAnalyticsEvent("rewarded_dismissed"))
+                if (isRewardEarned) {
                     onUserEarnedReward()
-                    loadAd()
                 }
-
-                override fun onAdShowedFullScreenContent() {
-                    analytics.logEvent(AdAnalyticsEvent("rewarded_impression"))
-                }
-
-                override fun onAdClicked() {
-                    analytics.logEvent(AdAnalyticsEvent("rewarded_clicked"))
-                }
+                loadAd() // Preload the next rewarded ad
             }
 
-            ad.show(activity) { rewardItem ->
-                isRewardEarned = true
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 analytics.logEvent(
                     AdAnalyticsEvent(
-                        eventName = "rewarded_earned",
-                        params = mapOf(
-                            "type" to rewardItem.type,
-                            "amount" to rewardItem.amount.toString()
-                        )
+                        eventName = "rewarded_show_failed",
+                        params = mapOf("message" to adError.message)
                     )
                 )
+                // If ad failed to display, gracefully grant reward so user flow isn't broken
+                onUserEarnedReward()
+                loadAd()
             }
-        } else {
-            // Ads disabled (e.g. Pro subscriber) or ad not available yet -> grant reward directly
-            onUserEarnedReward()
-            loadAd()
+
+            override fun onAdShowedFullScreenContent() {
+                analytics.logEvent(AdAnalyticsEvent("rewarded_impression"))
+            }
+
+            override fun onAdClicked() {
+                analytics.logEvent(AdAnalyticsEvent("rewarded_clicked"))
+            }
+        }
+
+        ad.show(activity) { rewardItem ->
+            isRewardEarned = true
+            analytics.logEvent(
+                AdAnalyticsEvent(
+                    eventName = "rewarded_earned",
+                    params = mapOf(
+                        "type" to rewardItem.type,
+                        "amount" to rewardItem.amount.toString()
+                    )
+                )
+            )
         }
     }
 }

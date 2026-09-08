@@ -73,6 +73,7 @@ import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.component.scrolledBottomElevation
 import com.ssverma.core.ui.component.showImmediateSnackbar
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.filter.R
 import com.ssverma.feature.filter.ui.discovery.component.DiscoveryFilterSheet
 import com.ssverma.feature.filter.ui.discovery.component.QuickVibesRow
@@ -601,7 +602,7 @@ fun UniversalDiscoveryScreen(
                 onOpenProUpgrade()
             },
             onWatchRewardAd = {
-                val activity = context as? Activity
+                val activity = context.findActivity()
                 if (activity != null) {
                     viewModel.watchAdForMultiServicePass(activity)
                 }

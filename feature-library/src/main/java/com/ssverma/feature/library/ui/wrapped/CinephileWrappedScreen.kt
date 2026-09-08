@@ -261,14 +261,13 @@ fun CinephileWrappedScreen(
         WrappedStoryExportBottomSheet(
             summary = summary,
             selectedStyle = uiState.selectedStyle,
-            isWatermarkFree = uiState.isWatermarkFree,
             isProActive = uiState.isProActive,
             isPassActive = uiState.isPassActive,
             isExporting = uiState.isExporting,
             isProPaymentEnabled = uiState.isProPaymentEnabled,
             isGateOpen = uiState.isGateOpen,
             onStyleSelected = viewModel::selectStyle,
-            onToggleWatermark = viewModel::toggleWatermarkFree,
+            onAttemptExport = viewModel::attemptExport,
             onDismissGate = viewModel::dismissGate,
             onWatchAdForPass = viewModel::watchAdForWrappedPass,
             onOpenProPaywall = {
@@ -277,7 +276,8 @@ fun CinephileWrappedScreen(
                 onOpenProPaywall()
             },
             onDismissRequest = viewModel::dismissExportSheet,
-            onSetExporting = viewModel::setExporting
+            onSetExporting = viewModel::setExporting,
+            userName = uiState.userName
         )
     }
 }

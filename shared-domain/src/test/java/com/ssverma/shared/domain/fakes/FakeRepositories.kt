@@ -51,8 +51,7 @@ class FakeDiaryRepository : DiaryRepository {
             if (entry.id == 0L) (entries.value.maxOfOrNull { it.id } ?: 0L) + 1L else entry.id
         val finalEntry = entry.copy(id = nextId)
         entries.update { current ->
-            val index =
-                current.indexOfFirst { it.id == finalEntry.id || (it.mediaId == finalEntry.mediaId && it.mediaType == finalEntry.mediaType) }
+            val index = current.indexOfFirst { it.id == finalEntry.id }
             if (index != -1) {
                 current.toMutableList().apply { set(index, finalEntry) }
             } else {

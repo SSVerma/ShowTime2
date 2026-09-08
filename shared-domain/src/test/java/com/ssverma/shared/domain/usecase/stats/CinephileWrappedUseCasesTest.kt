@@ -151,4 +151,43 @@ class CinephileWrappedUseCasesTest {
         assertEquals(2, allTimeSummary.totalLogged)
         assertEquals(4.5f, allTimeSummary.averageUserRating, 0.01f)
     }
+
+    @Test
+    fun `top rated media deduplicates multiple rewatches of the same mediaId`() = runTest {
+        val date1 = DateUtils.toMillis(LocalDate.of(2026, 1, 10))
+        val date2 = DateUtils.toMillis(LocalDate.of(2026, 2, 10))
+
+        // Same movie logged twice with 5 stars
+        fakeDiaryRepository.saveDiaryEntry(
+            DiaryEntry(
+                id = 1,
+                mediaId = 999,
+                mediaType = MediaType.Movie,
+                title = "Moana",
+                posterImageUrl = "/moana.jpg",
+                releaseDate = "2016-11-23",
+                userRating = 5.0f,
+                isRewatch = false,
+                loggedAt = date1
+            )
+        )
+        fakeDiaryRepository.saveDiaryEntry(
+            DiaryEntry(
+                id = 2,
+                mediaId = 999,
+                mediaType = MediaType.Movie,
+                title = "Moana",
+                posterImageUrl = "/moana.jpg",
+                releaseDate = "2016-11-23",
+                userRating = 5.0f,
+                isRewatch = true,
+                loggedAt = date2
+            )
+        )
+
+        val summary = getCinephileWrappedUseCase(2026).first()
+        assertEquals(2, summary.totalLogged)
+        assertEquals(1, summary.topRatedMedia.size)
+        assertEquals("Moana", summary.topRatedMedia[0].title)
+    }
 }

@@ -56,6 +56,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
@@ -441,7 +442,7 @@ fun CinemaReceiptScreen(
             description = stringResource(R.string.receipt_gate_desc),
             rewardActionLabel = stringResource(R.string.receipt_watch_ad_pass),
             onWatchAdClick = {
-                val activity = context as? Activity
+                val activity = context.findActivity()
                 if (activity != null) {
                     viewModel.watchAdForWatermarkFreePass(activity)
                 }

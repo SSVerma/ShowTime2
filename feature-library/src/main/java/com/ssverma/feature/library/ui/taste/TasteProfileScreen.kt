@@ -45,6 +45,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.ui.diary.component.DiaryFilterRow
 import com.ssverma.feature.library.ui.taste.component.CinephilePersonaCard
@@ -249,7 +250,7 @@ fun TasteProfileScreen(
             description = stringResource(R.string.taste_gate_desc),
             rewardActionLabel = stringResource(R.string.taste_watch_ad_pass),
             onWatchAdClick = {
-                val activity = context as? Activity
+                val activity = context.findActivity()
                 if (activity != null) {
                     viewModel.watchAdForTasteRadarPass(activity)
                 }

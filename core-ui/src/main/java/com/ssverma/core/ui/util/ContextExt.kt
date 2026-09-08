@@ -1,6 +1,8 @@
 package com.ssverma.core.ui.util
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -12,3 +14,10 @@ fun Context.openAppSettings() {
     }
     startActivity(intent)
 }
+
+tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+

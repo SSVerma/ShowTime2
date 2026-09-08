@@ -138,6 +138,7 @@ import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarPadding
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.domain.ReceiptGeneratorHelper
 import com.ssverma.feature.library.domain.model.ReceiptItem
@@ -792,7 +793,7 @@ fun LibraryScreen(
     }
 
     if (isQuotaGateVisible) {
-        val activity = context as? Activity
+        val activity = context.findActivity()
         FeatureQuotaGateBottomSheet(
             title = stringResource(R.string.custom_list_quota_reached_title),
             description = stringResource(R.string.custom_list_quota_reached_desc),

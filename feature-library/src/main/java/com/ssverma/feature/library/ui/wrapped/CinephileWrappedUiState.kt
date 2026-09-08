@@ -18,5 +18,6 @@ data class CinephileWrappedUiState(
     val isProPaymentEnabled: Boolean = true,
     val isGateOpen: Boolean = false,
     val isExportSheetOpen: Boolean = false,
-    val pendingStyle: WrappedStoryStyle? = null
+    val pendingStyle: WrappedStoryStyle? = null,
+    val userName: String? = null
 )

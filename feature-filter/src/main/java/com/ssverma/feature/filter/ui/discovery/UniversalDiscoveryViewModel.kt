@@ -212,6 +212,8 @@ class UniversalDiscoveryViewModel @Inject constructor(
                 scheduleQuery(debounceMs = 0)
             }
         }
+
+        rewardedAdManager.loadAd()
     }
 
     fun initFromNavKey(navKey: UniversalDiscoveryNavKey) {
@@ -447,6 +449,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
                         pendingProviderToSwitch = provider
                     )
                 }
+                rewardedAdManager.loadAd()
             }
         }
     }
@@ -486,6 +489,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
                         pendingProviderToSwitch = null
                     )
                 }
+                rewardedAdManager.loadAd()
                 scheduleQuery(debounceMs = 0)
             }
         }

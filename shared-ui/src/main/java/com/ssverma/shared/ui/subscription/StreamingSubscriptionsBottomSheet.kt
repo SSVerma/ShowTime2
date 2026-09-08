@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
@@ -182,7 +183,7 @@ fun StreamingSubscriptionsBottomSheet(
 
                         FilledTonalButton(
                             onClick = {
-                                val activity = context as? android.app.Activity
+                                val activity = context.findActivity()
                                 if (activity != null) {
                                     viewModel.watchAdForMultiServicePass(activity)
                                 }
@@ -204,7 +205,7 @@ fun StreamingSubscriptionsBottomSheet(
                     } else {
                         Button(
                             onClick = {
-                                val activity = context as? android.app.Activity
+                                val activity = context.findActivity()
                                 if (activity != null) {
                                     viewModel.watchAdForMultiServicePass(activity)
                                 }

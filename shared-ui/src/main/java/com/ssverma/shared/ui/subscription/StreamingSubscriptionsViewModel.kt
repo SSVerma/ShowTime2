@@ -89,6 +89,7 @@ class StreamingSubscriptionsViewModel @Inject constructor(
         }
 
         loadProviders()
+        rewardedAdManager.loadAd()
     }
 
     fun loadProviders() {
@@ -118,6 +119,7 @@ class StreamingSubscriptionsViewModel @Inject constructor(
             } else {
                 pendingProviderToToggle = providerId
                 _uiState.update { it.copy(showMultiServiceGate = true) }
+                rewardedAdManager.loadAd()
                 viewModelScope.launch {
                     _uiEffect.emit(StreamingSubscriptionsUiEffect.ShowMultiServiceGate)
                 }

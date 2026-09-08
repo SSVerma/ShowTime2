@@ -8,6 +8,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.ssverma.core.backup.auth.GoogleAuthClient
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.auth.domain.AuthSessionManager
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthProvider
@@ -53,7 +54,7 @@ fun SignInIfRequiredSheet(
 
         AuthProvider.GOOGLE -> {
             LaunchedEffect(Unit) {
-                val activity = context as? Activity
+                val activity = context.findActivity()
                 if (activity != null) {
                     val result = googleAuthClient.signIn(activity)
                     if (result.isSuccess) {

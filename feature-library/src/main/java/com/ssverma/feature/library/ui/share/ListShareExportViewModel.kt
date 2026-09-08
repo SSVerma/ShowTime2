@@ -81,6 +81,8 @@ class ListShareExportViewModel @Inject constructor(
                 }
             }
         }
+
+        rewardedAdManager.loadAd()
     }
 
     fun selectTheme(theme: ListShareTheme) {
@@ -94,6 +96,7 @@ class ListShareExportViewModel @Inject constructor(
             }
         } else {
             _uiState.update { it.copy(isGateOpen = true, pendingTheme = theme) }
+            rewardedAdManager.loadAd()
         }
     }
 

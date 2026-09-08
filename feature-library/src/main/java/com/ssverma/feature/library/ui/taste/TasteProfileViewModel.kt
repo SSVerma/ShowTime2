@@ -64,6 +64,8 @@ class TasteProfileViewModel @Inject constructor(
                 _isProPaymentEnabled.value = isEnabled
             }
         }
+
+        rewardedAdManager.loadAd()
     }
 
     val uiState: StateFlow<TasteProfileUiState> = combine(
@@ -107,6 +109,7 @@ class TasteProfileViewModel @Inject constructor(
 
     fun openGate() {
         _isGateOpen.value = true
+        rewardedAdManager.loadAd()
     }
 
     fun dismissGate() {

@@ -94,6 +94,8 @@ class CinemaReceiptViewModel @Inject constructor(
                 _isProPaymentEnabled.value = isEnabled
             }
         }
+
+        rewardedAdManager.loadAd()
     }
 
     val historyItems: StateFlow<List<SavedMediaItem>> = libraryRepository.getAllWatchHistory()
@@ -245,6 +247,7 @@ class CinemaReceiptViewModel @Inject constructor(
         if (currentStyle.isProOnly && !isUnlocked) {
             _pendingStyle.value = currentStyle
             _isGateOpen.value = true
+            rewardedAdManager.loadAd()
         } else {
             onAllowed()
         }

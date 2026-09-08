@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -47,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.util.ShareImageHelper
 import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
@@ -58,20 +58,20 @@ import kotlinx.coroutines.launch
 fun WrappedStoryExportBottomSheet(
     summary: WrappedYearSummary,
     selectedStyle: WrappedStoryStyle,
-    isWatermarkFree: Boolean,
     isProActive: Boolean,
     isPassActive: Boolean,
     isExporting: Boolean,
     isProPaymentEnabled: Boolean,
     isGateOpen: Boolean,
     onStyleSelected: (WrappedStoryStyle) -> Unit,
-    onToggleWatermark: () -> Unit,
+    onAttemptExport: (onAllowed: () -> Unit) -> Unit,
     onDismissGate: () -> Unit,
     onWatchAdForPass: (Activity) -> Unit,
     onOpenProPaywall: () -> Unit,
     onDismissRequest: () -> Unit,
     onSetExporting: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    userName: String? = null,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
     val context = LocalContext.current
@@ -143,40 +143,6 @@ fun WrappedStoryExportBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            // Watermark Toggle Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = MaterialTheme.spacing.medium, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.wrapped_watermark_free_title),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = if (isWatermarkFree) {
-                            stringResource(R.string.wrapped_watermark_free_active)
-                        } else {
-                            stringResource(R.string.wrapped_watermark_free_hint)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Switch(
-                    checked = isWatermarkFree,
-                    onCheckedChange = { onToggleWatermark() }
-                )
-            }
-
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
             // Live Story Card Preview (Captured into Bitmap)
@@ -193,8 +159,9 @@ fun WrappedStoryExportBottomSheet(
             ) {
                 WrappedStoryCardView(
                     summary = summary,
+                    userName = userName,
                     style = selectedStyle,
-                    showWatermark = !isWatermarkFree,
+                    showWatermark = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -211,28 +178,30 @@ fun WrappedStoryExportBottomSheet(
             ) {
                 OutlinedButton(
                     onClick = {
-                        coroutineScope.launch {
-                            onSetExporting(true)
-                            try {
-                                val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                val success = ShareImageHelper.saveBitmapToGallery(
-                                    context = context,
-                                    bitmap = bitmap,
-                                    title = "ShowTime_Wrapped_${
-                                        summary.yearLabel.replace(
-                                            " ",
-                                            "_"
-                                        )
-                                    }"
-                                )
-                                Toast.makeText(
-                                    context,
-                                    if (success) saveSuccess else saveFailed,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } catch (_: Exception) {
-                            } finally {
-                                onSetExporting(false)
+                        onAttemptExport {
+                            coroutineScope.launch {
+                                onSetExporting(true)
+                                try {
+                                    val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+                                    val success = ShareImageHelper.saveBitmapToGallery(
+                                        context = context,
+                                        bitmap = bitmap,
+                                        title = "ShowTime_Wrapped_${
+                                            summary.yearLabel.replace(
+                                                " ",
+                                                "_"
+                                            )
+                                        }"
+                                    )
+                                    Toast.makeText(
+                                        context,
+                                        if (success) saveSuccess else saveFailed,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } catch (_: Exception) {
+                                } finally {
+                                    onSetExporting(false)
+                                }
                             }
                         }
                     },
@@ -253,18 +222,20 @@ fun WrappedStoryExportBottomSheet(
 
                 Button(
                     onClick = {
-                        coroutineScope.launch {
-                            onSetExporting(true)
-                            try {
-                                val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                ShareImageHelper.shareBitmap(
-                                    context = context,
-                                    bitmap = bitmap,
-                                    chooserTitle = chooserTitle
-                                )
-                            } catch (_: Exception) {
-                            } finally {
-                                onSetExporting(false)
+                        onAttemptExport {
+                            coroutineScope.launch {
+                                onSetExporting(true)
+                                try {
+                                    val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+                                    ShareImageHelper.shareBitmap(
+                                        context = context,
+                                        bitmap = bitmap,
+                                        chooserTitle = chooserTitle
+                                    )
+                                } catch (_: Exception) {
+                                } finally {
+                                    onSetExporting(false)
+                                }
                             }
                         }
                     },
@@ -300,7 +271,7 @@ fun WrappedStoryExportBottomSheet(
             description = stringResource(R.string.wrapped_gate_desc),
             rewardActionLabel = stringResource(R.string.wrapped_watch_ad_pass),
             onWatchAdClick = {
-                val activity = context as? Activity
+                val activity = context.findActivity()
                 if (activity != null) {
                     onWatchAdForPass(activity)
                 }

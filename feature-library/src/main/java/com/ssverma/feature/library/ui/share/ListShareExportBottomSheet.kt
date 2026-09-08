@@ -69,6 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.util.ShareImageHelper
 import com.ssverma.shared.domain.model.library.ListShareCardFormat
@@ -515,7 +516,7 @@ fun ListShareExportBottomSheet(
                     ) {
                         Button(
                             onClick = {
-                                val activity = context as? Activity
+                                val activity = context.findActivity()
                                 if (activity != null) {
                                     viewModel.unlockThemesWithRewardedAd(activity)
                                 }

@@ -58,6 +58,7 @@ import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.account.R
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.auth.domain.model.TraktUser
@@ -185,7 +186,7 @@ fun TraktSyncScreen(
 
         // Rewarded Quota Gate Bottom Sheet
         if (uiState.isQuotaGateVisible) {
-            val activity = context as? Activity
+            val activity = context.findActivity()
             FeatureQuotaGateBottomSheet(
                 title = stringResource(R.string.trakt_pro_locked_title),
                 description = stringResource(R.string.trakt_pro_locked_desc),
@@ -203,7 +204,7 @@ fun TraktSyncScreen(
 
         // Pro Paywall Bottom Sheet
         if (uiState.isPaywallVisible) {
-            val activity = context as? Activity
+            val activity = context.findActivity()
             ProPaywallBottomSheet(
                 products = uiState.availableProducts,
                 isProActive = uiState.isProActive,

@@ -44,6 +44,7 @@ import com.ssverma.shared.domain.model.stats.WrappedYearSummary
 fun WrappedStoryCardView(
     summary: WrappedYearSummary,
     modifier: Modifier = Modifier,
+    userName: String? = null,
     style: WrappedStoryStyle = WrappedStoryStyle.CLASSIC_VELVET,
     showWatermark: Boolean = true
 ) {
@@ -131,8 +132,14 @@ fun WrappedStoryCardView(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
+                        val headerText = when {
+                            userName != null && summary.year == 0 -> "${userName.uppercase()}'S ALL-TIME WRAPPED"
+                            userName != null -> "${userName.uppercase()}'S ${summary.year} WRAPPED"
+                            summary.year == 0 -> "ALL-TIME CINEPHILE WRAPPED"
+                            else -> "${summary.year} CINEPHILE WRAPPED"
+                        }
                         Text(
-                            text = if (summary.year == 0) "ALL-TIME CINEPHILE WRAPPED" else "${summary.year} CINEPHILE WRAPPED",
+                            text = headerText,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp,
