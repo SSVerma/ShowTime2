@@ -1,5 +1,6 @@
 package com.ssverma.feature.library.ui.receipt
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -318,7 +320,7 @@ private fun GoldenVipPassCard(
         Surface(
             shape = RoundedCornerShape(20.dp),
             color = goldAccent.copy(alpha = 0.15f),
-            border = androidx.compose.foundation.BorderStroke(1.dp, goldAccent.copy(alpha = 0.5f))
+            border = BorderStroke(1.dp, goldAccent.copy(alpha = 0.5f))
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -449,7 +451,7 @@ private fun GoldenVipPassCard(
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = Color.Transparent,
-                border = androidx.compose.foundation.BorderStroke(1.dp, goldAccent)
+                border = BorderStroke(1.dp, goldAccent)
             ) {
                 Text(
                     text = stringResource(R.string.receipt_admit_one),
@@ -513,7 +515,7 @@ private fun CyberpunkNeonCard(
             Surface(
                 shape = RoundedCornerShape(4.dp),
                 color = neonAmber.copy(alpha = 0.2f),
-                border = androidx.compose.foundation.BorderStroke(1.dp, neonAmber)
+                border = BorderStroke(1.dp, neonAmber)
             ) {
                 Text(
                     text = "SYS:ONLINE",
@@ -752,7 +754,7 @@ private fun BarcodeCanvas(
             drawRect(
                 color = color,
                 topLeft = Offset(currentX, 0f),
-                size = androidx.compose.ui.geometry.Size(currentBarWidth, height)
+                size = Size(currentBarWidth, height)
             )
             currentX += currentBarWidth + (barWidth * 0.5f)
             if (currentX >= width) break
