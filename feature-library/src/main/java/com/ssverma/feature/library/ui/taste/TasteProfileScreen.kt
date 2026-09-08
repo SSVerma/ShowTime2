@@ -1,10 +1,14 @@
 package com.ssverma.feature.library.ui.taste
 
 import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +39,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +51,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
@@ -51,11 +58,13 @@ import com.ssverma.feature.library.ui.diary.component.DiaryFilterRow
 import com.ssverma.feature.library.ui.taste.component.CinephilePersonaCard
 import com.ssverma.feature.library.ui.taste.component.TasteEraDistributionCard
 import com.ssverma.feature.library.ui.taste.component.TasteKeyMetricsRow
+import com.ssverma.feature.library.ui.taste.component.TastePersonaShareBottomSheet
 import com.ssverma.feature.library.ui.taste.component.TasteRatingHistogram
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationShelfRow
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationsHeroCard
 import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.stats.TasteEraDistribution
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,12 +101,7 @@ fun TasteProfileScreen(
                 },
                 onBackPressed = onBackClick,
                 actions = {
-                    IconButton(onClick = {
-                        val shareText = viewModel.getShareTasteText(uiState.stats)
-                        with(IntentDispatcher) {
-                            context.dispatchShareTextIntent(text = shareText)
-                        }
-                    }) {
+                    IconButton(onClick = viewModel::openShareSheet) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
                             contentDescription = stringResource(R.string.taste_share_cd)
@@ -156,12 +160,7 @@ fun TasteProfileScreen(
                 item {
                     CinephilePersonaCard(
                         persona = uiState.stats.persona,
-                        onShareClick = {
-                            val shareText = viewModel.getShareTasteText(uiState.stats)
-                            with(IntentDispatcher) {
-                                context.dispatchShareTextIntent(text = shareText)
-                            }
-                        },
+                        onShareClick = viewModel::openShareSheet,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                     )
                 }
@@ -229,8 +228,9 @@ fun TasteProfileScreen(
                     }
                 } else {
                     item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TasteLockedTeaserCard(
+                        Spacer(modifier = Modifier.height(10.dp))
+                        TasteFrostedTeaserSection(
+                            eras = uiState.stats.eraDistribution,
                             onUnlockClick = viewModel::openGate,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                         )
@@ -262,6 +262,17 @@ fun TasteProfileScreen(
             onDismissRequest = { viewModel.dismissGate() },
             isProPaymentEnabled = uiState.isProPaymentEnabled,
             icon = Icons.Rounded.AutoAwesome
+        )
+    }
+
+    if (uiState.isShareSheetOpen) {
+        TastePersonaShareBottomSheet(
+            stats = uiState.stats,
+            isExporting = uiState.isExporting,
+            onDismissRequest = viewModel::dismissShareSheet,
+            onSetExporting = viewModel::setExporting,
+            shareText = viewModel.getShareTasteText(uiState.stats),
+            userName = uiState.userName
         )
     }
 }
@@ -318,74 +329,152 @@ private fun EmptyTasteProfileState(
 }
 
 @Composable
-private fun TasteLockedTeaserCard(
+private fun TasteFrostedTeaserSection(
+    eras: List<TasteEraDistribution>,
     onUnlockClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         modifier = modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(52.dp)
+            // Teaser Content (User's real Era spectrum + Mock shelf preview) with Hardware RenderEffect blur on API 31+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            Modifier.blur(14.dp)
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .alpha(0.38f)
+                    .pointerInput(Unit) {} // Consume touch events to prevent click-through
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                if (eras.isNotEmpty()) {
+                    TasteEraDistributionCard(
+                        eras = eras,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                }
+                TeaserShelfPlaceholder(
+                    modifier = Modifier.padding(
+                        horizontal = 16.dp,
+                        vertical = 8.dp
+                    )
+                )
+            }
+
+            // Frosted Scrim Overlay
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.45f),
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.98f)
+                            )
+                        )
+                    )
+            )
+
+            // Floating Centered Unlock Card
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(52.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.AutoAwesome,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(26.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = stringResource(R.string.taste_frosted_teaser_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = stringResource(R.string.taste_frosted_teaser_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = onUnlockClick,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
                     Icon(
-                        imageVector = Icons.Rounded.AutoAwesome,
+                        imageVector = Icons.Rounded.Star,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.taste_frosted_teaser_cta),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Text(
-                text = stringResource(R.string.taste_locked_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = stringResource(R.string.taste_locked_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = onUnlockClick,
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Star,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.taste_unlock_cta),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
-                )
+@Composable
+private fun TeaserShelfPlaceholder(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = "RECOMMENDED FOR YOU",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            repeat(3) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(120.dp)
+                ) {}
             }
         }
     }

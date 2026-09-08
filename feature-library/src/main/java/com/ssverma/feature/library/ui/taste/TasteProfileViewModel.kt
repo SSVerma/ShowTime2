@@ -7,6 +7,7 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.ads.quota.RewardManager
 import com.ssverma.core.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.shared.data.repository.BackupRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.domain.model.stats.RecommendationShelf
@@ -31,6 +32,7 @@ class TasteProfileViewModel @Inject constructor(
     private val getTasteProfileUseCase: GetTasteProfileUseCase,
     private val getSmartRecommendationsUseCase: GetSmartRecommendationsUseCase,
     private val billingRepository: BillingRepository,
+    private val backupRepository: BackupRepository,
     private val rewardManager: RewardManager,
     private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
@@ -43,9 +45,16 @@ class TasteProfileViewModel @Inject constructor(
     private val _isPassActive = MutableStateFlow(false)
     private val _isProPaymentEnabled = MutableStateFlow(true)
     private val _isGateOpen = MutableStateFlow(false)
+    private val _userName = MutableStateFlow<String?>(null)
+    private val _isShareSheetOpen = MutableStateFlow(false)
+    private val _isExporting = MutableStateFlow(false)
 
     init {
-        loadRecommendations(DiaryFilterType.ALL)
+        viewModelScope.launch {
+            backupRepository.googleUser.collectLatest { user ->
+                _userName.value = user?.displayName?.ifBlank { null }
+            }
+        }
 
         viewModelScope.launch {
             combine(
@@ -54,8 +63,13 @@ class TasteProfileViewModel @Inject constructor(
             ) { isPro, passStatus ->
                 isPro to passStatus.isTasteAnalyticsUnlocked
             }.collectLatest { (isPro, isPass) ->
+                val wasUnlocked = _isProActive.value || _isPassActive.value
+                val isNowUnlocked = isPro || isPass
                 _isProActive.value = isPro
                 _isPassActive.value = isPass
+                if (isNowUnlocked && (!wasUnlocked || _recommendationShelves.value.isEmpty())) {
+                    loadRecommendations(_selectedFilter.value, page = 1)
+                }
             }
         }
 
@@ -86,8 +100,15 @@ class TasteProfileViewModel @Inject constructor(
             _isGateOpen
         ) { isPro, isPass, isProPaymentEnabled, isGateOpen ->
             TasteAuthState(isPro, isPass, isProPaymentEnabled, isGateOpen)
+        },
+        combine(
+            _userName,
+            _isShareSheetOpen,
+            _isExporting
+        ) { userName, isShareSheetOpen, isExporting ->
+            TasteExportState(userName, isShareSheetOpen, isExporting)
         }
-    ) { dataState, authState ->
+    ) { dataState, authState, exportState ->
         TasteProfileUiState(
             isLoading = false,
             selectedFilter = dataState.filter,
@@ -97,7 +118,10 @@ class TasteProfileViewModel @Inject constructor(
             isProActive = authState.isPro,
             isPassActive = authState.isPass,
             isProPaymentEnabled = authState.isProPaymentEnabled,
-            isGateOpen = authState.isGateOpen
+            isGateOpen = authState.isGateOpen,
+            userName = exportState.userName,
+            isShareSheetOpen = exportState.isShareSheetOpen,
+            isExporting = exportState.isExporting
         )
     }.stateIn(
         scope = viewModelScope,
@@ -116,6 +140,18 @@ class TasteProfileViewModel @Inject constructor(
         _isGateOpen.value = false
     }
 
+    fun openShareSheet() {
+        _isShareSheetOpen.value = true
+    }
+
+    fun dismissShareSheet() {
+        _isShareSheetOpen.value = false
+    }
+
+    fun setExporting(isExporting: Boolean) {
+        _isExporting.value = isExporting
+    }
+
     fun watchAdForTasteRadarPass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
@@ -129,7 +165,9 @@ class TasteProfileViewModel @Inject constructor(
         if (_selectedFilter.value == filter) return
         _selectedFilter.value = filter
         recommendationPage = 1
-        loadRecommendations(filter, page = 1)
+        if (_isProActive.value || _isPassActive.value) {
+            loadRecommendations(filter, page = 1)
+        }
     }
 
     fun refreshRecommendations() {
@@ -183,4 +221,10 @@ private data class TasteAuthState(
     val isPass: Boolean,
     val isProPaymentEnabled: Boolean,
     val isGateOpen: Boolean
+)
+
+private data class TasteExportState(
+    val userName: String?,
+    val isShareSheetOpen: Boolean,
+    val isExporting: Boolean
 )

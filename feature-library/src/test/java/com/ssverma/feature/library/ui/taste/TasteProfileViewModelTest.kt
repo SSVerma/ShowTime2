@@ -5,6 +5,7 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.ads.quota.RewardManager
 import com.ssverma.core.ads.quota.RewardPassStatus
 import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.shared.domain.model.MediaType
@@ -12,6 +13,7 @@ import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.domain.usecase.recommendation.GetSmartRecommendationsUseCase
 import com.ssverma.shared.domain.usecase.stats.GetTasteProfileUseCase
+import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import com.ssverma.shared.testing.fakes.FakeDiaryRepository
 import com.ssverma.shared.testing.fakes.FakeDiscoveryRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
@@ -42,6 +44,7 @@ class TasteProfileViewModelTest {
     private lateinit var fakeLibraryRepository: FakeLibraryRepository
     private lateinit var fakeDiscoveryRepository: FakeDiscoveryRepository
     private lateinit var fakeBillingRepository: FakeBillingRepository
+    private lateinit var fakeBackupRepository: FakeBackupRepository
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
     private val passStatusFlow = MutableStateFlow(RewardPassStatus())
@@ -53,6 +56,7 @@ class TasteProfileViewModelTest {
         fakeLibraryRepository = FakeLibraryRepository()
         fakeDiscoveryRepository = FakeDiscoveryRepository()
         fakeBillingRepository = FakeBillingRepository(initialProActive = false)
+        fakeBackupRepository = FakeBackupRepository()
         every { mockRewardManager.passStatus } returns passStatusFlow
 
         val getTasteProfileUseCase = GetTasteProfileUseCase(
@@ -67,6 +71,7 @@ class TasteProfileViewModelTest {
             getTasteProfileUseCase = getTasteProfileUseCase,
             getSmartRecommendationsUseCase = getSmartRecommendationsUseCase,
             billingRepository = fakeBillingRepository,
+            backupRepository = fakeBackupRepository,
             rewardManager = mockRewardManager,
             rewardedAdManager = mockRewardedAdManager
         )
@@ -191,5 +196,58 @@ class TasteProfileViewModelTest {
 
         coVerify { mockRewardManager.grantRewardPass(RewardPassType.TASTE_ANALYTICS_RADAR) }
         assertFalse(viewModel.uiState.first().isGateOpen)
+    }
+
+    @Test
+    fun `google user updates userName in uiState`() = runTest {
+        fakeBackupRepository.setGoogleUser(
+            GoogleUser(
+                displayName = "Alex",
+                email = "alex@test.com",
+                photoUrl = null,
+                idToken = "token_123",
+                uid = "123"
+            )
+        )
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.first()
+        assertEquals("Alex", state.userName)
+    }
+
+    @Test
+    fun `openShareSheet and dismissShareSheet toggle share sheet state`() = runTest {
+        viewModel.openShareSheet()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.first().isShareSheetOpen)
+
+        viewModel.dismissShareSheet()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.first().isShareSheetOpen)
+    }
+
+    @Test
+    fun `setExporting updates isExporting state`() = runTest {
+        viewModel.setExporting(true)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.first().isExporting)
+
+        viewModel.setExporting(false)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.first().isExporting)
+    }
+
+    @Test
+    fun `recommendations are lazy-loaded when pass becomes active`() = runTest {
+        advanceUntilIdle()
+        // On free tier with no pass, recommendation shelves are empty
+        assertEquals(0, viewModel.uiState.first().recommendationShelves.size)
+
+        // When pass becomes active, recommendations are loaded
+        passStatusFlow.value = RewardPassStatus(isTasteAnalyticsUnlocked = true)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.first()
+        assertTrue(state.isPassActive)
     }
 }

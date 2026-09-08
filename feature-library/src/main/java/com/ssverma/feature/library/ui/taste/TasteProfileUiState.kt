@@ -13,5 +13,8 @@ data class TasteProfileUiState(
     val isProActive: Boolean = false,
     val isPassActive: Boolean = false,
     val isProPaymentEnabled: Boolean = true,
-    val isGateOpen: Boolean = false
+    val isGateOpen: Boolean = false,
+    val userName: String? = null,
+    val isShareSheetOpen: Boolean = false,
+    val isExporting: Boolean = false
 )

@@ -193,6 +193,19 @@
     <string name="taste_locked_desc">Unlock era breakdown and tailored recommendations powered by your diary ratings.</string>
     <string name="taste_unlock_cta">Unlock with Pro or 24h Pass</string>
     <string name="taste_watch_ad_pass">Watch Video for 24h Pass</string>
+    <string name="taste_frosted_teaser_title">Decades Time Machine &amp; AI Recommendations</string>
+    <string name="taste_frosted_teaser_desc">Discover your cinematic eras and personalized recommendations based on your unique taste.</string>
+    <string name="taste_frosted_teaser_cta">✦ Unlock with Ad or Pro</string>
+    <string name="taste_share_card_title">Share Taste Profile</string>
+    <string name="taste_share_card_subtitle">Export an aesthetic cinephile persona card</string>
+    <string name="taste_share_image_btn">Share Story Card</string>
+    <string name="taste_save_image_btn">Save Card</string>
+    <string name="taste_share_text_btn">Share Text Summary</string>
+    <string name="taste_share_save_success">Taste profile card saved to gallery!</string>
+    <string name="taste_share_save_failed">Failed to save card</string>
+    <string name="taste_share_chooser">Share Cinephile Taste Profile</string>
+    <string name="taste_card_tagline">ShowTime • Track &amp; Share Your Cinema Journey</string>
+    <string name="taste_card_top_era">Top Era: %1$s</string>
 
     <!-- Cinephile Wrapped Story Freemium Monetization -->
     <string name="wrapped_style_label">Story Card Style</string>
