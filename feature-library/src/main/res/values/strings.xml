@@ -198,7 +198,7 @@
     <string name="taste_frosted_teaser_cta">Unlock with Ad or Pro</string>
     <string name="taste_share_card_title">Share Taste Profile</string>
     <string name="taste_share_card_subtitle">Export an aesthetic cinephile persona card</string>
-    <string name="taste_share_image_btn">Share Story Card</string>
+    <string name="taste_share_image_btn">Share Card</string>
     <string name="taste_save_image_btn">Save Card</string>
     <string name="taste_share_text_btn">Share Text Summary</string>
     <string name="taste_share_save_success">Taste profile card saved to gallery!</string>

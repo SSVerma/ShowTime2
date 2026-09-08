@@ -4,10 +4,12 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +48,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
@@ -185,8 +188,9 @@ fun TastePersonaShareBottomSheet(
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(46.dp),
-                    shape = RoundedCornerShape(14.dp)
+                        .heightIn(min = 48.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Download,
@@ -196,7 +200,9 @@ fun TastePersonaShareBottomSheet(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = stringResource(R.string.taste_save_image_btn),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -222,9 +228,10 @@ fun TastePersonaShareBottomSheet(
                         }
                     },
                     modifier = Modifier
-                        .weight(1.2f)
-                        .height(46.dp),
+                        .weight(1f)
+                        .heightIn(min = 48.dp),
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
@@ -237,7 +244,9 @@ fun TastePersonaShareBottomSheet(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = stringResource(R.string.taste_share_image_btn),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
