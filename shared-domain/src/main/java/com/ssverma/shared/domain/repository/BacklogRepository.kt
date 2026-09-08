@@ -24,6 +24,7 @@ interface BacklogRepository {
     ): CinephileChallenge
 
     suspend fun deleteCustomChallenge(challengeId: String)
+    suspend fun updateCustomChallenge(challenge: CinephileChallenge)
     suspend fun addBlindspot(item: BlindspotPriorityItem)
     suspend fun removeBlindspot(mediaId: Int, mediaType: MediaType)
     suspend fun isBlindspot(mediaId: Int, mediaType: MediaType): Boolean

@@ -299,8 +299,8 @@
     <string name="challenges_create_goal_desc_label">Description or Motivation (Optional)</string>
     <string name="challenges_create_goal_desc_placeholder">e.g. Watch 50 movies &amp; 10 TV shows this year</string>
     <string name="challenges_create_goal_media_focus">Media Type Focus</string>
-    <string name="challenges_create_goal_titles_label">Add Specific Titles (Optional)</string>
-    <string name="challenges_create_goal_titles_desc">Pick specific movies or series to complete, or leave empty for a generic count sprint.</string>
+    <string name="challenges_create_goal_titles_label">Select Goal Titles</string>
+    <string name="challenges_create_goal_titles_desc">Search and select the movies or TV shows you want to tackle for this personal goal.</string>
     <string name="challenges_create_goal_search_trigger">Search &amp; add movies or TV shows…</string>
     <string name="challenges_create_goal_selected_titles">Selected Titles (%1$d)</string>
     <string name="challenges_create_goal_clear_all">Clear All</string>
@@ -340,4 +340,36 @@
     <string name="challenges_quota_reached_title">Personal Goal Limit Reached</string>
     <string name="challenges_quota_reached_desc">Free tier includes up to 2 active custom goals. Watch a quick ad to unlock an extra goal slot, or upgrade to ShowTime Pro for unlimited goals.</string>
     <string name="challenges_watch_ad_for_extra_goal_slot">Watch Ad for +1 Goal Slot</string>
+
+    <string name="challenges_create_goal_add_titles_hint">Search and select at least 1 title to create this goal</string>
+    <string name="challenges_create_goal_btn_disabled">Add titles to create goal</string>
+
+    <string name="challenges_delete_goal_btn">Delete Goal</string>
+    <string name="challenges_delete_goal_title">Delete Custom Goal?</string>
+    <string name="challenges_delete_goal_msg">Are you sure you want to delete \"%1$s\"? Your diary entries and logs will remain saved in ShowTime, but this custom goal will be permanently removed.</string>
+    <string name="challenges_delete_goal_confirm">Delete</string>
+
+    <string name="challenges_edit_goal_title">Edit Goal</string>
+    <string name="challenges_edit_goal_name">Goal Title</string>
+    <string name="challenges_edit_goal_desc">Motivation / Description</string>
+    <string name="challenges_edit_goal_save">Save Changes</string>
+
+    <string name="challenges_add_titles_cta">Add Titles</string>
+    <string name="challenges_add_titles_desc">Add more movies or TV shows to this challenge</string>
+    <string name="challenges_remove_title_from_goal_title">Remove Title from Goal?</string>
+    <string name="challenges_remove_title_from_goal_msg">Are you sure you want to remove \"%1$s\" from this goal?</string>
+    <string name="challenges_leave_dialog_title">Leave Challenge?</string>
+    <string name="challenges_leave_dialog_msg">Are you sure you want to leave \"%1$s\"? Your logged ratings and reviews will remain saved in your Cinema Diary, but this challenge will be removed from your active list.</string>
+    <string name="challenges_leave_action">Leave</string>
+    <string name="challenges_keep_challenge_action">Keep Challenge</string>
+    <string name="challenges_not_found">Challenge not found</string>
+    <string name="challenges_guide_title">How to Make Progress</string>
+    <string name="challenges_guide_with_titles">Log these titles into your Cinema Diary (rate or review them) as you watch them. Tap \"Log\" on any title below to mark it completed instantly!</string>
+    <string name="challenges_guide_without_titles">Log any movie or TV show into your Cinema Diary. Each logged entry automatically advances your sprint count towards your personal goal!</string>
+    <string name="challenges_filter_all_count">All (%1$d)</string>
+    <string name="challenges_filter_remaining_count">Remaining (%1$d)</string>
+    <string name="challenges_filter_watched_count">Watched (%1$d)</string>
+    <string name="challenges_cannot_remove_last_title">Cannot Remove Last Title</string>
+    <string name="challenges_cannot_remove_last_title_msg">A goal must have at least 1 title. Add another title first or delete the goal.</string>
+    <string name="challenges_cannot_remove_last_title_ok">Got It</string>
 </resources>

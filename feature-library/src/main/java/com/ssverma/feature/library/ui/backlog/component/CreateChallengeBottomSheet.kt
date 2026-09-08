@@ -37,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -45,7 +44,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -89,7 +87,6 @@ fun CreateChallengeBottomSheet(
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var mediaTypeFilter by remember { mutableStateOf(ChallengeMediaTypeFilter.ALL) }
-    var targetCount by remember { mutableFloatStateOf(25f) }
 
     var showClearAllConfirmation by remember { mutableStateOf(false) }
     var itemPendingRemoval by remember { mutableStateOf<ChallengeMediaItem?>(null) }
@@ -405,43 +402,57 @@ fun CreateChallengeBottomSheet(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Target Count Slider or Summary
-            val effectiveTargetCount = maxOf(targetCount.toInt(), selectedTitles.size, 1)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (selectedTitles.isNotEmpty()) {
-                        stringResource(R.string.challenges_create_goal_target_titles)
-                    } else {
-                        stringResource(R.string.challenges_create_goal_target_count)
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = stringResource(R.string.challenges_titles_count, effectiveTargetCount),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
+            // Target Count Summary or Prompt to Add Titles
             if (selectedTitles.isEmpty()) {
-                Slider(
-                    value = targetCount,
-                    onValueChange = { targetCount = it },
-                    valueRange = 5f..100f,
-                    steps = 18,
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
-                )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(14.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = stringResource(R.string.challenges_create_goal_add_titles_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.challenges_create_goal_target_titles),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.challenges_titles_count,
+                            selectedTitles.size
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -449,17 +460,17 @@ fun CreateChallengeBottomSheet(
             // Create Goal Button
             Button(
                 onClick = {
-                    if (title.isNotBlank()) {
+                    if (title.isNotBlank() && selectedTitles.isNotEmpty()) {
                         onCreateGoal(
                             title.trim(),
                             description.trim(),
                             mediaTypeFilter,
-                            effectiveTargetCount,
+                            selectedTitles.size,
                             selectedTitles
                         )
                     }
                 },
-                enabled = title.isNotBlank(),
+                enabled = title.isNotBlank() && selectedTitles.isNotEmpty(),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -472,7 +483,7 @@ fun CreateChallengeBottomSheet(
                             selectedTitles.size
                         )
                     } else {
-                        stringResource(R.string.challenges_create_goal_cta)
+                        stringResource(R.string.challenges_create_goal_btn_disabled)
                     },
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,

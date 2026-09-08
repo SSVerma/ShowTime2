@@ -1,5 +1,6 @@
 package com.ssverma.feature.library.ui.backlog.detail
 
+import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
@@ -36,6 +37,7 @@ class ChallengeDetailViewModelTest {
     private val getBacklogChallengesUseCase: GetBacklogChallengesUseCase = mockk(relaxed = true)
     private val manageChallengeUseCase: ManageChallengeUseCase = mockk(relaxed = true)
     private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase = mockk(relaxed = true)
+    private val tmdbApiService: TmdbApiService = mockk(relaxed = true)
 
     private val detailFlow = MutableStateFlow<Pair<ChallengeProgress?, Boolean>>(Pair(null, false))
     private lateinit var viewModel: ChallengeDetailViewModel
@@ -66,7 +68,8 @@ class ChallengeDetailViewModelTest {
         viewModel = ChallengeDetailViewModel(
             getBacklogChallengesUseCase = getBacklogChallengesUseCase,
             manageChallengeUseCase = manageChallengeUseCase,
-            saveDiaryEntryUseCase = saveDiaryEntryUseCase
+            saveDiaryEntryUseCase = saveDiaryEntryUseCase,
+            tmdbApiService = tmdbApiService
         )
     }
 
@@ -160,5 +163,149 @@ class ChallengeDetailViewModelTest {
         assertTrue(text.contains("25/100"))
         assertTrue(text.contains("25%"))
         assertTrue(text.contains("Silver Cinephile"))
+    }
+
+    @Test
+    fun `edit goal metadata workflow updates metadata and dismisses dialog`() = runTest {
+        viewModel.initChallenge("top_classics")
+        advanceUntilIdle()
+
+        viewModel.openEditMetadataDialog()
+        assertTrue(viewModel.uiState.first().isEditingMetadata)
+
+        viewModel.saveMetadata("New Title", "New Description")
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            manageChallengeUseCase.editCustomChallengeMetadata(
+                challengeId = "top_classics",
+                title = "New Title",
+                description = "New Description"
+            )
+        }
+        assertFalse(viewModel.uiState.first().isEditingMetadata)
+    }
+
+    @Test
+    fun `confirmDeleteGoal deletes custom challenge and invokes callback`() = runTest {
+        viewModel.initChallenge("top_classics")
+        advanceUntilIdle()
+
+        var deletedCallbackInvoked = false
+        viewModel.confirmDeleteGoal { deletedCallbackInvoked = true }
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { manageChallengeUseCase.deleteCustomChallenge("top_classics") }
+        assertTrue(deletedCallbackInvoked)
+    }
+
+    @Test
+    fun `requestRemoveItem shows warning when target items count is 1 or less`() = runTest {
+        val item = ChallengeMediaItem(
+            id = 1,
+            title = "Movie 1",
+            mediaType = MediaType.Movie,
+            posterImageUrl = "",
+            releaseYear = "2020"
+        )
+        val customChallenge = sampleChallenge.copy(
+            isCustom = true,
+            targetMediaItems = listOf(item)
+        )
+        val progress = sampleProgress.copy(challenge = customChallenge)
+        detailFlow.value = Pair(progress, true)
+
+        viewModel.initChallenge("top_classics")
+        advanceUntilIdle()
+
+        viewModel.requestRemoveItem(item)
+        val state = viewModel.uiState.first()
+        assertTrue(state.cannotRemoveLastTitleWarning)
+        assertNull(state.itemPendingRemoval)
+
+        viewModel.dismissCannotRemoveWarning()
+        assertFalse(viewModel.uiState.first().cannotRemoveLastTitleWarning)
+    }
+
+    @Test
+    fun `requestRemoveItem and confirmRemoveItem removes item when more than 1 item exists`() =
+        runTest {
+            val item1 = ChallengeMediaItem(
+                id = 1,
+                title = "Movie 1",
+                mediaType = MediaType.Movie,
+                posterImageUrl = "",
+                releaseYear = "2020"
+            )
+            val item2 = ChallengeMediaItem(
+                id = 2,
+                title = "Movie 2",
+                mediaType = MediaType.Movie,
+                posterImageUrl = "",
+                releaseYear = "2021"
+            )
+            val customChallenge = sampleChallenge.copy(
+                isCustom = true,
+                targetMediaItems = listOf(item1, item2)
+            )
+            val progress = sampleProgress.copy(challenge = customChallenge)
+            detailFlow.value = Pair(progress, true)
+
+            viewModel.initChallenge("top_classics")
+            advanceUntilIdle()
+
+            viewModel.requestRemoveItem(item1)
+            var state = viewModel.uiState.first()
+            assertEquals(item1, state.itemPendingRemoval)
+
+            viewModel.confirmRemoveItem()
+            advanceUntilIdle()
+
+            coVerify(exactly = 1) {
+                manageChallengeUseCase.removeTitleFromCustomChallenge(
+                    challengeId = "top_classics",
+                    mediaId = 1,
+                    mediaType = MediaType.Movie
+                )
+            }
+            state = viewModel.uiState.first()
+            assertNull(state.itemPendingRemoval)
+        }
+
+    @Test
+    fun `toggleMediaInCustomChallenge adds title if not currently in challenge`() = runTest {
+        val item1 = ChallengeMediaItem(
+            id = 1,
+            title = "Movie 1",
+            mediaType = MediaType.Movie,
+            posterImageUrl = "",
+            releaseYear = "2020"
+        )
+        val customChallenge = sampleChallenge.copy(
+            isCustom = true,
+            targetMediaItems = listOf(item1)
+        )
+        val progress = sampleProgress.copy(challenge = customChallenge)
+        detailFlow.value = Pair(progress, true)
+
+        viewModel.initChallenge("top_classics")
+        advanceUntilIdle()
+
+        val newItem = ChallengeMediaItem(
+            id = 2,
+            title = "Movie 2",
+            mediaType = MediaType.Movie,
+            posterImageUrl = "",
+            releaseYear = "2021"
+        )
+        viewModel.toggleMediaInCustomChallenge(newItem)
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            manageChallengeUseCase.addTitlesToCustomChallenge(
+                challengeId = "top_classics",
+                newItems = listOf(newItem)
+            )
+        }
     }
 }

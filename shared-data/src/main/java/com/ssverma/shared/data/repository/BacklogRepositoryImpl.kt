@@ -266,6 +266,18 @@ class BacklogRepositoryImpl @Inject constructor(
             leaveChallenge(challengeId)
         }
 
+    override suspend fun updateCustomChallenge(challenge: CinephileChallenge): Unit =
+        withContext(Dispatchers.IO) {
+            val current = activeChallengesFlow.first().toMutableList()
+            val index = current.indexOfFirst { it.id == challenge.id }
+            if (index != -1) {
+                current[index] = challenge
+                storage.edit { prefs ->
+                    prefs[KEY_ACTIVE_CHALLENGES] = gson.toJson(current)
+                }
+            }
+        }
+
     override suspend fun addBlindspot(item: BlindspotPriorityItem): Unit =
         withContext(Dispatchers.IO) {
             val current = blindspotsFlow.first().toMutableList()

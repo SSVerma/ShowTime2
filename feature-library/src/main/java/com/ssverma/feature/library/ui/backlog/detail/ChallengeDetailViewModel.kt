@@ -2,7 +2,13 @@ package com.ssverma.feature.library.ui.backlog.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.api.service.tmdb.TmdbApiService
+import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
+import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
+import com.ssverma.core.networking.adapter.ApiResponse
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
+import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
 import com.ssverma.shared.domain.model.challenge.ChallengeProgress
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
@@ -10,6 +16,7 @@ import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +28,8 @@ import javax.inject.Inject
 class ChallengeDetailViewModel @Inject constructor(
     private val getBacklogChallengesUseCase: GetBacklogChallengesUseCase,
     private val manageChallengeUseCase: ManageChallengeUseCase,
-    private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase
+    private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
+    private val tmdbApiService: TmdbApiService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChallengeDetailUiState())
@@ -29,6 +37,7 @@ class ChallengeDetailViewModel @Inject constructor(
 
     private var currentChallengeId: String? = null
     private var observeJob: Job? = null
+    private var mediaSearchJob: Job? = null
 
     fun initChallenge(challengeId: String) {
         if (currentChallengeId == challengeId && observeJob != null) return
@@ -84,6 +93,194 @@ class ChallengeDetailViewModel @Inject constructor(
             manageChallengeUseCase.leaveChallenge(challengeId)
             _uiState.update { it.copy(showLeaveConfirmation = false) }
             onLeft()
+        }
+    }
+
+    fun confirmDeleteGoal(onDeleted: () -> Unit) {
+        val challengeId = currentChallengeId ?: return
+        viewModelScope.launch {
+            manageChallengeUseCase.deleteCustomChallenge(challengeId)
+            _uiState.update { it.copy(showLeaveConfirmation = false) }
+            onDeleted()
+        }
+    }
+
+    fun openEditMetadataDialog() {
+        _uiState.update { it.copy(isEditingMetadata = true) }
+    }
+
+    fun dismissEditMetadataDialog() {
+        _uiState.update { it.copy(isEditingMetadata = false) }
+    }
+
+    fun saveMetadata(title: String, description: String) {
+        val challengeId = currentChallengeId ?: return
+        viewModelScope.launch {
+            manageChallengeUseCase.editCustomChallengeMetadata(
+                challengeId = challengeId,
+                title = title,
+                description = description
+            )
+            _uiState.update { it.copy(isEditingMetadata = false) }
+        }
+    }
+
+    fun requestRemoveItem(item: ChallengeMediaItem) {
+        val targetItems = _uiState.value.progress?.challenge?.targetMediaItems.orEmpty()
+        if (targetItems.size <= 1) {
+            _uiState.update { it.copy(cannotRemoveLastTitleWarning = true) }
+        } else {
+            _uiState.update { it.copy(itemPendingRemoval = item) }
+        }
+    }
+
+    fun dismissRemoveItem() {
+        _uiState.update { it.copy(itemPendingRemoval = null) }
+    }
+
+    fun dismissCannotRemoveWarning() {
+        _uiState.update { it.copy(cannotRemoveLastTitleWarning = false) }
+    }
+
+    fun confirmRemoveItem() {
+        val item = _uiState.value.itemPendingRemoval ?: return
+        val challengeId = currentChallengeId ?: return
+        viewModelScope.launch {
+            manageChallengeUseCase.removeTitleFromCustomChallenge(
+                challengeId = challengeId,
+                mediaId = item.id,
+                mediaType = item.mediaType
+            )
+            _uiState.update { it.copy(itemPendingRemoval = null) }
+        }
+    }
+
+    fun openAddTitlesSearch() {
+        _uiState.update { it.copy(isSearchingTitlesToAdd = true) }
+    }
+
+    fun closeAddTitlesSearch() {
+        clearMediaSearch()
+        _uiState.update { it.copy(isSearchingTitlesToAdd = false) }
+    }
+
+    fun onMediaSearchFilterChange(filter: ChallengeMediaTypeFilter) {
+        _uiState.update { it.copy(mediaSearchFilter = filter) }
+        val currentQuery = _uiState.value.mediaSearchQuery
+        if (currentQuery.isNotBlank()) {
+            onMediaSearchQueryChange(currentQuery, filter)
+        }
+    }
+
+    fun onMediaSearchQueryChange(
+        query: String,
+        filter: ChallengeMediaTypeFilter = ChallengeMediaTypeFilter.ALL
+    ) {
+        _uiState.update { it.copy(mediaSearchQuery = query) }
+        mediaSearchJob?.cancel()
+
+        val trimmed = query.trim()
+        if (trimmed.length < 2) {
+            _uiState.update {
+                it.copy(
+                    mediaSearchSuggestions = emptyList(),
+                    isSearchingMedia = false
+                )
+            }
+            return
+        }
+
+        mediaSearchJob = viewModelScope.launch {
+            delay(250)
+            _uiState.update { it.copy(isSearchingMedia = true) }
+
+            when (val response = tmdbApiService.multiSearch(query = trimmed)) {
+                is ApiResponse.Success -> {
+                    val rawResults = response.body.results.orEmpty()
+                    val filteredSuggestions = rawResults
+                        .filter { item ->
+                            val type = item.mediaType?.lowercase().orEmpty()
+                            when (filter) {
+                                ChallengeMediaTypeFilter.ALL -> type == "movie" || type == "tv"
+                                ChallengeMediaTypeFilter.MOVIE -> type == "movie"
+                                ChallengeMediaTypeFilter.TV -> type == "tv"
+                            }
+                        }
+                        .distinctBy { it.id }
+                        .take(8)
+                        .map { item ->
+                            val mediaType = if (item.mediaType.equals("tv", ignoreCase = true)) {
+                                MediaType.Tv
+                            } else {
+                                MediaType.Movie
+                            }
+                            val year = (item.releaseDate ?: item.firstAirDate)?.take(4).orEmpty()
+                            ChallengeMediaItem(
+                                id = item.id,
+                                title = item.name.orEmpty(),
+                                mediaType = mediaType,
+                                posterImageUrl = item.posterPath.convertToTmdbPosterUrl(),
+                                backdropImageUrl = item.backdropPath.convertToTmdbBackdropUrl(),
+                                releaseYear = year,
+                                directorOrCreator = "",
+                                overview = item.overview.orEmpty(),
+                                voteAvg = item.voteAvg
+                            )
+                        }
+
+                    _uiState.update {
+                        it.copy(
+                            mediaSearchSuggestions = filteredSuggestions,
+                            isSearchingMedia = false
+                        )
+                    }
+                }
+
+                else -> {
+                    _uiState.update {
+                        it.copy(
+                            mediaSearchSuggestions = emptyList(),
+                            isSearchingMedia = false
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun clearMediaSearch() {
+        mediaSearchJob?.cancel()
+        _uiState.update {
+            it.copy(
+                mediaSearchQuery = "",
+                mediaSearchSuggestions = emptyList(),
+                isSearchingMedia = false
+            )
+        }
+    }
+
+    fun toggleMediaInCustomChallenge(item: ChallengeMediaItem) {
+        val challengeId = currentChallengeId ?: return
+        val currentItems = _uiState.value.progress?.challenge?.targetMediaItems.orEmpty()
+        val isAlreadyAdded = currentItems.any { it.id == item.id && it.mediaType == item.mediaType }
+
+        viewModelScope.launch {
+            if (isAlreadyAdded) {
+                if (currentItems.size <= 1) {
+                    _uiState.update { it.copy(cannotRemoveLastTitleWarning = true) }
+                } else {
+                    manageChallengeUseCase.removeTitleFromCustomChallenge(
+                        challengeId = challengeId,
+                        mediaId = item.id,
+                        mediaType = item.mediaType
+                    )
+                }
+            } else {
+                manageChallengeUseCase.addTitlesToCustomChallenge(
+                    challengeId = challengeId,
+                    newItems = listOf(item)
+                )
+            }
         }
     }
 
