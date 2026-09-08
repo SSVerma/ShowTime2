@@ -313,4 +313,27 @@ class UniversalDiscoveryViewModelTest {
         advanceUntilIdle()
         assertThat(viewModel.uiState.value.filter.selectedProviderIds).isEmpty()
     }
+
+    @Test
+    fun `updating streaming subscriptions while My Services is active automatically updates filter`() =
+        runTest {
+            advanceUntilIdle()
+            assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(8)
+
+            streamingSubscriptionsFlow.value = setOf(119, 337)
+            advanceUntilIdle()
+
+            assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(119)
+        }
+
+    @Test
+    fun `clearing streaming subscriptions while My Services is active clears filter`() = runTest {
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(8)
+
+        streamingSubscriptionsFlow.value = emptySet()
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.filter.selectedProviderIds).isEmpty()
+    }
 }

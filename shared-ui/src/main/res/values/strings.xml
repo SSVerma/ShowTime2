@@ -305,15 +305,16 @@
     <string name="streaming_subscriptions_clear_all">Clear All</string>
     <string name="streaming_subscriptions_free_tier_hint">Free: 1 service • Pro: Combine unlimited</string>
     <string name="streaming_subscriptions_pro_badge">PRO UNLIMITED</string>
-    <string name="streaming_subscriptions_pass_badge">PASS ACTIVE (24H)</string>
+    <string name="streaming_subscriptions_pass_badge">PASS ACTIVE</string>
     <string name="streaming_multi_service_gate_title">Multi-Service Streaming</string>
     <string name="streaming_multi_service_gate_desc">Combine Netflix, Prime Video, Disney+, Apple TV+, and more into a single unified discovery feed with ShowTime Pro.</string>
     <string name="streaming_multi_service_unlock_pro">Upgrade to Pro</string>
     <string name="streaming_multi_service_switch_service">Switch to %1$s</string>
-    <string name="streaming_multi_service_pass_reward">Watch Video for 24h Pass</string>
+    <string name="streaming_multi_service_pass_reward">Watch Video for Multi-Service Pass</string>
     <string name="streaming_subscriptions_empty_services">No streaming services found</string>
     <string name="streaming_subscriptions_my_services_chip">My Services</string>
     <string name="streaming_subscriptions_my_services_chip_count">My Services (%1$d)</string>
+    <string name="streaming_subscriptions_edit_action">Edit streaming subscriptions</string>
 
     <!-- OTT Streaming Affiliate & Deep Link Strings -->
     <string name="watch_on_provider">Watch on %1$s</string>

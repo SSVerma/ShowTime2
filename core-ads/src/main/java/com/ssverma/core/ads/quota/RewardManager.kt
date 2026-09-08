@@ -155,6 +155,11 @@ class RewardManagerImpl @Inject constructor(
         val traktDurationHours = appConfigProvider.getLong(KEY_CONFIG_REWARDED_TRAKT_HOURS, 24L)
         val multiServiceDurationHours =
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_MULTI_SERVICE_HOURS, 24L)
+        val multiServiceDurationMinutes =
+            appConfigProvider.getLong(
+                KEY_CONFIG_REWARDED_MULTI_SERVICE_MINUTES,
+                multiServiceDurationHours * 60L
+            )
         val tasteAnalyticsDurationHours =
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_TASTE_ANALYTICS_HOURS, 24L)
         val receiptWatermarkDurationHours =
@@ -214,7 +219,7 @@ class RewardManagerImpl @Inject constructor(
                     val currentExpiry = prefs[KEY_MULTI_SERVICE_EXPIRY] ?: 0L
                     val baseTime = if (currentExpiry > now) currentExpiry else now
                     prefs[KEY_MULTI_SERVICE_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(multiServiceDurationHours)
+                        baseTime + TimeUnit.MINUTES.toMillis(multiServiceDurationMinutes)
                 }
 
                 RewardPassType.TASTE_ANALYTICS_RADAR -> {
@@ -383,6 +388,8 @@ class RewardManagerImpl @Inject constructor(
         const val KEY_CONFIG_REWARDED_THEME_HOURS = "rewarded_theme_duration_hours"
         const val KEY_CONFIG_REWARDED_TRAKT_HOURS = "rewarded_trakt_duration_hours"
         const val KEY_CONFIG_REWARDED_MULTI_SERVICE_HOURS = "rewarded_multi_service_duration_hours"
+        const val KEY_CONFIG_REWARDED_MULTI_SERVICE_MINUTES =
+            "rewarded_multi_service_duration_minutes"
         const val KEY_CONFIG_REWARDED_TASTE_ANALYTICS_HOURS =
             "rewarded_taste_analytics_duration_hours"
         const val KEY_CONFIG_REWARDED_RECEIPT_WATERMARK_HOURS =

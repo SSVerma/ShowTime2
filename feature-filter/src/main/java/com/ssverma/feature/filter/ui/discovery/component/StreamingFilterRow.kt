@@ -2,11 +2,15 @@ package com.ssverma.feature.filter.ui.discovery.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -15,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LiveTv
 import androidx.compose.material.icons.rounded.Tune
@@ -44,6 +49,7 @@ fun StreamingFilterRow(
     userSubscriptions: Set<Int> = emptySet(),
     onToggleProvider: (Int) -> Unit,
     onToggleMyServices: () -> Unit = {},
+    onOpenSubscriptionsSheet: () -> Unit = {},
     onOpenRegionSheet: () -> Unit,
     onOpenFilterSheet: () -> Unit,
     modifier: Modifier = Modifier
@@ -135,46 +141,108 @@ fun StreamingFilterRow(
                 label = "my_services_border"
             )
 
-            Surface(
-                onClick = onToggleMyServices,
-                shape = RoundedCornerShape(16.dp),
-                color = containerColor,
-                border = BorderStroke(1.dp, borderColor)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+            if (userSubscriptions.isEmpty()) {
+                Surface(
+                    onClick = onOpenSubscriptionsSheet,
+                    shape = RoundedCornerShape(16.dp),
+                    color = containerColor,
+                    border = BorderStroke(1.dp, borderColor)
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.LiveTv,
-                        contentDescription = null,
-                        tint = if (isMyServicesActive) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (userSubscriptions.isEmpty()) {
-                            stringResource(SharedUiR.string.streaming_subscriptions_my_services_chip)
-                        } else {
-                            stringResource(
-                                SharedUiR.string.streaming_subscriptions_my_services_chip_count,
-                                userSubscriptions.size
-                            )
-                        },
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (isMyServicesActive) FontWeight.Bold else FontWeight.SemiBold,
-                        color = if (isMyServicesActive) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurface
-                    )
-                    if (isMyServicesActive) {
-                        Spacer(modifier = Modifier.width(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.Rounded.Check,
+                            imageVector = Icons.Rounded.LiveTv,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
                         )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(SharedUiR.string.streaming_subscriptions_my_services_chip),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = containerColor,
+                    border = BorderStroke(1.dp, borderColor)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        // Clickable filter toggle area
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                                .clickable(onClick = onToggleMyServices)
+                                .padding(start = 10.dp, end = 6.dp, top = 4.dp, bottom = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.LiveTv,
+                                contentDescription = null,
+                                tint = if (isMyServicesActive) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(
+                                    SharedUiR.string.streaming_subscriptions_my_services_chip_count,
+                                    userSubscriptions.size
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (isMyServicesActive) FontWeight.Bold else FontWeight.SemiBold,
+                                color = if (isMyServicesActive) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurface
+                            )
+                            if (isMyServicesActive) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+
+                        // Subtle vertical separator
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(14.dp)
+                                .background(
+                                    if (isMyServicesActive) MaterialTheme.colorScheme.primary.copy(
+                                        alpha = 0.35f
+                                    )
+                                    else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+                                )
+                        )
+
+                        // Dedicated in-browse edit button
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                                .clickable(onClick = onOpenSubscriptionsSheet)
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = stringResource(SharedUiR.string.streaming_subscriptions_edit_action),
+                                tint = if (isMyServicesActive) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(13.dp)
+                            )
+                        }
                     }
                 }
             }

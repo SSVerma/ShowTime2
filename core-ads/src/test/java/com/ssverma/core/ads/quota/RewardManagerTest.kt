@@ -9,6 +9,7 @@ import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -230,6 +231,24 @@ class RewardManagerTest {
         assertThat(status.listShareThemesExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
 
         val allowed = rewardManager.isListShareThemesAllowed(isProActive = false)
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `grantRewardPass for MULTI_SERVICE_FILTER respects minutes configuration`() = runTest {
+        fakeAppConfigProvider.setLong(
+            RewardManagerImpl.KEY_CONFIG_REWARDED_MULTI_SERVICE_MINUTES,
+            120L
+        )
+        val before = System.currentTimeMillis()
+        rewardManager.grantRewardPass(RewardPassType.MULTI_SERVICE_FILTER)
+        val status = rewardManager.passStatus.value
+        assertThat(status.isMultiServiceUnlocked).isTrue()
+        val deltaMinutes =
+            TimeUnit.MILLISECONDS.toMinutes(status.multiServiceExpiryTimestamp - before)
+        assertThat(deltaMinutes).isEqualTo(120L)
+
+        val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = false)
         assertThat(allowed).isTrue()
     }
 }
