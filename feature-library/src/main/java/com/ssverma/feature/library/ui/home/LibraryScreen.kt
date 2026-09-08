@@ -2612,12 +2612,19 @@ private fun CustomListDetailSheet(
                                     )
                                     if (item.voteAvg > 0f) {
                                         Text(
-                                            text = " • ★ ${
-                                                String.format(
-                                                    "%.1f",
-                                                    item.voteAvg
-                                                )
-                                            }",
+                                            text = " • ",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Rounded.Star,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Text(
+                                            text = String.format("%.1f", item.voteAvg),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.SemiBold

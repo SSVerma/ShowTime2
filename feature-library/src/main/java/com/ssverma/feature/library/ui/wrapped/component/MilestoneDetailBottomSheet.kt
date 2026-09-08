@@ -16,7 +16,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.TrackChanges
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -100,17 +102,24 @@ fun MilestoneDetailBottomSheet(
                 color = if (milestone.isUnlocked) tierColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(
-                    text = if (milestone.isUnlocked) {
-                        "🏆 ${milestone.tier.name} TIER • ${milestone.category}"
-                    } else {
-                        "🎯 ${milestone.tier.name} TIER • ${milestone.category}"
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
+                ) {
+                    Icon(
+                        imageVector = if (milestone.isUnlocked) Icons.Rounded.EmojiEvents else Icons.Rounded.TrackChanges,
+                        contentDescription = null,
+                        tint = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${milestone.tier.name} TIER • ${milestone.category}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -136,12 +145,23 @@ fun MilestoneDetailBottomSheet(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = if (milestone.isUnlocked) "🏆 Achievement Unlocked!" else "Milestone Progress",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (milestone.isUnlocked) {
+                                Icon(
+                                    imageVector = Icons.Rounded.EmojiEvents,
+                                    contentDescription = null,
+                                    tint = tierColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
+                            Text(
+                                text = if (milestone.isUnlocked) "Achievement Unlocked!" else "Milestone Progress",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (milestone.isUnlocked) tierColor else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                         Text(
                             text = "${milestone.currentProgress} / ${milestone.maxProgress}",
                             style = MaterialTheme.typography.titleSmall,
@@ -177,12 +197,21 @@ fun MilestoneDetailBottomSheet(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
-                        Text(
-                            text = "🎯 ${milestone.remainingProgress} more to unlock this milestone.",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.TrackChanges,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${milestone.remainingProgress} more to unlock this milestone.",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }

@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -190,7 +191,8 @@ fun WrappedStoryCardView(
                     )
                     StatBox(
                         title = "AVG RATING",
-                        value = "${"%.1f".format(summary.averageUserRating)} ★",
+                        value = "%.1f".format(summary.averageUserRating),
+                        trailingIcon = Icons.Rounded.Star,
                         subtitle = "${summary.rewatchCount} Rewatches",
                         bgColor = cardBg,
                         accentColor = accentColor,
@@ -363,7 +365,8 @@ private fun StatBox(
     accentColor: androidx.compose.ui.graphics.Color,
     textWhite: androidx.compose.ui.graphics.Color,
     textMuted: androidx.compose.ui.graphics.Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    trailingIcon: ImageVector? = null
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -382,12 +385,26 @@ private fun StatBox(
                 color = accentColor
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = textWhite
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = textWhite
+                )
+                if (trailingIcon != null) {
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Icon(
+                        imageVector = trailingIcon,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,

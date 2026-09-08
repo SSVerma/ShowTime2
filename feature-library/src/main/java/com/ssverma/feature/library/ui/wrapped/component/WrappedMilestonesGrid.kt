@@ -339,12 +339,12 @@ private fun TierBadge(
     modifier: Modifier = Modifier
 ) {
     val tierColor = MilestonePalette.getTierColor(tier)
-    val (tierEmoji, tierName) = when (tier) {
-        MilestoneTier.BRONZE -> "🥉" to "Bronze"
-        MilestoneTier.SILVER -> "🥈" to "Silver"
-        MilestoneTier.GOLD -> "🥇" to "Gold"
-        MilestoneTier.PLATINUM -> "💎" to "Platinum"
-        MilestoneTier.DIAMOND -> "👑" to "Diamond"
+    val (tierIcon, tierName) = when (tier) {
+        MilestoneTier.BRONZE -> Icons.Rounded.WorkspacePremium to "Bronze"
+        MilestoneTier.SILVER -> Icons.Rounded.MilitaryTech to "Silver"
+        MilestoneTier.GOLD -> Icons.Rounded.EmojiEvents to "Gold"
+        MilestoneTier.PLATINUM -> Icons.Rounded.Diamond to "Platinum"
+        MilestoneTier.DIAMOND -> Icons.Rounded.Stars to "Diamond"
     }
 
     Surface(
@@ -366,11 +366,13 @@ private fun TierBadge(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
         ) {
-            Text(
-                text = tierEmoji,
-                style = MaterialTheme.typography.labelSmall
+            Icon(
+                imageVector = tierIcon,
+                contentDescription = null,
+                tint = if (isUnlocked) tierColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(12.dp)
             )
             Spacer(modifier = Modifier.width(3.dp))
             Text(

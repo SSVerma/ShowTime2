@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -120,7 +121,7 @@ fun TastePersonaCardView(
 
             // Persona Title
             Text(
-                text = "${persona.emoji} ${persona.title}",
+                text = persona.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center,
@@ -183,7 +184,8 @@ fun TastePersonaCardView(
             ) {
                 PersonaMetricPill(
                     label = "AVG RATING",
-                    value = "${stats.averageRating} ★",
+                    value = "${stats.averageRating}",
+                    trailingIcon = Icons.Rounded.Star,
                     modifier = Modifier.weight(1f)
                 )
                 PersonaMetricPill(
@@ -249,7 +251,8 @@ fun TastePersonaCardView(
 private fun PersonaMetricPill(
     label: String,
     value: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    trailingIcon: ImageVector? = null
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -269,12 +272,26 @@ private fun PersonaMetricPill(
                 letterSpacing = 0.5.sp
             )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                if (trailingIcon != null) {
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Icon(
+                        imageVector = trailingIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(15.dp)
+                    )
+                }
+            }
         }
     }
 }
