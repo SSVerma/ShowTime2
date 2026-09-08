@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,17 +26,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,11 +65,29 @@ fun TastePersonaShareBottomSheet(
     shareText: String,
     modifier: Modifier = Modifier,
     userName: String? = null,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    sheetState: SheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+    )
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val graphicsLayer = rememberGraphicsLayer()
+    val scrollState = rememberScrollState()
+
+    // Consume unconsumed vertical deltas to prevent overscroll from leaking
+    // into ModalBottomSheet's drag handler, keeping the sheet rock-solid during scroll.
+    val stopFluctuationNestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                return Offset(x = 0f, y = available.y)
+            }
+        }
+    }
 
     val saveSuccess = stringResource(R.string.taste_share_save_success)
     val saveFailed = stringResource(R.string.taste_share_save_failed)
@@ -77,14 +102,16 @@ fun TastePersonaShareBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp)
+                .nestedScroll(stopFluctuationNestedScrollConnection)
+                .verticalScroll(scrollState)
+                .navigationBarsPadding()
+                .padding(bottom = 12.dp)
         ) {
             // Header Title
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
             ) {
                 Text(
                     text = stringResource(R.string.taste_share_card_title),
@@ -99,7 +126,7 @@ fun TastePersonaShareBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Card Preview & Capture Box
             Box(
@@ -120,7 +147,7 @@ fun TastePersonaShareBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Export Actions Row
             Row(
@@ -135,6 +162,9 @@ fun TastePersonaShareBottomSheet(
                         coroutineScope.launch {
                             onSetExporting(true)
                             try {
+                                if (scrollState.value > 0) {
+                                    scrollState.scrollTo(0)
+                                }
                                 val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
                                 val success = ShareImageHelper.saveBitmapToGallery(
                                     context = context,
@@ -153,7 +183,9 @@ fun TastePersonaShareBottomSheet(
                             }
                         }
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(46.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Icon(
@@ -173,6 +205,9 @@ fun TastePersonaShareBottomSheet(
                         coroutineScope.launch {
                             onSetExporting(true)
                             try {
+                                if (scrollState.value > 0) {
+                                    scrollState.scrollTo(0)
+                                }
                                 val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
                                 ShareImageHelper.shareBitmap(
                                     context = context,
@@ -186,7 +221,9 @@ fun TastePersonaShareBottomSheet(
                             }
                         }
                     },
-                    modifier = Modifier.weight(1.2f),
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .height(46.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -205,7 +242,7 @@ fun TastePersonaShareBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Secondary Option: Share Text Summary
             Box(
