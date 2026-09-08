@@ -103,3 +103,48 @@ flowchart TD
    backlog entirely offline.
 3. **No External Tracking**: No telemetry or challenge completion data is transmitted to analytics
    servers.
+
+---
+
+## 6. Cloud Backup & Smart Non-Destructive Restore
+
+### 6.1 `BacklogBackupContributor` Integration
+
+Cloud Backup integrates seamlessly via the decoupled `BackupContributor` plugin pattern (`@IntoSet` Dagger multibindings). `BacklogBackupContributor` contributes to the backup snapshot under the `"backlog"` key:
+
+```json
+{
+  "version": 3,
+  "features": {
+    "backlog": {
+      "activeChallenges": [
+        {
+          "id": "custom_uuid",
+          "title": "Auteur Marathon",
+          "targetCount": 5,
+          "targetMediaItems": [],
+          "isCustom": true,
+          "joinedAt": 1725800000000
+        }
+      ],
+      "blindspots": [
+        {
+          "mediaId": 238,
+          "mediaType": "movie",
+          "title": "The Godfather",
+          "addedAt": 1725800000000
+        }
+      ]
+    }
+  }
+}
+```
+
+### 6.2 Smart Non-Destructive Merge
+
+During device restore or synchronization, `BacklogRepository.restoreBacklog` implements a non-destructive merge:
+1. **Local Goal Preservation**: Unbacked local in-progress goals created on the current device are never overwritten or deleted.
+2. **Conflict Resolution**: For challenge IDs present in both local state and cloud snapshot, the richer goal (higher `targetMediaItems` count or latest `joinedAt`) is retained.
+3. **Blindspot Deduplication**: Blindspots are merged and deduplicated by composite key `mediaId + mediaType`.
+4. **Backward Compatibility**: Fully compatible with legacy v1 and v2 snapshots where `activeChallenges` and `blindspots` were stored at the root of the JSON snapshot.
+

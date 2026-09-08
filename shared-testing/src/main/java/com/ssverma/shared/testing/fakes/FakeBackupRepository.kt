@@ -90,7 +90,9 @@ class FakeBackupRepository : BackupRepository {
             watchlistCount = 5,
             historyCount = 20,
             customListsCount = 2,
-            customListItemsCount = 8
+            customListItemsCount = 8,
+            challengesCount = 3,
+            blindspotsCount = 2
         )
         _lastBackupMetadata.value = metadata
         _backupStatus.value = BackupStatus.Success(
@@ -120,7 +122,9 @@ class FakeBackupRepository : BackupRepository {
             watchlistCount = 5,
             historyCount = 20,
             customListsCount = 2,
-            customListItemsCount = 8
+            customListItemsCount = 8,
+            challengesCount = 3,
+            blindspotsCount = 2
         )
         _backupStatus.value = BackupStatus.Success(
             operation = BackupOperation.RESTORE,

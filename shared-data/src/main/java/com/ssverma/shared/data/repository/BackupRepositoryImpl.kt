@@ -11,7 +11,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import com.ssverma.core.backup.auth.GoogleAuthClient
+import com.ssverma.core.backup.contributor.BackupContributor
 import com.ssverma.core.backup.drive.GoogleDriveBackupClient
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
@@ -23,19 +25,7 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.core.storage.keyvalue.read
 import com.ssverma.core.storage.keyvalue.write
-import com.ssverma.shared.data.local.db.dao.CustomListDao
-import com.ssverma.shared.data.local.db.dao.DiaryDao
-import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
-import com.ssverma.shared.data.local.db.dao.FavoriteDao
-import com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao
-import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
-import com.ssverma.shared.data.local.db.dao.WatchlistDao
-import com.ssverma.shared.data.local.db.model.BackupSnapshot
 import com.ssverma.shared.data.worker.PeriodicBackupWorker
-import com.ssverma.shared.domain.model.AppTheme
-import com.ssverma.shared.domain.repository.AppConfigRepository
-import com.ssverma.shared.domain.repository.BacklogRepository
-import com.ssverma.shared.domain.repository.CinemaGameRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +35,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -64,16 +53,7 @@ class BackupRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val googleAuthClient: GoogleAuthClient,
     private val googleDriveBackupClient: GoogleDriveBackupClient,
-    private val favoriteDao: FavoriteDao,
-    private val watchlistDao: WatchlistDao,
-    private val watchHistoryDao: WatchHistoryDao,
-    private val customListDao: CustomListDao,
-    private val diaryDao: DiaryDao,
-    private val showWatchProgressDao: ShowWatchProgressDao,
-    private val episodeWatchHistoryDao: EpisodeWatchHistoryDao,
-    private val backlogRepository: BacklogRepository,
-    private val cinemaGameRepository: CinemaGameRepository,
-    private val appConfigRepository: AppConfigRepository,
+    private val contributors: Set<@JvmSuppressWildcards BackupContributor>,
     private val firestore: FirebaseFirestore,
     keyValueStorageClient: KeyValueStorageClient
 ) : BackupRepository {
@@ -208,21 +188,45 @@ class BackupRepositoryImpl @Inject constructor(
         val json = googleDriveBackupClient.readCompressedBackup(BACKUP_FILE_NAME)
         if (!json.isNullOrBlank()) {
             try {
-                val snapshot = gson.fromJson(json, BackupSnapshot::class.java)
+                val jsonObject = gson.fromJson(json, JsonObject::class.java)
+                val timestamp = jsonObject.get("timestamp")?.asLong ?: System.currentTimeMillis()
+                val deviceName = jsonObject.get("deviceName")?.asString.orEmpty()
+                val featureCounts = mutableMapOf<String, Int>()
+
+                val countsObj = jsonObject.getAsJsonObject("featureCounts")
+                if (countsObj != null) {
+                    countsObj.entrySet().forEach { (k, v) ->
+                        featureCounts[k] = v.asInt
+                    }
+                } else {
+                    val legacyKeys = listOf(
+                        BackupMetadata.KEY_FAVORITES,
+                        BackupMetadata.KEY_WATCHLIST,
+                        BackupMetadata.KEY_HISTORY,
+                        BackupMetadata.KEY_CUSTOM_LISTS,
+                        BackupMetadata.KEY_CUSTOM_LIST_ITEMS,
+                        BackupMetadata.KEY_DIARY_ENTRIES,
+                        BackupMetadata.KEY_SHOW_PROGRESS,
+                        BackupMetadata.KEY_EPISODE_HISTORY,
+                        BackupMetadata.KEY_CHALLENGES,
+                        BackupMetadata.KEY_BLINDSPOTS
+                    )
+                    for (key in legacyKeys) {
+                        val count = jsonObject.get("${key}Count")?.asInt
+                            ?: jsonObject.getAsJsonArray(key)?.size()
+                            ?: 0
+                        if (count > 0) {
+                            featureCounts[key] = count
+                        }
+                    }
+                }
+
                 val (_, metadata) = googleDriveBackupClient.saveCompressedBackup(
                     fileName = BACKUP_FILE_NAME,
                     jsonPayload = json,
-                    timestamp = snapshot.timestamp,
-                    deviceName = snapshot.deviceName,
-                    favoritesCount = snapshot.favorites.size,
-                    watchlistCount = snapshot.watchlist.size,
-                    historyCount = snapshot.history.size,
-                    customListsCount = snapshot.customLists.size,
-                    customListItemsCount = snapshot.customListItems.size,
-                    diaryEntriesCount = snapshot.diaryEntries.size,
-                    showProgressCount = snapshot.showProgress.size,
-                    episodeHistoryCount = snapshot.episodeHistory.size,
-                    challengesCount = snapshot.activeChallenges.size
+                    timestamp = timestamp,
+                    deviceName = deviceName,
+                    featureCounts = featureCounts
                 )
                 _lastBackupMetadata.value = metadata
             } catch (_: Exception) {
@@ -239,21 +243,39 @@ class BackupRepositoryImpl @Inject constructor(
                 val effectiveUid = getEffectiveUserId()
                 val doc = firestore.collection(colUserBackups).document(effectiveUid).get().await()
                 if (doc.exists()) {
+                    val featureCounts = mutableMapOf<String, Int>()
+                    val legacyKeys = listOf(
+                        BackupMetadata.KEY_FAVORITES,
+                        BackupMetadata.KEY_WATCHLIST,
+                        BackupMetadata.KEY_HISTORY,
+                        BackupMetadata.KEY_CUSTOM_LISTS,
+                        BackupMetadata.KEY_CUSTOM_LIST_ITEMS,
+                        BackupMetadata.KEY_DIARY_ENTRIES,
+                        BackupMetadata.KEY_SHOW_PROGRESS,
+                        BackupMetadata.KEY_EPISODE_HISTORY,
+                        BackupMetadata.KEY_CHALLENGES,
+                        BackupMetadata.KEY_BLINDSPOTS
+                    )
+                    for (key in legacyKeys) {
+                        doc.getLong("${key}Count")?.toInt()?.let { count ->
+                            if (count > 0) {
+                                featureCounts[key] = count
+                            }
+                        }
+                    }
+                    (doc.get("featureCounts") as? Map<*, *>)?.forEach { (k, v) ->
+                        if (k is String && v is Number) {
+                            featureCounts[k] = v.toInt()
+                        }
+                    }
+
                     val metadata = BackupMetadata(
                         timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis(),
                         formattedDate = doc.getString("formattedDate").orEmpty(),
                         sizeBytes = doc.getLong("sizeBytes") ?: 0L,
                         formattedSize = doc.getString("formattedSize").orEmpty(),
                         deviceName = doc.getString("deviceName").orEmpty(),
-                        favoritesCount = doc.getLong("favoritesCount")?.toInt() ?: 0,
-                        watchlistCount = doc.getLong("watchlistCount")?.toInt() ?: 0,
-                        historyCount = doc.getLong("historyCount")?.toInt() ?: 0,
-                        customListsCount = doc.getLong("customListsCount")?.toInt() ?: 0,
-                        customListItemsCount = doc.getLong("customListItemsCount")?.toInt() ?: 0,
-                        diaryEntriesCount = doc.getLong("diaryEntriesCount")?.toInt() ?: 0,
-                        showProgressCount = doc.getLong("showProgressCount")?.toInt() ?: 0,
-                        episodeHistoryCount = doc.getLong("episodeHistoryCount")?.toInt() ?: 0,
-                        challengesCount = doc.getLong("challengesCount")?.toInt() ?: 0
+                        featureCounts = featureCounts
                     )
                     _lastBackupMetadata.value = metadata
 
@@ -274,15 +296,7 @@ class BackupRepositoryImpl @Inject constructor(
                             jsonPayload = remotePayload,
                             timestamp = metadata.timestamp,
                             deviceName = metadata.deviceName,
-                            favoritesCount = metadata.favoritesCount,
-                            watchlistCount = metadata.watchlistCount,
-                            historyCount = metadata.historyCount,
-                            customListsCount = metadata.customListsCount,
-                            customListItemsCount = metadata.customListItemsCount,
-                            diaryEntriesCount = metadata.diaryEntriesCount,
-                            showProgressCount = metadata.showProgressCount,
-                            episodeHistoryCount = metadata.episodeHistoryCount,
-                            challengesCount = metadata.challengesCount
+                            featureCounts = featureCounts
                         )
                         doc.getString("payloadHash")?.let { hash ->
                             backupSettingsStorage.write(KEY_LAST_BACKUP_HASH, hash)
@@ -322,66 +336,46 @@ class BackupRepositoryImpl @Inject constructor(
         )
 
         try {
-            val favorites = favoriteDao.getAllFavorites()
-            val watchlist = watchlistDao.getAllWatchlist()
-            val history = watchHistoryDao.getAllHistory()
-            val customLists = customListDao.getAllLists()
-            val customListItems = customListDao.getAllListItems()
-            val diaryEntries = diaryDao.getAllDiaryEntriesList()
-            val showProgress = showWatchProgressDao.getAllProgress()
-            val episodeHistory = episodeWatchHistoryDao.getAllHistory()
-            val activeChallenges = backlogRepository.activeChallengesFlow.first()
-            val blindspots = backlogRepository.blindspotsFlow.first()
-            val gameStats = cinemaGameRepository.getGameStats()
+            val featuresPayload = JsonObject()
+            val allFeatureCounts = mutableMapOf<String, Int>()
 
-            val currentTheme = appConfigRepository.appTheme.firstOrNull() ?: AppTheme.System
-            val currentRegion = appConfigRepository.watchProviderRegion.value
-
-            val preferences = mapOf(
-                KEY_PREF_THEME to currentTheme.name,
-                KEY_PREF_REGION to currentRegion
-            )
+            for (contributor in contributors) {
+                val data = contributor.exportData()
+                if (data != null) {
+                    featuresPayload.add(contributor.featureKey, data)
+                }
+                allFeatureCounts.putAll(contributor.getDetailedCounts())
+            }
 
             _backupStatus.value = BackupStatus.InProgress(
                 operation = BackupOperation.BACKUP,
                 progressPercent = 50
             )
 
-            val snapshot = BackupSnapshot(
-                version = 2,
-                timestamp = System.currentTimeMillis(),
-                favorites = favorites,
-                watchlist = watchlist,
-                history = history,
-                customLists = customLists,
-                customListItems = customListItems,
-                diaryEntries = diaryEntries,
-                showProgress = showProgress,
-                episodeHistory = episodeHistory,
-                activeChallenges = activeChallenges,
-                blindspots = blindspots,
-                gameStats = gameStats,
-                preferences = preferences
-            )
+            val timestamp = System.currentTimeMillis()
+            val snapshotObj = JsonObject()
+            snapshotObj.addProperty("version", 3)
+            snapshotObj.addProperty("timestamp", timestamp)
+            snapshotObj.add("features", featuresPayload)
 
-            val jsonPayload = gson.toJson(snapshot)
-            val contentFingerprint = snapshot.copy(timestamp = 0L, deviceName = "")
-            val payloadHash = computeSha256(gson.toJson(contentFingerprint))
+            val countsObj = JsonObject()
+            allFeatureCounts.forEach { (k, v) ->
+                countsObj.addProperty(k, v)
+            }
+            snapshotObj.add("featureCounts", countsObj)
+
+            val jsonPayload = gson.toJson(snapshotObj)
+
+            val fingerprintObj = snapshotObj.deepCopy()
+            fingerprintObj.remove("timestamp")
+            fingerprintObj.remove("deviceName")
+            val payloadHash = computeSha256(gson.toJson(fingerprintObj))
 
             val (_, metadata) = googleDriveBackupClient.saveCompressedBackup(
                 fileName = BACKUP_FILE_NAME,
                 jsonPayload = jsonPayload,
-                timestamp = snapshot.timestamp,
-                deviceName = snapshot.deviceName,
-                favoritesCount = favorites.size,
-                watchlistCount = watchlist.size,
-                historyCount = history.size,
-                customListsCount = customLists.size,
-                customListItemsCount = customListItems.size,
-                diaryEntriesCount = diaryEntries.size,
-                showProgressCount = showProgress.size,
-                episodeHistoryCount = episodeHistory.size,
-                challengesCount = activeChallenges.size
+                timestamp = timestamp,
+                featureCounts = allFeatureCounts
             )
 
             // SHA-256 Checksum Guard: Skip Firestore write if local payload hash is identical to last upload
@@ -389,17 +383,16 @@ class BackupRepositoryImpl @Inject constructor(
             val isHashUnchanged = lastUploadedHash.isNotBlank() && lastUploadedHash == payloadHash
 
             if (!isHashUnchanged) {
-                // Cloud Firestore upload with in-memory GZIP compression
                 try {
                     googleAuthClient.ensureAuthenticatedSession()
                     val effectiveUid = getEffectiveUserId()
                     val firebaseUid = googleAuthClient.currentFirebaseAuthUid ?: effectiveUid
                     val base64GzipPayload = compressGzip(jsonPayload)
-                    val backupDoc = mapOf(
+                    val backupDoc = mutableMapOf<String, Any>(
                         "uid" to effectiveUid,
                         "firebaseUid" to firebaseUid,
-                        "version" to snapshot.version,
-                        "timestamp" to snapshot.timestamp,
+                        "version" to 3,
+                        "timestamp" to timestamp,
                         "formattedDate" to metadata.formattedDate,
                         "deviceName" to metadata.deviceName,
                         "sizeBytes" to metadata.sizeBytes,
@@ -407,16 +400,12 @@ class BackupRepositoryImpl @Inject constructor(
                         "payloadHash" to payloadHash,
                         "isCompressed" to true,
                         "payloadGzip" to base64GzipPayload,
-                        "favoritesCount" to metadata.favoritesCount,
-                        "watchlistCount" to metadata.watchlistCount,
-                        "historyCount" to metadata.historyCount,
-                        "customListsCount" to metadata.customListsCount,
-                        "customListItemsCount" to metadata.customListItemsCount,
-                        "diaryEntriesCount" to metadata.diaryEntriesCount,
-                        "showProgressCount" to metadata.showProgressCount,
-                        "episodeHistoryCount" to metadata.episodeHistoryCount,
-                        "challengesCount" to metadata.challengesCount
+                        "featureCounts" to allFeatureCounts
                     )
+                    allFeatureCounts.forEach { (k, v) ->
+                        backupDoc["${k}Count"] = v
+                    }
+
                     firestore.collection(colUserBackups).document(effectiveUid)
                         .set(backupDoc, SetOptions.merge()).await()
                     backupSettingsStorage.write(KEY_LAST_BACKUP_HASH, payloadHash)
@@ -449,12 +438,10 @@ class BackupRepositoryImpl @Inject constructor(
 
         try {
             var json: String? = null
-            // Prioritize fetching latest from Cloud Firestore
             try {
                 googleAuthClient.ensureAuthenticatedSession()
                 val effectiveUid = getEffectiveUserId()
-                val doc =
-                    firestore.collection(colUserBackups).document(effectiveUid).get().await()
+                val doc = firestore.collection(colUserBackups).document(effectiveUid).get().await()
                 if (doc.exists()) {
                     val remoteGzip = doc.getString("payloadGzip")
                     json = when {
@@ -484,69 +471,31 @@ class BackupRepositoryImpl @Inject constructor(
                 return@withContext Result.failure(error)
             }
 
-            val snapshot = gson.fromJson(json, BackupSnapshot::class.java)
+            val jsonObject = gson.fromJson(json, JsonObject::class.java)
+            val featuresObj = jsonObject.getAsJsonObject("features")
 
             _backupStatus.value = BackupStatus.InProgress(
                 operation = BackupOperation.RESTORE,
                 progressPercent = 60
             )
 
-            if (snapshot.favorites.isNotEmpty()) {
-                favoriteDao.insertAll(snapshot.favorites)
-            }
-            if (snapshot.watchlist.isNotEmpty()) {
-                watchlistDao.insertAll(snapshot.watchlist)
-            }
-            if (snapshot.history.isNotEmpty()) {
-                watchHistoryDao.insertAll(snapshot.history)
-            }
-            if (snapshot.customLists.isNotEmpty()) {
-                customListDao.insertAllLists(snapshot.customLists)
-            }
-            if (snapshot.customListItems.isNotEmpty()) {
-                customListDao.insertAllListItems(snapshot.customListItems)
-            }
-            if (snapshot.diaryEntries.isNotEmpty()) {
-                diaryDao.insertAll(snapshot.diaryEntries)
-            }
-            if (snapshot.showProgress.isNotEmpty()) {
-                showWatchProgressDao.insertAll(snapshot.showProgress)
-            }
-            if (snapshot.episodeHistory.isNotEmpty()) {
-                episodeWatchHistoryDao.insertAll(snapshot.episodeHistory)
-            }
-            if (snapshot.activeChallenges.isNotEmpty() || snapshot.blindspots.isNotEmpty()) {
-                backlogRepository.restoreBacklog(snapshot.activeChallenges, snapshot.blindspots)
-            }
-            snapshot.gameStats?.let { stats ->
-                cinemaGameRepository.restoreGameStats(stats)
+            val allFeatureCounts = mutableMapOf<String, Int>()
+
+            for (contributor in contributors) {
+                val featurePayload = featuresObj?.get(contributor.featureKey)
+                contributor.importData(featurePayload = featurePayload, fullSnapshot = jsonObject)
+                allFeatureCounts.putAll(contributor.getDetailedCounts())
             }
 
-            // Restore preferences if available
-            snapshot.preferences[KEY_PREF_THEME]?.let { themeName ->
-                val theme = AppTheme.fromName(themeName)
-                appConfigRepository.updateAppTheme(theme)
-            }
-            snapshot.preferences[KEY_PREF_REGION]?.let { regionCode ->
-                if (regionCode.isNotBlank()) {
-                    appConfigRepository.updateWatchProviderRegion(regionCode)
-                }
-            }
+            val timestamp = jsonObject.get("timestamp")?.asLong ?: System.currentTimeMillis()
+            val deviceName = jsonObject.get("deviceName")?.asString.orEmpty()
 
             val (_, metadata) = googleDriveBackupClient.saveCompressedBackup(
                 fileName = BACKUP_FILE_NAME,
                 jsonPayload = json,
-                timestamp = snapshot.timestamp,
-                deviceName = snapshot.deviceName,
-                favoritesCount = snapshot.favorites.size,
-                watchlistCount = snapshot.watchlist.size,
-                historyCount = snapshot.history.size,
-                customListsCount = snapshot.customLists.size,
-                customListItemsCount = snapshot.customListItems.size,
-                diaryEntriesCount = snapshot.diaryEntries.size,
-                showProgressCount = snapshot.showProgress.size,
-                episodeHistoryCount = snapshot.episodeHistory.size,
-                challengesCount = snapshot.activeChallenges.size
+                timestamp = timestamp,
+                deviceName = deviceName,
+                featureCounts = allFeatureCounts
             )
 
             _lastBackupMetadata.value = metadata
@@ -574,7 +523,5 @@ class BackupRepositoryImpl @Inject constructor(
         private val KEY_BACKUP_FREQUENCY = stringPreferencesKey("backup_frequency")
         private val KEY_BACKUP_OVER_WIFI = booleanPreferencesKey("backup_over_wifi")
         private val KEY_LAST_BACKUP_HASH = stringPreferencesKey("backup_last_payload_hash")
-        private const val KEY_PREF_THEME = "pref_theme"
-        private const val KEY_PREF_REGION = "pref_region"
     }
 }

@@ -307,12 +307,44 @@ class BacklogRepositoryImpl @Inject constructor(
         activeChallenges: List<CinephileChallenge>,
         blindspots: List<BlindspotPriorityItem>
     ): Unit = withContext(Dispatchers.IO) {
-        storage.edit { prefs ->
-            if (activeChallenges.isNotEmpty()) {
-                prefs[KEY_ACTIVE_CHALLENGES] = gson.toJson(activeChallenges)
+        val currentChallenges = activeChallengesFlow.first()
+        val currentBlindspots = blindspotsFlow.first()
+
+        val mergedChallenges = currentChallenges.toMutableList()
+        for (remoteChallenge in activeChallenges) {
+            val localIndex = mergedChallenges.indexOfFirst { it.id == remoteChallenge.id }
+            if (localIndex != -1) {
+                val localChallenge = mergedChallenges[localIndex]
+                val resolved = when {
+                    remoteChallenge.targetMediaItems.size > localChallenge.targetMediaItems.size -> remoteChallenge
+                    localChallenge.targetMediaItems.size > remoteChallenge.targetMediaItems.size -> localChallenge
+                    (remoteChallenge.joinedAt ?: 0L) > (localChallenge.joinedAt
+                        ?: 0L) -> remoteChallenge
+
+                    else -> localChallenge
+                }
+                mergedChallenges[localIndex] = resolved
+            } else {
+                mergedChallenges.add(remoteChallenge)
             }
-            if (blindspots.isNotEmpty()) {
-                prefs[KEY_BLINDSPOTS] = gson.toJson(blindspots)
+        }
+
+        val mergedBlindspots = currentBlindspots.toMutableList()
+        for (remoteBlindspot in blindspots) {
+            val exists = mergedBlindspots.any {
+                it.mediaId == remoteBlindspot.mediaId && it.mediaType == remoteBlindspot.mediaType
+            }
+            if (!exists) {
+                mergedBlindspots.add(remoteBlindspot)
+            }
+        }
+
+        storage.edit { prefs ->
+            if (mergedChallenges.isNotEmpty()) {
+                prefs[KEY_ACTIVE_CHALLENGES] = gson.toJson(mergedChallenges)
+            }
+            if (mergedBlindspots.isNotEmpty()) {
+                prefs[KEY_BLINDSPOTS] = gson.toJson(mergedBlindspots)
             }
         }
     }

@@ -286,7 +286,27 @@ the checklist in this guide before being merged into development or release bran
 
 ---
 
-## 6. Security, Secrets & Privacy Standards
+## 6. Modular Architecture & Platform Decoupling Standards
+
+### A. Feature-Agnostic Core Modules (Zero Domain Bloat)
+
+* **Rule**: Infrastructure and platform modules (`core-*`) must remain strictly feature-agnostic. They must **never** reference domain entities, feature models, or feature-specific enum/string keys.
+* **Standard**:
+  - `core-backup` must not define individual feature counts (`favoritesCount`, `challengesCount`, etc.) in its primary constructors or drive clients. It uses generic `featureCounts: Map<String, Int>`.
+  - `core-notifications`, `core-storage`, `core-analytics`, and `core-networking` must never import from `shared-domain`, `shared-data`, or `feature-*`.
+
+### B. Contributor Plugin Pattern for Cross-Cutting Platform Services
+
+* **Rule**: Services orchestrating cross-cutting application capabilities (such as Cloud Backup & Restore, Push Notification Dispatchers, Analytics Dispatchers) must **never** become monolithic "god classes" that directly inject every DAO or repository in the app.
+* **Standard**:
+  - Platform services define a pluggable Contributor interface (e.g., `BackupContributor`) in `core-*`.
+  - Domain features in `shared-data` or `feature-*` provide their own isolated contributor implementations and bind them via Dagger Multibindings (`@IntoSet` / `@Multibinds`).
+  - The orchestrator injects `Set<@JvmSuppressWildcards BackupContributor>`, allowing new features to be added with zero changes to existing repository or orchestrator classes.
+  - Snapshot serialization must support isolated feature payloads (`"features": { ... }`) while maintaining backward compatibility for legacy snapshots via `fullSnapshot: JsonObject`.
+
+---
+
+## 7. Security, Secrets & Privacy Standards
 
 ```mermaid
 graph TD
@@ -317,7 +337,7 @@ graph TD
 
 ---
 
-## 7. Zero Hardcoded Data for Production Builds & End Users
+## 8. Zero Hardcoded Data for Production Builds & End Users
 
 * **Strict Invariant**: No synthetic, mock, or hardcoded dummy data may ever be served to end-users
   or included in production code paths.
@@ -336,7 +356,7 @@ graph TD
 
 ---
 
-## 8. Pre-Commit / Post-Change Verification Checklist
+## 9. Pre-Commit / Post-Change Verification Checklist
 
 Before pushing any commit or opening a PR, run through this validation gate:
 
@@ -356,6 +376,7 @@ Before pushing any commit or opening a PR, run through this validation gate:
 
 ### Manual Review Checklist:
 
+- [ ] **Feature-Agnostic Core Modules & Contributor Plugin Pattern**: Are `core-*` and `shared-*` modules completely free of feature-specific domain bloat? Do platform services (backup, notifications, analytics) use decoupled Dagger multibinding contributors (`@IntoSet`) rather than injecting domain DAOs/repositories into a god-class?
 - [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
   in upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
 - [ ] **Dumb UI & Passive Presentation**: Are all list filterings, sortings, and domain-to-UI data

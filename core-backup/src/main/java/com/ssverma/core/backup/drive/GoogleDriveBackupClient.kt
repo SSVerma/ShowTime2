@@ -19,6 +19,7 @@ class GoogleDriveBackupClient @Inject constructor(
         jsonPayload: String,
         timestamp: Long = System.currentTimeMillis(),
         deviceName: String = "",
+        featureCounts: Map<String, Int> = emptyMap(),
         favoritesCount: Int = 0,
         watchlistCount: Int = 0,
         historyCount: Int = 0,
@@ -27,7 +28,8 @@ class GoogleDriveBackupClient @Inject constructor(
         diaryEntriesCount: Int = 0,
         showProgressCount: Int = 0,
         episodeHistoryCount: Int = 0,
-        challengesCount: Int = 0
+        challengesCount: Int = 0,
+        blindspotsCount: Int = 0
     ): Pair<File, BackupMetadata> {
         val file = fileStorageClient.writeCompressedString(fileName, jsonPayload)
         val sizeBytes = file.length()
@@ -44,6 +46,7 @@ class GoogleDriveBackupClient @Inject constructor(
             sizeBytes = sizeBytes,
             formattedSize = formatBytes(sizeBytes),
             deviceName = resolvedDeviceName,
+            featureCounts = featureCounts,
             favoritesCount = favoritesCount,
             watchlistCount = watchlistCount,
             historyCount = historyCount,
@@ -52,7 +55,8 @@ class GoogleDriveBackupClient @Inject constructor(
             diaryEntriesCount = diaryEntriesCount,
             showProgressCount = showProgressCount,
             episodeHistoryCount = episodeHistoryCount,
-            challengesCount = challengesCount
+            challengesCount = challengesCount,
+            blindspotsCount = blindspotsCount
         )
         return Pair(file, metadata)
     }

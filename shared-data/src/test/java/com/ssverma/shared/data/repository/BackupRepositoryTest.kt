@@ -10,6 +10,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.ssverma.core.backup.auth.GoogleAuthClient
+import com.ssverma.core.backup.contributor.BackupContributor
 import com.ssverma.core.backup.drive.GoogleDriveBackupClient
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupOperation
@@ -17,6 +18,15 @@ import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
+import com.ssverma.shared.data.backup.contributors.AppPreferencesBackupContributor
+import com.ssverma.shared.data.backup.contributors.BacklogBackupContributor
+import com.ssverma.shared.data.backup.contributors.CinemaDiaryBackupContributor
+import com.ssverma.shared.data.backup.contributors.CinemaGameBackupContributor
+import com.ssverma.shared.data.backup.contributors.CustomListsBackupContributor
+import com.ssverma.shared.data.backup.contributors.FavoritesBackupContributor
+import com.ssverma.shared.data.backup.contributors.ShowProgressBackupContributor
+import com.ssverma.shared.data.backup.contributors.WatchHistoryBackupContributor
+import com.ssverma.shared.data.backup.contributors.WatchlistBackupContributor
 import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.DiaryDao
 import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
@@ -33,6 +43,11 @@ import com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity
 import com.ssverma.shared.data.local.db.entity.WatchHistoryEntity
 import com.ssverma.shared.data.local.db.entity.WatchlistEntity
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
+import com.ssverma.shared.domain.model.challenge.ChallengeCategory
+import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
+import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import com.ssverma.shared.domain.model.game.CinemaGameStats
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.BacklogRepository
@@ -118,6 +133,8 @@ class BackupRepositoryTest {
                 any(),
                 any(),
                 any(),
+                any(),
+                any(),
                 any()
             )
         } answers {
@@ -125,15 +142,7 @@ class BackupRepositoryTest {
             val payload = secondArg<String>()
             val timestamp = thirdArg<Long>()
             val deviceName = arg<String>(3)
-            val favCount = arg<Int>(4)
-            val watchCount = arg<Int>(5)
-            val histCount = arg<Int>(6)
-            val listCount = arg<Int>(7)
-            val listItemCount = arg<Int>(8)
-            val diaryCount = arg<Int>(9)
-            val showCount = arg<Int>(10)
-            val epCount = arg<Int>(11)
-            val challengeCount = arg<Int>(12)
+            val featureCounts = arg<Map<String, Int>>(4)
 
             storedBackupPayload = payload
             val metadata = BackupMetadata(
@@ -142,15 +151,7 @@ class BackupRepositoryTest {
                 sizeBytes = 512L,
                 formattedSize = "512 B",
                 deviceName = deviceName.ifBlank { "Test Device" },
-                favoritesCount = favCount,
-                watchlistCount = watchCount,
-                historyCount = histCount,
-                customListsCount = listCount,
-                customListItemsCount = listItemCount,
-                diaryEntriesCount = diaryCount,
-                showProgressCount = showCount,
-                episodeHistoryCount = epCount,
-                challengesCount = challengeCount
+                featureCounts = featureCounts
             )
             Pair(File("/tmp/$fileName"), metadata)
         }
@@ -159,20 +160,23 @@ class BackupRepositoryTest {
             storedBackupPayload
         }
 
+        val contributors: Set<BackupContributor> = setOf(
+            FavoritesBackupContributor(mockFavoriteDao),
+            WatchlistBackupContributor(mockWatchlistDao),
+            WatchHistoryBackupContributor(mockWatchHistoryDao),
+            CustomListsBackupContributor(mockCustomListDao),
+            CinemaDiaryBackupContributor(mockDiaryDao),
+            ShowProgressBackupContributor(mockShowWatchProgressDao, mockEpisodeWatchHistoryDao),
+            BacklogBackupContributor(mockBacklogRepository),
+            CinemaGameBackupContributor(mockCinemaGameRepository),
+            AppPreferencesBackupContributor(mockAppConfigRepository)
+        )
+
         repository = BackupRepositoryImpl(
             context = mockContext,
             googleAuthClient = mockGoogleAuthClient,
             googleDriveBackupClient = mockGoogleDriveBackupClient,
-            favoriteDao = mockFavoriteDao,
-            watchlistDao = mockWatchlistDao,
-            watchHistoryDao = mockWatchHistoryDao,
-            customListDao = mockCustomListDao,
-            diaryDao = mockDiaryDao,
-            showWatchProgressDao = mockShowWatchProgressDao,
-            episodeWatchHistoryDao = mockEpisodeWatchHistoryDao,
-            backlogRepository = mockBacklogRepository,
-            cinemaGameRepository = mockCinemaGameRepository,
-            appConfigRepository = mockAppConfigRepository,
+            contributors = contributors,
             firestore = mockFirestore,
             keyValueStorageClient = mockKeyValueStorageClient
         )
@@ -257,6 +261,28 @@ class BackupRepositoryTest {
                 episodeNumber = 5
             )
         )
+        val challenges = listOf(
+            CinephileChallenge(
+                id = "challenge_1",
+                title = "Sight & Sound",
+                description = "Masterpieces",
+                category = ChallengeCategory.Curated,
+                mediaTypeFilter = ChallengeMediaTypeFilter.MOVIE,
+                targetCount = 10,
+                targetMediaItems = emptyList(),
+                isCustom = false
+            )
+        )
+        val blindspots = listOf(
+            BlindspotPriorityItem(
+                mediaId = 238,
+                mediaType = MediaType.Movie,
+                title = "The Godfather",
+                posterImageUrl = "/godfather.jpg",
+                releaseYear = "1972",
+                voteAvg = 8.7f
+            )
+        )
 
         coEvery { mockFavoriteDao.getAllFavorites() } returns favs
         coEvery { mockWatchlistDao.getAllWatchlist() } returns watch
@@ -266,6 +292,8 @@ class BackupRepositoryTest {
         coEvery { mockDiaryDao.getAllDiaryEntriesList() } returns diary
         coEvery { mockShowWatchProgressDao.getAllProgress() } returns showProgress
         coEvery { mockEpisodeWatchHistoryDao.getAllHistory() } returns epHistory
+        every { mockBacklogRepository.activeChallengesFlow } returns flowOf(challenges)
+        every { mockBacklogRepository.blindspotsFlow } returns flowOf(blindspots)
         coEvery { mockCinemaGameRepository.getGameStats() } returns CinemaGameStats(
             gamesWon = 3,
             gamesPlayed = 5
@@ -284,6 +312,8 @@ class BackupRepositoryTest {
         assertThat(metadata?.diaryEntriesCount).isEqualTo(1)
         assertThat(metadata?.showProgressCount).isEqualTo(1)
         assertThat(metadata?.episodeHistoryCount).isEqualTo(1)
+        assertThat(metadata?.challengesCount).isEqualTo(1)
+        assertThat(metadata?.blindspotsCount).isEqualTo(1)
 
         assertThat(repository.lastBackupMetadata.value).isEqualTo(metadata)
         assertThat(repository.backupStatus.value).isInstanceOf(BackupStatus.Success::class.java)
@@ -327,6 +357,28 @@ class BackupRepositoryTest {
                 userRating = 4.5f
             )
         )
+        val challenges = listOf(
+            CinephileChallenge(
+                id = "restore_challenge",
+                title = "Sci-Fi Quest",
+                description = "Watch 5 sci-fi movies",
+                category = ChallengeCategory.PersonalGoal,
+                mediaTypeFilter = ChallengeMediaTypeFilter.MOVIE,
+                targetCount = 5,
+                targetMediaItems = emptyList(),
+                isCustom = true
+            )
+        )
+        val blindspots = listOf(
+            BlindspotPriorityItem(
+                mediaId = 10,
+                mediaType = MediaType.Movie,
+                title = "Dune",
+                posterImageUrl = "/dune.jpg",
+                releaseYear = "2021",
+                voteAvg = 8.2f
+            )
+        )
         val stats = CinemaGameStats(gamesWon = 7, gamesPlayed = 10)
 
         coEvery { mockFavoriteDao.getAllFavorites() } returns favs
@@ -337,19 +389,68 @@ class BackupRepositoryTest {
         coEvery { mockDiaryDao.getAllDiaryEntriesList() } returns diary
         coEvery { mockShowWatchProgressDao.getAllProgress() } returns emptyList()
         coEvery { mockEpisodeWatchHistoryDao.getAllHistory() } returns emptyList()
+        every { mockBacklogRepository.activeChallengesFlow } returns flowOf(challenges)
+        every { mockBacklogRepository.blindspotsFlow } returns flowOf(blindspots)
         coEvery { mockCinemaGameRepository.getGameStats() } returns stats
 
         repository.backupNow()
 
         val restoreResult = repository.restoreBackup()
-
         assertThat(restoreResult.isSuccess).isTrue()
         coVerify { mockFavoriteDao.insertAll(favs) }
         coVerify { mockCustomListDao.insertAllLists(lists) }
         coVerify { mockCustomListDao.insertAllListItems(listItems) }
         coVerify { mockDiaryDao.insertAll(diary) }
+        coVerify { mockBacklogRepository.restoreBacklog(challenges, blindspots) }
         coVerify { mockCinemaGameRepository.restoreGameStats(stats) }
         assertThat(repository.backupStatus.value).isInstanceOf(BackupStatus.Success::class.java)
+    }
+
+    @Test
+    fun `restoreBackup cleanly restores legacy v2 backup snapshot with root keys`() = runTest {
+        val legacyJson = """
+            {
+              "version": 2,
+              "timestamp": 1724000000000,
+              "deviceName": "Legacy Device",
+              "favorites": [
+                {
+                  "mediaId": 77,
+                  "mediaType": "movie",
+                  "title": "Legacy Cinema",
+                  "posterImageUrl": "/legacy.jpg",
+                  "backdropImageUrl": "/legacy_back.jpg",
+                  "voteAvg": 8.0,
+                  "releaseDate": "1999-05-05"
+                }
+              ],
+              "activeChallenges": [
+                {
+                  "id": "legacy_goal_1",
+                  "title": "Legacy Century Sprint",
+                  "description": "52 titles",
+                  "category": "PersonalGoal",
+                  "mediaTypeFilter": "ALL",
+                  "targetCount": 52,
+                  "targetMediaItems": [],
+                  "isCustom": false
+                }
+              ],
+              "blindspots": []
+            }
+        """.trimIndent()
+        storedBackupPayload = legacyJson
+
+        val result = repository.restoreBackup()
+
+        assertThat(result.isSuccess).isTrue()
+        coVerify { mockFavoriteDao.insertAll(match { it.any { fav -> fav.mediaId == 77 } }) }
+        coVerify {
+            mockBacklogRepository.restoreBacklog(
+                match { it.any { c -> c.id == "legacy_goal_1" } },
+                any()
+            )
+        }
     }
 
     @Test
@@ -380,6 +481,8 @@ class BackupRepositoryTest {
         coEvery { mockDiaryDao.getAllDiaryEntriesList() } returns emptyList()
         coEvery { mockShowWatchProgressDao.getAllProgress() } returns emptyList()
         coEvery { mockEpisodeWatchHistoryDao.getAllHistory() } returns emptyList()
+        every { mockBacklogRepository.activeChallengesFlow } returns flowOf(emptyList())
+        every { mockBacklogRepository.blindspotsFlow } returns flowOf(emptyList())
         coEvery { mockCinemaGameRepository.getGameStats() } returns CinemaGameStats()
 
         // First backup uploads to Firestore
