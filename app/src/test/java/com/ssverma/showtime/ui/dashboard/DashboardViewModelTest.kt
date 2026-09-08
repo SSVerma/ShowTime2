@@ -5,20 +5,27 @@ import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase
 import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
+import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
+import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
+import com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
+import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
 import com.ssverma.shared.testing.fakes.FakeTraktSyncRepository
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -43,16 +50,11 @@ class DashboardViewModelTest {
     private val cinemaGameRepository: CinemaGameRepository = mockk(relaxed = true)
     private val traktAuthManager: TraktAuthManager = mockk(relaxed = true)
     private val fakeTraktSyncRepository = FakeTraktSyncRepository()
-    private val getDailyPollUseCase: com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase =
-        mockk(relaxed = true)
-    private val voteDailyPollUseCase: com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase =
-        mockk(relaxed = true)
-    private val getTrendingDiscussionsUseCase: com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase =
-        mockk(relaxed = true)
-    private val movieGenresUseCase: com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase =
-        mockk(relaxed = true)
-    private val tvGenresUseCase: com.ssverma.feature.tv.domain.usecase.TvGenresUseCase =
-        mockk(relaxed = true)
+    private val getDailyPollUseCase: GetDailyPollUseCase = mockk(relaxed = true)
+    private val voteDailyPollUseCase: VoteDailyPollUseCase = mockk(relaxed = true)
+    private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase = mockk(relaxed = true)
+    private val movieGenresUseCase: MovieGenresUseCase = mockk(relaxed = true)
+    private val tvGenresUseCase: TvGenresUseCase = mockk(relaxed = true)
     private val reminderRepository: ReminderRepository = mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
@@ -80,7 +82,7 @@ class DashboardViewModelTest {
 
         every { traktAuthManager.authState } returns traktAuthFlow
         every { getDailyPollUseCase(any()) } returns MutableStateFlow(
-            com.ssverma.shared.domain.model.community.DailyPoll.empty(java.time.LocalDate.now())
+            DailyPoll.empty(LocalDate.now())
         )
         every { getTrendingDiscussionsUseCase() } returns MutableStateFlow(emptyList())
 
