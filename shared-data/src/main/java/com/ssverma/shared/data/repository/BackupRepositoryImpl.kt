@@ -235,6 +235,7 @@ class BackupRepositoryImpl @Inject constructor(
     override suspend fun fetchRemoteBackupMetadata(): Result<BackupMetadata?> =
         withContext(Dispatchers.IO) {
             try {
+                googleAuthClient.ensureAuthenticatedSession()
                 val effectiveUid = getEffectiveUserId()
                 val doc = firestore.collection(colUserBackups).document(effectiveUid).get().await()
                 if (doc.exists()) {
@@ -390,10 +391,13 @@ class BackupRepositoryImpl @Inject constructor(
             if (!isHashUnchanged) {
                 // Cloud Firestore upload with in-memory GZIP compression
                 try {
+                    googleAuthClient.ensureAuthenticatedSession()
                     val effectiveUid = getEffectiveUserId()
+                    val firebaseUid = googleAuthClient.currentFirebaseAuthUid ?: effectiveUid
                     val base64GzipPayload = compressGzip(jsonPayload)
                     val backupDoc = mapOf(
                         "uid" to effectiveUid,
+                        "firebaseUid" to firebaseUid,
                         "version" to snapshot.version,
                         "timestamp" to snapshot.timestamp,
                         "formattedDate" to metadata.formattedDate,
@@ -447,6 +451,7 @@ class BackupRepositoryImpl @Inject constructor(
             var json: String? = null
             // Prioritize fetching latest from Cloud Firestore
             try {
+                googleAuthClient.ensureAuthenticatedSession()
                 val effectiveUid = getEffectiveUserId()
                 val doc =
                     firestore.collection(colUserBackups).document(effectiveUid).get().await()

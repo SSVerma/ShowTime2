@@ -51,6 +51,9 @@ class GoogleAuthClient @Inject constructor(
     private val _currentUser = MutableStateFlow<GoogleUser?>(null)
     val currentUser: StateFlow<GoogleUser?> = _currentUser.asStateFlow()
 
+    val currentFirebaseAuthUid: String?
+        get() = firebaseAuth.currentUser?.uid
+
     init {
         scope.launch {
             loadStoredUser()
