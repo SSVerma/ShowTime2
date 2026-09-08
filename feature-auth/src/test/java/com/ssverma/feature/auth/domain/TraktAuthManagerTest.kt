@@ -24,7 +24,7 @@ class TraktAuthManagerTest {
 
     private val mockTraktAuthService: TraktAuthService = mockk(relaxed = true)
     private val mockTraktAuthStorage: TraktAuthStorage = mockk(relaxed = true)
-    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager =
+    private val mockDebugConfigManager: com.ssverma.shared.data.debug.DebugConfigManager =
         mockk(relaxed = true)
 
     private val storedTokenFlow = MutableStateFlow<String?>(null)

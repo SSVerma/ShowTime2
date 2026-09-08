@@ -5,9 +5,9 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleSignInCancelledException
-import com.ssverma.core.storage.debug.DebugConfigManager
-import com.ssverma.core.storage.debug.DebugProOverride
+import com.ssverma.core.billing.model.DebugProOverride
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
+import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.core.ui.UiText

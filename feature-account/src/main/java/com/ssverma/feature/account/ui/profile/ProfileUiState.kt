@@ -5,7 +5,7 @@ import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.billing.model.BillingProduct
-import com.ssverma.core.storage.debug.DebugProOverride
+import com.ssverma.core.billing.model.DebugProOverride
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.auth.domain.model.TraktAuthState

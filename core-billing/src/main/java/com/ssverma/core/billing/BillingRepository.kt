@@ -4,11 +4,11 @@ import android.app.Activity
 import com.android.billingclient.api.BillingClient
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.BillingState
+import com.ssverma.core.billing.model.DebugProOverride
+import com.ssverma.core.billing.model.ProOverrideProvider
 import com.ssverma.core.billing.model.ProStatus
 import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.ccm.AppConfigProvider
-import com.ssverma.core.storage.debug.DebugConfigManager
-import com.ssverma.core.storage.debug.DebugProOverride
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,7 +35,7 @@ interface BillingRepository {
 @Singleton
 class BillingRepositoryImpl @Inject constructor(
     private val billingClientWrapper: BillingClientWrapper,
-    private val debugConfigManager: DebugConfigManager,
+    private val proOverrideProvider: ProOverrideProvider,
     private val appConfigProvider: AppConfigProvider
 ) : BillingRepository {
 
@@ -49,7 +49,7 @@ class BillingRepositoryImpl @Inject constructor(
 
     override val isProActive: StateFlow<Boolean> = combine(
         proStatus,
-        debugConfigManager.proOverride
+        proOverrideProvider.proOverride
     ) { status, override ->
         when (override) {
             DebugProOverride.FORCE_ACTIVE -> true

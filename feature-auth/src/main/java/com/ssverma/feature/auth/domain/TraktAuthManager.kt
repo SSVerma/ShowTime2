@@ -2,7 +2,7 @@ package com.ssverma.feature.auth.domain
 
 import com.ssverma.core.di.AppScoped
 import com.ssverma.core.networking.adapter.ApiResponse
-import com.ssverma.core.storage.debug.DebugConfigManager
+import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.feature.auth.data.local.TraktAuthStorage
 import com.ssverma.feature.auth.data.remote.TraktAuthService
 import com.ssverma.feature.auth.domain.defaults.TraktDefaults

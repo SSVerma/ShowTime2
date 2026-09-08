@@ -16,7 +16,6 @@ dependencies {
     implementation(projects.coreDi)
     implementation(projects.coreAnalytics)
     implementation(projects.coreCcm)
-    implementation(projects.coreStorage)
 
     api(libs.play.billing)
     implementation(libs.coroutines.core)

@@ -1,9 +1,10 @@
-package com.ssverma.core.storage.debug
+package com.ssverma.shared.data.debug
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.ssverma.core.billing.model.DebugProOverride
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
@@ -18,12 +19,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
-
-enum class DebugProOverride {
-    AUTO,
-    FORCE_ACTIVE,
-    FORCE_INACTIVE
-}
 
 @Singleton
 class DebugConfigManager @Inject constructor(
@@ -60,7 +55,7 @@ class DebugConfigManager @Inject constructor(
 
     val isMockTraktEnabled: StateFlow<Boolean> = storage.data
         .map { prefs ->
-            prefs[KEY_MOCK_TRAKT] ?: false // Default to false so real user data is always used
+            prefs[KEY_MOCK_TRAKT] ?: false
         }.stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,

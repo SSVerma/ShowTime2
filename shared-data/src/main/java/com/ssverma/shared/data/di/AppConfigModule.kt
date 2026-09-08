@@ -5,6 +5,8 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.core.backup.BackupRepository
+import com.ssverma.core.billing.model.ProOverrideProvider
+import com.ssverma.shared.data.debug.DebugProOverrideProvider
 import com.ssverma.shared.data.repository.AffiliateRepositoryImpl
 import com.ssverma.shared.data.repository.BackupRepositoryImpl
 import com.ssverma.shared.data.repository.DefaultAppConfigRepository
@@ -55,6 +57,12 @@ abstract class AppConfigBindingModule {
     abstract fun bindDiaryRepository(
         repository: DefaultDiaryRepository
     ): DiaryRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindProOverrideProvider(
+        provider: DebugProOverrideProvider
+    ): ProOverrideProvider
 }
 
 @Module

@@ -4,13 +4,13 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.BillingState
+import com.ssverma.core.billing.model.DebugProOverride
+import com.ssverma.core.billing.model.ProOverrideProvider
 import com.ssverma.core.billing.model.ProStatus
 import com.ssverma.core.billing.model.ProductType
 import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.ccm.AppConfigProvider
-import com.ssverma.core.storage.debug.DebugConfigManager
-import com.ssverma.core.storage.debug.DebugProOverride
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +28,7 @@ class BillingRepositoryTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val mockBillingClientWrapper: BillingClientWrapper = mockk(relaxed = true)
-    private val mockDebugConfigManager: DebugConfigManager = mockk(relaxed = true)
+    private val mockProOverrideProvider: ProOverrideProvider = mockk(relaxed = true)
     private val mockAppConfigProvider: AppConfigProvider = mockk(relaxed = true)
 
     private val proStatusFlow = MutableStateFlow<ProStatus>(ProStatus.Inactive)
@@ -56,11 +56,11 @@ class BillingRepositoryTest {
         coEvery { mockBillingClientWrapper.proStatus } returns proStatusFlow
         coEvery { mockBillingClientWrapper.billingState } returns billingStateFlow
         coEvery { mockBillingClientWrapper.purchaseEvents } returns purchaseEventsFlow
-        coEvery { mockDebugConfigManager.proOverride } returns debugProOverrideFlow
+        coEvery { mockProOverrideProvider.proOverride } returns debugProOverrideFlow
 
         repository = BillingRepositoryImpl(
             billingClientWrapper = mockBillingClientWrapper,
-            debugConfigManager = mockDebugConfigManager,
+            proOverrideProvider = mockProOverrideProvider,
             appConfigProvider = mockAppConfigProvider
         )
     }

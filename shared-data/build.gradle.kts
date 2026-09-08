@@ -15,6 +15,7 @@ dependencies {
     implementation(projects.coreNetworking)
     implementation(projects.coreStorage)
     implementation(projects.coreBackup)
+    implementation(projects.coreBilling)
     implementation(projects.corePaging)
     implementation(projects.coreCcm)
     implementation(projects.coreNotifications)

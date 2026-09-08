@@ -29,8 +29,9 @@ class TraktSyncRepositoryTest {
         mockk(relaxed = true)
     private val mockShowWatchProgressDao: com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao =
         mockk(relaxed = true)
-    private val mockDebugConfigManager: com.ssverma.core.storage.debug.DebugConfigManager =
+    private val mockDebugConfigManager: com.ssverma.shared.data.debug.DebugConfigManager =
         mockk(relaxed = true)
+    private val mockTraktDataSource = com.ssverma.shared.data.local.mock.MockTraktDataSource()
 
     private val isMockTraktFlow = kotlinx.coroutines.flow.MutableStateFlow(false)
     private val customClientIdFlow = kotlinx.coroutines.flow.MutableStateFlow("")
@@ -49,7 +50,8 @@ class TraktSyncRepositoryTest {
             favoriteDao = mockFavoriteDao,
             episodeWatchHistoryDao = mockEpisodeWatchHistoryDao,
             showWatchProgressDao = mockShowWatchProgressDao,
-            debugConfigManager = mockDebugConfigManager
+            debugConfigManager = mockDebugConfigManager,
+            mockTraktDataSource = mockTraktDataSource
         )
     }
 
