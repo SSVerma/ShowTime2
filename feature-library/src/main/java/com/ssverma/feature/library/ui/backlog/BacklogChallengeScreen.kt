@@ -1,12 +1,9 @@
 package com.ssverma.feature.library.ui.backlog
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -265,24 +262,28 @@ fun BacklogChallengeScreen(
             )
         }
 
-        // Full-Screen Search View to Add Titles to Goal
-        AnimatedVisibility(
-            visible = uiState.isSearchingTitlesForGoal,
-            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 6 }),
-            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 6 })
-        ) {
-            ChallengeMediaSearchView(
-                searchQuery = uiState.mediaSearchQuery,
-                selectedFilter = uiState.mediaSearchFilter,
-                suggestions = uiState.mediaSearchSuggestions,
-                selectedTitles = uiState.selectedTitlesForCustomGoal,
-                isSearching = uiState.isSearchingMedia,
-                onSearchQueryChange = viewModel::onMediaSearchQueryChange,
-                onFilterChange = viewModel::onMediaSearchFilterChange,
-                onClearSearch = viewModel::clearMediaSearch,
-                onToggleMedia = viewModel::toggleTitleForCustomGoal,
-                onDismiss = viewModel::closeTitleSearchForGoal
-            )
+        // Full-Screen Search Dialog to Add Titles to Goal
+        if (uiState.isSearchingTitlesForGoal) {
+            Dialog(
+                onDismissRequest = viewModel::closeTitleSearchForGoal,
+                properties = DialogProperties(
+                    usePlatformDefaultWidth = false,
+                    decorFitsSystemWindows = false
+                )
+            ) {
+                ChallengeMediaSearchView(
+                    searchQuery = uiState.mediaSearchQuery,
+                    selectedFilter = uiState.mediaSearchFilter,
+                    suggestions = uiState.mediaSearchSuggestions,
+                    selectedTitles = uiState.selectedTitlesForCustomGoal,
+                    isSearching = uiState.isSearchingMedia,
+                    onSearchQueryChange = viewModel::onMediaSearchQueryChange,
+                    onFilterChange = viewModel::onMediaSearchFilterChange,
+                    onClearSearch = viewModel::clearMediaSearch,
+                    onToggleMedia = viewModel::toggleTitleForCustomGoal,
+                    onDismiss = viewModel::closeTitleSearchForGoal
+                )
+            }
         }
     }
 }
