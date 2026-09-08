@@ -13,19 +13,23 @@ The **Vintage Cinema Receipt Generator** (`feature-library`) is a viral social s
 1. **Multi-Source Receipt Generation**: Users can generate receipts from:
    - **Watch History** (all-time logged titles).
    - **This Month** (titles watched in the trailing 30 days).
+   - **This Year** (titles watched in the trailing 365 days).
+   - **Last 90 Days** (seasonal / summer / holiday binge).
    - **Favorites** (all favorited media).
    - **Watchlist** (curated to-watch queue).
    - **Custom Collections** (user-curated custom lists).
-2. **Distinct Aesthetic Visual Styles**:
+2. **Ticket Personalization**:
+   - **Cinema / Screening Room**: Custom theater title (defaults to `"ShowTime Cinema"`, editable to e.g. *"Alex's Midnight Cinema"*).
+   - **Ticket Holder / Cashier**: Pre-populated with Google User display name if signed in, or custom text.
+3. **Distinct Aesthetic Visual Styles**:
    - **Classic Thermal Paper (`ReceiptStyle.THERMAL`)**: Monochromatic paper ticket with realistic jagged tear edges, vintage dot-matrix typography, dotted dividers, barcode canvas, and vintage film stamp.
    - **Golden VIP Pass (`ReceiptStyle.GOLDEN_PASS`)**: Luxury black & gold foil aesthetic with gold borders, VIP admit-one badge, and reflective styling.
    - **Cyberpunk Neon (`ReceiptStyle.CYBERPUNK`)**: Retro-futuristic dark mode theme with neon amber/cyan accents, digital font styling, and monospace grid layout.
-3. **High-Resolution Vector/Bitmap Export**:
+4. **High-Resolution Vector/Bitmap Export**:
    - Captured losslessly on-device using Jetpack Compose's `rememberGraphicsLayer()` / `drawWithContent`.
    - Exported directly to the Android System Share sheet or saved to the user's Pictures gallery via `ShareImageHelper`.
-4. **Watermark Control**:
-   - Free tier includes a subtle `"ShowTime • Track & Share your Cinema Journey"` branding footer.
-   - Pro and Rewarded Pass users can toggle watermark removal for a clean, editorial aesthetic.
+5. **Branding & Organic Growth**:
+   - Subtle `"ShowTime • Track & Share your Cinema Journey"` branding footer retained across all styles to drive organic viral acquisition on social media.
 
 ### 2.2 Navigation & Deep Linking Flow
 
@@ -109,27 +113,26 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    User([User selects Receipt Style]) --> Check{Is Style Pro or Watermark Off?}
-    Check -- No --> RenderFree[Render Thermal Style with Watermark]
-    Check -- Yes --> ProCheck{Is Pro Active?}
-    ProCheck -- Yes --> RenderPro[Render Unlocked Style Watermark-Free]
-    ProCheck -- No --> PassCheck{Is 24h Pass Active?}
-    PassCheck -- Yes --> RenderPro
-    PassCheck -- No --> ShowGate[Open Receipt Monetization Gate]
+    User([User Previews Any Style]) --> TapAction[User Taps 'Share' or 'Save Image']
+    TapAction --> StyleCheck{Is Style Pro Only?}
+    StyleCheck -- No (Thermal) --> ExportDirect[Lossless Export to Share Sheet / Gallery]
+    StyleCheck -- Yes (Golden VIP / Cyberpunk) --> EntitlementCheck{Is Pro Active or 24h Pass Active?}
+    EntitlementCheck -- Yes --> ExportDirect
+    EntitlementCheck -- No --> ShowGate[Open VIP Export Gate]
     ShowGate --> OptionA[Subscribe to ShowTime Pro]
-    ShowGate --> OptionB[Watch 1 Rewarded Ad for 24h Pass]
+    ShowGate --> OptionB[Watch 1 Rewarded Ad for 24h VIP Export Pass]
 ```
 
 1. **Free Tier**:
-   - Access to **Classic Thermal Paper** style.
-   - All sources supported (History, This Month, Favorites, Watchlist, Custom Lists).
-   - Includes subtle `"ShowTime • Track & Share your Cinema Journey"` branding watermark footer.
+   - Full access to preview all styles (Thermal, Golden VIP, Cyberpunk Neon).
+   - All sources supported (History, This Month, This Year, Last 90 Days, Favorites, Watchlist, Custom Collections).
+   - Thermal receipt exports immediately.
+   - Includes subtle `"ShowTime • Track & Share your Cinema Journey"` branding footer for organic viral marketing.
 2. **Pro Tier**:
-   - Instant unlock for **Golden VIP Pass** and **Cyberpunk Neon** styles.
-   - Clean watermark-free exports.
-3. **Rewarded Ad Pass**:
-   - Users can watch one short video ad to unlock `RewardPassType.WATERMARK_FREE_RECEIPT`.
-   - Grants 24-hour watermark-free access and temporary access to premium card styles.
+   - Instant 1-tap export for all premium styles (**Golden VIP Pass**, **Cyberpunk Neon**) with zero ads.
+3. **Rewarded Ad Pass (Share-Action Hook)**:
+   - Free users attempting to export/save a luxury VIP pass can watch 1 rewarded video ad to unlock a **24-hour VIP Export Pass** (`RewardPassType.WATERMARK_FREE_RECEIPT`).
+   - Grants 24 hours of unlimited exports for all styles.
 
 ---
 
