@@ -160,9 +160,9 @@ import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.utils.ShareMediaUtils
-import com.ssverma.shared.ui.component.community.CommunityListCard
-import com.ssverma.shared.ui.component.community.CommunityListDetailSheet
-import com.ssverma.shared.ui.component.community.PublishListBottomSheet
+import com.ssverma.common.ui.community.CommunityListCard
+import com.ssverma.common.ui.community.CommunityListDetailSheet
+import com.ssverma.common.ui.community.PublishListBottomSheet
 import com.ssverma.shared.ui.component.media.MediaItem
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

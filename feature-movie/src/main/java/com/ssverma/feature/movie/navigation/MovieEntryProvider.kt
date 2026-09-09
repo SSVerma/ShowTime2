@@ -11,10 +11,9 @@ import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
 import com.ssverma.feature.movie.ui.details.MovieDetailsViewModel
-import com.ssverma.feature.movie.ui.details.MovieDiscussionsScreen
-import com.ssverma.feature.movie.ui.details.MovieDiscussionsViewModel
 import com.ssverma.feature.movie.ui.details.MovieImagePagerScreen
 import com.ssverma.feature.movie.ui.details.MovieImageShotsScreen
 import com.ssverma.feature.movie.ui.details.MovieReviewsScreen
@@ -133,7 +132,7 @@ fun EntryProviderScope<NavKey>.movieEntries(
             },
             openDiscussionsList = { args ->
                 navigator.navigate(
-                    MovieDiscussionsNavKey(
+                    CommunityDiscussionsNavKey.movie(
                         movieId = args.mediaId,
                         movieTitle = args.title,
                         posterImageUrl = args.posterImageUrl,
@@ -167,20 +166,6 @@ fun EntryProviderScope<NavKey>.movieEntries(
             },
             openLibraryPage = openLibraryPage,
             openProPaywall = { navigator.navigate(ProPaywallNavKey) }
-        )
-    }
-
-    showTimeEntry<MovieDiscussionsNavKey> { key ->
-        MovieDiscussionsScreen(
-            viewModel = hiltViewModel<MovieDiscussionsViewModel, MovieDiscussionsViewModel.Factory> { factory ->
-                factory.create(
-                    movieId = key.movieId,
-                    movieTitle = key.movieTitle,
-                    posterImageUrl = key.posterImageUrl,
-                    backdropImageUrl = key.backdropImageUrl
-                )
-            },
-            onBackPressed = { navigator.goBack() }
         )
     }
 

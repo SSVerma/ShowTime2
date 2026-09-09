@@ -58,7 +58,7 @@ import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
-import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
+import com.ssverma.common.ui.community.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import kotlinx.coroutines.launch
 

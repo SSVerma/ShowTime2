@@ -48,8 +48,7 @@ import com.ssverma.core.navigation.nav3.LocalNavigator
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
-import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
-import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
@@ -133,25 +132,23 @@ fun MediaOmniActionMenu(
                         if (onOpenDiscussions != null) {
                             onOpenDiscussions()
                         } else if (navigator != null) {
-                            if (mediaType == MediaType.Movie) {
-                                navigator.navigate(
-                                    MovieDiscussionsNavKey(
+                            navigator.navigate(
+                                if (mediaType == MediaType.Movie) {
+                                    CommunityDiscussionsNavKey.movie(
                                         movieId = mediaId,
                                         movieTitle = title,
                                         posterImageUrl = posterImageUrl,
                                         backdropImageUrl = backdropImageUrl
                                     )
-                                )
-                            } else {
-                                navigator.navigate(
-                                    TvShowDiscussionsNavKey(
+                                } else {
+                                    CommunityDiscussionsNavKey.tvShow(
                                         tvShowId = mediaId,
                                         tvShowTitle = title,
                                         posterImageUrl = posterImageUrl,
                                         backdropImageUrl = backdropImageUrl
                                     )
-                                )
-                            }
+                                }
+                            )
                         }
                     }
                 )

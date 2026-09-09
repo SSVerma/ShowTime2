@@ -20,6 +20,7 @@ dependencies {
     implementation(projects.coreDi)
     implementation(projects.coreBilling)
     implementation(projects.coreBackup)
+    implementation(projects.coreNavigation)
     implementation(projects.sharedAds)
 
     implementation(libs.compose.material3)

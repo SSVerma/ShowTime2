@@ -164,6 +164,8 @@ dependencies {
     implementation(projects.featurePaymentNavigation)
     implementation(projects.featureFilter)
     implementation(projects.featureFilterNavigation)
+    implementation(projects.featureCommunity)
+    implementation(projects.featureCommunityNavigation)
 
     implementation(libs.material)
     implementation(libs.compose.activity)

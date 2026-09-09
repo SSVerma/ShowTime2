@@ -63,4 +63,6 @@ include(":core-backup")
 include(":shared-testing")
 include(":feature-payment")
 include(":feature-payment-navigation")
+include(":feature-community")
+include(":feature-community-navigation")
 

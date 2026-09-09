@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.featureFilterNavigation)
     implementation(projects.featureAccountNavigation)
     implementation(projects.featureLibraryNavigation)
+    implementation(projects.featureCommunityNavigation)
 
 
     implementation(projects.coreAnalytics)

@@ -9,13 +9,12 @@ import com.ssverma.feature.filter.ui.discovery.UniversalDiscoveryScreen
 import com.ssverma.feature.filter.ui.hub.WatchProviderHubScreen
 import com.ssverma.feature.filter.ui.hub.WatchProviderHubViewModel
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
-import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
-import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.shared.domain.model.MediaType
@@ -101,7 +100,7 @@ fun EntryProviderScope<NavKey>.filterEntries(
             openDiscussions = { args ->
                 if (args.mediaType == MediaType.Movie) {
                     navigator.navigate(
-                        MovieDiscussionsNavKey(
+                        CommunityDiscussionsNavKey.movie(
                             movieId = args.mediaId,
                             movieTitle = args.title,
                             posterImageUrl = args.posterImageUrl,
@@ -110,7 +109,7 @@ fun EntryProviderScope<NavKey>.filterEntries(
                     )
                 } else {
                     navigator.navigate(
-                        TvShowDiscussionsNavKey(
+                        CommunityDiscussionsNavKey.tvShow(
                             tvShowId = args.mediaId,
                             tvShowTitle = args.title,
                             posterImageUrl = args.posterImageUrl,

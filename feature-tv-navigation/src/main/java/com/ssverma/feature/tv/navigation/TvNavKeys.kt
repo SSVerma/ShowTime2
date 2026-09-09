@@ -19,15 +19,6 @@ data class TvShowReviewsNavKey(val tvShowId: Int) : NavKey, Parcelable
 
 @Serializable
 @Parcelize
-data class TvShowDiscussionsNavKey(
-    val tvShowId: Int,
-    val tvShowTitle: String? = null,
-    val posterImageUrl: String? = null,
-    val backdropImageUrl: String? = null
-) : NavKey, Parcelable
-
-@Serializable
-@Parcelize
 data class TvSeasonDetailNavKey(
     val tvShowId: Int,
     val seasonNumber: Int,
@@ -43,17 +34,6 @@ data class TvEpisodeDetailNavKey(
     val episodeNumber: Int,
     val tvShowTitle: String? = null,
     val tvShowPosterPath: String? = null
-) : NavKey, Parcelable
-
-@Serializable
-@Parcelize
-data class TvEpisodeDiscussionsNavKey(
-    val tvShowId: Int,
-    val seasonNumber: Int,
-    val episodeNumber: Int,
-    val episodeTitle: String? = null,
-    val posterImageUrl: String? = null,
-    val backdropImageUrl: String? = null
 ) : NavKey, Parcelable
 
 @Serializable

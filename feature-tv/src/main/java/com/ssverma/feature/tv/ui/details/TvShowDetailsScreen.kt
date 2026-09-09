@@ -90,7 +90,7 @@ import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
-import com.ssverma.shared.ui.component.section.MediaDiscussionsSection
+import com.ssverma.common.ui.community.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.section.MediaReactionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.shared.ui.component.section.ReviewsSection

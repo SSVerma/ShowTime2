@@ -18,6 +18,7 @@ dependencies {
     implementation(projects.featureFilterNavigation)
     implementation(projects.featureMovieNavigation)
     implementation(projects.featureTvNavigation)
+    implementation(projects.featureCommunityNavigation)
 
     implementation(projects.coreUi)
     implementation(projects.commonUi)

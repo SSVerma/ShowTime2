@@ -11,17 +11,14 @@ import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.person.navigation.PersonDetailNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.tv.ui.details.TvEpisodeDetailsScreen
 import com.ssverma.feature.tv.ui.details.TvEpisodeDetailsViewModel
-import com.ssverma.feature.tv.ui.details.TvEpisodeDiscussionsScreen
-import com.ssverma.feature.tv.ui.details.TvEpisodeDiscussionsViewModel
 import com.ssverma.feature.tv.ui.details.TvSeasonDetailsScreen
 import com.ssverma.feature.tv.ui.details.TvSeasonDetailsViewModel
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.tv.ui.details.TvShowDetailsScreen
 import com.ssverma.feature.tv.ui.details.TvShowDetailsViewModel
-import com.ssverma.feature.tv.ui.details.TvShowDiscussionsScreen
-import com.ssverma.feature.tv.ui.details.TvShowDiscussionsViewModel
 import com.ssverma.feature.tv.ui.details.TvShowImagePagerScreen
 import com.ssverma.feature.tv.ui.details.TvShowImageShotsScreen
 import com.ssverma.feature.tv.ui.details.TvShowReviewsScreen
@@ -111,7 +108,7 @@ fun EntryProviderScope<NavKey>.tvEntries(
             },
             openDiscussionsList = { args ->
                 navigator.navigate(
-                    TvShowDiscussionsNavKey(
+                    CommunityDiscussionsNavKey.tvShow(
                         tvShowId = args.mediaId,
                         tvShowTitle = args.title,
                         posterImageUrl = args.posterImageUrl,
@@ -155,36 +152,6 @@ fun EntryProviderScope<NavKey>.tvEntries(
             },
             openLibraryPage = openLibraryPage,
             openProPaywall = { navigator.navigate(ProPaywallNavKey) }
-        )
-    }
-
-    showTimeEntry<TvShowDiscussionsNavKey> { key ->
-        TvShowDiscussionsScreen(
-            viewModel = hiltViewModel<TvShowDiscussionsViewModel, TvShowDiscussionsViewModel.Factory> { factory ->
-                factory.create(
-                    tvShowId = key.tvShowId,
-                    tvShowTitle = key.tvShowTitle,
-                    posterImageUrl = key.posterImageUrl,
-                    backdropImageUrl = key.backdropImageUrl
-                )
-            },
-            onBackPressed = { navigator.goBack() }
-        )
-    }
-
-    showTimeEntry<TvEpisodeDiscussionsNavKey> { key ->
-        TvEpisodeDiscussionsScreen(
-            viewModel = hiltViewModel<TvEpisodeDiscussionsViewModel, TvEpisodeDiscussionsViewModel.Factory> { factory ->
-                factory.create(
-                    tvShowId = key.tvShowId,
-                    seasonNumber = key.seasonNumber,
-                    episodeNumber = key.episodeNumber,
-                    episodeTitle = key.episodeTitle,
-                    posterImageUrl = key.posterImageUrl,
-                    backdropImageUrl = key.backdropImageUrl
-                )
-            },
-            onBackPressed = { navigator.goBack() }
         )
     }
 
@@ -267,7 +234,7 @@ fun EntryProviderScope<NavKey>.tvEntries(
             },
             openDiscussionsList = { args ->
                 navigator.navigate(
-                    TvEpisodeDiscussionsNavKey(
+                    CommunityDiscussionsNavKey.tvEpisode(
                         tvShowId = args.mediaId,
                         seasonNumber = args.seasonNumber ?: 0,
                         episodeNumber = args.episodeNumber ?: 0,

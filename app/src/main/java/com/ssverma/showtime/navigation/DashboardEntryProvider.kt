@@ -11,16 +11,14 @@ import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.TasteProfileNavKey
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
-import com.ssverma.feature.movie.navigation.MovieDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.MovieMatchRoomNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
-import com.ssverma.feature.tv.navigation.TvEpisodeDiscussionsNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
-import com.ssverma.feature.tv.navigation.TvShowDiscussionsNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.shared.domain.DiscoverOption
@@ -46,36 +44,31 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             openDiscussions = { args ->
                 val season = args.seasonNumber
                 val episode = args.episodeNumber
-                if (args.mediaType == MediaType.Movie) {
-                    navigator.navigate(
-                        MovieDiscussionsNavKey(
-                            movieId = args.mediaId,
-                            movieTitle = args.title,
-                            posterImageUrl = args.posterImageUrl,
-                            backdropImageUrl = args.backdropImageUrl
-                        )
+                val navKey = if (args.mediaType == MediaType.Movie) {
+                    CommunityDiscussionsNavKey.movie(
+                        movieId = args.mediaId,
+                        movieTitle = args.title,
+                        posterImageUrl = args.posterImageUrl,
+                        backdropImageUrl = args.backdropImageUrl
                     )
                 } else if (season != null && episode != null) {
-                    navigator.navigate(
-                        TvEpisodeDiscussionsNavKey(
-                            tvShowId = args.mediaId,
-                            seasonNumber = season,
-                            episodeNumber = episode,
-                            episodeTitle = args.title,
-                            posterImageUrl = args.posterImageUrl,
-                            backdropImageUrl = args.backdropImageUrl
-                        )
+                    CommunityDiscussionsNavKey.tvEpisode(
+                        tvShowId = args.mediaId,
+                        seasonNumber = season,
+                        episodeNumber = episode,
+                        episodeTitle = args.title,
+                        posterImageUrl = args.posterImageUrl,
+                        backdropImageUrl = args.backdropImageUrl
                     )
                 } else {
-                    navigator.navigate(
-                        TvShowDiscussionsNavKey(
-                            tvShowId = args.mediaId,
-                            tvShowTitle = args.title,
-                            posterImageUrl = args.posterImageUrl,
-                            backdropImageUrl = args.backdropImageUrl
-                        )
+                    CommunityDiscussionsNavKey.tvShow(
+                        tvShowId = args.mediaId,
+                        tvShowTitle = args.title,
+                        posterImageUrl = args.posterImageUrl,
+                        backdropImageUrl = args.backdropImageUrl
                     )
                 }
+                navigator.navigate(navKey)
             },
             openCinemaGame = {
                 navigator.navigate(CinemaGameNavKey)
