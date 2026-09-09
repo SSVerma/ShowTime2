@@ -1,4 +1,4 @@
-package com.ssverma.feature.filter.domain.model
+package com.ssverma.shared.domain.model.filter
 
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.SortBy

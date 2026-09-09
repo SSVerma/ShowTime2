@@ -22,7 +22,6 @@ dependencies {
     implementation(projects.coreUi)
     implementation(projects.commonUi)
     implementation(projects.sharedUi)
-    implementation(projects.sharedData)
     implementation(projects.coreUiPaging)
     implementation(projects.coreNavigation)
     implementation(projects.sharedDomain)
@@ -35,7 +34,6 @@ dependencies {
     implementation(projects.coreNetworking)
     implementation(projects.corePaging)
     implementation(projects.coreDi)
-    implementation(projects.apiService.tmdb)
     implementation(projects.coreImage)
     implementation(libs.hilt.navigation.compose)
 

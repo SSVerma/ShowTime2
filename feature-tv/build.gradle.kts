@@ -17,7 +17,6 @@ dependencies {
     implementation(projects.featureAccountNavigation)
     implementation(projects.featureLibraryNavigation)
 
-    implementation(projects.featureFilter)
 
     implementation(projects.coreAnalytics)
     implementation(projects.coreNotifications)

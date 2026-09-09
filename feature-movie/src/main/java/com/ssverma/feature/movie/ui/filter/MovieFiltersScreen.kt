@@ -4,7 +4,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ssverma.feature.filter.ui.filter.FiltersScreen
+import com.ssverma.common.ui.filter.FiltersScreen
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.MovieDiscoverConfig
 

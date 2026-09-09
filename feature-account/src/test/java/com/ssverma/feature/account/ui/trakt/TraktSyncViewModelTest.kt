@@ -148,15 +148,15 @@ class TraktSyncViewModelTest {
         )
         var syncLibraryCalledWithToken: String? = null
 
-        override suspend fun syncLibrary(accessToken: String): Result<TraktSyncResult> {
+        override suspend fun syncLibrary(accessToken: String?): Result<TraktSyncResult> {
             syncLibraryCalledWithToken = accessToken
             return syncResult
         }
 
-        override suspend fun getUpNextQueue(accessToken: String): Result<List<TraktUpNextEpisode>> =
+        override suspend fun getUpNextQueue(accessToken: String?): Result<List<TraktUpNextEpisode>> =
             Result.success(emptyList())
 
-        override fun getUpNextQueueFlow(accessToken: String): Flow<List<TraktUpNextEpisode>> =
+        override fun getUpNextQueueFlow(accessToken: String?): Flow<List<TraktUpNextEpisode>> =
             flowOf(emptyList())
 
         override fun getWatchedEpisodesFlow(showId: Int, seasonNumber: Int): Flow<Set<Int>> =

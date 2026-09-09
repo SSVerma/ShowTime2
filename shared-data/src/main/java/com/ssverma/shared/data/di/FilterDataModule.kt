@@ -1,12 +1,12 @@
-package com.ssverma.feature.filter.di
+package com.ssverma.shared.data.di
 
-import com.ssverma.feature.filter.data.repository.DefaultFilterRepository
-import com.ssverma.feature.filter.domain.FilterProvider
-import com.ssverma.feature.filter.domain.MovieFilter
-import com.ssverma.feature.filter.domain.TvFilter
-import com.ssverma.feature.filter.domain.repository.FilterRepository
-import com.ssverma.feature.filter.domain.usecase.FilterType
-import com.ssverma.feature.filter.domain.usecase.GetFiltersUseCase
+import com.ssverma.shared.data.repository.FilterRepositoryImpl
+import com.ssverma.shared.domain.filter.FilterProvider
+import com.ssverma.shared.domain.filter.MovieFilter
+import com.ssverma.shared.domain.filter.TvFilter
+import com.ssverma.shared.domain.repository.FilterRepository
+import com.ssverma.shared.domain.usecase.filter.FilterType
+import com.ssverma.shared.domain.usecase.filter.GetFiltersUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -17,12 +17,12 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class FilterModule {
+abstract class FilterDataModule {
 
     @Binds
     @Singleton
     abstract fun bindFilterRepository(
-        repository: DefaultFilterRepository
+        repository: FilterRepositoryImpl
     ): FilterRepository
 
     companion object {

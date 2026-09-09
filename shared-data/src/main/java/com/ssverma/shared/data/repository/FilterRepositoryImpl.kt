@@ -1,24 +1,27 @@
-package com.ssverma.feature.filter.data.repository
+package com.ssverma.shared.data.repository
 
 import com.ssverma.api.service.tmdb.TmdbApiService
-import com.ssverma.api.service.tmdb.response.RemoteCompany
-import com.ssverma.api.service.tmdb.response.RemoteKeyword
-import com.ssverma.api.service.tmdb.response.RemoteNetwork
-import com.ssverma.feature.filter.domain.repository.FilterRepository
+import com.ssverma.shared.data.mapper.asCompanies
 import com.ssverma.shared.data.mapper.asDomainResult
 import com.ssverma.shared.data.mapper.asGenres
+import com.ssverma.shared.data.mapper.asKeywords
 import com.ssverma.shared.data.mapper.asLanguages
+import com.ssverma.shared.data.mapper.asNetworks
 import com.ssverma.shared.data.mapper.asWatchProviderRegions
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.Company
 import com.ssverma.shared.domain.model.Genre
+import com.ssverma.shared.domain.model.Keyword
 import com.ssverma.shared.domain.model.Language
+import com.ssverma.shared.domain.model.Network
 import com.ssverma.shared.domain.model.WatchProviderRegion
+import com.ssverma.shared.domain.repository.FilterRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class DefaultFilterRepository @Inject constructor(
+class FilterRepositoryImpl @Inject constructor(
     private val tmdbApiService: TmdbApiService
 ) : FilterRepository {
 
@@ -67,21 +70,21 @@ class DefaultFilterRepository @Inject constructor(
         }
     }
 
-    override suspend fun searchKeywords(query: String): Result<List<RemoteKeyword>, Failure.CoreFailure> {
+    override suspend fun searchKeywords(query: String): Result<List<Keyword>, Failure.CoreFailure> {
         return tmdbApiService.searchKeywords(query).asDomainResult {
-            it.body.results ?: emptyList<RemoteKeyword>()
+            (it.body.results ?: emptyList()).asKeywords()
         }
     }
 
-    override suspend fun searchCompanies(query: String): Result<List<RemoteCompany>, Failure.CoreFailure> {
+    override suspend fun searchCompanies(query: String): Result<List<Company>, Failure.CoreFailure> {
         return tmdbApiService.searchCompanies(query).asDomainResult {
-            it.body.results ?: emptyList()
+            (it.body.results ?: emptyList()).asCompanies()
         }
     }
 
-    override suspend fun searchNetworks(query: String): Result<List<RemoteNetwork>, Failure.CoreFailure> {
+    override suspend fun searchNetworks(query: String): Result<List<Network>, Failure.CoreFailure> {
         return tmdbApiService.searchNetworks(query).asDomainResult {
-            it.body.results ?: emptyList()
+            (it.body.results ?: emptyList()).asNetworks()
         }
     }
 }

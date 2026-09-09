@@ -1,10 +1,11 @@
-package com.ssverma.feature.filter.domain.processor
+package com.ssverma.common.ui.filter.processor
 
-import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.domain.model.FilterPayload
-import com.ssverma.feature.filter.ui.filter.FilterGroupContentType
-import com.ssverma.feature.filter.ui.filter.FilterItem
-import com.ssverma.feature.filter.ui.filter.mapDynamicOption
+import com.ssverma.common.ui.filter.FilterGroupContentType
+import com.ssverma.common.ui.filter.FilterItem
+import com.ssverma.common.ui.filter.mapDynamicOption
+import com.ssverma.shared.domain.model.filter.DiscoverFilterState
+import com.ssverma.shared.domain.model.filter.FilterId
+import com.ssverma.shared.domain.model.filter.FilterPayload
 
 class SingleSelectableProcessor :
     FilterGroupProcessor<FilterGroupContentType.ListType.SingleSelectableListType, FilterId> {

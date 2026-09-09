@@ -1,8 +1,9 @@
-package com.ssverma.feature.filter.domain.processor
+package com.ssverma.common.ui.filter.processor
 
-import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.ui.filter.FilterGroup
-import com.ssverma.feature.filter.ui.filter.FilterGroupContentType
+import com.ssverma.common.ui.filter.FilterGroup
+import com.ssverma.common.ui.filter.FilterGroupContentType
+import com.ssverma.shared.domain.model.filter.DiscoverFilterState
+import com.ssverma.shared.domain.model.filter.FilterId
 
 class FilterExtractionEngine {
     private val processors = mutableMapOf<Class<*>, FilterGroupProcessor<*, *>>()

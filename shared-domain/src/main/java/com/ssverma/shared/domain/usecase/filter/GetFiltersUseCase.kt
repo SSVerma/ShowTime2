@@ -1,21 +1,21 @@
-package com.ssverma.feature.filter.domain.usecase
+package com.ssverma.shared.domain.usecase.filter
 
-import com.ssverma.core.di.DefaultDispatcher
-import com.ssverma.feature.filter.domain.FilterProvider
-import com.ssverma.feature.filter.domain.model.DynamicFilterItem
-import com.ssverma.feature.filter.domain.model.Filter
-import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.domain.model.FilterPayload
-import com.ssverma.feature.filter.domain.model.StaticFilterItem
-import com.ssverma.feature.filter.domain.repository.FilterRepository
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.SortBy
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.filter.FilterProvider
+import com.ssverma.shared.domain.model.filter.DynamicFilterItem
+import com.ssverma.shared.domain.model.filter.Filter
+import com.ssverma.shared.domain.model.filter.FilterId
+import com.ssverma.shared.domain.model.filter.FilterPayload
+import com.ssverma.shared.domain.model.filter.StaticFilterItem
+import com.ssverma.shared.domain.repository.FilterRepository
 import com.ssverma.shared.domain.repository.WatchProviderRepository
 import com.ssverma.shared.domain.usecase.NoParamFlowUseCase
 import com.ssverma.shared.domain.utils.DateUtils
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -26,10 +26,9 @@ enum class FilterType {
 }
 
 class GetFiltersUseCase @Inject constructor(
-    @DefaultDispatcher coroutineDispatcher: CoroutineDispatcher,
     private val filterRepository: FilterRepository,
     private val watchProviderRepository: WatchProviderRepository
-) : NoParamFlowUseCase<Result<List<Filter>, Failure.CoreFailure>>(coroutineDispatcher),
+) : NoParamFlowUseCase<Result<List<Filter>, Failure.CoreFailure>>(Dispatchers.Default),
     FilterProvider {
 
     private var filterType: FilterType = FilterType.Movie
@@ -409,7 +408,7 @@ class GetFiltersUseCase @Inject constructor(
                     keywords.map {
                         DynamicFilterItem(
                             id = it.id.toString(),
-                            displayText = it.name.orEmpty()
+                            displayText = it.name
                         )
                     }
                 }

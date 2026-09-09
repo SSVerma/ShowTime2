@@ -1,4 +1,4 @@
-package com.ssverma.feature.filter.ui.filter
+package com.ssverma.common.ui.filter
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -46,6 +46,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.common.ui.R
+import com.ssverma.common.ui.filter.component.FilterPickerBottomSheet
+import com.ssverma.common.ui.filter.component.FilterPickerChip
+import com.ssverma.common.ui.filter.component.MultiSelectableFilterFlowRow
+import com.ssverma.common.ui.filter.component.MultiSelectableFilterRow
+import com.ssverma.common.ui.filter.component.NonSelectedFilterChip
+import com.ssverma.common.ui.filter.component.SelectedFilterChip
+import com.ssverma.common.ui.filter.component.SingleSelectableFilterFlowRow
+import com.ssverma.common.ui.filter.component.SingleSelectableFilterRow
+import com.ssverma.common.ui.filter.processor.asDiscoverOptions
 import com.ssverma.core.ui.MultiSelectableState
 import com.ssverma.core.ui.Toggleable
 import com.ssverma.core.ui.asString
@@ -53,20 +63,10 @@ import com.ssverma.core.ui.component.RangeSliderScale
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.component.SliderScale
-import com.ssverma.feature.filter.R
-import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.domain.processor.DiscoverFilterState
-import com.ssverma.feature.filter.domain.processor.asDiscoverOptions
-import com.ssverma.feature.filter.ui.filter.component.FilterPickerBottomSheet
-import com.ssverma.feature.filter.ui.filter.component.FilterPickerChip
-import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterFlowRow
-import com.ssverma.feature.filter.ui.filter.component.MultiSelectableFilterRow
-import com.ssverma.feature.filter.ui.filter.component.NonSelectedFilterChip
-import com.ssverma.feature.filter.ui.filter.component.SelectedFilterChip
-import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterFlowRow
-import com.ssverma.feature.filter.ui.filter.component.SingleSelectableFilterRow
 import com.ssverma.shared.domain.DiscoverConfig
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.filter.DiscoverFilterState
+import com.ssverma.shared.domain.model.filter.FilterId
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.formatLocally
 import com.ssverma.shared.ui.component.ClickThroughFilterChip
@@ -301,7 +301,6 @@ fun FilterContent(
                                         ?: dateRangeContent.min,
                                     onDateSelected = { selectedDate ->
                                         dateRangeContent.state.onFromValueSelected(selectedDate)
-                                        // Validation: if from > to, clear to or set to = from
                                         dateRangeContent.state.toValue?.let { to ->
                                             if (selectedDate.isAfter(to)) {
                                                 dateRangeContent.state.onToValueSelected(null)
@@ -319,7 +318,6 @@ fun FilterContent(
                                         ?: dateRangeContent.max,
                                     onDateSelected = { selectedDate ->
                                         dateRangeContent.state.onToValueSelected(selectedDate)
-                                        // Validation: if to < from, clear from or set from = to
                                         dateRangeContent.state.fromValue?.let { from ->
                                             if (selectedDate.isBefore(from)) {
                                                 dateRangeContent.state.onFromValueSelected(null)
@@ -510,7 +508,6 @@ fun FilterDatePickerDialog(
         DatePicker(state = datePickerState)
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

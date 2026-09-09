@@ -1,4 +1,4 @@
-package com.ssverma.feature.filter.ui.filter
+package com.ssverma.common.ui.filter
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,8 +7,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.ssverma.core.ui.MultiSelectableState
 import com.ssverma.core.ui.SingleSelectableState
 import com.ssverma.core.ui.UiText
-import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.domain.model.FilterPayload
+import com.ssverma.shared.domain.model.filter.FilterId
+import com.ssverma.shared.domain.model.filter.FilterPayload
 import java.time.LocalDate
 
 data class FilterUiState(

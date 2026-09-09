@@ -1,8 +1,7 @@
-package com.ssverma.feature.filter.ui.filter.component
+package com.ssverma.common.ui.filter.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -49,6 +48,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ssverma.common.ui.R
+import com.ssverma.common.ui.filter.FilterItem
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.MultiSelectableState
 import com.ssverma.core.ui.SelectableState
@@ -57,9 +58,7 @@ import com.ssverma.core.ui.Toggleable
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
-import com.ssverma.feature.filter.R
-import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.ui.filter.FilterItem
+import com.ssverma.shared.domain.model.filter.FilterId
 import com.ssverma.shared.ui.component.ClickThroughFilterChip
 
 @Composable
@@ -109,7 +108,7 @@ fun SingleSelectableFilterRow(
     LazyRow(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
     ) {
         items(items.size) { index ->
             val item = items[index]
@@ -132,7 +131,7 @@ fun MultiSelectableFilterRow(
     LazyRow(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
     ) {
         items(items.size) { index ->
             val item = items[index]

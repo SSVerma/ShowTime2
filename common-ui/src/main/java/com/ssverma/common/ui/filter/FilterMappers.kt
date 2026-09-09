@@ -1,4 +1,4 @@
-package com.ssverma.feature.filter.ui.filter
+package com.ssverma.common.ui.filter
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -16,15 +16,15 @@ import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.ssverma.common.ui.R
 import com.ssverma.core.ui.UiText
-import com.ssverma.feature.filter.R
-import com.ssverma.feature.filter.domain.model.DynamicFilterItem
-import com.ssverma.feature.filter.domain.model.Filter
-import com.ssverma.feature.filter.domain.model.FilterId
-import com.ssverma.feature.filter.domain.model.FilterPayload
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.Order
 import com.ssverma.shared.domain.SortBy
+import com.ssverma.shared.domain.model.filter.DynamicFilterItem
+import com.ssverma.shared.domain.model.filter.Filter
+import com.ssverma.shared.domain.model.filter.FilterId
+import com.ssverma.shared.domain.model.filter.FilterPayload
 import java.time.LocalDate
 
 // 1. UI CONFIGURATION REGISTRY (OCP Compliant)
@@ -236,7 +236,6 @@ fun List<Filter>.asUiFilters(
                         initialOptions = initialOptions,
                         textMapper = ::asVoteCountText
                     )
-
                 }
                 group?.let { result.add(it) }
             }
@@ -262,7 +261,7 @@ fun List<Filter>.asUiFilters(
                     is FilterId.SelectionTypeId.SortBy -> {
                         val sortByItems = filter.items.flatMap { filterItem ->
                             val sortByOption = (filterItem.payload as? FilterPayload.Sort)?.sortBy
-                                ?: return@flatMap emptyList() // Return empty list instead of null
+                                ?: return@flatMap emptyList()
 
                             if (sortByOption == SortBy.None) {
                                 listOf(asSortByUiFilterItem(option = sortByOption))

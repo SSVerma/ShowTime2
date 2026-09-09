@@ -1,10 +1,10 @@
-package com.ssverma.feature.filter.domain
+package com.ssverma.shared.domain.filter
 
-import com.ssverma.feature.filter.domain.model.DynamicFilterItem
-import com.ssverma.feature.filter.domain.model.Filter
-import com.ssverma.feature.filter.domain.model.FilterId
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.filter.DynamicFilterItem
+import com.ssverma.shared.domain.model.filter.Filter
+import com.ssverma.shared.domain.model.filter.FilterId
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Qualifier
 

@@ -1,15 +1,15 @@
-package com.ssverma.feature.filter.ui.filter
+package com.ssverma.common.ui.filter
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiText
-import com.ssverma.feature.filter.domain.FilterProvider
-import com.ssverma.feature.filter.domain.MovieFilter
-import com.ssverma.feature.filter.domain.TvFilter
-import com.ssverma.feature.filter.domain.model.FilterId
 import com.ssverma.shared.domain.DiscoverConfig
 import com.ssverma.shared.domain.DiscoverOption
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.filter.FilterProvider
+import com.ssverma.shared.domain.filter.MovieFilter
+import com.ssverma.shared.domain.filter.TvFilter
+import com.ssverma.shared.domain.model.filter.FilterId
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
