@@ -17,7 +17,7 @@ dependencies {
     implementation(projects.featureMovieNavigation)
     implementation(projects.featureTvNavigation)
     implementation(projects.featureAccountNavigation)
-    implementation(projects.featurePayment)
+    implementation(projects.commonUi)
     implementation(projects.featurePaymentNavigation)
     implementation(projects.coreBackup)
 

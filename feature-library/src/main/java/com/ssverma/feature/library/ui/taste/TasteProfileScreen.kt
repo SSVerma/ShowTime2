@@ -62,7 +62,7 @@ import com.ssverma.feature.library.ui.taste.component.TastePersonaShareBottomShe
 import com.ssverma.feature.library.ui.taste.component.TasteRatingHistogram
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationShelfRow
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationsHeroCard
-import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.stats.TasteEraDistribution
 

@@ -58,7 +58,7 @@ import com.ssverma.feature.library.ui.backlog.component.BlindspotRadarSection
 import com.ssverma.feature.library.ui.backlog.component.ChallengeMediaSearchView
 import com.ssverma.feature.library.ui.backlog.component.CreateChallengeBottomSheet
 import com.ssverma.feature.library.ui.backlog.component.CuratedChallengeShelf
-import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import kotlinx.coroutines.launch
 

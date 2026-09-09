@@ -49,7 +49,7 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.util.ShareImageHelper
-import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
 import kotlinx.coroutines.launch
 

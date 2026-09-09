@@ -21,4 +21,5 @@
     <string name="content_language_desc">Default language for movie &amp; TV show metadata</string>
     <string name="search_languages">Search language…</string>
     <string name="no_languages_found">No languages found</string>
+    <string name="upgrade_to_pro">Upgrade to Pro</string>
 </resources>

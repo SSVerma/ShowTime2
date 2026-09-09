@@ -73,7 +73,7 @@ import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.account.R
-import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

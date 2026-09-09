@@ -152,7 +152,7 @@ import com.ssverma.feature.library.ui.home.component.LibraryTab
 import com.ssverma.feature.library.ui.home.component.LibraryTabType
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptBottomSheet
-import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityListCategories

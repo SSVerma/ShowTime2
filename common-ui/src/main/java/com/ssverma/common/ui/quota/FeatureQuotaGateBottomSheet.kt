@@ -1,4 +1,4 @@
-package com.ssverma.feature.payment.ui
+package com.ssverma.common.ui.quota
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,10 +31,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.common.ui.R
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.payment.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

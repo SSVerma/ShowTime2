@@ -24,7 +24,7 @@ dependencies {
     implementation(projects.coreNotifications)
     implementation(projects.coreBilling)
     implementation(projects.coreAds)
-    implementation(projects.featurePayment)
+    implementation(projects.commonUi)
     implementation(projects.featurePaymentNavigation)
     implementation(projects.sharedAnalytics)
     implementation(projects.sharedAds)

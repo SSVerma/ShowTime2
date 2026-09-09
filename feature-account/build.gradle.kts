@@ -21,6 +21,7 @@ dependencies {
     implementation(projects.sharedData)
     implementation(projects.apiService.tmdb)
     implementation(projects.featureAuth)
+    implementation(projects.commonUi)
     implementation(projects.featurePayment)
     implementation(projects.featurePaymentNavigation)
     api(projects.featureAccountNavigation)

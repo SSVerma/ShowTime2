@@ -63,7 +63,7 @@ import com.ssverma.feature.account.R
 import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.auth.domain.model.TraktUser
 import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
-import com.ssverma.feature.payment.ui.FeatureQuotaGateBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
