@@ -304,6 +304,34 @@ the checklist in this guide before being merged into development or release bran
   - The orchestrator injects `Set<@JvmSuppressWildcards BackupContributor>`, allowing new features to be added with zero changes to existing repository or orchestrator classes.
   - Snapshot serialization must support isolated feature payloads (`"features": { ... }`) while maintaining backward compatibility for legacy snapshots via `fullSnapshot: JsonObject`.
 
+### C. Module Taxonomy & Responsibility Boundaries
+
+* **Strict Invariant**: Every module in the project belongs to a well-defined tier in the architectural hierarchy:
+  1. **`core-*` (Platform Infrastructure Tier)**:
+     - Pure platform-level, infrastructure-only, and **100% feature-agnostic**.
+     - Examples: `core-networking`, `core-storage`, `core-billing`, `core-backup`, `core-navigation`.
+     - Rule: Must NEVER know about feature concepts, feature models, or feature pass enums.
+  2. **`common-ui` (Stateful Plug-and-Play UI Tier)**:
+     - Contains **stateful, plug-and-play UI components** that can be injected and rendered anywhere across the app.
+     - Examples: `LanguageSelectionBottomSheet`, `ThemeSelectionBottomSheet`, `RegionSelectionBottomSheet`, `AppInfoBottomSheet`.
+     - Rule: Self-contained interactive UI blocks with their own internal state/viewmodel coordination.
+  3. **`shared-*` (Stateless Cross-Cutting Building Blocks Tier)**:
+     - Contains **stateless, thin, reusable components** shared across N features.
+     - Examples: `shared-domain` (shared base models like `Movie`, `TvShow`), `shared-ui` (stateless composables: `MediaCard`, `Carousel`, `Avatar`, `Button`, formatting utils).
+     - Rule: **MUST NOT BE POLLUTED**. Never dump full feature data layers, Firestore repositories, DAOs, or domain business rules into `shared-*`.
+  4. **`feature-*` (Vertical Feature Slice Tier)**:
+     - Self-contained feature slices owning their own presentation, domain, and data layers (e.g. `feature-movie`, `feature-tv`, `feature-library`, `feature-community`, `feature-match`).
+  5. **`feature-*-navigation` (Navigation Contract Tier)**:
+     - Pure, lightweight API contracts exposing only `NavKey` and destination arguments so feature modules never depend directly on each other.
+
+### D. Strict Dependency Inversion (Zero UI-to-Data Coupling)
+
+* **Rule**: Presentation and UI modules (`shared-ui`, `common-ui`, `feature-*-ui`) must **NEVER declare dependencies on `shared-data` or any data module**.
+* **Standard**:
+  - UI depends strictly on Domain (`shared-domain`) and Navigation contracts (`feature-*-navigation`).
+  - Data implements Domain interfaces (Dependency Inversion: `Presentation -> Domain <- Data`).
+  - Direct UI-to-Data dependencies pull database, SQLite, and network runtimes transitively into the UI classpath, corrupting incremental build cache and destroying architectural boundaries.
+
 ---
 
 ## 7. Security, Secrets & Privacy Standards
@@ -376,6 +404,11 @@ Before pushing any commit or opening a PR, run through this validation gate:
 
 ### Manual Review Checklist:
 
+- [ ] **Architecture Boundaries & Module Taxonomy**:
+  - Are `core-*` modules 100% feature-agnostic and free of domain concepts or feature pass enums?
+  - Does any UI module (`shared-ui`, `common-ui`, `feature-*-ui`) declare a dependency on `shared-data`? (Strictly forbidden: UI must never depend on Data).
+  - Is `common-ui` reserved for stateful, plug-and-play components?
+  - Are `shared-*` modules stateless, thin, and unpolluted by feature-specific DAOs, repositories, or Firestore implementations?
 - [ ] **Feature-Agnostic Core Modules & Contributor Plugin Pattern**: Are `core-*` and `shared-*` modules completely free of feature-specific domain bloat? Do platform services (backup, notifications, analytics) use decoupled Dagger multibinding contributors (`@IntoSet`) rather than injecting domain DAOs/repositories into a god-class?
 - [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
   in upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?

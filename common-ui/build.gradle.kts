@@ -16,7 +16,6 @@ dependencies {
     implementation(projects.coreUi)
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)
-    implementation(projects.sharedData)
     implementation(projects.coreImage)
 
     implementation(libs.compose.material3)

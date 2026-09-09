@@ -9,7 +9,6 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.ssverma.shared.data.local.db.dao.AiringReminderDao
-import com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -20,7 +19,6 @@ import java.util.concurrent.TimeUnit
 @InstallIn(SingletonComponent::class)
 interface ReminderWorkerEntryPoint {
     fun airingReminderDao(): AiringReminderDao
-    fun showWatchProgressDao(): ShowWatchProgressDao
 }
 
 class AiringReminderRefreshWorker(

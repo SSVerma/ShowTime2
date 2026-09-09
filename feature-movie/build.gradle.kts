@@ -13,10 +13,10 @@ dependencies {
     implementation(projects.featurePersonNavigation)
     implementation(projects.featureSearchNavigation)
     implementation(projects.featureFilterNavigation)
+    implementation(projects.featureAccountNavigation)
+    implementation(projects.featureLibraryNavigation)
 
     implementation(projects.featureFilter)
-    implementation(projects.featureSearch)
-    implementation(projects.featureAccount)
 
     implementation(projects.coreAnalytics)
     implementation(projects.coreNotifications)

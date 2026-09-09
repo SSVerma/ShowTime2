@@ -11,7 +11,6 @@ android {
 dependencies {
     implementation(projects.coreUi)
     implementation(projects.sharedDomain)
-    implementation(projects.sharedData)
     implementation(projects.coreUiPaging)
     implementation(projects.coreImage)
     implementation(projects.coreDi)

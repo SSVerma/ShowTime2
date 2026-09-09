@@ -3,6 +3,7 @@ package com.ssverma.core.notifications
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -91,44 +92,7 @@ class ShowTimeNotificationManager @Inject constructor(
             }
         }
 
-        if (!deepLink.isNullOrBlank()) {
-            try {
-                val intent = Intent(
-                    Intent.ACTION_VIEW,
-                    deepLink.toUri()
-                ).apply {
-                    setPackage(context.packageName)
-                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
-
-                val pendingIntent = android.app.PendingIntent.getActivity(
-                    context,
-                    0,
-                    intent,
-                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-                )
-                builder.setContentIntent(pendingIntent)
-            } catch (e: Exception) {
-                val launchIntent =
-                    context.packageManager.getLaunchIntentForPackage(context.packageName)
-                val pendingIntent = android.app.PendingIntent.getActivity(
-                    context,
-                    0,
-                    launchIntent,
-                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-                )
-                builder.setContentIntent(pendingIntent)
-            }
-        } else {
-            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            val pendingIntent = android.app.PendingIntent.getActivity(
-                context,
-                0,
-                launchIntent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-            )
-            builder.setContentIntent(pendingIntent)
-        }
+        builder.setContentIntent(createPendingIntent(deepLink))
 
         notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
@@ -158,6 +122,12 @@ class ShowTimeNotificationManager @Inject constructor(
             }
         }
 
+        builder.setContentIntent(createPendingIntent(deepLink))
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+    }
+
+    private fun createPendingIntent(deepLink: String?): PendingIntent {
         if (!deepLink.isNullOrBlank()) {
             try {
                 val intent = Intent(
@@ -168,38 +138,24 @@ class ShowTimeNotificationManager @Inject constructor(
                     addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 }
 
-                val pendingIntent = android.app.PendingIntent.getActivity(
+                return PendingIntent.getActivity(
                     context,
                     0,
                     intent,
-                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                builder.setContentIntent(pendingIntent)
-            } catch (e: Exception) {
-                // Fallback: Just open the app if deep link is malformed
-                val launchIntent =
-                    context.packageManager.getLaunchIntentForPackage(context.packageName)
-                val pendingIntent = android.app.PendingIntent.getActivity(
-                    context,
-                    0,
-                    launchIntent,
-                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-                )
-                builder.setContentIntent(pendingIntent)
+            } catch (_: Exception) {
+                // Fallback to default app launch intent
             }
-        } else {
-            // Default: Launch app
-            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            val pendingIntent = android.app.PendingIntent.getActivity(
-                context,
-                0,
-                launchIntent,
-                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
-            )
-            builder.setContentIntent(pendingIntent)
         }
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        return PendingIntent.getActivity(
+            context,
+            0,
+            launchIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
     private fun fetchBitmap(url: String): Bitmap? {
