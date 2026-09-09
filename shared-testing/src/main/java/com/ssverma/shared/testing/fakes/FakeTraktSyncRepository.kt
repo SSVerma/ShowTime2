@@ -25,15 +25,15 @@ class FakeTraktSyncRepository : TraktSyncRepository {
     var lastMarkedPosterPath: String? = null
     var lastMarkedTotalAired: Int? = null
 
-    override suspend fun syncLibrary(accessToken: String): Result<TraktSyncResult> {
+    override suspend fun syncLibrary(accessToken: String?): Result<TraktSyncResult> {
         return syncResult
     }
 
-    override suspend fun getUpNextQueue(accessToken: String): Result<List<TraktUpNextEpisode>> {
+    override suspend fun getUpNextQueue(accessToken: String?): Result<List<TraktUpNextEpisode>> {
         return Result.success(upNextQueueFlow.value)
     }
 
-    override fun getUpNextQueueFlow(accessToken: String): Flow<List<TraktUpNextEpisode>> {
+    override fun getUpNextQueueFlow(accessToken: String?): Flow<List<TraktUpNextEpisode>> {
         return upNextQueueFlow
     }
 

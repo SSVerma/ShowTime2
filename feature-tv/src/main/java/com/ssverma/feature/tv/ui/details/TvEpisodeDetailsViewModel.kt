@@ -3,8 +3,6 @@ package com.ssverma.feature.tv.ui.details
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiState
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.tv.domain.model.TvEpisodeConfig
 import com.ssverma.feature.tv.domain.usecase.TvEpisodeUseCase
 import com.ssverma.feature.tv.ui.common.TvEpisodeUiState
@@ -46,7 +44,6 @@ class TvEpisodeDetailsViewModel @AssistedInject constructor(
     @Assisted("tvShowTitle") val tvShowTitle: String? = null,
     @Assisted("tvShowPosterPath") val tvShowPosterPath: String? = null,
     private val tvEpisodeUseCase: TvEpisodeUseCase,
-    private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository,
     private val getDiscussionsUseCase: GetDiscussionsUseCase,
     private val postCommentUseCase: PostCommentUseCase,
@@ -118,11 +115,9 @@ class TvEpisodeDetailsViewModel @AssistedInject constructor(
 
     fun toggleWatched() {
         viewModelScope.launch {
-            val token = (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken
             val episodeData = (_uiState.value as? UiState.Success)?.data
 
             traktSyncRepository.markEpisodeWatched(
-                accessToken = token,
                 showTmdbId = tvShowId,
                 season = seasonNumber,
                 episode = episodeNumber,

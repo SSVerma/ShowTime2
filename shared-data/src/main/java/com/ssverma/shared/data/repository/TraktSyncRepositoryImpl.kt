@@ -17,6 +17,7 @@ import com.ssverma.shared.data.remote.TraktIds
 import com.ssverma.shared.data.remote.TraktMediaItemIdentifier
 import com.ssverma.shared.data.remote.TraktSyncBody
 import com.ssverma.shared.data.remote.TraktSyncService
+import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.trakt.TraktSyncResult
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.notifier.WidgetSyncNotifier
@@ -39,7 +40,8 @@ class TraktSyncRepositoryImpl @Inject constructor(
     private val debugConfigManager: DebugConfigManager,
     private val mockTraktDataSource: MockTraktDataSource,
     private val tmdbApiService: TmdbApiService? = null,
-    private val widgetSyncNotifier: WidgetSyncNotifier? = null
+    private val widgetSyncNotifier: WidgetSyncNotifier? = null,
+    private val traktAuthProvider: TraktAuthProvider? = null
 ) : TraktSyncRepository {
 
     private fun getActiveClientId(): String {
@@ -48,7 +50,11 @@ class TraktSyncRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getUpNextQueueFlow(accessToken: String): Flow<List<TraktUpNextEpisode>> {
+    private suspend fun resolveAccessToken(passedToken: String?): String? {
+        return passedToken?.takeIf { it.isNotBlank() } ?: traktAuthProvider?.getAccessToken()
+    }
+
+    override fun getUpNextQueueFlow(accessToken: String?): Flow<List<TraktUpNextEpisode>> {
         return showWatchProgressDao.getUpNextQueueFlow().map { progressList ->
             if (debugConfigManager.isMockTraktEnabled.value) {
                 mockTraktDataSource.getUpNextQueue()
@@ -95,7 +101,7 @@ class TraktSyncRepositoryImpl @Inject constructor(
         return episodeWatchHistoryDao.isEpisodeWatchedFlow(showId, seasonNumber, episodeNumber)
     }
 
-    override suspend fun syncLibrary(accessToken: String): Result<TraktSyncResult> =
+    override suspend fun syncLibrary(accessToken: String?): Result<TraktSyncResult> =
         withContext(Dispatchers.IO) {
             try {
                 if (debugConfigManager.isMockTraktEnabled.value) {
@@ -115,8 +121,9 @@ class TraktSyncRepositoryImpl @Inject constructor(
                     )
                 }
 
+                val token = resolveAccessToken(accessToken).orEmpty()
                 val clientId = getActiveClientId()
-                val bearer = "Bearer $accessToken"
+                val bearer = "Bearer $token"
                 var importedWatchlist = 0
                 var importedHistory = 0
                 var exportedItems = 0
@@ -239,16 +246,17 @@ class TraktSyncRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getUpNextQueue(accessToken: String): Result<List<TraktUpNextEpisode>> =
+    override suspend fun getUpNextQueue(accessToken: String?): Result<List<TraktUpNextEpisode>> =
         withContext(Dispatchers.IO) {
             try {
                 if (debugConfigManager.isMockTraktEnabled.value) {
                     return@withContext Result.success(mockTraktDataSource.getUpNextQueue())
                 }
 
-                if (accessToken.isNotBlank()) {
+                val token = resolveAccessToken(accessToken)
+                if (!token.isNullOrBlank()) {
                     val clientId = getActiveClientId()
-                    val bearer = "Bearer $accessToken"
+                    val bearer = "Bearer $token"
                     when (val res = traktSyncService.getWatchedShowProgress(bearer, clientId)) {
                         is ApiResponse.Success -> {
                             val upNextList = res.body.mapNotNull { showProgress ->
@@ -380,9 +388,10 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 mockTraktDataSource.onEpisodeWatchedToggled(showTmdbId, isCurrentlyWatched)
             }
 
-            if (!accessToken.isNullOrBlank() && !debugConfigManager.isMockTraktEnabled.value) {
+            val token = resolveAccessToken(accessToken)
+            if (!token.isNullOrBlank() && !debugConfigManager.isMockTraktEnabled.value) {
                 val clientId = getActiveClientId()
-                val bearer = "Bearer $accessToken"
+                val bearer = "Bearer $token"
                 val payload = TraktSyncBody(
                     shows = listOf(
                         TraktMediaItemIdentifier(ids = TraktIds(tmdb = showTmdbId))
@@ -510,9 +519,10 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 mockTraktDataSource.onSeasonWatchedToggled(showTmdbId, episodeNumbers)
             }
 
-            if (!accessToken.isNullOrBlank() && !debugConfigManager.isMockTraktEnabled.value) {
+            val token = resolveAccessToken(accessToken)
+            if (!token.isNullOrBlank() && !debugConfigManager.isMockTraktEnabled.value) {
                 val clientId = getActiveClientId()
-                val bearer = "Bearer $accessToken"
+                val bearer = "Bearer $token"
                 val payload = TraktSyncBody(
                     shows = listOf(
                         TraktMediaItemIdentifier(ids = TraktIds(tmdb = showTmdbId))
@@ -533,12 +543,13 @@ class TraktSyncRepositoryImpl @Inject constructor(
         movieTmdbId: Int
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            if (accessToken.isNullOrBlank() || debugConfigManager.isMockTraktEnabled.value) {
+            val token = resolveAccessToken(accessToken)
+            if (token.isNullOrBlank() || debugConfigManager.isMockTraktEnabled.value) {
                 return@withContext Result.success(Unit)
             }
 
             val clientId = getActiveClientId()
-            val bearer = "Bearer $accessToken"
+            val bearer = "Bearer $token"
             val payload = TraktSyncBody(
                 movies = listOf(
                     TraktMediaItemIdentifier(ids = TraktIds(tmdb = movieTmdbId))

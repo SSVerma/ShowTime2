@@ -8,8 +8,6 @@ import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.tv.domain.failure.TvShowFailure
 import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.model.reminder.ReminderType
@@ -89,7 +87,6 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
     val appConfigRepository: AppConfigRepository,
     val affiliateRepository: AffiliateRepository,
-    private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository,
     val reminderRepository: ReminderRepository,
     val billingRepository: BillingRepository,
@@ -274,7 +271,6 @@ class TvShowDetailsViewModel @AssistedInject constructor(
 
     fun toggleSeasonWatched(tvSeason: TvSeason) {
         viewModelScope.launch {
-            val token = (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken
             val watchedCount = seasonWatchCounts.value[tvSeason.seasonNumber] ?: 0
             val isFullyWatched = tvSeason.episodeCount > 0 && watchedCount >= tvSeason.episodeCount
             val episodeNumbers = if (isFullyWatched) {
@@ -287,7 +283,6 @@ class TvShowDetailsViewModel @AssistedInject constructor(
                 show?.seasons?.sumOf { it.episodeCount } ?: (tvSeason.episodeCount * 2)
 
             traktSyncRepository.markSeasonWatched(
-                accessToken = token,
                 showTmdbId = tvShowId,
                 season = tvSeason.seasonNumber,
                 episodeNumbers = episodeNumbers,

@@ -6,8 +6,8 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.mapSuccess
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.auth.TraktAuthProvider
+import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.feature.tv.domain.usecase.NowAiringTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TodayAiringTvShowsUseCase
@@ -49,7 +49,7 @@ class HomeTvShowViewModel @Inject constructor(
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
     private val appConfigRepository: AppConfigRepository,
     private val adConfigProvider: AdConfigProvider,
-    private val traktAuthManager: TraktAuthManager,
+    private val traktAuthProvider: TraktAuthProvider,
     private val traktSyncRepository: TraktSyncRepository
 ) : ViewModel() {
 
@@ -76,12 +76,10 @@ class HomeTvShowViewModel @Inject constructor(
 
         // Observe Trakt State & Up Next queue reactively
         viewModelScope.launch {
-            traktAuthManager.authState.collectLatest { traktState ->
-                val isConnected = traktState is TraktAuthState.Connected
-                val token = (traktState as? TraktAuthState.Connected)?.accessToken.orEmpty()
+            traktAuthProvider.isConnectedFlow.collectLatest { isConnected ->
                 _uiState.update { it.copy(isTraktConnected = isConnected) }
 
-                traktSyncRepository.getUpNextQueueFlow(token).collectLatest { queue ->
+                traktSyncRepository.getUpNextQueueFlow().collectLatest { queue ->
                     _uiState.update { it.copy(upNextQueue = queue) }
                 }
             }
@@ -96,9 +94,7 @@ class HomeTvShowViewModel @Inject constructor(
         fetchTodayAiringTvShows()
         fetchNowAiringTvShows()
         fetchWatchProviders()
-        val token =
-            (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken.orEmpty()
-        fetchUpNextQueue(token)
+        fetchUpNextQueue()
     }
 
     fun fetchTvGenres() = viewModelScope.launch {
@@ -315,7 +311,7 @@ class HomeTvShowViewModel @Inject constructor(
         _uiState.update { it.copy(watchProviderAd = nativeAd) }
     }
 
-    fun fetchUpNextQueue(accessToken: String) = viewModelScope.launch {
+    fun fetchUpNextQueue(accessToken: String? = null) = viewModelScope.launch {
         val result = traktSyncRepository.getUpNextQueue(accessToken)
         result.onSuccess { queue ->
             _uiState.update { it.copy(upNextQueue = queue) }
@@ -323,9 +319,6 @@ class HomeTvShowViewModel @Inject constructor(
     }
 
     fun markEpisodeWatched(showTmdbId: Int, season: Int, episode: Int) = viewModelScope.launch {
-        val traktState = traktAuthManager.authState.value
-        val token = (traktState as? TraktAuthState.Connected)?.accessToken
-
         // 1. Optimistically update local upNextQueue in UI state so the user immediately sees progress & celebration!
         val currentQueue = _uiState.value.upNextQueue
         val targetItem = currentQueue.find { it.showTmdbId == showTmdbId }
@@ -352,7 +345,6 @@ class HomeTvShowViewModel @Inject constructor(
 
         // 2. Perform backend Trakt sync / Room DB update
         traktSyncRepository.markEpisodeWatched(
-            accessToken = token,
             showTmdbId = showTmdbId,
             season = season,
             episode = episode,
@@ -365,7 +357,7 @@ class HomeTvShowViewModel @Inject constructor(
         if (targetItem != null && (targetItem.totalCompleted + 1 >= targetItem.totalAired)) {
             _uiState.update {
                 it.copy(
-                    completedShowDialog = com.ssverma.shared.domain.model.trakt.CompletedShowDialogState(
+                    completedShowDialog = CompletedShowDialogState(
                         showTmdbId = targetItem.showTmdbId,
                         showTitle = targetItem.showTitle,
                         showPosterPath = targetItem.showPosterPath,

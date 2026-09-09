@@ -4,8 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.ui.UiState
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.feature.tv.domain.usecase.NowAiringTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TodayAiringTvShowsUseCase
@@ -47,10 +46,10 @@ class HomeTvShowViewModelTest {
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase = mockk(relaxed = true)
     private val appConfigRepository: AppConfigRepository = mockk(relaxed = true)
     private val adConfigProvider: AdConfigProvider = mockk(relaxed = true)
-    private val traktAuthManager: TraktAuthManager = mockk(relaxed = true)
+    private val traktAuthProvider: TraktAuthProvider = mockk(relaxed = true)
     private val fakeTraktSyncRepository = FakeTraktSyncRepository()
 
-    private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
+    private val isTraktConnectedFlow = MutableStateFlow(false)
 
     private val sampleUpNextEpisode = TraktUpNextEpisode(
         showTmdbId = 93405,
@@ -73,7 +72,8 @@ class HomeTvShowViewModelTest {
         every { appConfigRepository.preferredOriginalLanguage } returns MutableStateFlow("en")
         every { adConfigProvider.isAdsEnabled } returns false
 
-        every { traktAuthManager.authState } returns traktAuthFlow
+        every { traktAuthProvider.isConnectedFlow } returns isTraktConnectedFlow
+        every { traktAuthProvider.isConnected } answers { isTraktConnectedFlow.value }
 
         coEvery { trendingTvShowsUseCase(any()) } returns Result.Success(emptyList())
         coEvery { todayAiringTvShowsUseCase() } returns Result.Success(emptyList())
@@ -97,7 +97,7 @@ class HomeTvShowViewModelTest {
             fetchAllWatchProvidersUseCase = fetchAllWatchProvidersUseCase,
             appConfigRepository = appConfigRepository,
             adConfigProvider = adConfigProvider,
-            traktAuthManager = traktAuthManager,
+            traktAuthProvider = traktAuthProvider,
             traktSyncRepository = fakeTraktSyncRepository
         )
     }
@@ -106,10 +106,7 @@ class HomeTvShowViewModelTest {
     fun `initial trakt connection state and up next queue are updated reactively`() = runTest {
         advanceUntilIdle()
 
-        traktAuthFlow.value = TraktAuthState.Connected(
-            user = mockk(relaxed = true),
-            accessToken = "token_abc"
-        )
+        isTraktConnectedFlow.value = true
         fakeTraktSyncRepository.upNextQueueFlow.value = listOf(sampleUpNextEpisode)
         advanceUntilIdle()
 
@@ -124,10 +121,7 @@ class HomeTvShowViewModelTest {
     @Test
     fun `markEpisodeWatched optimistically increments totalCompleted and keeps totalAired unchanged`() =
         runTest {
-            traktAuthFlow.value = TraktAuthState.Connected(
-                user = mockk(relaxed = true),
-                accessToken = "token_abc"
-            )
+            isTraktConnectedFlow.value = true
             fakeTraktSyncRepository.upNextQueueFlow.value = listOf(sampleUpNextEpisode)
             advanceUntilIdle()
 
@@ -165,10 +159,7 @@ class HomeTvShowViewModelTest {
                 seasonNumber = 2,
                 episodeNumber = 9
             )
-            traktAuthFlow.value = TraktAuthState.Connected(
-                user = mockk(relaxed = true),
-                accessToken = "token_abc"
-            )
+            isTraktConnectedFlow.value = true
             fakeTraktSyncRepository.upNextQueueFlow.value = listOf(nearCompleteShow)
             advanceUntilIdle()
 

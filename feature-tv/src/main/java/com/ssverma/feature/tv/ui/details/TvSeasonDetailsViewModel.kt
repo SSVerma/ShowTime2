@@ -3,8 +3,6 @@ package com.ssverma.feature.tv.ui.details
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ui.UiState
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.tv.domain.model.TvSeasonConfig
 import com.ssverma.feature.tv.domain.usecase.TvSeasonUseCase
 import com.ssverma.feature.tv.ui.common.TvSeasonUiState
@@ -29,7 +27,6 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
     @Assisted("tvShowTitle") val tvShowTitle: String? = null,
     @Assisted("tvShowPosterPath") val tvShowPosterPath: String? = null,
     private val tvSeasonUseCase: TvSeasonUseCase,
-    private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository
 ) : ViewModel() {
 
@@ -80,7 +77,6 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
 
     fun toggleEpisodeWatched(episodeNumber: Int) {
         viewModelScope.launch {
-            val token = (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken
             val seasonData = (_uiState.value as? UiState.Success)?.data
             val isCurrentlyWatched = episodeNumber in watchedEpisodes.value
             val targetEpNumber = if (isCurrentlyWatched) episodeNumber else episodeNumber + 1
@@ -95,7 +91,6 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
             }
 
             traktSyncRepository.markEpisodeWatched(
-                accessToken = token,
                 showTmdbId = tvShowId,
                 season = seasonNumber,
                 episode = episodeNumber,
@@ -109,7 +104,6 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
 
     fun markSeasonWatched(episodeNumbers: List<Int>) {
         viewModelScope.launch {
-            val token = (traktAuthManager.authState.value as? TraktAuthState.Connected)?.accessToken
             val seasonData = (_uiState.value as? UiState.Success)?.data
             val totalAired = seasonData?.episodes?.size ?: 0
             val effectiveShowTitle = if (!tvShowTitle.isNullOrBlank()) {
@@ -119,7 +113,6 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
             }
 
             traktSyncRepository.markSeasonWatched(
-                accessToken = token,
                 showTmdbId = tvShowId,
                 season = seasonNumber,
                 episodeNumbers = episodeNumbers,

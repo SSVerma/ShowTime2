@@ -5,15 +5,15 @@ import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import kotlinx.coroutines.flow.Flow
 
 interface TraktSyncRepository {
-    suspend fun syncLibrary(accessToken: String): Result<TraktSyncResult>
-    suspend fun getUpNextQueue(accessToken: String): Result<List<TraktUpNextEpisode>>
-    fun getUpNextQueueFlow(accessToken: String): Flow<List<TraktUpNextEpisode>>
+    suspend fun syncLibrary(accessToken: String? = null): Result<TraktSyncResult>
+    suspend fun getUpNextQueue(accessToken: String? = null): Result<List<TraktUpNextEpisode>>
+    fun getUpNextQueueFlow(accessToken: String? = null): Flow<List<TraktUpNextEpisode>>
     fun getWatchedEpisodesFlow(showId: Int, seasonNumber: Int): Flow<Set<Int>>
     fun getWatchedSeasonsFlow(showId: Int): Flow<Set<Int>>
     fun getSeasonWatchCountsFlow(showId: Int): Flow<Map<Int, Int>>
     fun isEpisodeWatchedFlow(showId: Int, seasonNumber: Int, episodeNumber: Int): Flow<Boolean>
     suspend fun markEpisodeWatched(
-        accessToken: String?,
+        accessToken: String? = null,
         showTmdbId: Int,
         season: Int,
         episode: Int,
@@ -24,7 +24,7 @@ interface TraktSyncRepository {
     ): Result<Unit>
 
     suspend fun markSeasonWatched(
-        accessToken: String?,
+        accessToken: String? = null,
         showTmdbId: Int,
         season: Int,
         episodeNumbers: List<Int> = emptyList(),
@@ -33,5 +33,5 @@ interface TraktSyncRepository {
         totalAired: Int = 0
     ): Result<Unit>
 
-    suspend fun markMovieWatched(accessToken: String?, movieTmdbId: Int): Result<Unit>
+    suspend fun markMovieWatched(accessToken: String? = null, movieTmdbId: Int): Result<Unit>
 }

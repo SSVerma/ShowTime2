@@ -5,7 +5,9 @@ import com.ssverma.feature.auth.data.local.DefaultAuthLocalDataSource
 import com.ssverma.feature.auth.data.remote.AuthRemoteDataSource
 import com.ssverma.feature.auth.data.remote.DefaultAuthRemoteDataSource
 import com.ssverma.feature.auth.data.repository.DefaultAuthRepository
+import com.ssverma.feature.auth.domain.TraktAuthProviderImpl
 import com.ssverma.feature.auth.domain.repository.AuthRepository
+import com.ssverma.shared.domain.auth.TraktAuthProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,4 +30,9 @@ internal abstract class AuthDataModule {
     abstract fun provideAuthRepository(
         defaultAuthRepository: DefaultAuthRepository
     ): AuthRepository
+
+    @Binds
+    abstract fun provideTraktAuthProvider(
+        traktAuthProviderImpl: TraktAuthProviderImpl
+    ): TraktAuthProvider
 }
