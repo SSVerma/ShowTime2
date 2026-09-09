@@ -8,8 +8,8 @@ import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import android.app.Activity
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.core.ads.quota.RewardPassType
-import com.ssverma.core.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassType
+import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType

@@ -1,4 +1,4 @@
-package com.ssverma.core.ads
+package com.ssverma.shared.ads
 
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider

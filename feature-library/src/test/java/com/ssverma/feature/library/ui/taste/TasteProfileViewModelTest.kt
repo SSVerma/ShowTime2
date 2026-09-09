@@ -2,9 +2,9 @@ package com.ssverma.feature.library.ui.taste
 
 import android.app.Activity
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.core.ads.quota.RewardManager
-import com.ssverma.core.ads.quota.RewardPassStatus
-import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassStatus
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository

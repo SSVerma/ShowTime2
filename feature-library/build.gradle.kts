@@ -10,7 +10,7 @@ dependencies {
     implementation(projects.apiService.tmdb)
 
     api(projects.featureLibraryNavigation)
-    implementation(projects.coreAds)
+    implementation(projects.sharedAds)
     implementation(projects.coreBilling)
     implementation(projects.featurePersonNavigation)
     implementation(projects.featureSearchNavigation)

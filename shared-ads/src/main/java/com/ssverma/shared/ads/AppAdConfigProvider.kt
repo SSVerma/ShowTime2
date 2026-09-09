@@ -1,5 +1,6 @@
-package com.ssverma.core.ads
+package com.ssverma.shared.ads
 
+import com.ssverma.core.ads.BuildConfig
 import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ccm.AppConfigProvider

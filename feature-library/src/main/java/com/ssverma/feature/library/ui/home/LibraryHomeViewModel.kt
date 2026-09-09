@@ -4,8 +4,8 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.core.ads.quota.RewardManager
-import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBannerState
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter

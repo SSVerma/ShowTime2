@@ -2,8 +2,8 @@ package com.ssverma.feature.movie.ui.match
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssverma.core.ads.quota.RewardManager
-import com.ssverma.core.ads.quota.RewardPassType
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.feature.movie.domain.usecase.MovieWatchProvidersUseCase
 import com.ssverma.shared.domain.Result

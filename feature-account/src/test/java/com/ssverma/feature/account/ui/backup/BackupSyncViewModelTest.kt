@@ -4,8 +4,8 @@ import android.app.Activity
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.core.ads.quota.RewardManager
-import com.ssverma.core.ads.quota.RewardPassStatus
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleSignInCancelledException

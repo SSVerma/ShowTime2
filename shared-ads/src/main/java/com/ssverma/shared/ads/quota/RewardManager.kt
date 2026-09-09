@@ -1,4 +1,4 @@
-package com.ssverma.core.ads.quota
+package com.ssverma.shared.ads.quota
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit

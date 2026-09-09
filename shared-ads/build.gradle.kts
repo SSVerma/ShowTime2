@@ -14,7 +14,19 @@ dependencies {
     implementation(projects.coreImage)
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)
+    implementation(projects.coreCcm)
+    implementation(projects.coreStorage)
+    implementation(projects.coreBilling)
+    implementation(libs.datastore.preferences)
 
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(projects.coreTesting)
+    testImplementation(projects.sharedTesting)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
+    testImplementation(libs.coroutines.test)
 }

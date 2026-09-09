@@ -3,8 +3,8 @@ package com.ssverma.feature.library.ui.home
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.core.ads.quota.RewardManager
-import com.ssverma.core.ads.quota.RewardPassStatus
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
