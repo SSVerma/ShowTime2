@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui.match.component
+package com.ssverma.feature.match.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.feature.movie.ui.match.MovieMatchColor
+import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import java.util.Locale
 

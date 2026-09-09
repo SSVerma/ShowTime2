@@ -1,4 +1,4 @@
-package com.ssverma.shared.data.repository
+package com.ssverma.feature.match.data.repository
 
 import android.content.Context
 import android.content.pm.ApplicationInfo

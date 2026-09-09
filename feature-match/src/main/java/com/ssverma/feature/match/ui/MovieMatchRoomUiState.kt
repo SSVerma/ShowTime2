@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui.match
+package com.ssverma.feature.match.ui
 
 import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchMode

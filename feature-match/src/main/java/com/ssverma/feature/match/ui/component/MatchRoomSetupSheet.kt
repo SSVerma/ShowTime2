@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui.match.component
+package com.ssverma.feature.match.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable

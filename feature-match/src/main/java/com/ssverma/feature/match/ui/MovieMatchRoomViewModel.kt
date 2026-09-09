@@ -1,13 +1,11 @@
-package com.ssverma.feature.movie.ui.match
+package com.ssverma.feature.match.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.ads.quota.RewardPassType
-import com.ssverma.core.billing.BillingRepository
-import com.ssverma.feature.movie.domain.usecase.MovieWatchProvidersUseCase
 import com.ssverma.shared.domain.Result
-import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
 import com.ssverma.shared.domain.model.match.MovieMatchCard
@@ -26,8 +24,7 @@ import javax.inject.Inject
 class MovieMatchRoomViewModel @Inject constructor(
     private val matchRoomRepository: MatchRoomRepository,
     private val rewardManager: RewardManager,
-    private val billingRepository: BillingRepository,
-    private val movieWatchProvidersUseCase: MovieWatchProvidersUseCase
+    private val billingRepository: BillingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieMatchRoomUiState())

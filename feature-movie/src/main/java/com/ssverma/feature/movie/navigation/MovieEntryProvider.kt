@@ -19,8 +19,6 @@ import com.ssverma.feature.movie.ui.details.MovieImageShotsScreen
 import com.ssverma.feature.movie.ui.details.MovieReviewsScreen
 import com.ssverma.feature.movie.ui.details.MovieReviewsViewModel
 import com.ssverma.feature.movie.ui.game.CinemaGameScreen
-import com.ssverma.feature.movie.ui.match.MovieMatchRoomScreen
-import com.ssverma.feature.movie.ui.match.MovieMatchRoomViewModel
 import com.ssverma.feature.movie.ui.home.MovieScreen
 import com.ssverma.feature.movie.ui.list.MovieListScreen
 import com.ssverma.feature.movie.ui.list.MovieListViewModel
@@ -92,23 +90,6 @@ fun EntryProviderScope<NavKey>.movieEntries(
         CinemaGameScreen(
             viewModel = hiltViewModel(),
             onBackPress = { navigator.goBack() }
-        )
-    }
-
-    showTimeEntry<MovieMatchRoomNavKey> { key ->
-        val viewModel = hiltViewModel<MovieMatchRoomViewModel>()
-        LaunchedEffect(key) {
-            viewModel.initFromNavKey(key.roomCode, key.initialMode)
-        }
-        MovieMatchRoomScreen(
-            viewModel = viewModel,
-            onBackPressed = { navigator.goBack() },
-            openMovieDetails = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
-            },
-            openProPaywall = {
-                navigator.navigate(ProPaywallNavKey)
-            }
         )
     }
 

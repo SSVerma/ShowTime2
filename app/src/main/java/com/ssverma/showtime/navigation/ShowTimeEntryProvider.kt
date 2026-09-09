@@ -10,6 +10,7 @@ import com.ssverma.feature.account.navigation.accountEntries
 import com.ssverma.feature.auth.navigation.authEntries
 import com.ssverma.feature.community.navigation.communityEntries
 import com.ssverma.feature.filter.navigation.filterEntries
+import com.ssverma.feature.match.navigation.matchEntries
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.libraryEntries
 import com.ssverma.feature.movie.navigation.movieEntries
@@ -36,6 +37,7 @@ fun rememberShowTimeEntryProvider(
             paymentEntries(navigator)
             filterEntries(navigator)
             communityEntries(navigator)
+            matchEntries(navigator)
         }
     }
 }

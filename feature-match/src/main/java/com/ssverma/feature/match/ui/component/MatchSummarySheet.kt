@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui.match.component
+package com.ssverma.feature.match.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.feature.movie.ui.match.MovieMatchColor
+import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import java.util.Locale
 

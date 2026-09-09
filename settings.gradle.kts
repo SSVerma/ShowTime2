@@ -65,4 +65,6 @@ include(":feature-payment")
 include(":feature-payment-navigation")
 include(":feature-community")
 include(":feature-community-navigation")
+include(":feature-match")
+include(":feature-match-navigation")
 

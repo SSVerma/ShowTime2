@@ -166,6 +166,8 @@ dependencies {
     implementation(projects.featureFilterNavigation)
     implementation(projects.featureCommunity)
     implementation(projects.featureCommunityNavigation)
+    implementation(projects.featureMatch)
+    implementation(projects.featureMatchNavigation)
 
     implementation(libs.material)
     implementation(libs.compose.activity)

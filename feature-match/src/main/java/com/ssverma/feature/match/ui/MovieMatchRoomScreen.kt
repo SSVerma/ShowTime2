@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui.match
+package com.ssverma.feature.match.ui
 
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
@@ -66,11 +66,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.ui.layout.ContentScale
 import com.ssverma.core.image.NetworkImage
-import com.ssverma.feature.movie.R
-import com.ssverma.feature.movie.ui.match.component.MatchCelebrationDialog
-import com.ssverma.feature.movie.ui.match.component.MatchRoomSetupSheet
-import com.ssverma.feature.movie.ui.match.component.MatchSummarySheet
-import com.ssverma.feature.movie.ui.match.component.MovieSwipeDeck
+import com.ssverma.feature.match.R
+import com.ssverma.feature.match.ui.component.MatchCelebrationDialog
+import com.ssverma.feature.match.ui.component.MatchRoomSetupSheet
+import com.ssverma.feature.match.ui.component.MatchSummarySheet
+import com.ssverma.feature.match.ui.component.MovieSwipeDeck
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
 import com.ssverma.shared.domain.model.match.MovieMatchCard

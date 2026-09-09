@@ -30,10 +30,3 @@ data class MovieImagePagerNavKey(val movieId: Int, val initialPageIndex: Int) : 
 @Parcelize
 data object CinemaGameNavKey : NavKey, Parcelable
 
-@Serializable
-@Parcelize
-data class MovieMatchRoomNavKey(
-    val roomCode: String? = null,
-    val initialMode: String? = null
-) : NavKey, Parcelable
-

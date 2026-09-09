@@ -1,4 +1,4 @@
-package com.ssverma.feature.movie.ui.match.component
+package com.ssverma.feature.match.ui.component
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.ssverma.feature.movie.ui.match.MovieMatchColor
+import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import com.ssverma.shared.domain.model.match.SwipeDirection
 import kotlinx.coroutines.launch
