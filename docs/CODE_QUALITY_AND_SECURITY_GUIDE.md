@@ -320,9 +320,11 @@ the checklist in this guide before being merged into development or release bran
      - Examples: `shared-domain` (shared base models like `Movie`, `TvShow`), `shared-ui` (stateless composables: `MediaCard`, `Carousel`, `Avatar`, `Button`, formatting utils).
      - Rule: **MUST NOT BE POLLUTED**. Never dump full feature data layers, Firestore repositories, DAOs, or domain business rules into `shared-*`.
   4. **`feature-*` (Vertical Feature Slice Tier)**:
-     - Self-contained feature slices owning their own presentation, domain, and data layers (e.g. `feature-movie`, `feature-tv`, `feature-library`, `feature-community`, `feature-match`).
-  5. **`feature-*-navigation` (Navigation Contract Tier)**:
-     - Pure, lightweight API contracts exposing only `NavKey` and destination arguments so feature modules never depend directly on each other.
+      - Self-contained feature slices owning their own presentation, domain, and data layers (e.g. `feature-movie`, `feature-tv`, `feature-library`, `feature-community`, `feature-match`, `feature-account`, `feature-auth`, `feature-search`, `feature-person`, `feature-payment`, `feature-filter`).
+      - Rule: **Zero cross-feature implementation dependencies**. `feature-A` must NEVER depend on `feature-B`. Cross-feature navigation is achieved exclusively through `feature-*-navigation` contracts.
+   5. **`feature-*-navigation` (Navigation Contract Tier)**:
+      - Pure, lightweight API contracts exposing only `NavKey` and destination arguments so feature modules never depend directly on each other.
+      - Rule: Must contain ONLY `NavKey` data classes and serialization. No screens, ViewModels, repositories, or business logic.
 
 ### D. Strict Dependency Inversion (Zero UI-to-Data Coupling)
 
@@ -400,7 +402,14 @@ Before pushing any commit or opening a PR, run through this validation gate:
 
 # 4. Assemble and build the full debug APK
 ./gradlew :app:assembleDebug
+
+# 5. Run the automated pre-commit quality gate (auto-reformat + code quality checklist)
+git add -A && ./.githooks/pre-commit
 ```
+
+> **Note**: The `.githooks/pre-commit` hook automatically runs on every `git commit`. It performs:
+> 1. **Auto-reformatting** of staged files (Android Studio Cmd+Option+L equivalent).
+> 2. **Code Quality Checklist** validation (zero wildcard imports, zero inline FQCNs, zero hardcoded hex colors outside `*Color.kt`, zero debug logs).
 
 ### Manual Review Checklist:
 
@@ -409,6 +418,8 @@ Before pushing any commit or opening a PR, run through this validation gate:
   - Does any UI module (`shared-ui`, `common-ui`, `feature-*-ui`) declare a dependency on `shared-data`? (Strictly forbidden: UI must never depend on Data).
   - Is `common-ui` reserved for stateful, plug-and-play components?
   - Are `shared-*` modules stateless, thin, and unpolluted by feature-specific DAOs, repositories, or Firestore implementations?
+  - Are there zero cross-feature implementation dependencies (`feature-A` → `feature-B`)? Cross-feature wiring must go through `feature-*-navigation` contracts only.
+  - Do `feature-*-navigation` modules contain ONLY `NavKey` data classes with zero screens, ViewModels, or business logic?
 - [ ] **Feature-Agnostic Core Modules & Contributor Plugin Pattern**: Are `core-*` and `shared-*` modules completely free of feature-specific domain bloat? Do platform services (backup, notifications, analytics) use decoupled Dagger multibinding contributors (`@IntoSet`) rather than injecting domain DAOs/repositories into a god-class?
 - [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
   in upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
