@@ -84,8 +84,8 @@ import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
+import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 import com.ssverma.shared.ui.component.ProfileAvatarSharedKey
-import com.ssverma.shared.ui.subscription.StreamingSubscriptionsBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -26,8 +26,8 @@ import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.di.AppScoped
 import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.notifications.ShowTimeNotificationManager
-import com.ssverma.shared.ui.AppStateHolder
-import com.ssverma.shared.ui.LocalAppStateHolder
+import com.ssverma.common.ui.state.AppStateHolder
+import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.showtime.navigation.ShowTimeDeepLinkHandler
 import com.ssverma.showtime.widget.WidgetUpdateHelper
 import dagger.hilt.android.AndroidEntryPoint

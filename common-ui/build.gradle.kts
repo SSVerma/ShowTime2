@@ -17,6 +17,10 @@ dependencies {
     implementation(projects.sharedUi)
     implementation(projects.sharedDomain)
     implementation(projects.coreImage)
+    implementation(projects.coreDi)
+    implementation(projects.coreBilling)
+    implementation(projects.coreBackup)
+    implementation(projects.coreAds)
 
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
@@ -26,5 +30,10 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     testImplementation(libs.junit)
+    testImplementation(projects.coreTesting)
+    testImplementation(projects.sharedTesting)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
+    testImplementation(libs.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
 }

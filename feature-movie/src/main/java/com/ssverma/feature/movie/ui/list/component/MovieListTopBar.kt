@@ -11,7 +11,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
-import com.ssverma.feature.filter.ui.filter.FilterActionIcon
+import com.ssverma.shared.ui.component.FilterActionIcon
 import com.ssverma.feature.movie.ui.list.MoviePaginatedListUiState
 
 @OptIn(ExperimentalMaterial3Api::class)

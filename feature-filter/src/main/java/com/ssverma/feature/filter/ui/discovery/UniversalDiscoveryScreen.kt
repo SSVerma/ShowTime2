@@ -91,7 +91,7 @@ import com.ssverma.shared.ui.R as SharedUiR
 
 import android.app.Activity
 import com.ssverma.feature.filter.ui.discovery.component.StreamingMultiServiceGateDialog
-import com.ssverma.shared.ui.subscription.StreamingSubscriptionsBottomSheet
+import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

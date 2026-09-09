@@ -1,4 +1,4 @@
-package com.ssverma.shared.ui
+package com.ssverma.common.ui.state
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
@@ -7,6 +7,7 @@ import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
+import com.ssverma.shared.testing.fakes.FakeConfigurationRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -23,8 +24,7 @@ class AppStateHolderTest {
     private val fakeAppConfigRepository = FakeAppConfigRepository()
     private val fakeBillingRepository = FakeBillingRepository(initialProActive = false)
     private val fakeBackupRepository = FakeBackupRepository()
-    private val fakeConfigurationRepository =
-        com.ssverma.shared.testing.fakes.FakeConfigurationRepository()
+    private val fakeConfigurationRepository = FakeConfigurationRepository()
 
     private lateinit var appStateHolder: AppStateHolder
     private lateinit var testScope: TestScope
@@ -62,35 +62,30 @@ class AppStateHolderTest {
     }
 
     @Test
-    fun `updateAppTheme blocks OLED Midnight when isProActive is false`() = runTest {
+    fun `updateAppTheme to OledMidnight ignored when pro is inactive`() = runTest {
         appStateHolder.appTheme.test {
             assertThat(awaitItem()).isEqualTo(AppTheme.System)
 
-            // Attempt to update to OLED Midnight without Pro
             appStateHolder.updateAppTheme(AppTheme.OledMidnight)
-
-            // Expect theme to remain System
             expectNoEvents()
         }
     }
 
     @Test
-    fun `updateAppTheme allows OLED Midnight when isProActive is true`() = runTest {
+    fun `updateAppTheme to OledMidnight succeeds when pro is active`() = runTest {
         fakeBillingRepository.setProActive(true)
+        testScope.testScheduler.advanceUntilIdle()
 
         appStateHolder.appTheme.test {
             assertThat(awaitItem()).isEqualTo(AppTheme.System)
 
-            // Attempt to update to OLED Midnight with Pro active
             appStateHolder.updateAppTheme(AppTheme.OledMidnight)
-
-            // Expect theme to update to OLED Midnight
             assertThat(awaitItem()).isEqualTo(AppTheme.OledMidnight)
         }
     }
 
     @Test
-    fun `updateDynamicColor toggles dynamic color state`() = runTest {
+    fun `updateDynamicColor updates dynamic color flow`() = runTest {
         appStateHolder.isDynamicColorEnabled.test {
             assertThat(awaitItem()).isFalse()
 
@@ -100,15 +95,18 @@ class AppStateHolderTest {
     }
 
     @Test
-    fun `preferredOriginalLanguage updates and resets successfully`() = runTest {
-        appStateHolder.preferredOriginalLanguage.test {
-            assertThat(awaitItem()).isEqualTo("en")
+    fun `googleUser reflects backup repository status`() = runTest {
+        appStateHolder.googleUser.test {
+            assertThat(awaitItem()).isNull()
 
-            appStateHolder.updatePreferredOriginalLanguage("hi")
-            assertThat(awaitItem()).isEqualTo("hi")
-
-            appStateHolder.resetPreferredOriginalLanguage()
-            assertThat(awaitItem()).isEqualTo("")
+            val testUser = com.ssverma.core.backup.model.GoogleUser(
+                email = "cinephile@showtime.app",
+                displayName = "Cinephile",
+                photoUrl = "https://example.com/avatar.png",
+                idToken = "fake_id_token"
+            )
+            fakeBackupRepository.setGoogleUser(testUser)
+            assertThat(awaitItem()).isEqualTo(testUser)
         }
     }
 }

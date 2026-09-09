@@ -1,8 +1,6 @@
-package com.ssverma.shared.ui.subscription
+package com.ssverma.common.ui.subscription
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Star
@@ -50,7 +47,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -58,12 +54,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.core.ui.util.findActivity
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.R
 import kotlinx.coroutines.flow.collectLatest

@@ -1,4 +1,4 @@
-package com.ssverma.shared.ui.subscription
+package com.ssverma.common.ui.subscription
 
 import android.app.Activity
 import androidx.lifecycle.ViewModel

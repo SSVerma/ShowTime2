@@ -18,9 +18,6 @@ dependencies {
     implementation(projects.featureLibraryNavigation)
     implementation(projects.featureMovieNavigation)
     implementation(projects.featureTvNavigation)
-    implementation(projects.coreBilling)
-    implementation(projects.coreBackup)
-    implementation(projects.coreAds)
 
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)

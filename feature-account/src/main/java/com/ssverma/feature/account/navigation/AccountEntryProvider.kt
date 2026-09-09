@@ -9,7 +9,7 @@ import com.ssverma.feature.account.ui.profile.ProfileScreen
 import com.ssverma.feature.account.ui.trakt.TraktSyncScreen
 import com.ssverma.feature.auth.navigation.AuthNavKey
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
-import com.ssverma.shared.ui.LocalAppInfoTrigger
+import com.ssverma.common.ui.state.LocalAppInfoTrigger
 
 fun EntryProviderScope<NavKey>.accountEntries(
     navigator: Navigator

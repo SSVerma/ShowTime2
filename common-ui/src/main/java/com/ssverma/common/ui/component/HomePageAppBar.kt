@@ -1,4 +1,4 @@
-package com.ssverma.shared.ui.component
+package com.ssverma.common.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -45,9 +45,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.common.ui.state.LocalAppInfoTrigger
+import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.shared.domain.model.AppTheme
-import com.ssverma.shared.ui.LocalAppStateHolder
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.component.LocalizationSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +62,7 @@ fun HomePageAppBar(
 ) {
     var extendedMenuExpanded by remember { mutableStateOf(false) }
     var showThemeMenu by remember { mutableStateOf(false) }
-    val triggerAppInfo = com.ssverma.shared.ui.LocalAppInfoTrigger.current
+    val triggerAppInfo = LocalAppInfoTrigger.current
 
     TopAppBar(
         title = {

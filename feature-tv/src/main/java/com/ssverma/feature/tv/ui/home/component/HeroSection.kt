@@ -45,7 +45,7 @@ import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.shared.ui.component.HeroItem
-import com.ssverma.shared.ui.component.HomePageAppBar
+import com.ssverma.common.ui.component.HomePageAppBar
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 

@@ -99,8 +99,8 @@ import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.utils.AppConfigConstants
-import com.ssverma.shared.ui.LocalAppInfoTrigger
-import com.ssverma.shared.ui.LocalAppStateHolder
+import com.ssverma.common.ui.state.LocalAppInfoTrigger
+import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.showtime.component.ShowTimeDrawerContent
 import com.ssverma.showtime.component.ShowTimeTopSearchBar
