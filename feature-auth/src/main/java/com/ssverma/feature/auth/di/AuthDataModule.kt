@@ -5,8 +5,10 @@ import com.ssverma.feature.auth.data.local.DefaultAuthLocalDataSource
 import com.ssverma.feature.auth.data.remote.AuthRemoteDataSource
 import com.ssverma.feature.auth.data.remote.DefaultAuthRemoteDataSource
 import com.ssverma.feature.auth.data.repository.DefaultAuthRepository
+import com.ssverma.feature.auth.domain.TmdbAuthProviderImpl
 import com.ssverma.feature.auth.domain.TraktAuthProviderImpl
 import com.ssverma.feature.auth.domain.repository.AuthRepository
+import com.ssverma.shared.domain.auth.TmdbAuthProvider
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import dagger.Binds
 import dagger.Module
@@ -35,4 +37,9 @@ internal abstract class AuthDataModule {
     abstract fun provideTraktAuthProvider(
         traktAuthProviderImpl: TraktAuthProviderImpl
     ): TraktAuthProvider
+
+    @Binds
+    abstract fun provideTmdbAuthProvider(
+        tmdbAuthProviderImpl: TmdbAuthProviderImpl
+    ): TmdbAuthProvider
 }

@@ -2,7 +2,7 @@ package com.ssverma.feature.account.ui.trakt
 
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ui.UiText
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 
 data class TraktSyncUiState(
     val traktAuthState: TraktAuthState = TraktAuthState.Disconnected,

@@ -5,7 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.ssverma.feature.auth.domain.AuthManager
-import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.shared.domain.model.auth.AuthState
 
 @Composable
 fun AuthScreenContainer(

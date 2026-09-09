@@ -4,9 +4,9 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.feature.auth.data.local.TraktAuthStorage
 import com.ssverma.feature.auth.data.remote.TraktAuthService
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.feature.auth.domain.model.TraktDeviceCodeResponse
-import com.ssverma.feature.auth.domain.model.TraktUser
+import com.ssverma.shared.domain.model.auth.TraktUser
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

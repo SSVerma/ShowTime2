@@ -3,7 +3,7 @@ package com.ssverma.feature.auth.domain
 import com.ssverma.api.service.tmdb.TmdbDefaults
 import com.ssverma.core.di.AppScoped
 import com.ssverma.feature.auth.domain.failure.AuthError
-import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.shared.domain.model.auth.AuthState
 import com.ssverma.feature.auth.domain.repository.AuthRepository
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure

@@ -14,11 +14,11 @@ import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.account.domain.seeder.DatabaseSeeder
-import com.ssverma.feature.auth.domain.AuthManager
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.AuthState
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.auth.TmdbAuthProvider
+import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.auth.AuthState
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import io.mockk.coEvery
@@ -46,8 +46,8 @@ class ProfileViewModelTest {
         com.ssverma.shared.testing.fakes.FakeConfigurationRepository()
 
     private val mockAccountRepository: AccountRepository = mockk(relaxed = true)
-    private val mockAuthManager: AuthManager = mockk(relaxed = true)
-    private val mockTraktAuthManager: TraktAuthManager = mockk(relaxed = true)
+    private val mockTmdbAuthProvider: TmdbAuthProvider = mockk(relaxed = true)
+    private val mockTraktAuthProvider: TraktAuthProvider = mockk(relaxed = true)
     private val mockDebugConfigManager: DebugConfigManager = mockk(relaxed = true)
     private val mockDatabaseSeeder: DatabaseSeeder = mockk(relaxed = true)
 
@@ -58,9 +58,9 @@ class ProfileViewModelTest {
 
     @Before
     fun setUp() {
-        coEvery { mockAuthManager.authFlow } returns authFlow
+        coEvery { mockTmdbAuthProvider.authFlow } returns authFlow
         authFlow.tryEmit(AuthState.Unauthorized)
-        every { mockTraktAuthManager.authState } returns traktAuthFlow
+        every { mockTraktAuthProvider.authState } returns traktAuthFlow
         every { mockDebugConfigManager.proOverride } returns MutableStateFlow(DebugProOverride.AUTO)
         every { mockDebugConfigManager.isMockTraktEnabled } returns MutableStateFlow(true)
         every { mockDebugConfigManager.customTraktClientId } returns MutableStateFlow("")
@@ -68,13 +68,13 @@ class ProfileViewModelTest {
 
         viewModel = ProfileViewModel(
             accountRepository = mockAccountRepository,
-            authManager = mockAuthManager,
+            tmdbAuthProvider = mockTmdbAuthProvider,
             billingRepository = fakeBillingRepository,
             backupRepository = fakeBackupRepository,
             appConfigRepository = fakeAppConfigRepository,
             configurationRepository = fakeConfigurationRepository,
             appConfigProvider = fakeAppConfigProvider,
-            traktAuthManager = mockTraktAuthManager,
+            traktAuthProvider = mockTraktAuthProvider,
             debugConfigManager = mockDebugConfigManager,
             optionalDatabaseSeeder = Optional.of(mockDatabaseSeeder)
         )
@@ -148,7 +148,7 @@ class ProfileViewModelTest {
         viewModel.logout()
 
         coVerify {
-            mockAuthManager.logout()
+            mockTmdbAuthProvider.logout()
             mockAccountRepository.removeUserAccount()
         }
     }

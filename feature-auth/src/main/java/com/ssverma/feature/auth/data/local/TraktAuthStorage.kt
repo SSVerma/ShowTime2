@@ -9,7 +9,7 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.feature.auth.domain.model.TraktTokenResponse
-import com.ssverma.feature.auth.domain.model.TraktUser
+import com.ssverma.shared.domain.model.auth.TraktUser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull

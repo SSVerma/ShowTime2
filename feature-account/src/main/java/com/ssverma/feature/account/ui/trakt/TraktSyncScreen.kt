@@ -60,11 +60,11 @@ import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.account.R
-import com.ssverma.feature.auth.domain.model.TraktAuthState
-import com.ssverma.feature.auth.domain.model.TraktUser
-import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
+import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
+import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.auth.TraktUser
 import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
-import com.ssverma.feature.payment.ui.ProPaywallBottomSheet
+import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -175,7 +175,7 @@ fun TraktSyncScreen(
         // Trakt Connect Bottom Sheet
         if (uiState.isTraktConnectSheetVisible) {
             TraktConnectBottomSheet(
-                traktAuthManager = viewModel.traktAuthManager,
+                traktAuthProvider = viewModel.traktAuthProvider,
                 onDismiss = { viewModel.closeTraktConnect() },
                 onConnected = {
                     viewModel.closeTraktConnect()

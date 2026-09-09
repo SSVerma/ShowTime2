@@ -9,8 +9,8 @@ import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.auth.TraktAuthProvider
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.trakt.TraktSyncResult
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.repository.TraktSyncRepository
@@ -32,7 +32,7 @@ class TraktSyncViewModelTest {
 
     private val fakeBillingRepository = FakeBillingRepository(initialProActive = true)
     private val fakeTraktSyncRepository = FakeTraktSyncRepository()
-    private val mockTraktAuthManager: TraktAuthManager = mockk(relaxed = true)
+    private val mockTraktAuthProvider: TraktAuthProvider = mockk(relaxed = true)
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
 
@@ -43,11 +43,11 @@ class TraktSyncViewModelTest {
 
     @Before
     fun setUp() {
-        every { mockTraktAuthManager.authState } returns traktAuthFlow
+        every { mockTraktAuthProvider.authState } returns traktAuthFlow
         every { mockRewardManager.passStatus } returns passStatusFlow
 
         viewModel = TraktSyncViewModel(
-            traktAuthManager = mockTraktAuthManager,
+            traktAuthProvider = mockTraktAuthProvider,
             traktSyncRepository = fakeTraktSyncRepository,
             billingRepository = fakeBillingRepository,
             rewardManager = mockRewardManager,
@@ -112,7 +112,7 @@ class TraktSyncViewModelTest {
     fun `disconnectTrakt delegates to TraktAuthManager`() = runTest {
         viewModel.disconnectTrakt()
 
-        coVerify { mockTraktAuthManager.disconnect() }
+        coVerify { mockTraktAuthProvider.disconnect() }
     }
 
     @Test

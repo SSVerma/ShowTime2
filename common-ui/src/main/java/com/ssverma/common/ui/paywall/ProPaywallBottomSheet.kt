@@ -1,4 +1,4 @@
-package com.ssverma.feature.payment.ui
+package com.ssverma.common.ui.paywall
 
 import android.app.Activity
 import androidx.compose.animation.animateColorAsState
@@ -53,14 +53,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ssverma.common.ui.R
 import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.billing.model.BillingProduct
-import com.ssverma.core.billing.model.ProductType
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
-import com.ssverma.feature.payment.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

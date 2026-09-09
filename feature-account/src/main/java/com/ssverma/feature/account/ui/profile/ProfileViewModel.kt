@@ -14,13 +14,12 @@ import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.account.domain.seeder.DatabaseSeeder
-import com.ssverma.feature.auth.domain.AuthManager
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.AuthState
-import com.ssverma.feature.auth.domain.sessionIdOrNull
 import com.ssverma.core.backup.BackupRepository
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.auth.TmdbAuthProvider
+import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.auth.AuthState
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.ConfigurationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,13 +34,13 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
-    private val authManager: AuthManager,
+    private val tmdbAuthProvider: TmdbAuthProvider,
     private val billingRepository: BillingRepository,
     private val backupRepository: BackupRepository,
     private val appConfigRepository: AppConfigRepository,
     private val configurationRepository: ConfigurationRepository,
     private val appConfigProvider: AppConfigProvider,
-    private val traktAuthManager: TraktAuthManager,
+    private val traktAuthProvider: TraktAuthProvider,
     private val debugConfigManager: DebugConfigManager,
     private val optionalDatabaseSeeder: Optional<DatabaseSeeder>
 ) : ViewModel() {
@@ -81,7 +80,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            traktAuthManager.authState.collectLatest { traktState ->
+            traktAuthProvider.authState.collectLatest { traktState ->
                 _uiState.update { it.copy(traktAuthState = traktState) }
             }
         }
@@ -194,7 +193,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            authManager.authFlow.collectLatest { authState ->
+            tmdbAuthProvider.authFlow.collectLatest { authState ->
                 if (authState is AuthState.Authorized.WithSession) {
                     fetchProfile()
                 } else {
@@ -234,7 +233,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val sessionId = authManager.sessionIdOrNull()
+            val sessionId = tmdbAuthProvider.getSessionId()
             if (!sessionId.isNullOrBlank()) {
                 val profileResult = accountRepository.fetchProfile(sessionId = sessionId)
                 if (profileResult is Result.Success) {
@@ -358,7 +357,7 @@ class ProfileViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            authManager.logout()
+            tmdbAuthProvider.logout()
             accountRepository.removeUserAccount()
             backupRepository.signOutGoogle()
             fetchProfile()
@@ -404,7 +403,7 @@ class ProfileViewModel @Inject constructor(
 
     fun instantMockConnectTrakt() {
         viewModelScope.launch {
-            traktAuthManager.instantMockConnect()
+            traktAuthProvider.instantMockConnect()
             _uiState.update {
                 it.copy(
                     message = UiText.StaticText(R.string.dev_mock_connected_msg)
@@ -415,7 +414,7 @@ class ProfileViewModel @Inject constructor(
 
     fun disconnectTrakt() {
         viewModelScope.launch {
-            traktAuthManager.disconnect()
+            traktAuthProvider.disconnect()
         }
     }
 

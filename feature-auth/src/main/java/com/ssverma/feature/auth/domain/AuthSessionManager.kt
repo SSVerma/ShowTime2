@@ -4,7 +4,7 @@ import com.ssverma.core.backup.auth.GoogleAuthClient
 import com.ssverma.core.di.AppScoped
 import com.ssverma.feature.auth.domain.model.AuthAccount
 import com.ssverma.feature.auth.domain.model.AuthProvider
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

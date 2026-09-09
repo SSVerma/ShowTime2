@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.ssverma.feature.auth.domain.AuthManager
-import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.shared.domain.model.auth.AuthState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject

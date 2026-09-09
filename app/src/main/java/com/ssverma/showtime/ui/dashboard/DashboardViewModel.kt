@@ -8,7 +8,7 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.asSuccessOrErrorUiState
 import com.ssverma.core.ui.mapSuccess
 import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase
 import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase

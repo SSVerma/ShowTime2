@@ -16,13 +16,12 @@ import com.ssverma.feature.account.data.remote.AccountRemoteDataSource
 import com.ssverma.feature.account.domain.model.MediaStats
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.domain.repository.AccountRepository
-import com.ssverma.feature.auth.domain.AuthManager
-import com.ssverma.feature.auth.domain.sessionIdOrNull
 import com.ssverma.shared.data.mapper.MoviesMapper
 import com.ssverma.shared.data.mapper.TvShowsMapper
 import com.ssverma.shared.data.mapper.asDomainResult
 import com.ssverma.shared.domain.CoreResult
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.auth.TmdbAuthProvider
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.movie.Movie
@@ -33,7 +32,7 @@ import javax.inject.Inject
 internal class DefaultAccountRepository @Inject constructor(
     private val accountRemoteDataSource: AccountRemoteDataSource,
     private val accountLocalDataSource: AccountLocalDataSource,
-    private val authManager: AuthManager,
+    private val tmdbAuthProvider: TmdbAuthProvider,
     private val profileMapper: ProfileMapper,
     private val mediaStatsMapper: MediaStatsMapper,
     private val moviesMapper: MoviesMapper,
@@ -170,7 +169,7 @@ internal class DefaultAccountRepository @Inject constructor(
 
                         accountRemoteDataSource.fetchFavoriteMovies(
                             accountId = accountId,
-                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            sessionId = tmdbAuthProvider.getSessionId().orEmpty(),
                             page = pageNumber
                         )
                     },
@@ -190,7 +189,7 @@ internal class DefaultAccountRepository @Inject constructor(
 
                         accountRemoteDataSource.fetchFavoriteTvShows(
                             accountId = accountId,
-                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            sessionId = tmdbAuthProvider.getSessionId().orEmpty(),
                             page = pageNumber
                         )
                     },
@@ -210,7 +209,7 @@ internal class DefaultAccountRepository @Inject constructor(
 
                         accountRemoteDataSource.fetchWatchlistMovies(
                             accountId = accountId,
-                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            sessionId = tmdbAuthProvider.getSessionId().orEmpty(),
                             page = pageNumber
                         )
                     },
@@ -230,7 +229,7 @@ internal class DefaultAccountRepository @Inject constructor(
 
                         accountRemoteDataSource.fetchWatchlistTvShows(
                             accountId = accountId,
-                            sessionId = authManager.sessionIdOrNull().orEmpty(),
+                            sessionId = tmdbAuthProvider.getSessionId().orEmpty(),
                             page = pageNumber
                         )
                     },

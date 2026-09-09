@@ -12,7 +12,7 @@ import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.auth.domain.AuthSessionManager
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthProvider
-import com.ssverma.feature.auth.ui.trakt.TraktConnectBottomSheet
+import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
 
 /**
  * Plug-and-Play Authentication Sheet.
@@ -43,7 +43,7 @@ fun SignInIfRequiredSheet(
     when (requiredProvider) {
         AuthProvider.TRAKT -> {
             TraktConnectBottomSheet(
-                traktAuthManager = traktAuthManager,
+                traktAuthProvider = traktAuthManager,
                 onDismiss = onDismiss,
                 onConnected = {
                     onAuthenticated()

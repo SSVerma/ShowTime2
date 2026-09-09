@@ -1,6 +1,6 @@
 package com.ssverma.feature.auth.domain.failure
 
-import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.shared.domain.model.auth.AuthState
 import com.ssverma.shared.domain.failure.Failure
 
 data class AuthError(

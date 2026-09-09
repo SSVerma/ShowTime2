@@ -29,7 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchBrowserIntent
 import com.ssverma.core.ui.ScreenLoadingIndicator
 import com.ssverma.feature.auth.R
-import com.ssverma.feature.auth.domain.model.AuthState
+import com.ssverma.shared.domain.model.auth.AuthState
 import com.ssverma.feature.auth.ui.auth.content.ApprovalAskedContent
 import com.ssverma.feature.auth.ui.auth.content.ApprovalGrantedContent
 import com.ssverma.feature.auth.ui.auth.content.ApprovalRejectedContent

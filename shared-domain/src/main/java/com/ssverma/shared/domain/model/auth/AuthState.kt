@@ -1,4 +1,4 @@
-package com.ssverma.feature.auth.domain.model
+package com.ssverma.shared.domain.model.auth
 
 sealed interface AuthState {
     object Unauthorized : AuthState

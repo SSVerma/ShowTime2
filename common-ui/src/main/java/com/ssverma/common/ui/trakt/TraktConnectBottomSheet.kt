@@ -1,4 +1,4 @@
-package com.ssverma.feature.auth.ui.trakt
+package com.ssverma.common.ui.trakt
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -67,19 +67,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.ssverma.common.ui.R
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.feature.auth.R
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.auth.TraktAuthProvider
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TraktConnectBottomSheet(
-    traktAuthManager: TraktAuthManager,
+    traktAuthProvider: TraktAuthProvider,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -87,18 +87,18 @@ fun TraktConnectBottomSheet(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val authState by traktAuthManager.authState.collectAsStateWithLifecycle()
+    val authState by traktAuthProvider.authState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         if (authState !is TraktAuthState.Connected && authState !is TraktAuthState.Authorizing) {
-            traktAuthManager.startDeviceAuthorization()
+            traktAuthProvider.startDeviceAuthorization()
         }
     }
 
     DisposableEffect(Unit) {
         onDispose {
             if (authState is TraktAuthState.Authorizing) {
-                traktAuthManager.cancelAuthorization()
+                traktAuthProvider.cancelAuthorization()
             }
         }
     }
@@ -114,7 +114,7 @@ fun TraktConnectBottomSheet(
     ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         modifier = modifier
     ) {
@@ -222,7 +222,7 @@ fun TraktConnectBottomSheet(
                         ErrorContent(
                             errorMessage = state.message,
                             onRetry = {
-                                traktAuthManager.startDeviceAuthorization()
+                                traktAuthProvider.startDeviceAuthorization()
                             }
                         )
                     }

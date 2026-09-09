@@ -6,18 +6,21 @@ import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.feature.auth.data.local.TraktAuthStorage
 import com.ssverma.feature.auth.data.remote.TraktAuthService
 import com.ssverma.feature.auth.domain.defaults.TraktDefaults
-import com.ssverma.feature.auth.domain.model.TraktAuthState
 import com.ssverma.feature.auth.domain.model.TraktDeviceCodeRequest
 import com.ssverma.feature.auth.domain.model.TraktDeviceTokenRequest
 import com.ssverma.feature.auth.domain.model.TraktTokenResponse
-import com.ssverma.feature.auth.domain.model.TraktUser
+import com.ssverma.shared.domain.auth.TraktAuthProvider
+import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.auth.TraktUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,9 +31,20 @@ class TraktAuthManager @Inject constructor(
     private val traktAuthService: TraktAuthService,
     private val traktAuthStorage: TraktAuthStorage,
     private val debugConfigManager: DebugConfigManager
-) {
+) : TraktAuthProvider {
     private val _authState = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
-    val authState: StateFlow<TraktAuthState> = _authState.asStateFlow()
+    override val authState: StateFlow<TraktAuthState> = _authState.asStateFlow()
+
+    override val isConnectedFlow: Flow<Boolean>
+        get() = authState.map { it is TraktAuthState.Connected }
+
+    override val isConnected: Boolean
+        get() = authState.value is TraktAuthState.Connected
+
+    override suspend fun getAccessToken(): String? {
+        return (authState.value as? TraktAuthState.Connected)?.accessToken
+            ?: traktAuthStorage.getAccessToken()
+    }
 
     private var authorizationJob: Job? = null
 
@@ -54,7 +68,7 @@ class TraktAuthManager @Inject constructor(
         }
     }
 
-    fun startDeviceAuthorization() {
+    override fun startDeviceAuthorization() {
         authorizationJob?.cancel()
         authorizationJob = scope.launch {
             _authState.value = TraktAuthState.Disconnected
@@ -215,7 +229,7 @@ class TraktAuthManager @Inject constructor(
         }
     }
 
-    fun cancelAuthorization() {
+    override fun cancelAuthorization() {
         authorizationJob?.cancel()
         authorizationJob = null
         scope.launch {
@@ -230,7 +244,7 @@ class TraktAuthManager @Inject constructor(
         }
     }
 
-    fun disconnect() {
+    override fun disconnect() {
         authorizationJob?.cancel()
         authorizationJob = null
         scope.launch {
@@ -239,7 +253,7 @@ class TraktAuthManager @Inject constructor(
         }
     }
 
-    fun instantMockConnect() {
+    override fun instantMockConnect() {
         authorizationJob?.cancel()
         authorizationJob = null
         scope.launch {

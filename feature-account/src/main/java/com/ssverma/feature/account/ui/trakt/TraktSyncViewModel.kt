@@ -10,8 +10,8 @@ import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
-import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.feature.auth.domain.model.TraktAuthState
+import com.ssverma.shared.domain.auth.TraktAuthProvider
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.repository.TraktSyncRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TraktSyncViewModel @Inject constructor(
-    val traktAuthManager: TraktAuthManager,
+    val traktAuthProvider: TraktAuthProvider,
     private val traktSyncRepository: TraktSyncRepository,
     private val billingRepository: BillingRepository,
     private val rewardManager: RewardManager,
@@ -36,7 +36,7 @@ class TraktSyncViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            traktAuthManager.authState.collectLatest { traktState ->
+            traktAuthProvider.authState.collectLatest { traktState ->
                 _uiState.update { it.copy(traktAuthState = traktState) }
             }
         }
@@ -139,7 +139,7 @@ class TraktSyncViewModel @Inject constructor(
     }
 
     fun syncTraktNow() {
-        val currentAuth = traktAuthManager.authState.value
+        val currentAuth = traktAuthProvider.authState.value
         if (currentAuth !is TraktAuthState.Connected) return
 
         viewModelScope.launch {
@@ -171,7 +171,7 @@ class TraktSyncViewModel @Inject constructor(
 
     fun disconnectTrakt() {
         viewModelScope.launch {
-            traktAuthManager.disconnect()
+            traktAuthProvider.disconnect()
             _uiState.update {
                 it.copy(
                     message = UiText.DynamicText("Disconnected from Trakt.tv")
