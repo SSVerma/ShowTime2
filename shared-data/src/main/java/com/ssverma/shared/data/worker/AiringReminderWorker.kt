@@ -3,7 +3,16 @@ package com.ssverma.shared.data.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.notifications.ShowTimeNotificationManager
+import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.reminder.AiringReminder
+import com.ssverma.shared.domain.model.reminder.ReminderType
+import com.ssverma.shared.domain.utils.DateUtils
+import com.ssverma.shared.domain.utils.ReminderTimeCalculator
+import com.ssverma.shared.domain.utils.formatLocally
+import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.flow.first
 
 class AiringReminderWorker(
     appContext: Context,
@@ -54,6 +63,49 @@ class AiringReminderWorker(
             imageUrl = posterUrl,
             deepLink = deepLink
         )
+
+        // For TV shows, attempt rolling scheduling for the next upcoming episode
+        if (mediaType == "tv") {
+            try {
+                val entryPoint = EntryPointAccessors.fromApplication(
+                    applicationContext,
+                    ReminderWorkerEntryPoint::class.java
+                )
+                val response = entryPoint.tmdbApiService().getTvShowDetails(mediaId, emptyMap())
+                if (response is ApiResponse.Success) {
+                    val nextEpisode = response.body.nextEpisodeToAir
+                    val airDate = DateUtils.parseIsoDate(nextEpisode?.airDate)
+                    if (nextEpisode != null && airDate != null) {
+                        val hour = entryPoint.appConfigRepository().reminderNotificationHour.first()
+                        val minute =
+                            entryPoint.appConfigRepository().reminderNotificationMinute.first()
+                        val nextReminderTime = ReminderTimeCalculator.calculateReminderTime(
+                            airDate = airDate,
+                            hour = hour,
+                            minute = minute
+                        )
+                        if (nextReminderTime != null) {
+                            val nextReminder = AiringReminder(
+                                mediaId = mediaId,
+                                mediaType = MediaType.Tv,
+                                reminderType = ReminderType.TV_EPISODE,
+                                mediaTitle = mediaTitle,
+                                posterImageUrl = posterUrl.orEmpty(),
+                                seasonNumber = nextEpisode.seasonNumber,
+                                episodeNumber = nextEpisode.episodeNumber,
+                                episodeTitle = nextEpisode.title.takeIf { !it.isNullOrBlank() },
+                                airDate = airDate.formatLocally() ?: nextEpisode.airDate.orEmpty(),
+                                reminderTimeMillis = nextReminderTime,
+                                providerName = providerName
+                            )
+                            entryPoint.reminderRepository().addReminder(nextReminder)
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+                // Best-effort rolling schedule; daily worker handles it if TMDB hasn't updated yet
+            }
+        }
 
         return Result.success()
     }

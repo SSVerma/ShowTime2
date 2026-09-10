@@ -1,6 +1,7 @@
 package com.ssverma.shared.data.repository
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
@@ -8,6 +9,7 @@ import com.ssverma.core.storage.keyvalue.observe
 import com.ssverma.core.storage.keyvalue.write
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.utils.ReminderTimeCalculator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -142,6 +144,23 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(UserStreamingSubscriptionsKey, raw)
     }
 
+    override val reminderNotificationHour: Flow<Int>
+        get() = keyValueStorage.observe(
+            ReminderNotificationHourKey,
+            ReminderTimeCalculator.DEFAULT_NOTIFICATION_HOUR
+        )
+
+    override val reminderNotificationMinute: Flow<Int>
+        get() = keyValueStorage.observe(
+            ReminderNotificationMinuteKey,
+            ReminderTimeCalculator.DEFAULT_NOTIFICATION_MINUTE
+        )
+
+    override suspend fun updateReminderNotificationTime(hour: Int, minute: Int) {
+        keyValueStorage.write(ReminderNotificationHourKey, hour)
+        keyValueStorage.write(ReminderNotificationMinuteKey, minute)
+    }
+
     companion object {
         private val AppThemeKey = stringPreferencesKey("app_theme")
 
@@ -165,6 +184,11 @@ class DefaultAppConfigRepository @Inject constructor(
         private val AnalyticsEnabledKey = booleanPreferencesKey("analytics_enabled")
 
         private val NotificationsEnabledKey = booleanPreferencesKey("notifications_enabled")
+
+        private val ReminderNotificationHourKey = intPreferencesKey("reminder_notification_hour")
+
+        private val ReminderNotificationMinuteKey =
+            intPreferencesKey("reminder_notification_minute")
 
         // Define the remote key here since this domain owns the knowledge of what it's used for
         private const val REMOTE_KEY_ANALYTICS_ENABLED = "remote_analytics_enabled"

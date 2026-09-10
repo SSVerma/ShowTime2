@@ -17,6 +17,7 @@ import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.match.navigation.MatchRoomNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
@@ -169,6 +170,9 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
                         )
                     )
                 )
+            },
+            openProPaywall = {
+                navigator.navigate(ProPaywallNavKey)
             }
         )
     }

@@ -47,6 +47,8 @@ import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
+import com.ssverma.shared.domain.utils.ReminderTimeCalculator
+import com.ssverma.shared.domain.utils.formatLocally
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -55,6 +57,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -127,6 +130,14 @@ class TvShowDetailsViewModel @AssistedInject constructor(
                 reminderRepository.removeReminder(tvShow.id, MediaType.Tv)
                 _reminderSnackbarEvent.value = "Reminder removed for ${tvShow.title}"
             } else {
+                val nextEpisode = tvShow.nextEpisodeToAir
+                val targetAirDate = nextEpisode?.airDate
+                if (nextEpisode == null || targetAirDate == null) {
+                    _reminderSnackbarEvent.value =
+                        "No upcoming episodes scheduled for ${tvShow.title}"
+                    return@launch
+                }
+
                 val activeCount = reminderRepository.getActiveReminderCount()
                 val isPro = billingRepository.isProActive.value
                 val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
@@ -135,9 +146,28 @@ class TvShowDetailsViewModel @AssistedInject constructor(
                     return@launch
                 }
 
-                val airDateStr =
-                    tvShow.displayFirstAirDate ?: tvShow.firstAirDate?.toString() ?: "Upcoming"
-                val reminderTime = System.currentTimeMillis() + 86400000L
+                val hour = appConfigRepository.reminderNotificationHour.first()
+                val minute = appConfigRepository.reminderNotificationMinute.first()
+                val reminderTime = ReminderTimeCalculator.calculateReminderTime(
+                    airDate = targetAirDate,
+                    hour = hour,
+                    minute = minute
+                )
+
+                if (reminderTime == null) {
+                    _reminderSnackbarEvent.value = "Next episode air date has already passed"
+                    return@launch
+                }
+
+                val airDateStr = nextEpisode.displayAirDate
+                    ?: targetAirDate.formatLocally()
+                    ?: targetAirDate.toString()
+
+                val providerName = tvShow.watchProviders.values
+                    .firstNotNullOfOrNull {
+                        it.flatrate.firstOrNull()?.providerName
+                            ?: it.rent.firstOrNull()?.providerName
+                    }
 
                 val reminder = AiringReminder(
                     mediaId = tvShow.id,
@@ -145,11 +175,16 @@ class TvShowDetailsViewModel @AssistedInject constructor(
                     reminderType = ReminderType.TV_EPISODE,
                     mediaTitle = tvShow.title,
                     posterImageUrl = tvShow.posterImageUrl,
+                    seasonNumber = nextEpisode.seasonNumber,
+                    episodeNumber = nextEpisode.episodeNumber,
+                    episodeTitle = nextEpisode.title.takeIf { it.isNotBlank() },
                     airDate = airDateStr,
-                    reminderTimeMillis = reminderTime
+                    reminderTimeMillis = reminderTime,
+                    providerName = providerName
                 )
                 reminderRepository.addReminder(reminder)
-                _reminderSnackbarEvent.value = "Reminder set for ${tvShow.title}!"
+                val epInfo = "S${nextEpisode.seasonNumber}E${nextEpisode.episodeNumber}"
+                _reminderSnackbarEvent.value = "Reminder set for ${tvShow.title} ($epInfo)!"
             }
         }
     }

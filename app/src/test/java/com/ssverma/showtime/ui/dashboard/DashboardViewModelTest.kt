@@ -2,6 +2,7 @@ package com.ssverma.showtime.ui.dashboard
 
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.config.AdConfigProvider
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.shared.domain.model.auth.TraktAuthState
@@ -56,6 +57,7 @@ class DashboardViewModelTest {
     private val movieGenresUseCase: MovieGenresUseCase = mockk(relaxed = true)
     private val tvGenresUseCase: TvGenresUseCase = mockk(relaxed = true)
     private val reminderRepository: ReminderRepository = mockk(relaxed = true)
+    private val billingRepository: BillingRepository = mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
 
@@ -99,6 +101,8 @@ class DashboardViewModelTest {
         coEvery { movieGenresUseCase() } returns Result.Success(emptyList())
         coEvery { tvGenresUseCase() } returns Result.Success(emptyList())
 
+        every { billingRepository.isProActive } returns MutableStateFlow(false)
+
         viewModel = DashboardViewModel(
             trendingMoviesUseCase = trendingMoviesUseCase,
             trendingTvShowsUseCase = trendingTvShowsUseCase,
@@ -115,7 +119,8 @@ class DashboardViewModelTest {
             getTrendingDiscussionsUseCase = getTrendingDiscussionsUseCase,
             movieGenresUseCase = movieGenresUseCase,
             tvGenresUseCase = tvGenresUseCase,
-            reminderRepository = reminderRepository
+            reminderRepository = reminderRepository,
+            billingRepository = billingRepository
         )
     }
 

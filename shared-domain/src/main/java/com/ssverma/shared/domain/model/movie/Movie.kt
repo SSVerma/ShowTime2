@@ -50,9 +50,11 @@ class Movie(
     val nextFutureReleaseDate: LocalDate?
         get() {
             val today = LocalDate.now()
-            return releaseDates.values
+            val fromReleaseDates = releaseDates.values
                 .filter { it.isAfter(today) || it.isEqual(today) }
                 .minOrNull()
+            if (fromReleaseDates != null) return fromReleaseDates
+            return releaseDate?.takeIf { it.isAfter(today) || it.isEqual(today) }
         }
 }
 

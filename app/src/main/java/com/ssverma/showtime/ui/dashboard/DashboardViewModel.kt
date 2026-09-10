@@ -29,8 +29,11 @@ import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import android.content.Context
 import android.content.Intent
+import androidx.core.content.FileProvider
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import java.io.File
 import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
@@ -65,8 +68,11 @@ class DashboardViewModel @Inject constructor(
     private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase,
     private val movieGenresUseCase: MovieGenresUseCase,
     private val tvGenresUseCase: TvGenresUseCase,
-    private val reminderRepository: ReminderRepository
+    private val reminderRepository: ReminderRepository,
+    private val billingRepository: BillingRepository
 ) : ViewModel() {
+
+    val isPro: StateFlow<Boolean> = billingRepository.isProActive
 
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
@@ -401,19 +407,34 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun exportRemindersToIcs(context: Context) = viewModelScope.launch {
+        if (!billingRepository.isProActive.value) {
+            return@launch
+        }
         val icsContent = reminderRepository.exportToIcs()
         if (icsContent.isNotBlank()) {
             try {
+                val calendarDir = File(context.cacheDir, "shared_calendar").apply { mkdirs() }
+                val icsFile = File(calendarDir, "showtime_reminders.ics")
+                icsFile.writeText(icsContent)
+
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    icsFile
+                )
+
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/calendar"
-                    putExtra(Intent.EXTRA_TEXT, icsContent)
+                    putExtra(Intent.EXTRA_STREAM, uri)
                     putExtra(Intent.EXTRA_SUBJECT, "ShowTime Airing Reminders")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(
                     Intent.createChooser(intent, "Export Airing Reminders").apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    })
+                    }
+                )
             } catch (_: Exception) {
             }
         }

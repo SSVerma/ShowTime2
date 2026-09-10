@@ -84,6 +84,17 @@ class FakeAppConfigRepository(
         _isNotificationsEnabled.value = enabled
     }
 
+    private val _reminderNotificationHour = MutableStateFlow(9)
+    override val reminderNotificationHour: Flow<Int> = _reminderNotificationHour.asStateFlow()
+
+    private val _reminderNotificationMinute = MutableStateFlow(0)
+    override val reminderNotificationMinute: Flow<Int> = _reminderNotificationMinute.asStateFlow()
+
+    override suspend fun updateReminderNotificationTime(hour: Int, minute: Int) {
+        _reminderNotificationHour.value = hour
+        _reminderNotificationMinute.value = minute
+    }
+
     fun setAppTheme(theme: AppTheme) {
         _appTheme.value = theme
     }

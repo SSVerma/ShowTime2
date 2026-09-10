@@ -45,6 +45,8 @@ import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
+import com.ssverma.shared.domain.utils.ReminderTimeCalculator
+import com.ssverma.shared.domain.utils.formatLocally
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -53,6 +55,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -124,6 +127,13 @@ class MovieDetailsViewModel @AssistedInject constructor(
                 reminderRepository.removeReminder(movie.id, MediaType.Movie)
                 _reminderSnackbarEvent.value = "Reminder removed for ${movie.title}"
             } else {
+                val targetReleaseDate = movie.nextFutureReleaseDate
+                if (targetReleaseDate == null) {
+                    _reminderSnackbarEvent.value =
+                        "No upcoming release date found for ${movie.title}"
+                    return@launch
+                }
+
                 val activeCount = reminderRepository.getActiveReminderCount()
                 val isPro = billingRepository.isProActive.value
                 val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
@@ -132,9 +142,25 @@ class MovieDetailsViewModel @AssistedInject constructor(
                     return@launch
                 }
 
-                val airDateStr =
-                    movie.displayReleaseDate ?: movie.releaseDate?.toString() ?: "Upcoming"
-                val reminderTime = System.currentTimeMillis() + 86400000L
+                val hour = appConfigRepository.reminderNotificationHour.first()
+                val minute = appConfigRepository.reminderNotificationMinute.first()
+                val reminderTime = ReminderTimeCalculator.calculateReminderTime(
+                    airDate = targetReleaseDate,
+                    hour = hour,
+                    minute = minute
+                )
+
+                if (reminderTime == null) {
+                    _reminderSnackbarEvent.value = "Release date has already passed"
+                    return@launch
+                }
+
+                val airDateStr = targetReleaseDate.formatLocally() ?: targetReleaseDate.toString()
+                val providerName = movie.watchProviders.values
+                    .firstNotNullOfOrNull {
+                        it.flatrate.firstOrNull()?.providerName
+                            ?: it.rent.firstOrNull()?.providerName
+                    }
 
                 val reminder = AiringReminder(
                     mediaId = movie.id,
@@ -143,7 +169,8 @@ class MovieDetailsViewModel @AssistedInject constructor(
                     mediaTitle = movie.title,
                     posterImageUrl = movie.posterImageUrl,
                     airDate = airDateStr,
-                    reminderTimeMillis = reminderTime
+                    reminderTimeMillis = reminderTime,
+                    providerName = providerName
                 )
                 reminderRepository.addReminder(reminder)
                 _reminderSnackbarEvent.value = "Reminder set for ${movie.title}!"

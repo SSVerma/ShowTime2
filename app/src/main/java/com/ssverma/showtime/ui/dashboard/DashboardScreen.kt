@@ -91,6 +91,7 @@ fun DashboardScreen(
     openMovieMatch: () -> Unit = {},
     openMovieGenreListing: (Genre) -> Unit = {},
     openTvGenreListing: (Genre) -> Unit = {},
+    openProPaywall: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -98,6 +99,7 @@ fun DashboardScreen(
 
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isPro by viewModel.isPro.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val bottomBarHeight = rememberFloatingBottomBarHeight()
@@ -275,7 +277,13 @@ fun DashboardScreen(
                                 }
                             },
                             onRemoveReminderClick = viewModel::removeReminder,
-                            onExportCalendarClick = { viewModel.exportRemindersToIcs(context) },
+                            onExportCalendarClick = {
+                                if (isPro) {
+                                    viewModel.exportRemindersToIcs(context)
+                                } else {
+                                    openProPaywall()
+                                }
+                            },
                             modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                         )
                     }

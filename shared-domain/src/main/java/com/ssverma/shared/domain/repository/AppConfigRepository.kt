@@ -25,6 +25,10 @@ interface AppConfigRepository {
 
     val userStreamingSubscriptions: Flow<Set<Int>>
 
+    val reminderNotificationHour: Flow<Int>
+
+    val reminderNotificationMinute: Flow<Int>
+
     suspend fun updateAppTheme(theme: AppTheme)
 
     suspend fun updateDynamicColor(enabled: Boolean)
@@ -44,4 +48,6 @@ interface AppConfigRepository {
     suspend fun updateAnalyticsEnabled(enabled: Boolean)
 
     suspend fun updateNotificationsEnabled(enabled: Boolean)
+
+    suspend fun updateReminderNotificationTime(hour: Int, minute: Int)
 }
