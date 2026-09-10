@@ -153,7 +153,7 @@ class MatchRoomRepositoryImpl @Inject constructor(
         deck: List<MovieMatchCard>
     ): Result<MatchRoom, Failure<*>> {
         val code = generateRoomCode()
-        val roomId = code.lowercase()
+        val roomId = normalizeRoomId(code)
         val deckJson = gson.toJson(deck)
 
         val roomData = hashMapOf(
@@ -204,7 +204,7 @@ class MatchRoomRepositoryImpl @Inject constructor(
         roomCode: String,
         guestName: String
     ): Result<MatchRoom, Failure<*>> {
-        val roomId = roomCode.trim().lowercase()
+        val roomId = normalizeRoomId(roomCode)
         return try {
             val snapshot = firestore.collection(colMatchRooms).document(roomId).get().await()
             if (!snapshot.exists()) {
@@ -232,7 +232,8 @@ class MatchRoomRepositoryImpl @Inject constructor(
     }
 
     override fun observeRemoteRoom(roomId: String): Flow<MatchRoom?> = callbackFlow {
-        val docRef = firestore.collection(colMatchRooms).document(roomId.trim().lowercase())
+        val docId = normalizeRoomId(roomId)
+        val docRef = firestore.collection(colMatchRooms).document(docId)
         val listenerRegistration = docRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 trySend(null)
@@ -256,7 +257,7 @@ class MatchRoomRepositoryImpl @Inject constructor(
         movieId: Int,
         direction: SwipeDirection
     ): Result<Unit, Failure<*>> {
-        val docId = roomId.trim().lowercase()
+        val docId = normalizeRoomId(roomId)
         val docRef = firestore.collection(colMatchRooms).document(docId)
 
         return try {
@@ -392,5 +393,15 @@ class MatchRoomRepositoryImpl @Inject constructor(
     companion object {
         private val KEY_LAST_SESSION_DATE = stringPreferencesKey("match_room_last_session_date")
         private val KEY_DAILY_SESSION_COUNT = intPreferencesKey("match_room_daily_session_count")
+
+        fun normalizeRoomId(rawCode: String): String {
+            val cleaned = rawCode.trim().lowercase().replace(" ", "").replace("-", "")
+            if (cleaned.isBlank()) return ""
+            return if (cleaned.startsWith("st")) {
+                "st-" + cleaned.removePrefix("st")
+            } else {
+                "st-$cleaned"
+            }
+        }
     }
 }

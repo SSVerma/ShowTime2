@@ -24,8 +24,6 @@ import androidx.compose.material.icons.automirrored.rounded.Undo
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +55,8 @@ fun MovieSwipeDeck(
     onSwipe: (card: MovieMatchCard, direction: SwipeDirection) -> Unit,
     onOpenDetails: (card: MovieMatchCard) -> Unit,
     onRewind: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRewindProPrompt: () -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val topCard = cards.getOrNull(topCardIndex)
@@ -65,6 +64,13 @@ fun MovieSwipeDeck(
 
     val offsetX = remember(topCardIndex) { Animatable(0f) }
     val offsetY = remember(topCardIndex) { Animatable(0f) }
+
+    val likeAlpha = (offsetX.value / 160f).coerceIn(0f, 1f)
+    val nopeAlpha = (-offsetX.value / 160f).coerceIn(0f, 1f)
+    val rotationAngle = (offsetX.value / 24f).coerceIn(-20f, 20f)
+
+    val likeScale = (1f + (0.22f * likeAlpha) - (0.05f * nopeAlpha)).coerceIn(0.85f, 1.25f)
+    val nopeScale = (1f + (0.22f * nopeAlpha) - (0.05f * likeAlpha)).coerceIn(0.85f, 1.25f)
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -120,10 +126,6 @@ fun MovieSwipeDeck(
                 }
 
                 // Foreground Top Card (Draggable)
-                val likeAlpha = (offsetX.value / 160f).coerceIn(0f, 1f)
-                val nopeAlpha = (-offsetX.value / 160f).coerceIn(0f, 1f)
-                val rotationAngle = (offsetX.value / 24f).coerceIn(-20f, 20f)
-
                 key(topCard.id) {
                     MovieMatchCardView(
                         card = topCard,
@@ -200,54 +202,84 @@ fun MovieSwipeDeck(
                 // Rewind / Undo
                 Surface(
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (canRewind) 0.8f else 0.3f),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (canRewind) 0.85f else 0.4f),
                     border = BorderStroke(
                         1.dp,
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (canRewind) 0.5f else 0.25f)
                     ),
                     modifier = Modifier.size(48.dp)
                 ) {
                     IconButton(
-                        onClick = onRewind,
-                        enabled = canRewind
+                        onClick = {
+                            if (canRewind) {
+                                onRewind()
+                            } else {
+                                onRewindProPrompt()
+                            }
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.Undo,
                             contentDescription = "Undo Last Swipe",
-                            tint = if (canRewind) MovieMatchColor.RewindAmber else Color.Gray,
+                            tint = if (canRewind) MovieMatchColor.RewindAmber else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
                             modifier = Modifier.size(24.dp)
                         )
                     }
                 }
 
                 // Pass Button (Dislike)
-                FloatingActionButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            offsetX.animateTo(-1600f, tween(220))
-                            onSwipe(topCard, SwipeDirection.PASS)
-                        }
-                    },
+                Surface(
                     shape = CircleShape,
-                    containerColor = MovieMatchColor.PassRed.copy(alpha = 0.15f),
-                    contentColor = MovieMatchColor.PassRed,
-                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 2.dp),
-                    modifier = Modifier.size(68.dp)
+                    color = MovieMatchColor.PassRed.copy(
+                        alpha = (0.12f + 0.25f * nopeAlpha).coerceIn(
+                            0f,
+                            1f
+                        )
+                    ),
+                    border = BorderStroke(
+                        width = 1.5.dp + (1.dp * nopeAlpha),
+                        color = MovieMatchColor.PassRed.copy(
+                            alpha = (0.45f + 0.55f * nopeAlpha).coerceIn(
+                                0f,
+                                1f
+                            )
+                        )
+                    ),
+                    shadowElevation = 2.dp + (6.dp * nopeAlpha),
+                    modifier = Modifier
+                        .size(68.dp)
+                        .graphicsLayer {
+                            scaleX = nopeScale
+                            scaleY = nopeScale
+                        }
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = "Pass Movie",
-                        modifier = Modifier.size(34.dp)
-                    )
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                offsetX.animateTo(-1600f, tween(220))
+                                onSwipe(topCard, SwipeDirection.PASS)
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Pass Movie",
+                            tint = MovieMatchColor.PassRed,
+                            modifier = Modifier.size(34.dp)
+                        )
+                    }
                 }
 
                 // Info / Details Button
                 Surface(
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
                     border = BorderStroke(
                         1.dp,
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                     ),
                     modifier = Modifier.size(48.dp)
                 ) {
@@ -262,24 +294,47 @@ fun MovieSwipeDeck(
                 }
 
                 // Like Button (Heart)
-                FloatingActionButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            offsetX.animateTo(1600f, tween(220))
-                            onSwipe(topCard, SwipeDirection.LIKE)
-                        }
-                    },
+                Surface(
                     shape = CircleShape,
-                    containerColor = MovieMatchColor.LikeGreen.copy(alpha = 0.15f),
-                    contentColor = MovieMatchColor.LikeGreen,
-                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 2.dp),
-                    modifier = Modifier.size(68.dp)
+                    color = MovieMatchColor.LikeGreen.copy(
+                        alpha = (0.12f + 0.25f * likeAlpha).coerceIn(
+                            0f,
+                            1f
+                        )
+                    ),
+                    border = BorderStroke(
+                        width = 1.5.dp + (1.dp * likeAlpha),
+                        color = MovieMatchColor.LikeGreen.copy(
+                            alpha = (0.45f + 0.55f * likeAlpha).coerceIn(
+                                0f,
+                                1f
+                            )
+                        )
+                    ),
+                    shadowElevation = 2.dp + (6.dp * likeAlpha),
+                    modifier = Modifier
+                        .size(68.dp)
+                        .graphicsLayer {
+                            scaleX = likeScale
+                            scaleY = likeScale
+                        }
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Favorite,
-                        contentDescription = "Like Movie",
-                        modifier = Modifier.size(34.dp)
-                    )
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                offsetX.animateTo(1600f, tween(220))
+                                onSwipe(topCard, SwipeDirection.LIKE)
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Favorite,
+                            contentDescription = "Like Movie",
+                            tint = MovieMatchColor.LikeGreen,
+                            modifier = Modifier.size(34.dp)
+                        )
+                    }
                 }
             }
         }

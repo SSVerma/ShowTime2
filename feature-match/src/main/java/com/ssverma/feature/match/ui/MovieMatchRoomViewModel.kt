@@ -65,6 +65,26 @@ class MovieMatchRoomViewModel @Inject constructor(
         _uiState.update { it.copy(joinCodeInput = code.uppercase()) }
     }
 
+    fun openJoinRoom() {
+        _uiState.update {
+            it.copy(
+                phase = MatchScreenPhase.JOIN,
+                mode = MatchMode.REMOTE,
+                joinCodeInput = "",
+                errorMessage = null
+            )
+        }
+    }
+
+    fun backToSetup() {
+        _uiState.update {
+            it.copy(
+                phase = MatchScreenPhase.SETUP,
+                errorMessage = null
+            )
+        }
+    }
+
     fun openSetupSheet() {
         _uiState.update { it.copy(showSetupSheet = true) }
     }
@@ -222,6 +242,9 @@ class MovieMatchRoomViewModel @Inject constructor(
 
                     _uiState.update { current ->
                         current.copy(
+                            player1Name = room.hostName.ifBlank { current.player1Name },
+                            player2Name = room.guestName ?: current.player2Name,
+                            isGuestConnected = !room.guestUserId.isNullOrBlank(),
                             matches = latestMatches,
                             celebratingMatch = newlyMatched ?: current.celebratingMatch
                         )
@@ -363,8 +386,17 @@ class MovieMatchRoomViewModel @Inject constructor(
     }
 
     fun saveToWatchlist(card: MovieMatchCard) {
+        _uiState.update { it.copy(savedWatchlistIds = it.savedWatchlistIds + card.id) }
         viewModelScope.launch {
             matchRoomRepository.saveMatchToWatchlist(card)
+        }
+    }
+
+    fun handleRewindClick(onOpenPro: () -> Unit) {
+        if (_uiState.value.isProOrPassActive) {
+            onRewind()
+        } else {
+            onOpenPro()
         }
     }
 

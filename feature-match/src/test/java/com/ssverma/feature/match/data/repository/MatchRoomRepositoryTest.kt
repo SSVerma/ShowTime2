@@ -235,4 +235,14 @@ class MatchRoomRepositoryTest {
             )
         }
     }
+
+    @Test
+    fun `normalizeRoomId normalizes different user inputs correctly`() {
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("4829")).isEqualTo("st-4829")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("ST-4829")).isEqualTo("st-4829")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("st-4829")).isEqualTo("st-4829")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("ST 4829")).isEqualTo("st-4829")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("st4829")).isEqualTo("st-4829")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("  ST-1234  ")).isEqualTo("st-1234")
+    }
 }

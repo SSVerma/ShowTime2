@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.QrCode
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,6 +30,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -46,7 +50,7 @@ import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MatchRoomSetupSheet(
     sheetState: SheetState,
@@ -56,7 +60,8 @@ fun MatchRoomSetupSheet(
     isProOrPassActive: Boolean,
     onStartGame: (MatchRoomConfig, String, String) -> Unit,
     onUnlockPro: () -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onOpenJoinRoom: (() -> Unit)? = null
 ) {
     var selectedMode by remember { mutableStateOf(initialConfig.mode) }
     var selectedDeckType by remember { mutableStateOf(initialConfig.deckType) }
@@ -208,6 +213,23 @@ fun MatchRoomSetupSheet(
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
+            } else {
+                // Remote Mode Host Name
+                Text(
+                    text = "YOUR NAME",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = player1Name,
+                    onValueChange = { player1Name = it },
+                    label = { Text("Host Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(20.dp))
             }
 
             // Deck Type Selector
@@ -239,6 +261,7 @@ fun MatchRoomSetupSheet(
                         if (isProOrPassActive) {
                             selectedDeckType = MatchDeckType.MY_SUBSCRIPTIONS
                         } else {
+                            onDismissRequest()
                             onUnlockPro()
                         }
                     }
@@ -254,6 +277,7 @@ fun MatchRoomSetupSheet(
                         if (isProOrPassActive) {
                             selectedDeckType = MatchDeckType.GENRE
                         } else {
+                            onDismissRequest()
                             onUnlockPro()
                         }
                     }
@@ -263,28 +287,25 @@ fun MatchRoomSetupSheet(
             // Genre Chips (if Genre selected)
             if (selectedDeckType == MatchDeckType.GENRE && isProOrPassActive) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    genres.take(4).forEach { (id, name) ->
+                    genres.forEach { (id, name) ->
                         FilterChip(
                             selected = selectedGenreId == id,
                             onClick = { selectedGenreId = id },
-                            label = { Text(name) }
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    genres.drop(4).forEach { (id, name) ->
-                        FilterChip(
-                            selected = selectedGenreId == id,
-                            onClick = { selectedGenreId = id },
-                            label = { Text(name) }
+                            label = { Text(name) },
+                            leadingIcon = if (selectedGenreId == id) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            } else null
                         )
                     }
                 }
@@ -344,10 +365,33 @@ fun MatchRoomSetupSheet(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Start Swiping",
+                    text = if (selectedMode == MatchMode.REMOTE) "Create Remote Room" else "Start Swiping",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            // Quick shortcut to Join Room
+            if (onOpenJoinRoom != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = {
+                        onDismissRequest()
+                        onOpenJoinRoom()
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.QrCode,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Have a room code? Join Room")
+                }
             }
         }
     }

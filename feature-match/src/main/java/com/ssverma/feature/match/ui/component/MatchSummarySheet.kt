@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BookmarkAdd
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Star
@@ -34,6 +35,10 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +61,8 @@ fun MatchSummarySheet(
     onWatchNow: (MovieMatchCard) -> Unit,
     onAddToWatchlist: (MovieMatchCard) -> Unit,
     onStartNewSession: () -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    savedWatchlistIds: Set<Int> = emptySet()
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -129,6 +135,7 @@ fun MatchSummarySheet(
                     items(matches, key = { it.id }) { movie ->
                         MatchedMovieItem(
                             movie = movie,
+                            isWatchlistAdded = savedWatchlistIds.contains(movie.id),
                             onWatchNow = { onWatchNow(movie) },
                             onAddToWatchlist = { onAddToWatchlist(movie) }
                         )
@@ -164,10 +171,15 @@ fun MatchSummarySheet(
 @Composable
 private fun MatchedMovieItem(
     movie: MovieMatchCard,
+    isWatchlistAdded: Boolean,
     onWatchNow: () -> Unit,
     onAddToWatchlist: () -> Unit
 ) {
+    var localAdded by remember(movie.id, isWatchlistAdded) { mutableStateOf(isWatchlistAdded) }
+    val isAdded = isWatchlistAdded || localAdded
+
     Card(
+        onClick = onWatchNow,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
@@ -275,13 +287,16 @@ private fun MatchedMovieItem(
                 }
 
                 IconButton(
-                    onClick = onAddToWatchlist,
+                    onClick = {
+                        localAdded = true
+                        onAddToWatchlist()
+                    },
                     modifier = Modifier.size(34.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.BookmarkAdd,
-                        contentDescription = "Add to Watchlist",
-                        tint = MaterialTheme.colorScheme.primary,
+                        imageVector = if (isAdded) Icons.Rounded.Check else Icons.Rounded.BookmarkAdd,
+                        contentDescription = if (isAdded) "Added to Watchlist" else "Add to Watchlist",
+                        tint = if (isAdded) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                 }

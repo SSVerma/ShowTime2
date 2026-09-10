@@ -35,10 +35,20 @@ data class MovieMatchRoomUiState(
     val isProOrPassActive: Boolean = false,
     val showQuotaModal: Boolean = false,
     val showSetupSheet: Boolean = false,
-    val showSynopsisSheet: MovieMatchCard? = null
+    val showSynopsisSheet: MovieMatchCard? = null,
+    val savedWatchlistIds: Set<Int> = emptySet(),
+    val isGuestConnected: Boolean = false
 ) {
     val activePlayerName: String
         get() = if (activePlayerIndex == 0) player1Name else player2Name
+
+    val partnerName: String
+        get() = when {
+            (mode == MatchMode.REMOTE || config.mode == MatchMode.REMOTE) && isHost -> player2Name.ifBlank { "Partner" }
+            (mode == MatchMode.REMOTE || config.mode == MatchMode.REMOTE) && !isHost -> player1Name.ifBlank { "Host" }
+            activePlayerIndex == 0 -> player2Name.ifBlank { "Player 2" }
+            else -> player1Name.ifBlank { "Player 1" }
+        }
 
     val currentCard: MovieMatchCard?
         get() = cards.getOrNull(topCardIndex)

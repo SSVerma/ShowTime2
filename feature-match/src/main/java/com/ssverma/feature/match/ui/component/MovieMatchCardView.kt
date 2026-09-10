@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Card
@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,10 +54,37 @@ fun MovieMatchCardView(
     nopeOverlayAlpha: Float = 0f,
     onOpenDetails: () -> Unit = {}
 ) {
+    val defaultBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+    val dynamicBorder = remember(likeOverlayAlpha, nopeOverlayAlpha, defaultBorderColor) {
+        when {
+            likeOverlayAlpha > 0.1f -> BorderStroke(
+                width = 1.dp + (2.dp * likeOverlayAlpha),
+                color = MovieMatchColor.LikeGreen.copy(
+                    alpha = (0.3f + (0.7f * likeOverlayAlpha)).coerceIn(
+                        0f,
+                        1f
+                    )
+                )
+            )
+
+            nopeOverlayAlpha > 0.1f -> BorderStroke(
+                width = 1.dp + (2.dp * nopeOverlayAlpha),
+                color = MovieMatchColor.PassRed.copy(
+                    alpha = (0.3f + (0.7f * nopeOverlayAlpha)).coerceIn(
+                        0f,
+                        1f
+                    )
+                )
+            )
+
+            else -> BorderStroke(1.dp, defaultBorderColor)
+        }
+    }
+
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+        border = dynamicBorder,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = modifier
     ) {
@@ -204,9 +232,9 @@ fun MovieMatchCardView(
             // Stamp: LIKE (Fades in when dragging right)
             if (likeOverlayAlpha > 0.05f) {
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(4.dp, MovieMatchColor.LikeGreen),
+                    shape = RoundedCornerShape(14.dp),
+                    color = Color.Black.copy(alpha = 0.6f),
+                    border = BorderStroke(2.5.dp, MovieMatchColor.LikeGreen),
                     modifier = Modifier
                         .padding(24.dp)
                         .align(Alignment.TopStart)
@@ -217,13 +245,13 @@ fun MovieMatchCardView(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Check,
+                            imageVector = Icons.Rounded.Favorite,
                             contentDescription = null,
                             tint = MovieMatchColor.LikeGreen,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -236,12 +264,12 @@ fun MovieMatchCardView(
                 }
             }
 
-            // Stamp: NOPE (Fades in when dragging left)
+            // Stamp: NOPE / PASS (Fades in when dragging left)
             if (nopeOverlayAlpha > 0.05f) {
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(4.dp, MovieMatchColor.PassRed),
+                    shape = RoundedCornerShape(14.dp),
+                    color = Color.Black.copy(alpha = 0.6f),
+                    border = BorderStroke(2.5.dp, MovieMatchColor.PassRed),
                     modifier = Modifier
                         .padding(24.dp)
                         .align(Alignment.TopEnd)
@@ -252,13 +280,13 @@ fun MovieMatchCardView(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
                             contentDescription = null,
                             tint = MovieMatchColor.PassRed,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(

@@ -9,4 +9,8 @@ internal object MovieMatchColor {
     val RewindAmber = Color(0xFFFFB300)
     val CelebrationPink = Color(0xFFE91E63)
     val CelebrationOrange = Color(0xFFFF6D00)
+    val MatchHeartPink = Color(0xFFFF3366)
+    val MatchHeartBorder = Color(0x66FF3366)
+    val LikeGreenGlow = Color(0x334CAF50)
+    val PassRedGlow = Color(0x33E53935)
 }

@@ -1,11 +1,13 @@
 package com.ssverma.feature.match.ui
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +23,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.BookmarkAdd
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -28,6 +33,9 @@ import androidx.compose.material.icons.rounded.QrCode
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -86,6 +94,7 @@ fun MovieMatchRoomScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     val setupSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val summarySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSummarySheet by remember { mutableStateOf(false) }
@@ -110,7 +119,15 @@ fun MovieMatchRoomScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
+                    IconButton(
+                        onClick = {
+                            if (uiState.phase == MatchScreenPhase.JOIN) {
+                                viewModel.backToSetup()
+                            } else {
+                                onBackPressed()
+                            }
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "Back"
@@ -122,12 +139,15 @@ fun MovieMatchRoomScreen(
                         // Matches Counter Badge
                         Surface(
                             shape = CircleShape,
-                            color = MovieMatchColor.LikeGreen.copy(alpha = 0.2f),
+                            color = MovieMatchColor.MatchHeartPink.copy(alpha = 0.15f),
                             border = BorderStroke(
                                 1.dp,
-                                MovieMatchColor.LikeGreen.copy(alpha = 0.5f)
+                                MovieMatchColor.MatchHeartBorder
                             ),
-                            modifier = Modifier.padding(end = 8.dp)
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .clip(CircleShape)
+                                .clickable { showSummarySheet = true }
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -135,8 +155,8 @@ fun MovieMatchRoomScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Favorite,
-                                    contentDescription = null,
-                                    tint = MovieMatchColor.LikeGreen,
+                                    contentDescription = "View Matches",
+                                    tint = MovieMatchColor.MatchHeartPink,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -144,7 +164,7 @@ fun MovieMatchRoomScreen(
                                     text = "${uiState.matches.size}",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MovieMatchColor.LikeGreen
+                                    color = MovieMatchColor.MatchHeartPink
                                 )
                             }
                         }
@@ -201,10 +221,7 @@ fun MovieMatchRoomScreen(
                             )
                         },
                         onOpenCustomize = viewModel::openSetupSheet,
-                        onOpenJoin = {
-                            viewModel.setJoinCodeInput("")
-                            viewModel.openSetupSheet()
-                        }
+                        onOpenJoin = viewModel::openJoinRoom
                     )
                 }
 
@@ -212,20 +229,61 @@ fun MovieMatchRoomScreen(
                     JoinPhaseContent(
                         uiState = uiState,
                         onCodeChange = viewModel::setJoinCodeInput,
-                        onJoin = { viewModel.joinRemoteRoom(guestName = "Guest") }
+                        onJoin = { viewModel.joinRemoteRoom(guestName = "Guest") },
+                        onBackToSetup = viewModel::backToSetup
                     )
                 }
 
                 MatchScreenPhase.SWIPING -> {
-                    MovieSwipeDeck(
-                        cards = uiState.cards,
-                        topCardIndex = uiState.topCardIndex,
-                        canRewind = uiState.canUndo,
-                        onSwipe = viewModel::onSwipe,
-                        onOpenDetails = { openMovieDetails(it.id) },
-                        onRewind = viewModel::onRewind,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (uiState.config.mode == MatchMode.REMOTE && uiState.roomCode != null) {
+                            RemoteLobbyBanner(
+                                roomCode = uiState.roomCode.orEmpty(),
+                                partnerName = uiState.partnerName,
+                                isGuestConnected = uiState.isGuestConnected,
+                                onCopyCode = {
+                                    uiState.roomCode?.let { code ->
+                                        clipboardManager.setText(AnnotatedString(code))
+                                        Toast.makeText(
+                                            context,
+                                            "Room code copied: $code",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
+                                onShareCode = {
+                                    uiState.roomCode?.let { code ->
+                                        val shareText =
+                                            context.getString(R.string.match_room_invite_text, code)
+                                        val intent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_TEXT, shareText)
+                                            type = "text/plain"
+                                        }
+                                        context.startActivity(
+                                            Intent.createChooser(
+                                                intent,
+                                                "Invite Friend"
+                                            )
+                                        )
+                                    }
+                                }
+                            )
+                        }
+
+                        MovieSwipeDeck(
+                            cards = uiState.cards,
+                            topCardIndex = uiState.topCardIndex,
+                            canRewind = uiState.canUndo,
+                            onSwipe = viewModel::onSwipe,
+                            onOpenDetails = { openMovieDetails(it.id) },
+                            onRewind = viewModel::onRewind,
+                            onRewindProPrompt = { viewModel.handleRewindClick(openProPaywall) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                        )
+                    }
                 }
 
                 MatchScreenPhase.HANDOFF -> {
@@ -239,6 +297,7 @@ fun MovieMatchRoomScreen(
                 MatchScreenPhase.SUMMARY -> {
                     SummaryPhaseContent(
                         matches = uiState.matches,
+                        savedWatchlistIds = uiState.savedWatchlistIds,
                         onWatchNow = { openMovieDetails(it.id) },
                         onAddToWatchlist = viewModel::saveToWatchlist,
                         onStartNew = viewModel::resetToSetup
@@ -262,7 +321,8 @@ fun MovieMatchRoomScreen(
             uiState.celebratingMatch?.let { match ->
                 MatchCelebrationDialog(
                     matchedCard = match,
-                    partnerName = if (uiState.activePlayerIndex == 0) uiState.player2Name else uiState.player1Name,
+                    partnerName = uiState.partnerName,
+                    isWatchlistAdded = uiState.savedWatchlistIds.contains(match.id),
                     onWatchNow = {
                         viewModel.dismissCelebration()
                         openMovieDetails(match.id)
@@ -283,8 +343,30 @@ fun MovieMatchRoomScreen(
                     initialPlayer2 = uiState.player2Name,
                     isProOrPassActive = uiState.isProOrPassActive,
                     onStartGame = viewModel::startGame,
+                    onOpenJoinRoom = viewModel::openJoinRoom,
                     onUnlockPro = openProPaywall,
                     onDismissRequest = viewModel::closeSetupSheet
+                )
+            }
+
+            // Summary Bottom Sheet
+            if (showSummarySheet) {
+                MatchSummarySheet(
+                    sheetState = summarySheetState,
+                    matches = uiState.matches,
+                    savedWatchlistIds = uiState.savedWatchlistIds,
+                    onWatchNow = { movie ->
+                        showSummarySheet = false
+                        openMovieDetails(movie.id)
+                    },
+                    onAddToWatchlist = { movie ->
+                        viewModel.saveToWatchlist(movie)
+                    },
+                    onStartNewSession = {
+                        showSummarySheet = false
+                        viewModel.resetToSetup()
+                    },
+                    onDismissRequest = { showSummarySheet = false }
                 )
             }
 
@@ -302,7 +384,12 @@ fun MovieMatchRoomScreen(
                         Text(text = stringResource(R.string.match_room_unlock_with_pass))
                     },
                     confirmButton = {
-                        Button(onClick = openProPaywall) {
+                        Button(
+                            onClick = {
+                                viewModel.dismissQuotaModal()
+                                openProPaywall()
+                            }
+                        ) {
                             Text("Unlock Pro")
                         }
                     },
@@ -413,6 +500,25 @@ private fun SetupPhaseContent(
                 fontWeight = FontWeight.SemiBold
             )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Have Room Code shortcut
+        TextButton(
+            onClick = onOpenJoin,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.QrCode,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Have a room code? Join Room",
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -420,7 +526,8 @@ private fun SetupPhaseContent(
 private fun JoinPhaseContent(
     uiState: MovieMatchRoomUiState,
     onCodeChange: (String) -> Unit,
-    onJoin: () -> Unit
+    onJoin: () -> Unit,
+    onBackToSetup: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -473,6 +580,12 @@ private fun JoinPhaseContent(
                 .height(50.dp)
         ) {
             Text("Join Room & Swipe", fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        TextButton(onClick = onBackToSetup) {
+            Text("Back to Setup")
         }
     }
 }
@@ -534,6 +647,7 @@ private fun HandoffPhaseContent(
 @Composable
 private fun SummaryPhaseContent(
     matches: List<MovieMatchCard>,
+    savedWatchlistIds: Set<Int>,
     onWatchNow: (MovieMatchCard) -> Unit,
     onAddToWatchlist: (MovieMatchCard) -> Unit,
     onStartNew: () -> Unit
@@ -573,6 +687,7 @@ private fun SummaryPhaseContent(
         ) {
             items(matches.size) { index ->
                 val movie = matches[index]
+                val isSaved = savedWatchlistIds.contains(movie.id)
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
@@ -614,6 +729,19 @@ private fun SummaryPhaseContent(
                             }
                         }
 
+                        IconButton(
+                            onClick = { if (!isSaved) onAddToWatchlist(movie) },
+                            enabled = !isSaved
+                        ) {
+                            Icon(
+                                imageVector = if (isSaved) Icons.Rounded.Check else Icons.Rounded.BookmarkAdd,
+                                contentDescription = if (isSaved) "Added to Watchlist" else "Add to Watchlist",
+                                tint = if (isSaved) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
                         Button(
                             onClick = { onWatchNow(movie) },
                             shape = RoundedCornerShape(12.dp)
@@ -635,6 +763,94 @@ private fun SummaryPhaseContent(
                 .height(50.dp)
         ) {
             Text("Start New Round", fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun RemoteLobbyBanner(
+    roomCode: String,
+    partnerName: String,
+    isGuestConnected: Boolean,
+    onCopyCode: () -> Unit,
+    onShareCode: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isGuestConnected) MovieMatchColor.LikeGreen
+                            else MaterialTheme.colorScheme.tertiary
+                        )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Room: ",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = roomCode,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Text(
+                        text = if (isGuestConnected) "$partnerName joined" else "Waiting for $partnerName...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = onCopyCode,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ContentCopy,
+                        contentDescription = "Copy Room Code",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(
+                    onClick = onShareCode,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Share Room Code",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
     }
 }
