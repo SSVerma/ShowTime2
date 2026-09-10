@@ -804,7 +804,10 @@ fun LibraryScreen(
                         )
                     }
                 }
-            }
+            },
+            onOpenSecretListClick = if (onOpenSecretSharedList != null) {
+                { showOpenSecretListDialog = true }
+            } else null
         )
     }
 
@@ -1898,17 +1901,6 @@ private fun MyListsTabContent(
                         )
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (onOpenSecretListClick != null) {
-                                TextButton(onClick = onOpenSecretListClick) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Lock,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(text = stringResource(R.string.secret_share_open_action))
-                                }
-                            }
                             TextButton(onClick = onCreateListClick) {
                                 Icon(
                                     imageVector = Icons.Rounded.Add,
@@ -1916,7 +1908,53 @@ private fun MyListsTabContent(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(text = stringResource(R.string.create_custom_list))
+                                Text(
+                                    text = stringResource(R.string.create_custom_list),
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
+
+                            if (onOpenSecretListClick != null) {
+                                var showListMenu by remember { mutableStateOf(false) }
+                                Box {
+                                    IconButton(
+                                        onClick = { showListMenu = true },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.MoreVert,
+                                            contentDescription = stringResource(R.string.more_options),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = showListMenu,
+                                        onDismissRequest = { showListMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = stringResource(R.string.secret_share_open_action),
+                                                    style = MaterialTheme.typography.bodyMedium
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Lock,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            },
+                                            onClick = {
+                                                showListMenu = false
+                                                onOpenSecretListClick()
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -2751,7 +2789,8 @@ private const val MAX_LIST_DESCRIPTION_LENGTH = 200
 @Composable
 private fun CreateCustomListDialog(
     onDismiss: () -> Unit,
-    onCreate: (title: String, description: String?) -> Unit
+    onCreate: (title: String, description: String?) -> Unit,
+    onOpenSecretListClick: (() -> Unit)? = null
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -2808,6 +2847,33 @@ private fun CreateCustomListDialog(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                if (onOpenSecretListClick != null) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 4.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                    TextButton(
+                        onClick = {
+                            onDismiss()
+                            onOpenSecretListClick()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = stringResource(R.string.secret_share_open_dialog_title),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
