@@ -4,6 +4,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
+import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.repository.LibraryRepository
 import kotlinx.coroutines.flow.Flow
@@ -242,6 +243,7 @@ class FakeLibraryRepository : LibraryRepository {
     }
 
     private val customLists = MutableStateFlow<List<CustomList>>(emptyList())
+    private val joinedSecretLists = MutableStateFlow<List<JoinedSecretList>>(emptyList())
 
     fun getAllCustomLists(): List<CustomList> = customLists.value
 
@@ -256,7 +258,9 @@ class FakeLibraryRepository : LibraryRepository {
     override suspend fun createCustomList(
         title: String,
         description: String?,
-        coverImageUrl: String?
+        coverImageUrl: String?,
+        isCloned: Boolean,
+        sourceAuthorName: String?
     ): String {
         val id = UUID.randomUUID().toString()
         val newList = CustomList(
@@ -264,6 +268,8 @@ class FakeLibraryRepository : LibraryRepository {
             title = title,
             description = description,
             coverImageUrl = coverImageUrl,
+            isCloned = isCloned,
+            sourceAuthorName = sourceAuthorName,
             items = emptyList()
         )
         customLists.value = customLists.value + newList
@@ -387,5 +393,46 @@ class FakeLibraryRepository : LibraryRepository {
         )
         customLists.value = customLists.value + newList
         return newListId
+    }
+
+    override suspend fun updateCustomListSecretShareCode(listId: String, shareCode: String?) {
+        customLists.value = customLists.value.map { list ->
+            if (list.listId == listId) {
+                list.copy(secretShareCode = shareCode, updatedAt = System.currentTimeMillis())
+            } else {
+                list
+            }
+        }
+    }
+
+    override fun getJoinedSecretListsFlow(): Flow<List<JoinedSecretList>> {
+        return joinedSecretLists
+    }
+
+    override suspend fun saveJoinedSecretList(
+        shareCode: String,
+        title: String,
+        description: String?,
+        ownerName: String,
+        coverImageUrl: String?,
+        itemCount: Int,
+        isCollaborative: Boolean
+    ) {
+        val entry = JoinedSecretList(
+            shareCode = shareCode,
+            title = title,
+            description = description,
+            ownerName = ownerName,
+            coverImageUrl = coverImageUrl,
+            itemCount = itemCount,
+            isCollaborative = isCollaborative,
+            lastOpenedEpochMs = System.currentTimeMillis()
+        )
+        val current = joinedSecretLists.value.filterNot { it.shareCode == shareCode }
+        joinedSecretLists.value = listOf(entry) + current
+    }
+
+    override suspend fun removeJoinedSecretList(shareCode: String) {
+        joinedSecretLists.value = joinedSecretLists.value.filterNot { it.shareCode == shareCode }
     }
 }

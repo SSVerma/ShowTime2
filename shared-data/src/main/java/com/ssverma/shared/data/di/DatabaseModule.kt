@@ -9,6 +9,7 @@ import com.ssverma.shared.data.local.db.dao.CustomListDao
 import com.ssverma.shared.data.local.db.dao.DiaryDao
 import com.ssverma.shared.data.local.db.dao.EpisodeWatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.FavoriteDao
+import com.ssverma.shared.data.local.db.dao.JoinedSecretListDao
 import com.ssverma.shared.data.local.db.dao.ShowWatchProgressDao
 import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
@@ -84,5 +85,11 @@ object DatabaseModule {
     @Singleton
     fun provideAiringReminderDao(database: ShowTimeDatabase): AiringReminderDao {
         return database.airingReminderDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideJoinedSecretListDao(database: ShowTimeDatabase): JoinedSecretListDao {
+        return database.joinedSecretListDao()
     }
 }

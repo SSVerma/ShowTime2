@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Share
@@ -34,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -49,6 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,6 +91,8 @@ fun ListShareExportBottomSheet(
     items: List<SecretSharedListItem>,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    customListId: String? = null,
+    initialShareCode: String? = null,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     onOpenProPaywall: () -> Unit = {},
     viewModel: ListShareExportViewModel = hiltViewModel()
@@ -97,10 +103,22 @@ fun ListShareExportBottomSheet(
     val graphicsLayer = rememberGraphicsLayer()
     val clipboardManager = LocalClipboardManager.current
 
+    LaunchedEffect(initialShareCode) {
+        viewModel.initSecretShare(initialShareCode)
+    }
+
     var showRevokeConfirmDialog by remember { mutableStateOf(false) }
+    var showInfoSheet by remember { mutableStateOf(false) }
+
+    if (showInfoSheet) {
+        SecretShareInfoBottomSheet(
+            onDismissRequest = { showInfoSheet = false }
+        )
+    }
 
     val shareChooserTitle = stringResource(R.string.secret_share_chooser_title)
     val linkCopiedMsg = stringResource(R.string.secret_share_link_copied)
+    val linkRevokedMsg = stringResource(R.string.secret_share_revoked_success)
     val saveSuccessMsg = stringResource(R.string.receipt_saved_success)
     val saveFailedMsg = stringResource(R.string.receipt_save_failed)
 
@@ -118,27 +136,51 @@ fun ListShareExportBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .padding(start = 20.dp, end = 12.dp, top = 4.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                ) {
                     Text(
                         text = stringResource(R.string.secret_share_title),
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = stringResource(R.string.secret_share_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                IconButton(onClick = onDismissRequest) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = stringResource(R.string.close)
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { showInfoSheet = true },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Info,
+                            contentDescription = stringResource(R.string.secret_share_info_learn_more),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = onDismissRequest,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = stringResource(R.string.close),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
@@ -291,15 +333,62 @@ fun ListShareExportBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Primary Share Actions
+            // Link Actions Row (Copy Link & Share Link)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Generate & Copy / Share Secret Link
+                // 1. Copy Link (Strictly copies to clipboard, shows Toast notification, NO share sheet popup)
                 Button(
+                    onClick = {
+                        val existingCode = uiState.shareCode
+                        if (existingCode != null) {
+                            val url = ShareMediaUtils.buildSecretListUrl(existingCode)
+                            clipboardManager.setText(AnnotatedString(url))
+                            Toast.makeText(context, linkCopiedMsg, Toast.LENGTH_SHORT).show()
+                        } else {
+                            viewModel.generateSecretLink(
+                                title = title,
+                                description = description,
+                                items = items,
+                                ownerName = ownerName,
+                                customListId = customListId,
+                                onSuccess = { code ->
+                                    val url = ShareMediaUtils.buildSecretListUrl(code)
+                                    clipboardManager.setText(AnnotatedString(url))
+                                    Toast.makeText(context, linkCopiedMsg, Toast.LENGTH_SHORT)
+                                        .show()
+                                }
+                            )
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (uiState.isCreatingLink) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.secret_share_copy_link),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // 2. Share Link (Opens system share chooser with formatted text & secret link)
+                FilledTonalButton(
                     onClick = {
                         val existingCode = uiState.shareCode
                         if (existingCode != null) {
@@ -323,12 +412,8 @@ fun ListShareExportBottomSheet(
                                 description = description,
                                 items = items,
                                 ownerName = ownerName,
+                                customListId = customListId,
                                 onSuccess = { code ->
-                                    val url = ShareMediaUtils.buildSecretListUrl(code)
-                                    clipboardManager.setText(AnnotatedString(url))
-                                    Toast.makeText(context, linkCopiedMsg, Toast.LENGTH_SHORT)
-                                        .show()
-
                                     val shareText =
                                         ShareMediaUtils.buildFormattedSecretListMarkdown(
                                             title = title,
@@ -351,31 +436,29 @@ fun ListShareExportBottomSheet(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    if (uiState.isCreatingLink) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Rounded.Share,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = if (uiState.shareCode != null) {
-                                stringResource(R.string.secret_share_copy_link)
-                            } else {
-                                stringResource(R.string.secret_share_create_cta)
-                            },
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.secret_share_share_link),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+            }
 
-                // Share Story Image Card
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Story Card Image Actions Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // 3. Share Story Card Image
                 OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
@@ -403,7 +486,7 @@ fun ListShareExportBottomSheet(
                         )
                     } else {
                         Icon(
-                            imageVector = Icons.Rounded.Download,
+                            imageVector = Icons.AutoMirrored.Rounded.Send,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -414,17 +497,9 @@ fun ListShareExportBottomSheet(
                         )
                     }
                 }
-            }
 
-            // Save to Photos & Revoke Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(
+                // 4. Save to Photos
+                OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
                             try {
@@ -442,18 +517,33 @@ fun ListShareExportBottomSheet(
                             } catch (_: Exception) {
                             }
                         }
-                    }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Download,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(stringResource(R.string.secret_share_save_image))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.secret_share_save_image),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+            }
 
-                if (uiState.shareCode != null) {
+            // 5. Revoke Secret Link
+            if (uiState.shareCode != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     TextButton(
                         onClick = { showRevokeConfirmDialog = true },
                         colors = ButtonDefaults.textButtonColors(
@@ -466,7 +556,10 @@ fun ListShareExportBottomSheet(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(R.string.secret_share_revoke_action))
+                        Text(
+                            text = stringResource(R.string.secret_share_revoke_action),
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
@@ -484,8 +577,8 @@ fun ListShareExportBottomSheet(
                     Button(
                         onClick = {
                             showRevokeConfirmDialog = false
-                            viewModel.revokeSecretShare {
-                                Toast.makeText(context, "Secret link revoked", Toast.LENGTH_SHORT)
+                            viewModel.revokeSecretShare(customListId = customListId) {
+                                Toast.makeText(context, linkRevokedMsg, Toast.LENGTH_SHORT)
                                     .show()
                             }
                         },

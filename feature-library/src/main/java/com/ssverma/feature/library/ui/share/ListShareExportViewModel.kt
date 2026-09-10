@@ -12,6 +12,7 @@ import com.ssverma.shared.domain.model.library.ListShareCardFormat
 import com.ssverma.shared.domain.model.library.ListShareTheme
 import com.ssverma.shared.domain.model.library.SecretSharedList
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
+import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.repository.SecretSharedListRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +43,7 @@ data class ListShareExportUiState(
 @HiltViewModel
 class ListShareExportViewModel @Inject constructor(
     private val secretSharedListRepository: SecretSharedListRepository,
+    private val libraryRepository: LibraryRepository,
     private val billingRepository: BillingRepository,
     private val rewardManager: RewardManager,
     private val rewardedAdManager: RewardedAdManager
@@ -104,8 +106,33 @@ class ListShareExportViewModel @Inject constructor(
         _uiState.update { it.copy(selectedFormat = format) }
     }
 
+    fun initSecretShare(shareCode: String?) {
+        if (shareCode != null && _uiState.value.shareCode == null) {
+            _uiState.update { it.copy(shareCode = shareCode) }
+            viewModelScope.launch {
+                secretSharedListRepository.observeSecretSharedList(shareCode)
+                    .collectLatest { list ->
+                        if (list != null) {
+                            _uiState.update {
+                                it.copy(
+                                    secretSharedList = list,
+                                    isCollaborative = list.isCollaborative
+                                )
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
     fun setCollaborative(allow: Boolean) {
         _uiState.update { it.copy(isCollaborative = allow) }
+        val code = _uiState.value.shareCode
+        if (code != null) {
+            viewModelScope.launch {
+                secretSharedListRepository.updateCollaborativeStatus(code, allow)
+            }
+        }
     }
 
     fun setExportingImage(isExporting: Boolean) {
@@ -121,27 +148,35 @@ class ListShareExportViewModel @Inject constructor(
         description: String?,
         items: List<SecretSharedListItem>,
         ownerName: String,
+        customListId: String? = null,
         onSuccess: (String) -> Unit
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isCreatingLink = true, errorMessage = null) }
+            val sanitizedOwnerName =
+                ownerName.takeIf { it.isNotBlank() && !it.equals("Me", ignoreCase = true) }
+                    ?: "Friend"
             val result = secretSharedListRepository.createSecretShare(
                 title = title,
                 description = description,
                 items = items,
                 isCollaborative = _uiState.value.isCollaborative,
-                ownerName = ownerName
+                ownerName = sanitizedOwnerName
             )
             when (result) {
                 is Result.Success -> {
+                    val code = result.data.shareCode
+                    if (customListId != null) {
+                        libraryRepository.updateCustomListSecretShareCode(customListId, code)
+                    }
                     _uiState.update {
                         it.copy(
                             isCreatingLink = false,
-                            shareCode = result.data.shareCode,
+                            shareCode = code,
                             secretSharedList = result.data
                         )
                     }
-                    onSuccess(result.data.shareCode)
+                    onSuccess(code)
                 }
 
                 is Result.Error -> {
@@ -156,10 +191,13 @@ class ListShareExportViewModel @Inject constructor(
         }
     }
 
-    fun revokeSecretShare(onRevoked: () -> Unit) {
+    fun revokeSecretShare(customListId: String? = null, onRevoked: () -> Unit) {
         val code = _uiState.value.shareCode ?: return
         viewModelScope.launch {
             secretSharedListRepository.revokeSecretShare(code)
+            if (customListId != null) {
+                libraryRepository.updateCustomListSecretShareCode(customListId, null)
+            }
             _uiState.update { it.copy(shareCode = null, secretSharedList = null) }
             onRevoked()
         }

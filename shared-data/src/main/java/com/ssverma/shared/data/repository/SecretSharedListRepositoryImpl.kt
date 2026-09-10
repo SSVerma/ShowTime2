@@ -57,9 +57,18 @@ class SecretSharedListRepositoryImpl @Inject constructor(
         isCollaborative: Boolean,
         ownerName: String
     ): Result<SecretSharedList, Failure<*>> {
+        val safeOwnerName =
+            ownerName.takeIf { it.isNotBlank() && !it.equals("Me", ignoreCase = true) } ?: "Friend"
         val shareCode = generateShareCode()
         val docId = normalizeShareCode(shareCode)
-        val dtos = items.map { it.toDto() }
+        val stampedItems = items.map { item ->
+            if (item.addedByUserId.isNullOrBlank()) {
+                item.copy(addedByUserId = persistentUserId, addedByName = safeOwnerName)
+            } else {
+                item
+            }
+        }
+        val dtos = stampedItems.map { it.toDto() }
         val itemsJson = gson.toJson(dtos)
         val now = System.currentTimeMillis()
 
@@ -68,7 +77,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
             "title" to title,
             "description" to description,
             "ownerUserId" to persistentUserId,
-            "ownerName" to ownerName,
+            "ownerName" to safeOwnerName,
             "isCollaborative" to isCollaborative,
             "isRevoked" to false,
             "itemCount" to items.size,
@@ -198,11 +207,30 @@ class SecretSharedListRepositoryImpl @Inject constructor(
                 if (!snapshot.exists()) {
                     throw IllegalStateException("Secret shared list not found")
                 }
+                val isRevoked = snapshot.getBoolean("isRevoked") ?: false
+                if (isRevoked) {
+                    throw IllegalStateException("Secret shared list is revoked")
+                }
+
+                val ownerUserId = snapshot.getString("ownerUserId").orEmpty()
+                val isCollaborative = snapshot.getBoolean("isCollaborative") ?: false
+                val isOwner = ownerUserId == persistentUserId
+
                 val itemsJson = snapshot.getString("itemsJson").orEmpty()
                 val currentItems = parseItemsJson(itemsJson).toMutableList()
 
-                val removed = currentItems.removeAll { it.mediaId == mediaId }
-                if (removed) {
+                val targetItem = currentItems.firstOrNull { it.mediaId == mediaId }
+                if (targetItem != null) {
+                    // Smart Contributor Scoping:
+                    // Owner can remove any item.
+                    // Collaborators can only remove items they added themselves.
+                    val canRemove =
+                        isOwner || (isCollaborative && targetItem.addedByUserId == persistentUserId)
+                    if (!canRemove) {
+                        throw IllegalStateException("Only the list owner or the contributor who added this item can remove it")
+                    }
+
+                    currentItems.remove(targetItem)
                     val updatedJson = gson.toJson(currentItems.map { it.toDto() })
                     val now = System.currentTimeMillis()
                     transaction.update(
@@ -238,12 +266,37 @@ class SecretSharedListRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateCollaborativeStatus(
+        shareCode: String,
+        isCollaborative: Boolean
+    ): Result<Unit, Failure<*>> {
+        val docId = normalizeShareCode(shareCode)
+        val docRef = firestore.collection(colSecretSharedLists).document(docId)
+
+        return try {
+            docRef.update(
+                mapOf(
+                    "isCollaborative" to isCollaborative,
+                    "updatedAtEpochMs" to System.currentTimeMillis()
+                )
+            ).await()
+            Result.Success(Unit)
+        } catch (_: Exception) {
+            Result.Error(Failure.CoreFailure.NetworkFailure)
+        }
+    }
+
     private fun parseSecretSharedList(snapshot: DocumentSnapshot): SecretSharedList? {
         val shareCode = snapshot.getString("shareCode") ?: snapshot.id
         val title = snapshot.getString("title") ?: return null
         val description = snapshot.getString("description")
         val ownerUserId = snapshot.getString("ownerUserId").orEmpty()
-        val ownerName = snapshot.getString("ownerName").orEmpty()
+        val rawOwnerName = snapshot.getString("ownerName").orEmpty()
+        val ownerName = if (rawOwnerName.isBlank() || rawOwnerName.equals(
+                "Me",
+                ignoreCase = true
+            )
+        ) "Friend" else rawOwnerName
         val isCollaborative = snapshot.getBoolean("isCollaborative") ?: false
         val isRevoked = snapshot.getBoolean("isRevoked") ?: false
         val itemsJson = snapshot.getString("itemsJson").orEmpty()
@@ -297,6 +350,7 @@ internal data class SecretSharedListItemDto(
     val voteAvg: Float = 0f,
     val releaseYear: String? = null,
     val addedByName: String? = null,
+    val addedByUserId: String? = null,
     val addedAtEpochMs: Long = 0L
 ) {
     fun toDomain(): SecretSharedListItem = SecretSharedListItem(
@@ -307,7 +361,12 @@ internal data class SecretSharedListItemDto(
         backdropImageUrl = backdropImageUrl,
         voteAvg = voteAvg,
         releaseYear = releaseYear,
-        addedByName = addedByName,
+        addedByName = if (addedByName?.equals(
+                "Me",
+                ignoreCase = true
+            ) == true
+        ) "Friend" else addedByName,
+        addedByUserId = addedByUserId,
         addedAtEpochMs = addedAtEpochMs
     )
 }
@@ -321,6 +380,7 @@ private fun SecretSharedListItem.toDto(): SecretSharedListItemDto = SecretShared
     voteAvg = voteAvg,
     releaseYear = releaseYear,
     addedByName = addedByName,
+    addedByUserId = addedByUserId,
     addedAtEpochMs = addedAtEpochMs
 )
 

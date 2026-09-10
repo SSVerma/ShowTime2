@@ -19,6 +19,7 @@ import com.ssverma.shared.domain.model.community.PublishCustomListParams
 import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.model.community.UnpublishCustomListParams
 import com.ssverma.shared.domain.model.library.CustomList
+import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
@@ -88,6 +89,20 @@ class LibraryHomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+    val joinedSecretLists: StateFlow<List<JoinedSecretList>> =
+        libraryRepository.getJoinedSecretListsFlow()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
+
+    fun removeJoinedSecretList(shareCode: String) {
+        viewModelScope.launch {
+            libraryRepository.removeJoinedSecretList(shareCode)
+        }
+    }
 
     private val totalLocalItemsCount: Flow<Int> = combine(
         watchlistItems,

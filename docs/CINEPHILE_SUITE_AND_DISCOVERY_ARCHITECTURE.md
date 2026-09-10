@@ -288,6 +288,7 @@ keeping the core experience free and unrestricted.
 | **SQL Injection Prevention** | All database queries use Room DAO parameterized queries with type-safe parameters.                                                                 |
 | **Deep Link Sanitization**   | `ShowTimeDeepLinkHandler` whitelists schemes (`https`, `showtime`) and host domains (`showtime.ssverma.in`), safely parsing integer IDs and enums. |
 | **Data Privacy & GDPR**      | Local-first design ensures user data never leaves the device unless the user explicitly triggers Google Auth & Cloud Backup.                       |
+| **Firestore Security Rules** | Rules enforced in `firestore.rules`. Test/dry-run compilation via `npx firebase-tools deploy --only firestore:rules --dry-run` and release via `npx firebase-tools deploy --only firestore:rules`. |
 | **Code Quality Hook**        | Pre-commit hook (`./.githooks/pre-commit`) enforces zero hardcoded colors, token purity, string localization, and test execution before commit.    |
 
 ---

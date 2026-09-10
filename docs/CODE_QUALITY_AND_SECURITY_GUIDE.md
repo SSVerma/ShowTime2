@@ -405,6 +405,9 @@ Before pushing any commit or opening a PR, run through this validation gate:
 
 # 5. Run the automated pre-commit quality gate (auto-reformat + code quality checklist)
 git add -A && ./.githooks/pre-commit
+
+# 6. (If firestore.rules modified) Validate Firestore security rules compilation
+npx firebase-tools deploy --only firestore:rules --dry-run
 ```
 
 > **Note**: The `.githooks/pre-commit` hook automatically runs on every `git commit`. It performs:
@@ -412,6 +415,8 @@ git add -A && ./.githooks/pre-commit
 > 2. **Code Quality Checklist** validation (zero wildcard imports, zero inline FQCNs, zero hardcoded hex colors outside `*Color.kt`, zero debug logs).
 
 ### Manual Review Checklist:
+
+- [ ] **Firestore Security Rules**: If changes touch `firestore.rules`, were they tested with `npx firebase-tools deploy --only firestore:rules --dry-run` before release, and are dev and prod collections strictly isolated?
 
 - [ ] **Architecture Boundaries & Module Taxonomy**:
   - Are `core-*` modules 100% feature-agnostic and free of domain concepts or feature pass enums?

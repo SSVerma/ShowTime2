@@ -13,6 +13,7 @@ data class CustomListEntity(
     val isPublic: Boolean = false,
     val isCloned: Boolean = false,
     val sourceAuthorName: String? = null,
+    val secretShareCode: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

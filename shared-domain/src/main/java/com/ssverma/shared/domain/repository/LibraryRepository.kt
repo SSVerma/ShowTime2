@@ -3,6 +3,7 @@ package com.ssverma.shared.domain.repository
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.library.CustomList
+import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import kotlinx.coroutines.flow.Flow
 
@@ -77,7 +78,9 @@ interface LibraryRepository {
     suspend fun createCustomList(
         title: String,
         description: String? = null,
-        coverImageUrl: String? = null
+        coverImageUrl: String? = null,
+        isCloned: Boolean = false,
+        sourceAuthorName: String? = null
     ): String
 
     suspend fun updateCustomList(listId: String, title: String, description: String?)
@@ -103,4 +106,20 @@ interface LibraryRepository {
     )
 
     suspend fun cloneCommunityListToLocal(communityList: CommunityCuratedList): String
+
+    suspend fun updateCustomListSecretShareCode(listId: String, shareCode: String?)
+
+    fun getJoinedSecretListsFlow(): Flow<List<JoinedSecretList>>
+
+    suspend fun saveJoinedSecretList(
+        shareCode: String,
+        title: String,
+        description: String?,
+        ownerName: String,
+        coverImageUrl: String?,
+        itemCount: Int,
+        isCollaborative: Boolean
+    )
+
+    suspend fun removeJoinedSecretList(shareCode: String)
 }

@@ -13,6 +13,7 @@ import com.ssverma.shared.domain.model.library.ListShareCardFormat
 import com.ssverma.shared.domain.model.library.ListShareTheme
 import com.ssverma.shared.domain.model.library.SecretSharedList
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
+import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.repository.SecretSharedListRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -38,6 +39,7 @@ class ListShareExportViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val mockSecretSharedListRepository: SecretSharedListRepository = mockk(relaxed = true)
+    private val mockLibraryRepository: LibraryRepository = mockk(relaxed = true)
     private lateinit var fakeBillingRepository: FakeBillingRepository
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
@@ -52,6 +54,7 @@ class ListShareExportViewModelTest {
 
         viewModel = ListShareExportViewModel(
             secretSharedListRepository = mockSecretSharedListRepository,
+            libraryRepository = mockLibraryRepository,
             billingRepository = fakeBillingRepository,
             rewardManager = mockRewardManager,
             rewardedAdManager = mockRewardedAdManager
@@ -214,4 +217,88 @@ class ListShareExportViewModelTest {
         assertNull(viewModel.uiState.value.shareCode)
         assertNull(viewModel.uiState.value.secretSharedList)
     }
+
+    @Test
+    fun `setCollaborative updates repository when link exists`() = runTest {
+        val sampleList = SecretSharedList(
+            shareCode = "COLLAB123",
+            title = "Collab",
+            ownerUserId = "u1",
+            ownerName = "John"
+        )
+        coEvery {
+            mockSecretSharedListRepository.createSecretShare(any(), any(), any(), any(), any())
+        } returns Result.Success(sampleList)
+
+        viewModel.generateSecretLink("Collab", null, emptyList(), "John") {}
+        advanceUntilIdle()
+
+        viewModel.setCollaborative(false)
+        advanceUntilIdle()
+
+        coVerify { mockSecretSharedListRepository.updateCollaborativeStatus("COLLAB123", false) }
+        assertFalse(viewModel.uiState.value.isCollaborative)
+    }
+
+    @Test
+    fun `generateSecretLink updates libraryRepository updateCustomListSecretShareCode`() = runTest {
+        val sampleList = SecretSharedList(
+            shareCode = "GEN123",
+            title = "Test",
+            ownerUserId = "u1",
+            ownerName = "John"
+        )
+        coEvery {
+            mockSecretSharedListRepository.createSecretShare(any(), any(), any(), any(), any())
+        } returns Result.Success(sampleList)
+
+        viewModel.generateSecretLink(
+            title = "Test",
+            description = null,
+            items = emptyList(),
+            ownerName = "John",
+            customListId = "custom-list-1"
+        ) {}
+        advanceUntilIdle()
+
+        coVerify {
+            mockLibraryRepository.updateCustomListSecretShareCode(
+                "custom-list-1",
+                "GEN123"
+            )
+        }
+    }
+
+    @Test
+    fun `revokeSecretShare updates libraryRepository updateCustomListSecretShareCode with null`() =
+        runTest {
+            val sampleList = SecretSharedList(
+                shareCode = "REVOKE456",
+                title = "Test",
+                ownerUserId = "u1",
+                ownerName = "John"
+            )
+            coEvery {
+                mockSecretSharedListRepository.createSecretShare(any(), any(), any(), any(), any())
+            } returns Result.Success(sampleList)
+
+            viewModel.generateSecretLink(
+                title = "Test",
+                description = null,
+                items = emptyList(),
+                ownerName = "John",
+                customListId = "custom-list-2"
+            ) {}
+            advanceUntilIdle()
+
+            viewModel.revokeSecretShare(customListId = "custom-list-2") {}
+            advanceUntilIdle()
+
+            coVerify {
+                mockLibraryRepository.updateCustomListSecretShareCode(
+                    "custom-list-2",
+                    null
+                )
+            }
+        }
 }

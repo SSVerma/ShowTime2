@@ -3,6 +3,7 @@ package com.ssverma.feature.library.ui.home.component
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.ssverma.core.ui.UiText
 import com.ssverma.shared.domain.model.library.CustomList
+import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 
 enum class MediaTypeFilter {
@@ -21,7 +22,7 @@ data class LibraryTab(
             is LibraryTabType.Watchlist -> tabType.items.size
             is LibraryTabType.Favorites -> tabType.items.size
             is LibraryTabType.History -> tabType.items.size
-            is LibraryTabType.CustomLists -> tabType.lists.size
+            is LibraryTabType.CustomLists -> tabType.lists.size + tabType.joinedSecretLists.size
             is LibraryTabType.Community -> tabType.count
         }
 }
@@ -40,7 +41,8 @@ sealed interface LibraryTabType {
     ) : LibraryTabType
 
     data class CustomLists(
-        val lists: List<CustomList>
+        val lists: List<CustomList>,
+        val joinedSecretLists: List<JoinedSecretList> = emptyList()
     ) : LibraryTabType
 
     data class Community(

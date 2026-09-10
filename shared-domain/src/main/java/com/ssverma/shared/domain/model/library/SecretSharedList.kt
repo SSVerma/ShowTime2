@@ -37,5 +37,6 @@ data class SecretSharedListItem(
     val voteAvg: Float = 0f,
     val releaseYear: String? = null,
     val addedByName: String? = null,
+    val addedByUserId: String? = null,
     val addedAtEpochMs: Long = System.currentTimeMillis()
 )

@@ -152,12 +152,48 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    // Secret Shared Lists & Watchlists (Unlisted Private Sharing & Collaborative Co-Curators)
-    match /secret_shared_lists/{shareCode} {
-      allow read, write: if true;
+    function isValidSecretListCreate() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['shareCode', 'title', 'ownerUserId', 'isCollaborative', 'isRevoked', 'createdAtEpochMs', 'updatedAtEpochMs', 'itemsJson'])
+        && data.shareCode is string && data.shareCode.size() >= 4 && data.shareCode.size() <= 20
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 100
+        && data.ownerUserId is string && data.ownerUserId.size() > 0 && data.ownerUserId.size() <= 128
+        && data.isCollaborative is bool
+        && data.isRevoked == false
+        && data.itemsJson is string && data.itemsJson.size() <= 1000000;
     }
+
+    function isValidSecretListUpdate() {
+      let data = request.resource.data;
+      let existing = resource.data;
+      // Cannot modify a list that is already revoked
+      return !existing.isRevoked
+        // Creator identity, share code, and creation timestamp are immutable
+        && data.ownerUserId == existing.ownerUserId
+        && data.shareCode == existing.shareCode
+        && data.createdAtEpochMs == existing.createdAtEpochMs
+        // Schema & type validity
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 100
+        && data.isCollaborative is bool
+        && data.isRevoked is bool
+        && data.itemsJson is string && data.itemsJson.size() <= 1000000;
+    }
+
+    // Secret Shared Lists & Watchlists (Unlisted Private Sharing & Collaborative Co-Curators)
+    // Production (End Users)
+    match /secret_shared_lists/{shareCode} {
+      allow read: if true;
+      allow create: if isValidSecretListCreate();
+      allow update: if isValidSecretListUpdate();
+      allow delete: if false;
+    }
+
+    // Development & Testing (Isolated)
     match /dev_secret_shared_lists/{shareCode} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if isValidSecretListCreate();
+      allow update: if isValidSecretListUpdate();
+      allow delete: if false;
     }
 
     // Default fallback

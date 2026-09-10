@@ -1,6 +1,7 @@
 package com.ssverma.feature.library.ui.home
 
 import android.app.Activity
+import android.content.Context
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
@@ -54,6 +55,9 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material.icons.rounded.BookmarkBorder
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.EmojiEvents
@@ -65,9 +69,11 @@ import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.FolderSpecial
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.HistoryEdu
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.PublicOff
 import androidx.compose.material.icons.rounded.Search
@@ -85,6 +91,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -147,6 +154,7 @@ import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.ui.share.ListShareExportBottomSheet
+import com.ssverma.feature.library.ui.share.SecretShareInfoBottomSheet
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBanner
 import com.ssverma.feature.library.ui.home.component.LibraryTab
@@ -159,6 +167,7 @@ import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
+import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.common.ui.community.CommunityListCard
@@ -201,6 +210,7 @@ fun LibraryScreen(
     val favoriteItems by viewModel.favoriteItems.collectAsState()
     val historyItems by viewModel.historyItems.collectAsState()
     val customLists by viewModel.customLists.collectAsState()
+    val joinedSecretLists by viewModel.joinedSecretLists.collectAsState()
     val communityLists by viewModel.communityLists.collectAsState()
     val selectedCommunityCategory by viewModel.selectedCommunityCategory.collectAsState()
     val selectedCommunityList by viewModel.selectedCommunityList.collectAsState()
@@ -214,6 +224,11 @@ fun LibraryScreen(
     val isCreateListDialogVisible by viewModel.isCreateListDialogVisible.collectAsState()
     val isAdLoading by viewModel.isAdLoading.collectAsState()
     val context = LocalContext.current
+    val currentUserName = remember(context) {
+        context.getSharedPreferences("showtime_device_prefs", Context.MODE_PRIVATE)
+            .getString("user_display_name", null)
+            ?.takeIf { it.isNotBlank() && !it.equals("Me", ignoreCase = true) } ?: "Friend"
+    }
     val snackbarHostState = remember { SnackbarHostState() }
 
     var showClearHistoryDialog by remember { mutableStateOf(false) }
@@ -299,7 +314,14 @@ fun LibraryScreen(
         }
     }
 
-    val tabs = remember(watchlistItems, favoriteItems, historyItems, customLists, communityLists) {
+    val tabs = remember(
+        watchlistItems,
+        favoriteItems,
+        historyItems,
+        customLists,
+        joinedSecretLists,
+        communityLists
+    ) {
         listOf(
             LibraryTab(
                 title = UiText.StaticText(resId = R.string.watchlist),
@@ -319,7 +341,10 @@ fun LibraryScreen(
             LibraryTab(
                 title = UiText.StaticText(resId = SharedR.string.tab_my_lists),
                 icon = Icons.Rounded.FolderSpecial,
-                tabType = LibraryTabType.CustomLists(lists = customLists)
+                tabType = LibraryTabType.CustomLists(
+                    lists = customLists,
+                    joinedSecretLists = joinedSecretLists
+                )
             ),
             LibraryTab(
                 title = UiText.StaticText(resId = SharedR.string.tab_community),
@@ -643,7 +668,7 @@ fun LibraryScreen(
                                 secretSharePayload = SecretSharePayload(
                                     title = "My Watchlist",
                                     description = "Movies and TV shows I'm planning to watch",
-                                    ownerName = "Me",
+                                    ownerName = currentUserName,
                                     items = watchlistItems.map { it.toSecretSharedListItem() }
                                 )
                             }
@@ -678,7 +703,7 @@ fun LibraryScreen(
                                 secretSharePayload = SecretSharePayload(
                                     title = "My Favorite Titles",
                                     description = "My all-time favorite movies and TV shows",
-                                    ownerName = "Me",
+                                    ownerName = currentUserName,
                                     items = favoriteItems.map { it.toSecretSharedListItem() }
                                 )
                             }
@@ -717,11 +742,18 @@ fun LibraryScreen(
                 3 -> {
                     MyListsTabContent(
                         lists = customLists,
+                        joinedSecretLists = joinedSecretLists,
                         onCreateListClick = { viewModel.onAttemptCreateList() },
                         onOpenSecretListClick = if (onOpenSecretSharedList != null) {
                             { showOpenSecretListDialog = true }
                         } else null,
                         onListClick = { list -> viewModel.selectCustomList(list.listId) },
+                        onJoinedSecretListClick = { code ->
+                            onOpenSecretSharedList?.invoke(code)
+                        },
+                        onRemoveJoinedSecretList = { code ->
+                            viewModel.removeJoinedSecretList(code)
+                        },
                         onEditListClick = { list -> listPendingEdit = list },
                         onDeleteListClick = { list -> listPendingDeletion = list },
                         onExploreCommunityClick = {
@@ -960,9 +992,20 @@ fun LibraryScreen(
             onSecretShare = {
                 val target = selectedCustomList!!
                 secretSharePayload = SecretSharePayload(
+                    customListId = target.listId,
                     title = target.title,
                     description = target.description,
-                    ownerName = "Me",
+                    ownerName = if (target.isCloned) {
+                        target.sourceAuthorName?.takeIf {
+                            it.isNotBlank() && !it.equals(
+                                "Me",
+                                ignoreCase = true
+                            )
+                        } ?: currentUserName
+                    } else {
+                        currentUserName
+                    },
+                    initialShareCode = target.secretShareCode,
                     items = target.items.map { it.toSecretSharedListItem() }
                 )
             }
@@ -1207,6 +1250,8 @@ fun LibraryScreen(
             description = payload.description,
             ownerName = payload.ownerName,
             items = payload.items,
+            customListId = payload.customListId,
+            initialShareCode = payload.initialShareCode,
             onDismissRequest = { secretSharePayload = null },
             onOpenProPaywall = onNavigateToProPaywall
         )
@@ -1215,6 +1260,13 @@ fun LibraryScreen(
     if (showOpenSecretListDialog) {
         var codeInput by remember { mutableStateOf("") }
         var errorMessage by remember { mutableStateOf<String?>(null) }
+        var showSecretShareInfo by remember { mutableStateOf(false) }
+
+        if (showSecretShareInfo) {
+            SecretShareInfoBottomSheet(
+                onDismissRequest = { showSecretShareInfo = false }
+            )
+        }
 
         AlertDialog(
             onDismissRequest = { showOpenSecretListDialog = false },
@@ -1225,7 +1277,9 @@ fun LibraryScreen(
                     tint = MaterialTheme.colorScheme.primary
                 )
             },
-            title = { Text(text = stringResource(R.string.secret_share_open_dialog_title)) },
+            title = {
+                Text(text = stringResource(R.string.secret_share_open_dialog_title))
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -1246,6 +1300,21 @@ fun LibraryScreen(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
+                    TextButton(
+                        onClick = { showSecretShareInfo = true },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.secret_share_info_learn_more),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 }
             },
             confirmButton = {
@@ -1834,17 +1903,62 @@ private fun MediaCollectionTabContent(
     }
 }
 
+private enum class CustomListsFilter {
+    ALL,
+    MY_LISTS,
+    SHARED_WITH_ME
+}
+
 @Composable
 private fun MyListsTabContent(
     lists: List<CustomList>,
+    joinedSecretLists: List<JoinedSecretList> = emptyList(),
     onCreateListClick: () -> Unit,
     onListClick: (CustomList) -> Unit,
+    onJoinedSecretListClick: (String) -> Unit = {},
+    onRemoveJoinedSecretList: (String) -> Unit = {},
     onEditListClick: (CustomList) -> Unit,
     onDeleteListClick: (CustomList) -> Unit,
     onExploreCommunityClick: () -> Unit,
     onOpenSecretListClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    var selectedFilter by rememberSaveable { mutableStateOf(CustomListsFilter.ALL) }
+    var joinedListPendingRemoval by remember { mutableStateOf<JoinedSecretList?>(null) }
+
+    joinedListPendingRemoval?.let { targetJoinedList ->
+        AlertDialog(
+            onDismissRequest = { joinedListPendingRemoval = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = { Text(stringResource(R.string.secret_share_leave_action)) },
+            text = { Text(stringResource(R.string.secret_share_leave_confirm)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onRemoveJoinedSecretList(targetJoinedList.shareCode)
+                        joinedListPendingRemoval = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.remove_item))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { joinedListPendingRemoval = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     val contentPadding = rememberFloatingBottomBarPadding(
         start = MaterialTheme.spacing.medium,
         top = MaterialTheme.spacing.medium,
@@ -1852,8 +1966,10 @@ private fun MyListsTabContent(
         extraSpacing = MaterialTheme.spacing.large
     )
 
+    val totalCount = lists.size + joinedSecretLists.size
+
     AnimatedContent(
-        targetState = lists.isEmpty(),
+        targetState = totalCount == 0,
         transitionSpec = {
             fadeIn(
                 animationSpec = tween(
@@ -1886,106 +2002,396 @@ private fun MyListsTabContent(
                 modifier = Modifier.fillMaxSize()
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 4.dp)
                     ) {
-                        Text(
-                            text = if (lists.size == 1) "1 Collection" else "${lists.size} Collections",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (totalCount == 1) "1 Collection" else "$totalCount Collections",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            TextButton(onClick = onCreateListClick) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = stringResource(R.string.create_custom_list),
-                                    maxLines = 1,
-                                    softWrap = false
-                                )
-                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                TextButton(onClick = onCreateListClick) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.create_custom_list),
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                }
 
-                            if (onOpenSecretListClick != null) {
-                                var showListMenu by remember { mutableStateOf(false) }
-                                Box {
-                                    IconButton(
-                                        onClick = { showListMenu = true },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.MoreVert,
-                                            contentDescription = stringResource(R.string.more_options),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
+                                if (onOpenSecretListClick != null) {
+                                    var showListMenu by remember { mutableStateOf(false) }
+                                    Box {
+                                        IconButton(
+                                            onClick = { showListMenu = true },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.MoreVert,
+                                                contentDescription = stringResource(R.string.more_options),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
 
-                                    DropdownMenu(
-                                        expanded = showListMenu,
-                                        onDismissRequest = { showListMenu = false }
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    text = stringResource(R.string.secret_share_open_action),
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Lock,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(20.dp)
-                                                )
-                                            },
-                                            onClick = {
-                                                showListMenu = false
-                                                onOpenSecretListClick()
-                                            }
-                                        )
+                                        DropdownMenu(
+                                            expanded = showListMenu,
+                                            onDismissRequest = { showListMenu = false }
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(R.string.secret_share_open_action),
+                                                        style = MaterialTheme.typography.bodyMedium
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Lock,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                },
+                                                onClick = {
+                                                    showListMenu = false
+                                                    onOpenSecretListClick()
+                                                }
+                                            )
+                                        }
                                     }
                                 }
+                            }
+                        }
+
+                        if (joinedSecretLists.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                FilterChip(
+                                    selected = selectedFilter == CustomListsFilter.ALL,
+                                    onClick = { selectedFilter = CustomListsFilter.ALL },
+                                    label = { Text(stringResource(R.string.secret_share_filter_all)) },
+                                    leadingIcon = if (selectedFilter == CustomListsFilter.ALL) {
+                                        {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    } else null
+                                )
+                                FilterChip(
+                                    selected = selectedFilter == CustomListsFilter.MY_LISTS,
+                                    onClick = { selectedFilter = CustomListsFilter.MY_LISTS },
+                                    label = { Text(stringResource(R.string.secret_share_filter_my_lists)) },
+                                    leadingIcon = if (selectedFilter == CustomListsFilter.MY_LISTS) {
+                                        {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    } else null
+                                )
+                                FilterChip(
+                                    selected = selectedFilter == CustomListsFilter.SHARED_WITH_ME,
+                                    onClick = { selectedFilter = CustomListsFilter.SHARED_WITH_ME },
+                                    label = { Text(stringResource(R.string.secret_share_filter_shared_with_me)) },
+                                    leadingIcon = if (selectedFilter == CustomListsFilter.SHARED_WITH_ME) {
+                                        {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    } else null
+                                )
                             }
                         }
                     }
                 }
 
-                items(
-                    items = lists,
-                    key = { it.listId }
-                ) { list ->
-                    CustomListCard(
-                        customList = list,
-                        onClick = { onListClick(list) },
-                        onEditClick = { onEditListClick(list) },
-                        onDeleteClick = { onDeleteListClick(list) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem(
-                                fadeInSpec = tween(
-                                    durationMillis = 220,
-                                    easing = FastOutSlowInEasing
-                                ),
-                                fadeOutSpec = tween(
-                                    durationMillis = 180,
-                                    easing = FastOutSlowInEasing
-                                ),
-                                placementSpec = spring(
-                                    dampingRatio = Spring.DampingRatioNoBouncy,
-                                    stiffness = Spring.StiffnessMediumLow
+                if (selectedFilter != CustomListsFilter.SHARED_WITH_ME) {
+                    items(
+                        items = lists,
+                        key = { "custom_${it.listId}" }
+                    ) { list ->
+                        CustomListCard(
+                            customList = list,
+                            onClick = { onListClick(list) },
+                            onEditClick = { onEditListClick(list) },
+                            onDeleteClick = { onDeleteListClick(list) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem(
+                                    fadeInSpec = tween(
+                                        durationMillis = 220,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    fadeOutSpec = tween(
+                                        durationMillis = 180,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    placementSpec = spring(
+                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
                                 )
-                            )
+                        )
+                    }
+                }
+
+                if (selectedFilter != CustomListsFilter.MY_LISTS) {
+                    items(
+                        items = joinedSecretLists,
+                        key = { "joined_${it.shareCode}" }
+                    ) { joinedList ->
+                        JoinedSecretListCard(
+                            joinedList = joinedList,
+                            onClick = { onJoinedSecretListClick(joinedList.shareCode) },
+                            onRemoveClick = { joinedListPendingRemoval = joinedList },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem(
+                                    fadeInSpec = tween(
+                                        durationMillis = 220,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    fadeOutSpec = tween(
+                                        durationMillis = 180,
+                                        easing = FastOutSlowInEasing
+                                    ),
+                                    placementSpec = spring(
+                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
+                                )
+                        )
+                    }
+                }
+
+                if (selectedFilter == CustomListsFilter.SHARED_WITH_ME && joinedSecretLists.isEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 48.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Share,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = stringResource(R.string.secret_share_empty_items),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun JoinedSecretListCard(
+    joinedList: JoinedSecretList,
+    onClick: () -> Unit,
+    onRemoveClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    ElevatedCard(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.2f)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            ) {
+                val coverImageUrl = joinedList.coverImageUrl
+                if (coverImageUrl.isNullOrBlank()) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FolderSpecial,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.size(42.dp)
+                        )
+                    }
+                } else {
+                    NetworkImage(
+                        url = coverImageUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.People,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.secret_share_joined_badge),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+            }
+
+            Column(modifier = Modifier.padding(MaterialTheme.spacing.small)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = joinedList.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Box {
+                        IconButton(
+                            onClick = { showMenu = true },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.MoreVert,
+                                contentDescription = stringResource(
+                                    R.string.secret_share_options_cd,
+                                    joinedList.title
+                                ),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.secret_share_leave_action)) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.DeleteOutline,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    onRemoveClick()
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                val curatorLabel =
+                    if (joinedList.ownerName.isBlank() || joinedList.ownerName.equals(
+                            "Me",
+                            ignoreCase = true
+                        )
+                    ) {
+                        stringResource(R.string.secret_share_curated_by_friend)
+                    } else {
+                        stringResource(R.string.secret_share_curated_by, joinedList.ownerName)
+                    }
+                Text(
+                    text = curatorLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = if (joinedList.itemCount == 1) stringResource(R.string.one_item_count) else stringResource(
+                            R.string.items_count,
+                            joinedList.itemCount
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (joinedList.isCollaborative) {
+                        Text(
+                            text = "•",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                        Text(
+                            text = stringResource(R.string.secret_share_collab_chip),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
@@ -2128,6 +2534,10 @@ private fun CustomListCard(
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = when {
+                        customList.isSecretShared -> MaterialTheme.colorScheme.secondaryContainer.copy(
+                            alpha = 0.9f
+                        )
+
                         customList.isPublic -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
                         customList.isCloned -> MaterialTheme.colorScheme.tertiaryContainer.copy(
                             alpha = 0.9f
@@ -2144,16 +2554,19 @@ private fun CustomListCard(
                         modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                     ) {
                         val badgeIcon = when {
+                            customList.isSecretShared -> Icons.Rounded.Share
                             customList.isPublic -> Icons.Rounded.Public
                             customList.isCloned -> Icons.Rounded.Bookmark
                             else -> Icons.Rounded.Lock
                         }
                         val badgeTint = when {
+                            customList.isSecretShared -> MaterialTheme.colorScheme.onSecondaryContainer
                             customList.isPublic -> MaterialTheme.colorScheme.onPrimaryContainer
                             customList.isCloned -> MaterialTheme.colorScheme.onTertiaryContainer
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
                         val badgeText = when {
+                            customList.isSecretShared -> stringResource(R.string.secret_share_badge)
                             customList.isPublic -> stringResource(SharedR.string.public_badge)
                             customList.isCloned -> stringResource(SharedR.string.cloned_badge_grid)
                             else -> stringResource(SharedR.string.private_badge)
@@ -2299,6 +2712,10 @@ private fun CustomListDetailSheet(
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = when {
+                                customList.isSecretShared -> MaterialTheme.colorScheme.secondaryContainer.copy(
+                                    alpha = 0.85f
+                                )
+
                                 customList.isPublic -> MaterialTheme.colorScheme.primaryContainer.copy(
                                     alpha = 0.85f
                                 )
@@ -2315,16 +2732,19 @@ private fun CustomListDetailSheet(
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                             ) {
                                 val badgeIcon = when {
+                                    customList.isSecretShared -> Icons.Rounded.Share
                                     customList.isPublic -> Icons.Rounded.Public
                                     customList.isCloned -> Icons.Rounded.Bookmark
                                     else -> Icons.Rounded.Lock
                                 }
                                 val badgeTint = when {
+                                    customList.isSecretShared -> MaterialTheme.colorScheme.onSecondaryContainer
                                     customList.isPublic -> MaterialTheme.colorScheme.onPrimaryContainer
                                     customList.isCloned -> MaterialTheme.colorScheme.onTertiaryContainer
                                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                                 }
                                 val badgeText = when {
+                                    customList.isSecretShared -> stringResource(R.string.secret_share_badge)
                                     customList.isPublic -> stringResource(SharedR.string.public_collection_badge)
                                     customList.isCloned -> stringResource(SharedR.string.cloned_collection_badge)
                                     else -> stringResource(SharedR.string.private_collection_badge)
@@ -2403,12 +2823,12 @@ private fun CustomListDetailSheet(
                         )
                     ) {
                         DropdownMenuItem(
-                            text = { Text(text = stringResource(R.string.edit_list)) },
+                            text = { Text(stringResource(R.string.edit_list)) },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Rounded.Edit,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface
+                                    modifier = Modifier.size(20.dp)
                                 )
                             },
                             onClick = {
@@ -2439,20 +2859,62 @@ private fun CustomListDetailSheet(
                 }
             }
 
+            if (customList.isSecretShared) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MaterialTheme.spacing.medium)
+                        .clickable(onClick = onSecretShare)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.secret_share_active_banner,
+                                customList.secretShareCode.orEmpty()
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Rounded.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Action Buttons Bar with sleek pill surfaces (Horizontally scrollable)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            // Action Buttons Bar (Structured Material 3 Two-Tier Layout with Zero Horizontal Scroll)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = MaterialTheme.spacing.medium)
             ) {
+                val context = LocalContext.current
+
                 if (customList.isPublic) {
-                    val context = androidx.compose.ui.platform.LocalContext.current
-                    Surface(
+                    // Public List Actions:
+                    // Tier 1: Prominent Primary Action (Share Community Link)
+                    Button(
                         onClick = {
                             val shareText = ShareMediaUtils.buildShareableListText(
                                 listTitle = customList.title,
@@ -2464,127 +2926,172 @@ private fun CustomListDetailSheet(
                             )
                             context.dispatchShareTextIntent(text = shareText)
                         },
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Share,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(SharedR.string.share),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.custom_list_share_public_cta),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
-                    Surface(
-                        onClick = onUnpublishClick,
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+                    // Tier 2: Secondary Actions (Make Private & Cinema Receipt)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                        OutlinedButton(
+                            onClick = onUnpublishClick,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            ),
+                            modifier = Modifier.weight(1f)
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.PublicOff,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(SharedR.string.unpublish_action),
                                 style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.error
+                                fontWeight = FontWeight.Bold
                             )
                         }
-                    }
-                } else if (!customList.isCloned && customList.items.isNotEmpty()) {
-                    Surface(
-                        onClick = onPublishClick,
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Public,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(SharedR.string.publish_action),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
 
-                if (customList.items.isNotEmpty()) {
-                    Surface(
-                        onClick = onShareReceipt,
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(R.string.cinema_receipt),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
+                        if (customList.items.isNotEmpty()) {
+                            OutlinedButton(
+                                onClick = onShareReceipt,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(R.string.cinema_receipt),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
-
-                    Surface(
-                        onClick = onSecretShare,
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                } else if (!customList.isCloned) {
+                    // Private List Actions (Secret Share is exclusively for Private lists):
+                    if (customList.items.isNotEmpty()) {
+                        // Tier 1: Prominent Primary Action (Secret Share & Story Card)
+                        Button(
+                            onClick = onSecretShare,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.AutoAwesome,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = stringResource(R.string.secret_share_action),
+                                text = stringResource(R.string.secret_share_primary_action),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Tier 2: Secondary Actions (Publish to Community & Cinema Receipt)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            FilledTonalButton(
+                                onClick = onPublishClick,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Public,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(SharedR.string.publish_action),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            OutlinedButton(
+                                onClick = onShareReceipt,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = stringResource(R.string.cinema_receipt),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    // Cloned List Actions (Private • Cloned):
+                    if (customList.items.isNotEmpty()) {
+                        // Tier 1: Prominent Primary Action (Secret Share & Story Card)
+                        Button(
+                            onClick = onSecretShare,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.AutoAwesome,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.secret_share_primary_action),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // Tier 2: Cinema Receipt
+                        OutlinedButton(
+                            onClick = onShareReceipt,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ReceiptLong,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.cinema_receipt),
                                 style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.tertiary
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -3143,9 +3650,11 @@ private fun formatRelativeDate(timestamp: Long, prefix: String = "Added "): Stri
 }
 
 private data class SecretSharePayload(
+    val customListId: String? = null,
     val title: String,
     val description: String? = null,
-    val ownerName: String = "Me",
+    val ownerName: String = "Friend",
+    val initialShareCode: String? = null,
     val items: List<SecretSharedListItem>
 )
 

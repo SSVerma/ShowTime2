@@ -12,10 +12,12 @@ import com.ssverma.shared.data.local.db.dao.WatchHistoryDao
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
 import com.ssverma.shared.data.local.db.entity.AiringReminderEntity
 import com.ssverma.shared.data.local.db.entity.CustomListEntity
+import com.ssverma.shared.data.local.db.dao.JoinedSecretListDao
 import com.ssverma.shared.data.local.db.entity.CustomListItemEntity
 import com.ssverma.shared.data.local.db.entity.DiaryEntryEntity
 import com.ssverma.shared.data.local.db.entity.EpisodeWatchHistoryEntity
 import com.ssverma.shared.data.local.db.entity.FavoriteEntity
+import com.ssverma.shared.data.local.db.entity.JoinedSecretListEntity
 import com.ssverma.shared.data.local.db.entity.ShowWatchProgressEntity
 import com.ssverma.shared.data.local.db.entity.WatchHistoryEntity
 import com.ssverma.shared.data.local.db.entity.WatchlistEntity
@@ -30,9 +32,10 @@ import com.ssverma.shared.data.local.db.entity.WatchlistEntity
         EpisodeWatchHistoryEntity::class,
         ShowWatchProgressEntity::class,
         DiaryEntryEntity::class,
-        AiringReminderEntity::class
+        AiringReminderEntity::class,
+        JoinedSecretListEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class ShowTimeDatabase : RoomDatabase() {
@@ -44,5 +47,6 @@ abstract class ShowTimeDatabase : RoomDatabase() {
     abstract fun showWatchProgressDao(): ShowWatchProgressDao
     abstract fun diaryDao(): DiaryDao
     abstract fun airingReminderDao(): AiringReminderDao
+    abstract fun joinedSecretListDao(): JoinedSecretListDao
 }
 

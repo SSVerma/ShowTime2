@@ -259,7 +259,9 @@ fun ListShareStoryCardView(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                                 letterSpacing = 0.8.sp,
-                                color = themeConfig.textSecondary
+                                color = themeConfig.textSecondary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -308,7 +310,7 @@ private fun PosterMosaicGrid(
         posters.size in 2..3 -> {
             Row(
                 modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 posters.forEach { url ->
@@ -316,7 +318,7 @@ private fun PosterMosaicGrid(
                         url = url,
                         themeConfig = themeConfig,
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxHeight(if (format == ListShareCardFormat.SQUARE_1_1) 0.85f else 0.75f)
                             .aspectRatio(2f / 3f)
                     )
                 }
@@ -324,47 +326,59 @@ private fun PosterMosaicGrid(
         }
 
         else -> {
-            // 4 posters: 2x2 grid
+            // 4 posters: 2x2 grid bounded strictly by available row height to prevent downward overflow
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        8.dp,
+                        Alignment.CenterHorizontally
+                    ),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     PosterItem(
                         url = posters[0],
                         themeConfig = themeConfig,
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxHeight()
                             .aspectRatio(2f / 3f)
                     )
                     PosterItem(
                         url = posters[1],
                         themeConfig = themeConfig,
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxHeight()
                             .aspectRatio(2f / 3f)
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        8.dp,
+                        Alignment.CenterHorizontally
+                    ),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     PosterItem(
                         url = posters[2],
                         themeConfig = themeConfig,
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxHeight()
                             .aspectRatio(2f / 3f)
                     )
                     PosterItem(
                         url = posters[3],
                         themeConfig = themeConfig,
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxHeight()
                             .aspectRatio(2f / 3f)
                     )
                 }

@@ -30,4 +30,9 @@ interface SecretSharedListRepository {
     ): Result<Unit, Failure<*>>
 
     suspend fun revokeSecretShare(shareCode: String): Result<Unit, Failure<*>>
+
+    suspend fun updateCollaborativeStatus(
+        shareCode: String,
+        isCollaborative: Boolean
+    ): Result<Unit, Failure<*>>
 }

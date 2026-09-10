@@ -17,8 +17,12 @@ import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.notifier.WidgetSyncNotifier
 import com.ssverma.shared.domain.repository.LibraryRepository
+import com.ssverma.shared.data.local.db.dao.JoinedSecretListDao
+import com.ssverma.shared.data.local.db.entity.JoinedSecretListEntity
+import com.ssverma.shared.domain.model.library.JoinedSecretList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
@@ -30,6 +34,7 @@ class LibraryRepositoryImpl @Inject constructor(
     private val watchlistDao: WatchlistDao,
     private val watchHistoryDao: WatchHistoryDao,
     private val customListDao: CustomListDao,
+    private val joinedSecretListDao: JoinedSecretListDao? = null,
     private val widgetSyncNotifier: WidgetSyncNotifier? = null
 ) : LibraryRepository {
 
@@ -281,7 +286,9 @@ class LibraryRepositoryImpl @Inject constructor(
     override suspend fun createCustomList(
         title: String,
         description: String?,
-        coverImageUrl: String?
+        coverImageUrl: String?,
+        isCloned: Boolean,
+        sourceAuthorName: String?
     ): String {
         val listId = UUID.randomUUID().toString()
         val now = System.currentTimeMillis()
@@ -292,6 +299,8 @@ class LibraryRepositoryImpl @Inject constructor(
                 description = description,
                 coverImageUrl = coverImageUrl,
                 isPublic = false,
+                isCloned = isCloned,
+                sourceAuthorName = sourceAuthorName,
                 createdAt = now,
                 updatedAt = now
             )
@@ -432,6 +441,56 @@ class LibraryRepositoryImpl @Inject constructor(
         return newListId
     }
 
+    override suspend fun updateCustomListSecretShareCode(listId: String, shareCode: String?) {
+        customListDao.updateSecretShareCode(listId, shareCode)
+    }
+
+    override fun getJoinedSecretListsFlow(): Flow<List<JoinedSecretList>> {
+        return joinedSecretListDao?.getAllJoinedListsFlow()?.map { list ->
+            list.map { it.toJoinedSecretList() }
+        } ?: flowOf(emptyList())
+    }
+
+    override suspend fun saveJoinedSecretList(
+        shareCode: String,
+        title: String,
+        description: String?,
+        ownerName: String,
+        coverImageUrl: String?,
+        itemCount: Int,
+        isCollaborative: Boolean
+    ) {
+        joinedSecretListDao?.insertOrUpdate(
+            JoinedSecretListEntity(
+                shareCode = shareCode,
+                title = title,
+                description = description,
+                ownerName = ownerName,
+                coverImageUrl = coverImageUrl,
+                itemCount = itemCount,
+                isCollaborative = isCollaborative,
+                lastOpenedEpochMs = System.currentTimeMillis()
+            )
+        )
+    }
+
+    override suspend fun removeJoinedSecretList(shareCode: String) {
+        joinedSecretListDao?.deleteByShareCode(shareCode)
+    }
+
+    private fun JoinedSecretListEntity.toJoinedSecretList(): JoinedSecretList {
+        return JoinedSecretList(
+            shareCode = shareCode,
+            title = title,
+            description = description,
+            ownerName = ownerName,
+            coverImageUrl = coverImageUrl,
+            itemCount = itemCount,
+            isCollaborative = isCollaborative,
+            lastOpenedEpochMs = lastOpenedEpochMs
+        )
+    }
+
     private fun CustomListWithItems.toCustomList(): CustomList {
         return CustomList(
             listId = list.listId,
@@ -441,6 +500,7 @@ class LibraryRepositoryImpl @Inject constructor(
             isPublic = list.isPublic,
             isCloned = list.isCloned,
             sourceAuthorName = list.sourceAuthorName,
+            secretShareCode = list.secretShareCode,
             items = items.map { it.toCustomListItem() },
             createdAt = list.createdAt,
             updatedAt = list.updatedAt

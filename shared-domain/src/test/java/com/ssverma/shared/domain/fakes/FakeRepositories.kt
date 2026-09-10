@@ -13,6 +13,7 @@ import com.ssverma.shared.domain.model.diary.DiarySummaryStats
 import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
 import com.ssverma.shared.domain.model.library.CustomList
+import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.stats.CinephileMilestoneDefinition
@@ -270,7 +271,9 @@ class FakeLibraryRepository : LibraryRepository {
     override suspend fun createCustomList(
         title: String,
         description: String?,
-        coverImageUrl: String?
+        coverImageUrl: String?,
+        isCloned: Boolean,
+        sourceAuthorName: String?
     ): String = "1"
 
     override suspend fun updateCustomList(listId: String, title: String, description: String?) {}
@@ -300,6 +303,23 @@ class FakeLibraryRepository : LibraryRepository {
 
     override suspend fun cloneCommunityListToLocal(communityList: CommunityCuratedList): String =
         "1"
+
+    override suspend fun updateCustomListSecretShareCode(listId: String, shareCode: String?) {}
+    override fun getJoinedSecretListsFlow(): Flow<List<JoinedSecretList>> =
+        MutableStateFlow(emptyList())
+
+    override suspend fun saveJoinedSecretList(
+        shareCode: String,
+        title: String,
+        description: String?,
+        ownerName: String,
+        coverImageUrl: String?,
+        itemCount: Int,
+        isCollaborative: Boolean
+    ) {
+    }
+
+    override suspend fun removeJoinedSecretList(shareCode: String) {}
 }
 
 class FakeDiscoveryRepository : DiscoveryRepository {
