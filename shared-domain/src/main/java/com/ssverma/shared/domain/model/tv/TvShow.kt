@@ -42,7 +42,9 @@ class TvShow(
     val similarTvShows: List<TvShow>,
     val recommendations: List<TvShow>,
     val seasons: List<TvSeason>,
-    val watchProviders: Map<String, WatchProvider>
+    val watchProviders: Map<String, WatchProvider>,
+    val nextEpisodeToAir: TvEpisodePreview? = null,
+    val lastEpisodeToAir: TvEpisodePreview? = null
 )
 
 fun TvShow.imageShots(): List<ImageShot> {

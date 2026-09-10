@@ -43,8 +43,18 @@ class Movie(
     val reviews: List<Review>,
     val similarMovies: List<Movie>,
     val recommendations: List<Movie>,
-    val watchProviders: Map<String, WatchProvider>
-)
+    val watchProviders: Map<String, WatchProvider>,
+    val releaseDates: Map<Int, LocalDate> = emptyMap()
+) {
+    /** Earliest future release date across all types for this movie */
+    val nextFutureReleaseDate: LocalDate?
+        get() {
+            val today = LocalDate.now()
+            return releaseDates.values
+                .filter { it.isAfter(today) || it.isEqual(today) }
+                .minOrNull()
+        }
+}
 
 fun Movie.imageShots(): List<ImageShot> {
     return (backdrops + posters)

@@ -2,8 +2,10 @@ package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
+import com.ssverma.api.service.tmdb.response.RemoteTvEpisode
 import com.ssverma.api.service.tmdb.response.RemoteTvShow
 import com.ssverma.shared.domain.model.primaryTrailer
+import com.ssverma.shared.domain.model.tv.TvEpisodePreview
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.FormatterUtils
@@ -58,9 +60,23 @@ private suspend fun RemoteTvShow.asTvShow(): TvShow {
         recommendations = recommendations?.results?.asTvShows() ?: emptyList(),
         seasons = seasons?.asTvSeasons()?.reversed() ?: emptyList(),
         watchProviders = watchProviders?.asWatchProvidersMap() ?: emptyMap(),
+        nextEpisodeToAir = nextEpisodeToAir?.asTvEpisodePreview(),
+        lastEpisodeToAir = lastEpisodeToAir?.asTvEpisodePreview(),
+    )
+}
+
+private fun RemoteTvEpisode.asTvEpisodePreview(): TvEpisodePreview {
+    return TvEpisodePreview(
+        id = id,
+        title = title.orEmpty(),
+        airDate = DateUtils.parseIsoDate(airDate),
+        displayAirDate = DateUtils.parseIsoDate(airDate)?.formatLocally(),
+        seasonNumber = seasonNumber,
+        episodeNumber = episodeNumber
     )
 }
 
 private suspend fun List<RemoteTvShow>.asTvShows(): List<TvShow> {
     return map { it.asTvShow() }
 }
+

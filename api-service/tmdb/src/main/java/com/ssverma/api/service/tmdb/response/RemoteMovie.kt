@@ -82,5 +82,8 @@ class RemoteMovie(
     val recommendations: PagedPayload<RemoteMovie>?,
 
     @SerializedName("watch/providers")
-    val watchProviders: RemoteWatchProviderResponse?
+    val watchProviders: RemoteWatchProviderResponse?,
+
+    @SerializedName("release_dates")
+    val releaseDates: ReleaseDatesPayload?
 )

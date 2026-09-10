@@ -2,6 +2,7 @@ package com.ssverma.shared.data.mapper
 
 import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
+import com.ssverma.api.service.tmdb.response.ReleaseDatesPayload
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.primaryTrailer
@@ -10,6 +11,7 @@ import com.ssverma.shared.domain.utils.FormatterUtils
 import com.ssverma.shared.domain.utils.formatLocally
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import javax.inject.Inject
 
 class MovieMapper @Inject constructor() : Mapper<RemoteMovie, Movie>() {
@@ -61,7 +63,24 @@ private suspend fun RemoteMovie.asMovie(): Movie {
         similarMovies = similarMovies?.results?.asMovies() ?: emptyList(),
         recommendations = recommendations?.results?.asMovies() ?: emptyList(),
         watchProviders = watchProviders?.asWatchProvidersMap() ?: emptyMap(),
+        releaseDates = releaseDates?.asReleaseDatesMap().orEmpty(),
     )
+}
+
+private fun ReleaseDatesPayload.asReleaseDatesMap(): Map<Int, LocalDate> {
+    val result = mutableMapOf<Int, LocalDate>()
+    results?.forEach { country ->
+        country.releaseDates?.forEach { releaseDate ->
+            // TMDB release_date is ISO 8601 datetime, extract date part
+            val date = DateUtils.parseIsoDate(
+                releaseDate.releaseDate?.substringBefore("T")
+            )
+            if (date != null && !result.containsKey(releaseDate.type)) {
+                result[releaseDate.type] = date
+            }
+        }
+    }
+    return result
 }
 
 private suspend fun List<RemoteMovie>.asMovies(): List<Movie> {
@@ -69,3 +88,4 @@ private suspend fun List<RemoteMovie>.asMovies(): List<Movie> {
         map { it.asMovie() }
     }
 }
+

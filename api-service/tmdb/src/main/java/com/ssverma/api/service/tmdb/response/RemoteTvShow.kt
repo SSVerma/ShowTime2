@@ -73,5 +73,11 @@ class RemoteTvShow(
     val seasons: List<RemoteTvSeason>?,
 
     @SerializedName("watch/providers")
-    val watchProviders: RemoteWatchProviderResponse?
+    val watchProviders: RemoteWatchProviderResponse?,
+
+    @SerializedName("next_episode_to_air")
+    val nextEpisodeToAir: RemoteTvEpisode?,
+
+    @SerializedName("last_episode_to_air")
+    val lastEpisodeToAir: RemoteTvEpisode?
 )

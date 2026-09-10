@@ -46,6 +46,10 @@ fun List<MediaDetailsAppendable>.asQueryMap(): Map<String, String> {
             MediaDetailsAppendable.WatchProviders -> {
                 queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.WatchProviders)
             }
+
+            MediaDetailsAppendable.ReleaseDates -> {
+                queryBuilder.and(TmdbApiTiedConstants.AppendableResponseTypes.ReleaseDates)
+            }
         }
     }
 

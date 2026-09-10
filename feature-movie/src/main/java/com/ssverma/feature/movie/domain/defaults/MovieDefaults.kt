@@ -49,6 +49,7 @@ object MovieDefaults {
             MediaDetailsAppendable.Similar,
             MediaDetailsAppendable.Recommendations,
             MediaDetailsAppendable.WatchProviders,
+            MediaDetailsAppendable.ReleaseDates,
         )
     }
 }

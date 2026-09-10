@@ -117,6 +117,7 @@ object TmdbApiTiedConstants {
         const val Similar = "similar"
         const val Recommendations = "recommendations"
         const val WatchProviders = "watch/providers"
+        const val ReleaseDates = "release_dates"
     }
 
     object PersonDetailsAppendableResponseTypes {
