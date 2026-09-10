@@ -207,6 +207,9 @@ private fun LibraryNavScreen(
         onOpenChallenges = {
             navigator.navigate(BacklogChallengeNavKey)
         },
+        onOpenSecretSharedList = { code ->
+            navigator.navigate(SecretSharedListNavKey(code))
+        },
         initialTab = args.initialTab,
         initialMediaType = args.initialMediaType,
         targetCustomListId = args.targetCustomListId,

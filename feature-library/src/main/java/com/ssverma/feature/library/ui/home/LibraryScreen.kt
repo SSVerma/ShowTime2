@@ -91,6 +91,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SnackbarHostState
@@ -185,6 +186,7 @@ fun LibraryScreen(
     onOpenTasteProfile: () -> Unit = {},
     onOpenWrapped: () -> Unit = {},
     onOpenChallenges: () -> Unit = {},
+    onOpenSecretSharedList: ((shareCode: String) -> Unit)? = null,
     initialTab: LibraryTabDestination = LibraryTabDestination.Watchlist,
     initialMediaType: String? = null,
     targetCustomListId: String? = null,
@@ -227,6 +229,7 @@ fun LibraryScreen(
     var receiptSource by remember { mutableStateOf(ReceiptSource.HISTORY) }
     var customListForReceipt by remember { mutableStateOf<CustomList?>(null) }
     var secretSharePayload by remember { mutableStateOf<SecretSharePayload?>(null) }
+    var showOpenSecretListDialog by remember { mutableStateOf(false) }
 
     val activeReceiptSnapshot = remember(
         receiptSource,
@@ -669,7 +672,17 @@ fun LibraryScreen(
                             ) else onMovieClicked(item.mediaId)
                         },
                         onActionClick = { viewModel.removeFromFavorites(it.mediaId) },
-                        onExploreClick = openSearchPage
+                        onExploreClick = openSearchPage,
+                        onSecretShare = if (favoriteItems.isNotEmpty()) {
+                            {
+                                secretSharePayload = SecretSharePayload(
+                                    title = "My Favorite Titles",
+                                    description = "My all-time favorite movies and TV shows",
+                                    ownerName = "Me",
+                                    items = favoriteItems.map { it.toSecretSharedListItem() }
+                                )
+                            }
+                        } else null
                     )
                 }
 
@@ -705,6 +718,9 @@ fun LibraryScreen(
                     MyListsTabContent(
                         lists = customLists,
                         onCreateListClick = { viewModel.onAttemptCreateList() },
+                        onOpenSecretListClick = if (onOpenSecretSharedList != null) {
+                            { showOpenSecretListDialog = true }
+                        } else null,
                         onListClick = { list -> viewModel.selectCustomList(list.listId) },
                         onEditListClick = { list -> listPendingEdit = list },
                         onDeleteListClick = { list -> listPendingDeletion = list },
@@ -1190,6 +1206,66 @@ fun LibraryScreen(
             items = payload.items,
             onDismissRequest = { secretSharePayload = null },
             onOpenProPaywall = onNavigateToProPaywall
+        )
+    }
+
+    if (showOpenSecretListDialog) {
+        var codeInput by remember { mutableStateOf("") }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+
+        AlertDialog(
+            onDismissRequest = { showOpenSecretListDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Lock,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = { Text(text = stringResource(R.string.secret_share_open_dialog_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(R.string.secret_share_open_dialog_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = codeInput,
+                        onValueChange = {
+                            codeInput = it
+                            errorMessage = null
+                        },
+                        placeholder = { Text(stringResource(R.string.secret_share_open_dialog_placeholder)) },
+                        singleLine = true,
+                        isError = errorMessage != null,
+                        supportingText = errorMessage?.let { { Text(it) } },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val normalized = ShareMediaUtils.normalizeSecretShareCode(codeInput)
+                        if (normalized.isNotBlank()) {
+                            showOpenSecretListDialog = false
+                            onOpenSecretSharedList?.invoke(normalized)
+                        } else {
+                            errorMessage = context.getString(R.string.secret_share_not_found)
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.secret_share_open_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showOpenSecretListDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
         )
     }
 }
@@ -1763,6 +1839,7 @@ private fun MyListsTabContent(
     onEditListClick: (CustomList) -> Unit,
     onDeleteListClick: (CustomList) -> Unit,
     onExploreCommunityClick: () -> Unit,
+    onOpenSecretListClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val contentPadding = rememberFloatingBottomBarPadding(
@@ -1793,6 +1870,8 @@ private fun MyListsTabContent(
                 icon = Icons.Rounded.FolderSpecial,
                 actionButtonText = stringResource(R.string.create_custom_list),
                 onActionClick = onCreateListClick,
+                secondaryActionButtonText = if (onOpenSecretListClick != null) stringResource(R.string.secret_share_open_action) else null,
+                onSecondaryActionClick = onOpenSecretListClick,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
@@ -1818,14 +1897,27 @@ private fun MyListsTabContent(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        TextButton(onClick = onCreateListClick) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(text = stringResource(R.string.create_custom_list))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (onOpenSecretListClick != null) {
+                                TextButton(onClick = onOpenSecretListClick) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Lock,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(text = stringResource(R.string.secret_share_open_action))
+                                }
+                            }
+                            TextButton(onClick = onCreateListClick) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(text = stringResource(R.string.create_custom_list))
+                            }
                         }
                     }
                 }
@@ -2843,7 +2935,9 @@ private fun ExpressiveEmptyState(
     icon: ImageVector,
     actionButtonText: String,
     onActionClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    secondaryActionButtonText: String? = null,
+    onSecondaryActionClick: (() -> Unit)? = null
 ) {
     val bottomBarPadding = rememberFloatingBottomBarPadding()
     Box(
@@ -2936,6 +3030,26 @@ private fun ExpressiveEmptyState(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
+                }
+
+                if (secondaryActionButtonText != null && onSecondaryActionClick != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = onSecondaryActionClick,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                        Text(
+                            text = secondaryActionButtonText,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }

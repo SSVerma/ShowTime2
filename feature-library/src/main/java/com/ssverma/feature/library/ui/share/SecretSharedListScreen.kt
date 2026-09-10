@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.BookmarkAdded
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ContentCopy
@@ -524,10 +525,14 @@ fun SecretSharedListScreen(
 
         // Collaborative Search and Add BottomSheet
         if (uiState.showAddDialog) {
+            val existingIds = remember(uiState.secretSharedList) {
+                uiState.secretSharedList?.items?.map { it.mediaId }?.toSet().orEmpty()
+            }
             CollaborativeSearchBottomSheet(
                 query = uiState.searchQuery,
                 isSearching = uiState.isSearching,
                 results = uiState.searchResults,
+                existingMediaIds = existingIds,
                 onQueryChange = { viewModel.searchMedia(it) },
                 onAddMedia = { viewModel.addMediaToSharedList(it) },
                 onDismiss = { viewModel.setShowAddDialog(false) }
@@ -652,10 +657,13 @@ private fun CollaborativeSearchBottomSheet(
     query: String,
     isSearching: Boolean,
     results: List<SecretSharedListItem>,
+    existingMediaIds: Set<Int> = emptySet(),
     onQueryChange: (String) -> Unit,
     onAddMedia: (SecretSharedListItem) -> Unit,
     onDismiss: () -> Unit
 ) {
+    var locallyAddedIds by remember { mutableStateOf(setOf<Int>()) }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -723,6 +731,9 @@ private fun CollaborativeSearchBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(results, key = { "${it.mediaType}_${it.mediaId}" }) { item ->
+                        val isAdded =
+                            item.mediaId in existingMediaIds || item.mediaId in locallyAddedIds
+
                         Surface(
                             shape = RoundedCornerShape(10.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -771,21 +782,50 @@ private fun CollaborativeSearchBottomSheet(
                                     }
                                 }
 
-                                Button(
-                                    onClick = { onAddMedia(item) },
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(
-                                        horizontal = 12.dp,
-                                        vertical = 4.dp
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Add,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Add", fontSize = 12.sp)
+                                if (isAdded) {
+                                    OutlinedButton(
+                                        onClick = {},
+                                        enabled = false,
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(
+                                            horizontal = 10.dp,
+                                            vertical = 4.dp
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Added",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                } else {
+                                    Button(
+                                        onClick = {
+                                            locallyAddedIds = locallyAddedIds + item.mediaId
+                                            onAddMedia(item)
+                                        },
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(
+                                            horizontal = 12.dp,
+                                            vertical = 4.dp
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Add,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Add", fontSize = 12.sp)
+                                    }
                                 }
                             }
                         }

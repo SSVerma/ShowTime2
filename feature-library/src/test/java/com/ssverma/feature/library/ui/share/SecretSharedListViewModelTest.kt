@@ -62,7 +62,7 @@ class SecretSharedListViewModelTest {
     @Test
     fun `init loads and observes secret shared list`() = runTest {
         val sampleList = SecretSharedList(
-            shareCode = "SECRET999",
+            shareCode = "SL-SECRET999",
             title = "Nolan Filmography",
             description = "All Christopher Nolan masterworks",
             ownerUserId = "device-user-123",
@@ -80,11 +80,11 @@ class SecretSharedListViewModelTest {
             )
         )
 
-        every { mockSecretSharedListRepository.observeSecretSharedList("SECRET999") } returns flowOf(
+        every { mockSecretSharedListRepository.observeSecretSharedList("SL-SECRET999") } returns flowOf(
             sampleList
         )
 
-        viewModel.init("SECRET999")
+        viewModel.init("SL-SECRET999")
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -98,7 +98,7 @@ class SecretSharedListViewModelTest {
     @Test
     fun `addAllToWatchlist invokes library repository for items not yet in watchlist`() = runTest {
         val sampleList = SecretSharedList(
-            shareCode = "CODE1",
+            shareCode = "SL-CODE1",
             title = "Watchlist Seed",
             ownerUserId = "other-user",
             ownerName = "Friend",
@@ -124,10 +124,10 @@ class SecretSharedListViewModelTest {
             )
         )
 
-        every { mockSecretSharedListRepository.observeSecretSharedList("CODE1") } returns flowOf(
+        every { mockSecretSharedListRepository.observeSecretSharedList("SL-CODE1") } returns flowOf(
             sampleList
         )
-        viewModel.init("CODE1")
+        viewModel.init("SL-CODE1")
         advanceUntilIdle()
 
         every { mockLibraryRepository.isInWatchlistFlow(101) } returns flowOf(false)
@@ -164,7 +164,7 @@ class SecretSharedListViewModelTest {
     @Test
     fun `cloneToMyLists creates custom list and adds all media`() = runTest {
         val sampleList = SecretSharedList(
-            shareCode = "CLONE1",
+            shareCode = "SL-CLONE1",
             title = "Cyberpunk Gems",
             description = "Neon sci-fi",
             ownerUserId = "other-user",
@@ -181,7 +181,7 @@ class SecretSharedListViewModelTest {
             )
         )
 
-        every { mockSecretSharedListRepository.observeSecretSharedList("CLONE1") } returns flowOf(
+        every { mockSecretSharedListRepository.observeSecretSharedList("SL-CLONE1") } returns flowOf(
             sampleList
         )
         coEvery {
@@ -192,7 +192,7 @@ class SecretSharedListViewModelTest {
             )
         } returns "custom-list-42"
 
-        viewModel.init("CLONE1")
+        viewModel.init("SL-CLONE1")
         advanceUntilIdle()
 
         viewModel.cloneToMyLists()
@@ -273,21 +273,22 @@ class SecretSharedListViewModelTest {
         assertEquals("Star Wars", results.first().title)
         assertEquals("1977", results.first().releaseYear)
         assertEquals(MediaType.Movie, results.first().mediaType)
+        assertEquals("Friend", results.first().addedByName)
     }
 
     @Test
     fun `addMediaToSharedList and removeMediaFromSharedList call repository`() = runTest {
         val sampleList = SecretSharedList(
-            shareCode = "SHARE1",
+            shareCode = "SL-SHARE1",
             title = "Test",
             ownerUserId = "u1",
             ownerName = "O"
         )
-        every { mockSecretSharedListRepository.observeSecretSharedList("SHARE1") } returns flowOf(
+        every { mockSecretSharedListRepository.observeSecretSharedList("SL-SHARE1") } returns flowOf(
             sampleList
         )
 
-        viewModel.init("SHARE1")
+        viewModel.init("SL-SHARE1")
         advanceUntilIdle()
 
         val itemToAdd = SecretSharedListItem(
@@ -300,36 +301,55 @@ class SecretSharedListViewModelTest {
         viewModel.addMediaToSharedList(itemToAdd)
         advanceUntilIdle()
 
-        coVerify { mockSecretSharedListRepository.addMediaToSharedList("SHARE1", itemToAdd) }
+        coVerify { mockSecretSharedListRepository.addMediaToSharedList("SL-SHARE1", itemToAdd) }
         assertEquals("\"Dune\" added to list!", viewModel.uiState.value.feedbackMessage)
 
         viewModel.removeMediaFromSharedList(99)
         advanceUntilIdle()
 
-        coVerify { mockSecretSharedListRepository.removeMediaFromSharedList("SHARE1", 99) }
+        coVerify { mockSecretSharedListRepository.removeMediaFromSharedList("SL-SHARE1", 99) }
     }
 
     @Test
     fun `revokeSecretShare revokes repository and notifies caller`() = runTest {
         val sampleList = SecretSharedList(
-            shareCode = "REV1",
+            shareCode = "SL-REV1",
             title = "Revoke Test",
             ownerUserId = "device-user-123",
             ownerName = "Me"
         )
-        every { mockSecretSharedListRepository.observeSecretSharedList("REV1") } returns flowOf(
+        every { mockSecretSharedListRepository.observeSecretSharedList("SL-REV1") } returns flowOf(
             sampleList
         )
 
-        viewModel.init("REV1")
+        viewModel.init("SL-REV1")
         advanceUntilIdle()
 
         var onRevokedCalled = false
         viewModel.revokeSecretShare { onRevokedCalled = true }
         advanceUntilIdle()
 
-        coVerify { mockSecretSharedListRepository.revokeSecretShare("REV1") }
+        coVerify { mockSecretSharedListRepository.revokeSecretShare("SL-REV1") }
         assertTrue(onRevokedCalled)
         assertTrue(viewModel.uiState.value.isRevoked)
+    }
+
+    @Test
+    fun `init normalizes un-prefixed 4-digit shareCode to SL-XXXX`() = runTest {
+        val sampleList = SecretSharedList(
+            shareCode = "SL-4821",
+            title = "Test Normalization",
+            ownerUserId = "u1",
+            ownerName = "O"
+        )
+        every { mockSecretSharedListRepository.observeSecretSharedList("SL-4821") } returns flowOf(
+            sampleList
+        )
+
+        viewModel.init("4821")
+        advanceUntilIdle()
+
+        coVerify { mockSecretSharedListRepository.observeSecretSharedList("SL-4821") }
+        assertEquals(sampleList, viewModel.uiState.value.secretSharedList)
     }
 }

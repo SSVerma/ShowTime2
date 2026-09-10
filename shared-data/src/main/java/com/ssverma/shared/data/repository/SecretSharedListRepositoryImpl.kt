@@ -12,6 +12,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.SecretSharedList
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.shared.domain.repository.SecretSharedListRepository
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -57,7 +58,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
         ownerName: String
     ): Result<SecretSharedList, Failure<*>> {
         val shareCode = generateShareCode()
-        val docId = shareCode.uppercase()
+        val docId = normalizeShareCode(shareCode)
         val dtos = items.map { it.toDto() }
         val itemsJson = gson.toJson(dtos)
         val now = System.currentTimeMillis()
@@ -98,7 +99,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getSecretSharedList(shareCode: String): Result<SecretSharedList, Failure<*>> {
-        val docId = shareCode.trim().uppercase()
+        val docId = normalizeShareCode(shareCode)
         return try {
             val snapshot = firestore.collection(colSecretSharedLists).document(docId).get().await()
             if (!snapshot.exists()) {
@@ -118,7 +119,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
 
     override fun observeSecretSharedList(shareCode: String): Flow<SecretSharedList?> =
         callbackFlow {
-            val docId = shareCode.trim().uppercase()
+            val docId = normalizeShareCode(shareCode)
             val docRef = firestore.collection(colSecretSharedLists).document(docId)
 
             val listenerRegistration = docRef.addSnapshotListener { snapshot, error ->
@@ -142,7 +143,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
         shareCode: String,
         item: SecretSharedListItem
     ): Result<Unit, Failure<*>> {
-        val docId = shareCode.trim().uppercase()
+        val docId = normalizeShareCode(shareCode)
         val docRef = firestore.collection(colSecretSharedLists).document(docId)
 
         return try {
@@ -188,7 +189,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
         shareCode: String,
         mediaId: Int
     ): Result<Unit, Failure<*>> {
-        val docId = shareCode.trim().uppercase()
+        val docId = normalizeShareCode(shareCode)
         val docRef = firestore.collection(colSecretSharedLists).document(docId)
 
         return try {
@@ -221,7 +222,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
     }
 
     override suspend fun revokeSecretShare(shareCode: String): Result<Unit, Failure<*>> {
-        val docId = shareCode.trim().uppercase()
+        val docId = normalizeShareCode(shareCode)
         val docRef = firestore.collection(colSecretSharedLists).document(docId)
 
         return try {
@@ -279,6 +280,11 @@ class SecretSharedListRepositoryImpl @Inject constructor(
     private fun generateShareCode(): String {
         val num = Random.nextInt(1000, 10000)
         return "SL-$num"
+    }
+
+    companion object {
+        fun normalizeShareCode(rawCode: String): String =
+            ShareMediaUtils.normalizeSecretShareCode(rawCode)
     }
 }
 

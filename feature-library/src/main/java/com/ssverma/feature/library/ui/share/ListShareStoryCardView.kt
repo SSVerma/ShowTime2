@@ -111,7 +111,7 @@ fun ListShareStoryCardView(
                         Surface(
                             shape = RoundedCornerShape(100.dp),
                             color = themeConfig.accent.copy(alpha = 0.15f),
-                            border = androidx.compose.foundation.BorderStroke(
+                            border = BorderStroke(
                                 1.dp,
                                 themeConfig.accent.copy(alpha = 0.4f)
                             )
@@ -234,7 +234,7 @@ fun ListShareStoryCardView(
                     Surface(
                         shape = RoundedCornerShape(100.dp),
                         color = ListShareColor.WatermarkPillBackground,
-                        border = androidx.compose.foundation.BorderStroke(
+                        border = BorderStroke(
                             1.dp,
                             themeConfig.border.copy(alpha = 0.3f)
                         )

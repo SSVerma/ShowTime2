@@ -262,6 +262,11 @@
     <string name="secret_share_not_found">Secret list not found or link has expired.</string>
     <string name="secret_share_chooser_title">Share Secret List</string>
     <string name="secret_share_added_by">Added by %1$s</string>
+    <string name="secret_share_open_action">Open Secret List</string>
+    <string name="secret_share_open_dialog_title">Open Secret List</string>
+    <string name="secret_share_open_dialog_desc">Enter the secret list code (e.g. SL-4821 or 4821) or paste the share link.</string>
+    <string name="secret_share_open_dialog_placeholder">e.g. SL-4821 or paste link</string>
+    <string name="secret_share_open_dialog_confirm">Open</string>
 
     <!-- Feature #6: Cinephile Challenges & Backlog -->
     <string name="challenges_screen_title">Challenges &amp; Backlog</string>

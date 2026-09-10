@@ -122,4 +122,27 @@ object ShareMediaUtils {
 
         return builder.toString()
     }
+
+    fun normalizeSecretShareCode(rawCode: String): String {
+        var cleaned = rawCode.trim()
+        if (cleaned.contains("/l/")) {
+            cleaned = cleaned.substringAfter("/l/")
+        } else if (cleaned.contains("/list/")) {
+            cleaned = cleaned.substringAfter("/list/")
+        } else if (cleaned.contains("/secret_list/")) {
+            cleaned = cleaned.substringAfter("/secret_list/")
+        } else if (cleaned.contains("/shared_list/")) {
+            cleaned = cleaned.substringAfter("/shared_list/")
+        }
+        cleaned = cleaned.substringBefore("?").substringBefore("/").substringBefore("#").trim()
+            .uppercase()
+            .replace(" ", "").replace("-", "")
+        if (cleaned.isBlank()) return ""
+        return if (cleaned.startsWith("SL")) {
+            val suffix = cleaned.removePrefix("SL")
+            if (suffix.isBlank()) "SL" else "SL-$suffix"
+        } else {
+            "SL-$cleaned"
+        }
+    }
 }

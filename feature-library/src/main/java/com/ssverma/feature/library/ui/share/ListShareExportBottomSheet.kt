@@ -545,6 +545,7 @@ fun ListShareExportBottomSheet(
                             OutlinedButton(
                                 onClick = {
                                     viewModel.closeGate()
+                                    onDismissRequest()
                                     onOpenProPaywall()
                                 },
                                 modifier = Modifier.fillMaxWidth()

@@ -15,6 +15,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -126,5 +127,38 @@ class SecretSharedListRepositoryTest {
         assertThat(result).isInstanceOf(Result.Error::class.java)
         val failure = (result as Result.Error).error
         assertThat(failure).isEqualTo(Failure.CoreFailure.NetworkFailure)
+    }
+
+    @Test
+    fun `normalizeShareCode normalizes various formats correctly`() {
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("4821")).isEqualTo("SL-4821")
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("sl-4821")).isEqualTo("SL-4821")
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("sl 4821")).isEqualTo("SL-4821")
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("sl4821")).isEqualTo("SL-4821")
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("SL-4821")).isEqualTo("SL-4821")
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("https://showtime.ssverma.in/l/4821")).isEqualTo(
+            "SL-4821"
+        )
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("https://showtime.ssverma.in/l/SL-4821?ref=share")).isEqualTo(
+            "SL-4821"
+        )
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("https://showtime.ssverma.in/list/SL-4821")).isEqualTo(
+            "SL-4821"
+        )
+        assertThat(SecretSharedListRepositoryImpl.normalizeShareCode("   ")).isEqualTo("")
+    }
+
+    @Test
+    fun `getSecretSharedList normalizes raw code before querying document`() = runTest {
+        every { mockCollection.document("SL-4821") } returns mockDocument
+        every { mockDocument.get() } returns Tasks.forResult(mockSnapshot)
+        every { mockSnapshot.exists() } returns true
+        every { mockSnapshot.id } returns "SL-4821"
+        every { mockSnapshot.getString("title") } returns "Normalized Test"
+
+        val result = repository.getSecretSharedList("4821")
+
+        assertThat(result).isInstanceOf(Result.Success::class.java)
+        verify { mockCollection.document("SL-4821") }
     }
 }

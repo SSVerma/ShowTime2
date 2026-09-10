@@ -12,6 +12,7 @@ import com.ssverma.shared.domain.model.library.SecretSharedList
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.repository.SecretSharedListRepository
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -58,8 +59,15 @@ class SecretSharedListViewModel @Inject constructor(
             .getString("persistent_user_uuid", "").orEmpty()
     }
 
+    private val userName: String by lazy {
+        context.getSharedPreferences("showtime_device_prefs", Context.MODE_PRIVATE)
+            .getString("user_display_name", null)
+            ?.takeIf { it.isNotBlank() } ?: "Friend"
+    }
+
     fun init(shareCode: String) {
-        val normalizedCode = shareCode.trim().uppercase()
+        val normalizedCode = ShareMediaUtils.normalizeSecretShareCode(shareCode)
+        if (normalizedCode.isBlank()) return
         if (currentShareCode == normalizedCode && observeJob != null) return
         currentShareCode = normalizedCode
 
@@ -173,7 +181,7 @@ class SecretSharedListViewModel @Inject constructor(
                                 voteAvg = remote.voteAvg,
                                 releaseYear = remote.releaseDate?.take(4)
                                     ?: remote.firstAirDate?.take(4),
-                                addedByName = "Collaborator",
+                                addedByName = userName,
                                 addedAtEpochMs = System.currentTimeMillis()
                             )
                         }
@@ -195,7 +203,6 @@ class SecretSharedListViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isActionInProgress = false,
-                    showAddDialog = false,
                     feedbackMessage = "\"${item.title}\" added to list!"
                 )
             }
