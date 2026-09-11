@@ -88,6 +88,7 @@ fun CommunityListDetailSheet(
     onToggleUpvote: () -> Unit,
     onCloneList: () -> Unit,
     onUnpublish: (() -> Unit)? = null,
+    onDeleteFromCommunity: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -310,13 +311,43 @@ fun CommunityListDetailSheet(
                                     onClick = onUnpublish,
                                     shape = RoundedCornerShape(12.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    border = BorderStroke(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 10.dp),
+                                    modifier = Modifier
+                                        .weight(1.5f)
+                                        .height(40.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.DeleteOutline,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = stringResource(id = R.string.make_private_short),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            if (communityList.isMine && onDeleteFromCommunity != null) {
+                                OutlinedButton(
+                                    onClick = onDeleteFromCommunity,
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = MaterialTheme.colorScheme.error
                                     ),
                                     border = BorderStroke(
                                         width = 1.dp,
                                         color = MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
                                     ),
-                                    contentPadding = PaddingValues(horizontal = 12.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp),
                                     modifier = Modifier
                                         .weight(1.5f)
                                         .height(40.dp)
@@ -327,15 +358,19 @@ fun CommunityListDetailSheet(
                                         tint = MaterialTheme.colorScheme.error,
                                         modifier = Modifier.size(16.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = stringResource(id = R.string.unpublish_action),
+                                        text = stringResource(id = R.string.delete_from_community),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.error
+                                        color = MaterialTheme.colorScheme.error,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
-                            } else if (communityList.isClonedByMe) {
+                            }
+
+                            if (!communityList.isMine && communityList.isClonedByMe) {
                                 // Non-clickable subtle saved info pill with exact matching height
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),

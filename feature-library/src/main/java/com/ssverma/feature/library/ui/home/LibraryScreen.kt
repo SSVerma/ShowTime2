@@ -238,7 +238,7 @@ fun LibraryScreen(
     var listPendingPublish by remember { mutableStateOf<CustomList?>(null) }
     var listPendingUnpublish by remember { mutableStateOf<CustomList?>(null) }
     var listPendingClone by remember { mutableStateOf<CommunityCuratedList?>(null) }
-
+    var communityListPendingDeletion by remember { mutableStateOf<CommunityCuratedList?>(null) }
 
     var showReceiptSheet by remember { mutableStateOf(false) }
     var receiptStyle by remember { mutableStateOf(ReceiptStyle.THERMAL) }
@@ -791,7 +791,33 @@ fun LibraryScreen(
                                 listPendingClone = list
                             }
                         },
-                        onCreateListClick = { viewModel.onAttemptCreateList() }
+                        onCreateListClick = { viewModel.onAttemptCreateList() },
+                        onMakePrivate = { list ->
+                            val target = customLists.firstOrNull { it.listId == list.listId }
+                                ?: CustomList(
+                                    listId = list.listId,
+                                    title = list.title,
+                                    description = list.description,
+                                    isPublic = true,
+                                    items = list.items.map { item ->
+                                        CustomListItem(
+                                            listId = list.listId,
+                                            mediaId = item.mediaId,
+                                            mediaType = item.mediaType,
+                                            title = item.title,
+                                            posterImageUrl = item.posterImageUrl,
+                                            backdropImageUrl = item.backdropImageUrl,
+                                            voteAvg = item.voteAvg
+                                        )
+                                    },
+                                    createdAt = list.createdAtEpochMs,
+                                    updatedAt = list.updatedAtEpochMs
+                                )
+                            listPendingUnpublish = target
+                        },
+                        onDeleteFromCommunity = { list ->
+                            communityListPendingDeletion = list
+                        }
                     )
                 }
             }
@@ -1180,6 +1206,72 @@ fun LibraryScreen(
         )
     }
 
+    communityListPendingDeletion?.let { listToDelete ->
+        AlertDialog(
+            onDismissRequest = { communityListPendingDeletion = null },
+            shape = RoundedCornerShape(24.dp),
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(SharedR.string.delete_community_list_confirm_title),
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        SharedR.string.delete_community_list_confirm_msg,
+                        listToDelete.title
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val targetId = listToDelete.listId
+                        communityListPendingDeletion = null
+                        viewModel.deleteCommunityList(
+                            listId = targetId,
+                            onDeleted = {
+                                viewModel.selectCommunityList(null)
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.community_list_deleted_success)
+                                    )
+                                }
+                            },
+                            onError = { errorMsg ->
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = "Failed: $errorMsg"
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(text = stringResource(SharedR.string.delete_from_community))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { communityListPendingDeletion = null }) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     selectedCommunityList?.let { communityList ->
         val communitySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         CommunityListDetailSheet(
@@ -1234,6 +1326,11 @@ fun LibraryScreen(
                                 updatedAt = communityList.updatedAtEpochMs
                             )
                     listPendingUnpublish = target
+                }
+            } else null,
+            onDeleteFromCommunity = if (communityList.isMine) {
+                {
+                    communityListPendingDeletion = communityList
                 }
             } else null
         )
@@ -2450,6 +2547,8 @@ private fun CommunityTabContent(
     onToggleCommunityListUpvote: (String) -> Unit,
     onCloneCommunityList: (CommunityCuratedList) -> Unit,
     onCreateListClick: () -> Unit,
+    onMakePrivate: (CommunityCuratedList) -> Unit,
+    onDeleteFromCommunity: (CommunityCuratedList) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val contentPadding = rememberFloatingBottomBarPadding(
@@ -2518,6 +2617,12 @@ private fun CommunityTabContent(
                         onClick = { onCommunityListClick(item) },
                         onToggleUpvote = { onToggleCommunityListUpvote(item.listId) },
                         onCloneList = { onCloneCommunityList(item) },
+                        onMakePrivate = if (item.isMine) {
+                            { onMakePrivate(item) }
+                        } else null,
+                        onDeleteFromCommunity = if (item.isMine) {
+                            { onDeleteFromCommunity(item) }
+                        } else null,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

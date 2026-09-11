@@ -11,7 +11,9 @@ import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBannerState
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
+import com.ssverma.shared.domain.usecase.community.DeleteCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListDetailsUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.PublishCustomListUseCase
@@ -75,6 +77,10 @@ class LibraryHomeViewModelTest {
                 libraryRepository = fakeLibraryRepository,
                 communityRepository = fakeCommunityRepository
             ),
+            deleteCommunityListUseCase = DeleteCommunityListUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            communityRepository = fakeCommunityRepository,
             rewardManager = mockRewardManager,
             rewardedAdManager = mockRewardedAdManager,
             billingRepository = fakeBillingRepository,
@@ -412,6 +418,106 @@ class LibraryHomeViewModelTest {
 
         viewModel.backupBannerState.test {
             assertThat(awaitItem()).isEqualTo(LibraryBackupBannerState.HIDDEN)
+        }
+    }
+
+    @Test
+    fun cloneCommunityList_updatesDynamicCloneStateToTrue() = runTest {
+        val communityList = CommunityCuratedList(
+            listId = "comm-1",
+            title = "Top Sci-Fi",
+            description = "Great films",
+            authorId = "user-2",
+            authorName = "Jane",
+            categoryTag = "Sci-Fi",
+            itemCount = 0,
+            items = emptyList(),
+            previewPosters = emptyList(),
+            upvotesCount = 5,
+            clonesCount = 1,
+            isUpvotedByMe = false,
+            isClonedByMe = false,
+            isMine = false,
+            createdAtEpochMs = 1000L,
+            updatedAtEpochMs = 1000L
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(communityList))
+
+        viewModel.communityLists.test {
+            val initial = awaitItem()
+            assertThat(initial.first().isClonedByMe).isFalse()
+
+            viewModel.cloneCommunityList(communityList)
+
+            val updated = awaitItem()
+            assertThat(updated.first().isClonedByMe).isTrue()
+        }
+    }
+
+    @Test
+    fun deleteCustomList_resetsDynamicCloneStateToFalse() = runTest {
+        val communityList = CommunityCuratedList(
+            listId = "comm-1",
+            title = "Top Sci-Fi",
+            description = "Great films",
+            authorId = "user-2",
+            authorName = "Jane",
+            categoryTag = "Sci-Fi",
+            itemCount = 0,
+            items = emptyList(),
+            previewPosters = emptyList(),
+            upvotesCount = 5,
+            clonesCount = 1,
+            isUpvotedByMe = false,
+            isClonedByMe = false,
+            isMine = false,
+            createdAtEpochMs = 1000L,
+            updatedAtEpochMs = 1000L
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(communityList))
+
+        viewModel.communityLists.test {
+            assertThat(awaitItem().first().isClonedByMe).isFalse()
+
+            viewModel.cloneCommunityList(communityList)
+            assertThat(awaitItem().first().isClonedByMe).isTrue()
+
+            val clonedList =
+                viewModel.customLists.value.first { it.sourceCommunityListId == "comm-1" }
+            viewModel.deleteCustomList(clonedList.listId)
+
+            assertThat(awaitItem().first().isClonedByMe).isFalse()
+        }
+    }
+
+    @Test
+    fun deleteCommunityList_deletesListFromCommunity() = runTest {
+        val communityList = CommunityCuratedList(
+            listId = "comm-1",
+            title = "My Published List",
+            description = "My favorites",
+            authorId = "user-1",
+            authorName = "Me",
+            categoryTag = "Favorites",
+            itemCount = 0,
+            items = emptyList(),
+            previewPosters = emptyList(),
+            upvotesCount = 0,
+            clonesCount = 0,
+            isUpvotedByMe = false,
+            isClonedByMe = false,
+            isMine = true,
+            createdAtEpochMs = 1000L,
+            updatedAtEpochMs = 1000L
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(communityList))
+
+        viewModel.communityLists.test {
+            assertThat(awaitItem()).hasSize(1)
+
+            viewModel.deleteCommunityList("comm-1")
+
+            assertThat(awaitItem()).isEmpty()
         }
     }
 }

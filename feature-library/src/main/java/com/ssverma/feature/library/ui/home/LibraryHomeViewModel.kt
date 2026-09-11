@@ -21,8 +21,10 @@ import com.ssverma.shared.domain.model.community.UnpublishCustomListParams
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
+import com.ssverma.shared.domain.repository.CommunityRepository
 import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
+import com.ssverma.shared.domain.usecase.community.DeleteCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListDetailsUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.PublishCustomListUseCase
@@ -53,6 +55,8 @@ class LibraryHomeViewModel @Inject constructor(
     private val unpublishCustomListUseCase: UnpublishCustomListUseCase,
     private val toggleCommunityListUpvoteUseCase: ToggleCommunityListUpvoteUseCase,
     private val cloneCommunityListUseCase: CloneCommunityListUseCase,
+    private val deleteCommunityListUseCase: DeleteCommunityListUseCase,
+    private val communityRepository: CommunityRepository,
     private val rewardManager: RewardManager,
     private val rewardedAdManager: RewardedAdManager,
     private val billingRepository: BillingRepository,
@@ -306,6 +310,10 @@ class LibraryHomeViewModel @Inject constructor(
             if (isPublic) {
                 unpublishCustomListUseCase(UnpublishCustomListParams(listId = listId))
             }
+            val targetList = customLists.value.find { it.listId == listId }
+            targetList?.sourceCommunityListId?.let { sourceId ->
+                communityRepository.removeListClone(sourceId)
+            }
             libraryRepository.deleteCustomList(listId)
         }
     }
@@ -342,32 +350,46 @@ class LibraryHomeViewModel @Inject constructor(
     private val _selectedCommunityCategory = MutableStateFlow(CommunityListCategories.ALL)
     val selectedCommunityCategory: StateFlow<String> = _selectedCommunityCategory.asStateFlow()
 
-    val communityLists: StateFlow<List<CommunityCuratedList>> = _selectedCommunityCategory
-        .flatMapLatest { category ->
+    val communityLists: StateFlow<List<CommunityCuratedList>> = combine(
+        _selectedCommunityCategory.flatMapLatest { category ->
             getCommunityListsUseCase(if (category == CommunityListCategories.ALL) null else category)
+        },
+        customLists
+    ) { commLists, localLists ->
+        val clonedSourceIds = localLists.mapNotNull { it.sourceCommunityListId }.toSet()
+        commLists.map { item ->
+            item.copy(isClonedByMe = clonedSourceIds.contains(item.listId))
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList()
+    )
 
     private val _selectedCommunityListId = MutableStateFlow<String?>(null)
     val selectedCommunityListId: StateFlow<String?> = _selectedCommunityListId.asStateFlow()
 
-    val selectedCommunityList: StateFlow<CommunityCuratedList?> = _selectedCommunityListId
-        .flatMapLatest { listId ->
+    val selectedCommunityList: StateFlow<CommunityCuratedList?> = combine(
+        _selectedCommunityListId.flatMapLatest { listId ->
             if (listId == null) {
                 flowOf(null)
             } else {
                 getCommunityListDetailsUseCase(listId)
             }
+        },
+        customLists
+    ) { commList, localLists ->
+        if (commList == null) null
+        else {
+            val isActuallyClonedLocally =
+                localLists.any { it.sourceCommunityListId == commList.listId }
+            commList.copy(isClonedByMe = isActuallyClonedLocally)
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = null
+    )
 
     fun setCommunityCategory(category: String) {
         _selectedCommunityCategory.value = category
@@ -414,6 +436,9 @@ class LibraryHomeViewModel @Inject constructor(
                 UnpublishCustomListParams(listId = listId)
             )
             if (result is Result.Success) {
+                if (_selectedCommunityListId.value == listId) {
+                    _selectedCommunityListId.value = null
+                }
                 libraryRepository.setCustomListPublicStatus(
                     listId = listId,
                     isPublic = false,
@@ -422,6 +447,28 @@ class LibraryHomeViewModel @Inject constructor(
                 onUnpublished?.invoke()
             } else if (result is Result.Error) {
                 onError?.invoke("Unable to make collection private. Please try again.")
+            }
+        }
+    }
+
+    fun deleteCommunityList(
+        listId: String,
+        onDeleted: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val result = deleteCommunityListUseCase(listId = listId)
+            if (result is Result.Success) {
+                if (_selectedCommunityListId.value == listId) {
+                    _selectedCommunityListId.value = null
+                }
+                libraryRepository.setCustomListPublicStatus(
+                    listId = listId,
+                    isPublic = false
+                )
+                onDeleted?.invoke()
+            } else if (result is Result.Error) {
+                onError?.invoke("Unable to delete community collection. Please try again.")
             }
         }
     }

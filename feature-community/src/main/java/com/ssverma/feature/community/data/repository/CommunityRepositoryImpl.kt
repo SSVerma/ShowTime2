@@ -2,6 +2,7 @@ package com.ssverma.feature.community.data.repository
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -98,11 +99,17 @@ class CommunityRepositoryImpl @Inject constructor(
     private val keyPollCatalogVersion = intPreferencesKey("poll_catalog_version")
     private val keyPollCatalogLastFetched = longPreferencesKey("poll_catalog_last_fetched_epoch")
     private val keyPollEnabled = booleanPreferencesKey("poll_enabled")
-    private val keyUpvotedLists = stringPreferencesKey("community_upvoted_list_ids")
-    private val keyClonedLists = stringPreferencesKey("community_cloned_list_ids")
+    private fun scopedUpvotedKey(userId: String): Preferences.Key<String> {
+        return stringPreferencesKey("community_upvoted_list_ids_$userId")
+    }
+
+    private fun scopedClonedKey(userId: String): Preferences.Key<String> {
+        return stringPreferencesKey("community_cloned_list_ids_$userId")
+    }
 
     private suspend fun getCachedUpvotedListIds(): MutableSet<String> {
-        val json = storage.read(key = keyUpvotedLists) ?: return mutableSetOf()
+        val userId = getEffectiveUserId()
+        val json: String = storage.read(key = scopedUpvotedKey(userId)) ?: return mutableSetOf()
         return try {
             gson.fromJson<Set<String>>(json, object : TypeToken<Set<String>>() {}.type)
                 .toMutableSet()
@@ -112,7 +119,8 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getCachedClonedListIds(): MutableSet<String> {
-        val json = storage.read(key = keyClonedLists) ?: return mutableSetOf()
+        val userId = getEffectiveUserId()
+        val json: String = storage.read(key = scopedClonedKey(userId)) ?: return mutableSetOf()
         return try {
             gson.fromJson<Set<String>>(json, object : TypeToken<Set<String>>() {}.type)
                 .toMutableSet()
@@ -1488,7 +1496,10 @@ class CommunityRepositoryImpl @Inject constructor(
                 } else {
                     upvotedSet.remove(params.listId)
                 }
-                storage.write(key = keyUpvotedLists, value = gson.toJson(upvotedSet))
+                storage.write(
+                    key = scopedUpvotedKey(currentUserId),
+                    value = gson.toJson(upvotedSet)
+                )
 
                 // 0ms Optimistic UI update
                 val currentOverrides = optimisticListOverrides.value.toMutableMap()
@@ -1548,7 +1559,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val currentUserId = getEffectiveUserId()
             val clonedSet = getCachedClonedListIds()
             clonedSet.add(listId)
-            storage.write(key = keyClonedLists, value = gson.toJson(clonedSet))
+            storage.write(key = scopedClonedKey(currentUserId), value = gson.toJson(clonedSet))
 
             // 0ms Optimistic UI update
             val currentOverrides = optimisticListOverrides.value.toMutableMap()
@@ -1588,6 +1599,52 @@ class CommunityRepositoryImpl @Inject constructor(
                     // Non-blocking firestore sync
                 }
             }
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun removeListClone(listId: String): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val currentUserId = getEffectiveUserId()
+            val clonedSet = getCachedClonedListIds()
+            clonedSet.remove(listId)
+            storage.write(key = scopedClonedKey(currentUserId), value = gson.toJson(clonedSet))
+
+            // Reset optimistic override for clone state
+            val currentOverrides = optimisticListOverrides.value.toMutableMap()
+            val existingOverride = currentOverrides[listId]
+            if (existingOverride != null) {
+                currentOverrides[listId] = existingOverride.copy(isClonedByMe = false)
+            } else {
+                currentOverrides[listId] = ListOverride(isClonedByMe = false)
+            }
+            optimisticListOverrides.value = currentOverrides
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun deleteCommunityList(listId: String): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+        return try {
+            // Optimistic removal from UI
+            val currentOverrides = optimisticListOverrides.value.toMutableMap()
+            currentOverrides[listId] = ListOverride(isPublished = false)
+            optimisticListOverrides.value = currentOverrides
+            latestCommunityListsCache.remove(listId)
+
+            // Permanent deletion from Firestore
+            firestore.collection(colCommunityCuratedLists)
+                .document(listId)
+                .delete()
+                .await()
 
             Result.Success(Unit)
         } catch (e: Exception) {

@@ -448,6 +448,7 @@ class LibraryRepositoryImpl @Inject constructor(
                 isPublic = false,
                 isCloned = true,
                 sourceAuthorName = communityList.authorName,
+                sourceCommunityListId = communityList.listId,
                 createdAt = now,
                 updatedAt = now
             )
@@ -633,6 +634,7 @@ class LibraryRepositoryImpl @Inject constructor(
             isCloned = list.isCloned,
             sourceAuthorName = list.sourceAuthorName,
             secretShareCode = list.secretShareCode,
+            sourceCommunityListId = list.sourceCommunityListId,
             items = items.map { it.toCustomListItem() },
             createdAt = list.createdAt,
             updatedAt = list.updatedAt

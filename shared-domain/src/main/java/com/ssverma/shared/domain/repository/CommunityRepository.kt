@@ -60,4 +60,8 @@ interface CommunityRepository {
     suspend fun toggleCommunityListUpvote(params: ToggleListUpvoteParams): Result<Unit, Failure.CoreFailure>
 
     suspend fun recordListClone(listId: String): Result<Unit, Failure.CoreFailure>
+
+    suspend fun removeListClone(listId: String): Result<Unit, Failure.CoreFailure>
+
+    suspend fun deleteCommunityList(listId: String): Result<Unit, Failure.CoreFailure>
 }

@@ -9,6 +9,7 @@ data class CustomList(
     val isCloned: Boolean = false,
     val sourceAuthorName: String? = null,
     val secretShareCode: String? = null,
+    val sourceCommunityListId: String? = null,
     val items: List<CustomListItem> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

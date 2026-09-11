@@ -391,6 +391,7 @@ class FakeLibraryRepository : LibraryRepository {
             isPublic = false,
             isCloned = true,
             sourceAuthorName = communityList.authorName,
+            sourceCommunityListId = communityList.listId,
             items = clonedItems
         )
         customLists.value = customLists.value + newList

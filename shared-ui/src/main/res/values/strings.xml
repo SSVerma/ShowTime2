@@ -240,6 +240,13 @@
     <string name="publish_first_collection">Publish a Collection</string>
     <string name="tab_my_lists">My Lists</string>
     <string name="tab_community">Community</string>
+    <string name="your_list_badge">Your List</string>
+    <string name="delete_from_community">Delete from Community</string>
+    <string name="delete_community_list_confirm_title">Delete from Community?</string>
+    <string name="delete_community_list_confirm_msg">Are you sure you want to permanently delete \"%1$s\" from Community? This cannot be undone.</string>
+    <string name="community_list_deleted_success">Collection removed from Community.</string>
+    <string name="make_private_short">Make Private</string>
+    <string name="cd_more_options">More options</string>
 
     <!-- Cinema Diary Log and Rate Dialog -->
     <string name="diary_dialog_edit_title">Edit Diary Log</string>

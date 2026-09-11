@@ -200,4 +200,22 @@ class FakeCommunityRepository : CommunityRepository {
         }
         return Result.Success(Unit)
     }
+
+    override suspend fun removeListClone(listId: String): Result<Unit, Failure.CoreFailure> {
+        communityLists.value = communityLists.value.map {
+            if (it.listId == listId) {
+                it.copy(isClonedByMe = false)
+            } else it
+        }
+        return Result.Success(Unit)
+    }
+
+    override suspend fun deleteCommunityList(listId: String): Result<Unit, Failure.CoreFailure> {
+        communityLists.value = communityLists.value.filterNot { it.listId == listId }
+        return Result.Success(Unit)
+    }
+
+    fun setCommunityLists(lists: List<CommunityCuratedList>) {
+        communityLists.value = lists
+    }
 }

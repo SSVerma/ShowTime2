@@ -26,12 +26,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.FolderSpecial
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.PublicOff
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
@@ -63,7 +69,9 @@ fun CommunityListCard(
     onClick: () -> Unit,
     onToggleUpvote: () -> Unit,
     onCloneList: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onMakePrivate: (() -> Unit)? = null,
+    onDeleteFromCommunity: (() -> Unit)? = null
 ) {
     val haptic = LocalHapticFeedback.current
     var isHeartPopped by remember { mutableStateOf(false) }
@@ -130,6 +138,22 @@ fun CommunityListCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // "Your List" badge for owner
+                    if (communityList.isMine) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.your_list_badge),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+
                     // Item count pill
                     Surface(
                         shape = RoundedCornerShape(6.dp),
@@ -281,7 +305,7 @@ fun CommunityListCard(
                     )
                 }
 
-                // Interactive Upvote & Clone Buttons
+                // Interactive Upvote & Clone/Owner Buttons
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -334,8 +358,14 @@ fun CommunityListCard(
                         }
                     }
 
-                    // Clone to Library Button
-                    if (communityList.isClonedByMe) {
+                    if (communityList.isMine) {
+                        // Owner overflow menu
+                        OwnerOverflowMenu(
+                            onMakePrivate = onMakePrivate,
+                            onDeleteFromCommunity = onDeleteFromCommunity
+                        )
+                    } else if (communityList.isClonedByMe) {
+                        // Cloned badge (static)
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
@@ -359,7 +389,8 @@ fun CommunityListCard(
                                 )
                             }
                         }
-                    } else if (!communityList.isMine) {
+                    } else {
+                        // Clone button
                         Surface(
                             onClick = onCloneList,
                             shape = RoundedCornerShape(8.dp),
@@ -386,6 +417,78 @@ fun CommunityListCard(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OwnerOverflowMenu(
+    onMakePrivate: (() -> Unit)?,
+    onDeleteFromCommunity: (() -> Unit)?
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        IconButton(
+            onClick = { expanded = true },
+            modifier = Modifier.size(28.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.MoreVert,
+                contentDescription = stringResource(id = R.string.cd_more_options),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            if (onMakePrivate != null) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.make_private_short),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.PublicOff,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onMakePrivate()
+                    }
+                )
+            }
+            if (onDeleteFromCommunity != null) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.delete_from_community),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.DeleteOutline,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onDeleteFromCommunity()
+                    }
+                )
             }
         }
     }
