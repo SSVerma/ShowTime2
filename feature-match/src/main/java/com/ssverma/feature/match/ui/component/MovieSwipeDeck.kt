@@ -25,7 +25,6 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -92,13 +91,13 @@ fun MovieSwipeDeck(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "End of Deck!",
+                        text = stringResource(R.string.match_room_end_of_deck),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "You've reviewed all movies in this round.",
+                        text = stringResource(R.string.match_room_reviewed_all),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -196,12 +195,19 @@ fun MovieSwipeDeck(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 14.dp),
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Rewind / Undo
                 Surface(
+                    onClick = {
+                        if (canRewind) {
+                            onRewind()
+                        } else {
+                            onRewindProPrompt()
+                        }
+                    },
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (canRewind) 0.85f else 0.4f),
                     border = BorderStroke(
@@ -210,14 +216,9 @@ fun MovieSwipeDeck(
                     ),
                     modifier = Modifier.size(48.dp)
                 ) {
-                    IconButton(
-                        onClick = {
-                            if (canRewind) {
-                                onRewind()
-                            } else {
-                                onRewindProPrompt()
-                            }
-                        }
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.Undo,
@@ -232,6 +233,12 @@ fun MovieSwipeDeck(
 
                 // Pass Button (Dislike)
                 Surface(
+                    onClick = {
+                        coroutineScope.launch {
+                            offsetX.animateTo(-1600f, tween(220))
+                            onSwipe(topCard, SwipeDirection.PASS)
+                        }
+                    },
                     shape = CircleShape,
                     color = MovieMatchColor.PassRed.copy(
                         alpha = (0.12f + 0.25f * nopeAlpha).coerceIn(
@@ -248,7 +255,6 @@ fun MovieSwipeDeck(
                             )
                         )
                     ),
-                    shadowElevation = 2.dp + (6.dp * nopeAlpha),
                     modifier = Modifier
                         .size(68.dp)
                         .graphicsLayer {
@@ -256,13 +262,8 @@ fun MovieSwipeDeck(
                             scaleY = nopeScale
                         }
                 ) {
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                offsetX.animateTo(-1600f, tween(220))
-                                onSwipe(topCard, SwipeDirection.PASS)
-                            }
-                        },
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Icon(
@@ -276,6 +277,7 @@ fun MovieSwipeDeck(
 
                 // Info / Details Button
                 Surface(
+                    onClick = { onOpenDetails(topCard) },
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
                     border = BorderStroke(
@@ -284,7 +286,10 @@ fun MovieSwipeDeck(
                     ),
                     modifier = Modifier.size(48.dp)
                 ) {
-                    IconButton(onClick = { onOpenDetails(topCard) }) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.Info,
                             contentDescription = stringResource(R.string.match_room_cd_details),
@@ -296,6 +301,12 @@ fun MovieSwipeDeck(
 
                 // Like Button (Heart)
                 Surface(
+                    onClick = {
+                        coroutineScope.launch {
+                            offsetX.animateTo(1600f, tween(220))
+                            onSwipe(topCard, SwipeDirection.LIKE)
+                        }
+                    },
                     shape = CircleShape,
                     color = MovieMatchColor.LikeGreen.copy(
                         alpha = (0.12f + 0.25f * likeAlpha).coerceIn(
@@ -312,7 +323,6 @@ fun MovieSwipeDeck(
                             )
                         )
                     ),
-                    shadowElevation = 2.dp + (6.dp * likeAlpha),
                     modifier = Modifier
                         .size(68.dp)
                         .graphicsLayer {
@@ -320,13 +330,8 @@ fun MovieSwipeDeck(
                             scaleY = likeScale
                         }
                 ) {
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                offsetX.animateTo(1600f, tween(220))
-                                onSwipe(topCard, SwipeDirection.LIKE)
-                            }
-                        },
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Icon(

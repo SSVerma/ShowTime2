@@ -122,4 +122,7 @@
     <string name="match_room_genre_romance">Romance</string>
     <string name="match_room_genre_animation">Animation</string>
     <string name="match_room_genre_drama">Drama</string>
+    <string name="match_room_end_of_deck">End of Deck!</string>
+    <string name="match_room_reviewed_all">You\'ve reviewed all titles in this round.</string>
 </resources>
+
