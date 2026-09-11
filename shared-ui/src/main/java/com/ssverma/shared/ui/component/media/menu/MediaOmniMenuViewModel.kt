@@ -6,6 +6,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.repository.LibraryRepository
+import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MediaOmniMenuViewModel @Inject constructor(
     private val libraryRepository: LibraryRepository,
-    private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase
+    private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
+    private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase
 ) : ViewModel() {
 
     val customLists: Flow<List<CustomList>> = libraryRepository.getCustomListsFlow()
@@ -34,6 +36,9 @@ class MediaOmniMenuViewModel @Inject constructor(
 
     fun isMediaActionActive(mediaId: Int): Flow<Boolean> =
         libraryRepository.isMediaActionActiveFlow(mediaId)
+
+    fun getDiaryEntries(mediaId: Int, mediaType: MediaType): Flow<List<DiaryEntry>> =
+        getDiaryEntriesUseCase.forMedia(mediaId, mediaType)
 
     fun toggleWatchlist(
         mediaId: Int,

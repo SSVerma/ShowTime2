@@ -51,6 +51,7 @@ import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
@@ -76,6 +77,7 @@ fun MediaOmniActionMenu(
     isInWatchlist: Boolean? = null,
     isWatched: Boolean? = null,
     isFavorite: Boolean? = null,
+    existingDiaryEntry: DiaryEntry? = null,
     onToggleWatchlist: (() -> Unit)? = null,
     onToggleWatched: (() -> Unit)? = null,
     onToggleFavorite: (() -> Unit)? = null,
@@ -103,6 +105,9 @@ fun MediaOmniActionMenu(
         ?: viewModel.isFavorite(mediaId).collectAsState(initial = false).value
     val effectiveActionActive = isActionActive
         ?: viewModel.isMediaActionActive(mediaId).collectAsState(initial = false).value
+    val loadedDiaryEntries by viewModel.getDiaryEntries(mediaId, mediaType)
+        .collectAsState(initial = emptyList())
+    val effectiveExistingDiaryEntry = existingDiaryEntry ?: loadedDiaryEntries.firstOrNull()
 
     val canOpenDiscussions =
         config.showDiscussions && (onOpenDiscussions != null || navigator != null)
@@ -157,9 +162,14 @@ fun MediaOmniActionMenu(
         }
 
         if (canLogToDiary) {
+            val isLogged = effectiveExistingDiaryEntry != null
             add(
                 QuickActionItem(
-                    label = stringResource(R.string.media_menu_quick_diary),
+                    label = if (isLogged) {
+                        stringResource(R.string.media_menu_quick_diary_edit)
+                    } else {
+                        stringResource(R.string.media_menu_quick_diary)
+                    },
                     icon = Icons.Rounded.EditCalendar,
                     onClick = {
                         isMenuExpanded = false
@@ -428,11 +438,16 @@ fun MediaOmniActionMenu(
             backdropImageUrl = backdropImageUrl,
             releaseDate = releaseDate,
             tmdbRating = voteAvg,
+            existingEntry = effectiveExistingDiaryEntry,
             onDismiss = { showLogDialog = false },
             onSave = { entry ->
                 showLogDialog = false
                 viewModel.saveDiaryEntry(entry)
-                val feedbackMsg = context.getString(R.string.media_menu_diary_logged_success, title)
+                val feedbackMsg = if (effectiveExistingDiaryEntry != null) {
+                    context.getString(R.string.media_menu_diary_updated_success, title)
+                } else {
+                    context.getString(R.string.media_menu_diary_logged_success, title)
+                }
                 val viewInDiaryText = context.getString(R.string.media_menu_view_in_diary)
                 val destination = CinemaDiaryNavKey
                 onShowFeedback?.invoke(

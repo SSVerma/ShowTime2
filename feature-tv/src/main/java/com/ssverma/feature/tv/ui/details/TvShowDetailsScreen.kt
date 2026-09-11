@@ -258,6 +258,7 @@ private fun TvShowContent(
                             voteAvg = tvShow.voteAvg,
                             releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
                             config = MediaOmniMenuConfig(isUpcoming = tvShow.isUpcoming),
+                            existingDiaryEntry = diaryEntries.firstOrNull(),
                             onLogToDiary = { showLogDialog = true },
                             onOpenDiscussions = openDiscussionsList,
                             onShare = {
@@ -692,12 +693,17 @@ private fun TvShowContent(
                 existingEntry = diaryEntries.firstOrNull(),
                 onDismiss = { showLogDialog = false },
                 onSave = { entry ->
+                    val wasExisting = diaryEntries.isNotEmpty()
                     viewModel.saveDiaryEntry(entry)
                     showLogDialog = false
                     coroutineScope.launch {
                         val result = snackbarHostState.showImmediateSnackbar(
                             message = context.getString(
-                                SharedR.string.media_menu_diary_logged_success,
+                                if (wasExisting) {
+                                    SharedR.string.media_menu_diary_updated_success
+                                } else {
+                                    SharedR.string.media_menu_diary_logged_success
+                                },
                                 tvShow.title
                             ),
                             actionLabel = context.getString(SharedR.string.media_menu_view_in_diary),
