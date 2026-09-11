@@ -1,6 +1,5 @@
 package com.ssverma.common.ui.community
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
@@ -47,7 +46,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -72,6 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityCuratedListItem

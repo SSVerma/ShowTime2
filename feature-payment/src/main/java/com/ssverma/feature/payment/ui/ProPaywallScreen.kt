@@ -1,6 +1,5 @@
 package com.ssverma.feature.payment.ui
 
-import android.app.Activity
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -63,7 +62,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.billing.model.BillingProduct
-import com.ssverma.core.billing.model.ProductType
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity

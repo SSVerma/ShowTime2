@@ -18,6 +18,8 @@ import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventDispatcherOwner
 import androidx.navigationevent.OnBackInvokedDefaultInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import com.ssverma.common.ui.state.AppStateHolder
+import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.ads.manager.AppOpenAdManager
 import com.ssverma.core.ads.ui.LocalAdConfigProvider
@@ -26,8 +28,6 @@ import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.di.AppScoped
 import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.notifications.ShowTimeNotificationManager
-import com.ssverma.common.ui.state.AppStateHolder
-import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.showtime.navigation.ShowTimeDeepLinkHandler
 import com.ssverma.showtime.widget.WidgetUpdateHelper
 import dagger.hilt.android.AndroidEntryPoint

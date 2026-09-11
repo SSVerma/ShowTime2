@@ -1,8 +1,8 @@
 package com.ssverma.feature.match.ui.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -18,9 +18,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Devices
+import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.QrCode
+import androidx.compose.material.icons.rounded.Subscriptions
+import androidx.compose.material.icons.rounded.TheaterComedy
+import androidx.compose.material.icons.rounded.Weekend
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -29,7 +34,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
@@ -44,8 +48,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
+import com.ssverma.feature.match.R
 import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
@@ -70,16 +79,20 @@ fun MatchRoomSetupSheet(
     var player1Name by remember { mutableStateOf(initialPlayer1) }
     var player2Name by remember { mutableStateOf(initialPlayer2) }
 
+    val context = LocalContext.current
+    val defaultPlayer1 = stringResource(R.string.match_room_default_player1)
+    val defaultPlayer2 = stringResource(R.string.match_room_default_player2)
+
     val genres = remember {
         listOf(
-            28 to "Action",
-            27 to "Horror",
-            35 to "Comedy",
-            878 to "Sci-Fi",
-            53 to "Thriller",
-            10749 to "Romance",
-            16 to "Animation",
-            18 to "Drama"
+            28 to R.string.match_room_genre_action,
+            27 to R.string.match_room_genre_horror,
+            35 to R.string.match_room_genre_comedy,
+            878 to R.string.match_room_genre_scifi,
+            53 to R.string.match_room_genre_thriller,
+            10749 to R.string.match_room_genre_romance,
+            16 to R.string.match_room_genre_animation,
+            18 to R.string.match_room_genre_drama
         )
     }
 
@@ -95,7 +108,7 @@ fun MatchRoomSetupSheet(
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                text = "Movie Match Setup",
+                text = stringResource(R.string.match_room_setup_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -105,7 +118,7 @@ fun MatchRoomSetupSheet(
 
             // Mode Selector
             Text(
-                text = "MATCH MODE",
+                text = stringResource(R.string.match_room_setup_mode_header),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -135,14 +148,23 @@ fun MatchRoomSetupSheet(
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
-                        Text(
-                            text = "🛋️ Couch Mode",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.Weekend,
+                                contentDescription = null,
+                                tint = if (selectedMode == MatchMode.COUCH) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.match_room_mode_couch),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Pass & Play on 1 phone",
+                            text = stringResource(R.string.match_room_mode_couch_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -167,14 +189,23 @@ fun MatchRoomSetupSheet(
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
-                        Text(
-                            text = "📱 Remote Room",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.Devices,
+                                contentDescription = null,
+                                tint = if (selectedMode == MatchMode.REMOTE) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.match_room_mode_remote),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Code pairing via link",
+                            text = stringResource(R.string.match_room_mode_remote_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -187,7 +218,7 @@ fun MatchRoomSetupSheet(
             // Player Names (if Couch Mode)
             if (selectedMode == MatchMode.COUCH) {
                 Text(
-                    text = "PLAYERS",
+                    text = stringResource(R.string.match_room_setup_players_header),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -200,14 +231,14 @@ fun MatchRoomSetupSheet(
                     OutlinedTextField(
                         value = player1Name,
                         onValueChange = { player1Name = it },
-                        label = { Text("Player 1") },
+                        label = { Text(stringResource(R.string.match_room_setup_player1_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = player2Name,
                         onValueChange = { player2Name = it },
-                        label = { Text("Player 2") },
+                        label = { Text(stringResource(R.string.match_room_setup_player2_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
@@ -216,7 +247,7 @@ fun MatchRoomSetupSheet(
             } else {
                 // Remote Mode Host Name
                 Text(
-                    text = "YOUR NAME",
+                    text = stringResource(R.string.match_room_setup_your_name_header),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -225,7 +256,7 @@ fun MatchRoomSetupSheet(
                 OutlinedTextField(
                     value = player1Name,
                     onValueChange = { player1Name = it },
-                    label = { Text("Host Name") },
+                    label = { Text(stringResource(R.string.match_room_setup_host_name_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -234,7 +265,7 @@ fun MatchRoomSetupSheet(
 
             // Deck Type Selector
             Text(
-                text = "DECK FILTER",
+                text = stringResource(R.string.match_room_setup_filter_header),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -244,8 +275,9 @@ fun MatchRoomSetupSheet(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // Trending Tonight (Free)
                 DeckTypeOption(
-                    title = "🔥 Trending Tonight",
-                    description = "Top trending movies popular right now",
+                    icon = Icons.Rounded.LocalFireDepartment,
+                    title = stringResource(R.string.match_room_deck_trending),
+                    description = stringResource(R.string.match_room_deck_trending_desc),
                     isSelected = selectedDeckType == MatchDeckType.TRENDING,
                     isLocked = false,
                     onClick = { selectedDeckType = MatchDeckType.TRENDING }
@@ -253,15 +285,15 @@ fun MatchRoomSetupSheet(
 
                 // My Subscriptions Only
                 DeckTypeOption(
-                    title = "🍿 My Subscriptions Only",
-                    description = "Only movies streaming on Netflix, Prime, Disney+",
+                    icon = Icons.Rounded.Subscriptions,
+                    title = stringResource(R.string.match_room_deck_subscriptions),
+                    description = stringResource(R.string.match_room_deck_subscriptions_desc),
                     isSelected = selectedDeckType == MatchDeckType.MY_SUBSCRIPTIONS,
                     isLocked = !isProOrPassActive,
                     onClick = {
                         if (isProOrPassActive) {
                             selectedDeckType = MatchDeckType.MY_SUBSCRIPTIONS
                         } else {
-                            onDismissRequest()
                             onUnlockPro()
                         }
                     }
@@ -269,15 +301,15 @@ fun MatchRoomSetupSheet(
 
                 // Genre Spotlight
                 DeckTypeOption(
-                    title = "🎭 Genre Spotlight",
-                    description = "Focus on Horror, Sci-Fi, Comedy, or Romance",
+                    icon = Icons.Rounded.TheaterComedy,
+                    title = stringResource(R.string.match_room_deck_genre),
+                    description = stringResource(R.string.match_room_deck_genre_desc),
                     isSelected = selectedDeckType == MatchDeckType.GENRE,
                     isLocked = !isProOrPassActive,
                     onClick = {
                         if (isProOrPassActive) {
                             selectedDeckType = MatchDeckType.GENRE
                         } else {
-                            onDismissRequest()
                             onUnlockPro()
                         }
                     }
@@ -292,11 +324,11 @@ fun MatchRoomSetupSheet(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    genres.forEach { (id, name) ->
+                    genres.forEach { (id, nameRes) ->
                         FilterChip(
                             selected = selectedGenreId == id,
                             onClick = { selectedGenreId = id },
-                            label = { Text(name) },
+                            label = { Text(stringResource(nameRes)) },
                             leadingIcon = if (selectedGenreId == id) {
                                 {
                                     Icon(
@@ -315,7 +347,7 @@ fun MatchRoomSetupSheet(
 
             // Deck Size Selector
             Text(
-                text = "DECK SIZE",
+                text = stringResource(R.string.match_room_setup_deck_size_header),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -326,7 +358,7 @@ fun MatchRoomSetupSheet(
                     FilterChip(
                         selected = selectedDeckSize == size,
                         onClick = { selectedDeckSize = size },
-                        label = { Text("$size Movies") }
+                        label = { Text(stringResource(R.string.match_room_deck_size_format, size)) }
                     )
                 }
             }
@@ -340,15 +372,19 @@ fun MatchRoomSetupSheet(
                         deckType = selectedDeckType,
                         genreId = if (selectedDeckType == MatchDeckType.GENRE) selectedGenreId else null,
                         genreName = if (selectedDeckType == MatchDeckType.GENRE) {
-                            genres.firstOrNull { it.first == selectedGenreId }?.second
+                            genres.firstOrNull { it.first == selectedGenreId }?.second?.let {
+                                context.getString(
+                                    it
+                                )
+                            }
                         } else null,
                         deckSize = selectedDeckSize,
                         mode = selectedMode
                     )
                     onStartGame(
                         config,
-                        player1Name.ifBlank { "Player 1" },
-                        player2Name.ifBlank { "Player 2" })
+                        player1Name.ifBlank { defaultPlayer1 },
+                        player2Name.ifBlank { defaultPlayer2 })
                 },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -365,7 +401,9 @@ fun MatchRoomSetupSheet(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (selectedMode == MatchMode.REMOTE) "Create Remote Room" else "Start Swiping",
+                    text = if (selectedMode == MatchMode.REMOTE) stringResource(R.string.match_room_create_remote_button) else stringResource(
+                        R.string.match_room_start_deck
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -390,7 +428,7 @@ fun MatchRoomSetupSheet(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Have a room code? Join Room")
+                    Text(stringResource(R.string.match_room_join_prompt))
                 }
             }
         }
@@ -399,6 +437,7 @@ fun MatchRoomSetupSheet(
 
 @Composable
 private fun DeckTypeOption(
+    icon: ImageVector,
     title: String,
     description: String,
     isSelected: Boolean,
@@ -428,17 +467,39 @@ private fun DeckTypeOption(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             if (isLocked) {
@@ -458,7 +519,7 @@ private fun DeckTypeOption(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "PRO",
+                            text = stringResource(R.string.match_room_pro_tag),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.primary

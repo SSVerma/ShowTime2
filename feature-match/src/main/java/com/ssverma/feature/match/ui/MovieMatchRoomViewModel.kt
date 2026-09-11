@@ -1,8 +1,12 @@
 package com.ssverma.feature.match.ui
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.core.ui.UiText
+import com.ssverma.feature.match.R
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
@@ -24,7 +28,8 @@ import javax.inject.Inject
 class MovieMatchRoomViewModel @Inject constructor(
     private val matchRoomRepository: MatchRoomRepository,
     private val rewardManager: RewardManager,
-    private val billingRepository: BillingRepository
+    private val billingRepository: BillingRepository,
+    private val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieMatchRoomUiState())
@@ -33,6 +38,8 @@ class MovieMatchRoomViewModel @Inject constructor(
     private var currentRemoteRoomId: String? = null
 
     init {
+        rewardedAdManager.loadAd()
+
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
@@ -41,6 +48,12 @@ class MovieMatchRoomViewModel @Inject constructor(
                 isPro || passStatus.isMatchRoomUnlocked
             }.collect { isUnlocked ->
                 _uiState.update { it.copy(isProOrPassActive = isUnlocked) }
+            }
+        }
+
+        viewModelScope.launch {
+            matchRoomRepository.getWatchlistMovieIdsFlow().collect { ids ->
+                _uiState.update { it.copy(savedWatchlistIds = ids) }
             }
         }
     }
@@ -107,7 +120,8 @@ class MovieMatchRoomViewModel @Inject constructor(
             val canStart = matchRoomRepository.canStartMatchSession(isProOrPass)
 
             if (!canStart) {
-                _uiState.update { it.copy(showQuotaModal = true, showSetupSheet = false) }
+                rewardedAdManager.loadAd()
+                _uiState.update { it.copy(showQuotaModal = true) }
                 return@launch
             }
 
@@ -152,7 +166,7 @@ class MovieMatchRoomViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Unable to load movie deck. Please check your connection."
+                            errorMessage = UiText.StaticText(R.string.match_room_err_load_deck)
                         )
                     }
                 }
@@ -184,7 +198,7 @@ class MovieMatchRoomViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Failed to create remote room."
+                            errorMessage = UiText.StaticText(R.string.match_room_err_create_room)
                         )
                     }
                 }
@@ -223,7 +237,7 @@ class MovieMatchRoomViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Room not found. Check the code and try again."
+                            errorMessage = UiText.StaticText(R.string.match_room_err_room_not_found)
                         )
                     }
                 }
@@ -385,11 +399,23 @@ class MovieMatchRoomViewModel @Inject constructor(
         _uiState.update { it.copy(celebratingMatch = null) }
     }
 
-    fun saveToWatchlist(card: MovieMatchCard) {
-        _uiState.update { it.copy(savedWatchlistIds = it.savedWatchlistIds + card.id) }
-        viewModelScope.launch {
-            matchRoomRepository.saveMatchToWatchlist(card)
+    fun toggleWatchlist(card: MovieMatchCard) {
+        val isSaved = _uiState.value.savedWatchlistIds.contains(card.id)
+        if (isSaved) {
+            _uiState.update { it.copy(savedWatchlistIds = it.savedWatchlistIds - card.id) }
+            viewModelScope.launch {
+                matchRoomRepository.removeMatchFromWatchlist(card.id)
+            }
+        } else {
+            _uiState.update { it.copy(savedWatchlistIds = it.savedWatchlistIds + card.id) }
+            viewModelScope.launch {
+                matchRoomRepository.saveMatchToWatchlist(card)
+            }
         }
+    }
+
+    fun saveToWatchlist(card: MovieMatchCard) {
+        toggleWatchlist(card)
     }
 
     fun handleRewindClick(onOpenPro: () -> Unit) {
@@ -397,6 +423,15 @@ class MovieMatchRoomViewModel @Inject constructor(
             onRewind()
         } else {
             onOpenPro()
+        }
+    }
+
+    fun watchRewardedAdForPass(activity: Activity) {
+        rewardedAdManager.showRewardedAdIfReady(activity) {
+            viewModelScope.launch {
+                rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM)
+                _uiState.update { it.copy(showQuotaModal = false) }
+            }
         }
     }
 

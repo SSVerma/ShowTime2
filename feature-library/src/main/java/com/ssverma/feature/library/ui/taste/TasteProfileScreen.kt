@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui.taste
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -51,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
@@ -62,7 +62,6 @@ import com.ssverma.feature.library.ui.taste.component.TastePersonaShareBottomShe
 import com.ssverma.feature.library.ui.taste.component.TasteRatingHistogram
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationShelfRow
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationsHeroCard
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.stats.TasteEraDistribution
 

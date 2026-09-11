@@ -2,12 +2,12 @@ package com.ssverma.feature.library.ui.taste
 
 import android.app.Activity
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassStatus
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
@@ -17,7 +17,6 @@ import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import com.ssverma.shared.testing.fakes.FakeDiaryRepository
 import com.ssverma.shared.testing.fakes.FakeDiscoveryRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk

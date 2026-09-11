@@ -1,6 +1,5 @@
 package com.ssverma.feature.account.ui.profile
 
-import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,6 +62,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
+import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
@@ -77,14 +78,12 @@ import com.ssverma.feature.account.BuildConfig
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
-import com.ssverma.shared.domain.model.auth.TraktAuthState
-import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
-import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 import com.ssverma.shared.ui.component.ProfileAvatarSharedKey
 
 @OptIn(ExperimentalMaterial3Api::class)

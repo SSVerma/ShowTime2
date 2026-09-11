@@ -1,6 +1,5 @@
 package com.ssverma.shared.data.repository
 
-import androidx.core.net.toUri
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.shared.domain.model.AffiliateConfig
 import com.ssverma.shared.domain.repository.AffiliateRepository

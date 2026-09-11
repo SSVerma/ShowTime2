@@ -3,6 +3,8 @@ package com.ssverma.feature.community.ui.discussions
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.common.ui.community.CommentUiModel
+import com.ssverma.common.ui.community.toUiModel
 import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.DeleteCommentParams
 import com.ssverma.shared.domain.model.community.DiscussionTarget
@@ -21,8 +23,6 @@ import com.ssverma.shared.domain.usecase.community.GetDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
-import com.ssverma.common.ui.community.CommentUiModel
-import com.ssverma.common.ui.community.toUiModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject

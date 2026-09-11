@@ -12,7 +12,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
-import com.ssverma.api.service.tmdb.convertToTmdbLogoUrl
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.core.networking.adapter.ApiResponse
@@ -25,7 +24,6 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchMode
-import com.ssverma.shared.domain.model.match.MatchProviderBadge
 import com.ssverma.shared.domain.model.match.MatchRoom
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
 import com.ssverma.shared.domain.model.match.MatchRoomStatus
@@ -38,6 +36,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -152,9 +151,27 @@ class MatchRoomRepositoryImpl @Inject constructor(
         hostName: String,
         deck: List<MovieMatchCard>
     ): Result<MatchRoom, Failure<*>> {
-        val code = generateRoomCode()
-        val roomId = normalizeRoomId(code)
+        var code = generateRoomCode()
+        var roomId = normalizeRoomId(code)
         val deckJson = gson.toJson(deck)
+
+        // Prevent collision: check if an active room already exists with this code
+        for (attempt in 0 until 3) {
+            val existing = try {
+                firestore.collection(colMatchRooms).document(roomId).get().await()
+            } catch (_: Exception) {
+                null
+            }
+            if (existing == null || !existing.exists()) {
+                break
+            }
+            val existingCreated = existing.getLong("createdAtEpochMs") ?: 0L
+            if (System.currentTimeMillis() - existingCreated > ROOM_EXPIRY_MILLIS) {
+                break
+            }
+            code = generateRoomCode()
+            roomId = normalizeRoomId(code)
+        }
 
         val roomData = hashMapOf(
             "id" to roomId,
@@ -200,15 +217,58 @@ class MatchRoomRepositoryImpl @Inject constructor(
         }
     }
 
+    private var failedJoinAttempts = 0
+    private var joinCooldownUntilEpochMs = 0L
+
+    private fun recordFailedJoinAttempt() {
+        failedJoinAttempts++
+        if (failedJoinAttempts >= 5) {
+            joinCooldownUntilEpochMs = System.currentTimeMillis() + 30_000L
+            failedJoinAttempts = 0
+        }
+    }
+
     override suspend fun joinRemoteRoom(
         roomCode: String,
         guestName: String
     ): Result<MatchRoom, Failure<*>> {
         val roomId = normalizeRoomId(roomCode)
+        if (roomId.isBlank()) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+
+        val now = System.currentTimeMillis()
+        if (joinCooldownUntilEpochMs > now) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+
         return try {
             val snapshot = firestore.collection(colMatchRooms).document(roomId).get().await()
             if (!snapshot.exists()) {
+                recordFailedJoinAttempt()
                 return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+            }
+
+            val createdAt = snapshot.getLong("createdAtEpochMs") ?: 0L
+            if (now - createdAt > ROOM_EXPIRY_MILLIS) {
+                recordFailedJoinAttempt()
+                return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+            }
+
+            val existingGuestId = snapshot.getString("guestUserId")
+            if (!existingGuestId.isNullOrBlank() && existingGuestId != persistentUserId) {
+                return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+            }
+
+            val hostId = snapshot.getString("hostUserId")
+            if (hostId == persistentUserId) {
+                val room = parseRoomSnapshot(snapshot)
+                return if (room != null) {
+                    failedJoinAttempts = 0
+                    Result.Success(room)
+                } else {
+                    Result.Error(Failure.CoreFailure.UnexpectedFailure)
+                }
             }
 
             firestore.collection(colMatchRooms).document(roomId).update(
@@ -219,6 +279,7 @@ class MatchRoomRepositoryImpl @Inject constructor(
                 )
             ).await()
 
+            failedJoinAttempts = 0
             val updatedSnapshot = firestore.collection(colMatchRooms).document(roomId).get().await()
             val room = parseRoomSnapshot(updatedSnapshot)
             if (room != null) {
@@ -336,6 +397,21 @@ class MatchRoomRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun removeMatchFromWatchlist(movieId: Int): Result<Unit, Failure<*>> {
+        return try {
+            watchlistDao.deleteWatchlistById(movieId)
+            Result.Success(Unit)
+        } catch (_: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override fun getWatchlistMovieIdsFlow(): Flow<Set<Int>> {
+        return watchlistDao.getAllWatchlistFlow().map { list ->
+            list.map { it.mediaId }.toSet()
+        }
+    }
+
     private fun parseRoomSnapshot(snapshot: DocumentSnapshot): MatchRoom? {
         val id = snapshot.getString("id") ?: return null
         val roomCode = snapshot.getString("roomCode") ?: id.uppercase()
@@ -386,11 +462,16 @@ class MatchRoomRepositoryImpl @Inject constructor(
     }
 
     private fun generateRoomCode(): String {
-        val num = Random.nextInt(1000, 9999)
-        return "ST-$num"
+        val codeChars = CharArray(6) {
+            UNCONFUSABLE_CHARS[Random.nextInt(UNCONFUSABLE_CHARS.length)]
+        }
+        return "ST-${String(codeChars)}"
     }
 
     companion object {
+        private const val ROOM_EXPIRY_MILLIS = 24 * 60 * 60 * 1000L
+        private const val UNCONFUSABLE_CHARS = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+
         private val KEY_LAST_SESSION_DATE = stringPreferencesKey("match_room_last_session_date")
         private val KEY_DAILY_SESSION_COUNT = intPreferencesKey("match_room_daily_session_count")
 

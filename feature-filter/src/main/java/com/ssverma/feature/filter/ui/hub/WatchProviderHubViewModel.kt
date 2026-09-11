@@ -1,10 +1,12 @@
 package com.ssverma.feature.filter.ui.hub
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ads.config.AdConfigProvider
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchStreamingIntent
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.filter.ui.hub.config.MovieHubDiscoverConfig
 import com.ssverma.feature.filter.ui.hub.config.TvHubDiscoverConfig
@@ -19,11 +21,9 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
-import com.ssverma.shared.domain.repository.DiscoveryRepository
-import android.content.Context
-import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchStreamingIntent
 import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.repository.DiscoveryRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject

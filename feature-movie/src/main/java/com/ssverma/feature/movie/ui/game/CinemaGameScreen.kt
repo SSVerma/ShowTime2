@@ -1,6 +1,5 @@
 package com.ssverma.feature.movie.ui.game
 
-import android.app.Activity
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

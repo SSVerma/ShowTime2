@@ -1,28 +1,47 @@
 # Community Curated Lists: Architecture & Technical Specification
 
-This document provides a comprehensive technical design and architectural specification for the **Community Curated Lists, Cloud Sync, Optimistic Upvoting, and Session-Stable Ranking System** in ShowTime.
+This document provides a comprehensive technical design and architectural specification for the *
+*Community Curated Lists, Cloud Sync, Optimistic Upvoting, and Session-Stable Ranking System** in
+ShowTime.
 
 ---
 
 ## 1. Architectural Highlights
 
 1. **Public Community Curation**:
-   - Cinephiles can publish their custom film/TV collections with curated category tags (*Mind-Bending*, *Sci-Fi Essentials*, *All-Time Classics*, *Tearjerkers*, etc.).
-   - Cards display a 4-slot poster mosaic, creator attribution, item count, and interactive actions (Upvote & Clone to My Library).
+    - Cinephiles can publish their custom film/TV collections with curated category tags (
+      *Mind-Bending*, *Sci-Fi Essentials*, *All-Time Classics*, *Tearjerkers*, etc.).
+    - Cards display a 4-slot poster mosaic, creator attribution, item count, and interactive
+      actions (Upvote & Clone to My Library).
 2. **0ms Optimistic Feedback ($0 Network Latency Wait)**:
-   - Tapping Upvote or Clone updates the UI instantaneously (0ms) using in-memory `optimisticListOverrides` and `latestCommunityListsCache`.
-   - The heart fills/unfills, upvote counts increment/decrement, and the clone badge toggles without waiting for network round-trips.
+    - Tapping Upvote or Clone updates the UI instantaneously (0ms) using in-memory
+      `optimisticListOverrides` and `latestCommunityListsCache`.
+    - The heart fills/unfills, upvote counts increment/decrement, and the clone badge toggles
+      without waiting for network round-trips.
 3. **Session-Stable List Ordering (Zero Fluctuation / Card Jumping)**:
-   - Encapsulated within `StableListOrderTracker`.
-   - On the initial category stream load, lists are sorted by community popularity score (`upvotesCount * 2 + clonesCount`) and recency.
-   - During the browsing session, existing card positions remain **firmly anchored** even as live upvotes arrive or optimistic actions execute. Cards never jump or swap places under the user's thumb.
-   - Fresh rankings take effect when switching category filter chips, pulling to refresh, or re-entering the tab.
+    - Encapsulated within `StableListOrderTracker`.
+    - On the initial category stream load, lists are sorted by community popularity score (
+      `upvotesCount * 2 + clonesCount`) and recency.
+    - During the browsing session, existing card positions remain **firmly anchored** even as live
+      upvotes arrive or optimistic actions execute. Cards never jump or swap places under the user's
+      thumb.
+    - Fresh rankings take effect when switching category filter chips, pulling to refresh, or
+      re-entering the tab.
 4. **Dual-Layer Anti-Spam Defense**:
-   - **Layer 1 (UI Level — Touch Debounce)**: 350ms touch debounce window in [`CommunityListCard.kt`](file:///Users/ss/Projects/ShowTime/shared-ui/src/main/java/com/ssverma/shared/ui/component/community/CommunityListCard.kt) and [`CommunityListDetailSheet.kt`](file:///Users/ss/Projects/ShowTime/shared-ui/src/main/java/com/ssverma/shared/ui/component/community/CommunityListDetailSheet.kt) drops rapid tap spasms.
-   - **Layer 2 (Data Level — Per-List Mutex)**: Per-list `Mutex` serialization in [`CommunityRepositoryImpl.kt`](file:///Users/ss/Projects/ShowTime/shared-data/src/main/java/com/ssverma/shared/data/repository/CommunityRepositoryImpl.kt) serializes concurrent async updates, eliminating Firestore transaction race conditions.
+    - **Layer 1 (UI Level — Touch Debounce)**: 350ms touch debounce window in [
+      `CommunityListCard.kt`](file:///Users/ss/Projects/ShowTime/shared-ui/src/main/java/com/ssverma/shared/ui/component/community/CommunityListCard.kt)
+      and [
+      `CommunityListDetailSheet.kt`](file:///Users/ss/Projects/ShowTime/shared-ui/src/main/java/com/ssverma/shared/ui/component/community/CommunityListDetailSheet.kt)
+      drops rapid tap spasms.
+    - **Layer 2 (Data Level — Per-List Mutex)**: Per-list `Mutex` serialization in [
+      `CommunityRepositoryImpl.kt`](file:///Users/ss/Projects/ShowTime/shared-data/src/main/java/com/ssverma/shared/data/repository/CommunityRepositoryImpl.kt)
+      serializes concurrent async updates, eliminating Firestore transaction race conditions.
 5. **Design System Purity & High-Contrast Placeholders**:
-   - Zero hardcoded hex colors.
-   - 4-slot poster collage uses Material 3 `surfaceContainerHighest` with structured 1dp `outlineVariant` border and `onSurfaceVariant` icon tint, guaranteeing crisp visibility and WCAG AA contrast across both Light (`#DADCE0` on `#FFFFFF`) and Dark (`#32343C` on dark surface) themes.
+    - Zero hardcoded hex colors.
+    - 4-slot poster collage uses Material 3 `surfaceContainerHighest` with structured 1dp
+      `outlineVariant` border and `onSurfaceVariant` icon tint, guaranteeing crisp visibility and
+      WCAG AA contrast across both Light (`#DADCE0` on `#FFFFFF`) and Dark (`#32343C` on dark
+      surface) themes.
 
 ---
 
@@ -244,13 +263,13 @@ data class UnpublishCustomListParams(
 
 ## 7. Design System & Accessibility Token Mapping
 
-| Component Element | Material 3 Semantic Token | Light Mode Value | Dark Mode Value |
-|:---|:---|:---|:---|
-| **Card Container** | `MaterialTheme.colorScheme.surface` | `#FFFFFF` | `#15161A` |
-| **Card Border** | `MaterialTheme.colorScheme.outlineVariant (50%)` | `#C4C7C5 (50%)` | `#2B2C2F (50%)` |
-| **Poster Placeholder Slot** | `MaterialTheme.colorScheme.surfaceContainerHighest` | `#DADCE0` | `#32343C` |
-| **Slot Structured Border** | `MaterialTheme.colorScheme.outlineVariant (70%)` | `#C4C7C5 (70%)` | `#2B2C2F (70%)` |
-| **Slot Icon Tint** | `MaterialTheme.colorScheme.onSurfaceVariant (75%)` | `#5F6368 (75%)` | `#9AA0A6 (75%)` |
-| **Category Pill Container** | `MaterialTheme.colorScheme.primaryContainer (60%)` | `#D2E3FC (60%)` | `#331500 (60%)` |
-| **Category Pill Text** | `MaterialTheme.colorScheme.onPrimaryContainer` | `#174EA6` | `#FFDBC7` |
-| **Active Upvote Tint** | `MaterialTheme.colorScheme.primary` | `#1A73E8` | `#FF7A00` |
+| Component Element           | Material 3 Semantic Token                           | Light Mode Value | Dark Mode Value |
+|:----------------------------|:----------------------------------------------------|:-----------------|:----------------|
+| **Card Container**          | `MaterialTheme.colorScheme.surface`                 | `#FFFFFF`        | `#15161A`       |
+| **Card Border**             | `MaterialTheme.colorScheme.outlineVariant (50%)`    | `#C4C7C5 (50%)`  | `#2B2C2F (50%)` |
+| **Poster Placeholder Slot** | `MaterialTheme.colorScheme.surfaceContainerHighest` | `#DADCE0`        | `#32343C`       |
+| **Slot Structured Border**  | `MaterialTheme.colorScheme.outlineVariant (70%)`    | `#C4C7C5 (70%)`  | `#2B2C2F (70%)` |
+| **Slot Icon Tint**          | `MaterialTheme.colorScheme.onSurfaceVariant (75%)`  | `#5F6368 (75%)`  | `#9AA0A6 (75%)` |
+| **Category Pill Container** | `MaterialTheme.colorScheme.primaryContainer (60%)`  | `#D2E3FC (60%)`  | `#331500 (60%)` |
+| **Category Pill Text**      | `MaterialTheme.colorScheme.onPrimaryContainer`      | `#174EA6`        | `#FFDBC7`       |
+| **Active Upvote Tint**      | `MaterialTheme.colorScheme.primary`                 | `#1A73E8`        | `#FF7A00`       |

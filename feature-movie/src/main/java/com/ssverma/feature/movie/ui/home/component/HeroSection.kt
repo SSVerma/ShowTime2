@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
+import com.ssverma.common.ui.component.HomePageAppBar
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.StatefulContent
@@ -45,7 +46,6 @@ import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.ui.component.AppHeroCarousel
 import com.ssverma.shared.ui.component.CarouselDefaults
 import com.ssverma.shared.ui.component.HeroItem
-import com.ssverma.common.ui.component.HomePageAppBar
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 

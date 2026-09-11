@@ -1,17 +1,15 @@
 package com.ssverma.feature.movie.navigation
 
 import android.net.Uri
-import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.ProfileNavKey
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
-import com.ssverma.feature.payment.navigation.ProPaywallNavKey
-import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.movie.ui.details.MovieDetailsScreen
 import com.ssverma.feature.movie.ui.details.MovieDetailsViewModel
 import com.ssverma.feature.movie.ui.details.MovieImagePagerScreen
@@ -22,6 +20,7 @@ import com.ssverma.feature.movie.ui.game.CinemaGameScreen
 import com.ssverma.feature.movie.ui.home.MovieScreen
 import com.ssverma.feature.movie.ui.list.MovieListScreen
 import com.ssverma.feature.movie.ui.list.MovieListViewModel
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.person.navigation.PersonDetailNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey

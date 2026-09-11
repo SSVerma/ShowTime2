@@ -144,12 +144,56 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
+    function isValidMatchRoomCreate() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['id', 'roomCode', 'hostUserId', 'hostName', 'mode', 'status', 'deckJson', 'hostLikes', 'hostPasses', 'guestLikes', 'guestPasses', 'matches', 'createdAtEpochMs'])
+        && data.id is string && data.id.size() >= 4 && data.id.size() <= 32
+        && data.roomCode is string && data.roomCode.size() >= 4 && data.roomCode.size() <= 16
+        && data.hostUserId is string && data.hostUserId.size() > 0 && data.hostUserId.size() <= 128
+        && data.hostName is string && data.hostName.size() > 0 && data.hostName.size() <= 50
+        && data.mode is string && (data.mode == 'REMOTE' || data.mode == 'COUCH')
+        && data.status is string && (data.status == 'WAITING_FOR_GUEST' || data.status == 'SWIPING')
+        && data.deckJson is string && data.deckJson.size() > 0 && data.deckJson.size() <= 500000
+        && data.hostLikes is list && data.hostLikes.size() == 0
+        && data.hostPasses is list && data.hostPasses.size() == 0
+        && data.guestLikes is list && data.guestLikes.size() == 0
+        && data.guestPasses is list && data.guestPasses.size() == 0
+        && data.matches is list && data.matches.size() == 0
+        && data.createdAtEpochMs is int;
+    }
+
+    function isValidMatchRoomUpdate() {
+      let data = request.resource.data;
+      let existing = resource.data;
+      return data.id == existing.id
+        && data.roomCode == existing.roomCode
+        && data.hostUserId == existing.hostUserId
+        && data.createdAtEpochMs == existing.createdAtEpochMs
+        && data.deckJson == existing.deckJson
+        && data.mode == existing.mode
+        && data.hostName is string && data.hostName.size() > 0 && data.hostName.size() <= 50
+        && (data.guestUserId == null || (data.guestUserId is string && data.guestUserId.size() <= 128))
+        && (data.guestName == null || (data.guestName is string && data.guestName.size() <= 50))
+        && data.status is string
+        && data.hostLikes is list && data.hostLikes.size() <= 100
+        && data.hostPasses is list && data.hostPasses.size() <= 100
+        && data.guestLikes is list && data.guestLikes.size() <= 100
+        && data.guestPasses is list && data.guestPasses.size() <= 100
+        && data.matches is list && data.matches.size() <= 100;
+    }
+
     // Movie Match Rooms (Couples / Friends Swipe Night)
     match /match_rooms/{roomId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if isValidMatchRoomCreate();
+      allow update: if isValidMatchRoomUpdate();
+      allow delete: if false;
     }
     match /dev_match_rooms/{roomId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if isValidMatchRoomCreate();
+      allow update: if isValidMatchRoomUpdate();
+      allow delete: if false;
     }
 
     function isValidSecretListCreate() {

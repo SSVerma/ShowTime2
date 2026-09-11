@@ -1,6 +1,5 @@
 package com.ssverma.feature.account.ui.trakt
 
-import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +52,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.asString
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
@@ -60,11 +62,8 @@ import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.account.R
-import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.auth.TraktUser
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
-import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

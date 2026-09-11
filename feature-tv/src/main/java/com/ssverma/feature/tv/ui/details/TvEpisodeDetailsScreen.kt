@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.common.ui.community.MediaDiscussionsSection
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.image.NetworkImage
@@ -44,10 +45,10 @@ import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.community.EditCommentArgs
 import com.ssverma.shared.domain.model.community.PostCommentArgs
 import com.ssverma.shared.domain.model.community.ReportCommentArgs
-import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.tv.TvEpisode
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
@@ -58,7 +59,6 @@ import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
-import com.ssverma.common.ui.community.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import kotlinx.coroutines.launch
 

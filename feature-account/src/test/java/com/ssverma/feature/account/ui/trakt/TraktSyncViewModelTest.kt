@@ -3,12 +3,12 @@ package com.ssverma.feature.account.ui.trakt
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.trakt.TraktSyncResult

@@ -8,11 +8,11 @@ import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.DebugProOverride
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.domain.model.Profile
-import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 
 data class ProfileScreenState(
     val profileContent: ProfileContentState = ProfileContentState.Loading,

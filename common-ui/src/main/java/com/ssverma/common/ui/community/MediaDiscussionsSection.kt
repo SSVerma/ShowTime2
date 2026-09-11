@@ -46,12 +46,6 @@ import com.ssverma.shared.domain.model.community.EditCommentArgs
 import com.ssverma.shared.domain.model.community.PostCommentArgs
 import com.ssverma.shared.domain.model.community.ReportCommentArgs
 import com.ssverma.shared.ui.R
-import com.ssverma.common.ui.community.CommentUiModel
-import com.ssverma.common.ui.community.DeleteThoughtConfirmationDialog
-import com.ssverma.common.ui.community.DiscussionAvatar
-import com.ssverma.common.ui.community.PostCommentBottomSheet
-import com.ssverma.common.ui.community.ReportThoughtDialog
-import com.ssverma.common.ui.community.toUiModel
 import kotlinx.coroutines.launch
 
 private const val MaxPreviewDiscussions = 2

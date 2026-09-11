@@ -2,13 +2,13 @@ package com.ssverma.feature.auth.domain
 
 import com.ssverma.core.di.AppScoped
 import com.ssverma.core.networking.adapter.ApiResponse
-import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.feature.auth.data.local.TraktAuthStorage
 import com.ssverma.feature.auth.data.remote.TraktAuthService
 import com.ssverma.feature.auth.domain.defaults.TraktDefaults
 import com.ssverma.feature.auth.domain.model.TraktDeviceCodeRequest
 import com.ssverma.feature.auth.domain.model.TraktDeviceTokenRequest
 import com.ssverma.feature.auth.domain.model.TraktTokenResponse
+import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.auth.TraktUser

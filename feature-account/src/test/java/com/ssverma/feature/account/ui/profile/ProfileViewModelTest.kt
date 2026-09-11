@@ -7,13 +7,13 @@ import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleSignInCancelledException
 import com.ssverma.core.billing.model.DebugProOverride
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
-import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.repository.AccountRepository
 import com.ssverma.feature.account.domain.seeder.DatabaseSeeder
+import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.shared.domain.auth.TmdbAuthProvider
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.AppTheme

@@ -32,16 +32,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import java.util.Locale
@@ -155,7 +156,7 @@ fun MovieMatchCardView(
                     IconButton(onClick = onOpenDetails) {
                         Icon(
                             imageVector = Icons.Rounded.Info,
-                            contentDescription = "Movie Details",
+                            contentDescription = stringResource(R.string.match_room_cd_details),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
@@ -255,7 +256,7 @@ fun MovieMatchCardView(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "LIKE",
+                            text = stringResource(R.string.match_room_stamp_like),
                             color = MovieMatchColor.LikeGreen,
                             fontWeight = FontWeight.Black,
                             style = MaterialTheme.typography.titleLarge
@@ -290,7 +291,7 @@ fun MovieMatchCardView(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "PASS",
+                            text = stringResource(R.string.match_room_stamp_pass),
                             color = MovieMatchColor.PassRed,
                             fontWeight = FontWeight.Black,
                             style = MaterialTheme.typography.titleLarge

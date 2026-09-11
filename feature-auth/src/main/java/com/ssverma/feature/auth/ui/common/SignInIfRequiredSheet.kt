@@ -1,18 +1,17 @@
 package com.ssverma.feature.auth.ui.common
 
-import android.app.Activity
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
 import com.ssverma.core.backup.auth.GoogleAuthClient
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.auth.domain.AuthSessionManager
 import com.ssverma.feature.auth.domain.TraktAuthManager
 import com.ssverma.feature.auth.domain.model.AuthProvider
-import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
 
 /**
  * Plug-and-Play Authentication Sheet.

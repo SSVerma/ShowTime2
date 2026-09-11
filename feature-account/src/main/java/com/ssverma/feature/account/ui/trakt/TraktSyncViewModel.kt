@@ -4,12 +4,12 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.repository.TraktSyncRepository

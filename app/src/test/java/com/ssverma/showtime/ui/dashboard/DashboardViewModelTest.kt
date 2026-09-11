@@ -5,7 +5,6 @@ import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase
 import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
@@ -13,6 +12,7 @@ import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -26,7 +26,6 @@ import com.ssverma.shared.testing.fakes.FakeTraktSyncRepository
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -34,6 +33,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModelTest {

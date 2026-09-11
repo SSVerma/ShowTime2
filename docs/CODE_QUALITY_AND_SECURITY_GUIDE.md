@@ -78,7 +78,8 @@ the checklist in this guide before being merged into development or release bran
 
 ### D. Ripple & Click Handling (Surface / Card `onClick` vs `Modifier.clickable`)
 
-* **Rule**: Never use `Modifier.clickable { ... }` on container components like `Surface`, `Card`, `ElevatedCard`, or `OutlinedCard`.
+* **Rule**: Never use `Modifier.clickable { ... }` on container components like `Surface`, `Card`,
+  `ElevatedCard`, or `OutlinedCard`.
 * **Standard**: Always use the container's first-class `onClick = { ... }` parameter.
   ```kotlin
   // ❌ FORBIDDEN: Modifier.clickable suppresses or misclips container ripples and breaks M3 elevation/tint interaction
@@ -104,7 +105,9 @@ the checklist in this guide before being merged into development or release bran
       shape = RoundedCornerShape(16.dp)
   ) { ... }
   ```
-* **Rationale**: `Surface(onClick = ...)` and `Card(onClick = ...)` automatically attach the Material 3 `LocalIndication` / ripple cleanly bounded inside the container's `Shape`, provide accessible button semantics, and properly propagate interaction states without touch conflicts.
+* **Rationale**: `Surface(onClick = ...)` and `Card(onClick = ...)` automatically attach the
+  Material 3 `LocalIndication` / ripple cleanly bounded inside the container's `Shape`, provide
+  accessible button semantics, and properly propagate interaction states without touch conflicts.
 
 ---
 
@@ -297,11 +300,18 @@ the checklist in this guide before being merged into development or release bran
 
 ### E. Lambda Parameter Encapsulation (`*Args` Data Classes)
 
-* **Rule**: Kotlin lambdas **do not support named arguments** at call sites. Whenever a callback or lambda parameter accepts more than 1 argument (or has an expanding parameter set), wrap the parameters into a dedicated `*Args` data class (e.g. `PostCommentArgs`, `EditCommentArgs`, `ReportCommentArgs`).
+* **Rule**: Kotlin lambdas **do not support named arguments** at call sites. Whenever a callback or
+  lambda parameter accepts more than 1 argument (or has an expanding parameter set), wrap the
+  parameters into a dedicated `*Args` data class (e.g. `PostCommentArgs`, `EditCommentArgs`,
+  `ReportCommentArgs`).
 * **Why**:
-  - **Zero Transposition Bugs**: Positional lambdas allow callers to accidentally swap same-typed arguments (e.g., swapping `(commentId, reason)` or `(content, isSpoiler)`) without any compiler warning.
-  - **Refactor Resilient**: Adding, removing, or providing defaults for arguments does not break callback signatures across nested composable trees.
-  - **Idiomatic Method References**: Enables clean method references (e.g., `onEditComment = viewModel::editComment`, `onReportComment = viewModel::reportComment`).
+    - **Zero Transposition Bugs**: Positional lambdas allow callers to accidentally swap same-typed
+      arguments (e.g., swapping `(commentId, reason)` or `(content, isSpoiler)`) without any
+      compiler warning.
+    - **Refactor Resilient**: Adding, removing, or providing defaults for arguments does not break
+      callback signatures across nested composable trees.
+    - **Idiomatic Method References**: Enables clean method references (e.g.,
+      `onEditComment = viewModel::editComment`, `onReportComment = viewModel::reportComment`).
 * **Standard**:
   ```kotlin
   // ❌ FORBIDDEN: Raw multiple positional parameters in callbacks
@@ -322,58 +332,92 @@ the checklist in this guide before being merged into development or release bran
 
 ### A. Feature-Agnostic Core Modules (Zero Domain Bloat)
 
-* **Rule**: Infrastructure and platform modules (`core-*`) must remain strictly feature-agnostic. They must **never** reference domain entities, feature models, or feature-specific enum/string keys.
+* **Rule**: Infrastructure and platform modules (`core-*`) must remain strictly feature-agnostic.
+  They must **never** reference domain entities, feature models, or feature-specific enum/string
+  keys.
 * **Standard**:
-  - `core-backup` must not define individual feature counts (`favoritesCount`, `challengesCount`, etc.) in its primary constructors or drive clients. It uses generic `featureCounts: Map<String, Int>`.
-  - `core-notifications`, `core-storage`, `core-analytics`, and `core-networking` must never import from `shared-domain`, `shared-data`, or `feature-*`.
+    - `core-backup` must not define individual feature counts (`favoritesCount`, `challengesCount`,
+      etc.) in its primary constructors or drive clients. It uses generic
+      `featureCounts: Map<String, Int>`.
+    - `core-notifications`, `core-storage`, `core-analytics`, and `core-networking` must never
+      import from `shared-domain`, `shared-data`, or `feature-*`.
 
 ### B. Contributor Plugin Pattern for Cross-Cutting Platform Services
 
-* **Rule**: Services orchestrating cross-cutting application capabilities (such as Cloud Backup & Restore, Push Notification Dispatchers, Analytics Dispatchers) must **never** become monolithic "god classes" that directly inject every DAO or repository in the app.
+* **Rule**: Services orchestrating cross-cutting application capabilities (such as Cloud Backup &
+  Restore, Push Notification Dispatchers, Analytics Dispatchers) must **never** become monolithic "
+  god classes" that directly inject every DAO or repository in the app.
 * **Standard**:
-  - Platform services define a pluggable Contributor interface (e.g., `BackupContributor`) in `core-*`.
-  - Domain features in `shared-data` or `feature-*` provide their own isolated contributor implementations and bind them via Dagger Multibindings (`@IntoSet` / `@Multibinds`).
-  - The orchestrator injects `Set<@JvmSuppressWildcards BackupContributor>`, allowing new features to be added with zero changes to existing repository or orchestrator classes.
-  - Snapshot serialization must support isolated feature payloads (`"features": { ... }`) while maintaining backward compatibility for legacy snapshots via `fullSnapshot: JsonObject`.
+    - Platform services define a pluggable Contributor interface (e.g., `BackupContributor`) in
+      `core-*`.
+    - Domain features in `shared-data` or `feature-*` provide their own isolated contributor
+      implementations and bind them via Dagger Multibindings (`@IntoSet` / `@Multibinds`).
+    - The orchestrator injects `Set<@JvmSuppressWildcards BackupContributor>`, allowing new features
+      to be added with zero changes to existing repository or orchestrator classes.
+    - Snapshot serialization must support isolated feature payloads (`"features": { ... }`) while
+      maintaining backward compatibility for legacy snapshots via `fullSnapshot: JsonObject`.
 
 ### C. Module Taxonomy & Responsibility Boundaries
 
-* **Strict Invariant**: Every module in the project belongs to a well-defined tier in the architectural hierarchy:
-  1. **`core-*` (Platform Infrastructure Tier)**:
-     - Pure platform-level, infrastructure-only, and **100% feature-agnostic**.
-     - Examples: `core-networking`, `core-storage`, `core-billing`, `core-backup`, `core-navigation`.
-     - Rule: Must NEVER know about feature concepts, feature models, or feature pass enums.
-  2. **`common-ui` (Stateful Plug-and-Play UI Tier)**:
-     - Contains **stateful, plug-and-play UI components** that can be injected and rendered anywhere across the app.
-     - Examples: `LanguageSelectionBottomSheet`, `ThemeSelectionBottomSheet`, `RegionSelectionBottomSheet`, `AppInfoBottomSheet`.
-     - Rule: Self-contained interactive UI blocks with their own internal state/viewmodel coordination.
-  3. **`shared-*` (Stateless Cross-Cutting Building Blocks Tier)**:
-     - Contains **stateless, thin, reusable components** shared across N features.
-     - Examples: `shared-domain` (shared base models like `Movie`, `TvShow`), `shared-ui` (stateless composables: `MediaCard`, `Carousel`, `Avatar`, `Button`, formatting utils).
-     - Rule: **MUST NOT BE POLLUTED**. Never dump full feature data layers, Firestore repositories, DAOs, or domain business rules into `shared-*`.
-  4. **`feature-*` (Vertical Feature Slice Tier)**:
-      - Self-contained feature slices owning their own presentation, domain, and data layers (e.g. `feature-movie`, `feature-tv`, `feature-library`, `feature-community`, `feature-match`, `feature-account`, `feature-auth`, `feature-search`, `feature-person`, `feature-payment`, `feature-filter`).
-      - Rule: **Zero cross-feature implementation dependencies**. `feature-A` must NEVER depend on `feature-B`. Cross-feature navigation is achieved exclusively through `feature-*-navigation` contracts.
-   5. **`feature-*-navigation` (Navigation Contract Tier)**:
-      - Pure, lightweight API contracts exposing only `NavKey` and destination arguments so feature modules never depend directly on each other.
-      - Rule: Must contain ONLY `NavKey` data classes and serialization. No screens, ViewModels, repositories, or business logic.
+* **Strict Invariant**: Every module in the project belongs to a well-defined tier in the
+  architectural hierarchy:
+    1. **`core-*` (Platform Infrastructure Tier)**:
+        - Pure platform-level, infrastructure-only, and **100% feature-agnostic**.
+        - Examples: `core-networking`, `core-storage`, `core-billing`, `core-backup`,
+          `core-navigation`.
+        - Rule: Must NEVER know about feature concepts, feature models, or feature pass enums.
+    2. **`common-ui` (Stateful Plug-and-Play UI Tier)**:
+        - Contains **stateful, plug-and-play UI components** that can be injected and rendered
+          anywhere across the app.
+        - Examples: `LanguageSelectionBottomSheet`, `ThemeSelectionBottomSheet`,
+          `RegionSelectionBottomSheet`, `AppInfoBottomSheet`.
+        - Rule: Self-contained interactive UI blocks with their own internal state/viewmodel
+          coordination.
+    3. **`shared-*` (Stateless Cross-Cutting Building Blocks Tier)**:
+        - Contains **stateless, thin, reusable components** shared across N features.
+        - Examples: `shared-domain` (shared base models like `Movie`, `TvShow`), `shared-ui` (
+          stateless composables: `MediaCard`, `Carousel`, `Avatar`, `Button`, formatting utils).
+        - Rule: **MUST NOT BE POLLUTED**. Never dump full feature data layers, Firestore
+          repositories, DAOs, or domain business rules into `shared-*`.
+    4. **`feature-*` (Vertical Feature Slice Tier)**:
+        - Self-contained feature slices owning their own presentation, domain, and data layers (e.g.
+          `feature-movie`, `feature-tv`, `feature-library`, `feature-community`, `feature-match`,
+          `feature-account`, `feature-auth`, `feature-search`, `feature-person`, `feature-payment`,
+          `feature-filter`).
+        - Rule: **Zero cross-feature implementation dependencies**. `feature-A` must NEVER depend on
+          `feature-B`. Cross-feature navigation is achieved exclusively through
+          `feature-*-navigation` contracts.
+    5. **`feature-*-navigation` (Navigation Contract Tier)**:
+        - Pure, lightweight API contracts exposing only `NavKey` and destination arguments so
+          feature modules never depend directly on each other.
+        - Rule: Must contain ONLY `NavKey` data classes and serialization. No screens, ViewModels,
+          repositories, or business logic.
 
 ### D. Strict Dependency Inversion (Zero UI-to-Data Coupling)
 
-* **Rule**: Presentation and UI modules (`shared-ui`, `common-ui`, `feature-*-ui`) must **NEVER declare dependencies on `shared-data` or any data module**.
+* **Rule**: Presentation and UI modules (`shared-ui`, `common-ui`, `feature-*-ui`) must **NEVER
+  declare dependencies on `shared-data` or any data module**.
 * **Standard**:
-  - UI depends strictly on Domain (`shared-domain`) and Navigation contracts (`feature-*-navigation`).
-  - Data implements Domain interfaces (Dependency Inversion: `Presentation -> Domain <- Data`).
-  - Direct UI-to-Data dependencies pull database, SQLite, and network runtimes transitively into the UI classpath, corrupting incremental build cache and destroying architectural boundaries.
+    - UI depends strictly on Domain (`shared-domain`) and Navigation contracts (
+      `feature-*-navigation`).
+    - Data implements Domain interfaces (Dependency Inversion: `Presentation -> Domain <- Data`).
+    - Direct UI-to-Data dependencies pull database, SQLite, and network runtimes transitively into
+      the UI classpath, corrupting incremental build cache and destroying architectural boundaries.
 
 ---
 
 ### E. Feature UI Modularity & `component/` Subpackage Standard
 
-* **Rule**: Screen and sheet composables (`*Screen.kt`, `*BottomSheet.kt`) must remain clean, declarative, high-level orchestrators and should not exceed **~300–400 lines of code**. Monolithic "god-composables" are strictly forbidden.
+* **Rule**: Screen and sheet composables (`*Screen.kt`, `*BottomSheet.kt`) must remain clean,
+  declarative, high-level orchestrators and should not exceed **~300–400 lines of code**.
+  Monolithic "god-composables" are strictly forbidden.
 * **Component Subpackage Convention**:
-  - Complex screens or feature packages must organize modular presentation elements into a dedicated `component/` subpackage (e.g. `feature-library/.../ui/share/component/`, `feature-community/.../ui/detail/component/`).
-  - Single-responsibility UI parts (dialogs, custom cards, action bars, selector carousels/chips, empty/error state layouts, header banners) MUST be extracted into dedicated component files inside `component/`.
+    - Complex screens or feature packages must organize modular presentation elements into a
+      dedicated `component/` subpackage (e.g. `feature-library/.../ui/share/component/`,
+      `feature-community/.../ui/detail/component/`).
+    - Single-responsibility UI parts (dialogs, custom cards, action bars, selector carousels/chips,
+      empty/error state layouts, header banners) MUST be extracted into dedicated component files
+      inside `component/`.
 * **Standard Structure**:
   ```
   ui/share/
@@ -391,9 +435,12 @@ the checklist in this guide before being merged into development or release bran
       └── SecretShareDialogs.kt         # Sheet confirmation & gate dialogs
   ```
 * **Why**:
-  - **Readability & Maintainability**: Eliminates bloated 1000+ line monoliths that conflate layout, dialog orchestration, and animation state.
-  - **Component Reusability**: Dialogs, cards, and action bars can be shared cleanly across screens and bottom sheets without code duplication.
-  - **Isolated Compose Previews**: Granular composables can be independently previewed and styled without spinning up heavy screen-level ViewModels.
+    - **Readability & Maintainability**: Eliminates bloated 1000+ line monoliths that conflate
+      layout, dialog orchestration, and animation state.
+    - **Component Reusability**: Dialogs, cards, and action bars can be shared cleanly across
+      screens and bottom sheets without code duplication.
+    - **Isolated Compose Previews**: Granular composables can be independently previewed and styled
+      without spinning up heavy screen-level ViewModels.
 
 ---
 
@@ -473,21 +520,33 @@ npx firebase-tools deploy --only firestore:rules --dry-run
 
 > **Note**: The `.githooks/pre-commit` hook automatically runs on every `git commit`. It performs:
 > 1. **Auto-reformatting** of staged files (Android Studio Cmd+Option+L equivalent).
-> 2. **Code Quality Checklist** validation (zero wildcard imports, zero inline FQCNs, zero hardcoded hex colors outside `*Color.kt`, zero debug logs).
+> 2. **Code Quality Checklist** validation (zero wildcard imports, zero inline FQCNs, zero hardcoded
+     hex colors outside `*Color.kt`, zero debug logs).
 
 ### Manual Review Checklist:
 
-- [ ] **Firestore Security Rules**: If changes touch `firestore.rules`, were they tested with `npx firebase-tools deploy --only firestore:rules --dry-run` before release, and are dev and prod collections strictly isolated?
+- [ ] **Firestore Security Rules**: If changes touch `firestore.rules`, were they tested with
+  `npx firebase-tools deploy --only firestore:rules --dry-run` before release, and are dev and prod
+  collections strictly isolated?
 
 - [ ] **Architecture Boundaries & Module Taxonomy**:
-  - Are `core-*` modules 100% feature-agnostic and free of domain concepts or feature pass enums?
-  - Does any UI module (`shared-ui`, `common-ui`, `feature-*-ui`) declare a dependency on `shared-data`? (Strictly forbidden: UI must never depend on Data).
-  - Is `common-ui` reserved for stateful, plug-and-play components?
-  - Are `shared-*` modules stateless, thin, and unpolluted by feature-specific DAOs, repositories, or Firestore implementations?
-  - Are there zero cross-feature implementation dependencies (`feature-A` → `feature-B`)? Cross-feature wiring must go through `feature-*-navigation` contracts only.
-  - Do `feature-*-navigation` modules contain ONLY `NavKey` data classes with zero screens, ViewModels, or business logic?
-- [ ] **Feature-Agnostic Core Modules & Contributor Plugin Pattern**: Are `core-*` and `shared-*` modules completely free of feature-specific domain bloat? Do platform services (backup, notifications, analytics) use decoupled Dagger multibinding contributors (`@IntoSet`) rather than injecting domain DAOs/repositories into a god-class?
-- [ ] **Component Modularity & `component/` Subpackage**: Are screen and sheet files kept lean (~300–400 lines max) with complex UI parts, dialogs, card variants, state views, and control bars extracted into a dedicated `component/` subpackage?
+    - Are `core-*` modules 100% feature-agnostic and free of domain concepts or feature pass enums?
+    - Does any UI module (`shared-ui`, `common-ui`, `feature-*-ui`) declare a dependency on
+      `shared-data`? (Strictly forbidden: UI must never depend on Data).
+    - Is `common-ui` reserved for stateful, plug-and-play components?
+    - Are `shared-*` modules stateless, thin, and unpolluted by feature-specific DAOs, repositories,
+      or Firestore implementations?
+    - Are there zero cross-feature implementation dependencies (`feature-A` → `feature-B`)?
+      Cross-feature wiring must go through `feature-*-navigation` contracts only.
+    - Do `feature-*-navigation` modules contain ONLY `NavKey` data classes with zero screens,
+      ViewModels, or business logic?
+- [ ] **Feature-Agnostic Core Modules & Contributor Plugin Pattern**: Are `core-*` and `shared-*`
+  modules completely free of feature-specific domain bloat? Do platform services (backup,
+  notifications, analytics) use decoupled Dagger multibinding contributors (`@IntoSet`) rather than
+  injecting domain DAOs/repositories into a god-class?
+- [ ] **Component Modularity & `component/` Subpackage**: Are screen and sheet files kept lean (~
+  300–400 lines max) with complex UI parts, dialogs, card variants, state views, and control bars
+  extracted into a dedicated `component/` subpackage?
 - [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
   in upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
 - [ ] **Dumb UI & Passive Presentation**: Are all list filterings, sortings, and domain-to-UI data
@@ -503,7 +562,8 @@ npx firebase-tools deploy --only firestore:rules --dry-run
   function invocations, and constructor instantiations to maximize readability and eliminate
   parameter transposition bugs?
 - [ ] **Parameter Encapsulation (`*Args`)**: Are callback and lambda signatures with more than 1
-  parameter encapsulated into dedicated `*Args` data classes (e.g. `PostCommentArgs`, `EditCommentArgs`,
+  parameter encapsulated into dedicated `*Args` data classes (e.g. `PostCommentArgs`,
+  `EditCommentArgs`,
   `ReportCommentArgs`) to prevent transposition bugs since Kotlin lambdas lack named arguments?
 - [ ] **Secrets**: Did any sensitive key or token leak into the commit diff?
 - [ ] **Device Test**: Did the APK install and run smoothly without UI jank or crash on device?

@@ -1,19 +1,18 @@
 package com.ssverma.feature.filter.ui.discovery
 
+import android.app.Activity
 import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
-import android.app.Activity
-import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.core.billing.BillingRepository
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.discovery.DiscoveryDecade
 import com.ssverma.shared.domain.model.discovery.DiscoverySortOrder
 import com.ssverma.shared.domain.model.discovery.DiscoveryStudioHub

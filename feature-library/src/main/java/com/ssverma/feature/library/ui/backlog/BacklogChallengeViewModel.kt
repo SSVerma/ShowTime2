@@ -1,11 +1,16 @@
 package com.ssverma.feature.library.ui.backlog
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.convertToTmdbBackdropUrl
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.networking.adapter.ApiResponse
+import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
@@ -16,11 +21,6 @@ import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import com.ssverma.shared.domain.usecase.challenge.GetBacklogChallengesUseCase
 import com.ssverma.shared.domain.usecase.challenge.ManageChallengeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import android.app.Activity
-import com.ssverma.core.ads.manager.RewardedAdManager
-import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
-import com.ssverma.core.billing.BillingRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

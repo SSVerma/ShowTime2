@@ -1,14 +1,17 @@
 package com.ssverma.showtime.ui.dashboard
 
+import android.content.Context
+import android.content.Intent
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ads.config.AdConfigProvider
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.asSuccessOrErrorUiState
 import com.ssverma.core.ui.mapSuccess
 import com.ssverma.feature.auth.domain.TraktAuthManager
-import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.feature.movie.domain.usecase.MovieGenresUseCase
 import com.ssverma.feature.movie.domain.usecase.PopularMoviesUseCase
 import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
@@ -24,16 +27,12 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
+import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.movie.asMoviePreview
+import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
-import android.content.Context
-import android.content.Intent
-import androidx.core.content.FileProvider
-import com.ssverma.core.billing.BillingRepository
-import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.repository.AppConfigRepository
-import java.io.File
 import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
@@ -49,6 +48,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel

@@ -9,11 +9,11 @@ import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 class RewardManagerTest {
 

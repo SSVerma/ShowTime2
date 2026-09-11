@@ -35,4 +35,8 @@ interface MatchRoomRepository {
     suspend fun recordMatchSessionStarted()
 
     suspend fun saveMatchToWatchlist(card: MovieMatchCard): Result<Unit, Failure<*>>
+
+    suspend fun removeMatchFromWatchlist(movieId: Int): Result<Unit, Failure<*>>
+
+    fun getWatchlistMovieIdsFlow(): Flow<Set<Int>>
 }

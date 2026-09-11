@@ -18,7 +18,6 @@ import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
-import com.ssverma.core.ui.modifier.preventSheetFluctuation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +41,7 @@ import androidx.navigationevent.OnBackInvokedDefaultInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import com.ssverma.core.ui.modifier.preventSheetFluctuation
 import kotlinx.coroutines.launch
 
 /**

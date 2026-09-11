@@ -1,9 +1,12 @@
 package com.ssverma.feature.match.ui
 
+import android.app.Activity
 import com.google.common.truth.Truth.assertThat
+import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.ads.quota.RewardPassStatus
+import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchMode
@@ -17,6 +20,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +41,7 @@ class MovieMatchRoomViewModelTest {
     private val matchRoomRepository: MatchRoomRepository = mockk(relaxed = true)
     private val rewardManager: RewardManager = mockk(relaxed = true)
     private val billingRepository: BillingRepository = mockk(relaxed = true)
+    private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
 
     private val isProFlow = MutableStateFlow(false)
     private val passStatusFlow = MutableStateFlow(RewardPassStatus())
@@ -82,7 +87,8 @@ class MovieMatchRoomViewModelTest {
         viewModel = MovieMatchRoomViewModel(
             matchRoomRepository = matchRoomRepository,
             rewardManager = rewardManager,
-            billingRepository = billingRepository
+            billingRepository = billingRepository,
+            rewardedAdManager = rewardedAdManager
         )
     }
 
@@ -127,17 +133,20 @@ class MovieMatchRoomViewModelTest {
     }
 
     @Test
-    fun `startGame shows quota modal when free quota exceeded`() = runTest {
-        coEvery { matchRoomRepository.canStartMatchSession(isProActive = false) } returns false
+    fun `startGame shows quota modal when free quota exceeded and preserves setup sheet`() =
+        runTest {
+            coEvery { matchRoomRepository.canStartMatchSession(isProActive = false) } returns false
 
-        val config = MatchRoomConfig(mode = MatchMode.COUCH)
-        viewModel.startGame(config, "Alice", "Bob")
-        advanceUntilIdle()
+            viewModel.openSetupSheet()
+            val config = MatchRoomConfig(mode = MatchMode.COUCH)
+            viewModel.startGame(config, "Alice", "Bob")
+            advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertThat(state.showQuotaModal).isTrue()
-        assertThat(state.phase).isEqualTo(MatchScreenPhase.SETUP)
-    }
+            val state = viewModel.uiState.value
+            assertThat(state.showQuotaModal).isTrue()
+            assertThat(state.showSetupSheet).isTrue()
+            assertThat(state.phase).isEqualTo(MatchScreenPhase.SETUP)
+        }
 
     @Test
     fun `couch mode swipe handoff and mutual match detection flow`() = runTest {
@@ -279,4 +288,44 @@ class MovieMatchRoomViewModelTest {
         assertThat(state.isGuestConnected).isTrue()
         assertThat(state.matches).contains(fakeCard1)
     }
+
+    @Test
+    fun `toggleWatchlist adds and removes card from watchlist`() = runTest {
+        coEvery { matchRoomRepository.saveMatchToWatchlist(any()) } returns Result.Success(Unit)
+        coEvery { matchRoomRepository.removeMatchFromWatchlist(any()) } returns Result.Success(Unit)
+
+        // Add
+        viewModel.toggleWatchlist(fakeCard1)
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.savedWatchlistIds).contains(fakeCard1.id)
+        coVerify(exactly = 1) { matchRoomRepository.saveMatchToWatchlist(fakeCard1) }
+
+        // Remove (Toggle off)
+        viewModel.toggleWatchlist(fakeCard1)
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.savedWatchlistIds).doesNotContain(fakeCard1.id)
+        coVerify(exactly = 1) { matchRoomRepository.removeMatchFromWatchlist(fakeCard1.id) }
+    }
+
+    @Test
+    fun `watchRewardedAdForPass invokes showRewardedAdIfReady and grants pass on reward`() =
+        runTest {
+            val mockActivity: Activity = mockk(relaxed = true)
+            val rewardSlot = slot<() -> Unit>()
+            every {
+                rewardedAdManager.showRewardedAdIfReady(
+                    mockActivity,
+                    capture(rewardSlot)
+                )
+            } answers {
+                rewardSlot.captured.invoke()
+            }
+
+            viewModel.openSetupSheet()
+            viewModel.watchRewardedAdForPass(mockActivity)
+            advanceUntilIdle()
+
+            coVerify { rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM) }
+            assertThat(viewModel.uiState.value.showQuotaModal).isFalse()
+        }
 }

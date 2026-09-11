@@ -35,11 +35,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import com.ssverma.shared.domain.model.match.SwipeDirection
@@ -220,7 +221,7 @@ fun MovieSwipeDeck(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.Undo,
-                            contentDescription = "Undo Last Swipe",
+                            contentDescription = stringResource(R.string.match_room_cd_undo),
                             tint = if (canRewind) MovieMatchColor.RewindAmber else MaterialTheme.colorScheme.onSurfaceVariant.copy(
                                 alpha = 0.5f
                             ),
@@ -266,7 +267,7 @@ fun MovieSwipeDeck(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
-                            contentDescription = "Pass Movie",
+                            contentDescription = stringResource(R.string.match_room_cd_pass),
                             tint = MovieMatchColor.PassRed,
                             modifier = Modifier.size(34.dp)
                         )
@@ -286,7 +287,7 @@ fun MovieSwipeDeck(
                     IconButton(onClick = { onOpenDetails(topCard) }) {
                         Icon(
                             imageVector = Icons.Rounded.Info,
-                            contentDescription = "Movie Details",
+                            contentDescription = stringResource(R.string.match_room_cd_details),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
@@ -330,7 +331,7 @@ fun MovieSwipeDeck(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Favorite,
-                            contentDescription = "Like Movie",
+                            contentDescription = stringResource(R.string.match_room_cd_like),
                             tint = MovieMatchColor.LikeGreen,
                             modifier = Modifier.size(34.dp)
                         )

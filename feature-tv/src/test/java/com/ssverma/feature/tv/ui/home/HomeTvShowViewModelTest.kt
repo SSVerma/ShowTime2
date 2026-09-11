@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.ui.UiState
-import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.feature.tv.domain.usecase.NowAiringTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TodayAiringTvShowsUseCase
@@ -13,6 +12,7 @@ import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
 import com.ssverma.feature.tv.domain.usecase.UpcomingTvShowsUseCase
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShow

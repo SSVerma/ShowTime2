@@ -48,16 +48,21 @@ without relying on keyword search.
 ### 2.3 "My Subscriptions" Multi-Service Aggregation & In-Browse Quick Edit
 
 1. **Unified Streaming Aggregation**:
-   - Aggregates content simultaneously across all user-selected streaming services (e.g., Netflix, Disney+, Prime Video, Apple TV+).
-   - Dynamically checks availability in the user's localized region (`watchRegion`).
+    - Aggregates content simultaneously across all user-selected streaming services (e.g., Netflix,
+      Disney+, Prime Video, Apple TV+).
+    - Dynamically checks availability in the user's localized region (`watchRegion`).
 2. **Material 3 Split Pill (`[ 📺 My Services (N) | ✎ ]`)**:
-   - **Main Body**: One-tap toggle to filter catalog by configured subscriptions.
-   - **Trailing Edit Action (`✎`)**: Direct 1-tap launcher for `StreamingSubscriptionsBottomSheet`. Modifying subscriptions immediately updates active filters and fetches new results without navigating to Settings.
-   - **Empty State**: Displays `[ 📺 My Services ]` and prompts subscription setup on tap.
+    - **Main Body**: One-tap toggle to filter catalog by configured subscriptions.
+    - **Trailing Edit Action (`✎`)**: Direct 1-tap launcher for `StreamingSubscriptionsBottomSheet`.
+      Modifying subscriptions immediately updates active filters and fetches new results without
+      navigating to Settings.
+    - **Empty State**: Displays `[ 📺 My Services ]` and prompts subscription setup on tap.
 3. **Freemium & Gating Model**:
-   - **Free Tier Anchor**: 1 streaming service is always free with zero ads.
-   - **ShowTime Pro**: Unlimited concurrent streaming services combined permanently.
-   - **Rewarded Video Pass (`RewardManager`)**: Free users can watch a short rewarded video to unlock a Multi-Service Pass (configurable duration via Remote Config: 24h pass or 120m discovery journey pass).
+    - **Free Tier Anchor**: 1 streaming service is always free with zero ads.
+    - **ShowTime Pro**: Unlimited concurrent streaming services combined permanently.
+    - **Rewarded Video Pass (`RewardManager`)**: Free users can watch a short rewarded video to
+      unlock a Multi-Service Pass (configurable duration via Remote Config: 24h pass or 120m
+      discovery journey pass).
 
 ---
 

@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui.receipt
 
-import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +52,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
@@ -61,7 +61,6 @@ import com.ssverma.feature.library.R
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.util.ShareImageHelper
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

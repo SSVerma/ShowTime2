@@ -67,6 +67,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.region.RegionSelectionBottomSheet
+import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
@@ -79,6 +80,7 @@ import com.ssverma.feature.filter.ui.discovery.component.DiscoveryFilterSheet
 import com.ssverma.feature.filter.ui.discovery.component.QuickVibesRow
 import com.ssverma.feature.filter.ui.discovery.component.SpinTheReelDialog
 import com.ssverma.feature.filter.ui.discovery.component.StreamingFilterRow
+import com.ssverma.feature.filter.ui.discovery.component.StreamingMultiServiceGateDialog
 import com.ssverma.feature.filter.ui.discovery.component.UniversalMediaCard
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
@@ -88,10 +90,6 @@ import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import kotlinx.coroutines.launch
 import com.ssverma.shared.ui.R as SharedUiR
-
-import android.app.Activity
-import com.ssverma.feature.filter.ui.discovery.component.StreamingMultiServiceGateDialog
-import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

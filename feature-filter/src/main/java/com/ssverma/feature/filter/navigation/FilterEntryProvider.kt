@@ -5,11 +5,11 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.filter.ui.discovery.UniversalDiscoveryScreen
 import com.ssverma.feature.filter.ui.hub.WatchProviderHubScreen
 import com.ssverma.feature.filter.ui.hub.WatchProviderHubViewModel
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
-import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute

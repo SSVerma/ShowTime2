@@ -2,6 +2,7 @@ package com.ssverma.feature.match.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,15 +14,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BookmarkAdd
-import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.BookmarkAdded
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,26 +31,22 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import com.ssverma.core.ui.layout.ShowTimeBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
+import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import java.util.Locale
@@ -59,7 +57,7 @@ fun MatchSummarySheet(
     sheetState: SheetState,
     matches: List<MovieMatchCard>,
     onWatchNow: (MovieMatchCard) -> Unit,
-    onAddToWatchlist: (MovieMatchCard) -> Unit,
+    onToggleWatchlist: (MovieMatchCard) -> Unit,
     onStartNewSession: () -> Unit,
     onDismissRequest: () -> Unit,
     savedWatchlistIds: Set<Int> = emptySet()
@@ -74,14 +72,14 @@ fun MatchSummarySheet(
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 32.dp)
         ) {
-            // Header
+            // Compact Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Tonight's Matches",
+                    text = stringResource(R.string.match_room_tonight_matches),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -92,7 +90,11 @@ fun MatchSummarySheet(
                     color = if (matches.isNotEmpty()) MovieMatchColor.LikeGreen.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
-                        text = "${matches.size} Match${if (matches.size == 1) "" else "es"}",
+                        text = if (matches.size == 1) {
+                            stringResource(R.string.match_room_match_count_badge_single)
+                        } else {
+                            stringResource(R.string.match_room_match_count_badge, matches.size)
+                        },
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (matches.isNotEmpty()) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -101,25 +103,40 @@ fun MatchSummarySheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             if (matches.isEmpty()) {
-                // Empty State
+                // Empty State with M3 Vector Icon
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 40.dp),
+                        .padding(vertical = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Rounded.FavoriteBorder,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "💔 No Mutual Matches",
+                        text = stringResource(R.string.match_room_no_mutual_matches),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "You and your partner didn't swipe right on the same movies this round. Try another deck or unlock custom streaming filters!",
+                        text = stringResource(R.string.match_room_no_mutual_matches_desc),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -127,23 +144,23 @@ fun MatchSummarySheet(
                     )
                 }
             } else {
-                // List of Matched Movies
+                // List of Matched Movies (Maximized scroll height)
                 LazyColumn(
                     modifier = Modifier.weight(1f, fill = false),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(matches, key = { it.id }) { movie ->
                         MatchedMovieItem(
                             movie = movie,
                             isWatchlistAdded = savedWatchlistIds.contains(movie.id),
                             onWatchNow = { onWatchNow(movie) },
-                            onAddToWatchlist = { onAddToWatchlist(movie) }
+                            onToggleWatchlist = { onToggleWatchlist(movie) }
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Start New Room Action
             Button(
@@ -160,7 +177,7 @@ fun MatchSummarySheet(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Start New Round",
+                    text = stringResource(R.string.match_room_start_new_round),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -173,18 +190,13 @@ private fun MatchedMovieItem(
     movie: MovieMatchCard,
     isWatchlistAdded: Boolean,
     onWatchNow: () -> Unit,
-    onAddToWatchlist: () -> Unit
+    onToggleWatchlist: () -> Unit
 ) {
-    var localAdded by remember(movie.id, isWatchlistAdded) { mutableStateOf(isWatchlistAdded) }
-    val isAdded = isWatchlistAdded || localAdded
-
     Card(
         onClick = onWatchNow,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                alpha = 0.5f
-            )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
         modifier = Modifier.fillMaxWidth()
@@ -198,7 +210,7 @@ private fun MatchedMovieItem(
             // Thumbnail
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.size(width = 60.dp, height = 90.dp)
+                modifier = Modifier.size(width = 56.dp, height = 84.dp)
             ) {
                 NetworkImage(
                     url = movie.posterImageUrl,
@@ -210,7 +222,7 @@ private fun MatchedMovieItem(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Movie Details
+            // Details
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = movie.title,
@@ -280,23 +292,24 @@ private fun MatchedMovieItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        "Watch",
+                        text = stringResource(R.string.match_room_watch_action),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
                 IconButton(
-                    onClick = {
-                        localAdded = true
-                        onAddToWatchlist()
-                    },
+                    onClick = onToggleWatchlist,
                     modifier = Modifier.size(34.dp)
                 ) {
                     Icon(
-                        imageVector = if (isAdded) Icons.Rounded.Check else Icons.Rounded.BookmarkAdd,
-                        contentDescription = if (isAdded) "Added to Watchlist" else "Add to Watchlist",
-                        tint = if (isAdded) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.primary,
+                        imageVector = if (isWatchlistAdded) Icons.Rounded.BookmarkAdded else Icons.Rounded.BookmarkAdd,
+                        contentDescription = if (isWatchlistAdded) {
+                            stringResource(R.string.match_room_remove_from_watchlist)
+                        } else {
+                            stringResource(R.string.match_room_add_to_watchlist)
+                        },
+                        tint = if (isWatchlistAdded) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                 }

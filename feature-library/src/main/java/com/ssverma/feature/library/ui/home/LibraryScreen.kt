@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui.home
 
-import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
@@ -57,7 +56,6 @@ import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.EmojiEvents
@@ -135,6 +133,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.ssverma.common.ui.community.CommunityListCard
+import com.ssverma.common.ui.community.CommunityListDetailSheet
+import com.ssverma.common.ui.community.PublishListBottomSheet
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.UiText
@@ -153,15 +155,13 @@ import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.navigation.LibraryTabDestination
-import com.ssverma.feature.library.ui.share.ListShareExportBottomSheet
-import com.ssverma.feature.library.ui.share.SecretShareInfoBottomSheet
-import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBanner
 import com.ssverma.feature.library.ui.home.component.LibraryTab
 import com.ssverma.feature.library.ui.home.component.LibraryTabType
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
 import com.ssverma.feature.library.ui.receipt.CinemaReceiptBottomSheet
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.feature.library.ui.share.ListShareExportBottomSheet
+import com.ssverma.feature.library.ui.share.SecretShareInfoBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityListCategories
@@ -169,10 +169,8 @@ import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
+import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.shared.domain.utils.ShareMediaUtils
-import com.ssverma.common.ui.community.CommunityListCard
-import com.ssverma.common.ui.community.CommunityListDetailSheet
-import com.ssverma.common.ui.community.PublishListBottomSheet
 import com.ssverma.shared.ui.component.media.MediaItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

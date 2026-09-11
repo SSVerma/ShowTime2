@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.feature.auth.domain.AuthManager
 import com.ssverma.feature.auth.domain.failure.AuthError
-import com.ssverma.shared.domain.model.auth.AuthState
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.auth.AuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,6 +1,6 @@
 package com.ssverma.feature.match.ui
 
-import com.ssverma.shared.domain.model.match.MatchDeckType
+import com.ssverma.core.ui.UiText
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
 import com.ssverma.shared.domain.model.match.MovieMatchCard
@@ -31,7 +31,7 @@ data class MovieMatchRoomUiState(
     val matches: List<MovieMatchCard> = emptyList(),
     val celebratingMatch: MovieMatchCard? = null,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
+    val errorMessage: UiText? = null,
     val isProOrPassActive: Boolean = false,
     val showQuotaModal: Boolean = false,
     val showSetupSheet: Boolean = false,

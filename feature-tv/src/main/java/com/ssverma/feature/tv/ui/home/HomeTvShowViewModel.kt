@@ -6,8 +6,6 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.mapSuccess
-import com.ssverma.shared.domain.auth.TraktAuthProvider
-import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.feature.tv.domain.usecase.NowAiringTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TodayAiringTvShowsUseCase
@@ -23,6 +21,8 @@ import com.ssverma.shared.ads.injection.injectAds
 import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
+import com.ssverma.shared.domain.auth.TraktAuthProvider
+import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository

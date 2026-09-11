@@ -1,12 +1,6 @@
 package com.ssverma.feature.match.ui.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BookmarkAdd
@@ -45,10 +37,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import java.util.Locale
@@ -112,7 +104,7 @@ fun MatchCelebrationDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.match_room_cd_close),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -125,7 +117,7 @@ fun MatchCelebrationDialog(
                     ) {
                         // Celebration Header
                         Text(
-                            text = "🎉 IT'S A MATCH!",
+                            text = "🎉 " + stringResource(R.string.match_room_its_a_match),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Black,
                             color = MovieMatchColor.RatingGold,
@@ -135,7 +127,10 @@ fun MatchCelebrationDialog(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "You and $partnerName both want to watch",
+                            text = stringResource(
+                                R.string.match_room_celebration_both_loved,
+                                partnerName
+                            ),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -230,7 +225,7 @@ fun MatchCelebrationDialog(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Watch Now",
+                                text = stringResource(R.string.match_room_watch_now),
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -263,7 +258,7 @@ fun MatchCelebrationDialog(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = if (isAdded) "Added to Watchlist" else "Add to Watchlist",
+                                text = stringResource(if (isAdded) R.string.match_room_watchlist_added else R.string.match_room_add_to_watchlist),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = if (isAdded) FontWeight.Bold else FontWeight.Normal
                             )
@@ -274,7 +269,7 @@ fun MatchCelebrationDialog(
                         // Tertiary Action: Keep Swiping
                         TextButton(onClick = onDismiss) {
                             Text(
-                                text = "Keep Swiping",
+                                text = stringResource(R.string.match_room_keep_swiping),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -16,6 +16,7 @@ import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
+import com.ssverma.shared.data.local.db.entity.WatchlistEntity
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
@@ -244,5 +245,29 @@ class MatchRoomRepositoryTest {
         assertThat(MatchRoomRepositoryImpl.normalizeRoomId("ST 4829")).isEqualTo("st-4829")
         assertThat(MatchRoomRepositoryImpl.normalizeRoomId("st4829")).isEqualTo("st-4829")
         assertThat(MatchRoomRepositoryImpl.normalizeRoomId("  ST-1234  ")).isEqualTo("st-1234")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("K8M4X2")).isEqualTo("st-k8m4x2")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("ST-K8M4X2")).isEqualTo("st-k8m4x2")
+        assertThat(MatchRoomRepositoryImpl.normalizeRoomId("  ST-K8M4X2  ")).isEqualTo("st-k8m4x2")
+    }
+
+    @Test
+    fun `removeMatchFromWatchlist deletes item by mediaId in WatchlistDao`() = runTest {
+        val result = repository.removeMatchFromWatchlist(550)
+        assertThat(result).isInstanceOf(Result.Success::class.java)
+        coVerify(exactly = 1) { mockWatchlistDao.deleteWatchlistById(550) }
+    }
+
+    @Test
+    fun `getWatchlistMovieIdsFlow emits set of mediaIds from WatchlistDao`() = runTest {
+        val fakeEntities = listOf(
+            mockk<WatchlistEntity> { every { mediaId } returns 101 },
+            mockk<WatchlistEntity> { every { mediaId } returns 102 }
+        )
+        every { mockWatchlistDao.getAllWatchlistFlow() } returns flowOf(fakeEntities)
+
+        val flow = repository.getWatchlistMovieIdsFlow()
+        flow.collect { ids ->
+            assertThat(ids).containsExactly(101, 102)
+        }
     }
 }

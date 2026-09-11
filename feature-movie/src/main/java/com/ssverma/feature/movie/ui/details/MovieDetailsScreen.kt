@@ -6,7 +6,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +25,6 @@ import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -46,7 +44,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.common.ui.community.MediaDiscussionsSection
+import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
 import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
@@ -69,7 +70,6 @@ import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
-import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
@@ -81,12 +81,12 @@ import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaItemDefaults
+import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
-import com.ssverma.common.ui.community.MediaDiscussionsSection
 import com.ssverma.shared.ui.component.section.MediaReactionsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.shared.ui.component.section.ReviewsSection

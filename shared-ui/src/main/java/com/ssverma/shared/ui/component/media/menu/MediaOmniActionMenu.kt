@@ -45,10 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.navigation.nav3.LocalNavigator
+import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
-import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog

@@ -1,7 +1,7 @@
 <resources>
     <!-- Movie Match Room (Swipe Night) -->
-    <string name="match_room_title">Movie Match Room</string>
-    <string name="match_room_subtitle">Swipe movies with friends &amp; find what to watch tonight</string>
+    <string name="match_room_title">Movie &amp; Show Match</string>
+    <string name="match_room_subtitle">Swipe movies and TV shows with friends to find what to watch tonight</string>
     <string name="match_room_mode_couch">Pass &amp; Play (Couch Mode)</string>
     <string name="match_room_mode_couch_desc">2 people, 1 phone. Swipe together on the couch.</string>
     <string name="match_room_mode_remote">Remote Room (Invite a Friend)</string>
@@ -9,27 +9,113 @@
     <string name="match_room_create">Create Room</string>
     <string name="match_room_join">Join Room</string>
     <string name="match_room_enter_code">Enter Room Code</string>
-    <string name="match_room_code_hint">e.g. ST-4829</string>
+    <string name="match_room_code_hint">e.g. ST-K8M4X2</string>
     <string name="match_room_share_invite">Share Invite</string>
     <string name="match_room_its_a_match">IT\'S A MATCH!</string>
     <string name="match_room_both_loved">You both want to watch</string>
     <string name="match_room_keep_swiping">Keep Swiping</string>
     <string name="match_room_view_matches">View All Matches</string>
     <string name="match_room_pass_to_player2">Hand phone to %1$s!</string>
-    <string name="match_room_player2_prompt">Swipe right on movies you\'d like to watch tonight.</string>
+    <string name="match_room_player2_prompt">Swipe right on movies and shows you\'d like to watch tonight.</string>
     <string name="match_room_player_ready">I\'m Ready to Swipe</string>
     <string name="match_room_no_matches">No mutual matches found this round.</string>
     <string name="match_room_no_matches_desc">Try another deck or unlock custom streaming filters!</string>
     <string name="match_room_free_quota_exceeded">Daily Free Match Room Used</string>
     <string name="match_room_unlock_with_pass">Unlock unlimited rooms &amp; custom streaming filters with Pro or watch a quick video for a 24h pass.</string>
     <string name="match_room_deck_trending">Trending Tonight</string>
+    <string name="match_room_deck_trending_desc">Top trending movies and shows (1 free daily session)</string>
     <string name="match_room_deck_subscriptions">My Subscriptions Only</string>
+    <string name="match_room_deck_subscriptions_desc">Only titles streaming on Netflix, Prime, Disney+</string>
     <string name="match_room_deck_genre">Genre Spotlight</string>
+    <string name="match_room_deck_genre_desc">Focus on Horror, Sci-Fi, Comedy, Romance, and more</string>
     <string name="match_room_card_count">%1$d of %2$d</string>
     <string name="match_room_start_deck">Start Swiping</string>
     <string name="match_room_rewind">Rewind</string>
     <string name="match_room_watchlist_added">Added to Watchlist</string>
+    <string name="match_room_watchlist_removed">Removed from Watchlist</string>
+    <string name="match_room_add_to_watchlist">Add to Watchlist</string>
+    <string name="match_room_remove_from_watchlist">Remove from Watchlist</string>
     <string name="match_room_watch_now">Watch Now</string>
     <string name="match_room_finish">Finish</string>
-    <string name="match_room_invite_text">Join my ShowTime Movie Match Room: %1$s. Let\'s pick tonight\'s movie together!</string>
+    <string name="match_room_invite_text">Join my ShowTime Match Room: %1$s. Let\'s pick tonight\'s movie or show together!</string>
+
+    <!-- Setup Sheet -->
+    <string name="match_room_setup_title">Movie &amp; Show Match Setup</string>
+    <string name="match_room_setup_mode_header">MATCH MODE</string>
+    <string name="match_room_setup_players_header">PLAYERS</string>
+    <string name="match_room_setup_player1_label">Player 1</string>
+    <string name="match_room_setup_player2_label">Player 2</string>
+    <string name="match_room_setup_your_name_header">YOUR NAME</string>
+    <string name="match_room_setup_host_name_label">Host Name</string>
+    <string name="match_room_setup_filter_header">DECK FILTER</string>
+    <string name="match_room_setup_deck_size_header">DECK SIZE</string>
+    <string name="match_room_deck_size_format">%1$d Titles</string>
+    <string name="match_room_create_remote_button">Create Remote Room</string>
+    <string name="match_room_join_prompt">Have a room code? Join Room</string>
+    <string name="match_room_pro_tag">PRO</string>
+
+    <!-- Exit Dialog -->
+    <string name="match_room_exit_dialog_title">Exit Movie Match?</string>
+    <string name="match_room_exit_dialog_message">Are you sure you want to exit Movie Match?</string>
+    <string name="match_room_exit_session_dialog_title">Leave Match Session?</string>
+    <string name="match_room_exit_session_dialog_message">Are you sure you want to leave? Your match progress will be lost.</string>
+    <string name="match_room_exit_dialog_confirm">Exit</string>
+    <string name="match_room_exit_dialog_cancel">Stay</string>
+
+    <!-- Summary & Results -->
+    <string name="match_room_summary_title">Match Summary</string>
+    <string name="match_room_tonight_matches">Tonight\'s Matches</string>
+    <string name="match_room_summary_agreed">You both agreed on %1$d titles!</string>
+    <string name="match_room_summary_agreed_single">You both agreed on 1 title!</string>
+    <string name="match_room_summary_no_matches">No mutual matches this time. Try again with fresh titles!</string>
+    <string name="match_room_start_new_round">Start New Round</string>
+    <string name="match_room_no_mutual_matches">No Mutual Matches</string>
+    <string name="match_room_no_mutual_matches_desc">You and your partner didn\'t swipe right on the same titles this round. Try another deck or unlock custom streaming filters!</string>
+    <string name="match_room_match_count_badge">%1$d Matches</string>
+    <string name="match_room_match_count_badge_single">1 Match</string>
+    <string name="match_room_watch_action">Watch</string>
+
+    <!-- Quota & Pro -->
+    <string name="match_room_watch_video_pass">Watch Video (24h Pass)</string>
+    <string name="match_room_get_pro">Get Pro Unlimited</string>
+    <string name="match_room_not_now">Not Now</string>
+
+    <!-- Navigation and Accessibility -->
+    <string name="match_room_back">Back</string>
+    <string name="match_room_view_matches_cd">View Matches</string>
+    <string name="match_room_copy_code">Copy Code</string>
+    <string name="match_room_room_code_copied">Room code copied to clipboard</string>
+    <string name="match_room_share_room_code">Share Room Code</string>
+    <string name="match_room_swiping_status">Swiping: %1$s • %2$d/%3$d</string>
+    <string name="match_room_handoff_desc">%1$s has finished their picks. Now it\'s your turn to swipe! ShowTime will reveal your mutual matches at the end.</string>
+    <string name="match_room_lobby_room_label">Room: %1$s</string>
+    <string name="match_room_invite_friend">Invite Friend</string>
+    <string name="match_room_partner_swiping">%1$s is swiping…</string>
+    <string name="match_room_partner_waiting">Waiting for partner to join…</string>
+    <string name="match_room_partner_joined">%1$s joined</string>
+    <string name="match_room_partner_waiting_for">Waiting for %1$s…</string>
+    <string name="match_room_err_load_deck">Unable to load movie deck. Please check your connection.</string>
+    <string name="match_room_err_create_room">Failed to create remote room.</string>
+    <string name="match_room_err_room_not_found">Room not found. Check the code and try again.</string>
+    <string name="match_room_celebration_both_loved">You and %1$s both want to watch</string>
+    <string name="match_room_stamp_like">LIKE</string>
+    <string name="match_room_stamp_pass">PASS</string>
+    <string name="match_room_cd_close">Close</string>
+    <string name="match_room_cd_undo">Undo Last Swipe</string>
+    <string name="match_room_cd_pass">Pass Movie</string>
+    <string name="match_room_cd_details">Movie Details</string>
+    <string name="match_room_cd_like">Like Movie</string>
+    <string name="match_room_default_player1">Player 1</string>
+    <string name="match_room_default_player2">Player 2</string>
+    <string name="match_room_default_host">Host</string>
+    <string name="match_room_default_guest">Guest</string>
+    <string name="match_room_default_partner">Partner</string>
+    <string name="match_room_genre_action">Action</string>
+    <string name="match_room_genre_horror">Horror</string>
+    <string name="match_room_genre_comedy">Comedy</string>
+    <string name="match_room_genre_scifi">Sci-Fi</string>
+    <string name="match_room_genre_thriller">Thriller</string>
+    <string name="match_room_genre_romance">Romance</string>
+    <string name="match_room_genre_animation">Animation</string>
+    <string name="match_room_genre_drama">Drama</string>
 </resources>
