@@ -36,6 +36,7 @@ import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
 import com.ssverma.core.ui.theme.spacing
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
@@ -74,7 +75,7 @@ fun TvShowHomeContent(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
     openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { id, _ ->
         openTvShowDetails(id)
     },

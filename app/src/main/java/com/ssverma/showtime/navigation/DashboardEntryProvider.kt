@@ -32,7 +32,7 @@ import com.ssverma.showtime.ui.dashboard.DashboardScreen
 
 fun EntryProviderScope<NavKey>.dashboardEntries(
     navigator: Navigator,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit
+    openLibraryPage: (NavKey) -> Unit
 ) {
     showTimeEntry<DashboardHomeNavKey> {
         DashboardScreen(

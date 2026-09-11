@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiState
@@ -80,7 +81,7 @@ fun DashboardScreen(
     openStudioPortal: (StudioPortalItem) -> Unit,
     openMovieListing: () -> Unit,
     openTvListing: () -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
     openUniversalDiscovery: (UniversalDiscoveryNavKey) -> Unit,
     openCinemaDiary: () -> Unit = {},
     openTasteProfile: () -> Unit = {},

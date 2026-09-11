@@ -21,6 +21,7 @@ import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.feature.filter.ui.hub.component.WatchProviderHubContent
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.TvDiscoverConfig
@@ -37,7 +38,7 @@ fun WatchProviderHubScreen(
     onGenreClick: (Genre, Boolean) -> Unit,
     onMovieSeeAllClick: (providerInfo: ProviderInfo, discoverConfig: MovieDiscoverConfig) -> Unit,
     onTvSeeAllClick: (providerInfo: ProviderInfo, discoverConfig: TvDiscoverConfig) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
     viewModel: WatchProviderHubViewModel,
     source: String = "default"
 ) {

@@ -46,6 +46,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.navigation.nav3.LocalNavigator
 import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
+import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
@@ -433,7 +434,7 @@ fun MediaOmniActionMenu(
                 viewModel.saveDiaryEntry(entry)
                 val feedbackMsg = context.getString(R.string.media_menu_diary_logged_success, title)
                 val viewInDiaryText = context.getString(R.string.media_menu_view_in_diary)
-                val destination = LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
+                val destination = CinemaDiaryNavKey
                 onShowFeedback?.invoke(
                     ShowFeedbackArgs(
                         message = feedbackMsg,

@@ -27,6 +27,7 @@ import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.paging.PagedContent
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
 import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
@@ -46,7 +47,7 @@ fun MovieListScreen(
     onBackPressed: () -> Unit,
     openMovieDetails: (movieId: Int) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    openLibraryPage: (NavKey) -> Unit = {},
     viewModel: MovieListViewModel
 ) {
 

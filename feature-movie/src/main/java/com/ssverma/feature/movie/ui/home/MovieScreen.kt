@@ -17,6 +17,7 @@ import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.AppPage
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.analytics.MovieAnalyticsScreenName
 import com.ssverma.feature.movie.navigation.args.MovieListingArgs
@@ -32,7 +33,7 @@ fun MovieScreen(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
     openCinemaGame: () -> Unit,
     viewModel: HomeMovieViewModel = hiltViewModel()
 ) {

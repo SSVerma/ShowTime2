@@ -40,7 +40,7 @@ fun ShowTimeNavDisplay(
     navigationState: NavigationState,
     navigator: Navigator,
     modifier: Modifier = Modifier,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
 ) {
     val entryProvider = rememberShowTimeEntryProvider(
         navigator = navigator,

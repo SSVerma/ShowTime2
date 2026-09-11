@@ -8,7 +8,6 @@ import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
-import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.person.navigation.PersonDetailNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
@@ -30,7 +29,7 @@ import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 
 fun EntryProviderScope<NavKey>.tvEntries(
     navigator: Navigator,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit
+    openLibraryPage: (NavKey) -> Unit
 ) {
     showTimeEntry<TvShowListingRoute> { key ->
         TvShowListScreen(

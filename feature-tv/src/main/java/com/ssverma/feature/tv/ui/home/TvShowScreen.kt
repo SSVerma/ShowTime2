@@ -17,6 +17,7 @@ import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.AppPage
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
@@ -32,7 +33,7 @@ fun TvShowScreen(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
     openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { id, _ ->
         openTvShowDetails(
             id

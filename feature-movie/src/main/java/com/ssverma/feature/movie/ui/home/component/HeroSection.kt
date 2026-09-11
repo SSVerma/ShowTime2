@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.common.ui.component.HomePageAppBar
 import com.ssverma.core.image.NetworkImage
@@ -55,7 +56,7 @@ fun HeroSection(
     trendingMoviesState: MoviePreviewUiState,
     onSearchClicked: () -> Unit,
     onAccountClicked: () -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
     onMovieClicked: (movie: MoviePreview) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     onRetry: () -> Unit,

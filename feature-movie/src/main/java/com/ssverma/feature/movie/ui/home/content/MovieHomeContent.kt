@@ -28,6 +28,7 @@ import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
 import com.ssverma.core.ui.theme.spacing
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.movie.R
 import com.ssverma.feature.movie.analytics.MovieAnalyticsEvent
@@ -63,7 +64,7 @@ fun MovieHomeContent(
     openSearchPage: () -> Unit,
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit,
+    openLibraryPage: (NavKey) -> Unit,
     openCinemaGame: () -> Unit,
     modifier: Modifier = Modifier,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null

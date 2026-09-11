@@ -65,6 +65,8 @@ import com.ssverma.core.ui.layout.HorizontalLazyList
 import com.ssverma.core.ui.layout.HorizontalLazyListSection
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
+import androidx.navigation3.runtime.NavKey
+import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
@@ -121,7 +123,7 @@ fun TvShowDetailsScreen(
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    openLibraryPage: (NavKey) -> Unit = {},
     openProPaywall: () -> Unit = {},
     viewModel: TvShowDetailsViewModel
 ) {
@@ -183,7 +185,7 @@ private fun TvShowContent(
     openTvShowList: (listingRoute: TvShowListingRoute) -> Unit,
     openTvSeasonDetails: (seasonArgs: TvSeasonArgs) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    openLibraryPage: (NavKey) -> Unit = {},
     openProPaywall: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -693,10 +695,17 @@ private fun TvShowContent(
                     viewModel.saveDiaryEntry(entry)
                     showLogDialog = false
                     coroutineScope.launch {
-                        snackbarHostState.showImmediateSnackbar(
-                            message = "Logged \"${tvShow.title}\" to Cinema Diary! ✨",
+                        val result = snackbarHostState.showImmediateSnackbar(
+                            message = context.getString(
+                                SharedR.string.media_menu_diary_logged_success,
+                                tvShow.title
+                            ),
+                            actionLabel = context.getString(SharedR.string.media_menu_view_in_diary),
                             duration = SnackbarDuration.Short
                         )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            openLibraryPage(CinemaDiaryNavKey)
+                        }
                     }
                 }
             )

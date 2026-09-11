@@ -27,6 +27,7 @@ import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.AppPage
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.paging.PagedContent
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
@@ -46,7 +47,7 @@ fun TvShowListScreen(
     onBackPressed: () -> Unit,
     openTvShowDetails: (Int) -> Unit,
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
-    openLibraryPage: (LibraryHomeNavKey) -> Unit = {},
+    openLibraryPage: (NavKey) -> Unit = {},
     viewModel: TvShowListViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
