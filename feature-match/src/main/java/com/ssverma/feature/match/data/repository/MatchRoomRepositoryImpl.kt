@@ -26,6 +26,7 @@ import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoom
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
+import com.ssverma.shared.domain.model.match.MatchRoomFailure
 import com.ssverma.shared.domain.model.match.MatchRoomStatus
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import com.ssverma.shared.domain.model.match.SwipeDirection
@@ -234,41 +235,36 @@ class MatchRoomRepositoryImpl @Inject constructor(
     ): Result<MatchRoom, Failure<*>> {
         val roomId = normalizeRoomId(roomCode)
         if (roomId.isBlank()) {
-            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+            return Result.Error(Failure.FeatureFailure(MatchRoomFailure.RoomNotFound))
         }
 
         val now = System.currentTimeMillis()
         if (joinCooldownUntilEpochMs > now) {
-            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+            return Result.Error(Failure.FeatureFailure(MatchRoomFailure.RateLimited))
         }
 
         return try {
             val snapshot = firestore.collection(colMatchRooms).document(roomId).get().await()
             if (!snapshot.exists()) {
                 recordFailedJoinAttempt()
-                return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+                return Result.Error(Failure.FeatureFailure(MatchRoomFailure.RoomNotFound))
             }
 
             val createdAt = snapshot.getLong("createdAtEpochMs") ?: 0L
             if (now - createdAt > ROOM_EXPIRY_MILLIS) {
                 recordFailedJoinAttempt()
-                return Result.Error(Failure.CoreFailure.UnexpectedFailure)
-            }
-
-            val existingGuestId = snapshot.getString("guestUserId")
-            if (!existingGuestId.isNullOrBlank() && existingGuestId != persistentUserId) {
-                return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+                return Result.Error(Failure.FeatureFailure(MatchRoomFailure.RoomExpired))
             }
 
             val hostId = snapshot.getString("hostUserId")
             if (hostId == persistentUserId) {
-                val room = parseRoomSnapshot(snapshot)
-                return if (room != null) {
-                    failedJoinAttempts = 0
-                    Result.Success(room)
-                } else {
-                    Result.Error(Failure.CoreFailure.UnexpectedFailure)
-                }
+                // Cannot join own room as guest
+                return Result.Error(Failure.FeatureFailure(MatchRoomFailure.CannotJoinOwnRoom))
+            }
+
+            val existingGuestId = snapshot.getString("guestUserId")
+            if (!existingGuestId.isNullOrBlank() && existingGuestId != persistentUserId) {
+                return Result.Error(Failure.FeatureFailure(MatchRoomFailure.RoomFull))
             }
 
             firestore.collection(colMatchRooms).document(roomId).update(

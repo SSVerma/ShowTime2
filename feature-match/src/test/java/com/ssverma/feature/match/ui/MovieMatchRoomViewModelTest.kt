@@ -4,14 +4,18 @@ import android.app.Activity
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.core.ui.UiText
+import com.ssverma.feature.match.R
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoom
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
+import com.ssverma.shared.domain.model.match.MatchRoomFailure
 import com.ssverma.shared.domain.model.match.MatchRoomStatus
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import com.ssverma.shared.domain.model.match.SwipeDirection
@@ -328,4 +332,66 @@ class MovieMatchRoomViewModelTest {
             coVerify { rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM) }
             assertThat(viewModel.uiState.value.showQuotaModal).isFalse()
         }
+
+    @Test
+    fun `joinRemoteRoom with CannotJoinOwnRoom error displays cannot join own room error message`() =
+        runTest {
+            coEvery {
+                matchRoomRepository.joinRemoteRoom("ST-MYROOM", any())
+            } returns Result.Error(Failure.FeatureFailure(MatchRoomFailure.CannotJoinOwnRoom))
+
+            viewModel.setJoinCodeInput("ST-MYROOM")
+            viewModel.joinRemoteRoom(guestName = "Guest")
+            advanceUntilIdle()
+
+            val error = viewModel.uiState.value.errorMessage
+            assertThat(error).isInstanceOf(UiText.StaticText::class.java)
+            assertThat((error as UiText.StaticText).resId).isEqualTo(R.string.match_room_err_cannot_join_own_room)
+            assertThat(viewModel.uiState.value.phase).isEqualTo(MatchScreenPhase.SETUP)
+        }
+
+    @Test
+    fun `joinRemoteRoom with RoomFull error displays room full error message`() = runTest {
+        coEvery {
+            matchRoomRepository.joinRemoteRoom("ST-FULL12", any())
+        } returns Result.Error(Failure.FeatureFailure(MatchRoomFailure.RoomFull))
+
+        viewModel.setJoinCodeInput("ST-FULL12")
+        viewModel.joinRemoteRoom(guestName = "Guest")
+        advanceUntilIdle()
+
+        val error = viewModel.uiState.value.errorMessage
+        assertThat(error).isInstanceOf(UiText.StaticText::class.java)
+        assertThat((error as UiText.StaticText).resId).isEqualTo(R.string.match_room_err_room_full)
+    }
+
+    @Test
+    fun `joinRemoteRoom with RoomExpired error displays room expired error message`() = runTest {
+        coEvery {
+            matchRoomRepository.joinRemoteRoom("ST-OLD999", any())
+        } returns Result.Error(Failure.FeatureFailure(MatchRoomFailure.RoomExpired))
+
+        viewModel.setJoinCodeInput("ST-OLD999")
+        viewModel.joinRemoteRoom(guestName = "Guest")
+        advanceUntilIdle()
+
+        val error = viewModel.uiState.value.errorMessage
+        assertThat(error).isInstanceOf(UiText.StaticText::class.java)
+        assertThat((error as UiText.StaticText).resId).isEqualTo(R.string.match_room_err_room_expired)
+    }
+
+    @Test
+    fun `joinRemoteRoom with RateLimited error displays rate limited error message`() = runTest {
+        coEvery {
+            matchRoomRepository.joinRemoteRoom("ST-SPAM12", any())
+        } returns Result.Error(Failure.FeatureFailure(MatchRoomFailure.RateLimited))
+
+        viewModel.setJoinCodeInput("ST-SPAM12")
+        viewModel.joinRemoteRoom(guestName = "Guest")
+        advanceUntilIdle()
+
+        val error = viewModel.uiState.value.errorMessage
+        assertThat(error).isInstanceOf(UiText.StaticText::class.java)
+        assertThat((error as UiText.StaticText).resId).isEqualTo(R.string.match_room_err_rate_limited)
+    }
 }

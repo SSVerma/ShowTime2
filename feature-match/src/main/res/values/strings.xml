@@ -97,6 +97,10 @@
     <string name="match_room_err_load_deck">Unable to load movie deck. Please check your connection.</string>
     <string name="match_room_err_create_room">Failed to create remote room.</string>
     <string name="match_room_err_room_not_found">Room not found. Check the code and try again.</string>
+    <string name="match_room_err_cannot_join_own_room">You cannot join your own room. Share this code with a friend to swipe together!</string>
+    <string name="match_room_err_room_full">This room already has 2 players swiping.</string>
+    <string name="match_room_err_room_expired">This room has expired. Please create a new room.</string>
+    <string name="match_room_err_rate_limited">Too many attempts. Please wait 30 seconds before trying again.</string>
     <string name="match_room_celebration_both_loved">You and %1$s both want to watch</string>
     <string name="match_room_stamp_like">LIKE</string>
     <string name="match_room_stamp_pass">PASS</string>

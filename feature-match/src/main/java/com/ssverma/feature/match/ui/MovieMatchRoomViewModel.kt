@@ -10,8 +10,10 @@ import com.ssverma.feature.match.R
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.match.MatchMode
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
+import com.ssverma.shared.domain.model.match.MatchRoomFailure
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import com.ssverma.shared.domain.model.match.SwipeDirection
 import com.ssverma.shared.domain.repository.MatchRoomRepository
@@ -234,10 +236,18 @@ class MovieMatchRoomViewModel @Inject constructor(
                 }
 
                 is Result.Error -> {
+                    val errorRes =
+                        when ((joinResult.error as? Failure.FeatureFailure<*>)?.featureFailureType) {
+                            MatchRoomFailure.CannotJoinOwnRoom -> R.string.match_room_err_cannot_join_own_room
+                            MatchRoomFailure.RoomFull -> R.string.match_room_err_room_full
+                            MatchRoomFailure.RoomExpired -> R.string.match_room_err_room_expired
+                            MatchRoomFailure.RateLimited -> R.string.match_room_err_rate_limited
+                            else -> R.string.match_room_err_room_not_found
+                        }
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = UiText.StaticText(R.string.match_room_err_room_not_found)
+                            errorMessage = UiText.StaticText(errorRes)
                         )
                     }
                 }

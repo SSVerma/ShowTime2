@@ -172,7 +172,7 @@ service cloud.firestore {
         && data.deckJson == existing.deckJson
         && data.mode == existing.mode
         && data.hostName is string && data.hostName.size() > 0 && data.hostName.size() <= 50
-        && (data.guestUserId == null || (data.guestUserId is string && data.guestUserId.size() <= 128))
+        && (data.guestUserId == null || (data.guestUserId is string && data.guestUserId.size() <= 128 && data.guestUserId != existing.hostUserId))
         && (data.guestName == null || (data.guestName is string && data.guestName.size() <= 50))
         && data.status is string
         && data.hostLikes is list && data.hostLikes.size() <= 100

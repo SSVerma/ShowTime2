@@ -7,7 +7,11 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.preferencesOf
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.android.gms.tasks.Tasks
 import com.google.common.truth.Truth.assertThat
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.response.PagedPayload
@@ -18,8 +22,10 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
 import com.ssverma.shared.data.local.db.entity.WatchlistEntity
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.match.MatchDeckType
 import com.ssverma.shared.domain.model.match.MatchRoomConfig
+import com.ssverma.shared.domain.model.match.MatchRoomFailure
 import com.ssverma.shared.domain.model.match.MovieMatchCard
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import io.mockk.coEvery
@@ -269,5 +275,29 @@ class MatchRoomRepositoryTest {
         flow.collect { ids ->
             assertThat(ids).containsExactly(101, 102)
         }
+    }
+
+    @Test
+    fun `joinRemoteRoom returns CannotJoinOwnRoom when user is the host`() = runTest {
+        val mockDoc = mockk<DocumentReference>(relaxed = true)
+        val mockCollection = mockk<CollectionReference>(relaxed = true)
+        val mockSnapshot = mockk<DocumentSnapshot>(relaxed = true)
+
+        every { mockFirestore.collection(any()) } returns mockCollection
+        every { mockCollection.document(any()) } returns mockDoc
+
+        every { mockSnapshot.exists() } returns true
+        every { mockSnapshot.getLong("createdAtEpochMs") } returns System.currentTimeMillis()
+        // Persistent user UUID is "mock-user-123" from setUp()
+        every { mockSnapshot.getString("hostUserId") } returns "mock-user-123"
+
+        every { mockDoc.get() } returns Tasks.forResult(mockSnapshot)
+
+        val result = repository.joinRemoteRoom("ST-MYROOM", "Guest")
+        assertThat(result).isInstanceOf(Result.Error::class.java)
+        val error = (result as Result.Error).error
+        assertThat(error).isInstanceOf(Failure.FeatureFailure::class.java)
+        assertThat((error as Failure.FeatureFailure<*>).featureFailureType)
+            .isEqualTo(MatchRoomFailure.CannotJoinOwnRoom)
     }
 }
