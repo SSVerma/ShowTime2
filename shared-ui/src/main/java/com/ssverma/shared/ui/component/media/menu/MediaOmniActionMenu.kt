@@ -86,7 +86,6 @@ fun MediaOmniActionMenu(
     config: MediaOmniMenuConfig = MediaOmniMenuConfig.Default,
     customLists: List<CustomListOption>? = null,
     onToggleCustomList: ((CustomListOption) -> Unit)? = null,
-    isOverPoster: Boolean = true,
     actionContent: (@Composable (onClick: () -> Unit) -> Unit)? = null,
     viewModel: MediaOmniMenuViewModel = hiltViewModel()
 ) {
@@ -106,10 +105,11 @@ fun MediaOmniActionMenu(
 
     val canOpenDiscussions =
         config.showDiscussions && (onOpenDiscussions != null || navigator != null)
-    val canLogToDiary = config.showDiaryLog
+    val canLogToDiary = config.effectiveShowDiaryLog
     val canShare = config.showShare
 
-    val hasTrackingSection = config.showWatchlist || config.showWatched || config.showFavorite
+    val hasTrackingSection =
+        config.showWatchlist || config.effectiveShowWatched || config.showFavorite
     val hasCustomListSection = config.showCustomList
     val hasQuickActionsSection = canOpenDiscussions || canLogToDiary || canShare
 
@@ -200,7 +200,7 @@ fun MediaOmniActionMenu(
         onToggleExpand = { isMenuExpanded = !isMenuExpanded },
         onDismissRequest = { isMenuExpanded = false },
         showActiveDot = effectiveActionActive,
-        isOverPoster = isOverPoster,
+        isOverPoster = config.isOverPoster,
         actionContent = actionContent,
         modifier = modifier
     ) {
@@ -300,7 +300,7 @@ fun MediaOmniActionMenu(
                 )
             }
 
-            if (config.showWatched) {
+            if (config.effectiveShowWatched) {
                 ExpressiveMenuItem(
                     title = if (effectiveIsWatched) {
                         stringResource(R.string.media_card_action_mark_unwatched)

@@ -56,6 +56,18 @@ class Movie(
             if (fromReleaseDates != null) return fromReleaseDates
             return releaseDate?.takeIf { it.isAfter(today) || it.isEqual(today) }
         }
+
+    /** Whether the movie has not yet been released */
+    val isUpcoming: Boolean
+        get() {
+            val today = LocalDate.now()
+            if (nextFutureReleaseDate != null) return true
+            if (releaseDate != null && releaseDate.isAfter(today)) return true
+            return status.equals("In Production", ignoreCase = true) ||
+                    status.equals("Planned", ignoreCase = true) ||
+                    status.equals("Post Production", ignoreCase = true) ||
+                    status.equals("Upcoming", ignoreCase = true)
+        }
 }
 
 fun Movie.imageShots(): List<ImageShot> {

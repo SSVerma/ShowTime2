@@ -45,7 +45,23 @@ class TvShow(
     val watchProviders: Map<String, WatchProvider>,
     val nextEpisodeToAir: TvEpisodePreview? = null,
     val lastEpisodeToAir: TvEpisodePreview? = null
-)
+) {
+    /** Whether the TV show has scheduled future episodes to air */
+    val hasUpcomingEpisodes: Boolean
+        get() {
+            val nextEpisodeDate = nextEpisodeToAir?.airDate
+            return nextEpisodeDate != null && !nextEpisodeDate.isBefore(LocalDate.now())
+        }
+
+    /** Whether the TV series has not yet premiered */
+    val isUpcoming: Boolean
+        get() {
+            val today = LocalDate.now()
+            if (firstAirDate != null && firstAirDate.isAfter(today)) return true
+            return status.equals("In Production", ignoreCase = true) ||
+                    status.equals("Planned", ignoreCase = true)
+        }
+}
 
 fun TvShow.imageShots(): List<ImageShot> {
     return (backdrops + posters + stills)

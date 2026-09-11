@@ -156,8 +156,7 @@ fun UniversalMediaCard(
             onOpenDiscussions = onOpenDiscussions,
             onShare = onShare,
             onShowFeedback = onShowFeedback,
-            config = menuConfig,
-            isOverPoster = isOverPoster,
+            config = menuConfig.copy(isOverPoster = isOverPoster),
             viewModel = viewModel
         )
     }

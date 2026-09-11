@@ -17,10 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.NotificationsNone
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,6 +72,7 @@ import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
 import com.ssverma.shared.domain.utils.ShareMediaUtils
+import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
 import com.ssverma.shared.ui.component.BackdropActionButton
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.GenreItem
@@ -227,11 +226,13 @@ fun MovieContent(
                         viewModel.onPlayTrailerClicked(movie)
                     },
                     secondaryActions = {
-                        BackdropActionButton(
-                            onClick = { showLogDialog = true },
-                            icon = if (diaryEntries.isNotEmpty()) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                            contentDescription = "Log & Rate"
-                        )
+                        if (!movie.isUpcoming) {
+                            BackdropActionButton(
+                                onClick = { showLogDialog = true },
+                                icon = if (diaryEntries.isNotEmpty()) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                                contentDescription = stringResource(id = SharedR.string.log_and_rate_cd)
+                            )
+                        }
                         MediaOmniActionMenu(
                             mediaId = movie.id,
                             mediaType = MediaType.Movie,
@@ -240,7 +241,26 @@ fun MovieContent(
                             backdropImageUrl = movie.backdropImageUrl,
                             voteAvg = movie.voteAvg,
                             releaseDate = movie.releaseDate?.toString().orEmpty(),
+                            config = MediaOmniMenuConfig(isUpcoming = movie.isUpcoming),
                             onLogToDiary = { showLogDialog = true },
+                            onOpenDiscussions = openDiscussionsList,
+                            onShare = {
+                                analytics.logEvent(
+                                    MovieAnalyticsEvent.ShareClicked(
+                                        movieId = movie.id,
+                                        sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                                    )
+                                )
+                                val shareableText = ShareMediaUtils.buildShareableMediaText(
+                                    mediaTitle = movie.title,
+                                    mediaTagline = movie.tagline,
+                                    mediaOverview = movie.overview,
+                                    appPackageName = context.packageName,
+                                    mediaType = "movie",
+                                    mediaId = movie.id
+                                )
+                                context.dispatchShareTextIntent(text = shareableText)
+                            },
                             onShowFeedback = { args ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(
@@ -263,50 +283,26 @@ fun MovieContent(
                                 )
                             }
                         )
-                        BackdropActionButton(
-                            onClick = {
-                                analytics.logEvent(
-                                    MovieAnalyticsEvent.ShareClicked(
-                                        movieId = movie.id,
-                                        sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
-                                    )
-                                )
-                                val shareableText = ShareMediaUtils.buildShareableMediaText(
-                                    mediaTitle = movie.title,
-                                    mediaTagline = movie.tagline,
-                                    mediaOverview = movie.overview,
-                                    appPackageName = context.packageName,
-                                    mediaType = "movie",
-                                    mediaId = movie.id
-                                )
-                                context.dispatchShareTextIntent(text = shareableText)
-                            },
-                            icon = Icons.Rounded.Share,
-                            contentDescription = stringResource(id = SharedR.string.share)
-                        )
-                        BackdropActionButton(
-                            onClick = openDiscussionsList,
-                            icon = Icons.Rounded.ChatBubbleOutline,
-                            contentDescription = stringResource(id = SharedR.string.discussions)
-                        )
-                        BackdropActionButton(
-                            onClick = {
-                                if (!hasReminder && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                                    ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.POST_NOTIFICATIONS
-                                    ) != PackageManager.PERMISSION_GRANTED
-                                ) {
-                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                } else {
-                                    viewModel.toggleReminder(movie)
-                                }
-                            },
-                            icon = if (hasReminder) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
-                            containerColor = if (hasReminder) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                            contentColor = if (hasReminder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            contentDescription = stringResource(id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me)
-                        )
+                        if (movie.isUpcoming || hasReminder) {
+                            BackdropActionButton(
+                                onClick = {
+                                    if (!hasReminder && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                        ContextCompat.checkSelfPermission(
+                                            context,
+                                            Manifest.permission.POST_NOTIFICATIONS
+                                        ) != PackageManager.PERMISSION_GRANTED
+                                    ) {
+                                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    } else {
+                                        viewModel.toggleReminder(movie)
+                                    }
+                                },
+                                icon = if (hasReminder) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
+                                containerColor = if (hasReminder) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                                contentColor = if (hasReminder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                contentDescription = stringResource(id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me)
+                            )
+                        }
                     }
                 )
             }

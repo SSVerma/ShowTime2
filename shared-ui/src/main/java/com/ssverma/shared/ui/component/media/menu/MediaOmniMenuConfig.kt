@@ -7,10 +7,23 @@ data class MediaOmniMenuConfig(
     val showDiaryLog: Boolean = true,
     val showCustomList: Boolean = true,
     val showDiscussions: Boolean = true,
-    val showShare: Boolean = true
+    val showShare: Boolean = true,
+    val isUpcoming: Boolean = false,
+    val isOverPoster: Boolean = true
 ) {
+    val effectiveShowWatched: Boolean
+        get() = showWatched && !isUpcoming
+
+    val effectiveShowDiaryLog: Boolean
+        get() = showDiaryLog && !isUpcoming
+
     companion object {
         val Default = MediaOmniMenuConfig()
+
+        val Upcoming = MediaOmniMenuConfig(
+            isUpcoming = true
+        )
+
         val Episode = MediaOmniMenuConfig(
             showWatchlist = false,
             showWatched = true,
@@ -20,6 +33,7 @@ data class MediaOmniMenuConfig(
             showDiscussions = true,
             showShare = true
         )
+
         val Minimal = MediaOmniMenuConfig(
             showWatchlist = true,
             showWatched = true,

@@ -247,6 +247,7 @@
     <string name="community_list_deleted_success">Collection removed from Community.</string>
     <string name="make_private_short">Make Private</string>
     <string name="cd_more_options">More options</string>
+    <string name="log_and_rate_cd">Log &amp; Rate</string>
 
     <!-- Cinema Diary Log and Rate Dialog -->
     <string name="diary_dialog_edit_title">Edit Diary Log</string>

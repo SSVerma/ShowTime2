@@ -86,7 +86,6 @@ fun LazyListScope.trendingSpotlightShelf(
                                     backdropImageUrl = spotlightItem.backdropImageUrl,
                                     voteAvg = spotlightItem.voteAvg,
                                     releaseDate = spotlightItem.displayDate.orEmpty(),
-                                    isOverPoster = true,
                                     onShowFeedback = onShowFeedback
                                 )
                             }
