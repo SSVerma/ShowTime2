@@ -21,7 +21,6 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.random.Random
 
 @Singleton
 class SecretSharedListRepositoryImpl @Inject constructor(
@@ -327,8 +326,7 @@ class SecretSharedListRepositoryImpl @Inject constructor(
     }
 
     private fun generateShareCode(): String {
-        val num = Random.nextInt(1000, 10000)
-        return "SL-$num"
+        return ShareMediaUtils.generateSecretShareCode()
     }
 
     companion object {

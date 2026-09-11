@@ -1,6 +1,8 @@
 package com.ssverma.shared.domain.utils
 
+import java.security.SecureRandom
 import java.util.Locale
+import java.util.Random
 
 object ShareMediaUtils {
     const val DeepLinkDomain = "showtime.ssverma.in"
@@ -144,5 +146,16 @@ object ShareMediaUtils {
         } else {
             "SL-$cleaned"
         }
+    }
+
+    const val SecretShareCodeLength = 6
+    const val SecretShareCodeAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+
+    fun generateSecretShareCode(random: Random = SecureRandom()): String {
+        val sb = StringBuilder(SecretShareCodeLength)
+        repeat(SecretShareCodeLength) {
+            sb.append(SecretShareCodeAlphabet[random.nextInt(SecretShareCodeAlphabet.length)])
+        }
+        return "SL-$sb"
     }
 }

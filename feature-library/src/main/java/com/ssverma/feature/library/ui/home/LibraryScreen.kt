@@ -174,6 +174,7 @@ import com.ssverma.common.ui.community.CommunityListCard
 import com.ssverma.common.ui.community.CommunityListDetailSheet
 import com.ssverma.common.ui.community.PublishListBottomSheet
 import com.ssverma.shared.ui.component.media.MediaItem
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -1267,6 +1268,15 @@ fun LibraryScreen(
         var codeInput by remember { mutableStateOf("") }
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var showSecretShareInfo by remember { mutableStateOf(false) }
+        var failedAttempts by remember { mutableStateOf(0) }
+        var cooldownSeconds by remember { mutableStateOf(0) }
+
+        LaunchedEffect(cooldownSeconds) {
+            if (cooldownSeconds > 0) {
+                delay(1000L)
+                cooldownSeconds -= 1
+            }
+        }
 
         if (showSecretShareInfo) {
             SecretShareInfoBottomSheet(
@@ -1324,19 +1334,36 @@ fun LibraryScreen(
                 }
             },
             confirmButton = {
+                val isCoolingDown = cooldownSeconds > 0
                 Button(
                     onClick = {
-                        val normalized = ShareMediaUtils.normalizeSecretShareCode(codeInput)
-                        if (normalized.isNotBlank()) {
+                        if (isCoolingDown) return@Button
+                        val trimmed = codeInput.trim()
+                        val normalized = ShareMediaUtils.normalizeSecretShareCode(trimmed)
+                        val codeSuffix = normalized.removePrefix("SL-")
+                        if (normalized.isBlank() || codeSuffix.length < 4) {
+                            failedAttempts += 1
+                            if (failedAttempts >= 5) {
+                                cooldownSeconds = 30
+                                errorMessage =
+                                    context.getString(R.string.secret_share_cooldown_error, 30)
+                            } else {
+                                errorMessage =
+                                    context.getString(R.string.secret_share_invalid_code_format)
+                            }
+                        } else {
                             showOpenSecretListDialog = false
                             onOpenSecretSharedList?.invoke(normalized)
-                        } else {
-                            errorMessage = context.getString(R.string.secret_share_not_found)
                         }
                     },
+                    enabled = !isCoolingDown,
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(stringResource(R.string.secret_share_open_dialog_confirm))
+                    if (isCoolingDown) {
+                        Text(stringResource(R.string.secret_share_cooldown_error, cooldownSeconds))
+                    } else {
+                        Text(stringResource(R.string.secret_share_open_dialog_confirm))
+                    }
                 }
             },
             dismissButton = {

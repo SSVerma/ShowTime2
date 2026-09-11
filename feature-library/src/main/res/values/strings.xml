@@ -309,9 +309,11 @@
     <string name="secret_share_added_by_you">Added by You</string>
     <string name="secret_share_open_action">Open Secret List</string>
     <string name="secret_share_open_dialog_title">Open Secret List</string>
-    <string name="secret_share_open_dialog_desc">Enter the secret list code (e.g. SL-4821 or 4821) or paste the share link.</string>
-    <string name="secret_share_open_dialog_placeholder">e.g. SL-4821 or paste link</string>
+    <string name="secret_share_open_dialog_desc">Enter the secret list code (e.g. SL-7K9B2X) or paste the share link.</string>
+    <string name="secret_share_open_dialog_placeholder">e.g. SL-7K9B2X or paste link</string>
     <string name="secret_share_open_dialog_confirm">Open</string>
+    <string name="secret_share_invalid_code_format">Code must be at least 4 characters.</string>
+    <string name="secret_share_cooldown_error">Too many attempts. Please wait %1$ds.</string>
     <string name="secret_share_primary_action">Secret Share &amp; Story Card</string>
     <string name="custom_list_share_public_cta">Share Community Link</string>
     <string name="secret_share_info_learn_more">How does Secret Share work?</string>
@@ -329,7 +331,7 @@
     <string name="secret_share_info_title">What is a Secret Shared List?</string>
     <string name="secret_share_info_subtitle">Private, unlisted collaboration for cinephiles</string>
     <string name="secret_share_info_p1_title">100% Unlisted &amp; Private</string>
-    <string name="secret_share_info_p1_desc">Unlike public community lists, secret lists are never published in the public directory or search feeds. Only friends who have your unique code (e.g. SL-4821) or secret link can view it.</string>
+    <string name="secret_share_info_p1_desc">Unlike public community lists, secret lists are never published in the public directory or search feeds. Only friends who have your unique code (e.g. SL-7K9B2X) or secret link can view it.</string>
     <string name="secret_share_info_p2_title">Real-Time Collaboration</string>
     <string name="secret_share_info_p2_desc">Turn on co-curator mode to let friends add and remove movie &amp; TV recommendations together in real time.</string>
     <string name="secret_share_info_p3_title">Visual Story Card Sharing</string>
