@@ -219,18 +219,14 @@ class SecretSharedListRepositoryImpl @Inject constructor(
                 val itemsJson = snapshot.getString("itemsJson").orEmpty()
                 val currentItems = parseItemsJson(itemsJson).toMutableList()
 
-                val targetItem = currentItems.firstOrNull { it.mediaId == mediaId }
-                if (targetItem != null) {
-                    // Smart Contributor Scoping:
-                    // Owner can remove any item.
-                    // Collaborators can only remove items they added themselves.
-                    val canRemove =
-                        isOwner || (isCollaborative && targetItem.addedByUserId == persistentUserId)
-                    if (!canRemove) {
-                        throw IllegalStateException("Only the list owner or the contributor who added this item can remove it")
+                val itemToRemove = currentItems.firstOrNull { it.mediaId == mediaId }
+                if (itemToRemove != null) {
+                    val isAddedByCurrentUser = itemToRemove.addedByUserId == persistentUserId
+                    if (!isOwner && (!isCollaborative || !isAddedByCurrentUser)) {
+                        throw IllegalStateException("Collaborators can only remove items they added")
                     }
 
-                    currentItems.remove(targetItem)
+                    currentItems.removeAll { it.mediaId == mediaId }
                     val updatedJson = gson.toJson(currentItems.map { it.toDto() })
                     val now = System.currentTimeMillis()
                     transaction.update(
@@ -349,6 +345,7 @@ internal data class SecretSharedListItemDto(
     val backdropImageUrl: String = "",
     val voteAvg: Float = 0f,
     val releaseYear: String? = null,
+    val overview: String? = null,
     val addedByName: String? = null,
     val addedByUserId: String? = null,
     val addedAtEpochMs: Long = 0L
@@ -361,6 +358,7 @@ internal data class SecretSharedListItemDto(
         backdropImageUrl = backdropImageUrl,
         voteAvg = voteAvg,
         releaseYear = releaseYear,
+        overview = overview,
         addedByName = if (addedByName?.equals(
                 "Me",
                 ignoreCase = true
@@ -379,6 +377,7 @@ private fun SecretSharedListItem.toDto(): SecretSharedListItemDto = SecretShared
     backdropImageUrl = backdropImageUrl,
     voteAvg = voteAvg,
     releaseYear = releaseYear,
+    overview = overview,
     addedByName = addedByName,
     addedByUserId = addedByUserId,
     addedAtEpochMs = addedAtEpochMs

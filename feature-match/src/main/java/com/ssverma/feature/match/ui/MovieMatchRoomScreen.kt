@@ -138,16 +138,14 @@ fun MovieMatchRoomScreen(
                     if (uiState.phase == MatchScreenPhase.SWIPING) {
                         // Matches Counter Badge
                         Surface(
+                            onClick = { showSummarySheet = true },
                             shape = CircleShape,
                             color = MovieMatchColor.MatchHeartPink.copy(alpha = 0.15f),
                             border = BorderStroke(
                                 1.dp,
                                 MovieMatchColor.MatchHeartBorder
                             ),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .clip(CircleShape)
-                                .clickable { showSummarySheet = true }
+                            modifier = Modifier.padding(end = 8.dp)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,

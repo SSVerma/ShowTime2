@@ -36,6 +36,7 @@ data class SecretSharedListItem(
     val backdropImageUrl: String = "",
     val voteAvg: Float = 0f,
     val releaseYear: String? = null,
+    val overview: String? = null,
     val addedByName: String? = null,
     val addedByUserId: String? = null,
     val addedAtEpochMs: Long = System.currentTimeMillis()

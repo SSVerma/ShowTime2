@@ -1008,7 +1008,13 @@ fun LibraryScreen(
                     initialShareCode = target.secretShareCode,
                     items = target.items.map { it.toSecretSharedListItem() }
                 )
-            }
+            },
+            onOpenLiveSharedList = if (onOpenSecretSharedList != null) {
+                { code ->
+                    viewModel.selectCustomList(null)
+                    onOpenSecretSharedList.invoke(code)
+                }
+            } else null
         )
     }
 
@@ -2087,7 +2093,14 @@ private fun MyListsTabContent(
                                 FilterChip(
                                     selected = selectedFilter == CustomListsFilter.ALL,
                                     onClick = { selectedFilter = CustomListsFilter.ALL },
-                                    label = { Text(stringResource(R.string.secret_share_filter_all)) },
+                                    label = {
+                                        Text(
+                                            stringResource(
+                                                R.string.secret_share_filter_all_count,
+                                                lists.size + joinedSecretLists.size
+                                            )
+                                        )
+                                    },
                                     leadingIcon = if (selectedFilter == CustomListsFilter.ALL) {
                                         {
                                             Icon(
@@ -2101,7 +2114,14 @@ private fun MyListsTabContent(
                                 FilterChip(
                                     selected = selectedFilter == CustomListsFilter.MY_LISTS,
                                     onClick = { selectedFilter = CustomListsFilter.MY_LISTS },
-                                    label = { Text(stringResource(R.string.secret_share_filter_my_lists)) },
+                                    label = {
+                                        Text(
+                                            stringResource(
+                                                R.string.secret_share_filter_my_lists_count,
+                                                lists.size
+                                            )
+                                        )
+                                    },
                                     leadingIcon = if (selectedFilter == CustomListsFilter.MY_LISTS) {
                                         {
                                             Icon(
@@ -2115,7 +2135,14 @@ private fun MyListsTabContent(
                                 FilterChip(
                                     selected = selectedFilter == CustomListsFilter.SHARED_WITH_ME,
                                     onClick = { selectedFilter = CustomListsFilter.SHARED_WITH_ME },
-                                    label = { Text(stringResource(R.string.secret_share_filter_shared_with_me)) },
+                                    label = {
+                                        Text(
+                                            stringResource(
+                                                R.string.secret_share_filter_shared_with_me_count,
+                                                joinedSecretLists.size
+                                            )
+                                        )
+                                    },
                                     leadingIcon = if (selectedFilter == CustomListsFilter.SHARED_WITH_ME) {
                                         {
                                             Icon(
@@ -2281,8 +2308,13 @@ private fun JoinedSecretListCard(
                             modifier = Modifier.size(12.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
+                        val badgeText = if (joinedList.isCollaborative) {
+                            stringResource(R.string.secret_share_collab_chip)
+                        } else {
+                            stringResource(R.string.secret_share_joined_badge_short)
+                        }
                         Text(
-                            text = stringResource(R.string.secret_share_joined_badge),
+                            text = badgeText,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -2291,7 +2323,13 @@ private fun JoinedSecretListCard(
                 }
             }
 
-            Column(modifier = Modifier.padding(MaterialTheme.spacing.small)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(58.dp)
+                    .padding(MaterialTheme.spacing.small),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -2343,56 +2381,34 @@ private fun JoinedSecretListCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(2.dp))
+                val curatorName = joinedList.ownerName.takeIf {
+                    it.isNotBlank() && !it.equals("Me", ignoreCase = true) && !it.equals(
+                        "Friend",
+                        ignoreCase = true
+                    )
+                } ?: stringResource(R.string.secret_share_friend_fallback)
 
-                val curatorLabel =
-                    if (joinedList.ownerName.isBlank() || joinedList.ownerName.equals(
-                            "Me",
-                            ignoreCase = true
-                        )
-                    ) {
-                        stringResource(R.string.secret_share_curated_by_friend)
-                    } else {
-                        stringResource(R.string.secret_share_curated_by, joinedList.ownerName)
-                    }
+                val subtitle = if (joinedList.itemCount == 1) {
+                    stringResource(
+                        R.string.secret_share_item_count_by_single,
+                        curatorName
+                    )
+                } else {
+                    stringResource(
+                        R.string.secret_share_item_count_by,
+                        joinedList.itemCount,
+                        curatorName
+                    )
+                }
+
                 Text(
-                    text = curatorLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary,
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = if (joinedList.itemCount == 1) stringResource(R.string.one_item_count) else stringResource(
-                            R.string.items_count,
-                            joinedList.itemCount
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Medium
-                    )
-                    if (joinedList.isCollaborative) {
-                        Text(
-                            text = "•",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                        Text(
-                            text = stringResource(R.string.secret_share_collab_chip),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
             }
         }
     }
@@ -2588,7 +2604,13 @@ private fun CustomListCard(
                 }
             }
 
-            Column(modifier = Modifier.padding(MaterialTheme.spacing.small)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(58.dp)
+                    .padding(MaterialTheme.spacing.small),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
                     text = customList.title,
                     style = MaterialTheme.typography.titleMedium,
@@ -2597,8 +2619,6 @@ private fun CustomListCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(2.dp))
-
                 Text(
                     text = if (customList.itemCount == 1) stringResource(R.string.one_item_count) else stringResource(
                         R.string.items_count,
@@ -2606,7 +2626,9 @@ private fun CustomListCard(
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -2626,7 +2648,8 @@ private fun CustomListDetailSheet(
     onShareReceipt: () -> Unit,
     onPublishClick: () -> Unit,
     onUnpublishClick: () -> Unit,
-    onSecretShare: () -> Unit
+    onSecretShare: () -> Unit,
+    onOpenLiveSharedList: ((String) -> Unit)? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -2859,37 +2882,62 @@ private fun CustomListDetailSheet(
                 }
             }
 
-            if (customList.isSecretShared) {
+            if (customList.isSecretShared && !customList.secretShareCode.isNullOrBlank()) {
+                val shareCode = customList.secretShareCode.orEmpty()
                 Spacer(modifier = Modifier.height(10.dp))
                 Surface(
+                    onClick = {
+                        if (onOpenLiveSharedList != null) {
+                            onOpenLiveSharedList(shareCode)
+                        } else {
+                            onSecretShare()
+                        }
+                    },
                     shape = RoundedCornerShape(12.dp),
                     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = MaterialTheme.spacing.medium)
-                        .clickable(onClick = onSecretShare)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Share,
+                            imageVector = Icons.Rounded.People,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = stringResource(
-                                R.string.secret_share_active_banner,
-                                customList.secretShareCode.orEmpty()
-                            ),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(
+                                    R.string.secret_share_collab_shared_banner,
+                                    shareCode
+                                ),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                text = stringResource(R.string.secret_share_view_live_list),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        IconButton(
+                            onClick = onSecretShare,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = stringResource(R.string.secret_share_share_link),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                         Icon(
                             imageVector = Icons.Rounded.ChevronRight,
                             contentDescription = null,

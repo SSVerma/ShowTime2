@@ -6,6 +6,7 @@ import com.ssverma.feature.library.R
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.response.PagedPayload
 import com.ssverma.api.service.tmdb.response.RemoteMultiSearchSuggestion
+import com.ssverma.core.backup.auth.GoogleAuthClient
 import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.shared.domain.Result
@@ -21,6 +22,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -41,6 +43,7 @@ class SecretSharedListViewModelTest {
     private val mockSecretSharedListRepository: SecretSharedListRepository = mockk(relaxed = true)
     private val mockLibraryRepository: LibraryRepository = mockk(relaxed = true)
     private val mockTmdbApiService: TmdbApiService = mockk(relaxed = true)
+    private val mockGoogleAuthClient: GoogleAuthClient = mockk(relaxed = true)
     private val mockContext: Context = mockk(relaxed = true)
     private val mockPrefs: SharedPreferences = mockk(relaxed = true)
 
@@ -55,6 +58,10 @@ class SecretSharedListViewModelTest {
             )
         } returns mockPrefs
         every { mockPrefs.getString("persistent_user_uuid", "") } returns "device-user-123"
+        every { mockPrefs.getString("persistent_user_uuid", any()) } returns "device-user-123"
+        every { mockPrefs.getString("user_display_name", null) } returns "Friend"
+        every { mockGoogleAuthClient.currentUser } returns MutableStateFlow(null)
+        every { mockGoogleAuthClient.currentFirebaseAuthUid } returns null
 
         every { mockContext.getString(R.string.secret_share_all_added_success) } returns "All items added to your Watchlist!"
         every { mockContext.getString(R.string.secret_share_cloned_success) } returns "List cloned to your Custom Lists!"
@@ -77,6 +84,7 @@ class SecretSharedListViewModelTest {
             secretSharedListRepository = mockSecretSharedListRepository,
             libraryRepository = mockLibraryRepository,
             tmdbApiService = mockTmdbApiService,
+            googleAuthClient = mockGoogleAuthClient,
             context = mockContext
         )
     }
@@ -333,7 +341,12 @@ class SecretSharedListViewModelTest {
         viewModel.addMediaToSharedList(itemToAdd)
         advanceUntilIdle()
 
-        coVerify { mockSecretSharedListRepository.addMediaToSharedList("SL-SHARE1", itemToAdd) }
+        coVerify {
+            mockSecretSharedListRepository.addMediaToSharedList(
+                "SL-SHARE1",
+                match { it.mediaId == 99 && it.title == "Dune" && it.addedByName == "Friend" }
+            )
+        }
         assertEquals("\"Dune\" added to list!", viewModel.uiState.value.feedbackMessage)
 
         viewModel.removeMediaFromSharedList(99)
@@ -676,5 +689,20 @@ class SecretSharedListViewModelTest {
         assertEquals("", viewModel.uiState.value.searchQuery)
         assertTrue(viewModel.uiState.value.searchResults.isEmpty())
         assertFalse(viewModel.uiState.value.isSearching)
+    }
+
+    @Test
+    fun `updateUserDisplayName updates state and persists to preferences`() = runTest {
+        val mockEditor: SharedPreferences.Editor = mockk(relaxed = true)
+        every { mockPrefs.edit() } returns mockEditor
+        every { mockEditor.putString(any(), any()) } returns mockEditor
+
+        viewModel.updateUserDisplayName("Shashank")
+
+        assertEquals("Shashank", viewModel.uiState.value.currentUserName)
+        io.mockk.verify {
+            mockEditor.putString("user_display_name", "Shashank")
+            mockEditor.apply()
+        }
     }
 }

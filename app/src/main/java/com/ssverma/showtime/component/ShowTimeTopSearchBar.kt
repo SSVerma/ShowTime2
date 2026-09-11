@@ -230,6 +230,7 @@ private fun TopBarLocalizationPill(
     Box(modifier = modifier) {
         if (isLanguageFiltered) {
             Surface(
+                onClick = { menuExpanded = true },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -237,14 +238,7 @@ private fun TopBarLocalizationPill(
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                 ),
-                modifier = Modifier
-                    .height(30.dp)
-                    .clip(CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(bounded = true),
-                        onClick = { menuExpanded = true }
-                    )
+                modifier = Modifier.height(30.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -387,17 +381,11 @@ private fun TopBarLocalizationPill(
             }
         } else {
             Surface(
+                onClick = onLocalizationClick,
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .height(30.dp)
-                    .clip(CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(bounded = true),
-                        onClick = onLocalizationClick
-                    )
+                modifier = Modifier.height(30.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

@@ -149,8 +149,17 @@ class ListShareExportViewModel @Inject constructor(
         items: List<SecretSharedListItem>,
         ownerName: String,
         customListId: String? = null,
-        onSuccess: (String) -> Unit
+        onSuccess: (String) -> Unit = {}
     ) {
+        val existing = _uiState.value.shareCode
+        if (existing != null) {
+            onSuccess(existing)
+            return
+        }
+        if (_uiState.value.isCreatingLink) {
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isCreatingLink = true, errorMessage = null) }
             val sanitizedOwnerName =

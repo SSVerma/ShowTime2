@@ -16,7 +16,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -45,7 +45,7 @@ fun PostCommentBottomSheet(
     var text by remember { mutableStateOf("") }
     var isSpoiler by remember { mutableStateOf(false) }
 
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),

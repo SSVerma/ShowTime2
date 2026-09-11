@@ -16,6 +16,9 @@ interface JoinedSecretListDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(list: JoinedSecretListEntity)
 
+    @Query("SELECT * FROM joined_secret_lists")
+    suspend fun getAllJoinedLists(): List<JoinedSecretListEntity>
+
     @Query("DELETE FROM joined_secret_lists WHERE shareCode = :shareCode")
     suspend fun deleteByShareCode(shareCode: String)
 }

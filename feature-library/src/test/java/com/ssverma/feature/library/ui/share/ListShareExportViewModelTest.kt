@@ -193,6 +193,33 @@ class ListShareExportViewModelTest {
     }
 
     @Test
+    fun `generateSecretLink returns existing code immediately without calling repository if shareCode already present`() =
+        runTest {
+            val sampleList = SecretSharedList(
+                shareCode = "SECRET123",
+                title = "Sci-Fi Gems",
+                ownerUserId = "user-1",
+                ownerName = "John"
+            )
+            coEvery {
+                mockSecretSharedListRepository.createSecretShare(any(), any(), any(), any(), any())
+            } returns Result.Success(sampleList)
+
+            viewModel.generateSecretLink("Sci-Fi Gems", null, emptyList(), "John") {}
+            advanceUntilIdle()
+            assertEquals("SECRET123", viewModel.uiState.value.shareCode)
+
+            var secondCode: String? = null
+            viewModel.generateSecretLink("Sci-Fi Gems", null, emptyList(), "John") {
+                secondCode = it
+            }
+            assertEquals("SECRET123", secondCode)
+            coVerify(exactly = 1) {
+                mockSecretSharedListRepository.createSecretShare(any(), any(), any(), any(), any())
+            }
+        }
+
+    @Test
     fun `revokeSecretShare clears shareCode`() = runTest {
         val sampleList = SecretSharedList(
             shareCode = "REVOKE123",

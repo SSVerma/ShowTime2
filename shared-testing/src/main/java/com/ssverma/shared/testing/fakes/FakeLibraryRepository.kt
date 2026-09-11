@@ -1,5 +1,7 @@
 package com.ssverma.shared.testing.fakes
 
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.library.CustomList
@@ -434,5 +436,13 @@ class FakeLibraryRepository : LibraryRepository {
 
     override suspend fun removeJoinedSecretList(shareCode: String) {
         joinedSecretLists.value = joinedSecretLists.value.filterNot { it.shareCode == shareCode }
+    }
+
+    override suspend fun syncSecretSharedLists(): Result<Unit, Failure<*>> {
+        return Result.Success(Unit)
+    }
+
+    override suspend fun syncCustomListWithCloud(listId: String): Result<Unit, Failure<*>> {
+        return Result.Success(Unit)
     }
 }

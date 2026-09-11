@@ -131,6 +131,105 @@ for file in $STAGED_KT_FILES; do
     done < <(grep -nE "Color\((0x[0-9a-fA-F]{6,8}|[0-9]+)\)" "$file" || true)
 done
 
+# 2b. Zero Raw ModalBottomSheet Outside ShowTimeBottomSheet
+for file in $STAGED_KT_FILES; do
+    [ -f "$file" ] || continue
+    if [[ "$file" =~ ShowTimeBottomSheet\.kt$ ]] || [[ "$file" =~ /test/ ]] || [[ "$file" =~ /androidTest/ ]]; then
+        continue
+    fi
+    while IFS=: read -r line_num line_content; do
+        # Ignore comments
+        if [[ "$line_content" =~ ^[[:space:]]*// ]]; then
+            continue
+        fi
+        report_error "Raw ModalBottomSheet found. Use ShowTimeBottomSheet for universal backpress support and animations." \
+            "$file" "$line_num" "$line_content" \
+            "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#3-modal-bottom-sheets--backpress-handling"
+    done < <(grep -nE "\bModalBottomSheet\(" "$file" || true)
+done
+
+# 2c. Zero Modifier.clickable on Surface / Card (Use Container onClick Parameter)
+if command -v python3 &> /dev/null && [ -n "$STAGED_KT_FILES" ]; then
+    while IFS=: read -r file line_num container_name bad_call; do
+        [ -n "$file" ] || continue
+        report_error "${container_name} uses Modifier.${bad_call}. Use ${container_name}(onClick = ...) to preserve shape ripple animation." \
+            "$file" "$line_num" "${container_name}(...${bad_call}...)" \
+            "docs/CODE_QUALITY_AND_SECURITY_GUIDE.md#4-interactive-source--ripple-preservation"
+    done < <(python3 - "$STAGED_KT_FILES" << 'PYEOF'
+import sys, re
+
+file_list = sys.argv[1].split()
+pattern = re.compile(r"\b(Surface|Card|ElevatedCard|OutlinedCard)\s*\(")
+clickable_pattern = re.compile(r"\.(clickable|combinedClickable)\s*[\(\{]")
+
+for file_path in file_list:
+    if "/test/" in file_path or "/androidTest/" in file_path or not file_path.endswith((".kt", ".kts")):
+        continue
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as fh:
+            content = fh.read()
+    except Exception:
+        continue
+
+    for match in pattern.finditer(content):
+        start = match.end() - 1
+        depth = 0
+        in_string = False
+        in_char = False
+        in_line_comment = False
+        in_block_comment = False
+        end = -1
+        i = start
+        while i < len(content):
+            c = content[i]
+            if in_line_comment:
+                if c == "\n":
+                    in_line_comment = False
+            elif in_block_comment:
+                if c == "*" and i + 1 < len(content) and content[i+1] == "/":
+                    in_block_comment = False
+                    i += 1
+            elif in_string:
+                if c == "\\" and i + 1 < len(content):
+                    i += 1
+                elif c == "\"":
+                    in_string = False
+            elif in_char:
+                if c == "\\" and i + 1 < len(content):
+                    i += 1
+                elif c == "\x27":
+                    in_char = False
+            else:
+                if c == "/" and i + 1 < len(content) and content[i+1] == "/":
+                    in_line_comment = True
+                    i += 1
+                elif c == "/" and i + 1 < len(content) and content[i+1] == "*":
+                    in_block_comment = True
+                    i += 1
+                elif c == "\"":
+                    in_string = True
+                elif c == "\x27":
+                    in_char = True
+                elif c == "(":
+                    depth += 1
+                elif c == ")":
+                    depth -= 1
+                    if depth == 0:
+                        end = i
+                        break
+            i += 1
+        if end != -1:
+            args_text = content[start:end+1]
+            click_match = clickable_pattern.search(args_text)
+            if click_match:
+                line_num = content[:match.start() + click_match.start()].count("\n") + 1
+                container_name = match.group(1)
+                bad_call = click_match.group(0).strip()
+                print(f"{file_path}:{line_num}:{container_name}:{bad_call}")
+PYEOF
+    )
+fi
+
 # 3. Zero Leftover Debug Logs / println in Production
 for file in $STAGED_KT_FILES $STAGED_JAVA_FILES; do
     [ -f "$file" ] || continue

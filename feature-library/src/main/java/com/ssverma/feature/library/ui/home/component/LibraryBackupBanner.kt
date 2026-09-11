@@ -93,6 +93,7 @@ fun LibraryBackupBanner(
         }
 
         Surface(
+            onClick = onActionClick,
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
             border = BorderStroke(
@@ -102,7 +103,6 @@ fun LibraryBackupBanner(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 6.dp)
-                .clickable { onActionClick() }
         ) {
             Row(
                 modifier = Modifier

@@ -59,6 +59,12 @@ class LibraryHomeViewModel @Inject constructor(
     private val backupRepository: BackupRepository
 ) : ViewModel() {
 
+    init {
+        viewModelScope.launch {
+            libraryRepository.syncSecretSharedLists()
+        }
+    }
+
     private val _isBackupBannerDismissed = MutableStateFlow(false)
     val isBackupBannerDismissed: StateFlow<Boolean> = _isBackupBannerDismissed.asStateFlow()
 
@@ -208,6 +214,11 @@ class LibraryHomeViewModel @Inject constructor(
 
     fun selectCustomList(listId: String?) {
         _selectedCustomListId.value = listId
+        if (listId != null) {
+            viewModelScope.launch {
+                libraryRepository.syncCustomListWithCloud(listId)
+            }
+        }
     }
 
     fun removeFromWatchlist(mediaId: Int) {

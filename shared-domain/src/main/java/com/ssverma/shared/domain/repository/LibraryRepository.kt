@@ -1,5 +1,7 @@
 package com.ssverma.shared.domain.repository
 
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.library.CustomList
@@ -122,4 +124,6 @@ interface LibraryRepository {
     )
 
     suspend fun removeJoinedSecretList(shareCode: String)
+    suspend fun syncSecretSharedLists(): Result<Unit, Failure<*>>
+    suspend fun syncCustomListWithCloud(listId: String): Result<Unit, Failure<*>>
 }

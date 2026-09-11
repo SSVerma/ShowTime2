@@ -22,13 +22,10 @@ import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,12 +33,13 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.ui.share.component.SecretShareInfoFeatureCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +48,7 @@ fun SecretShareInfoBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -117,25 +115,25 @@ fun SecretShareInfoBottomSheet(
 
             // 4 Educational Feature Pillars
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                InfoFeatureCard(
+                SecretShareInfoFeatureCard(
                     icon = Icons.Rounded.Lock,
                     title = stringResource(R.string.secret_share_info_p1_title),
                     description = stringResource(R.string.secret_share_info_p1_desc)
                 )
 
-                InfoFeatureCard(
+                SecretShareInfoFeatureCard(
                     icon = Icons.Rounded.Group,
                     title = stringResource(R.string.secret_share_info_p2_title),
                     description = stringResource(R.string.secret_share_info_p2_desc)
                 )
 
-                InfoFeatureCard(
+                SecretShareInfoFeatureCard(
                     icon = Icons.Rounded.Style,
                     title = stringResource(R.string.secret_share_info_p3_title),
                     description = stringResource(R.string.secret_share_info_p3_desc)
                 )
 
-                InfoFeatureCard(
+                SecretShareInfoFeatureCard(
                     icon = Icons.Rounded.Security,
                     title = stringResource(R.string.secret_share_info_p4_title),
                     description = stringResource(R.string.secret_share_info_p4_desc)
@@ -154,60 +152,6 @@ fun SecretShareInfoBottomSheet(
                     text = stringResource(R.string.secret_share_info_got_it),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun InfoFeatureCard(
-    icon: ImageVector,
-    title: String,
-    description: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                modifier = Modifier.size(36.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

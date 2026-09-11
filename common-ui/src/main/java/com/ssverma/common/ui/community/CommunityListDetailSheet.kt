@@ -47,7 +47,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -115,9 +115,7 @@ fun CommunityListDetailSheet(
         label = "DetailHeartTint"
     )
 
-    BackHandler { onDismiss() }
-
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surface,

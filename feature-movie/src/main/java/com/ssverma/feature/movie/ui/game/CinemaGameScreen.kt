@@ -405,15 +405,14 @@ private fun ClueSelectorRow(
             val isSelected = index == selectedIndex
 
             Surface(
+                onClick = { onClueSelect(index) },
+                enabled = isUnlocked,
                 shape = RoundedCornerShape(12.dp),
                 color = when {
                     isSelected -> MaterialTheme.colorScheme.primary
                     isUnlocked -> MaterialTheme.colorScheme.secondaryContainer
                     else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                },
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(enabled = isUnlocked) { onClueSelect(index) }
+                }
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

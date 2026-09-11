@@ -145,15 +145,13 @@ fun MatchCelebrationDialog(
 
                         // Movie Poster Preview (Clickable)
                         Surface(
+                            onClick = { onWatchNow(matchedCard) },
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(
                                 1.dp,
                                 MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                             ),
-                            modifier = Modifier
-                                .size(width = 160.dp, height = 240.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable { onWatchNow(matchedCard) }
+                            modifier = Modifier.size(width = 160.dp, height = 240.dp)
                         ) {
                             NetworkImage(
                                 url = matchedCard.posterImageUrl,

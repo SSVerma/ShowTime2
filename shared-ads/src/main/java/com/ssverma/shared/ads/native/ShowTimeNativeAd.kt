@@ -670,21 +670,15 @@ private fun NativeAdCircularLogoContent(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxSize()
-            .graphicsLayer {
-                shadowElevation = 2.dp.toPx()
-                shape = CircleShape
-                clip = true
-            }
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = CircleShape
-            )
-            .clickable(onClick = onAdClicked),
+        onClick = onAdClicked,
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surface
+        shadowElevation = 2.dp,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant
+        ),
+        color = MaterialTheme.colorScheme.surface,
+        modifier = modifier.fillMaxSize()
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),

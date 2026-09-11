@@ -320,6 +320,11 @@ class FakeLibraryRepository : LibraryRepository {
     }
 
     override suspend fun removeJoinedSecretList(shareCode: String) {}
+
+    override suspend fun syncSecretSharedLists(): Result<Unit, Failure<*>> = Result.Success(Unit)
+
+    override suspend fun syncCustomListWithCloud(listId: String): Result<Unit, Failure<*>> =
+        Result.Success(Unit)
 }
 
 class FakeDiscoveryRepository : DiscoveryRepository {

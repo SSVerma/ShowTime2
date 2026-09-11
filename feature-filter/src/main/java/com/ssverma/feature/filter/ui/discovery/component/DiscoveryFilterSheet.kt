@@ -20,7 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -53,7 +53,7 @@ fun DiscoveryFilterSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var draftFilter by remember(filter) { mutableStateOf(filter) }
 
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,

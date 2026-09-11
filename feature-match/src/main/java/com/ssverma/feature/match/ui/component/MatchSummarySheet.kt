@@ -29,7 +29,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -64,7 +64,7 @@ fun MatchSummarySheet(
     onDismissRequest: () -> Unit,
     savedWatchlistIds: Set<Int> = emptySet()
 ) {
-    ModalBottomSheet(
+    ShowTimeBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState
     ) {

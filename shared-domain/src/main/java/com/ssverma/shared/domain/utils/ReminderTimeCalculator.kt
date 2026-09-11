@@ -24,7 +24,7 @@ object ReminderTimeCalculator {
         zoneId: ZoneId = ZoneId.systemDefault(),
         nowMillis: Long = System.currentTimeMillis()
     ): Long? {
-        val today = LocalDate.now(zoneId)
+        val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate()
         if (airDate.isBefore(today)) {
             return null
         }

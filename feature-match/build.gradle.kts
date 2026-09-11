@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.coreBilling)
     implementation(projects.coreStorage)
     implementation(projects.coreImage)
+    implementation(projects.coreUi)
     implementation(projects.sharedData)
     implementation(projects.sharedAds)
     implementation(projects.apiService.tmdb)

@@ -43,6 +43,7 @@ fun DailyGameBanner(
     modifier: Modifier = Modifier
 ) {
     OutlinedCard(
+        onClick = onOpenGame,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.outlinedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
@@ -51,9 +52,7 @@ fun DailyGameBanner(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onOpenGame() }
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier

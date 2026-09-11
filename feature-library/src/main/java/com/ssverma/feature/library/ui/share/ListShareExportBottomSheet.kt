@@ -1,9 +1,9 @@
 package com.ssverma.feature.library.ui.share
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.widget.Toast
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,43 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.ContentCopy
-import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.PlayCircle
-import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,19 +39,29 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.ui.share.component.SecretShareCollaborativeToggleCard
+import com.ssverma.feature.library.ui.share.component.SecretShareCuratorCard
+import com.ssverma.feature.library.ui.share.component.SecretShareEditNameDialog
+import com.ssverma.feature.library.ui.share.component.SecretShareFormatSelector
+import com.ssverma.feature.library.ui.share.component.SecretShareImageActionsRow
+import com.ssverma.feature.library.ui.share.component.SecretShareLinkActionsRow
+import com.ssverma.feature.library.ui.share.component.SecretShareLuxuryGateDialog
+import com.ssverma.feature.library.ui.share.component.SecretShareRevokeButton
+import com.ssverma.feature.library.ui.share.component.SecretShareRevokeConfirmDialog
+import com.ssverma.feature.library.ui.share.component.SecretShareThemeSelector
+import com.ssverma.feature.library.ui.share.component.copyToClipboard
 import com.ssverma.feature.library.util.ShareImageHelper
 import com.ssverma.shared.domain.model.library.ListShareCardFormat
-import com.ssverma.shared.domain.model.library.ListShareTheme
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.shared.domain.utils.ShareMediaUtils
 import kotlinx.coroutines.launch
@@ -101,28 +85,94 @@ fun ListShareExportBottomSheet(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val graphicsLayer = rememberGraphicsLayer()
-    val clipboardManager = LocalClipboardManager.current
-
-    LaunchedEffect(initialShareCode) {
-        viewModel.initSecretShare(initialShareCode)
-    }
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
 
     var showRevokeConfirmDialog by remember { mutableStateOf(false) }
     var showInfoSheet by remember { mutableStateOf(false) }
+    var showEditNameDialog by remember { mutableStateOf(false) }
 
-    if (showInfoSheet) {
-        SecretShareInfoBottomSheet(
-            onDismissRequest = { showInfoSheet = false }
-        )
+    val storedCuratorName = remember(context, ownerName) {
+        val prefs = context.getSharedPreferences("showtime_device_prefs", Context.MODE_PRIVATE)
+        val uid = prefs.getString("persistent_user_uuid", "").orEmpty()
+        val defaultCinephile =
+            if (uid.isNotBlank()) "Cinephile #${kotlin.math.abs(uid.hashCode() % 900) + 100}" else "Cinephile"
+        prefs.getString("user_display_name", null)
+            ?.takeIf {
+                it.isNotBlank() && !it.equals(
+                    "Me",
+                    ignoreCase = true
+                ) && !it.equals("Friend", ignoreCase = true)
+            }
+            ?: ownerName.takeIf {
+                it.isNotBlank() && !it.equals(
+                    "Me",
+                    ignoreCase = true
+                ) && !it.equals("Friend", ignoreCase = true)
+            }
+            ?: defaultCinephile
+    }
+    var activeCuratorName by remember(storedCuratorName) { mutableStateOf(storedCuratorName) }
+
+    val effectiveOwnerName = activeCuratorName.ifBlank {
+        ownerName.takeIf { it.isNotBlank() && !it.equals("Me", ignoreCase = true) }
+            ?: storedCuratorName
     }
 
     val shareChooserTitle = stringResource(R.string.secret_share_chooser_title)
     val linkCopiedMsg = stringResource(R.string.secret_share_link_copied)
+    val linkCreatingMsg = stringResource(R.string.secret_share_creating)
     val linkRevokedMsg = stringResource(R.string.secret_share_revoked_success)
     val saveSuccessMsg = stringResource(R.string.receipt_saved_success)
     val saveFailedMsg = stringResource(R.string.receipt_save_failed)
 
-    ModalBottomSheet(
+    var pendingCopyOnReady by remember { mutableStateOf(false) }
+    var pendingShareOnReady by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialShareCode) {
+        if (initialShareCode != null) {
+            viewModel.initSecretShare(shareCode = initialShareCode)
+        } else if (uiState.shareCode == null) {
+            viewModel.generateSecretLink(
+                title = title,
+                description = description,
+                items = items,
+                ownerName = effectiveOwnerName,
+                customListId = customListId
+            )
+        }
+    }
+
+    LaunchedEffect(uiState.shareCode) {
+        val code = uiState.shareCode ?: return@LaunchedEffect
+        val url = ShareMediaUtils.buildSecretListUrl(code)
+        if (pendingCopyOnReady) {
+            pendingCopyOnReady = false
+            copyToClipboard(
+                composeClipboardManager = clipboardManager,
+                text = url
+            )
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                Toast.makeText(context.applicationContext, linkCopiedMsg, Toast.LENGTH_SHORT).show()
+            }
+        }
+        if (pendingShareOnReady) {
+            pendingShareOnReady = false
+            val shareText = ShareMediaUtils.buildFormattedSecretListMarkdown(
+                title = title,
+                description = description,
+                authorName = effectiveOwnerName,
+                shareCode = code,
+                itemTitlesWithRating = items.map { it.title to it.voteAvg }
+            )
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            context.startActivity(Intent.createChooser(shareIntent, shareChooserTitle))
+        }
+    }
+
+    ShowTimeBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         modifier = modifier
@@ -132,7 +182,7 @@ fun ListShareExportBottomSheet(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Header
+            // Header Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,9 +207,7 @@ fun ListShareExportBottomSheet(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(
                         onClick = { showInfoSheet = true },
                         modifier = Modifier.size(36.dp)
@@ -187,76 +235,19 @@ fun ListShareExportBottomSheet(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Format Selection Chips
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.secret_share_format_label) + ":",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                FilterChip(
-                    selected = uiState.selectedFormat == ListShareCardFormat.STORY_9_16,
-                    onClick = { viewModel.selectFormat(ListShareCardFormat.STORY_9_16) },
-                    label = { Text(stringResource(R.string.secret_share_format_story)) }
-                )
-                FilterChip(
-                    selected = uiState.selectedFormat == ListShareCardFormat.SQUARE_1_1,
-                    onClick = { viewModel.selectFormat(ListShareCardFormat.SQUARE_1_1) },
-                    label = { Text(stringResource(R.string.secret_share_format_square)) }
-                )
-            }
+            SecretShareFormatSelector(
+                selectedFormat = uiState.selectedFormat,
+                onSelectFormat = viewModel::selectFormat
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Theme Selection Carousel
-            Text(
-                text = stringResource(R.string.secret_share_theme_label),
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 20.dp)
+            SecretShareThemeSelector(
+                selectedTheme = uiState.selectedTheme,
+                isLuxuryUnlocked = uiState.isProActive || uiState.isPassActive,
+                onSelectTheme = viewModel::selectTheme
             )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ThemeOptionChip(
-                    label = "Classic",
-                    isSelected = uiState.selectedTheme == ListShareTheme.CLASSIC_SHOWTIME,
-                    isLocked = false,
-                    onClick = { viewModel.selectTheme(ListShareTheme.CLASSIC_SHOWTIME) }
-                )
-                ThemeOptionChip(
-                    label = "Vintage 35mm",
-                    isSelected = uiState.selectedTheme == ListShareTheme.VINTAGE_35MM,
-                    isLocked = !uiState.isProActive && !uiState.isPassActive,
-                    onClick = { viewModel.selectTheme(ListShareTheme.VINTAGE_35MM) }
-                )
-                ThemeOptionChip(
-                    label = "OLED Noir",
-                    isSelected = uiState.selectedTheme == ListShareTheme.OLED_MIDNIGHT,
-                    isLocked = !uiState.isProActive && !uiState.isPassActive,
-                    onClick = { viewModel.selectTheme(ListShareTheme.OLED_MIDNIGHT) }
-                )
-                ThemeOptionChip(
-                    label = "Cyberpunk",
-                    isSelected = uiState.selectedTheme == ListShareTheme.NEON_CYBERPUNK,
-                    isLocked = !uiState.isProActive && !uiState.isPassActive,
-                    onClick = { viewModel.selectTheme(ListShareTheme.NEON_CYBERPUNK) }
-                )
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -282,7 +273,7 @@ fun ListShareExportBottomSheet(
             ) {
                 ListShareStoryCardView(
                     title = title,
-                    ownerName = ownerName,
+                    ownerName = effectiveOwnerName,
                     itemCount = items.size,
                     averageRating = avgRating,
                     posters = previewPosters,
@@ -294,394 +285,197 @@ fun ListShareExportBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Curator Display Name Card ("Sharing as")
+            SecretShareCuratorCard(
+                curatorName = effectiveOwnerName,
+                onChangeNameClick = { showEditNameDialog = true }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Collaborative Co-Curators Toggle
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.secret_share_collaborative_title),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = stringResource(R.string.secret_share_collaborative_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Switch(
-                        checked = uiState.isCollaborative,
-                        onCheckedChange = { viewModel.setCollaborative(it) }
-                    )
-                }
-            }
+            SecretShareCollaborativeToggleCard(
+                isCollaborative = uiState.isCollaborative,
+                onToggleCollaborative = viewModel::setCollaborative
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Link Actions Row (Copy Link & Share Link)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // 1. Copy Link (Strictly copies to clipboard, shows Toast notification, NO share sheet popup)
-                Button(
-                    onClick = {
-                        val existingCode = uiState.shareCode
-                        if (existingCode != null) {
-                            val url = ShareMediaUtils.buildSecretListUrl(existingCode)
-                            clipboardManager.setText(AnnotatedString(url))
-                            Toast.makeText(context, linkCopiedMsg, Toast.LENGTH_SHORT).show()
-                        } else {
-                            viewModel.generateSecretLink(
-                                title = title,
-                                description = description,
-                                items = items,
-                                ownerName = ownerName,
-                                customListId = customListId,
-                                onSuccess = { code ->
-                                    val url = ShareMediaUtils.buildSecretListUrl(code)
-                                    clipboardManager.setText(AnnotatedString(url))
-                                    Toast.makeText(context, linkCopiedMsg, Toast.LENGTH_SHORT)
-                                        .show()
-                                }
-                            )
+            SecretShareLinkActionsRow(
+                isCreatingLink = uiState.isCreatingLink,
+                isPendingCopy = pendingCopyOnReady,
+                isPendingShare = pendingShareOnReady,
+                onCopyLinkClick = {
+                    val existingCode = uiState.shareCode
+                    if (existingCode != null) {
+                        val url = ShareMediaUtils.buildSecretListUrl(existingCode)
+                        copyToClipboard(
+                            composeClipboardManager = clipboardManager,
+                            text = url
+                        )
+                        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                            Toast.makeText(
+                                context.applicationContext,
+                                linkCopiedMsg,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    if (uiState.isCreatingLink) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
+                    } else {
+                        Toast.makeText(
+                            context.applicationContext,
+                            linkCreatingMsg,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        pendingCopyOnReady = true
+                        viewModel.generateSecretLink(
+                            title = title,
+                            description = description,
+                            items = items,
+                            ownerName = effectiveOwnerName,
+                            customListId = customListId
+                        )
+                    }
+                },
+                onShareLinkClick = {
+                    val existingCode = uiState.shareCode
+                    if (existingCode != null) {
+                        val shareText = ShareMediaUtils.buildFormattedSecretListMarkdown(
+                            title = title,
+                            description = description,
+                            authorName = effectiveOwnerName,
+                            shareCode = existingCode,
+                            itemTitlesWithRating = items.map { it.title to it.voteAvg }
+                        )
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        context.startActivity(
+                            Intent.createChooser(shareIntent, shareChooserTitle)
                         )
                     } else {
-                        Icon(
-                            imageVector = Icons.Rounded.ContentCopy,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = stringResource(R.string.secret_share_copy_link),
-                            fontWeight = FontWeight.Bold
+                        Toast.makeText(
+                            context.applicationContext,
+                            linkCreatingMsg,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        pendingShareOnReady = true
+                        viewModel.generateSecretLink(
+                            title = title,
+                            description = description,
+                            items = items,
+                            ownerName = effectiveOwnerName,
+                            customListId = customListId
                         )
                     }
                 }
-
-                // 2. Share Link (Opens system share chooser with formatted text & secret link)
-                FilledTonalButton(
-                    onClick = {
-                        val existingCode = uiState.shareCode
-                        if (existingCode != null) {
-                            val shareText = ShareMediaUtils.buildFormattedSecretListMarkdown(
-                                title = title,
-                                description = description,
-                                authorName = ownerName,
-                                shareCode = existingCode,
-                                itemTitlesWithRating = items.map { it.title to it.voteAvg }
-                            )
-                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, shareText)
-                            }
-                            context.startActivity(
-                                Intent.createChooser(shareIntent, shareChooserTitle)
-                            )
-                        } else {
-                            viewModel.generateSecretLink(
-                                title = title,
-                                description = description,
-                                items = items,
-                                ownerName = ownerName,
-                                customListId = customListId,
-                                onSuccess = { code ->
-                                    val shareText =
-                                        ShareMediaUtils.buildFormattedSecretListMarkdown(
-                                            title = title,
-                                            description = description,
-                                            authorName = ownerName,
-                                            shareCode = code,
-                                            itemTitlesWithRating = items.map { it.title to it.voteAvg }
-                                        )
-                                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                        type = "text/plain"
-                                        putExtra(Intent.EXTRA_TEXT, shareText)
-                                    }
-                                    context.startActivity(
-                                        Intent.createChooser(shareIntent, shareChooserTitle)
-                                    )
-                                }
-                            )
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.secret_share_share_link),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Story Card Image Actions Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // 3. Share Story Card Image
-                OutlinedButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            viewModel.setExportingImage(true)
-                            try {
-                                val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                ShareImageHelper.shareBitmap(
-                                    context = context,
-                                    bitmap = bitmap,
-                                    chooserTitle = shareChooserTitle
-                                )
-                            } catch (_: Exception) {
-                            } finally {
-                                viewModel.setExportingImage(false)
-                            }
+            SecretShareImageActionsRow(
+                isExportingImage = uiState.isExportingImage,
+                onShareImageClick = {
+                    coroutineScope.launch {
+                        viewModel.setExportingImage(true)
+                        try {
+                            val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+                            ShareImageHelper.shareBitmap(
+                                context = context,
+                                bitmap = bitmap,
+                                chooserTitle = shareChooserTitle
+                            )
+                        } catch (_: Exception) {
+                        } finally {
+                            viewModel.setExportingImage(false)
                         }
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    if (uiState.isExportingImage) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Send,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = stringResource(R.string.secret_share_export_image),
-                            fontWeight = FontWeight.Bold
-                        )
+                    }
+                },
+                onSaveImageClick = {
+                    coroutineScope.launch {
+                        try {
+                            val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+                            val success = ShareImageHelper.saveBitmapToGallery(
+                                context = context,
+                                bitmap = bitmap,
+                                title = "ShowTime_Secret_${title.replace(" ", "_")}"
+                            )
+                            Toast.makeText(
+                                context,
+                                if (success) saveSuccessMsg else saveFailedMsg,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } catch (_: Exception) {
+                        }
                     }
                 }
+            )
 
-                // 4. Save to Photos
-                OutlinedButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            try {
-                                val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                val success = ShareImageHelper.saveBitmapToGallery(
-                                    context = context,
-                                    bitmap = bitmap,
-                                    title = "ShowTime_Secret_${title.replace(" ", "_")}"
-                                )
-                                Toast.makeText(
-                                    context,
-                                    if (success) saveSuccessMsg else saveFailedMsg,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } catch (_: Exception) {
-                            }
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Download,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.secret_share_save_image),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            // 5. Revoke Secret Link
+            // Revoke Secret Link Action Button
             if (uiState.shareCode != null) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(
-                        onClick = { showRevokeConfirmDialog = true },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Warning,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(R.string.secret_share_revoke_action),
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
+                SecretShareRevokeButton(
+                    onRevokeClick = { showRevokeConfirmDialog = true }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Revoke Confirmation Dialog
+        // Dialogs
+        if (showInfoSheet) {
+            SecretShareInfoBottomSheet(
+                onDismissRequest = { showInfoSheet = false }
+            )
+        }
+
+        if (showEditNameDialog) {
+            SecretShareEditNameDialog(
+                initialName = activeCuratorName,
+                onDismissRequest = { showEditNameDialog = false },
+                onSaveName = { updatedName ->
+                    activeCuratorName = updatedName
+                    context.getSharedPreferences("showtime_device_prefs", Context.MODE_PRIVATE)
+                        .edit()
+                        .putString("user_display_name", updatedName)
+                        .apply()
+                }
+            )
+        }
+
         if (showRevokeConfirmDialog) {
-            AlertDialog(
+            SecretShareRevokeConfirmDialog(
                 onDismissRequest = { showRevokeConfirmDialog = false },
-                title = { Text(stringResource(R.string.secret_share_revoke_action)) },
-                text = { Text(stringResource(R.string.secret_share_revoke_confirm)) },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showRevokeConfirmDialog = false
-                            viewModel.revokeSecretShare(customListId = customListId) {
-                                Toast.makeText(context, linkRevokedMsg, Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text(stringResource(R.string.remove_item))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showRevokeConfirmDialog = false }) {
-                        Text(stringResource(R.string.cancel))
+                onConfirmRevoke = {
+                    viewModel.revokeSecretShare(customListId = customListId) {
+                        Toast.makeText(
+                            context.applicationContext,
+                            linkRevokedMsg,
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             )
         }
 
-        // Luxury Themes Gate Dialog
         if (uiState.isGateOpen) {
-            AlertDialog(
-                onDismissRequest = { viewModel.closeGate() },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(28.dp)
-                    )
-                },
-                title = { Text(stringResource(R.string.secret_share_gate_title)) },
-                text = { Text(stringResource(R.string.secret_share_gate_desc)) },
-                confirmButton = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                val activity = context.findActivity()
-                                if (activity != null) {
-                                    viewModel.unlockThemesWithRewardedAd(activity)
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.PlayCircle,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.secret_share_watch_ad_pass))
-                        }
-
-                        if (uiState.isProPaymentEnabled) {
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.closeGate()
-                                    onDismissRequest()
-                                    onOpenProPaywall()
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Get ShowTime Pro")
-                            }
-                        }
+            SecretShareLuxuryGateDialog(
+                isProPaymentEnabled = uiState.isProPaymentEnabled,
+                onDismissRequest = viewModel::closeGate,
+                onWatchAd = {
+                    val activity = context.findActivity()
+                    if (activity != null) {
+                        viewModel.unlockThemesWithRewardedAd(activity)
                     }
                 },
-                dismissButton = {
-                    TextButton(onClick = { viewModel.closeGate() }) {
-                        Text(stringResource(R.string.cancel))
-                    }
+                onOpenProPaywall = {
+                    viewModel.closeGate()
+                    onDismissRequest()
+                    onOpenProPaywall()
                 }
             )
         }
     }
-}
-
-@Composable
-private fun ThemeOptionChip(
-    label: String,
-    isSelected: Boolean,
-    isLocked: Boolean,
-    onClick: () -> Unit
-) {
-    FilterChip(
-        selected = isSelected,
-        onClick = onClick,
-        label = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(label)
-                if (isLocked) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Rounded.Lock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(12.dp)
-                    )
-                }
-            }
-        },
-        colors = FilterChipDefaults.filterChipColors()
-    )
 }

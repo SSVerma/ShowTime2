@@ -1,8 +1,7 @@
-package com.ssverma.feature.library.ui.backlog.component
+package com.ssverma.feature.library.ui.common
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,12 +26,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Tv
+import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -42,7 +43,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -52,7 +52,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -61,28 +60,34 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
 import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
 import com.ssverma.shared.ui.component.media.ShowTimeMediaListCard
 
 @Composable
-fun ChallengeMediaSearchView(
+fun <T> ShowTimeMediaSearchPicker(
     searchQuery: String,
     selectedFilter: ChallengeMediaTypeFilter,
-    suggestions: List<ChallengeMediaItem>,
-    selectedTitles: List<ChallengeMediaItem>,
+    suggestions: List<T>,
     isSearching: Boolean,
     onSearchQueryChange: (String, ChallengeMediaTypeFilter) -> Unit,
-    onFilterChange: (ChallengeMediaTypeFilter) -> Unit,
     onClearSearch: () -> Unit,
-    onToggleMedia: (ChallengeMediaItem) -> Unit,
+    onMediaSelected: (T) -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isMediaSelectedAlready: ((T) -> Boolean)? = null,
+    contributorDisplayName: String? = null,
+    isGoogleUser: Boolean = false,
+    itemKey: ((Int, T) -> Any)? = null,
+    itemTitle: (T) -> String,
+    itemPosterUrl: (T) -> String,
+    itemMediaType: (T) -> MediaType,
+    itemVoteAvg: (T) -> Float = { 0f },
+    itemReleaseYear: (T) -> String? = { null },
+    itemOverview: (T) -> String? = { null }
 ) {
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     BackHandler {
         onDismiss()
@@ -90,7 +95,6 @@ fun ChallengeMediaSearchView(
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-        keyboardController?.show()
     }
 
     Surface(
@@ -104,17 +108,17 @@ fun ChallengeMediaSearchView(
                 .navigationBarsPadding()
                 .imePadding()
         ) {
-            // Top Search Bar with Back & Done action
+            // Top Search Bar
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 4.dp, end = 8.dp, top = 8.dp, bottom = 6.dp)
+                    .padding(start = 4.dp, end = 16.dp, top = 8.dp, bottom = 6.dp)
             ) {
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = stringResource(R.string.cd_back),
+                        contentDescription = stringResource(R.string.close),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -151,7 +155,7 @@ fun ChallengeMediaSearchView(
                         ) {
                             if (searchQuery.isEmpty()) {
                                 Text(
-                                    text = stringResource(R.string.challenges_search_placeholder),
+                                    text = stringResource(R.string.diary_search_placeholder),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 )
@@ -186,33 +190,13 @@ fun ChallengeMediaSearchView(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Clear,
-                                    contentDescription = stringResource(R.string.cd_clear_search),
+                                    contentDescription = stringResource(R.string.clear_filter),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
                         }
                     }
-                }
-
-                // Done Button with selection count
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.padding(start = 4.dp)
-                ) {
-                    Text(
-                        text = if (selectedTitles.isNotEmpty()) {
-                            stringResource(
-                                R.string.challenges_search_done_count,
-                                selectedTitles.size
-                            )
-                        } else {
-                            stringResource(R.string.challenges_search_done)
-                        },
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                 }
             }
 
@@ -225,7 +209,7 @@ fun ChallengeMediaSearchView(
             ) {
                 FilterChip(
                     selected = selectedFilter == ChallengeMediaTypeFilter.ALL,
-                    onClick = { onFilterChange(ChallengeMediaTypeFilter.ALL) },
+                    onClick = { onSearchQueryChange(searchQuery, ChallengeMediaTypeFilter.ALL) },
                     label = { Text(stringResource(R.string.filter_all)) },
                     shape = RoundedCornerShape(20.dp),
                     colors = FilterChipDefaults.filterChipColors(
@@ -236,7 +220,7 @@ fun ChallengeMediaSearchView(
 
                 FilterChip(
                     selected = selectedFilter == ChallengeMediaTypeFilter.MOVIE,
-                    onClick = { onFilterChange(ChallengeMediaTypeFilter.MOVIE) },
+                    onClick = { onSearchQueryChange(searchQuery, ChallengeMediaTypeFilter.MOVIE) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Rounded.Movie,
@@ -255,7 +239,7 @@ fun ChallengeMediaSearchView(
 
                 FilterChip(
                     selected = selectedFilter == ChallengeMediaTypeFilter.TV,
-                    onClick = { onFilterChange(ChallengeMediaTypeFilter.TV) },
+                    onClick = { onSearchQueryChange(searchQuery, ChallengeMediaTypeFilter.TV) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Rounded.Tv,
@@ -273,92 +257,176 @@ fun ChallengeMediaSearchView(
                 )
             }
 
+            // Optional Contributor Identity Banner (Collaborative Lists)
+            if (!contributorDisplayName.isNullOrBlank()) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isGoogleUser) Icons.Rounded.Verified else Icons.Rounded.AccountCircle,
+                            contentDescription = null,
+                            tint = if (isGoogleUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.secret_share_recommending_as,
+                                contributorDisplayName
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isGoogleUser) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    if (isGoogleUser) {
+                                        R.string.secret_share_identity_google_verified
+                                    } else {
+                                        R.string.secret_share_identity_guest
+                                    }
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isGoogleUser) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             HorizontalDivider(
                 thickness = 0.5.dp,
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                 modifier = Modifier.padding(top = 4.dp)
             )
 
-            // Results / Empty State
+            // Results / Empty States
             if (suggestions.isNotEmpty()) {
                 LazyColumn(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                 ) {
                     itemsIndexed(
                         suggestions,
-                        key = { index, item -> "${item.mediaType}_${item.id}_$index" }) { _, item ->
-                        val isAdded =
-                            selectedTitles.any { it.id == item.id && it.mediaType == item.mediaType }
+                        key = { index, item ->
+                            itemKey?.invoke(index, item)
+                                ?: "${itemMediaType(item)}_${itemTitle(item)}_$index"
+                        }
+                    ) { _, item ->
+                        val isAlreadyInList = isMediaSelectedAlready?.invoke(item) == true
+                        val rating = itemVoteAvg(item)
+                        val year = itemReleaseYear(item)
+                        val overview = itemOverview(item)
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                ShowTimeMediaListCard(
-                                    title = item.title,
-                                    posterImageUrl = item.posterImageUrl.convertToTmdbPosterUrl(),
-                                    onClick = { onToggleMedia(item) },
-                                    cardHeight = 104.dp,
-                                    topStartBadge = if (item.voteAvg > 0f) {
-                                        { MediaCardRatingBadge(rating = item.voteAvg) }
-                                    } else null,
-                                    subtitle = {
-                                        val typeLabel = if (item.mediaType == MediaType.Tv) {
-                                            stringResource(R.string.media_type_tv_short)
-                                        } else {
-                                            stringResource(R.string.media_type_movie)
-                                        }
-                                        val meta = if (item.releaseYear.isNotBlank()) {
-                                            "$typeLabel • ${item.releaseYear}"
-                                        } else {
-                                            typeLabel
-                                        }
-                                        Text(
-                                            text = meta,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    },
-                                    overview = item.overview.ifEmpty { null }
+                        ShowTimeMediaListCard(
+                            title = itemTitle(item),
+                            posterImageUrl = itemPosterUrl(item).convertToTmdbPosterUrl(),
+                            onClick = {
+                                if (!isAlreadyInList) {
+                                    onMediaSelected(item)
+                                }
+                            },
+                            cardHeight = 120.dp,
+                            topStartBadge = if (rating > 0f) {
+                                { MediaCardRatingBadge(rating = rating) }
+                            } else null,
+                            subtitle = {
+                                val typeLabel = if (itemMediaType(item) == MediaType.Tv) {
+                                    stringResource(R.string.media_type_tv_short)
+                                } else {
+                                    stringResource(R.string.media_type_movie)
+                                }
+                                val meta = if (!year.isNullOrBlank()) {
+                                    "$typeLabel • $year"
+                                } else {
+                                    typeLabel
+                                }
+                                Text(
+                                    text = meta,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                            }
-
-                            Spacer(modifier = Modifier.width(10.dp))
-
-                            // Checkmark / Add action indicator
-                            Surface(
-                                onClick = { onToggleMedia(item) },
-                                shape = CircleShape,
-                                color = if (isAdded) {
-                                    MaterialTheme.colorScheme.primary
+                            },
+                            overview = overview?.ifBlank { null },
+                            trailingActions = {
+                                if (isAlreadyInList) {
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = MaterialTheme.colorScheme.primaryContainer.copy(
+                                            alpha = 0.7f
+                                        ),
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(
+                                                horizontal = 8.dp,
+                                                vertical = 4.dp
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = stringResource(R.string.secret_share_item_already_added),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        }
+                                    }
                                 } else {
-                                    MaterialTheme.colorScheme.surfaceContainerHighest
-                                },
-                                contentColor = if (isAdded) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = if (isAdded) Icons.Rounded.Check else Icons.Rounded.Add,
-                                        contentDescription = if (isAdded) {
-                                            stringResource(R.string.challenges_search_item_added)
-                                        } else {
-                                            stringResource(R.string.challenges_search_item_add)
+                                    Surface(
+                                        onClick = {
+                                            if (!isAlreadyInList) {
+                                                onMediaSelected(item)
+                                            }
                                         },
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Add,
+                                                contentDescription = stringResource(R.string.secret_share_add_title_action),
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
-                        }
+                        )
                     }
                 }
             } else if (searchQuery.isNotBlank() && !isSearching) {
@@ -371,7 +439,7 @@ fun ChallengeMediaSearchView(
                         .padding(horizontal = 32.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.challenges_search_no_results, searchQuery),
+                        text = stringResource(R.string.diary_search_no_results, searchQuery),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -402,14 +470,14 @@ fun ChallengeMediaSearchView(
                     }
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = stringResource(R.string.challenges_search_empty_title),
+                        text = stringResource(R.string.secret_share_search_initial_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.challenges_search_empty_subtitle),
+                        text = stringResource(R.string.secret_share_search_initial_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center

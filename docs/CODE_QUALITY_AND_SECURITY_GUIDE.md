@@ -76,6 +76,38 @@ the checklist in this guide before being merged into development or release bran
 
 ---
 
+### D. Ripple & Click Handling (Surface / Card `onClick` vs `Modifier.clickable`)
+
+* **Rule**: Never use `Modifier.clickable { ... }` on container components like `Surface`, `Card`, `ElevatedCard`, or `OutlinedCard`.
+* **Standard**: Always use the container's first-class `onClick = { ... }` parameter.
+  ```kotlin
+  // ❌ FORBIDDEN: Modifier.clickable suppresses or misclips container ripples and breaks M3 elevation/tint interaction
+  Surface(
+      shape = RoundedCornerShape(12.dp),
+      modifier = Modifier.fillMaxWidth().clickable { onItemClick() }
+  ) { ... }
+
+  Card(
+      shape = RoundedCornerShape(16.dp),
+      modifier = Modifier.clickable { onOpen() }
+  ) { ... }
+
+  // ✅ CORRECT: Surface/Card onClick guarantees bounded ripple animation, correct Role.Button semantics, and stateful interaction
+  Surface(
+      onClick = { onItemClick() },
+      shape = RoundedCornerShape(12.dp),
+      modifier = Modifier.fillMaxWidth()
+  ) { ... }
+
+  Card(
+      onClick = { onOpen() },
+      shape = RoundedCornerShape(16.dp)
+  ) { ... }
+  ```
+* **Rationale**: `Surface(onClick = ...)` and `Card(onClick = ...)` automatically attach the Material 3 `LocalIndication` / ripple cleanly bounded inside the container's `Shape`, provide accessible button semantics, and properly propagate interaction states without touch conflicts.
+
+---
+
 ## 3. Localization & Accessibility
 
 ### A. Zero Hardcoded English Strings
@@ -336,6 +368,35 @@ the checklist in this guide before being merged into development or release bran
 
 ---
 
+### E. Feature UI Modularity & `component/` Subpackage Standard
+
+* **Rule**: Screen and sheet composables (`*Screen.kt`, `*BottomSheet.kt`) must remain clean, declarative, high-level orchestrators and should not exceed **~300–400 lines of code**. Monolithic "god-composables" are strictly forbidden.
+* **Component Subpackage Convention**:
+  - Complex screens or feature packages must organize modular presentation elements into a dedicated `component/` subpackage (e.g. `feature-library/.../ui/share/component/`, `feature-community/.../ui/detail/component/`).
+  - Single-responsibility UI parts (dialogs, custom cards, action bars, selector carousels/chips, empty/error state layouts, header banners) MUST be extracted into dedicated component files inside `component/`.
+* **Standard Structure**:
+  ```
+  ui/share/
+  ├── SecretSharedListScreen.kt         # Lean orchestrator (~150-200 lines)
+  ├── SecretSharedListViewModel.kt      # State management
+  ├── ListShareExportBottomSheet.kt    # Lean bottom sheet container
+  └── component/                        # Modular, testable, reusable UI pieces
+      ├── SharedMediaGridCard.kt        # Item card presentation
+      ├── SecretSharedListHeader.kt     # Header, curator info & primary action rows
+      ├── SecretSharedListTopAppBar.kt  # App bar, title animation & overflow menu
+      ├── SecretSharedListDialogs.kt    # Alert and confirmation dialogs
+      ├── SecretSharedListStates.kt     # Empty, revoked, and not-found states
+      ├── SecretShareControls.kt        # Format & theme selectors, toggle cards
+      ├── SecretShareActionRows.kt      # Primary CTAs and action bars
+      └── SecretShareDialogs.kt         # Sheet confirmation & gate dialogs
+  ```
+* **Why**:
+  - **Readability & Maintainability**: Eliminates bloated 1000+ line monoliths that conflate layout, dialog orchestration, and animation state.
+  - **Component Reusability**: Dialogs, cards, and action bars can be shared cleanly across screens and bottom sheets without code duplication.
+  - **Isolated Compose Previews**: Granular composables can be independently previewed and styled without spinning up heavy screen-level ViewModels.
+
+---
+
 ## 7. Security, Secrets & Privacy Standards
 
 ```mermaid
@@ -426,6 +487,7 @@ npx firebase-tools deploy --only firestore:rules --dry-run
   - Are there zero cross-feature implementation dependencies (`feature-A` → `feature-B`)? Cross-feature wiring must go through `feature-*-navigation` contracts only.
   - Do `feature-*-navigation` modules contain ONLY `NavKey` data classes with zero screens, ViewModels, or business logic?
 - [ ] **Feature-Agnostic Core Modules & Contributor Plugin Pattern**: Are `core-*` and `shared-*` modules completely free of feature-specific domain bloat? Do platform services (backup, notifications, analytics) use decoupled Dagger multibinding contributors (`@IntoSet`) rather than injecting domain DAOs/repositories into a god-class?
+- [ ] **Component Modularity & `component/` Subpackage**: Are screen and sheet files kept lean (~300–400 lines max) with complex UI parts, dialogs, card variants, state views, and control bars extracted into a dedicated `component/` subpackage?
 - [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
   in upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
 - [ ] **Dumb UI & Passive Presentation**: Are all list filterings, sortings, and domain-to-UI data

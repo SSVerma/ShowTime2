@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -29,19 +27,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssverma.core.image.NetworkImage
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.ui.share.component.PosterMosaicGrid
+import com.ssverma.feature.library.ui.share.component.VintageSprocketHoles
+import com.ssverma.feature.library.ui.share.component.resolveCardTheme
 import com.ssverma.shared.domain.model.library.ListShareCardFormat
 import com.ssverma.shared.domain.model.library.ListShareTheme
 import java.util.Locale
@@ -128,7 +123,7 @@ fun ListShareStoryCardView(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "SECRET COLLECTION",
+                                    text = stringResource(R.string.secret_share_story_badge),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.2.sp,
@@ -254,7 +249,7 @@ fun ListShareStoryCardView(
                                 text = if (showWatermark) {
                                     stringResource(R.string.secret_share_watermark)
                                 } else {
-                                    "ShowTime Cinephile"
+                                    stringResource(R.string.secret_share_story_curator_default)
                                 },
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
@@ -268,227 +263,5 @@ fun ListShareStoryCardView(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun PosterMosaicGrid(
-    posters: List<String>,
-    themeConfig: StoryCardThemeConfig,
-    format: ListShareCardFormat
-) {
-    when {
-        posters.isEmpty() -> {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = themeConfig.cardBg,
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .aspectRatio(2f / 3f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Movie,
-                        contentDescription = null,
-                        tint = themeConfig.textSecondary.copy(alpha = 0.5f),
-                        modifier = Modifier.size(48.dp)
-                    )
-                }
-            }
-        }
-
-        posters.size == 1 -> {
-            PosterItem(
-                url = posters[0],
-                themeConfig = themeConfig,
-                modifier = Modifier
-                    .fillMaxHeight(0.9f)
-                    .aspectRatio(2f / 3f)
-            )
-        }
-
-        posters.size in 2..3 -> {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                posters.forEach { url ->
-                    PosterItem(
-                        url = url,
-                        themeConfig = themeConfig,
-                        modifier = Modifier
-                            .fillMaxHeight(if (format == ListShareCardFormat.SQUARE_1_1) 0.85f else 0.75f)
-                            .aspectRatio(2f / 3f)
-                    )
-                }
-            }
-        }
-
-        else -> {
-            // 4 posters: 2x2 grid bounded strictly by available row height to prevent downward overflow
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        8.dp,
-                        Alignment.CenterHorizontally
-                    ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    PosterItem(
-                        url = posters[0],
-                        themeConfig = themeConfig,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(2f / 3f)
-                    )
-                    PosterItem(
-                        url = posters[1],
-                        themeConfig = themeConfig,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(2f / 3f)
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        8.dp,
-                        Alignment.CenterHorizontally
-                    ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    PosterItem(
-                        url = posters[2],
-                        themeConfig = themeConfig,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(2f / 3f)
-                    )
-                    PosterItem(
-                        url = posters[3],
-                        themeConfig = themeConfig,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(2f / 3f)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PosterItem(
-    url: String,
-    themeConfig: StoryCardThemeConfig,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = themeConfig.cardBg,
-        border = BorderStroke(1.dp, themeConfig.border.copy(alpha = 0.5f)),
-        modifier = modifier.clip(RoundedCornerShape(12.dp))
-    ) {
-        NetworkImage(
-            url = url,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Composable
-private fun VintageSprocketHoles(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxHeight(),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        repeat(12) {
-            Box(
-                modifier = Modifier
-                    .size(width = 8.dp, height = 12.dp)
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(ListShareColor.VintageSprocketHole)
-            )
-        }
-    }
-}
-
-private data class StoryCardThemeConfig(
-    val brush: Brush,
-    val border: Color,
-    val accent: Color,
-    val secondaryAccent: Color,
-    val textPrimary: Color,
-    val textSecondary: Color,
-    val cardBg: Color,
-    val isVintage: Boolean = false
-)
-
-private fun resolveCardTheme(theme: ListShareTheme): StoryCardThemeConfig {
-    return when (theme) {
-        ListShareTheme.CLASSIC_SHOWTIME -> StoryCardThemeConfig(
-            brush = Brush.verticalGradient(
-                listOf(ListShareColor.ClassicBackgroundStart, ListShareColor.ClassicBackgroundEnd)
-            ),
-            border = ListShareColor.ClassicAccent.copy(alpha = 0.35f),
-            accent = ListShareColor.ClassicAccent,
-            secondaryAccent = ListShareColor.ClassicAccent,
-            textPrimary = ListShareColor.ClassicTextPrimary,
-            textSecondary = ListShareColor.ClassicTextSecondary,
-            cardBg = ListShareColor.ClassicCard
-        )
-
-        ListShareTheme.VINTAGE_35MM -> StoryCardThemeConfig(
-            brush = Brush.verticalGradient(
-                listOf(ListShareColor.VintageBackgroundStart, ListShareColor.VintageBackgroundEnd)
-            ),
-            border = ListShareColor.VintageAccent.copy(alpha = 0.4f),
-            accent = ListShareColor.VintageAccent,
-            secondaryAccent = ListShareColor.VintageAccent,
-            textPrimary = ListShareColor.VintageTextPrimary,
-            textSecondary = ListShareColor.VintageTextSecondary,
-            cardBg = ListShareColor.VintageCard,
-            isVintage = true
-        )
-
-        ListShareTheme.OLED_MIDNIGHT -> StoryCardThemeConfig(
-            brush = Brush.verticalGradient(
-                listOf(ListShareColor.OledBackgroundStart, ListShareColor.OledBackgroundEnd)
-            ),
-            border = ListShareColor.OledBorder,
-            accent = ListShareColor.OledAccent,
-            secondaryAccent = ListShareColor.OledAccent,
-            textPrimary = ListShareColor.OledTextPrimary,
-            textSecondary = ListShareColor.OledTextSecondary,
-            cardBg = ListShareColor.OledCard
-        )
-
-        ListShareTheme.NEON_CYBERPUNK -> StoryCardThemeConfig(
-            brush = Brush.verticalGradient(
-                listOf(
-                    ListShareColor.CyberpunkBackgroundStart,
-                    ListShareColor.CyberpunkBackgroundEnd
-                )
-            ),
-            border = ListShareColor.CyberpunkBorder,
-            accent = ListShareColor.CyberpunkAccentPink,
-            secondaryAccent = ListShareColor.CyberpunkAccentCyan,
-            textPrimary = ListShareColor.CyberpunkTextPrimary,
-            textSecondary = ListShareColor.CyberpunkTextSecondary,
-            cardBg = ListShareColor.CyberpunkCard
-        )
     }
 }

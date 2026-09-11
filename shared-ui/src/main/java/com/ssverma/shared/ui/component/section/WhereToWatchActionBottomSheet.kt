@@ -227,15 +227,14 @@ fun WhereToWatchActionBottomSheet(
 
             // Mandatory JustWatch Attribution & Title Price Comparison
             Surface(
+                onClick = {
+                    val justWatchUrl = affiliateRepository.buildJustWatchUrl(watchProviderLink)
+                    context.dispatchBrowserIntent(justWatchUrl)
+                    onDismissRequest()
+                },
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        val justWatchUrl = affiliateRepository.buildJustWatchUrl(watchProviderLink)
-                        context.dispatchBrowserIntent(justWatchUrl)
-                        onDismissRequest()
-                    }
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

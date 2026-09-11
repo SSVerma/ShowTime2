@@ -53,7 +53,8 @@ fun ShowTimeMediaGridCard(
     border: BorderStroke? = null,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     shape: Shape = RoundedCornerShape(12.dp),
-    aspectRatio: Float = TmdbPosterAspectRatio
+    aspectRatio: Float = TmdbPosterAspectRatio,
+    metadataHeight: Dp = MediaItemDefaults.GridCardMetadataHeight
 ) {
     Card(
         onClick = onClick,
@@ -166,8 +167,8 @@ fun ShowTimeMediaGridCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(MediaItemDefaults.GridCardMetadataHeight)
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                    .height(metadataHeight)
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -182,9 +183,7 @@ fun ShowTimeMediaGridCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(24.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Box(modifier = Modifier.weight(1f, fill = false)) {
                         subtitle?.invoke()
@@ -302,10 +301,14 @@ fun ShowTimeMediaListCard(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 6.dp),
+                    .padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false)
+                ) {
                     Text(
                         text = title,
                         style = MaterialTheme.typography.titleSmall,

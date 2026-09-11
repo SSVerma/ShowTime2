@@ -19,7 +19,12 @@ import com.ssverma.shared.domain.notifier.WidgetSyncNotifier
 import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.data.local.db.dao.JoinedSecretListDao
 import com.ssverma.shared.data.local.db.entity.JoinedSecretListEntity
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.library.JoinedSecretList
+import com.ssverma.shared.domain.model.library.SecretSharedListItem
+import com.ssverma.shared.domain.repository.SecretSharedListRepository
+import dagger.Lazy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
@@ -35,7 +40,8 @@ class LibraryRepositoryImpl @Inject constructor(
     private val watchHistoryDao: WatchHistoryDao,
     private val customListDao: CustomListDao,
     private val joinedSecretListDao: JoinedSecretListDao? = null,
-    private val widgetSyncNotifier: WidgetSyncNotifier? = null
+    private val widgetSyncNotifier: WidgetSyncNotifier? = null,
+    private val secretSharedListRepository: Lazy<SecretSharedListRepository>? = null
 ) : LibraryRepository {
 
     override fun isFavoriteFlow(mediaId: Int): Flow<Boolean> {
@@ -335,6 +341,7 @@ class LibraryRepositoryImpl @Inject constructor(
         voteAvg: Float,
         userNotes: String?
     ) {
+        val now = System.currentTimeMillis()
         customListDao.insertListItem(
             CustomListItemEntity(
                 listId = listId,
@@ -346,13 +353,39 @@ class LibraryRepositoryImpl @Inject constructor(
                 voteAvg = voteAvg,
                 userNotes = userNotes,
                 rankOrder = 0,
-                addedAt = System.currentTimeMillis()
+                addedAt = now
             )
         )
+
+        val list = customListDao.getListWithItemsFlow(listId).firstOrNull()?.list
+        val shareCode = list?.secretShareCode
+        if (!shareCode.isNullOrBlank()) {
+            secretSharedListRepository?.get()?.addMediaToSharedList(
+                shareCode = shareCode,
+                item = SecretSharedListItem(
+                    mediaId = mediaId,
+                    mediaType = mediaType,
+                    title = title,
+                    posterImageUrl = posterImageUrl,
+                    backdropImageUrl = backdropImageUrl,
+                    voteAvg = voteAvg,
+                    addedByName = null,
+                    addedByUserId = null,
+                    addedAtEpochMs = now
+                )
+            )
+        }
     }
 
     override suspend fun removeMediaFromCustomList(listId: String, mediaId: Int) {
+        val list = customListDao.getListWithItemsFlow(listId).firstOrNull()?.list
+        val shareCode = list?.secretShareCode
+
         customListDao.deleteListItem(listId, mediaId)
+
+        if (!shareCode.isNullOrBlank()) {
+            secretSharedListRepository?.get()?.removeMediaFromSharedList(shareCode, mediaId)
+        }
     }
 
     override fun getCustomListIdsForMediaFlow(mediaId: Int): Flow<List<String>> {
@@ -476,6 +509,105 @@ class LibraryRepositoryImpl @Inject constructor(
 
     override suspend fun removeJoinedSecretList(shareCode: String) {
         joinedSecretListDao?.deleteByShareCode(shareCode)
+    }
+
+    override suspend fun syncSecretSharedLists(): Result<Unit, Failure<*>> {
+        val repo = secretSharedListRepository?.get() ?: return Result.Success(Unit)
+        return try {
+            val allLists = customListDao.getAllLists()
+            for (customList in allLists) {
+                val shareCode = customList.secretShareCode
+                if (!shareCode.isNullOrBlank()) {
+                    syncCustomListWithCloud(customList.listId)
+                }
+            }
+
+            val joinedDao = joinedSecretListDao
+            if (joinedDao != null) {
+                val allJoined = joinedDao.getAllJoinedLists()
+                for (joined in allJoined) {
+                    val result = repo.getSecretSharedList(joined.shareCode)
+                    if (result is Result.Success) {
+                        val cloudList = result.data
+                        if (cloudList.isRevoked) {
+                            joinedDao.deleteByShareCode(joined.shareCode)
+                        } else {
+                            joinedDao.insertOrUpdate(
+                                joined.copy(
+                                    title = cloudList.title,
+                                    description = cloudList.description,
+                                    ownerName = cloudList.ownerName,
+                                    coverImageUrl = cloudList.previewPosters.firstOrNull(),
+                                    itemCount = cloudList.items.size,
+                                    isCollaborative = cloudList.isCollaborative
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+            Result.Success(Unit)
+        } catch (_: Exception) {
+            Result.Error(Failure.CoreFailure.NetworkFailure)
+        }
+    }
+
+    override suspend fun syncCustomListWithCloud(listId: String): Result<Unit, Failure<*>> {
+        val repo = secretSharedListRepository?.get() ?: return Result.Success(Unit)
+        return try {
+            val listWithItems = customListDao.getListWithItemsFlow(listId).firstOrNull()
+                ?: return Result.Success(Unit)
+            val shareCode = listWithItems.list.secretShareCode ?: return Result.Success(Unit)
+
+            val result = repo.getSecretSharedList(shareCode)
+            if (result is Result.Success) {
+                val cloudList = result.data
+                if (cloudList.isRevoked) {
+                    customListDao.updateSecretShareCode(listId, null)
+                    return Result.Success(Unit)
+                }
+
+                val existingItems = listWithItems.items
+                val existingMediaIds = existingItems.map { it.mediaId }.toSet()
+                val cloudItems = cloudList.items
+                val cloudMediaIds = cloudItems.map { it.mediaId }.toSet()
+
+                for (cloudItem in cloudItems) {
+                    if (!existingMediaIds.contains(cloudItem.mediaId)) {
+                        customListDao.insertListItem(
+                            CustomListItemEntity(
+                                listId = listId,
+                                mediaId = cloudItem.mediaId,
+                                mediaType = cloudItem.mediaType.toStorageKey(),
+                                title = cloudItem.title,
+                                posterImageUrl = cloudItem.posterImageUrl,
+                                backdropImageUrl = cloudItem.backdropImageUrl,
+                                voteAvg = cloudItem.voteAvg,
+                                userNotes = null,
+                                rankOrder = existingItems.size,
+                                addedAt = if (cloudItem.addedAtEpochMs > 0) cloudItem.addedAtEpochMs else System.currentTimeMillis()
+                            )
+                        )
+                    }
+                }
+
+                for (localItem in existingItems) {
+                    if (!cloudMediaIds.contains(localItem.mediaId)) {
+                        customListDao.deleteListItem(listId, localItem.mediaId)
+                    }
+                }
+
+                customListDao.updateList(
+                    listId = listId,
+                    title = cloudList.title.ifBlank { listWithItems.list.title },
+                    description = cloudList.description ?: listWithItems.list.description,
+                    updatedAt = cloudList.updatedAtEpochMs
+                )
+            }
+            Result.Success(Unit)
+        } catch (_: Exception) {
+            Result.Error(Failure.CoreFailure.NetworkFailure)
+        }
     }
 
     private fun JoinedSecretListEntity.toJoinedSecretList(): JoinedSecretList {

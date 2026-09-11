@@ -145,6 +145,7 @@ private fun ReminderCard(
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -156,7 +157,6 @@ private fun ReminderCard(
         modifier = modifier
             .width(220.dp)
             .height(100.dp)
-            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
