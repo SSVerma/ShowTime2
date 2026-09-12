@@ -72,6 +72,7 @@ fun LazyListScope.trendingWorldwideShelf(
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     onRetry: () -> Unit,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
+    isAdsEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     item(key = "trending_worldwide_shelf") {
@@ -158,13 +159,20 @@ fun LazyListScope.trendingWorldwideShelf(
                             }
                         }
                     ) { movies ->
+                        val displayMovies = remember(movies, isAdsEnabled) {
+                            if (!isAdsEnabled) {
+                                movies.filterIsInstance<InjectableContent<MoviePreview>>()
+                            } else {
+                                movies
+                            }
+                        }
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(
-                                items = movies,
+                                items = displayMovies,
                                 key = { item ->
                                     when (item) {
                                         is InjectableAd -> item.id
@@ -216,13 +224,20 @@ fun LazyListScope.trendingWorldwideShelf(
                             }
                         }
                     ) { tvShows ->
+                        val displayTvShows = remember(tvShows, isAdsEnabled) {
+                            if (!isAdsEnabled) {
+                                tvShows.filterIsInstance<InjectableContent<TvShowPreview>>()
+                            } else {
+                                tvShows
+                            }
+                        }
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(
-                                items = tvShows,
+                                items = displayTvShows,
                                 key = { item ->
                                     when (item) {
                                         is InjectableAd -> item.id

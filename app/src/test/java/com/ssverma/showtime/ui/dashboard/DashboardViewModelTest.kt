@@ -11,10 +11,14 @@ import com.ssverma.feature.movie.domain.usecase.TrendingMoviesUseCase
 import com.ssverma.feature.tv.domain.usecase.PopularTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TrendingTvShowsUseCase
 import com.ssverma.feature.tv.domain.usecase.TvGenresUseCase
+import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.domain.Result
+import com.ssverma.core.ui.UiState
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.community.DailyPoll
+import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
+import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.ReminderRepository
@@ -60,6 +64,7 @@ class DashboardViewModelTest {
     private val reminderRepository: ReminderRepository = mockk(relaxed = true)
     private val billingRepository: BillingRepository = mockk(relaxed = true)
 
+    private val isProActiveFlow = MutableStateFlow(false)
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
     private val notificationShelfDismissedFlow = MutableStateFlow(0L)
 
@@ -107,7 +112,7 @@ class DashboardViewModelTest {
         coEvery { movieGenresUseCase() } returns Result.Success(emptyList())
         coEvery { tvGenresUseCase() } returns Result.Success(emptyList())
 
-        every { billingRepository.isProActive } returns MutableStateFlow(false)
+        every { billingRepository.isProActive } returns isProActiveFlow
 
         viewModel = DashboardViewModel(
             trendingMoviesUseCase = trendingMoviesUseCase,
@@ -262,6 +267,61 @@ class DashboardViewModelTest {
         advanceUntilIdle()
         coVerify(exactly = 1) { appConfigRepository.dismissNotificationShelf() }
         assertThat(viewModel.uiState.value.isNotificationShelfCoolingDown).isTrue()
+    }
+
+    @Test
+    fun `ad injection updates dynamically when pro status changes`() = runTest {
+        every { adConfigProvider.isAdsEnabled } returns true
+        val movie1 = mockk<Movie>(relaxed = true) { every { id } returns 1 }
+        val movie2 = mockk<Movie>(relaxed = true) { every { id } returns 2 }
+        val tv1 = mockk<TvShow>(relaxed = true) { every { id } returns 101 }
+        val tv2 = mockk<TvShow>(relaxed = true) { every { id } returns 102 }
+
+        coEvery { trendingMoviesUseCase(any()) } returns Result.Success(listOf(movie1, movie2))
+        coEvery { trendingTvShowsUseCase(any()) } returns Result.Success(listOf(tv1, tv2))
+        coEvery { popularMoviesUseCase() } returns Result.Success(listOf(movie1, movie2))
+        coEvery { popularTvShowsUseCase() } returns Result.Success(listOf(tv1, tv2))
+
+        viewModel.fetchTrendingMedia()
+        viewModel.fetchPopularMovies()
+        viewModel.fetchPopularTvShows()
+        advanceUntilIdle()
+
+        // Verify that ads are injected initially when isProActive = false and ads enabled
+        val trendingWithAds = (viewModel.uiState.value.trendingMedia as UiState.Success).data
+        val popularMoviesWithAds = (viewModel.uiState.value.popularMovies as UiState.Success).data
+        val popularTvWithAds = (viewModel.uiState.value.popularTvShows as UiState.Success).data
+
+        assertThat(trendingWithAds.any { it is InjectableAd }).isTrue()
+        assertThat(popularMoviesWithAds.any { it is InjectableAd }).isTrue()
+        assertThat(popularTvWithAds.any { it is InjectableAd }).isTrue()
+
+        // Activate Pro
+        isProActiveFlow.value = true
+        advanceUntilIdle()
+
+        // Verify that ads are removed when Pro is active
+        val trendingNoAds = (viewModel.uiState.value.trendingMedia as UiState.Success).data
+        val popularMoviesNoAds = (viewModel.uiState.value.popularMovies as UiState.Success).data
+        val popularTvNoAds = (viewModel.uiState.value.popularTvShows as UiState.Success).data
+
+        assertThat(trendingNoAds.any { it is InjectableAd }).isFalse()
+        assertThat(popularMoviesNoAds.any { it is InjectableAd }).isFalse()
+        assertThat(popularTvNoAds.any { it is InjectableAd }).isFalse()
+
+        // Pro deactivated / expired
+        isProActiveFlow.value = false
+        advanceUntilIdle()
+
+        // Verify that ads are re-injected
+        val trendingAdsRestored = (viewModel.uiState.value.trendingMedia as UiState.Success).data
+        val popularMoviesAdsRestored =
+            (viewModel.uiState.value.popularMovies as UiState.Success).data
+        val popularTvAdsRestored = (viewModel.uiState.value.popularTvShows as UiState.Success).data
+
+        assertThat(trendingAdsRestored.any { it is InjectableAd }).isTrue()
+        assertThat(popularMoviesAdsRestored.any { it is InjectableAd }).isTrue()
+        assertThat(popularTvAdsRestored.any { it is InjectableAd }).isTrue()
     }
 }
 

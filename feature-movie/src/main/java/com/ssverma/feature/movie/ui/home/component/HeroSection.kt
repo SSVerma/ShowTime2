@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.common.ui.component.HomePageAppBar
+import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.StatefulContent
@@ -106,11 +107,19 @@ fun HeroSection(
             )
         }
     ) { movies ->
-        val internalCarouselState = rememberCarouselState { movies.size }
+        val adConfigProvider = LocalAdConfigProvider.current
+        val effectiveMovies = remember(movies, adConfigProvider.isAdsEnabled) {
+            if (!adConfigProvider.isAdsEnabled) {
+                movies.filterIsInstance<InjectableContent<MoviePreview>>()
+            } else {
+                movies
+            }
+        }
+        val internalCarouselState = rememberCarouselState { effectiveMovies.size }
         val effectiveCarouselState = carouselState ?: internalCarouselState
 
-        val currentBackdrop = remember(movies, effectiveCarouselState.currentItem) {
-            val currentItem = movies.getOrNull(effectiveCarouselState.currentItem)
+        val currentBackdrop = remember(effectiveMovies, effectiveCarouselState.currentItem) {
+            val currentItem = effectiveMovies.getOrNull(effectiveCarouselState.currentItem)
             if (currentItem is InjectableContent<*>) {
                 (currentItem as InjectableContent<MoviePreview>).item.backdropImageUrl
             } else {
@@ -158,7 +167,7 @@ fun HeroSection(
                 }
 
                 AppHeroCarousel(
-                    items = movies,
+                    items = effectiveMovies,
                     carouselState = effectiveCarouselState,
                     maxItemWidth = maxItemWidth,
                     itemHeight = itemHeight,

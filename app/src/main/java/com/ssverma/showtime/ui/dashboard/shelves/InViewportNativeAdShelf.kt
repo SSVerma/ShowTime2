@@ -13,8 +13,10 @@ import com.ssverma.shared.ads.ui.NativeAdStyle
 fun LazyListScope.inViewportNativeAdShelf(
     nativeAd: NativeAd?,
     onAdLoaded: (NativeAd) -> Unit,
+    isAdsEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    if (!isAdsEnabled) return
     item(key = "in_viewport_native_ad_shelf") {
         Box(
             modifier = modifier

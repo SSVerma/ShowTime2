@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiState
@@ -110,7 +111,17 @@ fun DashboardScreen(
     val lazyListState = rememberLazyListState()
     var showCalendarSyncSheet by rememberSaveable { mutableStateOf(false) }
 
-    val trendingMedia = (uiState.trendingMedia as? UiState.Success)?.data.orEmpty()
+    val adConfigProvider = LocalAdConfigProvider.current
+    val isAdsEnabled = adConfigProvider.isAdsEnabled && !isPro
+
+    val rawTrendingMedia = (uiState.trendingMedia as? UiState.Success)?.data.orEmpty()
+    val trendingMedia = remember(rawTrendingMedia, isAdsEnabled) {
+        if (!isAdsEnabled) {
+            rawTrendingMedia.filterIsInstance<InjectableContent<TrendingSpotlightItem>>()
+        } else {
+            rawTrendingMedia
+        }
+    }
     val carouselState = rememberCarouselState { trendingMedia.size }
 
     val currentBackdrop = remember(trendingMedia, carouselState.currentItem) {
@@ -173,6 +184,7 @@ fun DashboardScreen(
                 trendingSpotlightShelf(
                     trendingState = uiState.trendingMedia,
                     carouselState = carouselState,
+                    isAdsEnabled = isAdsEnabled,
                     onMovieClick = { openMovieDetails(it.id) },
                     onTvShowClick = { openTvShowDetails(it.id) },
                     onAdLoaded = viewModel::onCarouselNativeAdLoaded,
@@ -218,6 +230,7 @@ fun DashboardScreen(
                 inViewportNativeAdShelf(
                     nativeAd = uiState.nativeAd,
                     onAdLoaded = viewModel::onNativeAdLoaded,
+                    isAdsEnabled = isAdsEnabled,
                     modifier = Modifier.dashboardSectionSpacing()
                 )
 
@@ -337,6 +350,7 @@ fun DashboardScreen(
                     onTogglePopularType = viewModel::setMoviePopularSelected,
                     onMovieClick = { openMovieDetails(it.id) },
                     onTvShowClick = { openTvShowDetails(it.id) },
+                    isAdsEnabled = isAdsEnabled,
                     onSeeAllClick = {
                         if (uiState.isMoviePopularSelected) {
                             openMovieListing()

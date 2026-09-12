@@ -29,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.UiState
@@ -132,6 +133,8 @@ fun TvShowHomeContent(
                 )
             }
         }
+
+        val adConfigProvider = LocalAdConfigProvider.current
 
         LazyColumn(
             state = lazyListState,
@@ -238,18 +241,20 @@ fun TvShowHomeContent(
                 )
             }
 
-            item {
-                ShowTimeNativeAd(
-                    ad = uiState.feedInlineAd,
-                    loadInternally = uiState.feedInlineAd == null,
-                    onAdLoaded = viewModel::onFeedInlineAdLoaded,
-                    style = NativeAdStyle.List,
-                    analyticsEventPrefix = "tv_home_feed_inline_native",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = MaterialTheme.spacing.medium)
-                        .padding(horizontal = MaterialTheme.spacing.medium)
-                )
+            if (adConfigProvider.isAdsEnabled) {
+                item {
+                    ShowTimeNativeAd(
+                        ad = uiState.feedInlineAd,
+                        loadInternally = uiState.feedInlineAd == null,
+                        onAdLoaded = viewModel::onFeedInlineAdLoaded,
+                        style = NativeAdStyle.List,
+                        analyticsEventPrefix = "tv_home_feed_inline_native",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = MaterialTheme.spacing.medium)
+                            .padding(horizontal = MaterialTheme.spacing.medium)
+                    )
+                }
             }
 
             item {

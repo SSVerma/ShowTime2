@@ -28,9 +28,11 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
+import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
@@ -87,7 +89,49 @@ class DashboardViewModel @Inject constructor(
         style = NativeAdStyle.Grid
     )
 
+    private var rawSpotlightItems: List<TrendingSpotlightItem> = emptyList()
+    private var rawPopularMovies: List<MoviePreview> = emptyList()
+    private var rawPopularTvShows: List<TvShowPreview> = emptyList()
+
+    private fun isAdsCurrentlyEnabled(): Boolean {
+        return adConfigProvider.isAdsEnabled && !billingRepository.isProActive.value
+    }
+
+    private fun applyAdInjection() {
+        val adsEnabled = isAdsCurrentlyEnabled()
+
+        if (rawSpotlightItems.isNotEmpty()) {
+            val injected = rawSpotlightItems.injectAds(
+                config = homeSpotlightAdConfig,
+                isAdsEnabled = adsEnabled
+            )
+            _uiState.update { it.copy(trendingMedia = UiState.Success(injected)) }
+        }
+
+        if (rawPopularMovies.isNotEmpty()) {
+            val injected = rawPopularMovies.injectAds(
+                config = popularCarouselAdConfig,
+                isAdsEnabled = adsEnabled
+            )
+            _uiState.update { it.copy(popularMovies = UiState.Success(injected)) }
+        }
+
+        if (rawPopularTvShows.isNotEmpty()) {
+            val injected = rawPopularTvShows.injectAds(
+                config = popularCarouselAdConfig,
+                isAdsEnabled = adsEnabled
+            )
+            _uiState.update { it.copy(popularTvShows = UiState.Success(injected)) }
+        }
+    }
+
     init {
+        viewModelScope.launch {
+            billingRepository.isProActive.collect {
+                applyAdInjection()
+            }
+        }
+
         viewModelScope.launch {
             reminderRepository.getActiveReminders().collectLatest { reminders ->
                 _uiState.update { it.copy(activeReminders = reminders) }
@@ -205,9 +249,10 @@ class DashboardViewModel @Inject constructor(
         }
 
         if (spotlightItems.isNotEmpty()) {
+            rawSpotlightItems = spotlightItems
             val injected = spotlightItems.injectAds(
                 config = homeSpotlightAdConfig,
-                isAdsEnabled = adConfigProvider.isAdsEnabled
+                isAdsEnabled = isAdsCurrentlyEnabled()
             )
             _uiState.update { it.copy(trendingMedia = UiState.Success(injected)) }
         } else if (movieResult is Result.Error) {
@@ -223,9 +268,11 @@ class DashboardViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 popularMovies = result.asSuccessOrErrorUiState().mapSuccess { movies ->
-                    movies.map { movie -> movie.asMoviePreview() }.injectAds(
+                    val previews = movies.map { movie -> movie.asMoviePreview() }
+                    rawPopularMovies = previews
+                    previews.injectAds(
                         config = popularCarouselAdConfig,
-                        isAdsEnabled = adConfigProvider.isAdsEnabled
+                        isAdsEnabled = isAdsCurrentlyEnabled()
                     )
                 }
             )
@@ -238,9 +285,11 @@ class DashboardViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 popularTvShows = result.asSuccessOrErrorUiState().mapSuccess { tvShows ->
-                    tvShows.map { tvShow -> tvShow.asTvShowPreview() }.injectAds(
+                    val previews = tvShows.map { tvShow -> tvShow.asTvShowPreview() }
+                    rawPopularTvShows = previews
+                    previews.injectAds(
                         config = popularCarouselAdConfig,
-                        isAdsEnabled = adConfigProvider.isAdsEnabled
+                        isAdsEnabled = isAdsCurrentlyEnabled()
                     )
                 }
             )
