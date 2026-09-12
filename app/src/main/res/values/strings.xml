@@ -157,4 +157,32 @@
     <string name="network_disney_plus">Disney+</string>
     <string name="network_amazon">Prime Video</string>
     <string name="network_cw">The CW</string>
+
+    <!-- Notification Shelf & Permission Flow -->
+    <string name="notification_shelf_title">Release Alerts</string>
+    <string name="notification_shelf_subtitle">Get notified when new episodes &amp; movies air</string>
+    <string name="notification_shelf_action_enable">Turn On</string>
+    <string name="notification_shelf_dismiss_cd">Dismiss release alerts</string>
+    <string name="notification_rationale_title">Enable Release Alerts</string>
+    <string name="notification_rationale_desc">ShowTime notifies you when movies on your watchlist release and when new TV episodes air. We only send relevant alerts for titles you track.</string>
+    <string name="notification_rationale_confirm">Allow</string>
+    <string name="notification_rationale_dismiss">Not Now</string>
+    <string name="notification_settings_title">Notifications Disabled</string>
+    <string name="notification_settings_desc">Notifications are blocked in your device settings. To receive release reminders and episode drops, please enable notifications for ShowTime in Settings.</string>
+    <string name="notification_settings_action">Open Settings</string>
+    <string name="notification_settings_dismiss">Cancel</string>
+
+    <!-- Airing Reminders Calendar Integration -->
+    <string name="calendar_sync_title">Calendar Integration</string>
+    <string name="calendar_sync_subtitle">Sync your active reminders with your calendar</string>
+    <string name="calendar_sync_app_title">Add to Calendar App</string>
+    <string name="calendar_sync_app_desc">Open in Google Calendar or your default calendar app</string>
+    <string name="calendar_export_ics_title">Export Calendar File (.ics)</string>
+    <string name="calendar_export_ics_desc">Share or batch import all reminders into any calendar app</string>
+
+    <!-- Notification Shelf Dismiss Rationale Dialog -->
+    <string name="notification_dismiss_title">Dismiss Notification Alerts?</string>
+    <string name="notification_dismiss_desc">Without notifications, ShowTime cannot alert you when your tracked episodes air or when watchlist movies arrive on streaming.\n\nYou can always enable alerts later in Settings.</string>
+    <string name="notification_dismiss_enable">Turn On</string>
+    <string name="notification_dismiss_confirm">Dismiss</string>
 </resources>

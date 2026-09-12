@@ -85,7 +85,6 @@ import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.rememberNavigationState
-import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
 import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
@@ -109,7 +108,6 @@ import com.ssverma.showtime.navigation.DashboardHomeNavKey
 import com.ssverma.showtime.navigation.ShowTimeNavDisplay
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
-import com.ssverma.showtime.notifications.NotificationPermissionHandler
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -249,15 +247,9 @@ fun ShowTime(
         CompositionLocalProvider(
             LocalAppInfoTrigger provides { showManualAppInfoSheet = true }
         ) {
-            val notificationManager = LocalNotificationManager.current
             val isHomePage = isHomePage(
                 currentNavKey = currentDestination,
                 bottomNavDestinations = ShowTimeTopLevelNavItems
-            )
-
-            NotificationPermissionHandler(
-                notificationManager = notificationManager,
-                canRequest = isHomePage && !showAppInfoSheet
             )
 
             ModalNavigationDrawer(

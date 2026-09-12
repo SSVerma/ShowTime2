@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.layout.AdaptiveHorizontalCarousel
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
@@ -97,30 +98,46 @@ fun UpNextSection(
         Spacer(modifier = Modifier.height(10.dp))
 
         // Horizontal Carousel
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(
-                items = upNextEpisodes,
-                key = { it.showTmdbId }
-            ) { episode ->
-                UpNextCard(
-                    episode = episode,
-                    modifier = Modifier.animateItem(
-                        fadeInSpec = tween(durationMillis = 250),
-                        fadeOutSpec = tween(durationMillis = 250),
-                        placementSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                    ),
-                    onClick = { onUpNextEpisodeClick(episode.showTmdbId, episode.seasonNumber) },
-                    onMarkWatched = {
-                        onMarkWatchedClick(
-                            episode.showTmdbId,
-                            episode.seasonNumber,
-                            episode.episodeNumber
-                        )
-                    }
-                )
+        AdaptiveHorizontalCarousel(
+            itemCount = upNextEpisodes.size,
+            minMultiItemWidth = 280.dp,
+            maxMultiItemWidth = 340.dp
+        ) { cardWidth ->
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    items = upNextEpisodes,
+                    key = { it.showTmdbId }
+                ) { episode ->
+                    UpNextCard(
+                        episode = episode,
+                        modifier = Modifier
+                            .width(cardWidth)
+                            .animateItem(
+                                fadeInSpec = tween(durationMillis = 250),
+                                fadeOutSpec = tween(durationMillis = 250),
+                                placementSpec = tween(
+                                    durationMillis = 300,
+                                    easing = FastOutSlowInEasing
+                                )
+                            ),
+                        onClick = {
+                            onUpNextEpisodeClick(
+                                episode.showTmdbId,
+                                episode.seasonNumber
+                            )
+                        },
+                        onMarkWatched = {
+                            onMarkWatchedClick(
+                                episode.showTmdbId,
+                                episode.seasonNumber,
+                                episode.episodeNumber
+                            )
+                        }
+                    )
+                }
             }
         }
     }
@@ -155,7 +172,7 @@ private fun UpNextCard(
     ) {
         OutlinedCard(
             onClick = onClick,
-            modifier = Modifier.width(300.dp),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.outlinedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface

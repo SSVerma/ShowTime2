@@ -54,4 +54,10 @@ interface AppConfigRepository {
     suspend fun updateReleaseRadarEnabled(enabled: Boolean)
 
     suspend fun updateReminderNotificationTime(hour: Int, minute: Int)
+
+    /** Epoch millis when the notification permission shelf was last dismissed by the user. */
+    val notificationShelfLastDismissedMs: Flow<Long>
+
+    /** Record the current time as the last dismissal of the notification permission shelf. */
+    suspend fun dismissNotificationShelf()
 }

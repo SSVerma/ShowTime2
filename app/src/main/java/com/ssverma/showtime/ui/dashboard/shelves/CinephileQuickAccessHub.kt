@@ -59,7 +59,8 @@ fun LazyListScope.cinephileQuickAccessHub(
     onOpenBacklogChallenges: () -> Unit,
     onOpenReceipt: () -> Unit,
     onOpenPeople: () -> Unit,
-    onOpenDiscovery: () -> Unit
+    onOpenDiscovery: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     item(key = "cinephile_quick_access_hub") {
         CinephileQuickAccessHub(
@@ -77,9 +78,7 @@ fun LazyListScope.cinephileQuickAccessHub(
             onOpenReceipt = onOpenReceipt,
             onOpenPeople = onOpenPeople,
             onOpenDiscovery = onOpenDiscovery,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 4.dp)
+            modifier = modifier.fillMaxWidth()
         )
     }
 }

@@ -24,6 +24,7 @@ import com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
 import com.ssverma.shared.testing.fakes.FakeTraktSyncRepository
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,6 +61,7 @@ class DashboardViewModelTest {
     private val billingRepository: BillingRepository = mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
+    private val notificationShelfDismissedFlow = MutableStateFlow(0L)
 
     private val sampleUpNextEpisode = TraktUpNextEpisode(
         showTmdbId = 1396,
@@ -80,6 +82,10 @@ class DashboardViewModelTest {
         every { appConfigRepository.isTranslationEnabled } returns MutableStateFlow(false)
         every { appConfigRepository.contentLanguage } returns MutableStateFlow("en")
         every { appConfigRepository.preferredOriginalLanguage } returns MutableStateFlow("en")
+        every { appConfigRepository.notificationShelfLastDismissedMs } returns notificationShelfDismissedFlow
+        coEvery { appConfigRepository.dismissNotificationShelf() } coAnswers {
+            notificationShelfDismissedFlow.value = System.currentTimeMillis()
+        }
         every { adConfigProvider.isAdsEnabled } returns false
 
         every { traktAuthManager.authState } returns traktAuthFlow
@@ -226,6 +232,36 @@ class DashboardViewModelTest {
 
         viewModel.setMovieStudioSelected(true)
         assertThat(viewModel.uiState.value.isMovieStudioSelected).isTrue()
+    }
+
+    @Test
+    fun `notification shelf is not cooling down by default`() = runTest {
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.isNotificationShelfCoolingDown).isFalse()
+    }
+
+    @Test
+    fun `notification shelf is cooling down when dismissed within 7 days`() = runTest {
+        notificationShelfDismissedFlow.value =
+            System.currentTimeMillis() - (2L * 24 * 60 * 60 * 1000)
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.isNotificationShelfCoolingDown).isTrue()
+    }
+
+    @Test
+    fun `notification shelf is not cooling down when dismissed more than 7 days ago`() = runTest {
+        notificationShelfDismissedFlow.value =
+            System.currentTimeMillis() - (8L * 24 * 60 * 60 * 1000)
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value.isNotificationShelfCoolingDown).isFalse()
+    }
+
+    @Test
+    fun `dismissNotificationShelf delegates to appConfigRepository`() = runTest {
+        viewModel.dismissNotificationShelf()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { appConfigRepository.dismissNotificationShelf() }
+        assertThat(viewModel.uiState.value.isNotificationShelfCoolingDown).isTrue()
     }
 }
 

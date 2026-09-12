@@ -136,6 +136,14 @@ class DashboardViewModel @Inject constructor(
                 _uiState.update { it.copy(trendingDiscussions = discussions) }
             }
         }
+
+        viewModelScope.launch {
+            appConfigRepository.notificationShelfLastDismissedMs.collect { dismissedEpoch ->
+                val coolingDown = dismissedEpoch > 0L &&
+                        System.currentTimeMillis() - dismissedEpoch < NOTIFICATION_SHELF_COOLDOWN_MS
+                _uiState.update { it.copy(isNotificationShelfCoolingDown = coolingDown) }
+            }
+        }
     }
 
     fun voteDailyPoll(optionIndex: Int) = viewModelScope.launch {
@@ -438,5 +446,14 @@ class DashboardViewModel @Inject constructor(
             } catch (_: Exception) {
             }
         }
+    }
+
+    fun dismissNotificationShelf() = viewModelScope.launch {
+        appConfigRepository.dismissNotificationShelf()
+    }
+
+    companion object {
+        /** 7 days in milliseconds. */
+        private const val NOTIFICATION_SHELF_COOLDOWN_MS = 7L * 24 * 60 * 60 * 1000
     }
 }

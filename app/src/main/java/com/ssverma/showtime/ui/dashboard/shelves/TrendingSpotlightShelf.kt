@@ -34,13 +34,12 @@ fun LazyListScope.trendingSpotlightShelf(
     onTvShowClick: (TrendingSpotlightItem) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     onRetry: () -> Unit,
-    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
+    modifier: Modifier = Modifier.padding(top = 8.dp)
 ) {
     item(key = "trending_spotlight_shelf") {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
+            modifier = modifier.fillMaxWidth()
         ) {
             AppHeroCarousel(
                 uiState = trendingState,

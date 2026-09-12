@@ -50,5 +50,6 @@ data class DashboardUiState(
     val activeReminders: List<AiringReminder> = emptyList(),
     val isTraktConnected: Boolean = false,
     val nativeAd: NativeAd? = null,
-    val completedShowDialog: CompletedShowDialogState? = null
+    val completedShowDialog: CompletedShowDialogState? = null,
+    val isNotificationShelfCoolingDown: Boolean = false
 )

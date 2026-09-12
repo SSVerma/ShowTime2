@@ -102,6 +102,14 @@ class FakeAppConfigRepository(
         _reminderNotificationMinute.value = minute
     }
 
+    private val _notificationShelfLastDismissedMs = MutableStateFlow(0L)
+    override val notificationShelfLastDismissedMs: Flow<Long> =
+        _notificationShelfLastDismissedMs.asStateFlow()
+
+    override suspend fun dismissNotificationShelf() {
+        _notificationShelfLastDismissedMs.value = System.currentTimeMillis()
+    }
+
     fun setAppTheme(theme: AppTheme) {
         _appTheme.value = theme
     }

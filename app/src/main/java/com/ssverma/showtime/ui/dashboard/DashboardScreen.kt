@@ -23,8 +23,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -42,7 +45,6 @@ import com.ssverma.core.ui.component.scrim
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
-import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
@@ -55,6 +57,7 @@ import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.SeasonCompletionDialog
 import com.ssverma.shared.ui.component.section.ActiveRemindersSection
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
+import com.ssverma.showtime.ui.dashboard.shelves.AiringCalendarSyncBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.DailyPollBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
 import com.ssverma.showtime.ui.dashboard.shelves.cinephileQuickAccessHub
@@ -105,6 +108,7 @@ fun DashboardScreen(
     val coroutineScope = rememberCoroutineScope()
     val bottomBarHeight = rememberFloatingBottomBarHeight()
     val lazyListState = rememberLazyListState()
+    var showCalendarSyncSheet by rememberSaveable { mutableStateOf(false) }
 
     val trendingMedia = (uiState.trendingMedia as? UiState.Success)?.data.orEmpty()
     val carouselState = rememberCarouselState { trendingMedia.size }
@@ -206,17 +210,23 @@ fun DashboardScreen(
                     onOpenReceipt = openReceipt,
                     onOpenPeople = openPeople,
                     onOpenMovieMatch = openMovieMatch,
-                    onOpenDiscovery = { openUniversalDiscovery(UniversalDiscoveryNavKey()) }
+                    onOpenDiscovery = { openUniversalDiscovery(UniversalDiscoveryNavKey()) },
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 3. In-Viewport Native Ad Showcase (Guaranteed initial viewport viewability & high CPM)
                 inViewportNativeAdShelf(
                     nativeAd = uiState.nativeAd,
-                    onAdLoaded = viewModel::onNativeAdLoaded
+                    onAdLoaded = viewModel::onNativeAdLoaded,
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 4. Notification Permission Shelf (Conditional, Android 13+)
-                notificationPermissionShelf()
+                notificationPermissionShelf(
+                    isCoolingDown = uiState.isNotificationShelfCoolingDown,
+                    onDismissConfirmed = viewModel::dismissNotificationShelf,
+                    modifier = Modifier.dashboardSectionSpacing()
+                )
 
                 // 5. Up Next to Watch (Personalized continue watching queue)
                 item(key = "dashboard_up_next_section") {
@@ -247,7 +257,7 @@ fun DashboardScreen(
                                     episode = episodeNumber
                                 )
                             },
-                            modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
+                            modifier = Modifier.dashboardSectionSpacing()
                         )
                     }
                 }
@@ -280,19 +290,20 @@ fun DashboardScreen(
                             onRemoveReminderClick = viewModel::removeReminder,
                             onExportCalendarClick = {
                                 if (isPro) {
-                                    viewModel.exportRemindersToIcs(context)
+                                    showCalendarSyncSheet = true
                                 } else {
                                     openProPaywall()
                                 }
                             },
-                            modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
+                            modifier = Modifier.dashboardSectionSpacing()
                         )
                     }
                 }
 
                 // 6. Universal Discovery & Browse Hub ("What to Watch Tonight")
                 universalDiscoveryShelf(
-                    onOpenDiscovery = openUniversalDiscovery
+                    onOpenDiscovery = openUniversalDiscovery,
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 7. Explore Genres (Segmented: [ 🎬 Movies | 📺 TV Shows ])
@@ -314,7 +325,8 @@ fun DashboardScreen(
                         } else {
                             viewModel.fetchTvGenres()
                         }
-                    }
+                    },
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 8. Popular Media Worldwide Shelf (Segmented: [ 🎬 Movies | 📺 TV Shows ])
@@ -351,7 +363,8 @@ fun DashboardScreen(
                                 openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
                             }
                         }
-                    }
+                    },
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 9. Streaming Universe Hub (Segmented: [ 🎬 Movies | 📺 TV Shows ])
@@ -361,32 +374,37 @@ fun DashboardScreen(
                     isMovieSelected = uiState.isMovieStreamingSelected,
                     onToggleStreamingType = viewModel::setMovieStreamingSelected,
                     onProviderClick = openWatchProviderHub,
-                    onRetry = { viewModel.fetchWatchProviders() }
+                    onRetry = { viewModel.fetchWatchProviders() },
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 10. Cinephile Studio & Network Hubs (A24, HBO, Studio Ghibli, Pixar)
                 studioPortalsShelf(
                     isMovieSelected = uiState.isMovieStudioSelected,
                     onToggleStudioType = viewModel::setMovieStudioSelected,
-                    onPortalClick = openStudioPortal
+                    onPortalClick = openStudioPortal,
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 11. Trending Community Discussions & Cinephile Buzz
                 trendingDiscussionsShelf(
                     discussions = uiState.trendingDiscussions,
-                    onDiscussionClick = openDiscussions
+                    onDiscussionClick = openDiscussions,
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 12. Rate Us & Share Showcase
-                rateShowTimeShelf()
+                rateShowTimeShelf(
+                    modifier = Modifier.dashboardSectionSpacing()
+                )
 
                 // 13. TMDB Attribution Footer (Edge-to-edge till bottom end)
                 item(key = "dashboard_tmdb_attribution") {
                     AttributionFooter(
                         bottomPadding = bottomBarHeight,
                         modifier = Modifier
+                            .dashboardSectionSpacing()
                             .fillMaxWidth()
-                            .padding(top = 28.dp)
                     )
                 }
             }
@@ -412,6 +430,18 @@ fun DashboardScreen(
                     onDismiss = viewModel::dismissDailyPollSheet
                 )
             }
+
+            if (showCalendarSyncSheet) {
+                AiringCalendarSyncBottomSheet(
+                    reminders = uiState.activeReminders,
+                    onExportIcs = {
+                        viewModel.exportRemindersToIcs(context)
+                    },
+                    onDismiss = { showCalendarSyncSheet = false }
+                )
+            }
         }
     }
 }
+
+private fun Modifier.dashboardSectionSpacing(): Modifier = this.padding(top = 20.dp)

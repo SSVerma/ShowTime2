@@ -56,7 +56,8 @@ fun LazyListScope.dashboardGenreShelf(
     isMovieSelected: Boolean,
     onToggleGenreType: (Boolean) -> Unit,
     onGenreClicked: (Genre, Boolean) -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     item(key = "dashboard_genre_shelf") {
         DashboardGenreShelf(
@@ -66,9 +67,7 @@ fun LazyListScope.dashboardGenreShelf(
             onToggleGenreType = onToggleGenreType,
             onGenreClicked = onGenreClicked,
             onRetry = onRetry,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
+            modifier = modifier.fillMaxWidth()
         )
     }
 }

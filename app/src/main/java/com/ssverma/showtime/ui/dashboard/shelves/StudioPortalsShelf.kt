@@ -223,14 +223,13 @@ val CuratedTvNetworks = listOf(
 fun LazyListScope.studioPortalsShelf(
     isMovieSelected: Boolean,
     onToggleStudioType: (Boolean) -> Unit,
-    onPortalClick: (StudioPortalItem) -> Unit
+    onPortalClick: (StudioPortalItem) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     item(key = "studio_portals_shelf") {
         val portals = if (isMovieSelected) CuratedMovieStudios else CuratedTvNetworks
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp)
+            modifier = modifier.fillMaxWidth()
         ) {
             // Standard Section Header with Segmented Switcher
             SectionHeader(

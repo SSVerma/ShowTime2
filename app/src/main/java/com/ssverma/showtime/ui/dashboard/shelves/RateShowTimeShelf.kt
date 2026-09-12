@@ -62,7 +62,7 @@ fun LazyListScope.rateShowTimeShelf(
         RateShowTimeCard(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp)
         )
     }
 }

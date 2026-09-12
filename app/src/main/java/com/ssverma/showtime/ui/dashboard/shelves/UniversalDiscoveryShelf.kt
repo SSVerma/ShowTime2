@@ -37,14 +37,15 @@ import com.ssverma.shared.ui.discovery.icon
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 
 fun LazyListScope.universalDiscoveryShelf(
-    onOpenDiscovery: (UniversalDiscoveryNavKey) -> Unit
+    onOpenDiscovery: (UniversalDiscoveryNavKey) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     item(key = "universal_discovery_shelf") {
         UniversalDiscoveryShelf(
             onOpenDiscovery = onOpenDiscovery,
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp)
         )
     }
 }

@@ -2,6 +2,7 @@ package com.ssverma.shared.data.repository
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
@@ -177,6 +178,13 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(ReminderNotificationMinuteKey, minute)
     }
 
+    override val notificationShelfLastDismissedMs: Flow<Long>
+        get() = keyValueStorage.observe(NotificationShelfDismissedEpochKey, 0L)
+
+    override suspend fun dismissNotificationShelf() {
+        keyValueStorage.write(NotificationShelfDismissedEpochKey, System.currentTimeMillis())
+    }
+
     companion object {
         private val AppThemeKey = stringPreferencesKey("app_theme")
 
@@ -207,6 +215,9 @@ class DefaultAppConfigRepository @Inject constructor(
 
         private val ReminderNotificationMinuteKey =
             intPreferencesKey("reminder_notification_minute")
+
+        private val NotificationShelfDismissedEpochKey =
+            longPreferencesKey("notification_shelf_dismissed_epoch_ms")
 
         // Define the remote key here since this domain owns the knowledge of what it's used for
         private const val REMOTE_KEY_ANALYTICS_ENABLED = "remote_analytics_enabled"

@@ -38,7 +38,8 @@ fun LazyListScope.streamingUniverseShelf(
     isMovieSelected: Boolean,
     onToggleStreamingType: (Boolean) -> Unit,
     onProviderClick: (ProviderInfo, Boolean) -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     item(key = "streaming_universe_shelf") {
         val activeProviders = if (isMovieSelected) movieProviders else tvProviders
@@ -56,9 +57,7 @@ fun LazyListScope.streamingUniverseShelf(
                     onToggle = onToggleStreamingType
                 )
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 18.dp)
+            modifier = modifier.fillMaxWidth()
         )
     }
 }

@@ -47,14 +47,13 @@ import com.ssverma.shared.ui.R
 
 fun LazyListScope.trendingDiscussionsShelf(
     discussions: List<TrendingDiscussion>,
-    onDiscussionClick: (DiscussionNavArgs) -> Unit
+    onDiscussionClick: (DiscussionNavArgs) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     if (discussions.isNotEmpty()) {
         item(key = "trending_discussions_shelf") {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
+                modifier = modifier.fillMaxWidth()
             ) {
                 // Shelf Header
                 SectionHeader(

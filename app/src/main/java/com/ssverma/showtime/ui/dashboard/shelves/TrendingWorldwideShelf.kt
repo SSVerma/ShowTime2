@@ -71,13 +71,12 @@ fun LazyListScope.trendingWorldwideShelf(
     onSeeAllClick: () -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
     onRetry: () -> Unit,
-    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
+    onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
     item(key = "trending_worldwide_shelf") {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
+            modifier = modifier.fillMaxWidth()
         ) {
             // 1. Header with Title on Left and Segmented Switcher [ Movie | TV Series ] on Right
             SectionHeader(

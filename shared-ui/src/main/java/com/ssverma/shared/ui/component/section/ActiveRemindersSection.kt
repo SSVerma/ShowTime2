@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalIconButton
@@ -32,7 +33,12 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.ssverma.core.ui.layout.AdaptiveHorizontalCarousel
 import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.ui.R
 
@@ -55,6 +62,8 @@ fun ActiveRemindersSection(
     quotaLabel: String? = null
 ) {
     if (reminders.isEmpty()) return
+
+    var reminderToRemove by remember { mutableStateOf<AiringReminder?>(null) }
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -120,19 +129,62 @@ fun ActiveRemindersSection(
         }
 
         // Horizontal Scrollable Cards
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(reminders, key = { it.id }) { reminder ->
-                ReminderCard(
-                    reminder = reminder,
-                    onClick = { onReminderClick(reminder) },
-                    onRemoveClick = { onRemoveReminderClick(reminder) }
-                )
+        AdaptiveHorizontalCarousel(
+            itemCount = reminders.size,
+            minMultiItemWidth = 240.dp,
+            maxMultiItemWidth = 340.dp
+        ) { cardWidth ->
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(reminders, key = { it.id }) { reminder ->
+                    ReminderCard(
+                        reminder = reminder,
+                        onClick = { onReminderClick(reminder) },
+                        onRemoveClick = { reminderToRemove = reminder },
+                        modifier = Modifier.width(cardWidth)
+                    )
+                }
             }
         }
+    }
+
+    // Removal confirmation dialog
+    reminderToRemove?.let { reminder ->
+        val title = reminder.displayLabel
+        AlertDialog(
+            onDismissRequest = { reminderToRemove = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.NotificationsActive,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = {
+                Text(text = stringResource(id = R.string.reminder_remove_title))
+            },
+            text = {
+                Text(text = stringResource(id = R.string.reminder_remove_desc, title))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onRemoveReminderClick(reminder)
+                        reminderToRemove = null
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.reminder_remove_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { reminderToRemove = null }) {
+                    Text(text = stringResource(id = R.string.reminder_remove_cancel))
+                }
+            }
+        )
     }
 }
 
@@ -153,9 +205,7 @@ private fun ReminderCard(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         ),
-        modifier = modifier
-            .width(220.dp)
-            .height(100.dp)
+        modifier = modifier.height(100.dp)
     ) {
         Row(
             modifier = Modifier
