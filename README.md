@@ -81,6 +81,8 @@ consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
     - [Cloud Backup, Auth & Pro Gating](docs/features/CLOUD_BACKUP_AUTH_AND_PRO_GATING_ARCHITECTURE.md)
 - **Standards & Guides**:
     - [Code Quality, Design System & Security Standards](docs/CODE_QUALITY_AND_SECURITY_GUIDE.md)
+    - [Modular Architecture & Capability Taxonomy Guide](docs/MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md)
+    - [Jetpack Compose Performance & Stability Guide](docs/COMPOSE_PERFORMANCE_AND_STABILITY_GUIDE.md)
     - [Deep Linking & Social Sharing Guide](docs/DEEP_LINKING_AND_SHARING_GUIDE.md)
     - [Firebase Anonymous Auth & Google Linking](docs/FIREBASE_ANONYMOUS_AUTH_AND_GOOGLE_LINKING_ARCHITECTURE.md)
 

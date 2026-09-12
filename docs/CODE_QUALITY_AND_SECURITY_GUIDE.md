@@ -216,14 +216,60 @@ the checklist in this guide before being merged into development or release bran
       val episodeNumber: Int? = null
   )
 
-  openDiscussions: ((DiscussionNavArgs) -> Unit)? = null
-  ```
+### D. Automated Code Reformatting (`Cmd + Option + L` / `format.sh`)
+
+* **Rule**: All Kotlin, Java, and XML source files must be reformatted according to the official
+  Android Studio style guide before committing.
+* **Automated Enforcement**:
+  - The `.githooks/pre-commit` hook automatically detects staged code files and reformats them using
+    Android Studio's native CLI formatter (`/Applications/Android Studio.app/Contents/bin/format.sh`).
+  - Developers and AI agents can format on-demand at any time using:
+    ```bash
+    # Reformat all staged code files (Cmd + Option + L equivalent)
+    ./scripts/format-code.sh staged
+
+    # Reformat all modified files in the working directory
+    ./scripts/format-code.sh all
+
+    # Reformat a specific file or directory
+    ./scripts/format-code.sh path/to/file.kt
+    ```
 
 ---
 
-## 5. Jetpack Compose Performance Guidelines
+## 5. Jetpack Compose Performance & Stability Guidelines
 
-### A. Stable Keys in Lazy Layouts
+> 🔗 **Authoritative Reference**: For deep architectural details on Compose compiler metrics, phased state reads, and skippable recomposition, refer to the [Jetpack Compose Performance & Stability Guide](COMPOSE_PERFORMANCE_AND_STABILITY_GUIDE.md).
+
+### A. Compiler Stability & `@Immutable` UI State Models
+
+* **Rule**: All UI state data classes, domain view models passed to composables, and state wrappers
+  MUST be annotated with `@Immutable` (or `@Stable` for observable state holders).
+* **The `List<T>` Unstable Trap**: In Kotlin, standard collection interfaces (`List<T>`, `Set<T>`,
+  `Map<T>`) are treated as **unstable** by the Compose compiler by default because they could be
+  mutable `ArrayList` instances under the hood. Any composable receiving an unannotated UI state with
+  a `List<T>` **cannot skip recomposition**, dropping frames during list updates.
+* **Standard**:
+  ```kotlin
+  // ❌ FORBIDDEN: Unannotated data class with List<T> forces recomposition on every parent tick
+  data class MovieDetailsUiState(
+      val movie: Movie? = null,
+      val cast: List<CastMember> = emptyList(),
+      val isLoading: Boolean = false
+  )
+
+  // ✅ CORRECT: @Immutable guarantees compiler stability and skippable recomposition
+  import androidx.compose.runtime.Immutable
+
+  @Immutable
+  data class MovieDetailsUiState(
+      val movie: Movie? = null,
+      val cast: List<CastMember> = emptyList(),
+      val isLoading: Boolean = false
+  )
+  ```
+
+### B. Stable Keys & Content Types in Lazy Layouts
 
 * **Rule**: Every `items(...)` block in `LazyColumn`, `LazyRow`, or `LazyVerticalGrid` must supply
   an explicit `key` and `contentType`:
@@ -239,7 +285,7 @@ the checklist in this guide before being merged into development or release bran
   }
   ```
 
-### B. Modifier Convention & Parameter Ordering
+### C. Modifier Convention & Parameter Ordering
 
 * **Rule**: In reusable composables, `modifier: Modifier = Modifier` must be the **first optional
   parameter**:
@@ -253,7 +299,7 @@ the checklist in this guide before being merged into development or release bran
   ) { ... }
   ```
 
-### C. Image Memory Optimization (Coil)
+### D. Image Memory Optimization (Coil)
 
 * **Rule**: Always downsample images to the target container size to avoid loading full-resolution
   4K bitmaps into RAM:
@@ -268,15 +314,14 @@ the checklist in this guide before being merged into development or release bran
   )
   ```
 
-### D. Separation of Concerns: Zero Calculations in UI / Composables (Dumb UI Principle)
+### E. Separation of Concerns: Zero Calculations in UI / Composables (Dumb UI Principle)
 
 * **Strict Invariant**: Composables and UI-layer functions must **never** perform data
   transformations, business logic, date arithmetic, string slicing (`.take(...)`), regex parsing,
   mathematical operations, list filtering (`.filter`), or list sorting (`.sortedBy`, `.sortedWith`).
 * **Rule**: All state displayed in the UI must be pre-calculated, formatted, sorted, filtered, and
   exposed by upper layers (Domain UseCases, Data Mappers, or ViewModels) using background
-  dispatchers
-  (e.g. `Dispatchers.Default`).
+  dispatchers (e.g. `Dispatchers.Default`).
 * **Standard**:
   ```kotlin
   // ❌ FORBIDDEN IN COMPOSABLES
@@ -298,7 +343,7 @@ the checklist in this guide before being merged into development or release bran
   }.flowOn(Dispatchers.Default).stateIn(...)
   ```
 
-### E. Lambda Parameter Encapsulation (`*Args` Data Classes)
+### F. Lambda Parameter Encapsulation (`*Args` Data Classes)
 
 * **Rule**: Kotlin lambdas **do not support named arguments** at call sites. Whenever a callback or
   lambda parameter accepts more than 1 argument (or has an expanding parameter set), wrap the
@@ -306,25 +351,67 @@ the checklist in this guide before being merged into development or release bran
   `ReportCommentArgs`).
 * **Why**:
     - **Zero Transposition Bugs**: Positional lambdas allow callers to accidentally swap same-typed
-      arguments (e.g., swapping `(commentId, reason)` or `(content, isSpoiler)`) without any
-      compiler warning.
-    - **Refactor Resilient**: Adding, removing, or providing defaults for arguments does not break
-      callback signatures across nested composable trees.
-    - **Idiomatic Method References**: Enables clean method references (e.g.,
-      `onEditComment = viewModel::editComment`, `onReportComment = viewModel::reportComment`).
-* **Standard**:
+      arguments without compiler warnings.
+    - **Refactor Resilient**: Adding or modifying arguments does not break callback signatures across trees.
+    - **Idiomatic Method References**: Enables clean method references (e.g., `onClick = viewModel::onAction`).
+
+### G. Phased State Reads & `derivedStateOf`
+
+* **Rule**: Defer reading rapidly changing state (scroll offsets, animated values) to Layout or Draw
+  phases using lambda modifiers (`Modifier.offset { ... }` or `Modifier.graphicsLayer { ... }`) to
+  prevent re-triggering the Composition phase at 60/120 FPS.
+* **Rule**: Wrap calculations that filter high-frequency updates into boolean/threshold state with
+  `derivedStateOf`:
   ```kotlin
-  // ❌ FORBIDDEN: Raw multiple positional parameters in callbacks
-  onEditComment: (commentId: String, newContent: String, isSpoiler: Boolean) -> Unit = { _, _, _ -> }
-  onReportComment: (commentId: String, reason: String) -> Unit = { _, _ -> }
+  val showBackToTop by remember {
+      derivedStateOf { listState.firstVisibleItemIndex > 0 }
+  }
+### H. Memory Performance & Leak Prevention
 
-  // ✅ CORRECT: Encapsulated into dedicated *Args data class
-  data class EditCommentArgs(val commentId: String, val newContent: String, val isSpoiler: Boolean = false)
-  data class ReportCommentArgs(val commentId: String, val reason: String)
+* **Coil Viewport Downsampling**: Never load raw 4K posters or backdrops directly into RAM. Always
+  constrain image dimensions to viewport bounds (`.size(width, height)`).
+* **Zero Context Leaks**:
+    - Never pass an `Activity` context into long-lived singletons, companion objects, or coroutine
+      scopes. Use `@ApplicationContext` exclusively for singleton lifecycle bindings.
+    - ViewModels must never store references to `Context`, `View`, or `Activity`.
+* **Zero Object Allocations in Hot Paths**:
+    - Never allocate new objects (e.g. `Paint()`, `Path()`, `Regex()`) inside `DrawScope` (e.g.
+      `Modifier.drawBehind { ... }` or `Canvas { ... }`) or within fast-scrolling list loops. Allocate
+      once using `remember` or at the class level.
+* **Large Dataset Virtualization**:
+    - Use Android Paging 3 (`core-paging`, `core-ui-paging`) for infinite scrolling feeds instead of
+      loading thousands of items into a single in-memory `List<T>`.
 
-  onEditComment: (EditCommentArgs) -> Unit = {}
-  onReportComment: (ReportCommentArgs) -> Unit = {}
-  ```
+### I. CPU & Coroutine Dispatcher Governance
+
+* **Strict Thread Offloading**:
+    - **`Dispatchers.Main`**: Strictly reserved for UI rendering and light state orchestration.
+      **Zero disk I/O, network calls, or heavy loops on Main.**
+    - **`Dispatchers.IO`**: Mandatory for all Room SQLite database queries, DataStore operations,
+      file reads/writes, and network calls.
+    - **`Dispatchers.Default`**: Mandatory for all CPU-bound computations (JSON serialization/deserialization,
+      image cryptographic hashing, list sorting/filtering across large datasets).
+* **Flow Resource Optimization (`WhileSubscribed(5000)`)**:
+    - In ViewModels, convert cold repository flows to state flows using
+      `.stateIn(scope, SharingStarted.WhileSubscribed(5000), initialValue)`. The 5-second stop timeout
+      cancels upstream database/network observers when the app enters the background or between screen
+      transitions, saving substantial CPU cycles.
+* **Debouncing High-Frequency Inputs**:
+    - Debounce user-driven search queries and text inputs (`.debounce(300)`) before triggering
+      downstream network or database lookups.
+
+### J. Battery Performance & Background Work Governance
+
+* **Jetpack WorkManager for Deferrable Background Work**:
+    - All background synchronization (Airing Notifications sync, Trakt sync, Cloud Backup) MUST use
+      Android Jetpack `WorkManager`. Never launch unbounded background services or raw coroutine loops.
+    - Always attach battery and network constraints (`Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).setRequiresBatteryNotLow(true)`).
+* **Radio Optimization via HTTP Caching**:
+    - Configure OkHttp disk cache with `Cache-Control: max-age=...` headers to serve cached responses
+      without waking up the device's cellular/Wi-Fi radio.
+* **Exponential Backoff on Rate Limits**:
+    - Rate limit interceptors must implement exponential backoff on HTTP 429 to avoid CPU spin and
+      battery drain during transient server throttles.
 
 ---
 
@@ -360,25 +447,30 @@ the checklist in this guide before being merged into development or release bran
 ### C. Module Taxonomy & Responsibility Boundaries
 
 * **Strict Invariant**: Every module in the project belongs to a well-defined tier in the
-  architectural hierarchy:
+  architectural hierarchy. Refer to the comprehensive [Modular Architecture & Capability Taxonomy Guide](MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md) for the capability decision tree:
     1. **`core-*` (Platform Infrastructure Tier)**:
         - Pure platform-level, infrastructure-only, and **100% feature-agnostic**.
         - Examples: `core-networking`, `core-storage`, `core-billing`, `core-backup`,
-          `core-navigation`.
+          `core-navigation`, `core-ads`, `core-analytics`, `core-notifications`.
         - Rule: Must NEVER know about feature concepts, feature models, or feature pass enums.
-    2. **`common-ui` (Stateful Plug-and-Play UI Tier)**:
+    2. **`shared-*` (Specialized Application Capability & Domain Tier)**:
+        - Contains **app-wide ambient capabilities, engines, and domain models** shared across features.
+        - Examples:
+          - `shared-domain`: Pure Kotlin entities (`Movie`, `TvShow`) and repository interfaces.
+          - `shared-ui`: Pure, stateless presentation widgets (`MediaCard`, `Carousel`, design tokens).
+          - `shared-ads`: Full-stack ads engine (Banners, Native ads, `RewardManager`, and unified `ShowTimeFeatureGate`).
+          - `shared-analytics`: Domain event keys, error trackers, and telemetry conventions.
+        - Rule: **MUST NOT BE POLLUTED**. Never dump full feature data layers, Firestore
+          repositories, DAOs, or domain business rules into `shared-*`. Specialized capabilities
+          (like Ads and Analytics) must be isolated in dedicated modules (`shared-ads`, `shared-analytics`)
+          so `shared-ui` and `shared-domain` stay 100% clean.
+    3. **`common-ui` (Stateful Plug-and-Play UI Tier)**:
         - Contains **stateful, plug-and-play UI components** that can be injected and rendered
           anywhere across the app.
         - Examples: `LanguageSelectionBottomSheet`, `ThemeSelectionBottomSheet`,
-          `RegionSelectionBottomSheet`, `AppInfoBottomSheet`.
+          `RegionSelectionBottomSheet`, `AppInfoBottomSheet`, `ProPaywallBottomSheet`.
         - Rule: Self-contained interactive UI blocks with their own internal state/viewmodel
           coordination.
-    3. **`shared-*` (Stateless Cross-Cutting Building Blocks Tier)**:
-        - Contains **stateless, thin, reusable components** shared across N features.
-        - Examples: `shared-domain` (shared base models like `Movie`, `TvShow`), `shared-ui` (
-          stateless composables: `MediaCard`, `Carousel`, `Avatar`, `Button`, formatting utils).
-        - Rule: **MUST NOT BE POLLUTED**. Never dump full feature data layers, Firestore
-          repositories, DAOs, or domain business rules into `shared-*`.
     4. **`feature-*` (Vertical Feature Slice Tier)**:
         - Self-contained feature slices owning their own presentation, domain, and data layers (e.g.
           `feature-movie`, `feature-tv`, `feature-library`, `feature-community`, `feature-match`,
@@ -390,8 +482,8 @@ the checklist in this guide before being merged into development or release bran
     5. **`feature-*-navigation` (Navigation Contract Tier)**:
         - Pure, lightweight API contracts exposing only `NavKey` and destination arguments so
           feature modules never depend directly on each other.
-        - Rule: Must contain ONLY `NavKey` data classes and serialization. No screens, ViewModels,
-          repositories, or business logic.
+        - Rule: Must contain ONLY `NavKey` data classes and serialization for destinations on the
+          Compose navigation backstack. No screens, ViewModels, repositories, or business logic.
 
 ### D. Strict Dependency Inversion (Zero UI-to-Data Coupling)
 
@@ -406,72 +498,91 @@ the checklist in this guide before being merged into development or release bran
 
 ---
 
-### E. Feature UI Modularity & `component/` Subpackage Standard
+### E. Feature UI Modularity, File Line Caps & `component/` Subpackage
 
-* **Rule**: Screen and sheet composables (`*Screen.kt`, `*BottomSheet.kt`) must remain clean,
-  declarative, high-level orchestrators and should not exceed **~300–400 lines of code**.
-  Monolithic "god-composables" are strictly forbidden.
+* **Strict File Size Hard Cap**: No source file should exceed **~300–400 lines of code**. Monolithic
+  "god-composables" and 1000+ line files are strictly forbidden in code review.
 * **Component Subpackage Convention**:
-    - Complex screens or feature packages must organize modular presentation elements into a
-      dedicated `component/` subpackage (e.g. `feature-library/.../ui/share/component/`,
-      `feature-community/.../ui/detail/component/`).
+    - Screen and sheet composables (`*Screen.kt`, `*BottomSheet.kt`) must remain clean, declarative,
+      high-level orchestrators (~150–250 lines).
     - Single-responsibility UI parts (dialogs, custom cards, action bars, selector carousels/chips,
       empty/error state layouts, header banners) MUST be extracted into dedicated component files
-      inside `component/`.
-* **Standard Structure**:
-  ```
-  ui/share/
-  ├── SecretSharedListScreen.kt         # Lean orchestrator (~150-200 lines)
-  ├── SecretSharedListViewModel.kt      # State management
-  ├── ListShareExportBottomSheet.kt    # Lean bottom sheet container
-  └── component/                        # Modular, testable, reusable UI pieces
-      ├── SharedMediaGridCard.kt        # Item card presentation
-      ├── SecretSharedListHeader.kt     # Header, curator info & primary action rows
-      ├── SecretSharedListTopAppBar.kt  # App bar, title animation & overflow menu
-      ├── SecretSharedListDialogs.kt    # Alert and confirmation dialogs
-      ├── SecretSharedListStates.kt     # Empty, revoked, and not-found states
-      ├── SecretShareControls.kt        # Format & theme selectors, toggle cards
-      ├── SecretShareActionRows.kt      # Primary CTAs and action bars
-      └── SecretShareDialogs.kt         # Sheet confirmation & gate dialogs
-  ```
-* **Why**:
-    - **Readability & Maintainability**: Eliminates bloated 1000+ line monoliths that conflate
-      layout, dialog orchestration, and animation state.
-    - **Component Reusability**: Dialogs, cards, and action bars can be shared cleanly across
-      screens and bottom sheets without code duplication.
-    - **Isolated Compose Previews**: Granular composables can be independently previewed and styled
-      without spinning up heavy screen-level ViewModels.
+      inside a `component/` subpackage (e.g. `feature-library/.../ui/share/component/`).
+* **Reuse Discovery Protocol (Search Before Authoring)**:
+    - Before authoring any new custom button, card, bottom sheet, or dialog, developers and AI
+      agents **MUST search `shared-ui` and `common-ui` first**.
+    - If a matching reusable component exists (e.g., `UniversalMediaCard`, `ShowTimeBottomSheet`),
+      use it directly.
+    - If authoring a new component with cross-feature reusability, evaluate placement against the
+      [Modular Architecture Taxonomy](MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md).
 
 ---
 
-## 7. Security, Secrets & Privacy Standards
+### F. Lean ViewModels, UseCases & Repositories (SRP & Subpackaging)
+
+To ensure business logic layers remain maintainable, testable, and unbloated:
+
+1. **Lean ViewModels (Target: ~200–300 lines)**:
+    - **Separate State & Events**: UI State (`*UiState.kt`) and UI Events/Actions (`*UiAction.kt`)
+      must reside in dedicated files, not buried at the bottom of the ViewModel.
+    - **Logic Offloading**: Offload complex filtering, sorting, or data transformation engines into
+      dedicated helper/processor classes in a `processor/` or `mapper/` subpackage (e.g.,
+      `FilterExtractionEngine.kt`, `ReceiptMappers.kt`).
+    - The ViewModel acts purely as an orchestrator: collects domain use-cases, manages coroutine
+      scopes, and combines reactive flows into a single `@Immutable` `StateFlow<UiState>`.
+2. **Single-Responsibility UseCases**:
+    - One UseCase = **One business action**.
+    - Expose a single `operator fun invoke(...)`.
+    - Pure Kotlin only: zero Android UI framework imports.
+3. **Decoupled Repositories**:
+    - Repository interfaces reside in `:shared-domain`.
+    - Implementations in `:shared-data` strictly delegate persistence to Room DAOs, DataStore, and
+      network clients. Repositories must never contain UI formatting or business calculation logic.
+
+---
+
+## 7. Open-Source Security, Secrets & Privacy Standards
+
+ShowTime is a public, open-source repository on GitHub. The security architecture must ensure that
+forks, public clones, and third parties cannot compromise credentials, abuse API quotas, or inject
+malicious intents.
 
 ```mermaid
 graph TD
     subgraph Git Security
-        A[Repository Git] -->|Protected by .gitignore| B[core.properties / local.properties]
-        A -->|Zero Hardcoded Keys| C[Public Open-Source Repo]
+        A[Public Git Source] -->|Protected by .gitignore| B[core.properties / local.properties]
+        A -->|Zero Hardcoded Keys| C[BYOK Pattern: core.properties.example]
+        A -->|Pre-Commit Secret Scanner| D[Automated Regex Gate]
     end
 
     subgraph Runtime Security
-        D[Sensitive Data / Tokens] -->|Encrypted at Rest| E[EncryptedDataStore]
-        F[Dynamic Configs / Affiliates] -->|Remote Injected| G[Firebase Remote Config]
-        H[Google Cloud APIs] -->|SHA-1 Fingerprint Locked| I[com.ssverma.showtime]
+        E[User OAuth Tokens] -->|AES-256 GCM| F[EncryptedDataStore]
+        G[Outbound Links] -->|Sanitized Scheme & Host| H[Safe Browser Intent]
+        I[Android Components] -->|android:exported=false| J[Protected Activities & Services]
+        K[Google Cloud APIs] -->|SHA-1 Fingerprint Locked| L[com.ssverma.showtime]
     end
 ```
 
-1. **Zero Hardcoded Secrets in Source Code**:
+1. **Zero Hardcoded Secrets in Source Code & BYOK (Bring Your Own Key)**:
     - API keys, OAuth client secrets, and dynamic partner tags must never be committed to Git.
-    - Inject secrets via `core.properties` (gitignored) or GitHub Actions Secrets.
-2. **Encrypted Storage for Auth & Tokens**:
-    - Store OAuth tokens (Trakt, Google Tokens) using `EncryptedDataStore` or `MasterKeys` Keystore
-      encryption.
-3. **Google Cloud SHA-1 Fingerprint Restriction**:
-    - All Google APIs (AdMob, Google Sign-In, Firebase) are strictly locked to the release SHA-1
-      certificate fingerprint and package name (`com.ssverma.showtime`).
-4. **Secure External Intent Handling**:
-    - Validate all outbound URLs before launching browser intents to prevent malicious URI
-      hijacking.
+    - Inject secrets via `core.properties` (gitignored). Provide a sanitized `core.properties.example`
+      template so open-source contributors can build the app with their own keys.
+    - Debug builds must provide mock fallbacks and in-app developer settings to test without live keys.
+2. **Google Cloud SHA-1 Fingerprint Restriction**:
+    - Public client identifiers (like `google-services.json`) are committed publicly.
+    - All Google APIs (AdMob, Google Sign-In, Firebase) are strictly locked to ShowTime’s **Release
+      SHA-1 certificate fingerprint** and package name (`com.ssverma.showtime`). Unauthorized forks
+      cannot abuse backend quotas.
+3. **Device Code OAuth Flow (Zero Client Secrets)**:
+    - Third-party integrations (like Trakt.tv) use the **Device Code Flow** (`trakt.tv/activate`)
+      which requires only a public `client_id`. Client secrets are never embedded in the APK.
+4. **Encrypted Storage for Auth & Tokens**:
+    - Store OAuth access/refresh tokens using `EncryptedDataStore` backed by Android Keystore.
+5. **Android Component Export & Intent Protection**:
+    - All Activities, Services, and BroadcastReceivers must explicitly declare
+      `android:exported="false"` unless they are designated entry points (launcher activity or
+      verified App Links).
+    - Validate and sanitize all outbound URLs before launching `ACTION_VIEW` intents.
 
 ---
 
@@ -530,40 +641,60 @@ npx firebase-tools deploy --only firestore:rules --dry-run
   collections strictly isolated?
 
 - [ ] **Architecture Boundaries & Module Taxonomy**:
+    - Does every new or refactored capability comply with the [Modular Architecture & Capability Taxonomy Guide](MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md)?
     - Are `core-*` modules 100% feature-agnostic and free of domain concepts or feature pass enums?
     - Does any UI module (`shared-ui`, `common-ui`, `feature-*-ui`) declare a dependency on
       `shared-data`? (Strictly forbidden: UI must never depend on Data).
-    - Is `common-ui` reserved for stateful, plug-and-play components?
-    - Are `shared-*` modules stateless, thin, and unpolluted by feature-specific DAOs, repositories,
+    - Does any component in `common-ui` satisfy the **4-Gate Admission Test**, remaining free of
+      `shared-data`, `feature-*`, and direct ad SDK dependencies?
+    - Are `shared-*` modules specialized, thin, and unpolluted by feature-specific DAOs, repositories,
       or Firestore implementations?
+    - Are all ads, rewarded ad prompts, and quota dialogs/sheets unified under `ShowTimeFeatureGate` in
+      `shared-ads` rather than scattering ad loading or duplicate dialog composables across feature modules?
     - Are there zero cross-feature implementation dependencies (`feature-A` → `feature-B`)?
       Cross-feature wiring must go through `feature-*-navigation` contracts only.
-    - Do `feature-*-navigation` modules contain ONLY `NavKey` data classes with zero screens,
-      ViewModels, or business logic?
+    - Do `feature-*-navigation` modules contain ONLY `NavKey` data classes for backstack routing with
+      zero screens, ViewModels, or business logic?
 - [ ] **Feature-Agnostic Core Modules & Contributor Plugin Pattern**: Are `core-*` and `shared-*`
   modules completely free of feature-specific domain bloat? Do platform services (backup,
   notifications, analytics) use decoupled Dagger multibinding contributors (`@IntoSet`) rather than
   injecting domain DAOs/repositories into a god-class?
-- [ ] **Component Modularity & `component/` Subpackage**: Are screen and sheet files kept lean (~
-  300–400 lines max) with complex UI parts, dialogs, card variants, state views, and control bars
-  extracted into a dedicated `component/` subpackage?
+- [ ] **Compiler Stability & Skippable Recomposition**: Are all UI state data classes and models
+  annotated with `@Immutable` (referencing the [Compose Performance & Stability Guide](COMPOSE_PERFORMANCE_AND_STABILITY_GUIDE.md))?
+  Are rapidly changing states deferred to layout/draw phases with lambda modifiers?
+- [ ] **File Size Hard Cap (~300–400 Lines Max)**: Are all source files under ~300–400 lines of code with
+  zero 1000+ line monoliths? Are complex screen/sheet components extracted into a dedicated `component/` subpackage?
+- [ ] **Reuse Discovery Protocol**: Did you search `shared-ui` and `common-ui` first before authoring
+  new custom UI components?
+- [ ] **Lean ViewModels & Single-Responsibility UseCases**: Are ViewModels kept lean (~200–300 lines) with
+  `*UiState.kt` in separate files, and complex logic offloaded into `processor/` or `mapper/` subpackages?
+  Do UseCases have a single `operator fun invoke(...)` with zero Android framework imports?
+- [ ] **Open-Source Security & Android Component Protection**: Are secrets quarantined to gitignored
+  `core.properties` with a sanitized `core.properties.example` template? Are all non-launcher Android
+  components set to `android:exported="false"`?
 - [ ] **Zero UI Calculations**: Are all dates, strings, numbers, and business logic pre-calculated
   in upper layers (Domain/ViewModel/Mapper) with zero parsing, regex, or slicing in Composables?
 - [ ] **Dumb UI & Passive Presentation**: Are all list filterings, sortings, and domain-to-UI data
   mappings performed in the ViewModel/Domain layer on background dispatchers (e.g.
   `Dispatchers.Default`) rather than via `remember { ... }` in composables?
+- [ ] **Memory & Context Leak Prevention**: Are remote images downsampled with Coil (`.size(...)`)?
+  Are context references restricted to `@ApplicationContext` with zero Activity references in ViewModels?
+- [ ] **CPU, Battery & Threading Governance**: Are all database/disk/network calls on `Dispatchers.IO` and
+  heavy computations on `Dispatchers.Default`? Are background sync tasks managed via Jetpack `WorkManager`
+  with battery/network constraints? Are ViewModels using `SharingStarted.WhileSubscribed(5000)`?
+- [ ] **Automated Code Reformatting**: Were all modified code files reformatted using Android Studio's
+  formatter via `./scripts/format-code.sh staged` or the pre-commit hook?
 - [ ] **No Hardcoded Data**: Are all mock data, stubs, and sandbox tools strictly quarantined to
   debug-only modes with zero mock data leakage to production/end users?
 - [ ] **Strings**: Are all new user-facing texts extracted to `strings.xml`?
 - [ ] **Colors & Spacing**: Are there zero hardcoded `Color(0x...)` or raw un-tokenized `dp` values?
 - [ ] **Imports**: Are there zero wildcard imports (`*`) and zero unused imports?
-- [ ] **Lazy Lists**: Do all Lazy lists have explicit `key = { ... }` defined?
+- [ ] **Lazy Lists**: Do all Lazy lists have explicit `key = { ... }` and `contentType = { ... }` defined?
 - [ ] **Named Arguments**: Are named arguments used wherever possible across composable calls,
   function invocations, and constructor instantiations to maximize readability and eliminate
   parameter transposition bugs?
 - [ ] **Parameter Encapsulation (`*Args`)**: Are callback and lambda signatures with more than 1
   parameter encapsulated into dedicated `*Args` data classes (e.g. `PostCommentArgs`,
-  `EditCommentArgs`,
-  `ReportCommentArgs`) to prevent transposition bugs since Kotlin lambdas lack named arguments?
+  `EditCommentArgs`, `ReportCommentArgs`) to prevent transposition bugs since Kotlin lambdas lack named arguments?
 - [ ] **Secrets**: Did any sensitive key or token leak into the commit diff?
 - [ ] **Device Test**: Did the APK install and run smoothly without UI jank or crash on device?

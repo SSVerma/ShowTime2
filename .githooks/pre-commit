@@ -43,7 +43,9 @@ elif command -v format.sh &> /dev/null; then
     FORMATTER_BIN=$(command -v format.sh)
 fi
 
-if [ -n "$FORMATTER_BIN" ] && [ -n "$STAGED_CODE_FILES" ]; then
+if [ -z "$STAGED_CODE_FILES" ]; then
+    echo -e "${GREEN}--> [1/2] No code files (.kt, .java, .xml) staged; skipping auto-reformat.${NC}"
+elif [ -n "$FORMATTER_BIN" ]; then
     echo -e "${CYAN}--> [1/2] Auto-reformatting staged files with Android Studio Formatter (Cmd+Option+L)...${NC}"
     
     FORMAT_TARGETS=()
