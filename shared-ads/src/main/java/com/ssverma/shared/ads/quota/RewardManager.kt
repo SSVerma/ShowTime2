@@ -8,6 +8,7 @@ import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.shared.domain.repository.ReminderQuotaManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,8 +57,7 @@ data class RewardPassStatus(
     val receiptWatermarkFreeExpiryTimestamp: Long = 0L,
     val isWrappedStoryUnlocked: Boolean = false,
     val wrappedStoryExpiryTimestamp: Long = 0L,
-    val isAiringRemindersUnlocked: Boolean = false,
-    val airingRemindersExpiryTimestamp: Long = 0L,
+    val extraReminderSlots: Int = 0,
     val isMatchRoomUnlocked: Boolean = false,
     val matchRoomExpiryTimestamp: Long = 0L,
     val isListShareThemesUnlocked: Boolean = false,
@@ -79,6 +79,8 @@ interface RewardManager {
     suspend fun isReceiptWatermarkFreeAllowed(isProActive: Boolean): Boolean
     suspend fun isWrappedStoryAllowed(isProActive: Boolean): Boolean
     suspend fun canScheduleReminder(currentActiveCount: Int, isProActive: Boolean): Boolean
+    suspend fun grantReminderPass()
+    suspend fun consumeReminderPass(): Boolean
     suspend fun isExtraRemindersAllowed(isProActive: Boolean): Boolean
     suspend fun isMatchRoomAllowed(isProActive: Boolean): Boolean
     suspend fun isListShareThemesAllowed(isProActive: Boolean): Boolean
@@ -90,7 +92,7 @@ class RewardManagerImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val appConfigProvider: AppConfigProvider,
     keyValueStorageClient: KeyValueStorageClient
-) : RewardManager {
+) : RewardManager, ReminderQuotaManager {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val storage: KeyValueStorage = keyValueStorageClient.createKeyValueStorage(
@@ -121,7 +123,7 @@ class RewardManagerImpl @Inject constructor(
             val tasteAnalyticsExpiry = prefs[KEY_TASTE_ANALYTICS_EXPIRY] ?: 0L
             val receiptWatermarkExpiry = prefs[KEY_RECEIPT_WATERMARK_FREE_EXPIRY] ?: 0L
             val wrappedStoryExpiry = prefs[KEY_WRAPPED_STORY_EXPIRY] ?: 0L
-            val airingRemindersExpiry = prefs[KEY_AIRING_REMINDERS_EXPIRY] ?: 0L
+            val extraReminderSlots = prefs[KEY_EXTRA_REMINDER_SLOTS] ?: 0
             val matchRoomExpiry = prefs[KEY_MATCH_ROOM_EXPIRY] ?: 0L
             val listShareThemesExpiry = prefs[KEY_LIST_SHARE_THEMES_EXPIRY] ?: 0L
 
@@ -142,8 +144,7 @@ class RewardManagerImpl @Inject constructor(
                 receiptWatermarkFreeExpiryTimestamp = if (receiptWatermarkExpiry > now) receiptWatermarkExpiry else 0L,
                 isWrappedStoryUnlocked = wrappedStoryExpiry > now,
                 wrappedStoryExpiryTimestamp = if (wrappedStoryExpiry > now) wrappedStoryExpiry else 0L,
-                isAiringRemindersUnlocked = airingRemindersExpiry > now,
-                airingRemindersExpiryTimestamp = if (airingRemindersExpiry > now) airingRemindersExpiry else 0L,
+                extraReminderSlots = extraReminderSlots,
                 isMatchRoomUnlocked = matchRoomExpiry > now,
                 matchRoomExpiryTimestamp = if (matchRoomExpiry > now) matchRoomExpiry else 0L,
                 isListShareThemesUnlocked = listShareThemesExpiry > now,
@@ -171,8 +172,6 @@ class RewardManagerImpl @Inject constructor(
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_RECEIPT_WATERMARK_HOURS, 24L)
         val wrappedStoryDurationHours =
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_WRAPPED_STORY_HOURS, 24L)
-        val airingRemindersDurationHours =
-            appConfigProvider.getLong(KEY_CONFIG_REWARDED_AIRING_REMINDERS_HOURS, 24L)
         val matchRoomDurationHours =
             appConfigProvider.getLong(KEY_CONFIG_REWARDED_MATCH_ROOM_HOURS, 24L)
         val listShareThemesDurationHours =
@@ -254,10 +253,8 @@ class RewardManagerImpl @Inject constructor(
                 }
 
                 RewardPassType.AIRING_REMINDERS -> {
-                    val currentExpiry = prefs[KEY_AIRING_REMINDERS_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_AIRING_REMINDERS_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(airingRemindersDurationHours)
+                    val current = prefs[KEY_EXTRA_REMINDER_SLOTS] ?: 0
+                    prefs[KEY_EXTRA_REMINDER_SLOTS] = current + 1
                 }
 
                 RewardPassType.MATCH_ROOM -> {
@@ -349,14 +346,29 @@ class RewardManagerImpl @Inject constructor(
         isProActive: Boolean
     ): Boolean {
         if (isProActive) return true
-        if (_passStatus.value.isAiringRemindersUnlocked) return true
         val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L).toInt()
-        return currentActiveCount < freeLimit
+        if (currentActiveCount < freeLimit) return true
+        return _passStatus.value.extraReminderSlots > 0
+    }
+
+    override suspend fun grantReminderPass() {
+        grantRewardPass(RewardPassType.AIRING_REMINDERS)
+    }
+
+    override suspend fun consumeReminderPass(): Boolean {
+        val current = _passStatus.value.extraReminderSlots
+        if (current <= 0) return false
+        storage.edit { prefs ->
+            val slots = prefs[KEY_EXTRA_REMINDER_SLOTS] ?: 0
+            if (slots > 0) prefs[KEY_EXTRA_REMINDER_SLOTS] = slots - 1
+        }
+        refreshPassStatus()
+        return true
     }
 
     override suspend fun isExtraRemindersAllowed(isProActive: Boolean): Boolean {
         if (isProActive) return true
-        return _passStatus.value.isAiringRemindersUnlocked
+        return _passStatus.value.extraReminderSlots > 0
     }
 
     override suspend fun isMatchRoomAllowed(isProActive: Boolean): Boolean {
@@ -390,8 +402,8 @@ class RewardManagerImpl @Inject constructor(
             longPreferencesKey("reward_receipt_watermark_expiry")
         private val KEY_WRAPPED_STORY_EXPIRY =
             longPreferencesKey("reward_wrapped_story_expiry")
-        private val KEY_AIRING_REMINDERS_EXPIRY =
-            longPreferencesKey("reward_airing_reminders_expiry")
+        private val KEY_EXTRA_REMINDER_SLOTS =
+            intPreferencesKey("reward_extra_reminder_slots")
         private val KEY_MATCH_ROOM_EXPIRY =
             longPreferencesKey("reward_match_room_expiry")
         private val KEY_LIST_SHARE_THEMES_EXPIRY =
@@ -418,8 +430,6 @@ class RewardManagerImpl @Inject constructor(
             "rewarded_receipt_watermark_duration_hours"
         const val KEY_CONFIG_REWARDED_WRAPPED_STORY_HOURS =
             "rewarded_wrapped_story_duration_hours"
-        const val KEY_CONFIG_REWARDED_AIRING_REMINDERS_HOURS =
-            "rewarded_airing_reminders_duration_hours"
         const val KEY_CONFIG_REWARDED_MATCH_ROOM_HOURS =
             "rewarded_match_room_duration_hours"
         const val KEY_CONFIG_REWARDED_LIST_SHARE_THEMES_HOURS =

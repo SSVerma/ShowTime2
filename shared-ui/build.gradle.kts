@@ -15,10 +15,13 @@ dependencies {
     implementation(projects.coreImage)
     implementation(projects.coreDi)
     implementation(projects.coreNavigation)
+    implementation(projects.coreAds)
+    implementation(projects.coreBilling)
     implementation(projects.featureLibraryNavigation)
     implementation(projects.featureMovieNavigation)
     implementation(projects.featureTvNavigation)
     implementation(projects.featureCommunityNavigation)
+    implementation(projects.featurePaymentNavigation)
 
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
@@ -28,6 +31,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
     testImplementation(projects.coreTesting)
     testImplementation(projects.sharedTesting)
     androidTestImplementation(libs.androidx.junit)

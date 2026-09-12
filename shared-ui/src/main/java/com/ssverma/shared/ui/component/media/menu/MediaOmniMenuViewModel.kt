@@ -1,24 +1,89 @@
 package com.ssverma.shared.ui.component.media.menu
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.repository.LibraryRepository
+import com.ssverma.shared.domain.repository.ReminderQuotaManager
+import com.ssverma.shared.domain.repository.ReminderRepository
+import com.ssverma.shared.domain.repository.ReminderToggleResult
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class MediaOmniMenuViewModel @Inject constructor(
     private val libraryRepository: LibraryRepository,
     private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
-    private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase
+    private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
+    private val reminderRepository: ReminderRepository,
+    private val reminderQuotaManager: ReminderQuotaManager,
+    private val rewardedAdManager: RewardedAdManager,
+    private val billingRepository: BillingRepository
 ) : ViewModel() {
+
+    val isProPaymentEnabled: StateFlow<Boolean> = billingRepository.isBillingEnabled
+
+    private val _isAdLoading = MutableStateFlow(false)
+    val isAdLoading: StateFlow<Boolean> = _isAdLoading.asStateFlow()
+
+    fun preloadRewardedAd() {
+        rewardedAdManager.loadAd()
+    }
+
+    fun dismissQuotaGate() {
+        _isAdLoading.value = false
+    }
+
+    fun onWatchAdForReminderPass(activity: Activity, onRewardGranted: () -> Unit) {
+        _isAdLoading.value = true
+        rewardedAdManager.showRewardedAdIfReady(
+            activity = activity,
+            onAdDismissed = { _isAdLoading.value = false }
+        ) {
+            viewModelScope.launch {
+                _isAdLoading.value = false
+                reminderQuotaManager.grantReminderPass()
+                onRewardGranted()
+            }
+        }
+    }
+
+    fun hasReminder(mediaId: Int, mediaType: MediaType): Flow<Boolean> =
+        reminderRepository.getReminderForMedia(mediaId, mediaType).map { it != null }
+
+    fun toggleReminder(
+        mediaId: Int,
+        mediaType: MediaType,
+        title: String,
+        posterImageUrl: String,
+        targetAirDate: LocalDate? = null,
+        onResult: ((ReminderToggleResult) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val result = reminderRepository.toggleMediaReminder(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                targetAirDate = targetAirDate
+            )
+            onResult?.invoke(result)
+        }
+    }
 
     val customLists: Flow<List<CustomList>> = libraryRepository.getCustomListsFlow()
 

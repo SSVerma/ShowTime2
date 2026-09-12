@@ -177,16 +177,24 @@ class RewardManagerTest {
     }
 
     @Test
-    fun `grantRewardPass for AIRING_REMINDERS unlocks airing reminders pass`() = runTest {
-        rewardManager.grantRewardPass(RewardPassType.AIRING_REMINDERS)
-        val status = rewardManager.passStatus.value
-        assertThat(status.isAiringRemindersUnlocked).isTrue()
-        assertThat(status.airingRemindersExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
+    fun `grantRewardPass for AIRING_REMINDERS grants single reminder slot and consumption works`() =
+        runTest {
+            rewardManager.grantRewardPass(RewardPassType.AIRING_REMINDERS)
+            val status = rewardManager.passStatus.value
+            assertThat(status.extraReminderSlots).isEqualTo(1)
 
-        val allowed =
-            rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = false)
-        assertThat(allowed).isTrue()
-    }
+            val allowed =
+                rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = false)
+            assertThat(allowed).isTrue()
+
+            val consumed = rewardManager.consumeReminderPass()
+            assertThat(consumed).isTrue()
+            assertThat(rewardManager.passStatus.value.extraReminderSlots).isEqualTo(0)
+
+            val allowedAfterConsumption =
+                rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = false)
+            assertThat(allowedAfterConsumption).isFalse()
+        }
 
     @Test
     fun `isMatchRoomAllowed returns true for pro user`() = runTest {

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.EventAvailable
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,7 +46,9 @@ fun AiringCalendarSyncBottomSheet(
     reminders: List<AiringReminder>,
     onExportIcs: () -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isPro: Boolean = false,
+    onOpenProPaywall: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -114,9 +117,14 @@ fun AiringCalendarSyncBottomSheet(
                     icon = Icons.Rounded.EventAvailable,
                     title = stringResource(R.string.calendar_sync_app_title),
                     subtitle = subtitle,
+                    isProRequired = !isPro,
                     onClick = {
-                        CalendarIntentHelper.launchCalendarInsert(context, targetReminder)
                         onDismiss()
+                        if (isPro) {
+                            CalendarIntentHelper.launchCalendarInsert(context, targetReminder)
+                        } else {
+                            onOpenProPaywall()
+                        }
                     }
                 )
 
@@ -128,9 +136,14 @@ fun AiringCalendarSyncBottomSheet(
                 icon = Icons.Rounded.Share,
                 title = stringResource(R.string.calendar_export_ics_title),
                 subtitle = stringResource(R.string.calendar_export_ics_desc),
+                isProRequired = !isPro,
                 onClick = {
-                    onExportIcs()
                     onDismiss()
+                    if (isPro) {
+                        onExportIcs()
+                    } else {
+                        onOpenProPaywall()
+                    }
                 }
             )
 
@@ -145,7 +158,8 @@ private fun CalendarSyncOptionItem(
     title: String,
     subtitle: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isProRequired: Boolean = false
 ) {
     Card(
         onClick = onClick,
@@ -196,7 +210,34 @@ private fun CalendarSyncOptionItem(
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            if (isProRequired) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.padding(horizontal = 6.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Lock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = stringResource(R.string.pro_badge),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            } else {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
 
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,

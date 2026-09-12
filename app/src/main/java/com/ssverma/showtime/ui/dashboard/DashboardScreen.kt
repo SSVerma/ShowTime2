@@ -302,11 +302,7 @@ fun DashboardScreen(
                             },
                             onRemoveReminderClick = viewModel::removeReminder,
                             onExportCalendarClick = {
-                                if (isPro) {
-                                    showCalendarSyncSheet = true
-                                } else {
-                                    openProPaywall()
-                                }
+                                showCalendarSyncSheet = true
                             },
                             modifier = Modifier.dashboardSectionSpacing()
                         )
@@ -448,6 +444,8 @@ fun DashboardScreen(
             if (showCalendarSyncSheet) {
                 AiringCalendarSyncBottomSheet(
                     reminders = uiState.activeReminders,
+                    isPro = isPro,
+                    onOpenProPaywall = openProPaywall,
                     onExportIcs = {
                         viewModel.exportRemindersToIcs(context)
                     },

@@ -24,7 +24,7 @@ class RewardedAdManager @Inject constructor(
 ) {
     private var rewardedAd: RewardedAd? = null
     private var isAdLoading = false
-    private var pendingShowRequest: Pair<Activity, () -> Unit>? = null
+    private var pendingShowRequest: PendingRewardedRequest? = null
 
     val isAdLoaded: Boolean
         get() = rewardedAd != null
@@ -52,7 +52,8 @@ class RewardedAdManager @Inject constructor(
                     // If a user was waiting for the ad to show, fall back gracefully to grant reward
                     val pending = pendingShowRequest
                     pendingShowRequest = null
-                    pending?.second?.invoke()
+                    pending?.onUserEarnedReward?.invoke()
+                    pending?.onAdDismissed?.invoke()
                 }
 
                 override fun onAdLoaded(ad: RewardedAd) {
@@ -64,11 +65,12 @@ class RewardedAdManager @Inject constructor(
                     val pending = pendingShowRequest
                     if (pending != null) {
                         pendingShowRequest = null
-                        val (activity, onReward) = pending
+                        val (activity, onDismissed, onReward) = pending
                         if (!activity.isFinishing && !activity.isDestroyed) {
-                            showLoadedAd(ad, activity, onReward)
+                            showLoadedAd(ad, activity, onDismissed, onReward)
                         } else {
                             onReward()
+                            onDismissed?.invoke()
                         }
                     }
                 }
@@ -80,18 +82,31 @@ class RewardedAdManager @Inject constructor(
         activity: Activity,
         onUserEarnedReward: () -> Unit
     ) {
+        showRewardedAdIfReady(
+            activity = activity,
+            onAdDismissed = null,
+            onUserEarnedReward = onUserEarnedReward
+        )
+    }
+
+    fun showRewardedAdIfReady(
+        activity: Activity,
+        onAdDismissed: (() -> Unit)?,
+        onUserEarnedReward: () -> Unit
+    ) {
         if (!adConfigProvider.isAdsEnabled) {
             onUserEarnedReward()
+            onAdDismissed?.invoke()
             return
         }
 
         val ad = rewardedAd
         if (ad != null) {
-            showLoadedAd(ad, activity, onUserEarnedReward)
+            showLoadedAd(ad, activity, onAdDismissed, onUserEarnedReward)
         } else if (isAdLoading) {
-            pendingShowRequest = activity to onUserEarnedReward
+            pendingShowRequest = PendingRewardedRequest(activity, onAdDismissed, onUserEarnedReward)
         } else {
-            pendingShowRequest = activity to onUserEarnedReward
+            pendingShowRequest = PendingRewardedRequest(activity, onAdDismissed, onUserEarnedReward)
             loadAd()
         }
     }
@@ -99,6 +114,7 @@ class RewardedAdManager @Inject constructor(
     private fun showLoadedAd(
         ad: RewardedAd,
         activity: Activity,
+        onAdDismissed: (() -> Unit)?,
         onUserEarnedReward: () -> Unit
     ) {
         rewardedAd = null
@@ -110,6 +126,7 @@ class RewardedAdManager @Inject constructor(
                 if (isRewardEarned) {
                     onUserEarnedReward()
                 }
+                onAdDismissed?.invoke()
                 loadAd() // Preload the next rewarded ad
             }
 
@@ -122,6 +139,7 @@ class RewardedAdManager @Inject constructor(
                 )
                 // If ad failed to display, gracefully grant reward so user flow isn't broken
                 onUserEarnedReward()
+                onAdDismissed?.invoke()
                 loadAd()
             }
 
@@ -148,3 +166,9 @@ class RewardedAdManager @Inject constructor(
         }
     }
 }
+
+private data class PendingRewardedRequest(
+    val activity: Activity,
+    val onAdDismissed: (() -> Unit)?,
+    val onUserEarnedReward: () -> Unit
+)

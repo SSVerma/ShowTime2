@@ -347,9 +347,10 @@
     <string name="export_calendar">Export to Calendar</string>
     <string name="export_calendar_success">Calendar schedule exported!</string>
     <string name="add_to_calendar">Add to Calendar</string>
-    <string name="reminder_quota_title">Unlock Unlimited Reminders</string>
-    <string name="reminder_quota_desc">Free accounts can track up to 3 active airing reminders. Upgrade to ShowTime Pro for unlimited reminders and calendar synchronization.</string>
-    <string name="reminder_quota_reward_label">Watch Video for 24h Pass</string>
+    <string name="upgrade_to_pro">Upgrade to Pro</string>
+    <string name="reminder_quota_title">Unlock Airing Reminder</string>
+    <string name="reminder_quota_desc">Free accounts can track up to 3 active airing reminders. Watch a short video to set this reminder, or upgrade to ShowTime Pro for unlimited reminders.</string>
+    <string name="reminder_quota_reward_label">Watch Video to Set Reminder</string>
     <string name="reminder_dismiss_cd">Dismiss reminder</string>
     <string name="reminder_badge_today">TODAY</string>
     <string name="reminder_free_quota_label">%1$d of %2$d free reminders</string>
@@ -357,6 +358,18 @@
     <string name="reminder_remove_desc">You will no longer receive a notification when \"%1$s\" airs. You can always add a new reminder later.</string>
     <string name="reminder_remove_confirm">Remove</string>
     <string name="reminder_remove_cancel">Keep Reminder</string>
+    <string name="reminder_quota_exceeded">Reminder limit reached. Upgrade to Pro for unlimited reminders.</string>
+    <string name="reminder_no_upcoming_schedule">No upcoming release or episode scheduled for \"%1$s\".</string>
+    <string name="reminder_permission_required">Notification permission is required to receive reminders.</string>
+    <string name="reminder_notifications_disabled">Notifications are disabled in device settings. Please enable them to receive reminders.</string>
+    <string name="notification_rationale_title">Enable Release Alerts</string>
+    <string name="notification_rationale_desc">ShowTime notifies you when movies on your watchlist release and when new TV episodes air. We only send relevant alerts for titles you track.</string>
+    <string name="notification_rationale_confirm">Allow</string>
+    <string name="notification_rationale_dismiss">Not Now</string>
+    <string name="notification_settings_title">Notifications Disabled</string>
+    <string name="notification_settings_desc">Notifications are blocked in your device settings. To receive release reminders and episode drops, please enable notifications for ShowTime in Settings.</string>
+    <string name="notification_settings_action">Open Settings</string>
+    <string name="notification_settings_dismiss">Cancel</string>
 
     <!-- Community Moderation & UGC Safety (Guideline 1.2 Compliance) -->
     <string name="report_collection">Report Collection</string>

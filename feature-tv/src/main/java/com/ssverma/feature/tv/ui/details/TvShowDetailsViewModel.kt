@@ -1,8 +1,10 @@
 package com.ssverma.feature.tv.ui.details
 
+import android.app.Activity
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIntent
 import com.ssverma.core.ui.UiState
@@ -93,7 +95,8 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     private val traktSyncRepository: TraktSyncRepository,
     val reminderRepository: ReminderRepository,
     val billingRepository: BillingRepository,
-    val rewardManager: RewardManager
+    val rewardManager: RewardManager,
+    val rewardedAdManager: RewardedAdManager
 ) : ViewModel() {
 
     @AssistedFactory
@@ -113,11 +116,15 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     private val _isQuotaGateVisible = MutableStateFlow(false)
     val isQuotaGateVisible: StateFlow<Boolean> = _isQuotaGateVisible.asStateFlow()
 
+    private val _isAdLoading = MutableStateFlow(false)
+    val isAdLoading: StateFlow<Boolean> = _isAdLoading.asStateFlow()
+
     private val _reminderSnackbarEvent = MutableStateFlow<String?>(null)
     val reminderSnackbarEvent: StateFlow<String?> = _reminderSnackbarEvent.asStateFlow()
 
     fun dismissQuotaGate() {
         _isQuotaGateVisible.value = false
+        _isAdLoading.value = false
     }
 
     fun clearReminderSnackbarEvent() {
@@ -143,6 +150,7 @@ class TvShowDetailsViewModel @AssistedInject constructor(
                 val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
                 if (!canSchedule) {
                     _isQuotaGateVisible.value = true
+                    rewardedAdManager.loadAd()
                     return@launch
                 }
 
@@ -189,11 +197,18 @@ class TvShowDetailsViewModel @AssistedInject constructor(
         }
     }
 
-    fun onWatchAdForReminderPass(tvShow: TvShow) {
-        viewModelScope.launch {
-            rewardManager.grantRewardPass(RewardPassType.AIRING_REMINDERS)
-            _isQuotaGateVisible.value = false
-            toggleReminder(tvShow)
+    fun onWatchAdForReminderPass(activity: Activity, tvShow: TvShow) {
+        _isAdLoading.value = true
+        rewardedAdManager.showRewardedAdIfReady(
+            activity = activity,
+            onAdDismissed = { _isAdLoading.value = false }
+        ) {
+            viewModelScope.launch {
+                _isAdLoading.value = false
+                rewardManager.grantReminderPass()
+                _isQuotaGateVisible.value = false
+                toggleReminder(tvShow)
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.ssverma.shared.ui.component.media.menu
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,15 +22,19 @@ import androidx.compose.material.icons.rounded.EditCalendar
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.FolderSpecial
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,11 +43,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.ui.util.findActivity
+import com.ssverma.feature.payment.navigation.ProPaywallNavKey
+import com.ssverma.shared.ui.component.notification.NotificationPermissionDialogs
+import com.ssverma.shared.ui.component.notification.rememberNotificationPermissionHandler
+import com.ssverma.shared.ui.component.quota.FeatureQuotaGateBottomSheet
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import java.time.LocalDate
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher
 import com.ssverma.core.navigation.nav3.LocalNavigator
 import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
@@ -52,6 +66,7 @@ import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
+import com.ssverma.shared.domain.repository.ReminderToggleResult
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
@@ -60,9 +75,12 @@ import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 private data class QuickActionItem(
     val label: String,
     val icon: ImageVector,
-    val onClick: () -> Unit
+    val onClick: () -> Unit,
+    val tint: Color? = null,
+    val containerColor: Color? = null
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaOmniActionMenu(
     mediaId: Int,
@@ -77,15 +95,18 @@ fun MediaOmniActionMenu(
     isInWatchlist: Boolean? = null,
     isWatched: Boolean? = null,
     isFavorite: Boolean? = null,
+    hasReminder: Boolean? = null,
     existingDiaryEntry: DiaryEntry? = null,
     onToggleWatchlist: (() -> Unit)? = null,
     onToggleWatched: (() -> Unit)? = null,
     onToggleFavorite: (() -> Unit)? = null,
+    onToggleReminder: (() -> Unit)? = null,
     onLogToDiary: (() -> Unit)? = null,
     onCustomListClick: (() -> Unit)? = null,
     onOpenDiscussions: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
+    onOpenProPaywall: (() -> Unit)? = null,
     config: MediaOmniMenuConfig = MediaOmniMenuConfig.Default,
     customLists: List<CustomListOption>? = null,
     onToggleCustomList: ((CustomListOption) -> Unit)? = null,
@@ -96,6 +117,7 @@ fun MediaOmniActionMenu(
     val navigator = LocalNavigator.current
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showLogDialog by remember { mutableStateOf(false) }
+    var showQuotaGate by remember { mutableStateOf(false) }
 
     val effectiveInWatchlist = isInWatchlist
         ?: viewModel.isInWatchlist(mediaId).collectAsState(initial = false).value
@@ -103,12 +125,15 @@ fun MediaOmniActionMenu(
         ?: viewModel.isWatched(mediaId).collectAsState(initial = false).value
     val effectiveIsFavorite = isFavorite
         ?: viewModel.isFavorite(mediaId).collectAsState(initial = false).value
+    val effectiveHasReminder = hasReminder
+        ?: viewModel.hasReminder(mediaId, mediaType).collectAsState(initial = false).value
     val effectiveActionActive = isActionActive
         ?: viewModel.isMediaActionActive(mediaId).collectAsState(initial = false).value
     val loadedDiaryEntries by viewModel.getDiaryEntries(mediaId, mediaType)
         .collectAsState(initial = emptyList())
     val effectiveExistingDiaryEntry = existingDiaryEntry ?: loadedDiaryEntries.firstOrNull()
 
+    val canRemind = config.isEligibleForReminder(effectiveHasReminder)
     val canOpenDiscussions =
         config.showDiscussions && (onOpenDiscussions != null || navigator != null)
     val canLogToDiary = config.effectiveShowDiaryLog
@@ -117,7 +142,7 @@ fun MediaOmniActionMenu(
     val hasTrackingSection =
         config.showWatchlist || config.effectiveShowWatched || config.showFavorite
     val hasCustomListSection = config.showCustomList
-    val hasQuickActionsSection = canOpenDiscussions || canLogToDiary || canShare
+    val hasQuickActionsSection = canRemind || canOpenDiscussions || canLogToDiary || canShare
 
     if (!hasTrackingSection && !hasCustomListSection && !hasQuickActionsSection) return
 
@@ -127,7 +152,102 @@ fun MediaOmniActionMenu(
     val quickActionTint = MaterialTheme.colorScheme.primary
     val quickActionContainer = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
 
+    val executeToggleReminder: () -> Unit = {
+        if (onToggleReminder != null) {
+            onToggleReminder()
+        } else {
+            val parsedAirDate = if (releaseDate.isNotEmpty()) {
+                try {
+                    LocalDate.parse(releaseDate)
+                } catch (e: Exception) {
+                    null
+                }
+            } else null
+
+            viewModel.toggleReminder(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                title = title,
+                posterImageUrl = posterImageUrl,
+                targetAirDate = parsedAirDate
+            ) { result ->
+                val feedbackMsg = when (result) {
+                    is ReminderToggleResult.Added -> {
+                        context.getString(R.string.reminder_added_snackbar, result.label)
+                    }
+
+                    ReminderToggleResult.Removed -> {
+                        context.getString(R.string.reminder_removed_snackbar, title)
+                    }
+
+                    ReminderToggleResult.QuotaExceeded -> {
+                        showQuotaGate = true
+                        null
+                    }
+
+                    ReminderToggleResult.NoUpcomingSchedule -> {
+                        context.getString(R.string.reminder_no_upcoming_schedule, title)
+                    }
+
+                    is ReminderToggleResult.Error -> {
+                        result.message ?: context.getString(R.string.unexpected_error_msg)
+                    }
+                }
+                feedbackMsg?.let { msg ->
+                    onShowFeedback?.invoke(
+                        ShowFeedbackArgs(
+                            message = msg
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    val notificationPermissionHandler = rememberNotificationPermissionHandler()
+
     val quickActions = buildList {
+        if (canRemind) {
+            val remindLabel = if (effectiveHasReminder) {
+                stringResource(R.string.reminder_set)
+            } else {
+                stringResource(R.string.remind_me)
+            }
+            val remindIcon = if (effectiveHasReminder) {
+                Icons.Rounded.NotificationsActive
+            } else {
+                Icons.Rounded.NotificationsNone
+            }
+            val remindTint = if (effectiveHasReminder) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                null
+            }
+            val remindContainer = if (effectiveHasReminder) {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+            } else {
+                null
+            }
+            add(
+                QuickActionItem(
+                    label = remindLabel,
+                    icon = remindIcon,
+                    onClick = {
+                        isMenuExpanded = false
+                        if (effectiveHasReminder) {
+                            executeToggleReminder()
+                        } else {
+                            notificationPermissionHandler.requestPermissionThen {
+                                executeToggleReminder()
+                            }
+                        }
+                    },
+                    tint = remindTint,
+                    containerColor = remindContainer
+                )
+            )
+        }
+
         if (canOpenDiscussions) {
             add(
                 QuickActionItem(
@@ -210,7 +330,7 @@ fun MediaOmniActionMenu(
         expanded = isMenuExpanded,
         onToggleExpand = { isMenuExpanded = !isMenuExpanded },
         onDismissRequest = { isMenuExpanded = false },
-        showActiveDot = effectiveActionActive,
+        showActiveDot = effectiveActionActive || effectiveHasReminder,
         isOverPoster = config.isOverPoster,
         actionContent = actionContent,
         modifier = modifier
@@ -230,18 +350,18 @@ fun MediaOmniActionMenu(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .clickable(onClick = action.onClick)
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                            .padding(horizontal = 6.dp, vertical = 4.dp)
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = quickActionContainer,
+                            color = action.containerColor ?: quickActionContainer,
                             modifier = Modifier.size(36.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = action.icon,
                                     contentDescription = action.label,
-                                    tint = quickActionTint,
+                                    tint = action.tint ?: quickActionTint,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -250,8 +370,9 @@ fun MediaOmniActionMenu(
                         Text(
                             text = action.label,
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1
+                            color = action.tint ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -427,6 +548,48 @@ fun MediaOmniActionMenu(
                 viewModel = viewModel
             )
         }
+    }
+
+    NotificationPermissionDialogs(handler = notificationPermissionHandler)
+
+    val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
+
+    LaunchedEffect(showQuotaGate) {
+        if (showQuotaGate) {
+            viewModel.preloadRewardedAd()
+        }
+    }
+
+    if (showQuotaGate) {
+        FeatureQuotaGateBottomSheet(
+            title = stringResource(id = R.string.reminder_quota_title),
+            description = stringResource(id = R.string.reminder_quota_desc),
+            rewardActionLabel = stringResource(id = R.string.reminder_quota_reward_label),
+            isAdLoading = isAdLoading,
+            onWatchAdClick = {
+                val activity = context.findActivity()
+                if (activity != null) {
+                    viewModel.onWatchAdForReminderPass(activity) {
+                        showQuotaGate = false
+                        executeToggleReminder()
+                    }
+                }
+            },
+            onUpgradeProClick = {
+                showQuotaGate = false
+                viewModel.dismissQuotaGate()
+                if (onOpenProPaywall != null) {
+                    onOpenProPaywall()
+                } else if (navigator != null) {
+                    navigator.navigate(ProPaywallNavKey)
+                }
+            },
+            onDismissRequest = {
+                showQuotaGate = false
+                viewModel.dismissQuotaGate()
+            },
+            isProPaymentEnabled = viewModel.isProPaymentEnabled.collectAsStateWithLifecycle().value
+        )
     }
 
     if (showLogDialog) {

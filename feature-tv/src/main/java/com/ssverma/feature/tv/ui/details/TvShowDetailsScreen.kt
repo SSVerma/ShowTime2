@@ -1,10 +1,5 @@
 package com.ssverma.feature.tv.ui.details
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -49,7 +44,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import com.ssverma.shared.ui.component.notification.NotificationPermissionDialogs
+import com.ssverma.shared.ui.component.notification.rememberNotificationPermissionHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.common.ui.community.MediaDiscussionsSection
 import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
@@ -58,6 +54,7 @@ import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.foundation.Emphasize
@@ -198,6 +195,7 @@ private fun TvShowContent(
     val diaryEntries by viewModel.diaryEntries.collectAsStateWithLifecycle()
     val hasReminder by viewModel.hasReminder.collectAsStateWithLifecycle()
     val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
+    val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
     val reminderSnackbarEvent by viewModel.reminderSnackbarEvent.collectAsStateWithLifecycle()
     var showLogDialog by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
@@ -205,11 +203,7 @@ private fun TvShowContent(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) {
-        viewModel.toggleReminder(tvShow)
-    }
+    val notificationPermissionHandler = rememberNotificationPermissionHandler()
 
     LaunchedEffect(reminderSnackbarEvent) {
         reminderSnackbarEvent?.let { message ->
@@ -257,7 +251,10 @@ private fun TvShowContent(
                             backdropImageUrl = tvShow.backdropImageUrl,
                             voteAvg = tvShow.voteAvg,
                             releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
-                            config = MediaOmniMenuConfig(isUpcoming = tvShow.isUpcoming),
+                            config = MediaOmniMenuConfig(
+                                isUpcoming = tvShow.isUpcoming,
+                                showReminder = false
+                            ),
                             existingDiaryEntry = diaryEntries.firstOrNull(),
                             onLogToDiary = { showLogDialog = true },
                             onOpenDiscussions = openDiscussionsList,
@@ -303,15 +300,12 @@ private fun TvShowContent(
                         if (tvShow.hasUpcomingEpisodes || hasReminder) {
                             BackdropActionButton(
                                 onClick = {
-                                    if (!hasReminder && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                                        ContextCompat.checkSelfPermission(
-                                            context,
-                                            Manifest.permission.POST_NOTIFICATIONS
-                                        ) != PackageManager.PERMISSION_GRANTED
-                                    ) {
-                                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                    } else {
+                                    if (hasReminder) {
                                         viewModel.toggleReminder(tvShow)
+                                    } else {
+                                        notificationPermissionHandler.requestPermissionThen {
+                                            viewModel.toggleReminder(tvShow)
+                                        }
                                     }
                                 },
                                 icon = if (hasReminder) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
@@ -680,6 +674,7 @@ private fun TvShowContent(
                 Spacer(modifier = Modifier.height(48.dp))
             }
         }
+        NotificationPermissionDialogs(handler = notificationPermissionHandler)
 
         if (showLogDialog) {
             LogAndRateDialog(
@@ -738,7 +733,13 @@ private fun TvShowContent(
                 title = stringResource(id = SharedR.string.reminder_quota_title),
                 description = stringResource(id = SharedR.string.reminder_quota_desc),
                 rewardActionLabel = stringResource(id = SharedR.string.reminder_quota_reward_label),
-                onWatchAdClick = { viewModel.onWatchAdForReminderPass(tvShow) },
+                isAdLoading = isAdLoading,
+                onWatchAdClick = {
+                    val activity = context.findActivity()
+                    if (activity != null) {
+                        viewModel.onWatchAdForReminderPass(activity, tvShow)
+                    }
+                },
                 onUpgradeProClick = {
                     viewModel.dismissQuotaGate()
                     openProPaywall()
