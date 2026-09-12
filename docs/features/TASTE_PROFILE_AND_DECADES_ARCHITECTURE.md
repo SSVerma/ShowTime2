@@ -115,10 +115,10 @@ flowchart TD
         ShareSheet["TastePersonaShareBottomSheet (rememberGraphicsLayer)"]
     end
 
-    subgraph Monetization["core-ads & core-billing"]
-        RewardMgr["RewardManager (TASTE_ANALYTICS_RADAR)"]
+    subgraph Monetization["core-ads, core-billing & shared-ads"]
+        RewardMgr["RewardManager (TasteRadarPassKey)"]
         BillingRepo["BillingRepository (isProActive)"]
-        QuotaSheet["FeatureQuotaGateBottomSheet"]
+        QuotaSheet["ShowTimeFeatureGate (TasteAnalyticsGateConfig)"]
     end
 
     DiaryDao --> GetTasteProfile

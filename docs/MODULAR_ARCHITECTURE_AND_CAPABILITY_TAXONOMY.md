@@ -62,7 +62,7 @@ ShowTime enforces a decoupled **Platform (`core-*`) vs. Application Engine (`sha
   - Completely feature-agnostic: knows nothing about movies, TV shows, watchlists, reminders, or passes.
 * **`shared-ads` (Application Monetization Engine Tier)**:
   - Houses ShowTime's ad rules: Feed ad injection (`AdInjectable`), Banner & Native components (`ShowTimeBannerAd`, `ShowTimeNativeAd`).
-  - Quota and pass persistence (`RewardManager`, `RewardPassType`, `RewardPassStatus`).
+  - Quota and pass persistence (`RewardManager`, `PassKey`, `FeaturePassPolicy`).
   - Unified in-context gating (`ShowTimeFeatureGate`, `FeaturePassPolicy`, `FeatureGateConfig`).
   - Completely shields `shared-ui`, `shared-domain`, and `common-ui` from ad-related bloat.
 

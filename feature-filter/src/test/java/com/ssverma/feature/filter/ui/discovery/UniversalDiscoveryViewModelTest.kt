@@ -6,7 +6,6 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -51,7 +50,7 @@ class UniversalDiscoveryViewModelTest {
     private val preferredOriginalLanguageFlow = MutableStateFlow("")
     private val isProUserFlow = MutableStateFlow(false)
     private val isBillingEnabledFlow = MutableStateFlow(true)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus(isMultiServiceUnlocked = false))
+    private val isPassActiveFlow = MutableStateFlow(false)
 
     private lateinit var viewModel: UniversalDiscoveryViewModel
 
@@ -59,7 +58,7 @@ class UniversalDiscoveryViewModelTest {
     fun setUp() {
         coEvery { mockBillingRepository.isProActive } returns isProUserFlow
         coEvery { mockBillingRepository.isBillingEnabled } returns isBillingEnabledFlow
-        coEvery { mockRewardManager.passStatus } returns passStatusFlow
+        coEvery { mockRewardManager.isPassActive(MultiServiceFilterPassKey) } returns isPassActiveFlow
         coEvery { mockAppConfigRepository.watchProviderRegion } returns watchRegionFlow
         coEvery { mockAppConfigRepository.userStreamingSubscriptions } returns streamingSubscriptionsFlow
         coEvery { mockAppConfigRepository.preferredOriginalLanguage } returns preferredOriginalLanguageFlow

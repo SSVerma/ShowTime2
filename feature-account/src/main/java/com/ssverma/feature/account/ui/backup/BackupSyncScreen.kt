@@ -60,7 +60,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupOperation
@@ -235,11 +239,10 @@ fun BackupSyncScreen(
         }
 
         if (uiState.isManualBackupGateVisible) {
-            FeatureQuotaGateBottomSheet(
-                title = stringResource(R.string.manual_backup_gate_title),
-                description = stringResource(R.string.manual_backup_gate_desc),
-                rewardActionLabel = stringResource(R.string.watch_ad_to_backup_now),
+            ShowTimeFeatureGate(
+                config = ManualBackupGateConfig,
                 isAdLoading = uiState.isAdLoading,
+                isProPaymentEnabled = true,
                 onWatchAdClick = {
                     if (activity != null) {
                         viewModel.watchAdForManualBackup(activity)
@@ -775,3 +778,16 @@ private fun AutoBackupSettingsCard(
         }
     }
 }
+
+private val AutoBackupPassKey = PassKey("auto_backup")
+
+private val ManualBackupGateConfig = FeatureGateConfig(
+    titleRes = R.string.manual_backup_gate_title,
+    descriptionRes = R.string.manual_backup_gate_desc,
+    rewardActionLabelRes = R.string.watch_ad_to_backup_now,
+    icon = Icons.Rounded.CloudUpload,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.ActionUnlock(AutoBackupPassKey)
+)
+
+

@@ -9,8 +9,8 @@ import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.networking.adapter.ApiResponse
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.challenge.BlindspotPriorityItem
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
@@ -31,6 +31,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+val CustomGoalPassKey = PassKey("extra_custom_goal")
 
 @HiltViewModel
 class BacklogChallengeViewModel @Inject constructor(
@@ -119,7 +121,12 @@ class BacklogChallengeViewModel @Inject constructor(
         viewModelScope.launch {
             val currentCustomCount = _uiState.value.activeChallenges.count { it.challenge.isCustom }
             val isPro = billingRepository.isProActive.first()
-            val canCreate = rewardManager.canCreateCustomGoal(currentCustomCount, isPro)
+            val canCreate = rewardManager.canPerformQuotaAction(
+                key = CustomGoalPassKey,
+                currentCount = currentCustomCount,
+                freeLimit = 2,
+                isProActive = isPro
+            )
             if (canCreate) {
                 _uiState.update { it.copy(isCreatingCustomGoal = true) }
             } else {
@@ -137,7 +144,7 @@ class BacklogChallengeViewModel @Inject constructor(
         _uiState.update { it.copy(isAdLoading = true) }
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.EXTRA_CUSTOM_GOAL)
+                rewardManager.grantExtraSlots(CustomGoalPassKey, 1)
                 _uiState.update {
                     it.copy(
                         isQuotaGateVisible = false,

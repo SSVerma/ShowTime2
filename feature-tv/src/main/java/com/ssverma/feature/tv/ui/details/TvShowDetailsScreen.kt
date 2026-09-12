@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.Star
@@ -48,7 +49,11 @@ import com.ssverma.shared.ui.component.notification.NotificationPermissionDialog
 import com.ssverma.shared.ui.component.notification.rememberNotificationPermissionHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.common.ui.community.MediaDiscussionsSection
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
@@ -729,11 +734,10 @@ private fun TvShowContent(
         }
 
         if (isQuotaGateVisible) {
-            FeatureQuotaGateBottomSheet(
-                title = stringResource(id = SharedR.string.reminder_quota_title),
-                description = stringResource(id = SharedR.string.reminder_quota_desc),
-                rewardActionLabel = stringResource(id = SharedR.string.reminder_quota_reward_label),
+            ShowTimeFeatureGate(
+                config = AiringReminderGateConfig,
                 isAdLoading = isAdLoading,
+                isProPaymentEnabled = viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle().value,
                 onWatchAdClick = {
                     val activity = context.findActivity()
                     if (activity != null) {
@@ -744,12 +748,25 @@ private fun TvShowContent(
                     viewModel.dismissQuotaGate()
                     openProPaywall()
                 },
-                onDismissRequest = { viewModel.dismissQuotaGate() },
-                isProPaymentEnabled = viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle().value
+                onDismissRequest = { viewModel.dismissQuotaGate() }
             )
         }
     }
 }
+
+private val AiringReminderPassKey = PassKey("airing_reminders")
+
+private val AiringReminderGateConfig = FeatureGateConfig(
+    titleRes = SharedR.string.reminder_quota_title,
+    descriptionRes = SharedR.string.reminder_quota_desc,
+    rewardActionLabelRes = SharedR.string.reminder_quota_reward_label,
+    icon = Icons.Rounded.Lock,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.ConsumableSlot(
+        passKey = AiringReminderPassKey,
+        slotsGranted = 1
+    )
+)
 
 @Composable
 private fun SimilarTvShowsSection(

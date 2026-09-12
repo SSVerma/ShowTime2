@@ -1,6 +1,7 @@
 package com.ssverma.shared.ads.quota
 
 import android.content.Context
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -8,83 +9,95 @@ import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.domain.repository.ReminderQuotaManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-enum class RewardPassType {
-    AUTO_BACKUP,
-    PRO_THEME,
-    TRAKT_SYNC,
-    EXTRA_CUSTOM_LIST,
-    COMMUNITY_PUBLISH,
-    CINEMA_GAME_REVIVE,
-    MULTI_SERVICE_FILTER,
-    TASTE_ANALYTICS_RADAR,
-    WATERMARK_FREE_RECEIPT,
-    CINEMA_WRAPPED_STORY,
-    AIRING_REMINDERS,
-    MATCH_ROOM,
-    LIST_SHARE_THEMES,
-    EXTRA_CUSTOM_GOAL
-}
+/**
+ * Generic, feature-agnostic reward pass engine.
+ *
+ * Manages timed passes and consumable slots keyed by [PassKey].
+ * Contains zero knowledge of vertical feature implementations.
+ */
+interface RewardManager : ReminderQuotaManager {
+    /** Observe whether a timed pass for [key] is currently active (unexpired). */
+    fun isPassActive(key: PassKey): Flow<Boolean>
 
-data class RewardPassStatus(
-    val isAutoBackupUnlocked: Boolean = false,
-    val autoBackupExpiryTimestamp: Long = 0L,
-    val isProThemeUnlocked: Boolean = false,
-    val isTraktSyncUnlocked: Boolean = false,
-    val extraCustomListSlots: Int = 0,
-    val extraCommunityPublishSlots: Int = 0,
-    val extraCustomGoalSlots: Int = 0,
-    val cinemaGameRevivesRemaining: Int = 0,
-    val isMultiServiceUnlocked: Boolean = false,
-    val multiServiceExpiryTimestamp: Long = 0L,
-    val isTasteAnalyticsUnlocked: Boolean = false,
-    val tasteAnalyticsExpiryTimestamp: Long = 0L,
-    val isReceiptWatermarkFreeUnlocked: Boolean = false,
-    val receiptWatermarkFreeExpiryTimestamp: Long = 0L,
-    val isWrappedStoryUnlocked: Boolean = false,
-    val wrappedStoryExpiryTimestamp: Long = 0L,
-    val extraReminderSlots: Int = 0,
-    val isMatchRoomUnlocked: Boolean = false,
-    val matchRoomExpiryTimestamp: Long = 0L,
-    val isListShareThemesUnlocked: Boolean = false,
-    val listShareThemesExpiryTimestamp: Long = 0L
-)
+    /** Check whether a timed pass for [key] is currently active (unexpired) at this instant. */
+    suspend fun isPassActiveNow(key: PassKey): Boolean
 
-interface RewardManager {
-    val passStatus: StateFlow<RewardPassStatus>
+    /** Get the current expiration timestamp (in epoch ms) for [key], or 0 if inactive/expired. */
+    fun getPassExpiryTimestamp(key: PassKey): Flow<Long>
 
-    suspend fun grantRewardPass(passType: RewardPassType)
-    suspend fun canCreateCustomList(currentCount: Int, isProActive: Boolean): Boolean
-    suspend fun canPublishCommunityList(currentActiveCount: Int, isProActive: Boolean): Boolean
-    suspend fun canCreateCustomGoal(currentActiveCount: Int, isProActive: Boolean): Boolean
-    suspend fun isAutoBackupAllowed(isProActive: Boolean): Boolean
-    suspend fun isThemeUnlocked(isProActive: Boolean): Boolean
-    suspend fun isTraktSyncAllowed(isProActive: Boolean): Boolean
-    suspend fun isMultiServiceFilterAllowed(isProActive: Boolean): Boolean
-    suspend fun isTasteAnalyticsAllowed(isProActive: Boolean): Boolean
-    suspend fun isReceiptWatermarkFreeAllowed(isProActive: Boolean): Boolean
-    suspend fun isWrappedStoryAllowed(isProActive: Boolean): Boolean
-    suspend fun canScheduleReminder(currentActiveCount: Int, isProActive: Boolean): Boolean
-    suspend fun grantReminderPass()
-    suspend fun consumeReminderPass(): Boolean
-    suspend fun isExtraRemindersAllowed(isProActive: Boolean): Boolean
-    suspend fun isMatchRoomAllowed(isProActive: Boolean): Boolean
-    suspend fun isListShareThemesAllowed(isProActive: Boolean): Boolean
-    suspend fun useCinemaGameRevive(): Boolean
+    /**
+     * Grants a timed pass for [key] lasting [durationMs].
+     * If the pass is already active, extends the expiry timestamp.
+     */
+    suspend fun grantTimedPass(key: PassKey, durationMs: Long = TimeUnit.HOURS.toMillis(24))
+
+    /** Observe extra consumable slots granted for [key]. */
+    fun getExtraSlots(key: PassKey): Flow<Int>
+
+    /** Get current count of extra consumable slots for [key]. */
+    suspend fun getExtraSlotsCount(key: PassKey): Int
+
+    /** Grants [slots] additional consumable slots for [key]. */
+    suspend fun grantExtraSlots(key: PassKey, slots: Int = 1)
+
+    /** Consumes 1 slot for [key] if available. Returns true if consumed, false if no slots available. */
+    suspend fun consumeSlot(key: PassKey): Boolean
+
+    /** Grants a reward based on a [FeaturePassPolicy]. */
+    suspend fun grantPass(policy: FeaturePassPolicy) {
+        when (policy) {
+            is FeaturePassPolicy.TimedPass -> grantTimedPass(policy.passKey, policy.durationMs)
+            is FeaturePassPolicy.ConsumableSlot -> grantExtraSlots(
+                policy.passKey,
+                policy.slotsGranted
+            )
+
+            is FeaturePassPolicy.ActionUnlock -> grantTimedPass(
+                policy.passKey,
+                TimeUnit.HOURS.toMillis(24)
+            )
+        }
+    }
+
+    /**
+     * Generic quota check: determines if an action is allowed given the user's current count,
+     * the free tier limit, and Pro subscription status.
+     * Always returns true if [isProActive] is true. Otherwise, checks if currentCount < freeLimit + bonusSlots.
+     */
+    suspend fun canPerformQuotaAction(
+        key: PassKey,
+        currentCount: Int,
+        freeLimit: Int,
+        isProActive: Boolean
+    ): Boolean {
+        if (isProActive) return true
+        val bonusSlots = getExtraSlotsCount(key)
+        return currentCount < (freeLimit + bonusSlots)
+    }
+
+    /**
+     * Generic feature access check: returns true if Pro is active, or if Pro is not required,
+     * or if an active pass exists for [key].
+     */
+    suspend fun isFeatureAllowed(
+        key: PassKey,
+        isProActive: Boolean,
+        isProRequired: Boolean = true
+    ): Boolean {
+        if (isProActive || !isProRequired) return true
+        return isPassActiveNow(key)
+    }
 }
 
 @Singleton
@@ -94,347 +107,108 @@ class RewardManagerImpl @Inject constructor(
     keyValueStorageClient: KeyValueStorageClient
 ) : RewardManager, ReminderQuotaManager {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val storage: KeyValueStorage = keyValueStorageClient.createKeyValueStorage(
         context = context,
         config = KeyValueStorageConfig(fileName = "reward_manager_prefs")
     )
 
-    private val _passStatus = MutableStateFlow(RewardPassStatus())
-    override val passStatus: StateFlow<RewardPassStatus> = _passStatus.asStateFlow()
+    override fun isPassActive(key: PassKey): Flow<Boolean> {
+        val expiryKey = key.toExpiryKey()
+        return storage.data.map { prefs ->
+            val expiry = prefs[expiryKey] ?: 0L
+            expiry > System.currentTimeMillis()
+        }.distinctUntilChanged()
+    }
 
-    init {
-        scope.launch {
-            refreshPassStatus()
+    override suspend fun isPassActiveNow(key: PassKey): Boolean {
+        val expiryKey = key.toExpiryKey()
+        val expiry = storage.data.map { it[expiryKey] ?: 0L }.first()
+        return expiry > System.currentTimeMillis()
+    }
+
+    override fun getPassExpiryTimestamp(key: PassKey): Flow<Long> {
+        val expiryKey = key.toExpiryKey()
+        return storage.data.map { prefs ->
+            val expiry = prefs[expiryKey] ?: 0L
+            if (expiry > System.currentTimeMillis()) expiry else 0L
+        }.distinctUntilChanged()
+    }
+
+    override suspend fun grantTimedPass(key: PassKey, durationMs: Long) {
+        val now = System.currentTimeMillis()
+        val expiryKey = key.toExpiryKey()
+        storage.edit { prefs ->
+            val currentExpiry = prefs[expiryKey] ?: 0L
+            val baseTime = if (currentExpiry > now) currentExpiry else now
+            prefs[expiryKey] = baseTime + durationMs
         }
     }
 
-    private suspend fun refreshPassStatus() {
-        val now = System.currentTimeMillis()
-        val status = storage.data.map { prefs ->
-            val autoBackupExpiry = prefs[KEY_AUTO_BACKUP_EXPIRY] ?: 0L
-            val proThemeExpiry = prefs[KEY_PRO_THEME_EXPIRY] ?: 0L
-            val traktSyncExpiry = prefs[KEY_TRAKT_SYNC_EXPIRY] ?: 0L
-            val extraListSlots = prefs[KEY_EXTRA_LIST_SLOTS] ?: 0
-            val extraPublishSlots = prefs[KEY_EXTRA_PUBLISH_SLOTS] ?: 0
-            val extraGoalSlots = prefs[KEY_EXTRA_GOAL_SLOTS] ?: 0
-            val revives = prefs[KEY_GAME_REVIVES] ?: 0
-            val multiServiceExpiry = prefs[KEY_MULTI_SERVICE_EXPIRY] ?: 0L
-            val tasteAnalyticsExpiry = prefs[KEY_TASTE_ANALYTICS_EXPIRY] ?: 0L
-            val receiptWatermarkExpiry = prefs[KEY_RECEIPT_WATERMARK_FREE_EXPIRY] ?: 0L
-            val wrappedStoryExpiry = prefs[KEY_WRAPPED_STORY_EXPIRY] ?: 0L
-            val extraReminderSlots = prefs[KEY_EXTRA_REMINDER_SLOTS] ?: 0
-            val matchRoomExpiry = prefs[KEY_MATCH_ROOM_EXPIRY] ?: 0L
-            val listShareThemesExpiry = prefs[KEY_LIST_SHARE_THEMES_EXPIRY] ?: 0L
-
-            RewardPassStatus(
-                isAutoBackupUnlocked = autoBackupExpiry > now,
-                autoBackupExpiryTimestamp = if (autoBackupExpiry > now) autoBackupExpiry else 0L,
-                isProThemeUnlocked = proThemeExpiry > now,
-                isTraktSyncUnlocked = traktSyncExpiry > now,
-                extraCustomListSlots = extraListSlots,
-                extraCommunityPublishSlots = extraPublishSlots,
-                extraCustomGoalSlots = extraGoalSlots,
-                cinemaGameRevivesRemaining = revives,
-                isMultiServiceUnlocked = multiServiceExpiry > now,
-                multiServiceExpiryTimestamp = if (multiServiceExpiry > now) multiServiceExpiry else 0L,
-                isTasteAnalyticsUnlocked = tasteAnalyticsExpiry > now,
-                tasteAnalyticsExpiryTimestamp = if (tasteAnalyticsExpiry > now) tasteAnalyticsExpiry else 0L,
-                isReceiptWatermarkFreeUnlocked = receiptWatermarkExpiry > now,
-                receiptWatermarkFreeExpiryTimestamp = if (receiptWatermarkExpiry > now) receiptWatermarkExpiry else 0L,
-                isWrappedStoryUnlocked = wrappedStoryExpiry > now,
-                wrappedStoryExpiryTimestamp = if (wrappedStoryExpiry > now) wrappedStoryExpiry else 0L,
-                extraReminderSlots = extraReminderSlots,
-                isMatchRoomUnlocked = matchRoomExpiry > now,
-                matchRoomExpiryTimestamp = if (matchRoomExpiry > now) matchRoomExpiry else 0L,
-                isListShareThemesUnlocked = listShareThemesExpiry > now,
-                listShareThemesExpiryTimestamp = if (listShareThemesExpiry > now) listShareThemesExpiry else 0L
-            )
-        }.first()
-        _passStatus.value = status
+    override fun getExtraSlots(key: PassKey): Flow<Int> {
+        val slotsKey = key.toSlotsKey()
+        return storage.data.map { prefs ->
+            prefs[slotsKey] ?: 0
+        }.distinctUntilChanged()
     }
 
-    override suspend fun grantRewardPass(passType: RewardPassType) {
-        val now = System.currentTimeMillis()
-        val backupDurationDays = appConfigProvider.getLong(KEY_CONFIG_REWARDED_BACKUP_DAYS, 7L)
-        val themeDurationHours = appConfigProvider.getLong(KEY_CONFIG_REWARDED_THEME_HOURS, 24L)
-        val traktDurationHours = appConfigProvider.getLong(KEY_CONFIG_REWARDED_TRAKT_HOURS, 24L)
-        val multiServiceDurationHours =
-            appConfigProvider.getLong(KEY_CONFIG_REWARDED_MULTI_SERVICE_HOURS, 24L)
-        val multiServiceDurationMinutes =
-            appConfigProvider.getLong(
-                KEY_CONFIG_REWARDED_MULTI_SERVICE_MINUTES,
-                multiServiceDurationHours * 60L
-            )
-        val tasteAnalyticsDurationHours =
-            appConfigProvider.getLong(KEY_CONFIG_REWARDED_TASTE_ANALYTICS_HOURS, 24L)
-        val receiptWatermarkDurationHours =
-            appConfigProvider.getLong(KEY_CONFIG_REWARDED_RECEIPT_WATERMARK_HOURS, 24L)
-        val wrappedStoryDurationHours =
-            appConfigProvider.getLong(KEY_CONFIG_REWARDED_WRAPPED_STORY_HOURS, 24L)
-        val matchRoomDurationHours =
-            appConfigProvider.getLong(KEY_CONFIG_REWARDED_MATCH_ROOM_HOURS, 24L)
-        val listShareThemesDurationHours =
-            appConfigProvider.getLong(KEY_CONFIG_REWARDED_LIST_SHARE_THEMES_HOURS, 24L)
+    override suspend fun getExtraSlotsCount(key: PassKey): Int {
+        val slotsKey = key.toSlotsKey()
+        return storage.data.map { it[slotsKey] ?: 0 }.first()
+    }
 
+    override suspend fun grantExtraSlots(key: PassKey, slots: Int) {
+        val slotsKey = key.toSlotsKey()
         storage.edit { prefs ->
-            when (passType) {
-                RewardPassType.AUTO_BACKUP -> {
-                    val maxStackDays =
-                        appConfigProvider.getLong(KEY_CONFIG_MAX_BACKUP_STACK_DAYS, 14L)
-                    val maxExpiry = now + TimeUnit.DAYS.toMillis(maxStackDays)
-                    val currentExpiry = prefs[KEY_AUTO_BACKUP_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    val targetExpiry = baseTime + TimeUnit.DAYS.toMillis(backupDurationDays)
-                    prefs[KEY_AUTO_BACKUP_EXPIRY] =
-                        if (targetExpiry > maxExpiry) maxExpiry else targetExpiry
-                }
+            val current = prefs[slotsKey] ?: 0
+            prefs[slotsKey] = current + slots
+        }
+    }
 
-                RewardPassType.PRO_THEME -> {
-                    val currentExpiry = prefs[KEY_PRO_THEME_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_PRO_THEME_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(themeDurationHours)
-                }
-
-                RewardPassType.TRAKT_SYNC -> {
-                    val currentExpiry = prefs[KEY_TRAKT_SYNC_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_TRAKT_SYNC_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(traktDurationHours)
-                }
-
-                RewardPassType.EXTRA_CUSTOM_LIST -> {
-                    val current = prefs[KEY_EXTRA_LIST_SLOTS] ?: 0
-                    prefs[KEY_EXTRA_LIST_SLOTS] = current + 1
-                }
-
-                RewardPassType.EXTRA_CUSTOM_GOAL -> {
-                    val current = prefs[KEY_EXTRA_GOAL_SLOTS] ?: 0
-                    prefs[KEY_EXTRA_GOAL_SLOTS] = current + 1
-                }
-
-                RewardPassType.COMMUNITY_PUBLISH -> {
-                    val current = prefs[KEY_EXTRA_PUBLISH_SLOTS] ?: 0
-                    prefs[KEY_EXTRA_PUBLISH_SLOTS] = current + 1
-                }
-
-                RewardPassType.CINEMA_GAME_REVIVE -> {
-                    val current = prefs[KEY_GAME_REVIVES] ?: 0
-                    prefs[KEY_GAME_REVIVES] = current + 1
-                }
-
-                RewardPassType.MULTI_SERVICE_FILTER -> {
-                    val currentExpiry = prefs[KEY_MULTI_SERVICE_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_MULTI_SERVICE_EXPIRY] =
-                        baseTime + TimeUnit.MINUTES.toMillis(multiServiceDurationMinutes)
-                }
-
-                RewardPassType.TASTE_ANALYTICS_RADAR -> {
-                    val currentExpiry = prefs[KEY_TASTE_ANALYTICS_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_TASTE_ANALYTICS_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(tasteAnalyticsDurationHours)
-                }
-
-                RewardPassType.WATERMARK_FREE_RECEIPT -> {
-                    val currentExpiry = prefs[KEY_RECEIPT_WATERMARK_FREE_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_RECEIPT_WATERMARK_FREE_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(receiptWatermarkDurationHours)
-                }
-
-                RewardPassType.CINEMA_WRAPPED_STORY -> {
-                    val currentExpiry = prefs[KEY_WRAPPED_STORY_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_WRAPPED_STORY_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(wrappedStoryDurationHours)
-                }
-
-                RewardPassType.AIRING_REMINDERS -> {
-                    val current = prefs[KEY_EXTRA_REMINDER_SLOTS] ?: 0
-                    prefs[KEY_EXTRA_REMINDER_SLOTS] = current + 1
-                }
-
-                RewardPassType.MATCH_ROOM -> {
-                    val currentExpiry = prefs[KEY_MATCH_ROOM_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_MATCH_ROOM_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(matchRoomDurationHours)
-                }
-
-                RewardPassType.LIST_SHARE_THEMES -> {
-                    val currentExpiry = prefs[KEY_LIST_SHARE_THEMES_EXPIRY] ?: 0L
-                    val baseTime = if (currentExpiry > now) currentExpiry else now
-                    prefs[KEY_LIST_SHARE_THEMES_EXPIRY] =
-                        baseTime + TimeUnit.HOURS.toMillis(listShareThemesDurationHours)
-                }
+    override suspend fun consumeSlot(key: PassKey): Boolean {
+        val slotsKey = key.toSlotsKey()
+        var consumed = false
+        storage.edit { prefs ->
+            val current = prefs[slotsKey] ?: 0
+            if (current > 0) {
+                prefs[slotsKey] = current - 1
+                consumed = true
             }
         }
-        refreshPassStatus()
+        return consumed
     }
 
-    override suspend fun canCreateCustomList(currentCount: Int, isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_CUSTOM_LIST_LIMIT, 3L).toInt()
-        val bonusSlots = _passStatus.value.extraCustomListSlots
-        return currentCount < (freeLimit + bonusSlots)
-    }
-
-    override suspend fun canPublishCommunityList(
-        currentActiveCount: Int,
-        isProActive: Boolean
-    ): Boolean {
-        if (isProActive) return true
-        val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_PUBLISH_LIMIT, 2L).toInt()
-        val bonusSlots = _passStatus.value.extraCommunityPublishSlots
-        return currentActiveCount < (freeLimit + bonusSlots)
-    }
-
-    override suspend fun canCreateCustomGoal(
-        currentActiveCount: Int,
-        isProActive: Boolean
-    ): Boolean {
-        if (isProActive) return true
-        val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L).toInt()
-        val bonusSlots = _passStatus.value.extraCustomGoalSlots
-        return currentActiveCount < (freeLimit + bonusSlots)
-    }
-
-    override suspend fun isAutoBackupAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        val proRequired = appConfigProvider.getBoolean(KEY_CONFIG_AUTO_BACKUP_PRO_REQUIRED, true)
-        if (!proRequired) return true
-        return _passStatus.value.isAutoBackupUnlocked
-    }
-
-    override suspend fun isThemeUnlocked(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.isProThemeUnlocked
-    }
-
-    override suspend fun isTraktSyncAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        val proRequired = appConfigProvider.getBoolean(KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED, true)
-        if (!proRequired) return true
-        return _passStatus.value.isTraktSyncUnlocked
-    }
-
-    override suspend fun isMultiServiceFilterAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.isMultiServiceUnlocked
-    }
-
-    override suspend fun isTasteAnalyticsAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.isTasteAnalyticsUnlocked
-    }
-
-    override suspend fun isReceiptWatermarkFreeAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.isReceiptWatermarkFreeUnlocked
-    }
-
-    override suspend fun isWrappedStoryAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.isWrappedStoryUnlocked
-    }
+    // --- ReminderQuotaManager Implementation ---
 
     override suspend fun canScheduleReminder(
         currentActiveCount: Int,
         isProActive: Boolean
     ): Boolean {
-        if (isProActive) return true
         val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L).toInt()
-        if (currentActiveCount < freeLimit) return true
-        return _passStatus.value.extraReminderSlots > 0
+        return canPerformQuotaAction(
+            AiringReminderPassKey,
+            currentActiveCount,
+            freeLimit,
+            isProActive
+        )
     }
 
     override suspend fun grantReminderPass() {
-        grantRewardPass(RewardPassType.AIRING_REMINDERS)
+        grantExtraSlots(AiringReminderPassKey, 1)
     }
 
     override suspend fun consumeReminderPass(): Boolean {
-        val current = _passStatus.value.extraReminderSlots
-        if (current <= 0) return false
-        storage.edit { prefs ->
-            val slots = prefs[KEY_EXTRA_REMINDER_SLOTS] ?: 0
-            if (slots > 0) prefs[KEY_EXTRA_REMINDER_SLOTS] = slots - 1
-        }
-        refreshPassStatus()
-        return true
-    }
-
-    override suspend fun isExtraRemindersAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.extraReminderSlots > 0
-    }
-
-    override suspend fun isMatchRoomAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.isMatchRoomUnlocked
-    }
-
-    override suspend fun isListShareThemesAllowed(isProActive: Boolean): Boolean {
-        if (isProActive) return true
-        return _passStatus.value.isListShareThemesUnlocked
-    }
-
-    override suspend fun useCinemaGameRevive(): Boolean {
-        val current = _passStatus.value.cinemaGameRevivesRemaining
-        if (current <= 0) return false
-        storage.edit { prefs ->
-            val slots = prefs[KEY_GAME_REVIVES] ?: 0
-            if (slots > 0) prefs[KEY_GAME_REVIVES] = slots - 1
-        }
-        refreshPassStatus()
-        return true
+        return consumeSlot(AiringReminderPassKey)
     }
 
     companion object {
-        private val KEY_AUTO_BACKUP_EXPIRY = longPreferencesKey("reward_auto_backup_expiry")
-        private val KEY_PRO_THEME_EXPIRY = longPreferencesKey("reward_pro_theme_expiry")
-        private val KEY_TRAKT_SYNC_EXPIRY = longPreferencesKey("reward_trakt_sync_expiry")
-        private val KEY_MULTI_SERVICE_EXPIRY = longPreferencesKey("reward_multi_service_expiry")
-        private val KEY_TASTE_ANALYTICS_EXPIRY = longPreferencesKey("reward_taste_analytics_expiry")
-        private val KEY_RECEIPT_WATERMARK_FREE_EXPIRY =
-            longPreferencesKey("reward_receipt_watermark_expiry")
-        private val KEY_WRAPPED_STORY_EXPIRY =
-            longPreferencesKey("reward_wrapped_story_expiry")
-        private val KEY_EXTRA_REMINDER_SLOTS =
-            intPreferencesKey("reward_extra_reminder_slots")
-        private val KEY_MATCH_ROOM_EXPIRY =
-            longPreferencesKey("reward_match_room_expiry")
-        private val KEY_LIST_SHARE_THEMES_EXPIRY =
-            longPreferencesKey("reward_list_share_themes_expiry")
-        private val KEY_EXTRA_LIST_SLOTS = intPreferencesKey("reward_extra_list_slots")
-        private val KEY_EXTRA_PUBLISH_SLOTS = intPreferencesKey("reward_extra_publish_slots")
-        private val KEY_EXTRA_GOAL_SLOTS = intPreferencesKey("reward_extra_goal_slots")
-        private val KEY_GAME_REVIVES = intPreferencesKey("reward_game_revives")
+        val AiringReminderPassKey = PassKey("airing_reminders")
 
-        const val KEY_CONFIG_FREE_CUSTOM_LIST_LIMIT = "free_custom_list_limit"
-        const val KEY_CONFIG_FREE_PUBLISH_LIMIT = "free_community_publish_limit"
-        const val KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT = "free_custom_goal_limit"
-        const val KEY_CONFIG_FREE_REMINDERS_LIMIT = "free_airing_reminders_limit"
-        const val KEY_CONFIG_REWARDED_BACKUP_DAYS = "rewarded_backup_duration_days"
-        const val KEY_CONFIG_MAX_BACKUP_STACK_DAYS = "rewarded_backup_max_stack_days"
-        const val KEY_CONFIG_REWARDED_THEME_HOURS = "rewarded_theme_duration_hours"
-        const val KEY_CONFIG_REWARDED_TRAKT_HOURS = "rewarded_trakt_duration_hours"
-        const val KEY_CONFIG_REWARDED_MULTI_SERVICE_HOURS = "rewarded_multi_service_duration_hours"
-        const val KEY_CONFIG_REWARDED_MULTI_SERVICE_MINUTES =
-            "rewarded_multi_service_duration_minutes"
-        const val KEY_CONFIG_REWARDED_TASTE_ANALYTICS_HOURS =
-            "rewarded_taste_analytics_duration_hours"
-        const val KEY_CONFIG_REWARDED_RECEIPT_WATERMARK_HOURS =
-            "rewarded_receipt_watermark_duration_hours"
-        const val KEY_CONFIG_REWARDED_WRAPPED_STORY_HOURS =
-            "rewarded_wrapped_story_duration_hours"
-        const val KEY_CONFIG_REWARDED_MATCH_ROOM_HOURS =
-            "rewarded_match_room_duration_hours"
-        const val KEY_CONFIG_REWARDED_LIST_SHARE_THEMES_HOURS =
-            "rewarded_list_share_themes_duration_hours"
-        const val KEY_CONFIG_AUTO_BACKUP_PRO_REQUIRED = "auto_backup_pro_required"
-        const val KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED = "trakt_sync_pro_required"
+        private fun PassKey.toExpiryKey(): Preferences.Key<Long> =
+            longPreferencesKey("pass_expiry_$value")
+
+        private fun PassKey.toSlotsKey(): Preferences.Key<Int> =
+            intPreferencesKey("pass_slots_$value")
+
+        const val KEY_CONFIG_FREE_REMINDERS_LIMIT = "config_free_reminders_limit"
     }
 }

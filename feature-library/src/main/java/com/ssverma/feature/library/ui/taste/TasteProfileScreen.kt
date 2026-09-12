@@ -50,7 +50,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
@@ -244,10 +247,10 @@ fun TasteProfileScreen(
     }
 
     if (uiState.isGateOpen) {
-        FeatureQuotaGateBottomSheet(
-            title = stringResource(R.string.taste_gate_title),
-            description = stringResource(R.string.taste_gate_desc),
-            rewardActionLabel = stringResource(R.string.taste_watch_ad_pass),
+        ShowTimeFeatureGate(
+            config = TasteAnalyticsGateConfig,
+            isAdLoading = false,
+            isProPaymentEnabled = uiState.isProPaymentEnabled,
             onWatchAdClick = {
                 val activity = context.findActivity()
                 if (activity != null) {
@@ -258,9 +261,7 @@ fun TasteProfileScreen(
                 viewModel.dismissGate()
                 onOpenProPaywall()
             },
-            onDismissRequest = { viewModel.dismissGate() },
-            isProPaymentEnabled = uiState.isProPaymentEnabled,
-            icon = Icons.Rounded.AutoAwesome
+            onDismissRequest = { viewModel.dismissGate() }
         )
     }
 
@@ -478,3 +479,14 @@ private fun TeaserShelfPlaceholder(modifier: Modifier = Modifier) {
         }
     }
 }
+
+private val TasteAnalyticsGateConfig = FeatureGateConfig(
+    titleRes = R.string.taste_gate_title,
+    descriptionRes = R.string.taste_gate_desc,
+    rewardActionLabelRes = R.string.taste_watch_ad_pass,
+    icon = Icons.Rounded.AutoAwesome,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.TimedPass(
+        passKey = TasteRadarPassKey
+    )
+)

@@ -9,7 +9,6 @@ import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBannerState
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityModerationConfig
@@ -51,8 +50,6 @@ class LibraryHomeViewModelTest {
     private val fakeBillingRepository = FakeBillingRepository(initialProActive = false)
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
-
     private lateinit var viewModel: LibraryHomeViewModel
 
     @Before
@@ -60,8 +57,14 @@ class LibraryHomeViewModelTest {
         fakeLibraryRepository = FakeLibraryRepository()
         fakeCommunityRepository = FakeCommunityRepository()
         fakeBackupRepository = FakeBackupRepository()
-        every { mockRewardManager.passStatus } returns passStatusFlow
-        coEvery { mockRewardManager.canCreateCustomList(any(), any()) } returns true
+        coEvery {
+            mockRewardManager.canPerformQuotaAction(
+                CustomListPassKey,
+                any(),
+                any(),
+                any()
+            )
+        } returns true
 
         viewModel = LibraryHomeViewModel(
             libraryRepository = fakeLibraryRepository,
@@ -114,7 +117,14 @@ class LibraryHomeViewModelTest {
 
     @Test
     fun `onAttemptCreateList opens create list dialog when under quota`() = runTest {
-        coEvery { mockRewardManager.canCreateCustomList(0, false) } returns true
+        coEvery {
+            mockRewardManager.canPerformQuotaAction(
+                CustomListPassKey,
+                0,
+                any(),
+                false
+            )
+        } returns true
 
         viewModel.onAttemptCreateList()
 
@@ -124,7 +134,14 @@ class LibraryHomeViewModelTest {
 
     @Test
     fun `onAttemptCreateList triggers quota gate when limit reached for free user`() = runTest {
-        coEvery { mockRewardManager.canCreateCustomList(any(), false) } returns false
+        coEvery {
+            mockRewardManager.canPerformQuotaAction(
+                CustomListPassKey,
+                any(),
+                any(),
+                false
+            )
+        } returns false
 
         viewModel.onAttemptCreateList()
 
@@ -134,7 +151,14 @@ class LibraryHomeViewModelTest {
 
     @Test
     fun `dismissQuotaGate closes bottom sheet`() = runTest {
-        coEvery { mockRewardManager.canCreateCustomList(any(), false) } returns false
+        coEvery {
+            mockRewardManager.canPerformQuotaAction(
+                CustomListPassKey,
+                any(),
+                any(),
+                false
+            )
+        } returns false
         viewModel.onAttemptCreateList()
         assertThat(viewModel.isQuotaGateVisible.value).isTrue()
 

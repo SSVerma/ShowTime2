@@ -11,8 +11,8 @@ import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSnapshot
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
@@ -44,6 +44,8 @@ data class CinemaReceiptUiState(
     val collectorName: String = "SHOWTIME CINEPHILE",
     val isEditPersonalizationOpen: Boolean = false
 )
+
+val CinemaReceiptPassKey = PassKey("watermark_free_receipt")
 
 @HiltViewModel
 class CinemaReceiptViewModel @Inject constructor(
@@ -80,9 +82,9 @@ class CinemaReceiptViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
-                rewardManager.passStatus
-            ) { isPro, passStatus ->
-                isPro to passStatus.isReceiptWatermarkFreeUnlocked
+                rewardManager.isPassActive(CinemaReceiptPassKey)
+            ) { isPro, isPass ->
+                isPro to isPass
             }.collectLatest { (isPro, isPass) ->
                 _isProActive.value = isPro
                 _isPassActive.value = isPass
@@ -256,7 +258,7 @@ class CinemaReceiptViewModel @Inject constructor(
     fun watchAdForWatermarkFreePass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.WATERMARK_FREE_RECEIPT)
+                rewardManager.grantTimedPass(CinemaReceiptPassKey)
                 _isPassActive.value = true
                 val pending = _pendingStyle.value
                 if (pending != null) {

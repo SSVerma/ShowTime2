@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ShowTimeFeatureGate: Common Actions -->
+    <string name="gate_upgrade_to_pro">Upgrade to Pro</string>
+    <string name="gate_watch_ad_icon_cd">Watch a rewarded video ad</string>
+    <string name="gate_pro_icon_cd">Upgrade to ShowTime Pro</string>
+</resources>

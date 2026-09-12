@@ -66,7 +66,14 @@ class BacklogChallengeViewModelTest {
         every { backlogRepository.blindspotsFlow } returns blindspotsFlow
         every { diaryRepository.getAllDiaryEntries() } returns diaryEntriesFlow
         every { billingRepository.isProActive } returns isProActiveFlow
-        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns true
+        coEvery {
+            rewardManager.canPerformQuotaAction(
+                CustomGoalPassKey,
+                any(),
+                any(),
+                any()
+            )
+        } returns true
 
         getBacklogChallengesUseCase = GetBacklogChallengesUseCase(
             backlogRepository = backlogRepository,
@@ -283,7 +290,14 @@ class BacklogChallengeViewModelTest {
 
     @Test
     fun `openCreateCustomGoalSheet opens sheet when quota allowed`() = runTest {
-        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns true
+        coEvery {
+            rewardManager.canPerformQuotaAction(
+                CustomGoalPassKey,
+                any(),
+                any(),
+                any()
+            )
+        } returns true
 
         viewModel.openCreateCustomGoalSheet()
         advanceUntilIdle()
@@ -295,7 +309,14 @@ class BacklogChallengeViewModelTest {
 
     @Test
     fun `openCreateCustomGoalSheet displays quota gate when quota exceeded`() = runTest {
-        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns false
+        coEvery {
+            rewardManager.canPerformQuotaAction(
+                CustomGoalPassKey,
+                any(),
+                any(),
+                any()
+            )
+        } returns false
 
         viewModel.openCreateCustomGoalSheet()
         advanceUntilIdle()
@@ -308,7 +329,14 @@ class BacklogChallengeViewModelTest {
 
     @Test
     fun `dismissQuotaGate hides quota gate`() = runTest {
-        coEvery { rewardManager.canCreateCustomGoal(any(), any()) } returns false
+        coEvery {
+            rewardManager.canPerformQuotaAction(
+                CustomGoalPassKey,
+                any(),
+                any(),
+                any()
+            )
+        } returns false
         viewModel.openCreateCustomGoalSheet()
         advanceUntilIdle()
 

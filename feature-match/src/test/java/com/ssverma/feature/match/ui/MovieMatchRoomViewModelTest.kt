@@ -6,9 +6,8 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.match.R
+import com.ssverma.feature.match.ui.component.MatchRoomPassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.match.MatchDeckType
@@ -48,7 +47,7 @@ class MovieMatchRoomViewModelTest {
     private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
 
     private val isProFlow = MutableStateFlow(false)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
+    private val isPassActiveFlow = MutableStateFlow(false)
 
     private lateinit var viewModel: MovieMatchRoomViewModel
 
@@ -82,7 +81,7 @@ class MovieMatchRoomViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         every { billingRepository.isProActive } returns isProFlow
-        every { rewardManager.passStatus } returns passStatusFlow
+        every { rewardManager.isPassActive(MatchRoomPassKey) } returns isPassActiveFlow
         coEvery { matchRoomRepository.canStartMatchSession(any()) } returns true
         coEvery { matchRoomRepository.fetchMatchDeck(any()) } returns Result.Success(
             listOf(fakeCard1, fakeCard2)
@@ -329,7 +328,7 @@ class MovieMatchRoomViewModelTest {
             viewModel.watchRewardedAdForPass(mockActivity)
             advanceUntilIdle()
 
-            coVerify { rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM) }
+            coVerify { rewardManager.grantTimedPass(MatchRoomPassKey) }
             assertThat(viewModel.uiState.value.showQuotaModal).isFalse()
         }
 

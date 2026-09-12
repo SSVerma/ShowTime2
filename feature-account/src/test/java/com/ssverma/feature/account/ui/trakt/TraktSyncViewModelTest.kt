@@ -8,7 +8,6 @@ import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.trakt.TraktSyncResult
@@ -37,14 +36,14 @@ class TraktSyncViewModelTest {
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
 
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
+    private val isPassActiveFlow = MutableStateFlow(false)
 
     private lateinit var viewModel: TraktSyncViewModel
 
     @Before
     fun setUp() {
         every { mockTraktAuthProvider.authState } returns traktAuthFlow
-        every { mockRewardManager.passStatus } returns passStatusFlow
+        every { mockRewardManager.isPassActive(TraktSyncPassKey) } returns isPassActiveFlow
 
         viewModel = TraktSyncViewModel(
             traktAuthProvider = mockTraktAuthProvider,
@@ -129,7 +128,7 @@ class TraktSyncViewModelTest {
     @Test
     fun `onConnectTraktClicked shows quota gate when user is free without active pass`() = runTest {
         fakeBillingRepository.setProActive(false)
-        passStatusFlow.value = RewardPassStatus(isTraktSyncUnlocked = false)
+        isPassActiveFlow.value = false
         testScheduler.advanceUntilIdle()
 
         viewModel.onConnectTraktClicked()

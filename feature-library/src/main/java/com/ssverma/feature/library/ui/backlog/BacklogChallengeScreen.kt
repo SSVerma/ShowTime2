@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,7 +47,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
@@ -289,11 +293,10 @@ fun BacklogChallengeScreen(
         // Quota Gate Bottom Sheet
         if (uiState.isQuotaGateVisible) {
             val activity = context.findActivity()
-            FeatureQuotaGateBottomSheet(
-                title = stringResource(R.string.challenges_quota_reached_title),
-                description = stringResource(R.string.challenges_quota_reached_desc),
-                rewardActionLabel = stringResource(R.string.challenges_watch_ad_for_extra_goal_slot),
+            ShowTimeFeatureGate(
+                config = CustomGoalQuotaGateConfig,
                 isAdLoading = uiState.isAdLoading,
+                isProPaymentEnabled = true,
                 onWatchAdClick = {
                     if (activity != null) {
                         viewModel.watchAdForGoalSlot(activity)
@@ -308,3 +311,16 @@ fun BacklogChallengeScreen(
         }
     }
 }
+
+private val CustomGoalQuotaGateConfig = FeatureGateConfig(
+    titleRes = R.string.challenges_quota_reached_title,
+    descriptionRes = R.string.challenges_quota_reached_desc,
+    rewardActionLabelRes = R.string.challenges_watch_ad_for_extra_goal_slot,
+    icon = Icons.Rounded.Flag,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.ConsumableSlot(
+        passKey = CustomGoalPassKey,
+        slotsGranted = 1
+    )
+)
+

@@ -53,7 +53,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.asString
@@ -186,11 +190,10 @@ fun TraktSyncScreen(
         // Rewarded Quota Gate Bottom Sheet
         if (uiState.isQuotaGateVisible) {
             val activity = context.findActivity()
-            FeatureQuotaGateBottomSheet(
-                title = stringResource(R.string.trakt_pro_locked_title),
-                description = stringResource(R.string.trakt_pro_locked_desc),
-                rewardActionLabel = stringResource(R.string.watch_ad_for_trakt_pass),
+            ShowTimeFeatureGate(
+                config = TraktSyncGateConfig,
                 isAdLoading = uiState.isAdLoading,
+                isProPaymentEnabled = true,
                 onWatchAdClick = {
                     if (activity != null) {
                         viewModel.watchAdForTraktPass(activity)
@@ -434,3 +437,16 @@ private fun TraktDisconnectedCard(
         }
     }
 }
+
+internal val TraktSyncPassKey = PassKey("trakt_sync")
+
+private val TraktSyncGateConfig = FeatureGateConfig(
+    titleRes = R.string.trakt_pro_locked_title,
+    descriptionRes = R.string.trakt_pro_locked_desc,
+    rewardActionLabelRes = R.string.watch_ad_for_trakt_pass,
+    icon = Icons.Rounded.Sync,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.TimedPass(TraktSyncPassKey)
+)
+
+

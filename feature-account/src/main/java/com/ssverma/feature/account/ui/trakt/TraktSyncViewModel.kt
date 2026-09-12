@@ -9,7 +9,6 @@ import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.repository.TraktSyncRepository
@@ -50,9 +49,9 @@ class TraktSyncViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
-                rewardManager.passStatus
-            ) { isPro, passStatus ->
-                isPro || passStatus.isTraktSyncUnlocked
+                rewardManager.isPassActive(TraktSyncPassKey)
+            ) { isPro, isPassActive ->
+                isPro || isPassActive
             }.collectLatest { isUnlocked ->
                 _uiState.update { it.copy(isTraktSyncUnlocked = isUnlocked) }
             }
@@ -83,7 +82,7 @@ class TraktSyncViewModel @Inject constructor(
         _uiState.update { it.copy(isAdLoading = true) }
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.TRAKT_SYNC)
+                rewardManager.grantTimedPass(TraktSyncPassKey)
                 _uiState.update {
                     it.copy(
                         isQuotaGateVisible = false,

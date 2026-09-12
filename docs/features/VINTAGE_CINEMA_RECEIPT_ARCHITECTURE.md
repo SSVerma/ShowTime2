@@ -88,7 +88,7 @@ flowchart TD
     subgraph Repositories["Domain & Data Repositories"]
         LibRepo["LibraryRepository\n(Watch History, Favorites, Watchlist, Custom Lists)"]
         BillingRepo["BillingRepository\n(isProActive)"]
-        RewardMgr["RewardManager\n(RewardPassStatus, Ad Passes)"]
+        RewardMgr["RewardManager\n(PassKey, Ad Passes)"]
     end
 
     subgraph ExportPipeline["Rendering & Export Pipeline"]
@@ -155,7 +155,7 @@ flowchart LR
       zero ads.
 3. **Rewarded Ad Pass (Share-Action Hook)**:
     - Free users attempting to export/save a luxury VIP pass can watch 1 rewarded video ad to unlock
-      a **24-hour VIP Export Pass** (`RewardPassType.WATERMARK_FREE_RECEIPT`).
+      a **24-hour VIP Export Pass** (`PassKey("watermark_free_receipt")`).
     - Grants 24 hours of unlimited exports for all styles.
 
 ---

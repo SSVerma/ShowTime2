@@ -26,16 +26,25 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -43,7 +52,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
+import com.ssverma.feature.library.ui.wrapped.CinemaWrappedPassKey
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
@@ -266,10 +279,10 @@ fun WrappedStoryExportBottomSheet(
 
     // Gate Bottom Sheet
     if (isGateOpen) {
-        FeatureQuotaGateBottomSheet(
-            title = stringResource(R.string.wrapped_gate_title),
-            description = stringResource(R.string.wrapped_gate_desc),
-            rewardActionLabel = stringResource(R.string.wrapped_watch_ad_pass),
+        ShowTimeFeatureGate(
+            config = CinemaWrappedGateConfig,
+            isAdLoading = false,
+            isProPaymentEnabled = isProPaymentEnabled,
             onWatchAdClick = {
                 val activity = context.findActivity()
                 if (activity != null) {
@@ -280,9 +293,18 @@ fun WrappedStoryExportBottomSheet(
                 onDismissGate()
                 onOpenProPaywall()
             },
-            onDismissRequest = onDismissGate,
-            isProPaymentEnabled = isProPaymentEnabled,
-            icon = Icons.Rounded.AutoAwesome
+            onDismissRequest = onDismissGate
         )
     }
 }
+
+private val CinemaWrappedGateConfig = FeatureGateConfig(
+    titleRes = R.string.wrapped_gate_title,
+    descriptionRes = R.string.wrapped_gate_desc,
+    rewardActionLabelRes = R.string.wrapped_watch_ad_pass,
+    icon = Icons.Rounded.AutoAwesome,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.TimedPass(
+        passKey = CinemaWrappedPassKey
+    )
+)

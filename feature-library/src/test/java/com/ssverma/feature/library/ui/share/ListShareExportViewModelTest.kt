@@ -5,8 +5,6 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.ListShareCardFormat
@@ -43,14 +41,14 @@ class ListShareExportViewModelTest {
     private lateinit var fakeBillingRepository: FakeBillingRepository
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
+    private val isPassActiveFlow = MutableStateFlow(false)
 
     private lateinit var viewModel: ListShareExportViewModel
 
     @Before
     fun setUp() {
         fakeBillingRepository = FakeBillingRepository(initialProActive = false)
-        every { mockRewardManager.passStatus } returns passStatusFlow
+        every { mockRewardManager.isPassActive(SecretShareThemesPassKey) } returns isPassActiveFlow
 
         viewModel = ListShareExportViewModel(
             secretSharedListRepository = mockSecretSharedListRepository,
@@ -110,7 +108,7 @@ class ListShareExportViewModelTest {
 
     @Test
     fun `reward pass unlocks luxury theme and removes watermark`() = runTest {
-        passStatusFlow.value = RewardPassStatus(isListShareThemesUnlocked = true)
+        isPassActiveFlow.value = true
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.isPassActive)
@@ -137,7 +135,7 @@ class ListShareExportViewModelTest {
         viewModel.unlockThemesWithRewardedAd(mockActivity)
         advanceUntilIdle()
 
-        coVerify { mockRewardManager.grantRewardPass(RewardPassType.LIST_SHARE_THEMES) }
+        coVerify { mockRewardManager.grantTimedPass(SecretShareThemesPassKey) }
         val state = viewModel.uiState.value
         assertTrue(state.isPassActive)
         assertTrue(state.isWatermarkFree)

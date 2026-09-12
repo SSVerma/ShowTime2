@@ -13,7 +13,6 @@ import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import io.mockk.coEvery
 import io.mockk.every
@@ -33,15 +32,11 @@ class BackupSyncViewModelTest {
     private val fakeBackupRepository = FakeBackupRepository()
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
 
     private lateinit var viewModel: BackupSyncViewModel
 
     @Before
     fun setUp() {
-        every { mockRewardManager.passStatus } returns passStatusFlow
-        coEvery { mockRewardManager.isAutoBackupAllowed(any()) } returns true
-
         viewModel = BackupSyncViewModel(
             backupRepository = fakeBackupRepository,
             billingRepository = fakeBillingRepository,

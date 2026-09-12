@@ -8,8 +8,6 @@ import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
@@ -41,7 +39,7 @@ class CinemaReceiptViewModelTest {
     private lateinit var fakeBackupRepository: FakeBackupRepository
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
+    private val isPassActiveFlow = MutableStateFlow(false)
     private lateinit var viewModel: CinemaReceiptViewModel
 
     @Before
@@ -49,12 +47,9 @@ class CinemaReceiptViewModelTest {
         fakeLibraryRepository = FakeLibraryRepository()
         fakeBillingRepository = FakeBillingRepository(initialProActive = false)
         fakeBackupRepository = FakeBackupRepository()
-        every { mockRewardManager.passStatus } returns passStatusFlow
-        coEvery { mockRewardManager.grantRewardPass(RewardPassType.WATERMARK_FREE_RECEIPT) } answers {
-            passStatusFlow.value = RewardPassStatus(
-                isReceiptWatermarkFreeUnlocked = true,
-                receiptWatermarkFreeExpiryTimestamp = System.currentTimeMillis() + 86400000
-            )
+        every { mockRewardManager.isPassActive(CinemaReceiptPassKey) } returns isPassActiveFlow
+        coEvery { mockRewardManager.grantTimedPass(CinemaReceiptPassKey) } answers {
+            isPassActiveFlow.value = true
         }
 
         viewModel = CinemaReceiptViewModel(
@@ -160,7 +155,7 @@ class CinemaReceiptViewModelTest {
         viewModel.watchAdForWatermarkFreePass(mockActivity)
         advanceUntilIdle()
 
-        coVerify { mockRewardManager.grantRewardPass(RewardPassType.WATERMARK_FREE_RECEIPT) }
+        coVerify { mockRewardManager.grantTimedPass(CinemaReceiptPassKey) }
         val state = viewModel.uiState.value
         assertThat(state.isPassActive).isTrue()
         assertThat(state.selectedStyle).isEqualTo(ReceiptStyle.CYBERPUNK)

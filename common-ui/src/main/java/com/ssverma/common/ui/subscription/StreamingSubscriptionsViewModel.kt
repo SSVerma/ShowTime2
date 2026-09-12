@@ -7,8 +7,8 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.asSuccessOrErrorUiState
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.repository.AppConfigRepository
@@ -62,9 +62,9 @@ class StreamingSubscriptionsViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
-                rewardManager.passStatus
-            ) { isPro, passStatus ->
-                isPro to passStatus.isMultiServiceUnlocked
+                rewardManager.isPassActive(MultiServiceFilterPassKey)
+            ) { isPro, isPass ->
+                isPro to isPass
             }.collectLatest { (isPro, isPass) ->
                 _uiState.update { it.copy(isProActive = isPro, isPassActive = isPass) }
             }
@@ -135,7 +135,7 @@ class StreamingSubscriptionsViewModel @Inject constructor(
     fun watchAdForMultiServicePass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.MULTI_SERVICE_FILTER)
+                rewardManager.grantTimedPass(MultiServiceFilterPassKey)
                 val pending = pendingProviderToToggle
                 if (pending != null) {
                     _uiState.update {
@@ -163,3 +163,6 @@ class StreamingSubscriptionsViewModel @Inject constructor(
         }
     }
 }
+
+private val MultiServiceFilterPassKey = PassKey("multi_service_filter")
+

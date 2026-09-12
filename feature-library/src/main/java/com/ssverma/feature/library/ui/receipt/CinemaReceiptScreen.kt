@@ -52,7 +52,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
@@ -436,10 +439,10 @@ fun CinemaReceiptScreen(
     }
 
     if (uiState.isGateOpen) {
-        FeatureQuotaGateBottomSheet(
-            title = stringResource(R.string.receipt_gate_title),
-            description = stringResource(R.string.receipt_gate_desc),
-            rewardActionLabel = stringResource(R.string.receipt_watch_ad_pass),
+        ShowTimeFeatureGate(
+            config = CinemaReceiptGateConfig,
+            isAdLoading = false,
+            isProPaymentEnabled = uiState.isProPaymentEnabled,
             onWatchAdClick = {
                 val activity = context.findActivity()
                 if (activity != null) {
@@ -450,9 +453,7 @@ fun CinemaReceiptScreen(
                 viewModel.dismissGate()
                 onOpenProPaywall()
             },
-            onDismissRequest = { viewModel.dismissGate() },
-            isProPaymentEnabled = uiState.isProPaymentEnabled,
-            icon = Icons.Rounded.Star
+            onDismissRequest = { viewModel.dismissGate() }
         )
     }
 
@@ -503,3 +504,14 @@ fun CinemaReceiptScreen(
         )
     }
 }
+
+private val CinemaReceiptGateConfig = FeatureGateConfig(
+    titleRes = R.string.receipt_gate_title,
+    descriptionRes = R.string.receipt_gate_desc,
+    rewardActionLabelRes = R.string.receipt_watch_ad_pass,
+    icon = Icons.Rounded.Star,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.TimedPass(
+        passKey = CinemaReceiptPassKey
+    )
+)

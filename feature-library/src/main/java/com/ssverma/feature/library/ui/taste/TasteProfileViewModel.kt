@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.backup.BackupRepository
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.domain.model.stats.RecommendationShelf
@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+val TasteRadarPassKey = PassKey("taste_analytics_radar")
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -59,9 +61,9 @@ class TasteProfileViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
-                rewardManager.passStatus
-            ) { isPro, passStatus ->
-                isPro to passStatus.isTasteAnalyticsUnlocked
+                rewardManager.isPassActive(TasteRadarPassKey)
+            ) { isPro, isPass ->
+                isPro to isPass
             }.collectLatest { (isPro, isPass) ->
                 val wasUnlocked = _isProActive.value || _isPassActive.value
                 val isNowUnlocked = isPro || isPass
@@ -155,7 +157,7 @@ class TasteProfileViewModel @Inject constructor(
     fun watchAdForTasteRadarPass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.TASTE_ANALYTICS_RADAR)
+                rewardManager.grantTimedPass(TasteRadarPassKey)
                 _isGateOpen.value = false
             }
         }

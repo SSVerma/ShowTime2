@@ -7,8 +7,8 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.match.R
+import com.ssverma.feature.match.ui.component.MatchRoomPassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.match.MatchMode
@@ -45,9 +45,9 @@ class MovieMatchRoomViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
-                rewardManager.passStatus
-            ) { isPro, passStatus ->
-                isPro || passStatus.isMatchRoomUnlocked
+                rewardManager.isPassActive(MatchRoomPassKey)
+            ) { isPro, isPassActive ->
+                isPro || isPassActive
             }.collect { isUnlocked ->
                 _uiState.update { it.copy(isProOrPassActive = isUnlocked) }
             }
@@ -439,7 +439,7 @@ class MovieMatchRoomViewModel @Inject constructor(
     fun watchRewardedAdForPass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM)
+                rewardManager.grantTimedPass(MatchRoomPassKey)
                 _uiState.update { it.copy(showQuotaModal = false) }
             }
         }
@@ -447,7 +447,7 @@ class MovieMatchRoomViewModel @Inject constructor(
 
     fun grantRewardedPass() {
         viewModelScope.launch {
-            rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM)
+            rewardManager.grantTimedPass(MatchRoomPassKey)
             _uiState.update { it.copy(showQuotaModal = false) }
         }
     }

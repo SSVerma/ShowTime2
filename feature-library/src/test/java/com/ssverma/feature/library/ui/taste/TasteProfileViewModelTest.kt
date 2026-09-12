@@ -6,8 +6,6 @@ import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
@@ -46,7 +44,7 @@ class TasteProfileViewModelTest {
     private lateinit var fakeBackupRepository: FakeBackupRepository
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
+    private val isPassActiveFlow = MutableStateFlow(false)
     private lateinit var viewModel: TasteProfileViewModel
 
     @Before
@@ -56,7 +54,7 @@ class TasteProfileViewModelTest {
         fakeDiscoveryRepository = FakeDiscoveryRepository()
         fakeBillingRepository = FakeBillingRepository(initialProActive = false)
         fakeBackupRepository = FakeBackupRepository()
-        every { mockRewardManager.passStatus } returns passStatusFlow
+        every { mockRewardManager.isPassActive(TasteRadarPassKey) } returns isPassActiveFlow
 
         val getTasteProfileUseCase = GetTasteProfileUseCase(
             diaryRepository = fakeDiaryRepository,
@@ -155,7 +153,7 @@ class TasteProfileViewModelTest {
 
     @Test
     fun `taste radar reward pass updates isPassActive state`() = runTest {
-        passStatusFlow.value = RewardPassStatus(isTasteAnalyticsUnlocked = true)
+        isPassActiveFlow.value = true
         advanceUntilIdle()
 
         val state = viewModel.uiState.first()
@@ -193,7 +191,7 @@ class TasteProfileViewModelTest {
         viewModel.watchAdForTasteRadarPass(activity)
         advanceUntilIdle()
 
-        coVerify { mockRewardManager.grantRewardPass(RewardPassType.TASTE_ANALYTICS_RADAR) }
+        coVerify { mockRewardManager.grantTimedPass(TasteRadarPassKey) }
         assertFalse(viewModel.uiState.first().isGateOpen)
     }
 
@@ -243,7 +241,7 @@ class TasteProfileViewModelTest {
         assertEquals(0, viewModel.uiState.first().recommendationShelves.size)
 
         // When pass becomes active, recommendations are loaded
-        passStatusFlow.value = RewardPassStatus(isTasteAnalyticsUnlocked = true)
+        isPassActiveFlow.value = true
         advanceUntilIdle()
 
         val state = viewModel.uiState.first()

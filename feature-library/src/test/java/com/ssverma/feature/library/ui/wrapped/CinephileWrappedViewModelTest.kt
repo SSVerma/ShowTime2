@@ -6,8 +6,6 @@ import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.feature.library.ui.wrapped.component.WrappedStoryStyle
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassStatus
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.usecase.stats.GetCinephileWrappedUseCase
@@ -47,7 +45,7 @@ class CinephileWrappedViewModelTest {
     private lateinit var fakeBackupRepository: FakeBackupRepository
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
-    private val passStatusFlow = MutableStateFlow(RewardPassStatus())
+    private val isPassActiveFlow = MutableStateFlow(false)
     private lateinit var viewModel: CinephileWrappedViewModel
 
     @Before
@@ -57,7 +55,7 @@ class CinephileWrappedViewModelTest {
         fakeMilestoneRepository = FakeCinephileMilestoneRepository()
         fakeBillingRepository = FakeBillingRepository(initialProActive = false)
         fakeBackupRepository = FakeBackupRepository()
-        every { mockRewardManager.passStatus } returns passStatusFlow
+        every { mockRewardManager.isPassActive(CinemaWrappedPassKey) } returns isPassActiveFlow
 
         val getCinephileWrappedUseCase = GetCinephileWrappedUseCase(
             diaryRepository = fakeDiaryRepository,
@@ -168,7 +166,7 @@ class CinephileWrappedViewModelTest {
 
     @Test
     fun `wrapped story pass updates isPassActive and watermark-free`() = runTest {
-        passStatusFlow.value = RewardPassStatus(isWrappedStoryUnlocked = true)
+        isPassActiveFlow.value = true
         advanceUntilIdle()
 
         val state = viewModel.uiState.first()
@@ -254,7 +252,7 @@ class CinephileWrappedViewModelTest {
         viewModel.watchAdForWrappedPass(activity)
         advanceUntilIdle()
 
-        coVerify { mockRewardManager.grantRewardPass(RewardPassType.CINEMA_WRAPPED_STORY) }
+        coVerify { mockRewardManager.grantTimedPass(CinemaWrappedPassKey) }
         val state = viewModel.uiState.first()
         assertFalse(state.isGateOpen)
         assertEquals(WrappedStoryStyle.NEON_CYBERPUNK, state.selectedStyle)

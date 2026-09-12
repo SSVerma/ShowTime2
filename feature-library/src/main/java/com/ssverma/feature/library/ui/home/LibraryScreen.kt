@@ -140,7 +140,10 @@ import com.ssverma.common.ui.community.CommunityListDetailSheet
 import com.ssverma.common.ui.community.PublishListBottomSheet
 import com.ssverma.common.ui.community.ReportCommunityListDialog
 import com.ssverma.common.ui.community.SensitiveContentConfirmationDialog
-import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.shared.domain.model.community.ContentModerationResult
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
@@ -890,11 +893,10 @@ fun LibraryScreen(
 
     if (isQuotaGateVisible) {
         val activity = context.findActivity()
-        FeatureQuotaGateBottomSheet(
-            title = stringResource(R.string.custom_list_quota_reached_title),
-            description = stringResource(R.string.custom_list_quota_reached_desc),
-            rewardActionLabel = stringResource(R.string.watch_ad_for_extra_list_slot),
+        ShowTimeFeatureGate(
+            config = CustomListQuotaGateConfig,
             isAdLoading = isAdLoading,
+            isProPaymentEnabled = true,
             onWatchAdClick = {
                 if (activity != null) {
                     viewModel.watchAdForListSlot(activity)
@@ -4043,4 +4045,17 @@ private fun CustomListItem.toSecretSharedListItem(): SecretSharedListItem = Secr
     addedByName = "Curator",
     addedAtEpochMs = addedAt
 )
+
+private val CustomListQuotaGateConfig = FeatureGateConfig(
+    titleRes = R.string.custom_list_quota_reached_title,
+    descriptionRes = R.string.custom_list_quota_reached_desc,
+    rewardActionLabelRes = R.string.watch_ad_for_extra_list_slot,
+    icon = Icons.Rounded.FolderSpecial,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.ConsumableSlot(
+        passKey = CustomListPassKey,
+        slotsGranted = 1
+    )
+)
+
 

@@ -6,10 +6,12 @@ import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -24,6 +26,9 @@ class RewardManagerTest {
     private val preferencesFlow = MutableStateFlow(emptyPreferences())
 
     private lateinit var rewardManager: RewardManagerImpl
+
+    private val testPassKey = PassKey("test_pass")
+    private val testSlotKey = PassKey("test_slots")
 
     @Before
     fun setUp() {
@@ -46,255 +51,234 @@ class RewardManagerTest {
     }
 
     @Test
-    fun `canCreateCustomList returns true for pro user regardless of limit`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_LIST_LIMIT, 3L)
-
-        val allowed = rewardManager.canCreateCustomList(currentCount = 10, isProActive = true)
-        assertThat(allowed).isTrue()
+    fun `isPassActive returns false when pass has not been granted`() = runTest {
+        val isActive = rewardManager.isPassActive(testPassKey).first()
+        assertThat(isActive).isFalse()
+        assertThat(rewardManager.isPassActiveNow(testPassKey)).isFalse()
     }
 
     @Test
-    fun `canCreateCustomList respects free limit for free user`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_LIST_LIMIT, 3L)
-
-        val allowedUnderLimit =
-            rewardManager.canCreateCustomList(currentCount = 2, isProActive = false)
-        assertThat(allowedUnderLimit).isTrue()
-
-        val allowedAtLimit =
-            rewardManager.canCreateCustomList(currentCount = 3, isProActive = false)
-        assertThat(allowedAtLimit).isFalse()
-    }
-
-    @Test
-    fun `canPublishCommunityList returns true for pro user`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_PUBLISH_LIMIT, 2L)
-
-        val allowed =
-            rewardManager.canPublishCommunityList(currentActiveCount = 5, isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isAutoBackupAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isAutoBackupAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isTraktSyncAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isTraktSyncAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isTraktSyncAllowed returns false for free user when no pass active and pro required`() =
-        runTest {
-            fakeAppConfigProvider.setBoolean(
-                RewardManagerImpl.KEY_CONFIG_TRAKT_SYNC_PRO_REQUIRED,
-                true
-            )
-            val allowed = rewardManager.isTraktSyncAllowed(isProActive = false)
-            assertThat(allowed).isFalse()
-        }
-
-    @Test
-    fun `isMultiServiceFilterAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isMultiServiceFilterAllowed returns false for free user with no active pass`() = runTest {
-        val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = false)
-        assertThat(allowed).isFalse()
-    }
-
-    @Test
-    fun `isTasteAnalyticsAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isTasteAnalyticsAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isTasteAnalyticsAllowed returns false for free user with no active pass`() = runTest {
-        val allowed = rewardManager.isTasteAnalyticsAllowed(isProActive = false)
-        assertThat(allowed).isFalse()
-    }
-
-    @Test
-    fun `isReceiptWatermarkFreeAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isReceiptWatermarkFreeAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isReceiptWatermarkFreeAllowed returns false for free user with no active pass`() =
-        runTest {
-            val allowed = rewardManager.isReceiptWatermarkFreeAllowed(isProActive = false)
-            assertThat(allowed).isFalse()
-        }
-
-    @Test
-    fun `isWrappedStoryAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isWrappedStoryAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isWrappedStoryAllowed returns false for free user with no active pass`() = runTest {
-        val allowed = rewardManager.isWrappedStoryAllowed(isProActive = false)
-        assertThat(allowed).isFalse()
-    }
-
-    @Test
-    fun `grantRewardPass for CINEMA_WRAPPED_STORY unlocks wrapped story pass`() = runTest {
-        rewardManager.grantRewardPass(RewardPassType.CINEMA_WRAPPED_STORY)
-        val status = rewardManager.passStatus.value
-        assertThat(status.isWrappedStoryUnlocked).isTrue()
-        assertThat(status.wrappedStoryExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
-
-        val allowed = rewardManager.isWrappedStoryAllowed(isProActive = false)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `canScheduleReminder returns true for pro user regardless of count`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L)
-        val allowed = rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `canScheduleReminder respects free limit for free user`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L)
-        val underLimit =
-            rewardManager.canScheduleReminder(currentActiveCount = 2, isProActive = false)
-        assertThat(underLimit).isTrue()
-
-        val atLimit = rewardManager.canScheduleReminder(currentActiveCount = 3, isProActive = false)
-        assertThat(atLimit).isFalse()
-    }
-
-    @Test
-    fun `grantRewardPass for AIRING_REMINDERS grants single reminder slot and consumption works`() =
-        runTest {
-            rewardManager.grantRewardPass(RewardPassType.AIRING_REMINDERS)
-            val status = rewardManager.passStatus.value
-            assertThat(status.extraReminderSlots).isEqualTo(1)
-
-            val allowed =
-                rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = false)
-            assertThat(allowed).isTrue()
-
-            val consumed = rewardManager.consumeReminderPass()
-            assertThat(consumed).isTrue()
-            assertThat(rewardManager.passStatus.value.extraReminderSlots).isEqualTo(0)
-
-            val allowedAfterConsumption =
-                rewardManager.canScheduleReminder(currentActiveCount = 10, isProActive = false)
-            assertThat(allowedAfterConsumption).isFalse()
-        }
-
-    @Test
-    fun `isMatchRoomAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isMatchRoomAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isMatchRoomAllowed returns false for free user without pass`() = runTest {
-        val allowed = rewardManager.isMatchRoomAllowed(isProActive = false)
-        assertThat(allowed).isFalse()
-    }
-
-    @Test
-    fun `grantRewardPass for MATCH_ROOM unlocks match room pass`() = runTest {
-        rewardManager.grantRewardPass(RewardPassType.MATCH_ROOM)
-        val status = rewardManager.passStatus.value
-        assertThat(status.isMatchRoomUnlocked).isTrue()
-        assertThat(status.matchRoomExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
-
-        val allowed = rewardManager.isMatchRoomAllowed(isProActive = false)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isListShareThemesAllowed returns true for pro user`() = runTest {
-        val allowed = rewardManager.isListShareThemesAllowed(isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `isListShareThemesAllowed returns false for free user without pass`() = runTest {
-        val allowed = rewardManager.isListShareThemesAllowed(isProActive = false)
-        assertThat(allowed).isFalse()
-    }
-
-    @Test
-    fun `grantRewardPass for LIST_SHARE_THEMES unlocks list share themes pass`() = runTest {
-        rewardManager.grantRewardPass(RewardPassType.LIST_SHARE_THEMES)
-        val status = rewardManager.passStatus.value
-        assertThat(status.isListShareThemesUnlocked).isTrue()
-        assertThat(status.listShareThemesExpiryTimestamp).isGreaterThan(System.currentTimeMillis())
-
-        val allowed = rewardManager.isListShareThemesAllowed(isProActive = false)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `grantRewardPass for MULTI_SERVICE_FILTER respects minutes configuration`() = runTest {
-        fakeAppConfigProvider.setLong(
-            RewardManagerImpl.KEY_CONFIG_REWARDED_MULTI_SERVICE_MINUTES,
-            120L
-        )
+    fun `grantTimedPass activates pass and sets expiry timestamp`() = runTest {
+        val durationMs = TimeUnit.HOURS.toMillis(24)
         val before = System.currentTimeMillis()
-        rewardManager.grantRewardPass(RewardPassType.MULTI_SERVICE_FILTER)
-        val status = rewardManager.passStatus.value
-        assertThat(status.isMultiServiceUnlocked).isTrue()
-        val deltaMinutes =
-            TimeUnit.MILLISECONDS.toMinutes(status.multiServiceExpiryTimestamp - before)
-        assertThat(deltaMinutes).isEqualTo(120L)
 
-        val allowed = rewardManager.isMultiServiceFilterAllowed(isProActive = false)
+        rewardManager.grantTimedPass(testPassKey, durationMs)
+
+        assertThat(rewardManager.isPassActive(testPassKey).first()).isTrue()
+        assertThat(rewardManager.isPassActiveNow(testPassKey)).isTrue()
+
+        val expiry = rewardManager.getPassExpiryTimestamp(testPassKey).first()
+        assertThat(expiry).isAtLeast(before + durationMs)
+    }
+
+    @Test
+    fun `grantTimedPass extends expiry if pass already active`() = runTest {
+        val firstDuration = TimeUnit.HOURS.toMillis(12)
+        val extension = TimeUnit.HOURS.toMillis(24)
+
+        rewardManager.grantTimedPass(testPassKey, firstDuration)
+        val initialExpiry = rewardManager.getPassExpiryTimestamp(testPassKey).first()
+
+        rewardManager.grantTimedPass(testPassKey, extension)
+        val extendedExpiry = rewardManager.getPassExpiryTimestamp(testPassKey).first()
+
+        assertThat(extendedExpiry).isEqualTo(initialExpiry + extension)
+    }
+
+    @Test
+    fun `getExtraSlots returns 0 initially`() = runTest {
+        assertThat(rewardManager.getExtraSlotsCount(testSlotKey)).isEqualTo(0)
+        assertThat(rewardManager.getExtraSlots(testSlotKey).first()).isEqualTo(0)
+    }
+
+    @Test
+    fun `grantExtraSlots increments available slot count`() = runTest {
+        rewardManager.grantExtraSlots(testSlotKey, 2)
+        assertThat(rewardManager.getExtraSlotsCount(testSlotKey)).isEqualTo(2)
+
+        rewardManager.grantExtraSlots(testSlotKey, 1)
+        assertThat(rewardManager.getExtraSlotsCount(testSlotKey)).isEqualTo(3)
+        assertThat(rewardManager.getExtraSlots(testSlotKey).first()).isEqualTo(3)
+    }
+
+    @Test
+    fun `consumeSlot decrements slots and returns true when available`() = runTest {
+        rewardManager.grantExtraSlots(testSlotKey, 1)
+
+        val consumed = rewardManager.consumeSlot(testSlotKey)
+        assertThat(consumed).isTrue()
+        assertThat(rewardManager.getExtraSlotsCount(testSlotKey)).isEqualTo(0)
+
+        val consumedAgain = rewardManager.consumeSlot(testSlotKey)
+        assertThat(consumedAgain).isFalse()
+    }
+
+    @Test
+    fun `grantPass with TimedPass policy activates timed pass`() = runTest {
+        val policy = FeaturePassPolicy.TimedPass(
+            passKey = testPassKey,
+            durationMs = TimeUnit.HOURS.toMillis(48)
+        )
+        rewardManager.grantPass(policy)
+
+        assertThat(rewardManager.isPassActiveNow(testPassKey)).isTrue()
+    }
+
+    @Test
+    fun `grantPass with ConsumableSlot policy grants slots`() = runTest {
+        val policy = FeaturePassPolicy.ConsumableSlot(
+            passKey = testSlotKey,
+            slotsGranted = 3
+        )
+        rewardManager.grantPass(policy)
+
+        assertThat(rewardManager.getExtraSlotsCount(testSlotKey)).isEqualTo(3)
+    }
+
+    @Test
+    fun `grantPass with ActionUnlock policy activates 24h pass`() = runTest {
+        val policy = FeaturePassPolicy.ActionUnlock(passKey = testPassKey)
+        rewardManager.grantPass(policy)
+
+        assertThat(rewardManager.isPassActiveNow(testPassKey)).isTrue()
+    }
+
+    @Test
+    fun `canPerformQuotaAction returns true for Pro user regardless of count`() = runTest {
+        val allowed = rewardManager.canPerformQuotaAction(
+            key = testSlotKey,
+            currentCount = 100,
+            freeLimit = 3,
+            isProActive = true
+        )
         assertThat(allowed).isTrue()
     }
 
     @Test
-    fun `canCreateCustomGoal returns true for pro user regardless of limit`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L)
+    fun `canPerformQuotaAction respects free limit plus bonus slots for free user`() = runTest {
+        val allowedUnder = rewardManager.canPerformQuotaAction(
+            key = testSlotKey,
+            currentCount = 2,
+            freeLimit = 3,
+            isProActive = false
+        )
+        assertThat(allowedUnder).isTrue()
 
-        val allowed = rewardManager.canCreateCustomGoal(currentActiveCount = 10, isProActive = true)
-        assertThat(allowed).isTrue()
-    }
-
-    @Test
-    fun `canCreateCustomGoal respects free limit for free user`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L)
-
-        val allowedUnderLimit =
-            rewardManager.canCreateCustomGoal(currentActiveCount = 1, isProActive = false)
-        assertThat(allowedUnderLimit).isTrue()
-
-        val allowedAtLimit =
-            rewardManager.canCreateCustomGoal(currentActiveCount = 2, isProActive = false)
+        val allowedAtLimit = rewardManager.canPerformQuotaAction(
+            key = testSlotKey,
+            currentCount = 3,
+            freeLimit = 3,
+            isProActive = false
+        )
         assertThat(allowedAtLimit).isFalse()
-    }
 
-    @Test
-    fun `grantRewardPass for EXTRA_CUSTOM_GOAL increments custom goal slots`() = runTest {
-        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_CUSTOM_GOAL_LIMIT, 2L)
+        // Grant 2 bonus slots
+        rewardManager.grantExtraSlots(testSlotKey, 2)
 
-        rewardManager.grantRewardPass(RewardPassType.EXTRA_CUSTOM_GOAL)
-        val status = rewardManager.passStatus.value
-        assertThat(status.extraCustomGoalSlots).isEqualTo(1)
-
-        val allowedWithBonus =
-            rewardManager.canCreateCustomGoal(currentActiveCount = 2, isProActive = false)
+        val allowedWithBonus = rewardManager.canPerformQuotaAction(
+            key = testSlotKey,
+            currentCount = 4,
+            freeLimit = 3,
+            isProActive = false
+        )
         assertThat(allowedWithBonus).isTrue()
 
-        val blockedAboveBonus =
-            rewardManager.canCreateCustomGoal(currentActiveCount = 3, isProActive = false)
-        assertThat(blockedAboveBonus).isFalse()
+        val allowedAtNewLimit = rewardManager.canPerformQuotaAction(
+            key = testSlotKey,
+            currentCount = 5,
+            freeLimit = 3,
+            isProActive = false
+        )
+        assertThat(allowedAtNewLimit).isFalse()
+    }
+
+    @Test
+    fun `isFeatureAllowed returns true for Pro user`() = runTest {
+        val allowed = rewardManager.isFeatureAllowed(
+            key = testPassKey,
+            isProActive = true,
+            isProRequired = true
+        )
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isFeatureAllowed returns true when Pro is not required`() = runTest {
+        val allowed = rewardManager.isFeatureAllowed(
+            key = testPassKey,
+            isProActive = false,
+            isProRequired = false
+        )
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `isFeatureAllowed returns false for free user without pass`() = runTest {
+        val allowed = rewardManager.isFeatureAllowed(
+            key = testPassKey,
+            isProActive = false,
+            isProRequired = true
+        )
+        assertThat(allowed).isFalse()
+    }
+
+    @Test
+    fun `isFeatureAllowed returns true for free user with active pass`() = runTest {
+        rewardManager.grantTimedPass(testPassKey)
+
+        val allowed = rewardManager.isFeatureAllowed(
+            key = testPassKey,
+            isProActive = false,
+            isProRequired = true
+        )
+        assertThat(allowed).isTrue()
+    }
+
+    @Test
+    fun `ReminderQuotaManager delegation operates correctly`() = runTest {
+        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L)
+
+        // Free tier checks
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 2,
+                isProActive = false
+            )
+        ).isTrue()
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 3,
+                isProActive = false
+            )
+        ).isFalse()
+
+        // Pro check
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 10,
+                isProActive = true
+            )
+        ).isTrue()
+
+        // Grant & consume pass
+        rewardManager.grantReminderPass()
+        assertThat(rewardManager.getExtraSlotsCount(RewardManagerImpl.AiringReminderPassKey)).isEqualTo(
+            1
+        )
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 3,
+                isProActive = false
+            )
+        ).isTrue()
+
+        val consumed = rewardManager.consumeReminderPass()
+        assertThat(consumed).isTrue()
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 3,
+                isProActive = false
+            )
+        ).isFalse()
     }
 }

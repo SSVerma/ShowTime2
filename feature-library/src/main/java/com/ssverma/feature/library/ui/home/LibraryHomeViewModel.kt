@@ -8,8 +8,8 @@ import com.ssverma.core.backup.BackupRepository
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBannerState
 import com.ssverma.feature.library.ui.home.component.MediaTypeFilter
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CloneCommunityListParams
@@ -52,6 +52,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+val CustomListPassKey = PassKey("extra_custom_list")
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -261,7 +263,12 @@ class LibraryHomeViewModel @Inject constructor(
         viewModelScope.launch {
             val currentCount = customLists.value.size
             val isPro = billingRepository.isProActive.first()
-            val canCreate = rewardManager.canCreateCustomList(currentCount, isPro)
+            val canCreate = rewardManager.canPerformQuotaAction(
+                key = CustomListPassKey,
+                currentCount = currentCount,
+                freeLimit = 3,
+                isProActive = isPro
+            )
             if (canCreate) {
                 _isCreateListDialogVisible.value = true
             } else {
@@ -284,7 +291,7 @@ class LibraryHomeViewModel @Inject constructor(
         _isAdLoading.value = true
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.EXTRA_CUSTOM_LIST)
+                rewardManager.grantExtraSlots(CustomListPassKey, 1)
                 _isQuotaGateVisible.value = false
                 _isAdLoading.value = false
                 _isCreateListDialogVisible.value = true

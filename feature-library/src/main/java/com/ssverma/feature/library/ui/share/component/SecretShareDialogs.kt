@@ -1,21 +1,13 @@
 package com.ssverma.feature.library.ui.share.component
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.PlayCircle
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,7 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Star
 import com.ssverma.feature.library.R
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
+import com.ssverma.feature.library.ui.share.SecretShareThemesPassKey
 
 @Composable
 internal fun SecretShareEditNameDialog(
@@ -127,54 +126,24 @@ internal fun SecretShareLuxuryGateDialog(
     onOpenProPaywall: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AlertDialog(
+    ShowTimeFeatureGate(
+        config = SecretShareThemesGateConfig,
+        isAdLoading = false,
+        isProPaymentEnabled = isProPaymentEnabled,
+        onWatchAdClick = onWatchAd,
+        onUpgradeProClick = onOpenProPaywall,
         onDismissRequest = onDismissRequest,
-        modifier = modifier,
-        icon = {
-            Icon(
-                imageVector = Icons.Rounded.Star,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
-            )
-        },
-        title = { Text(text = stringResource(R.string.secret_share_gate_title)) },
-        text = { Text(text = stringResource(R.string.secret_share_gate_desc)) },
-        confirmButton = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = onWatchAd,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.PlayCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = stringResource(R.string.secret_share_watch_ad_pass))
-                }
-
-                if (isProPaymentEnabled) {
-                    OutlinedButton(
-                        onClick = {
-                            onDismissRequest()
-                            onOpenProPaywall()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = stringResource(R.string.get_showtime_pro))
-                    }
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(R.string.cancel))
-            }
-        }
+        modifier = modifier
     )
 }
+
+private val SecretShareThemesGateConfig = FeatureGateConfig(
+    titleRes = R.string.secret_share_gate_title,
+    descriptionRes = R.string.secret_share_gate_desc,
+    rewardActionLabelRes = R.string.secret_share_watch_ad_pass,
+    icon = Icons.Rounded.Star,
+    presentationStyle = GatePresentationStyle.Dialog,
+    passPolicy = FeaturePassPolicy.TimedPass(
+        passKey = SecretShareThemesPassKey
+    )
+)

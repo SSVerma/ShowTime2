@@ -7,8 +7,8 @@ import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.backup.BackupRepository
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.feature.library.ui.wrapped.component.WrappedStoryStyle
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.model.stats.CinephileMilestone
 import com.ssverma.shared.domain.model.stats.WrappedYearSummary
 import com.ssverma.shared.domain.usecase.stats.GetCinephileWrappedUseCase
@@ -24,6 +24,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+val CinemaWrappedPassKey = PassKey("cinema_wrapped")
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -58,9 +60,9 @@ class CinephileWrappedViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 billingRepository.isProActive,
-                rewardManager.passStatus
-            ) { isPro, passStatus ->
-                isPro to passStatus.isWrappedStoryUnlocked
+                rewardManager.isPassActive(CinemaWrappedPassKey)
+            ) { isPro, isPass ->
+                isPro to isPass
             }.collectLatest { (isPro, isPass) ->
                 _isProActive.value = isPro
                 _isPassActive.value = isPass
@@ -188,7 +190,7 @@ class CinephileWrappedViewModel @Inject constructor(
     fun watchAdForWrappedPass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.CINEMA_WRAPPED_STORY)
+                rewardManager.grantTimedPass(CinemaWrappedPassKey)
                 _isPassActive.value = true
                 _isWatermarkFree.value = true
                 val pending = _pendingStyle.value

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
+import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.ads.quota.RewardManager
-import com.ssverma.shared.ads.quota.RewardPassType
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.library.ListShareCardFormat
 import com.ssverma.shared.domain.model.library.ListShareTheme
@@ -40,6 +40,8 @@ data class ListShareExportUiState(
     val errorMessage: String? = null
 )
 
+val SecretShareThemesPassKey = PassKey("list_share_themes")
+
 @HiltViewModel
 class ListShareExportViewModel @Inject constructor(
     private val secretSharedListRepository: SecretSharedListRepository,
@@ -72,8 +74,7 @@ class ListShareExportViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            rewardManager.passStatus.collectLatest { status ->
-                val passUnlocked = status.isListShareThemesUnlocked
+            rewardManager.isPassActive(SecretShareThemesPassKey).collectLatest { passUnlocked ->
                 _uiState.update { current ->
                     val unlocked = current.isProActive || passUnlocked
                     current.copy(
@@ -215,7 +216,7 @@ class ListShareExportViewModel @Inject constructor(
     fun unlockThemesWithRewardedAd(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantRewardPass(RewardPassType.LIST_SHARE_THEMES)
+                rewardManager.grantTimedPass(SecretShareThemesPassKey)
                 val pending = _uiState.value.pendingTheme ?: ListShareTheme.VINTAGE_35MM
                 _uiState.update {
                     it.copy(
