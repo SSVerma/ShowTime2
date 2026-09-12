@@ -133,10 +133,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.ssverma.common.ui.community.BlockAuthorConfirmationDialog
+import com.ssverma.common.ui.community.CommunityGuidelinesAgreementDialog
 import com.ssverma.common.ui.community.CommunityListCard
 import com.ssverma.common.ui.community.CommunityListDetailSheet
 import com.ssverma.common.ui.community.PublishListBottomSheet
+import com.ssverma.common.ui.community.ReportCommunityListDialog
+import com.ssverma.common.ui.community.SensitiveContentConfirmationDialog
 import com.ssverma.common.ui.quota.FeatureQuotaGateBottomSheet
+import com.ssverma.shared.domain.model.community.ContentModerationResult
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.UiText
@@ -213,6 +218,7 @@ fun LibraryScreen(
     val communityLists by viewModel.communityLists.collectAsState()
     val selectedCommunityCategory by viewModel.selectedCommunityCategory.collectAsState()
     val selectedCommunityList by viewModel.selectedCommunityList.collectAsState()
+    val hasAcceptedGuidelines by viewModel.hasAcceptedCommunityGuidelines.collectAsState()
 
     val watchlistFilter by viewModel.watchlistFilter.collectAsState()
     val favoritesFilter by viewModel.favoritesFilter.collectAsState()
@@ -237,6 +243,14 @@ fun LibraryScreen(
     var listPendingUnpublish by remember { mutableStateOf<CustomList?>(null) }
     var listPendingClone by remember { mutableStateOf<CommunityCuratedList?>(null) }
     var communityListPendingDeletion by remember { mutableStateOf<CommunityCuratedList?>(null) }
+    var listPendingReport by remember { mutableStateOf<CommunityCuratedList?>(null) }
+    var authorPendingBlock by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var guidelinesPendingPublish by remember { mutableStateOf<Pair<CustomList, String>?>(null) }
+    var sensitiveWarningPendingPublish by remember {
+        mutableStateOf<Triple<CustomList, String, String>?>(
+            null
+        )
+    }
 
     var showReceiptSheet by remember { mutableStateOf(false) }
     var receiptStyle by remember { mutableStateOf(ReceiptStyle.THERMAL) }
@@ -815,6 +829,12 @@ fun LibraryScreen(
                         },
                         onDeleteFromCommunity = { list ->
                             communityListPendingDeletion = list
+                        },
+                        onReportCommunityList = { list ->
+                            listPendingReport = list
+                        },
+                        onBlockAuthor = { authorId, authorName ->
+                            authorPendingBlock = authorId to authorName
                         }
                     )
                 }
@@ -1050,7 +1070,109 @@ fun LibraryScreen(
             sheetState = publishSheetState,
             onDismiss = { listPendingPublish = null },
             onPublish = { categoryTag ->
-                listPendingPublish = null
+                val moderationResult = viewModel.validateContent(
+                    title = listToPublish.title,
+                    description = listToPublish.description
+                )
+                when (moderationResult) {
+                    is ContentModerationResult.Prohibited -> {
+                        listPendingPublish = null
+                        coroutineScope.launch {
+                            snackbarHostState.showImmediateSnackbar(
+                                message = context.getString(SharedR.string.content_moderation_severe_error)
+                            )
+                        }
+                    }
+
+                    is ContentModerationResult.SensitiveWarning -> {
+                        listPendingPublish = null
+                        if (!hasAcceptedGuidelines) {
+                            guidelinesPendingPublish = Pair(listToPublish, categoryTag)
+                        } else {
+                            sensitiveWarningPendingPublish =
+                                Triple(listToPublish, categoryTag, moderationResult.flaggedTerm)
+                        }
+                    }
+
+                    is ContentModerationResult.Approved -> {
+                        listPendingPublish = null
+                        if (!hasAcceptedGuidelines) {
+                            guidelinesPendingPublish = Pair(listToPublish, categoryTag)
+                        } else {
+                            viewModel.selectCustomList(null)
+                            viewModel.publishCustomList(
+                                localList = listToPublish,
+                                categoryTag = categoryTag,
+                                onPublished = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(4)
+                                        snackbarHostState.showImmediateSnackbar(
+                                            message = context.getString(SharedR.string.list_published_success)
+                                        )
+                                    }
+                                },
+                                onError = { errorMsg ->
+                                    coroutineScope.launch {
+                                        snackbarHostState.showImmediateSnackbar(
+                                            message = "Publish failed: $errorMsg"
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    guidelinesPendingPublish?.let { (listToPublish, categoryTag) ->
+        CommunityGuidelinesAgreementDialog(
+            onAgree = {
+                viewModel.acceptCommunityGuidelines()
+                guidelinesPendingPublish = null
+                val check = viewModel.validateContent(
+                    title = listToPublish.title,
+                    description = listToPublish.description
+                )
+                if (check is ContentModerationResult.SensitiveWarning) {
+                    sensitiveWarningPendingPublish =
+                        Triple(listToPublish, categoryTag, check.flaggedTerm)
+                } else if (check is ContentModerationResult.Approved) {
+                    viewModel.selectCustomList(null)
+                    viewModel.publishCustomList(
+                        localList = listToPublish,
+                        categoryTag = categoryTag,
+                        onPublished = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(4)
+                                snackbarHostState.showImmediateSnackbar(
+                                    message = context.getString(SharedR.string.list_published_success)
+                                )
+                            }
+                        },
+                        onError = { errorMsg ->
+                            coroutineScope.launch {
+                                snackbarHostState.showImmediateSnackbar(
+                                    message = "Publish failed: $errorMsg"
+                                )
+                            }
+                        }
+                    )
+                }
+            },
+            onDismiss = {
+                guidelinesPendingPublish = null
+            }
+        )
+    }
+
+
+    sensitiveWarningPendingPublish?.let { (listToPublish, categoryTag, matchedKeyword) ->
+        SensitiveContentConfirmationDialog(
+            matchedKeyword = matchedKeyword,
+            onConfirmPublish = {
+                sensitiveWarningPendingPublish = null
                 viewModel.selectCustomList(null)
                 viewModel.publishCustomList(
                     localList = listToPublish,
@@ -1071,7 +1193,51 @@ fun LibraryScreen(
                         }
                     }
                 )
+            },
+            onDismiss = {
+                sensitiveWarningPendingPublish = null
             }
+        )
+    }
+
+    listPendingReport?.let { listToReport ->
+        ReportCommunityListDialog(
+            onConfirmReport = { reason ->
+                listPendingReport = null
+                viewModel.reportCommunityList(
+                    listId = listToReport.listId,
+                    authorId = listToReport.authorId,
+                    reason = reason,
+                    onReported = {
+                        coroutineScope.launch {
+                            snackbarHostState.showImmediateSnackbar(
+                                message = context.getString(SharedR.string.report_collection_success)
+                            )
+                        }
+                    }
+                )
+            },
+            onDismiss = { listPendingReport = null }
+        )
+    }
+
+    authorPendingBlock?.let { (authorId, authorName) ->
+        BlockAuthorConfirmationDialog(
+            authorName = authorName,
+            onConfirmBlock = {
+                authorPendingBlock = null
+                viewModel.blockCommunityUser(
+                    authorId = authorId,
+                    onBlocked = {
+                        coroutineScope.launch {
+                            snackbarHostState.showImmediateSnackbar(
+                                message = context.getString(SharedR.string.block_creator_success)
+                            )
+                        }
+                    }
+                )
+            },
+            onDismiss = { authorPendingBlock = null }
         )
     }
 
@@ -1329,6 +1495,16 @@ fun LibraryScreen(
             onDeleteFromCommunity = if (communityList.isMine) {
                 {
                     communityListPendingDeletion = communityList
+                }
+            } else null,
+            onReport = if (!communityList.isMine) {
+                {
+                    listPendingReport = communityList
+                }
+            } else null,
+            onBlockAuthor = if (!communityList.isMine) {
+                {
+                    authorPendingBlock = communityList.authorId to communityList.authorName
                 }
             } else null
         )
@@ -2547,6 +2723,8 @@ private fun CommunityTabContent(
     onCreateListClick: () -> Unit,
     onMakePrivate: (CommunityCuratedList) -> Unit,
     onDeleteFromCommunity: (CommunityCuratedList) -> Unit,
+    onReportCommunityList: (CommunityCuratedList) -> Unit,
+    onBlockAuthor: (authorId: String, authorName: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val contentPadding = rememberFloatingBottomBarPadding(
@@ -2620,6 +2798,12 @@ private fun CommunityTabContent(
                         } else null,
                         onDeleteFromCommunity = if (item.isMine) {
                             { onDeleteFromCommunity(item) }
+                        } else null,
+                        onReport = if (!item.isMine) {
+                            { onReportCommunityList(item) }
+                        } else null,
+                        onBlockAuthor = if (!item.isMine) {
+                            { onBlockAuthor(item.authorId, item.authorName) }
                         } else null,
                         modifier = Modifier.fillMaxWidth()
                     )

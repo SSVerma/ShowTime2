@@ -353,4 +353,33 @@
     <string name="reminder_dismiss_cd">Dismiss reminder</string>
     <string name="reminder_badge_today">TODAY</string>
     <string name="reminder_free_quota_label">%1$d of %2$d free reminders</string>
+
+    <!-- Community Moderation & UGC Safety (Guideline 1.2 Compliance) -->
+    <string name="report_collection">Report Collection</string>
+    <string name="report_collection_dialog_title">Report Collection</string>
+    <string name="report_collection_dialog_desc">Help keep ShowTime safe and welcoming for all cinephiles. Select the reason that best describes the issue with this collection:</string>
+    <string name="report_reason_inappropriate_sexual">Inappropriate or sexually explicit content</string>
+    <string name="report_reason_hate_harassment">Hate speech or harassment</string>
+    <string name="report_reason_spam_misleading">Spam, advertising, or misleading title</string>
+    <string name="report_reason_violence_harm">Violence, gore, or harmful content</string>
+    <string name="report_reason_other">Other violation of community guidelines</string>
+    <string name="report_collection_submit">Submit Report</string>
+    <string name="report_collection_success">Thank you for reporting. This collection has been hidden from your feed.</string>
+    <string name="block_creator">Block Creator</string>
+    <string name="block_creator_dialog_title">Block this Creator?</string>
+    <string name="block_creator_dialog_desc">You won\'t see any community collections created by %1$s in your feeds.</string>
+    <string name="block_creator_confirm">Block Creator</string>
+    <string name="block_creator_success">Creator blocked. Their collections have been removed from your feed.</string>
+    <string name="sensitive_theme_confirm_title">Community Guidelines Check</string>
+    <string name="sensitive_theme_confirm_desc">Your collection title or description contains sensitive keywords (\"%1$s\"). Please confirm that this collection strictly discusses cinema and films, and does not contain explicit or offensive material.</string>
+    <string name="sensitive_theme_confirm_action">Confirm &amp; Publish</string>
+    <string name="content_moderation_severe_error">Unable to publish. This collection contains terms that violate ShowTime Community Guidelines.</string>
+    <string name="community_guidelines_dialog_title">ShowTime Community Guidelines</string>
+    <string name="community_guidelines_dialog_desc">ShowTime maintains zero tolerance for objectionable content, harassment, hate speech, sexually explicit material, or abusive behavior.\n\nAll community collections and discussions must remain respectful and cinema-focused. Any violations will result in immediate content removal and permanent account banning.\n\nBy proceeding, you agree to adhere to these community terms.</string>
+    <string name="community_guidelines_agree_action">Agree &amp; Continue</string>
+    <string name="community_guidelines_footer_notice">By publishing, you agree to ShowTime\'s Zero-Tolerance Content Policy &amp; Community Guidelines.</string>
+    <string name="community_flagged_title">Community Flagged</string>
+    <string name="community_flagged_desc">Flagged by cinephiles for sensitive content.</string>
+    <string name="community_flagged_show_anyway">Show Collection</string>
 </resources>
+

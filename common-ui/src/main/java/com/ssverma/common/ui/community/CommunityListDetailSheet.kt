@@ -88,6 +88,8 @@ fun CommunityListDetailSheet(
     onCloneList: () -> Unit,
     onUnpublish: (() -> Unit)? = null,
     onDeleteFromCommunity: (() -> Unit)? = null,
+    onReport: (() -> Unit)? = null,
+    onBlockAuthor: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -147,25 +149,37 @@ fun CommunityListDetailSheet(
                     )
                 }
 
-                // Share button
-                IconButton(
-                    onClick = {
-                        val shareText = ShareMediaUtils.buildShareableListText(
-                            listTitle = communityList.title,
-                            listDescription = communityList.description,
-                            authorName = communityList.authorName,
-                            itemTitles = communityList.items.map { it.title },
-                            appPackageName = context.packageName,
-                            listId = communityList.listId
-                        )
-                        context.dispatchShareTextIntent(text = shareText)
-                    }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = stringResource(id = R.string.share_list),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    // Share button
+                    IconButton(
+                        onClick = {
+                            val shareText = ShareMediaUtils.buildShareableListText(
+                                listTitle = communityList.title,
+                                listDescription = communityList.description,
+                                authorName = communityList.authorName,
+                                itemTitles = communityList.items.map { it.title },
+                                appPackageName = context.packageName,
+                                listId = communityList.listId
+                            )
+                            context.dispatchShareTextIntent(text = shareText)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = stringResource(id = R.string.share_list),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    if (!communityList.isMine && (onReport != null || onBlockAuthor != null)) {
+                        CommunityListNonOwnerOverflowMenu(
+                            onReport = onReport,
+                            onBlockAuthor = onBlockAuthor
+                        )
+                    }
                 }
             }
 

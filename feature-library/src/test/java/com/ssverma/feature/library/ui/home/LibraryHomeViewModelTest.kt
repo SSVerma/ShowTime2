@@ -12,13 +12,22 @@ import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.ads.quota.RewardPassStatus
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.CommunityModerationConfig
+import com.ssverma.shared.domain.model.community.CommunityReportReason
+import com.ssverma.shared.domain.model.community.ContentModerationResult
+import com.ssverma.shared.domain.model.community.ReportCommunityListParams
+import com.ssverma.shared.domain.usecase.community.AcceptCommunityGuidelinesUseCase
+import com.ssverma.shared.domain.usecase.community.BlockCommunityUserUseCase
 import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.DeleteCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListDetailsUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
+import com.ssverma.shared.domain.usecase.community.HasAcceptedCommunityGuidelinesUseCase
 import com.ssverma.shared.domain.usecase.community.PublishCustomListUseCase
+import com.ssverma.shared.domain.usecase.community.ReportCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.UnpublishCustomListUseCase
+import com.ssverma.shared.domain.usecase.community.ValidateCommunityContentUseCase
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import com.ssverma.shared.testing.fakes.FakeCommunityRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
@@ -78,6 +87,21 @@ class LibraryHomeViewModelTest {
                 communityRepository = fakeCommunityRepository
             ),
             deleteCommunityListUseCase = DeleteCommunityListUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            reportCommunityListUseCase = ReportCommunityListUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            blockCommunityUserUseCase = BlockCommunityUserUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            validateCommunityContentUseCase = ValidateCommunityContentUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            hasAcceptedCommunityGuidelinesUseCase = HasAcceptedCommunityGuidelinesUseCase(
+                communityRepository = fakeCommunityRepository
+            ),
+            acceptCommunityGuidelinesUseCase = AcceptCommunityGuidelinesUseCase(
                 communityRepository = fakeCommunityRepository
             ),
             communityRepository = fakeCommunityRepository,
@@ -449,8 +473,12 @@ class LibraryHomeViewModelTest {
 
             viewModel.cloneCommunityList(communityList)
 
-            val updated = awaitItem()
+            var updated = awaitItem()
+            if (!updated.first().isClonedByMe || updated.first().clonesCount == 1L) {
+                updated = awaitItem()
+            }
             assertThat(updated.first().isClonedByMe).isTrue()
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -480,13 +508,22 @@ class LibraryHomeViewModelTest {
             assertThat(awaitItem().first().isClonedByMe).isFalse()
 
             viewModel.cloneCommunityList(communityList)
-            assertThat(awaitItem().first().isClonedByMe).isTrue()
+            var cloned = awaitItem()
+            if (!cloned.first().isClonedByMe || cloned.first().clonesCount == 1L) {
+                cloned = awaitItem()
+            }
+            assertThat(cloned.first().isClonedByMe).isTrue()
 
             val clonedList =
                 viewModel.customLists.value.first { it.sourceCommunityListId == "comm-1" }
             viewModel.deleteCustomList(clonedList.listId)
 
-            assertThat(awaitItem().first().isClonedByMe).isFalse()
+            var unCloned = awaitItem()
+            while (unCloned.first().isClonedByMe) {
+                unCloned = awaitItem()
+            }
+            assertThat(unCloned.first().isClonedByMe).isFalse()
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -519,5 +556,180 @@ class LibraryHomeViewModelTest {
 
             assertThat(awaitItem()).isEmpty()
         }
+    }
+
+    @Test
+    fun reportCommunityList_optimisticallyHidesListAndReports() = runTest {
+        val communityList = CommunityCuratedList(
+            listId = "comm-report-1",
+            title = "Suspicious Collection",
+            description = "Some description",
+            authorId = "author-bad",
+            authorName = "BadAuthor",
+            categoryTag = "Crime",
+            itemCount = 0,
+            items = emptyList(),
+            previewPosters = emptyList(),
+            upvotesCount = 0,
+            clonesCount = 0,
+            isUpvotedByMe = false,
+            isClonedByMe = false,
+            isMine = false,
+            createdAtEpochMs = 1000L,
+            updatedAtEpochMs = 1000L
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(communityList))
+
+        viewModel.communityLists.test {
+            assertThat(awaitItem()).hasSize(1)
+
+            viewModel.reportCommunityList(
+                listId = "comm-report-1",
+                authorId = "author-bad",
+                reason = CommunityReportReason.InappropriateOrSexual
+            )
+
+            assertThat(awaitItem()).isEmpty()
+        }
+    }
+
+    @Test
+    fun blockCommunityUser_blocksCreatorAndHidesFromCommunityLists() = runTest {
+        val communityList = CommunityCuratedList(
+            listId = "comm-block-1",
+            title = "Creator Collection",
+            description = "Some description",
+            authorId = "author-blocked",
+            authorName = "BlockedCreator",
+            categoryTag = "Drama",
+            itemCount = 0,
+            items = emptyList(),
+            previewPosters = emptyList(),
+            upvotesCount = 0,
+            clonesCount = 0,
+            isUpvotedByMe = false,
+            isClonedByMe = false,
+            isMine = false,
+            createdAtEpochMs = 1000L,
+            updatedAtEpochMs = 1000L
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(communityList))
+
+        viewModel.communityLists.test {
+            assertThat(awaitItem()).hasSize(1)
+
+            viewModel.blockCommunityUser(authorId = "author-blocked")
+
+            assertThat(awaitItem()).isEmpty()
+        }
+    }
+
+    @Test
+    fun validateContent_allowsNormalCinemaTitlesWithoutFalsePositives() = runTest {
+        val benignTitles = listOf(
+            "Classic 90s Thrillers",
+            "The Assassin Anthology",
+            "Cocktail Recipes in Cinema",
+            "Moby Dick Adaptations",
+            "The Dick Cavett Show Interviews"
+        )
+        for (title in benignTitles) {
+            val result = viewModel.validateContent(title = title, description = "Great movies")
+            assertThat(result).isInstanceOf(ContentModerationResult.Approved::class.java)
+        }
+    }
+
+    @Test
+    fun validateContent_flagsSensitiveThemeForConfirmation() = runTest {
+        val result = viewModel.validateContent(
+            title = "Cinema with explicit nudity scenes",
+            description = "Film study"
+        )
+        assertThat(result).isInstanceOf(ContentModerationResult.SensitiveWarning::class.java)
+    }
+
+    @Test
+    fun validateContent_blocksSevereProhibitedTerms() = runTest {
+        val result =
+            viewModel.validateContent(title = "cp collection illegal", description = "bad stuff")
+        assertThat(result).isInstanceOf(ContentModerationResult.Prohibited::class.java)
+    }
+
+    @Test
+    fun hasAcceptedCommunityGuidelines_defaultsToFalseAndUpdatesOnAccept() = runTest {
+        viewModel.hasAcceptedCommunityGuidelines.test {
+            assertThat(awaitItem()).isFalse()
+
+            viewModel.acceptCommunityGuidelines()
+
+            assertThat(awaitItem()).isTrue()
+        }
+    }
+
+    @Test
+    fun communityLists_shieldedWhenReportCountAtFlagThreshold() = runTest {
+        val flaggedList = CommunityCuratedList(
+            listId = "comm-flagged-1",
+            title = "Controversial Collection",
+            description = "Some description",
+            authorId = "author-flagged",
+            authorName = "FlaggedAuthor",
+            categoryTag = "Drama",
+            reportCount = CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_FLAG_THRESHOLD
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(flaggedList))
+
+        viewModel.communityLists.test {
+            val lists = awaitItem()
+            assertThat(lists).hasSize(1)
+            assertThat(lists.first().isFlagged).isTrue()
+        }
+    }
+
+    @Test
+    fun communityLists_quarantinedWhenReportCountAtMaxThreshold() = runTest {
+        val quarantinedList = CommunityCuratedList(
+            listId = "comm-quarantine-1",
+            title = "Severe Content Collection",
+            description = "Some description",
+            authorId = "author-quarantine",
+            authorName = "QuarantineAuthor",
+            categoryTag = "Crime",
+            reportCount = CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_MAX_REPORT_THRESHOLD
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(quarantinedList))
+
+        viewModel.communityLists.test {
+            val lists = awaitItem()
+            assertThat(lists).isEmpty()
+        }
+    }
+
+    @Test
+    fun reportCommunityList_deduplicatesRepeatedReports() = runTest {
+        val communityList = CommunityCuratedList(
+            listId = "comm-dedup-1",
+            title = "Deduplication Test",
+            description = "Some description",
+            authorId = "author-dedup",
+            authorName = "DedupAuthor",
+            categoryTag = "Sci-Fi",
+            reportCount = 0L
+        )
+        fakeCommunityRepository.setCommunityLists(listOf(communityList))
+
+        val params = ReportCommunityListParams(
+            listId = "comm-dedup-1",
+            authorId = "author-dedup",
+            reason = CommunityReportReason.SpamOrCommercial,
+            details = "First report"
+        )
+
+        fakeCommunityRepository.reportCommunityList(params)
+        assertThat(fakeCommunityRepository.rawCommunityLists.value.first().reportCount).isEqualTo(1L)
+
+        // Attempting to report the same list a second time should not increase reportCount
+        fakeCommunityRepository.reportCommunityList(params.copy(details = "Second report attempt"))
+        assertThat(fakeCommunityRepository.rawCommunityLists.value.first().reportCount).isEqualTo(1L)
     }
 }

@@ -7,6 +7,7 @@ import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityCuratedListItem
 import com.ssverma.shared.domain.model.community.CommunityListCategories
+import com.ssverma.shared.domain.model.community.CommunityModerationConfig
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.DeleteCommentParams
 import com.ssverma.shared.domain.model.community.DiscussionTarget
@@ -16,6 +17,7 @@ import com.ssverma.shared.domain.model.community.MediaReactions
 import com.ssverma.shared.domain.model.community.PostCommentParams
 import com.ssverma.shared.domain.model.community.PublishCustomListParams
 import com.ssverma.shared.domain.model.community.ReportCommentParams
+import com.ssverma.shared.domain.model.community.ReportCommunityListParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
 import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.model.community.TrendingDiscussion
@@ -23,12 +25,16 @@ import com.ssverma.shared.domain.model.community.UnpublishCustomListParams
 import com.ssverma.shared.domain.repository.CommunityRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 
 class FakeCommunityRepository : CommunityRepository {
 
     private val communityLists = MutableStateFlow<List<CommunityCuratedList>>(emptyList())
+    val rawCommunityLists: StateFlow<List<CommunityCuratedList>> = communityLists.asStateFlow()
     private val discussions = MutableStateFlow<Map<String, List<Comment>>>(emptyMap())
     private val reactions = MutableStateFlow<Map<String, MediaReactions>>(emptyMap())
 
@@ -137,14 +143,27 @@ class FakeCommunityRepository : CommunityRepository {
     }
 
     override fun getCommunityCuratedLists(category: String?): Flow<List<CommunityCuratedList>> {
-        return communityLists.map { lists ->
-            if (category.isNullOrBlank() || category == CommunityListCategories.ALL) lists
-            else lists.filter { it.categoryTag.equals(category, ignoreCase = true) }
+        return combine(communityLists, blockedUserIds) { lists, blocked ->
+            lists
+                .filter {
+                    it.authorId !in blocked &&
+                            it.reportCount < CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_MAX_REPORT_THRESHOLD
+                }
+                .filter {
+                    if (category.isNullOrBlank() || category == CommunityListCategories.ALL) true
+                    else it.categoryTag.equals(category, ignoreCase = true)
+                }
         }
     }
 
     override fun getCommunityListDetails(listId: String): Flow<CommunityCuratedList?> {
-        return communityLists.map { lists -> lists.find { it.listId == listId } }
+        return combine(communityLists, blockedUserIds) { lists, blocked ->
+            lists.find {
+                it.listId == listId &&
+                        it.authorId !in blocked &&
+                        it.reportCount < CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_MAX_REPORT_THRESHOLD
+            }
+        }
     }
 
     override suspend fun publishCustomList(params: PublishCustomListParams): Result<Unit, Failure.CoreFailure> {
@@ -213,6 +232,49 @@ class FakeCommunityRepository : CommunityRepository {
     override suspend fun deleteCommunityList(listId: String): Result<Unit, Failure.CoreFailure> {
         communityLists.value = communityLists.value.filterNot { it.listId == listId }
         return Result.Success(Unit)
+    }
+
+    private val blockedUserIds = MutableStateFlow<Set<String>>(emptySet())
+
+    private val reportedListIds = mutableSetOf<String>()
+
+    override suspend fun reportCommunityList(params: ReportCommunityListParams): Result<Unit, Failure.CoreFailure> {
+        val isFirstReport = reportedListIds.add(params.listId)
+        if (isFirstReport) {
+            communityLists.value = communityLists.value.map {
+                if (it.listId == params.listId) {
+                    it.copy(reportCount = it.reportCount + 1L)
+                } else it
+            }
+        }
+        return Result.Success(Unit)
+    }
+
+    override suspend fun blockUser(authorId: String): Result<Unit, Failure.CoreFailure> {
+        blockedUserIds.value = blockedUserIds.value + authorId
+        return Result.Success(Unit)
+    }
+
+    override suspend fun unblockUser(authorId: String): Result<Unit, Failure.CoreFailure> {
+        blockedUserIds.value = blockedUserIds.value - authorId
+        return Result.Success(Unit)
+    }
+
+    override fun getBlockedUserIdsFlow(): Flow<Set<String>> = blockedUserIds
+
+    var severeBlockedRegex: String = CommunityModerationConfig.DEFAULT_SEVERE_BLOCKED_REGEX
+    var sensitiveConfirmRegex: String = CommunityModerationConfig.DEFAULT_SENSITIVE_CONFIRM_REGEX
+
+    override fun getCommunitySevereBlockedRegex(): String = severeBlockedRegex
+
+    override fun getCommunitySensitiveConfirmRegex(): String = sensitiveConfirmRegex
+
+    private val acceptedGuidelinesFlow = MutableStateFlow(false)
+
+    override fun hasAcceptedCommunityGuidelinesFlow(): Flow<Boolean> = acceptedGuidelinesFlow
+
+    override suspend fun setCommunityGuidelinesAccepted(accepted: Boolean) {
+        acceptedGuidelinesFlow.value = accepted
     }
 
     fun setCommunityLists(lists: List<CommunityCuratedList>) {

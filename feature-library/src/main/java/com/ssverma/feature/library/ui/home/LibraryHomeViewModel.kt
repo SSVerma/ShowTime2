@@ -15,7 +15,10 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CloneCommunityListParams
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityListCategories
+import com.ssverma.shared.domain.model.community.CommunityReportReason
+import com.ssverma.shared.domain.model.community.ContentModerationResult
 import com.ssverma.shared.domain.model.community.PublishCustomListParams
+import com.ssverma.shared.domain.model.community.ReportCommunityListParams
 import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.model.community.UnpublishCustomListParams
 import com.ssverma.shared.domain.model.library.CustomList
@@ -23,13 +26,18 @@ import com.ssverma.shared.domain.model.library.JoinedSecretList
 import com.ssverma.shared.domain.model.library.SavedMediaItem
 import com.ssverma.shared.domain.repository.CommunityRepository
 import com.ssverma.shared.domain.repository.LibraryRepository
+import com.ssverma.shared.domain.usecase.community.AcceptCommunityGuidelinesUseCase
+import com.ssverma.shared.domain.usecase.community.BlockCommunityUserUseCase
 import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.DeleteCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListDetailsUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
+import com.ssverma.shared.domain.usecase.community.HasAcceptedCommunityGuidelinesUseCase
 import com.ssverma.shared.domain.usecase.community.PublishCustomListUseCase
+import com.ssverma.shared.domain.usecase.community.ReportCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.UnpublishCustomListUseCase
+import com.ssverma.shared.domain.usecase.community.ValidateCommunityContentUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -56,12 +64,18 @@ class LibraryHomeViewModel @Inject constructor(
     private val toggleCommunityListUpvoteUseCase: ToggleCommunityListUpvoteUseCase,
     private val cloneCommunityListUseCase: CloneCommunityListUseCase,
     private val deleteCommunityListUseCase: DeleteCommunityListUseCase,
+    private val reportCommunityListUseCase: ReportCommunityListUseCase,
+    private val blockCommunityUserUseCase: BlockCommunityUserUseCase,
+    private val validateCommunityContentUseCase: ValidateCommunityContentUseCase,
+    private val hasAcceptedCommunityGuidelinesUseCase: HasAcceptedCommunityGuidelinesUseCase,
+    private val acceptCommunityGuidelinesUseCase: AcceptCommunityGuidelinesUseCase,
     private val communityRepository: CommunityRepository,
     private val rewardManager: RewardManager,
     private val rewardedAdManager: RewardedAdManager,
     private val billingRepository: BillingRepository,
     private val backupRepository: BackupRepository
 ) : ViewModel() {
+
 
     init {
         viewModelScope.launch {
@@ -350,16 +364,21 @@ class LibraryHomeViewModel @Inject constructor(
     private val _selectedCommunityCategory = MutableStateFlow(CommunityListCategories.ALL)
     val selectedCommunityCategory: StateFlow<String> = _selectedCommunityCategory.asStateFlow()
 
+    private val _locallyReportedListIds = MutableStateFlow<Set<String>>(emptySet())
+
     val communityLists: StateFlow<List<CommunityCuratedList>> = combine(
         _selectedCommunityCategory.flatMapLatest { category ->
             getCommunityListsUseCase(if (category == CommunityListCategories.ALL) null else category)
         },
-        customLists
-    ) { commLists, localLists ->
+        customLists,
+        _locallyReportedListIds
+    ) { commLists, localLists, reportedIds ->
         val clonedSourceIds = localLists.mapNotNull { it.sourceCommunityListId }.toSet()
-        commLists.map { item ->
-            item.copy(isClonedByMe = clonedSourceIds.contains(item.listId))
-        }
+        commLists
+            .filter { it.listId !in reportedIds }
+            .map { item ->
+                item.copy(isClonedByMe = clonedSourceIds.contains(item.listId))
+            }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -495,6 +514,70 @@ class LibraryHomeViewModel @Inject constructor(
             } else if (result is Result.Error) {
                 onError?.invoke("Unable to clone collection. Please try again.")
             }
+        }
+    }
+
+    fun reportCommunityList(
+        listId: String,
+        authorId: String,
+        reason: CommunityReportReason,
+        details: String? = null,
+        onReported: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            _locallyReportedListIds.value = _locallyReportedListIds.value + listId
+            if (_selectedCommunityListId.value == listId) {
+                _selectedCommunityListId.value = null
+            }
+            val result = reportCommunityListUseCase(
+                ReportCommunityListParams(
+                    listId = listId,
+                    authorId = authorId,
+                    reason = reason,
+                    details = details
+                )
+            )
+            if (result is Result.Success) {
+                onReported?.invoke()
+            } else {
+                onError?.invoke("Unable to report collection. Please try again.")
+            }
+        }
+    }
+
+    fun blockCommunityUser(
+        authorId: String,
+        onBlocked: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            if (selectedCommunityList.value?.authorId == authorId) {
+                _selectedCommunityListId.value = null
+            }
+            val result = blockCommunityUserUseCase(authorId)
+            if (result is Result.Success) {
+                onBlocked?.invoke()
+            } else {
+                onError?.invoke("Unable to block creator. Please try again.")
+            }
+        }
+    }
+
+    fun validateContent(title: String, description: String?): ContentModerationResult {
+        return validateCommunityContentUseCase(title = title, description = description)
+    }
+
+    val hasAcceptedCommunityGuidelines: StateFlow<Boolean> =
+        hasAcceptedCommunityGuidelinesUseCase().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
+
+    fun acceptCommunityGuidelines() {
+        viewModelScope.launch {
+            acceptCommunityGuidelinesUseCase(true)
         }
     }
 }

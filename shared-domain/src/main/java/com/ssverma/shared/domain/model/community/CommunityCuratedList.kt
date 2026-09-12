@@ -16,6 +16,9 @@ data class CommunityCuratedList(
     val isUpvotedByMe: Boolean = false,
     val isClonedByMe: Boolean = false,
     val isMine: Boolean = false,
+    val reportCount: Long = 0L,
+    val isFlagged: Boolean = reportCount >= CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_FLAG_THRESHOLD,
     val createdAtEpochMs: Long = System.currentTimeMillis(),
     val updatedAtEpochMs: Long = System.currentTimeMillis()
 )
+

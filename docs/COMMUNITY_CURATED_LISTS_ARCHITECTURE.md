@@ -273,3 +273,54 @@ data class UnpublishCustomListParams(
 | **Category Pill Container** | `MaterialTheme.colorScheme.primaryContainer (60%)`  | `#D2E3FC (60%)`  | `#331500 (60%)` |
 | **Category Pill Text**      | `MaterialTheme.colorScheme.onPrimaryContainer`      | `#174EA6`        | `#FFDBC7`       |
 | **Active Upvote Tint**      | `MaterialTheme.colorScheme.primary`                 | `#1A73E8`        | `#FF7A00`       |
+
+---
+
+## 8. Content Moderation & UGC Safety System ($0 Infrastructure Cost)
+
+To strictly comply with **Google Play Developer Program Policies** and **Apple App Store Review Guidelines (Guideline 1.2 User Generated Content)** while incurring **$0 in recurring infrastructure costs**, ShowTime implements a comprehensive multi-tier safety architecture:
+
+```mermaid
+graph TD
+    subgraph Publishing Flow ["Pre-Publish Screening"]
+        PUB[Publish Dialog Input] --> VAL[ValidateCommunityContentUseCase]
+        VAL -->|Severe Prohibited Match| BLK[Hard Block - Toast Error]
+        VAL -->|Sensitive Cinema Theme Match| CONF[Sensitive Confirmation Dialog]
+        CONF -->|User Confirms Compliance| SAVE[Write to Firestore]
+        CONF -->|User Cancels| EDIT[Back to Edit]
+        VAL -->|No Prohibited / Sensitive Terms| SAVE
+    end
+
+    subgraph Community Consumption ["Browsing & Consumption"]
+        BROWSE[Community List Feed] --> FILTER[Filter Out Blocked Users & Quarantined Lists]
+        REP[Report Collection Action] --> OPT_HIDE[Instant 0ms Local Hide]
+        REP --> WRITE_REP[Firestore WriteBatch: Increment reportCount & Create Report Doc]
+        WRITE_REP --> AUTO_Q[reportCount >= maxReportThreshold -> Auto-Quarantined from Queries]
+        BLOCK[Block Creator Action] --> LOCAL_BLOCK[Save Blocked Author to DataStore & Instantly Filter]
+    end
+```
+
+### A. Pre-Publish Multi-Tier Regex Screening
+* **Zero False Positives via Word Boundaries (`\b`)**: Solves the classic Scunthorpe problem. Titles containing substrings such as *"Classic"*, *"The Assassin Anthology"*, *"Cocktail Hour"*, and *"Moby Dick"* pass without any false warnings.
+* **Severe Prohibited Tier (`DEFAULT_SEVERE_BLOCKED_REGEX`)**: Hard blocks severe terms, CSAM (`child porn`, `cp`, `underage exploitation`), hate speech slurs, and illegal content prior to saving.
+* **Sensitive Cinema Themes Tier (`DEFAULT_SENSITIVE_CONFIRM_REGEX`)**: Rather than falsely locking out legitimate cinephile collections with mature themes (e.g., *"Sex, Lies, and Videotape"*, *"Erotic Thrillers of the 80s"*, *"Artistic Nudity in Cinema"*), this tier triggers a **Community Guidelines Confirmation Dialog**. The user acknowledges compliance, avoiding censorship while ensuring intentionality.
+* **Zero-Deploy Flexibility**: Patterns can be updated in real-time via Firebase Remote Config without releasing an app update:
+  - `remote_community_severe_blocked_regex`
+  - `remote_community_sensitive_confirm_regex`
+
+### B. In-App Reporting & Dynamic Auto-Quarantine
+* **Report Reasons**: Categorized into `InappropriateOrSexual`, `HateOrHarassment`, `SpamOrCommercial`, `SpoilersWithoutWarning`, and `Other`.
+* **Zero-Latency Optimistic Hiding**: The moment a user submits a report, the collection is instantly hidden (0ms) from their feed via `_locallyReportedListIds` in `LibraryHomeViewModel`.
+* **Subcollection Security**: User reports are stored in `/community_curated_lists/{listId}/reports/{reportId}`. Firestore security rules enforce write-only permissions (`allow create: if request.auth != null; allow read, update, delete: if false;`), protecting reporter privacy and preventing malicious tampering.
+* **Dynamic Auto-Quarantine**: Lists reaching the threshold (`reportCount >= remote_community_lists_max_report_threshold`, default: 3) are automatically excluded from public category queries.
+
+### C. Creator Blocking
+* **User Safety Control**: Cinephiles can block any creator whose content they do not wish to see via `CommunityModerationDialogs.kt` (`BlockAuthorConfirmationDialog`).
+* **Persistent Local Filtering**: Blocked creator IDs are stored in persistent DataStore storage and reactively combined with public feeds (`combine(communityLists, blockedUserIds)`), immediately removing all current and future collections by that creator across the entire application.
+
+### D. One-Time Community Guidelines & EULA Acceptance (Guideline 1.2 Compliance)
+* **Explicit Zero-Tolerance Agreement**: Mandated by Apple App Store Guideline 1.2 and Google Play UGC policies. Before publishing a collection for the first time, users must explicitly agree to terms stating zero tolerance for objectionable content, harassment, hate speech, or abusive behavior via `CommunityGuidelinesAgreementDialog`.
+* **Persistent Local Preference**: Agreement is persisted in DataStore (`has_accepted_community_guidelines`), so existing compliant creators are never prompted again on subsequent publishes.
+* **Publish Sheet Notice**: `PublishListBottomSheet` incorporates a persistent footer disclaimer (*"By publishing, you agree to ShowTime's Zero-Tolerance Content Policy & Community Guidelines"*).
+
+

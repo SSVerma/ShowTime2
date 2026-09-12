@@ -39,6 +39,7 @@ import com.ssverma.shared.domain.model.community.MediaReactions
 import com.ssverma.shared.domain.model.community.PostCommentParams
 import com.ssverma.shared.domain.model.community.PublishCustomListParams
 import com.ssverma.shared.domain.model.community.ReportCommentParams
+import com.ssverma.shared.domain.model.community.ReportCommunityListParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
 import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.model.community.TrendingDiscussion
@@ -121,6 +122,24 @@ class CommunityRepositoryImpl @Inject constructor(
     private suspend fun getCachedClonedListIds(): MutableSet<String> {
         val userId = getEffectiveUserId()
         val json: String = storage.read(key = scopedClonedKey(userId)) ?: return mutableSetOf()
+        return try {
+            gson.fromJson<Set<String>>(json, object : TypeToken<Set<String>>() {}.type)
+                .toMutableSet()
+        } catch (_: Exception) {
+            mutableSetOf()
+        }
+    }
+
+    private fun scopedBlockedUsersKey(userId: String): Preferences.Key<String> {
+        return stringPreferencesKey("community_blocked_user_ids_$userId")
+    }
+
+    private val blockedUserIdsFlow = MutableStateFlow<Set<String>>(emptySet())
+
+    private suspend fun getCachedBlockedUserIds(): MutableSet<String> {
+        val userId = getEffectiveUserId()
+        val json: String =
+            storage.read(key = scopedBlockedUsersKey(userId)) ?: return mutableSetOf()
         return try {
             gson.fromJson<Set<String>>(json, object : TypeToken<Set<String>>() {}.type)
                 .toMutableSet()
@@ -214,7 +233,16 @@ class CommunityRepositoryImpl @Inject constructor(
     private val optimisticListOverrides =
         MutableStateFlow<Map<String, ListOverride>>(emptyMap())
 
+    private val keyCommunityGuidelinesAccepted =
+        booleanPreferencesKey("community_guidelines_accepted")
+    private val acceptedGuidelinesFlow = MutableStateFlow(false)
+
     init {
+        repositoryScope.launch {
+            blockedUserIdsFlow.value = getCachedBlockedUserIds()
+            acceptedGuidelinesFlow.value =
+                storage.read(key = keyCommunityGuidelinesAccepted, default = false)
+        }
         // Trigger background catalog sync on startup
         repositoryScope.launch {
             syncCatalogIfStale()
@@ -1352,6 +1380,22 @@ class CommunityRepositoryImpl @Inject constructor(
             }
 
             orderTracker.sortByStableOrder(mergedLists)
+        }.combine(blockedUserIdsFlow) { list, blockedUsers ->
+            val maxReportThreshold = appConfigProvider.getLong(
+                CommunityModerationConfig.REMOTE_KEY_COMMUNITY_LISTS_MAX_REPORT_THRESHOLD,
+                CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_MAX_REPORT_THRESHOLD
+            )
+            val flagThreshold = appConfigProvider.getLong(
+                CommunityModerationConfig.REMOTE_KEY_COMMUNITY_LISTS_FLAG_THRESHOLD,
+                CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_FLAG_THRESHOLD
+            )
+            list
+                .filter { item ->
+                    item.reportCount < maxReportThreshold && item.authorId !in blockedUsers
+                }
+                .map { item ->
+                    item.copy(isFlagged = item.reportCount >= flagThreshold)
+                }
         }.combine(remoteEnabledFlow) { list, isRemotelyEnabled ->
             if (!isRemotelyEnabled) emptyList() else list
         }
@@ -1393,6 +1437,20 @@ class CommunityRepositoryImpl @Inject constructor(
                         isClonedByMe = override?.isClonedByMe ?: rawList.isClonedByMe
                     )
                 }
+            }
+        }.combine(blockedUserIdsFlow) { details, blockedUsers ->
+            val maxReportThreshold = appConfigProvider.getLong(
+                CommunityModerationConfig.REMOTE_KEY_COMMUNITY_LISTS_MAX_REPORT_THRESHOLD,
+                CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_MAX_REPORT_THRESHOLD
+            )
+            val flagThreshold = appConfigProvider.getLong(
+                CommunityModerationConfig.REMOTE_KEY_COMMUNITY_LISTS_FLAG_THRESHOLD,
+                CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_FLAG_THRESHOLD
+            )
+            if (details == null || details.reportCount >= maxReportThreshold || details.authorId in blockedUsers) {
+                null
+            } else {
+                details.copy(isFlagged = details.reportCount >= flagThreshold)
             }
         }.combine(remoteEnabledFlow) { details, isRemotelyEnabled ->
             if (!isRemotelyEnabled) null else details
@@ -1436,6 +1494,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 "previewPosters" to local.previewPosters,
                 "upvotesCount" to 0L,
                 "clonesCount" to 0L,
+                "reportCount" to 0L,
                 "isPublished" to true,
                 "createdAt" to local.createdAt,
                 "updatedAt" to System.currentTimeMillis()
@@ -1652,6 +1711,98 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun reportCommunityList(
+        params: ReportCommunityListParams
+    ): Result<Unit, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+        return try {
+            val userId = getEffectiveUserId()
+            val listDocRef = firestore
+                .collection(colCommunityCuratedLists)
+                .document(params.listId)
+
+            val reportDoc = listDocRef.collection("reports").document(userId)
+
+            firestore.runTransaction { transaction ->
+                val reportSnapshot = transaction.get(reportDoc)
+                val reportData = mapOf(
+                    "reporterId" to userId,
+                    "authorId" to params.authorId,
+                    "reason" to params.reason.name,
+                    "details" to (params.details ?: ""),
+                    "reportedAt" to FieldValue.serverTimestamp()
+                )
+                if (reportSnapshot.exists()) {
+                    transaction.set(reportDoc, reportData, SetOptions.merge())
+                } else {
+                    transaction.set(reportDoc, reportData)
+                    transaction.update(listDocRef, "reportCount", FieldValue.increment(1L))
+                }
+            }.await()
+
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun blockUser(authorId: String): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val userId = getEffectiveUserId()
+            val currentBlocked = getCachedBlockedUserIds()
+            currentBlocked.add(authorId)
+            storage.write(
+                key = scopedBlockedUsersKey(userId),
+                value = gson.toJson(currentBlocked)
+            )
+            blockedUserIdsFlow.value = currentBlocked.toSet()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override suspend fun unblockUser(authorId: String): Result<Unit, Failure.CoreFailure> {
+        return try {
+            val userId = getEffectiveUserId()
+            val currentBlocked = getCachedBlockedUserIds()
+            currentBlocked.remove(authorId)
+            storage.write(
+                key = scopedBlockedUsersKey(userId),
+                value = gson.toJson(currentBlocked)
+            )
+            blockedUserIdsFlow.value = currentBlocked.toSet()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+    }
+
+    override fun getBlockedUserIdsFlow(): Flow<Set<String>> = blockedUserIdsFlow
+
+    override fun getCommunitySevereBlockedRegex(): String {
+        return appConfigProvider.getString(
+            CommunityModerationConfig.REMOTE_KEY_COMMUNITY_SEVERE_BLOCKED_REGEX,
+            CommunityModerationConfig.DEFAULT_SEVERE_BLOCKED_REGEX
+        )
+    }
+
+    override fun getCommunitySensitiveConfirmRegex(): String {
+        return appConfigProvider.getString(
+            CommunityModerationConfig.REMOTE_KEY_COMMUNITY_SENSITIVE_CONFIRM_REGEX,
+            CommunityModerationConfig.DEFAULT_SENSITIVE_CONFIRM_REGEX
+        )
+    }
+
+    override fun hasAcceptedCommunityGuidelinesFlow(): Flow<Boolean> = acceptedGuidelinesFlow
+
+    override suspend fun setCommunityGuidelinesAccepted(accepted: Boolean) {
+        storage.write(key = keyCommunityGuidelinesAccepted, value = accepted)
+        acceptedGuidelinesFlow.value = accepted
+    }
+
     private fun DocumentSnapshot.toCommunityCuratedList(
         currentUserId: String,
         isUpvoted: Boolean = false,
@@ -1669,6 +1820,7 @@ class CommunityRepositoryImpl @Inject constructor(
         val clonesCount = getLong("clonesCount") ?: 0L
         val createdAt = getLong("createdAt") ?: System.currentTimeMillis()
         val updatedAt = getLong("updatedAt") ?: System.currentTimeMillis()
+        val reportCount = getLong("reportCount") ?: 0L
 
         @Suppress("UNCHECKED_CAST")
         val rawItems = get("items") as? List<Map<String, Any>> ?: emptyList()
@@ -1697,6 +1849,12 @@ class CommunityRepositoryImpl @Inject constructor(
         val previewPosters = get("previewPosters") as? List<String>
             ?: items.map { it.posterImageUrl }.filter { it.isNotBlank() }.take(4)
 
+        val flagThreshold = appConfigProvider.getLong(
+            CommunityModerationConfig.REMOTE_KEY_COMMUNITY_LISTS_FLAG_THRESHOLD,
+            CommunityModerationConfig.DEFAULT_COMMUNITY_LISTS_FLAG_THRESHOLD
+        )
+        val isFlagged = reportCount >= flagThreshold
+
         return CommunityCuratedList(
             listId = listId,
             title = title,
@@ -1710,6 +1868,8 @@ class CommunityRepositoryImpl @Inject constructor(
             previewPosters = previewPosters,
             upvotesCount = upvotesCount,
             clonesCount = clonesCount,
+            reportCount = reportCount,
+            isFlagged = isFlagged,
             isMine = (authorId == currentUserId),
             isUpvotedByMe = isUpvoted,
             isClonedByMe = isCloned,
