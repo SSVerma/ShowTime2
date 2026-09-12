@@ -71,19 +71,29 @@ interface RewardManager : ReminderQuotaManager {
     }
 
     /**
-     * Generic quota check: determines if an action is allowed given the user's current count,
+     * Checks whether a quota-limited action can be performed based on current count,
      * the free tier limit, and Pro subscription status.
-     * Always returns true if [isProActive] is true. Otherwise, checks if currentCount < freeLimit + bonusSlots.
+     * Always returns true if [isProActive] is true.
+     *
+     * When [isConsumableToken] is true (e.g. Airing Reminders), bonus slots are consumable tokens
+     * consumed per action above the free limit: returns true if currentCount < freeLimit OR bonusSlots > 0.
+     * When [isConsumableToken] is false (e.g. Custom Lists/Goals), bonus slots expand the capacity
+     * ceiling: returns true if currentCount < freeLimit + bonusSlots.
      */
     suspend fun canPerformQuotaAction(
         key: PassKey,
         currentCount: Int,
         freeLimit: Int,
-        isProActive: Boolean
+        isProActive: Boolean,
+        isConsumableToken: Boolean = false
     ): Boolean {
         if (isProActive) return true
         val bonusSlots = getExtraSlotsCount(key)
-        return currentCount < (freeLimit + bonusSlots)
+        return if (isConsumableToken) {
+            if (currentCount < freeLimit) true else bonusSlots > 0
+        } else {
+            currentCount < (freeLimit + bonusSlots)
+        }
     }
 
     /**
@@ -185,10 +195,11 @@ class RewardManagerImpl @Inject constructor(
     ): Boolean {
         val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_REMINDERS_LIMIT, 3L).toInt()
         return canPerformQuotaAction(
-            AiringReminderPassKey,
-            currentActiveCount,
-            freeLimit,
-            isProActive
+            key = AiringReminderPassKey,
+            currentCount = currentActiveCount,
+            freeLimit = freeLimit,
+            isProActive = isProActive,
+            isConsumableToken = true
         )
     }
 

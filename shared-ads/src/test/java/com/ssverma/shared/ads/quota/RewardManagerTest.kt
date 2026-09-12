@@ -260,7 +260,7 @@ class RewardManagerTest {
             )
         ).isTrue()
 
-        // Grant & consume pass
+        // Grant & consume pass at freeLimit (3)
         rewardManager.grantReminderPass()
         assertThat(rewardManager.getExtraSlotsCount(RewardManagerImpl.AiringReminderPassKey)).isEqualTo(
             1
@@ -272,11 +272,41 @@ class RewardManagerTest {
             )
         ).isTrue()
 
+        // Test ABOVE freeLimit (e.g. 4 reminders already active)
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 4,
+                isProActive = false
+            )
+        ).isTrue()
+
         val consumed = rewardManager.consumeReminderPass()
         assertThat(consumed).isTrue()
         assertThat(
             rewardManager.canScheduleReminder(
                 currentActiveCount = 3,
+                isProActive = false
+            )
+        ).isFalse()
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 4,
+                isProActive = false
+            )
+        ).isFalse()
+
+        // Test 5th reminder workflow: 4 in DB, watch 1 ad -> grant 1 slot -> can schedule -> consume -> blocked
+        rewardManager.grantReminderPass()
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 4,
+                isProActive = false
+            )
+        ).isTrue()
+        rewardManager.consumeReminderPass()
+        assertThat(
+            rewardManager.canScheduleReminder(
+                currentActiveCount = 5,
                 isProActive = false
             )
         ).isFalse()
