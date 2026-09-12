@@ -167,4 +167,6 @@
     <string name="streaming_subscriptions_title">My Streaming Services</string>
     <string name="streaming_subscriptions_select_hint">Select your streaming services</string>
     <string name="streaming_subscriptions_count_format">%1$d services selected</string>
+    <string name="settings_release_radar_title">Smart Release Radar</string>
+    <string name="settings_release_radar_desc">Alerts when watchlisted movies hit theaters or arrive on streaming</string>
 </resources>

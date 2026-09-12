@@ -13,7 +13,8 @@ data class TvShowPreview(
     val displayYear: String,
     val popularity: Float,
     val displayPopularity: String,
-    val genreIds: List<Int>
+    val genreIds: List<Int>,
+    val isUpcoming: Boolean = false
 )
 
 fun TvShow.asTvShowPreview(): TvShowPreview {
@@ -30,6 +31,7 @@ fun TvShow.asTvShowPreview(): TvShowPreview {
         displayYear = firstAirDate?.year?.toString().orEmpty(),
         popularity = popularity,
         displayPopularity = displayPopularity,
-        genreIds = generes.map { it.id }
+        genreIds = generes.map { it.id },
+        isUpcoming = isUpcoming
     )
 }

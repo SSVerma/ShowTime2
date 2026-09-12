@@ -49,5 +49,9 @@ interface AppConfigRepository {
 
     suspend fun updateNotificationsEnabled(enabled: Boolean)
 
+    val isReleaseRadarEnabled: Flow<Boolean>
+
+    suspend fun updateReleaseRadarEnabled(enabled: Boolean)
+
     suspend fun updateReminderNotificationTime(hour: Int, minute: Int)
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="release_radar_theatrical_title">%1$s in theaters today!</string>
+    <string name="release_radar_theatrical_desc">Now playing in cinemas. Tap to check showtimes and details.</string>
+    <string name="release_radar_streaming_title">%1$s is now streaming!</string>
+    <string name="release_radar_streaming_desc">Available to stream on %1$s. Tap to watch.</string>
+    <string name="release_radar_streaming_desc_general">Now available to stream. Tap to check providers.</string>
+</resources>

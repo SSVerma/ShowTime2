@@ -145,5 +145,6 @@ data class UniversalMediaItem(
     val genreNames: List<String> = emptyList(),
     val isWatched: Boolean = false,
     val isFavorite: Boolean = false,
-    val isInWatchlist: Boolean = false
+    val isInWatchlist: Boolean = false,
+    val isUpcoming: Boolean = false
 )

@@ -22,6 +22,7 @@ import com.ssverma.shared.ui.component.media.MediaItemDefaults
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
+import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
 import com.ssverma.shared.ui.component.DiscoverySection as SharedDiscoverySection
 
 @Composable
@@ -98,10 +99,12 @@ fun DiscoverySection(
             is InjectableContent<*> -> {
                 @Suppress("UNCHECKED_CAST")
                 val tvShowPreview = (injectableItem as InjectableContent<TvShowPreview>).item
+                val isUpcomingCategory = config is TvShowListingConfig.Filterable.Upcoming
                 UniversalMediaCard(
                     item = tvShowPreview.asUniversalMediaItem(),
                     onClick = { onTvShowClicked(tvShowPreview) },
                     isGridView = true,
+                    menuConfig = if (isUpcomingCategory) MediaOmniMenuConfig.Upcoming else MediaOmniMenuConfig.Default,
                     topStartSlot = {
                         val hasIndicator = when (config) {
                             is TvShowListingConfig.Filterable.Popular,

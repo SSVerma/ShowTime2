@@ -35,4 +35,37 @@ interface WatchlistDao {
 
     @Query("DELETE FROM watchlist")
     suspend fun clearWatchlist()
+
+    @Query("SELECT * FROM watchlist WHERE mediaType = 'movie' AND releaseDate = :todayIso AND hasNotifiedTheatrical = 0")
+    suspend fun getTheatricalReleaseAlertCandidates(todayIso: String): List<WatchlistEntity>
+
+    @Query("UPDATE watchlist SET hasNotifiedTheatrical = 1 WHERE mediaId = :mediaId")
+    suspend fun markTheatricalNotified(mediaId: Int)
+
+    @Query(
+        """
+        SELECT * FROM watchlist 
+        WHERE mediaType = 'movie' 
+          AND hasNotifiedStreaming = 0 
+          AND releaseDate >= :minReleaseDateIso 
+          AND releaseDate <= :maxReleaseDateIso 
+          AND lastStreamingCheckEpochMs < :minRecheckEpochMs 
+        ORDER BY lastStreamingCheckEpochMs ASC 
+        LIMIT :limit
+        """
+    )
+    suspend fun getStreamingRadarCandidates(
+        minReleaseDateIso: String,
+        maxReleaseDateIso: String,
+        minRecheckEpochMs: Long,
+        limit: Int = 3
+    ): List<WatchlistEntity>
+
+    @Query("UPDATE watchlist SET lastStreamingCheckEpochMs = :checkEpochMs, knownStreamingProviders = :providers, hasNotifiedStreaming = :hasNotified WHERE mediaId = :mediaId")
+    suspend fun updateStreamingCheckStatus(
+        mediaId: Int,
+        checkEpochMs: Long,
+        providers: String,
+        hasNotified: Boolean
+    )
 }

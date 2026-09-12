@@ -134,6 +134,8 @@ fun UniversalMediaCard(
         }
     }
 
+    val isItemUpcoming = menuConfig.isUpcoming || item.isUpcoming
+
     @Composable
     fun RenderOmniAction(isOverPoster: Boolean) {
         MediaOmniActionMenu(
@@ -156,7 +158,10 @@ fun UniversalMediaCard(
             onOpenDiscussions = onOpenDiscussions,
             onShare = onShare,
             onShowFeedback = onShowFeedback,
-            config = menuConfig.copy(isOverPoster = isOverPoster),
+            config = menuConfig.copy(
+                isUpcoming = isItemUpcoming,
+                isOverPoster = isOverPoster
+            ),
             viewModel = viewModel
         )
     }
@@ -179,7 +184,7 @@ fun UniversalMediaCard(
 
     val resolvedBottomStartBadge: (@Composable () -> Unit)? = when {
         bottomStartSlot != null -> bottomStartSlot
-        effectiveIsWatched -> {
+        effectiveIsWatched && !isItemUpcoming -> {
             { MediaCardWatchedBadge(onClick = resolvedToggleWatched) }
         }
 

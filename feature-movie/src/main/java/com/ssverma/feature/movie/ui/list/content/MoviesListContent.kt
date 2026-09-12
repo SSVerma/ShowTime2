@@ -17,6 +17,7 @@ import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
+import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
 
 @Composable
 fun MoviesListContent(
@@ -27,6 +28,8 @@ fun MoviesListContent(
     modifier: Modifier = Modifier,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
+    val isUpcomingCategory = config is MovieListingConfig.Filterable.Upcoming
+
     PagedList(
         pagingItems = moviePagingItems,
         contentPadding = PaddingValues(MaterialTheme.spacing.medium),
@@ -37,6 +40,7 @@ fun MoviesListContent(
             item = movie.asUniversalMediaItem(),
             onClick = { openMovieDetails(movie) },
             isGridView = false,
+            menuConfig = if (isUpcomingCategory) MediaOmniMenuConfig.Upcoming else MediaOmniMenuConfig.Default,
             topStartSlot = {
                 val hasIndicator = when (config) {
                     is MovieListingConfig.Filterable.Popular,

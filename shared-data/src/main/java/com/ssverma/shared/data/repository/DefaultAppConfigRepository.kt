@@ -8,6 +8,7 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.observe
 import com.ssverma.core.storage.keyvalue.write
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.utils.ReminderTimeCalculator
 import kotlinx.coroutines.CoroutineScope
@@ -97,6 +98,21 @@ class DefaultAppConfigRepository @Inject constructor(
             isLocallyEnabled && isRemotelyEnabled
         }
 
+    override val isReleaseRadarEnabled: Flow<Boolean>
+        get() = combine(
+            keyValueStorage.observe(ReleaseRadarEnabledKey, true),
+            appConfigProvider.observeBoolean(
+                ReleaseRadarConfig.REMOTE_KEY_RELEASE_RADAR_ENABLED,
+                ReleaseRadarConfig.DEFAULT_RELEASE_RADAR_ENABLED
+            )
+        ) { isLocallyEnabled, isRemotelyEnabled ->
+            isLocallyEnabled && isRemotelyEnabled
+        }
+
+    override suspend fun updateReleaseRadarEnabled(enabled: Boolean) {
+        keyValueStorage.write(ReleaseRadarEnabledKey, enabled)
+    }
+
     override suspend fun updateAppTheme(theme: AppTheme) {
         keyValueStorage.write(AppThemeKey, theme.name)
     }
@@ -184,6 +200,8 @@ class DefaultAppConfigRepository @Inject constructor(
         private val AnalyticsEnabledKey = booleanPreferencesKey("analytics_enabled")
 
         private val NotificationsEnabledKey = booleanPreferencesKey("notifications_enabled")
+
+        private val ReleaseRadarEnabledKey = booleanPreferencesKey("release_radar_enabled")
 
         private val ReminderNotificationHourKey = intPreferencesKey("reminder_notification_hour")
 

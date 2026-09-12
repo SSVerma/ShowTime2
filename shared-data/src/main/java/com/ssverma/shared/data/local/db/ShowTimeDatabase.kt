@@ -35,7 +35,7 @@ import com.ssverma.shared.data.local.db.entity.WatchlistEntity
         AiringReminderEntity::class,
         JoinedSecretListEntity::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class ShowTimeDatabase : RoomDatabase() {

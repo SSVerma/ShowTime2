@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LiveTv
+import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Star
@@ -44,6 +45,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -133,6 +135,9 @@ fun ProfileScreen(
                     contentLanguage = uiState.contentLanguage,
                     availableLanguages = uiState.availableLanguages,
                     userStreamingSubscriptions = uiState.userStreamingSubscriptions,
+                    isReleaseRadarEnabled = uiState.isReleaseRadarEnabled,
+                    isReleaseRadarRemoteEnabled = uiState.isReleaseRadarRemoteEnabled,
+                    onReleaseRadarToggled = { viewModel.updateReleaseRadarEnabled(it) },
                     googleUser = uiState.googleUser,
                     guestPseudonym = uiState.guestPseudonym,
                     isSigningIn = uiState.isSigningIn,
@@ -294,6 +299,9 @@ private fun ProfileContent(
     contentLanguage: String,
     availableLanguages: List<Language>,
     userStreamingSubscriptions: Set<Int>,
+    isReleaseRadarEnabled: Boolean,
+    isReleaseRadarRemoteEnabled: Boolean,
+    onReleaseRadarToggled: (Boolean) -> Unit,
     googleUser: GoogleUser?,
     guestPseudonym: String,
     isSigningIn: Boolean,
@@ -323,7 +331,7 @@ private fun ProfileContent(
     ) {
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-        // Avatar & Info Header
+        // Profile Avatar & Identity Card
         ProfileHeader(
             profile = profile,
             googleUser = googleUser,
@@ -345,7 +353,7 @@ private fun ProfileContent(
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-        // Pro Status / Upgrade Banner
+        // Monetization Banners
         if (isProActive) {
             ProActiveBanner()
         } else if (isPaywallRemoteEnabled) {
@@ -370,6 +378,9 @@ private fun ProfileContent(
             contentLanguage = contentLanguage,
             availableLanguages = availableLanguages,
             userStreamingSubscriptions = userStreamingSubscriptions,
+            isReleaseRadarEnabled = isReleaseRadarEnabled,
+            isReleaseRadarRemoteEnabled = isReleaseRadarRemoteEnabled,
+            onReleaseRadarToggled = onReleaseRadarToggled,
             googleUser = googleUser,
             traktAuthState = traktAuthState,
             isMockTraktEnabled = isMockTraktEnabled,
@@ -660,6 +671,9 @@ private fun SettingsNavGroup(
     contentLanguage: String,
     availableLanguages: List<Language>,
     userStreamingSubscriptions: Set<Int>,
+    isReleaseRadarEnabled: Boolean,
+    isReleaseRadarRemoteEnabled: Boolean,
+    onReleaseRadarToggled: (Boolean) -> Unit,
     googleUser: GoogleUser?,
     traktAuthState: TraktAuthState,
     isMockTraktEnabled: Boolean,
@@ -774,6 +788,16 @@ private fun SettingsNavGroup(
             onClick = onOpenStreamingSubscriptions
         )
 
+        if (isReleaseRadarRemoteEnabled) {
+            SettingsSwitchTile(
+                title = stringResource(R.string.settings_release_radar_title),
+                subtitle = stringResource(R.string.settings_release_radar_desc),
+                icon = Icons.Rounded.NotificationsActive,
+                checked = isReleaseRadarEnabled,
+                onCheckedChange = onReleaseRadarToggled
+            )
+        }
+
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
         HorizontalDivider(
@@ -872,6 +896,74 @@ private fun SettingsNavTile(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsSwitchTile(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedCard(
+        onClick = { onCheckedChange(!checked) },
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        ),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spacing.medium)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange
             )
         }
     }

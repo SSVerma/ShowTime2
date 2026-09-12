@@ -14,7 +14,8 @@ data class MoviePreview(
     val popularity: Float,
     val displayPopularity: String,
     val genreIds: List<Int>,
-    val adult: Boolean
+    val adult: Boolean,
+    val isUpcoming: Boolean = false
 )
 
 fun Movie.asMoviePreview(): MoviePreview {
@@ -32,6 +33,7 @@ fun Movie.asMoviePreview(): MoviePreview {
         popularity = popularity,
         displayPopularity = displayPopularity,
         genreIds = generes.map { it.id },
-        adult = false
+        adult = false,
+        isUpcoming = isUpcoming
     )
 }

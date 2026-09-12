@@ -17,6 +17,7 @@ import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
+import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
 
 @Composable
 fun TvShowsListContent(
@@ -27,6 +28,8 @@ fun TvShowsListContent(
     modifier: Modifier = Modifier,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
+    val isUpcomingCategory = config is TvShowListingConfig.Filterable.Upcoming
+
     PagedList(
         pagingItems = tvShowPagingItems,
         contentPadding = PaddingValues(MaterialTheme.spacing.medium),
@@ -37,6 +40,7 @@ fun TvShowsListContent(
             item = tvShow.asUniversalMediaItem(),
             onClick = { openTvShowDetails(tvShow) },
             isGridView = false,
+            menuConfig = if (isUpcomingCategory) MediaOmniMenuConfig.Upcoming else MediaOmniMenuConfig.Default,
             topStartSlot = {
                 val hasIndicator = when (config) {
                     is TvShowListingConfig.Filterable.Popular,

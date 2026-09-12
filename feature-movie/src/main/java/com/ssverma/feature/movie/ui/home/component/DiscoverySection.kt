@@ -22,6 +22,7 @@ import com.ssverma.shared.ui.component.media.MediaItemDefaults
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.UniversalMediaCard
 import com.ssverma.shared.ui.component.media.asUniversalMediaItem
+import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
 import com.ssverma.shared.ui.component.DiscoverySection as SharedDiscoverySection
 
 @Composable
@@ -81,12 +82,14 @@ fun DiscoverySection(
             is InjectableContent<*> -> {
                 @Suppress("UNCHECKED_CAST")
                 val moviePreview = (injectableItem as InjectableContent<MoviePreview>).item
+                val config = categoryPayload.asMovieListingConfig()
+                val isUpcomingCategory = config is MovieListingConfig.Filterable.Upcoming
                 UniversalMediaCard(
                     item = moviePreview.asUniversalMediaItem(),
                     onClick = { onMovieClicked(moviePreview) },
                     isGridView = true,
+                    menuConfig = if (isUpcomingCategory) MediaOmniMenuConfig.Upcoming else MediaOmniMenuConfig.Default,
                     topStartSlot = {
-                        val config = categoryPayload.asMovieListingConfig()
                         val hasIndicator = when (config) {
                             is MovieListingConfig.Filterable.Popular,
                             is MovieListingConfig.Filterable.TopRated,

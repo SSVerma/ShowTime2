@@ -84,6 +84,13 @@ class FakeAppConfigRepository(
         _isNotificationsEnabled.value = enabled
     }
 
+    private val _isReleaseRadarEnabled = MutableStateFlow(true)
+    override val isReleaseRadarEnabled: Flow<Boolean> = _isReleaseRadarEnabled.asStateFlow()
+
+    override suspend fun updateReleaseRadarEnabled(enabled: Boolean) {
+        _isReleaseRadarEnabled.value = enabled
+    }
+
     private val _reminderNotificationHour = MutableStateFlow(9)
     override val reminderNotificationHour: Flow<Int> = _reminderNotificationHour.asStateFlow()
 

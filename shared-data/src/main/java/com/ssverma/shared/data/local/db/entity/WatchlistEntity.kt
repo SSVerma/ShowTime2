@@ -13,5 +13,9 @@ data class WatchlistEntity(
     val backdropImageUrl: String,
     val voteAvg: Float,
     val releaseDate: String,
-    val addedAt: Long = System.currentTimeMillis()
+    val addedAt: Long = System.currentTimeMillis(),
+    val hasNotifiedTheatrical: Boolean = false,
+    val hasNotifiedStreaming: Boolean = false,
+    val lastStreamingCheckEpochMs: Long = 0L,
+    val knownStreamingProviders: String = ""
 )

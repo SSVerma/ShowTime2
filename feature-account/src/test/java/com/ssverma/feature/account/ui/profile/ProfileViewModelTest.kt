@@ -19,6 +19,7 @@ import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.auth.AuthState
 import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
 import io.mockk.coEvery
@@ -236,6 +237,47 @@ class ProfileViewModelTest {
             assertThat(state.message).isInstanceOf(UiText.StaticText::class.java)
             val staticText = state.message as UiText.StaticText
             assertThat(staticText.resId).isEqualTo(R.string.google_sign_in_failed)
+        }
+    }
+
+    @Test
+    fun `updateReleaseRadarEnabled updates appConfigRepository and uiState`() = runTest {
+        viewModel.updateReleaseRadarEnabled(false)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isReleaseRadarEnabled).isFalse()
+        }
+
+        viewModel.updateReleaseRadarEnabled(true)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isReleaseRadarEnabled).isTrue()
+        }
+    }
+
+    @Test
+    fun `isReleaseRadarRemoteEnabled reacts to remote config updates`() = runTest {
+        viewModel.uiState.test {
+            val initialState = awaitItem()
+            assertThat(initialState.isReleaseRadarRemoteEnabled).isTrue()
+
+            fakeAppConfigProvider.setBoolean(
+                ReleaseRadarConfig.REMOTE_KEY_RELEASE_RADAR_ENABLED,
+                false
+            )
+
+            val disabledState = awaitItem()
+            assertThat(disabledState.isReleaseRadarRemoteEnabled).isFalse()
+
+            fakeAppConfigProvider.setBoolean(
+                ReleaseRadarConfig.REMOTE_KEY_RELEASE_RADAR_ENABLED,
+                true
+            )
+
+            val reEnabledState = awaitItem()
+            assertThat(reEnabledState.isReleaseRadarRemoteEnabled).isTrue()
         }
     }
 }

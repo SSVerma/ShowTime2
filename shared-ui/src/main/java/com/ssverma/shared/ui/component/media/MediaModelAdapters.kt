@@ -19,7 +19,8 @@ fun MoviePreview.asUniversalMediaItem(): UniversalMediaItem {
         voteAvg = voteAvg,
         voteCount = voteCount,
         releaseDate = displayReleaseDate.orEmpty(),
-        displayYear = displayYear
+        displayYear = displayYear,
+        isUpcoming = isUpcoming
     )
 }
 
@@ -34,7 +35,8 @@ fun TvShowPreview.asUniversalMediaItem(): UniversalMediaItem {
         voteAvg = voteAvg,
         voteCount = voteCount,
         releaseDate = displayFirstAirDate.orEmpty(),
-        displayYear = displayYear
+        displayYear = displayYear,
+        isUpcoming = isUpcoming
     )
 }
 
@@ -49,7 +51,8 @@ fun Movie.asUniversalMediaItem(): UniversalMediaItem {
         voteAvg = voteAvg,
         voteCount = voteCount,
         releaseDate = displayReleaseDate.orEmpty(),
-        displayYear = releaseDate?.year?.toString().orEmpty()
+        displayYear = releaseDate?.year?.toString().orEmpty(),
+        isUpcoming = isUpcoming
     )
 }
 
@@ -64,7 +67,8 @@ fun TvShow.asUniversalMediaItem(): UniversalMediaItem {
         voteAvg = voteAvg,
         voteCount = voteCount,
         releaseDate = displayFirstAirDate.orEmpty(),
-        displayYear = firstAirDate?.year?.toString().orEmpty()
+        displayYear = firstAirDate?.year?.toString().orEmpty(),
+        isUpcoming = isUpcoming
     )
 }
 

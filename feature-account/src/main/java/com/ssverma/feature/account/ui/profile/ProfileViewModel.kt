@@ -20,6 +20,7 @@ import com.ssverma.shared.domain.auth.TmdbAuthProvider
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.auth.AuthState
+import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.ConfigurationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -159,6 +160,21 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             appConfigRepository.userStreamingSubscriptions.collectLatest { subscriptions ->
                 _uiState.update { it.copy(userStreamingSubscriptions = subscriptions) }
+            }
+        }
+
+        viewModelScope.launch {
+            appConfigRepository.isReleaseRadarEnabled.collectLatest { enabled ->
+                _uiState.update { it.copy(isReleaseRadarEnabled = enabled) }
+            }
+        }
+
+        viewModelScope.launch {
+            appConfigProvider.observeBoolean(
+                ReleaseRadarConfig.REMOTE_KEY_RELEASE_RADAR_ENABLED,
+                ReleaseRadarConfig.DEFAULT_RELEASE_RADAR_ENABLED
+            ).collectLatest { remoteEnabled ->
+                _uiState.update { it.copy(isReleaseRadarRemoteEnabled = remoteEnabled) }
             }
         }
 
@@ -311,6 +327,12 @@ class ProfileViewModel @Inject constructor(
 
     fun closeStreamingSubscriptionsSheet() {
         _uiState.update { it.copy(isStreamingSubscriptionsSheetVisible = false) }
+    }
+
+    fun updateReleaseRadarEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            appConfigRepository.updateReleaseRadarEnabled(enabled)
+        }
     }
 
     fun signInWithGoogle(activity: Activity) {
