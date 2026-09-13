@@ -65,6 +65,7 @@ import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.shared.ads.quota.PassKey
+import com.ssverma.shared.backup.ui.component.RestoreConfirmationDialog
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupOperation
@@ -158,41 +159,20 @@ fun BackupSyncScreen(
 
         // Restore Confirmation Dialog
         if (showRestoreConfirmDialog) {
-            AlertDialog(
-                onDismissRequest = { showRestoreConfirmDialog = false },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.CloudSync,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.restore_backup_confirm_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(text = stringResource(R.string.restore_backup_confirm_msg))
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showRestoreConfirmDialog = false
-                            viewModel.restoreBackup()
-                        }
-                    ) {
-                        Text(text = stringResource(R.string.restore_backup))
+            val metadata = uiState.lastBackupMetadata
+            if (metadata != null) {
+                RestoreConfirmationDialog(
+                    metadata = metadata,
+                    localItemCount = uiState.localItemCount,
+                    onConfirmRestore = {
+                        showRestoreConfirmDialog = false
+                        viewModel.restoreBackup()
+                    },
+                    onDismissRequest = {
+                        showRestoreConfirmDialog = false
                     }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showRestoreConfirmDialog = false }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
-                }
-            )
+                )
+            }
         }
 
         // Sign Out Confirmation Dialog

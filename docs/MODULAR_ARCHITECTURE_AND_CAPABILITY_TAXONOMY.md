@@ -91,6 +91,19 @@ Payment illustrates when a capability spans both a full destination and an overl
 
 ---
 
+### Case Study D: Cloud Backup & Restore (`core-backup` vs. `shared-backup`)
+
+* **`core-backup` (Platform Infrastructure Tier)**:
+  - Wraps Android Credential Manager, Google Identity SDK, and compressed local JSON persistence.
+  - Houses the background `PeriodicBackupWorker` scheduler and `BackupRepository` contract.
+  - Completely feature-agnostic and contains zero Compose UI elements.
+* **`shared-backup` (Application Engine & Shared UI Tier)**:
+  - Houses reusable Compose components: `CloudBackupFoundCard` (used during Onboarding in `:app`) and `RestoreConfirmationDialog` (used in `:feature-account`).
+  - Contains domain breakdown badges, summary formatters, and non-destructive merge UI helpers.
+  - Eliminates redundant code between Onboarding and Settings without dumping backup domain logic into `common-ui`.
+
+---
+
 ## 4. Guidelines for Module Protection (Zero Bloat Invariant)
 
 To maintain long-term codebase health and prevent architectural decay:

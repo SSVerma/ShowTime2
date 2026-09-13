@@ -22,5 +22,6 @@ interface BackupRepository {
     suspend fun setBackupFrequency(frequency: BackupFrequency)
     suspend fun setBackupOverWifiOnly(wifiOnly: Boolean)
     suspend fun getEffectiveUserId(): String
+    suspend fun getLocalItemCount(): Int
     fun resetStatus()
 }

@@ -79,6 +79,7 @@ class BackupSyncViewModel @Inject constructor(
         }
 
         rewardedAdManager.loadAd()
+        refreshLocalItemCount()
     }
 
     fun signInWithGoogle(activity: Activity) {
@@ -94,6 +95,8 @@ class BackupSyncViewModel @Inject constructor(
                         )
                     )
                 }
+                backupRepository.fetchRemoteBackupMetadata()
+                refreshLocalItemCount()
             }.onFailure { error ->
                 _uiState.update {
                     it.copy(
@@ -106,6 +109,13 @@ class BackupSyncViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun refreshLocalItemCount() {
+        viewModelScope.launch {
+            val count = backupRepository.getLocalItemCount()
+            _uiState.update { it.copy(localItemCount = count) }
         }
     }
 
@@ -155,6 +165,7 @@ class BackupSyncViewModel @Inject constructor(
                         message = UiText.StaticText(R.string.backup_success)
                     )
                 }
+                refreshLocalItemCount()
             }.onFailure {
                 _uiState.update {
                     it.copy(
@@ -174,6 +185,7 @@ class BackupSyncViewModel @Inject constructor(
                         message = UiText.StaticText(R.string.restore_success_msg)
                     )
                 }
+                refreshLocalItemCount()
             }.onFailure {
                 _uiState.update {
                     it.copy(

@@ -43,6 +43,11 @@
     <string name="sign_out_google">Sign out Google</string>
     <string name="cloud_backup">Cloud Backup</string>
     <string name="cloud_backup_desc">Private cloud backup with Google Account</string>
+    <string name="cloud_backup_status_last_backup">Last backup: %1$s</string>
+    <string name="cloud_backup_status_active">Cloud backup active</string>
+    <string name="cloud_backup_status_no_backup">No cloud backup yet • Tap to create</string>
+    <string name="cloud_backup_status_syncing">Syncing cloud backup…</string>
+    <string name="cloud_backup_status_restoring">Restoring library…</string>
     <string name="last_backup">Last Backup: %1$s</string>
     <string name="backup_size">Size: %1$s</string>
     <string name="back_up_now">Back Up Now</string>

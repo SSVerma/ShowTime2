@@ -61,9 +61,14 @@ class FakeBackupRepository : BackupRepository {
     }
 
     var fakeEffectiveUserId: String = "fake_user_123"
+    var fakeLocalItemCount: Int = 0
 
     override suspend fun getEffectiveUserId(): String {
         return fakeEffectiveUserId
+    }
+
+    override suspend fun getLocalItemCount(): Int {
+        return fakeLocalItemCount
     }
 
     override suspend fun fetchRemoteBackupMetadata(): Result<BackupMetadata?> {

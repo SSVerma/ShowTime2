@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Storage
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,7 +33,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,9 +49,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
+import com.ssverma.shared.backup.ui.component.CloudBackupFoundCard
 import com.ssverma.showtime.R
 import com.ssverma.showtime.ui.onboarding.illustration.CloudVaultArt
 
@@ -53,10 +61,17 @@ import com.ssverma.showtime.ui.onboarding.illustration.CloudVaultArt
 fun OnboardingCloudStep(
     googleUser: GoogleUser?,
     isSigningIn: Boolean,
+    lastBackupMetadata: BackupMetadata?,
+    isRestoringBackup: Boolean,
+    isBackupRestored: Boolean,
+    isBackupRestoreSkipped: Boolean,
     onSignInWithGoogle: (Activity) -> Unit,
+    onRestoreBackup: () -> Unit,
+    onSkipRestoreBackup: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var showStartFreshConfirmDialog by remember { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -136,39 +151,59 @@ fun OnboardingCloudStep(
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-        // Google Sign-In or Connected state
+        // Google Sign-In, Backup Found Card, or Connected state
         if (googleUser != null) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.CheckCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
+            val hasBackup = lastBackupMetadata != null && (
+                    lastBackupMetadata.favoritesCount + lastBackupMetadata.watchlistCount +
+                            lastBackupMetadata.historyCount + lastBackupMetadata.customListsCount +
+                            lastBackupMetadata.showProgressCount > 0
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = stringResource(
-                                id = R.string.onboarding_cloud_signed_in_as,
-                                googleUser.displayName.ifBlank { googleUser.email }
-                            ),
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+
+            if (hasBackup && !isBackupRestoreSkipped) {
+                CloudBackupFoundCard(
+                    metadata = lastBackupMetadata,
+                    isRestoring = isRestoringBackup,
+                    isRestored = isBackupRestored,
+                    onRestoreClick = onRestoreBackup,
+                    onSkipClick = { showStartFreshConfirmDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
-                        Text(
-                            text = googleUser.email,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
-                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = stringResource(
+                                    id = R.string.onboarding_cloud_signed_in_as,
+                                    googleUser.displayName.ifBlank { googleUser.email }
+                                ),
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = googleUser.email,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                            )
+                        }
                     }
                 }
             }
@@ -213,6 +248,37 @@ fun OnboardingCloudStep(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
+            )
+        }
+
+        if (showStartFreshConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showStartFreshConfirmDialog = false },
+                shape = RoundedCornerShape(24.dp),
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.onboarding_cloud_start_fresh_dialog_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(text = stringResource(id = R.string.onboarding_cloud_start_fresh_dialog_msg))
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showStartFreshConfirmDialog = false
+                            onSkipRestoreBackup()
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.onboarding_cloud_start_fresh_dialog_confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showStartFreshConfirmDialog = false }) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                }
             )
         }
 

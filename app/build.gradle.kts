@@ -144,6 +144,7 @@ dependencies {
     implementation(projects.sharedDomain)
     implementation(projects.sharedData)
     implementation(projects.sharedAds)
+    implementation(projects.sharedBackup)
     implementation(projects.commonUi)
 
     implementation(projects.featureMovie)

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shared_backup_found_title">Cloud Backup Found</string>
+    <string name="shared_backup_found_desc">We found your saved library from %1$s.</string>
+    <string name="shared_backup_restore_cta">Restore My Library</string>
+    <string name="shared_backup_restoring">Restoring library…</string>
+    <string name="shared_backup_restored_success">All set! Your library has been restored.</string>
+    <string name="shared_backup_skip_cta">Start Fresh</string>
+
+    <string name="shared_backup_restore_confirm_title">Restore Cloud Backup?</string>
+    <string name="shared_backup_restore_confirm_msg_empty">We found a backup from %1$s with %2$d saved items. Would you like to restore it now?</string>
+    <string name="shared_backup_restore_confirm_msg_merge">Your existing local items will be safely merged with %1$d items from your cloud backup (%2$s). No local data will be deleted.</string>
+    <string name="shared_backup_restore_confirm_action">Restore &amp; Merge</string>
+    <string name="shared_backup_restore_dismiss_action">Keep Local Only</string>
+
+    <string name="shared_backup_badge_movies">%1$d Movies</string>
+    <string name="shared_backup_badge_shows">%1$d TV Shows</string>
+    <string name="shared_backup_badge_episodes">%1$d Episodes</string>
+    <string name="shared_backup_badge_diary">%1$d Diary</string>
+    <string name="shared_backup_badge_lists">%1$d Lists</string>
+</resources>

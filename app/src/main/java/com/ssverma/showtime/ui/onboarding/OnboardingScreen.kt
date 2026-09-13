@@ -121,7 +121,13 @@ fun OnboardingScreen(
                         OnboardingCloudStep(
                             googleUser = uiState.googleUser,
                             isSigningIn = uiState.isSigningInWithGoogle,
-                            onSignInWithGoogle = { viewModel.signInWithGoogle(it) }
+                            lastBackupMetadata = uiState.lastBackupMetadata,
+                            isRestoringBackup = uiState.isRestoringBackup,
+                            isBackupRestored = uiState.isBackupRestored,
+                            isBackupRestoreSkipped = uiState.isBackupRestoreSkipped,
+                            onSignInWithGoogle = { viewModel.signInWithGoogle(it) },
+                            onRestoreBackup = { viewModel.restoreBackup() },
+                            onSkipRestoreBackup = { viewModel.skipRestoreBackup() }
                         )
                     }
                 }

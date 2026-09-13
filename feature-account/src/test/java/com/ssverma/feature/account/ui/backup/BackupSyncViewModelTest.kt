@@ -211,4 +211,45 @@ class BackupSyncViewModelTest {
             assertThat(staticText.resId).isEqualTo(R.string.google_sign_in_failed)
         }
     }
+
+    @Test
+    fun `signInWithGoogle with existing backup updates state without unprompted restore prompt`() =
+        runTest {
+            val mockActivity: Activity = mockk(relaxed = true)
+            val fakeMetadata = com.ssverma.core.backup.model.BackupMetadata(
+                timestamp = 1000L,
+                formattedDate = "Sep 10, 2026",
+                sizeBytes = 1024L,
+                formattedSize = "1 KB",
+                deviceName = "Pixel 8 Pro",
+                featureCounts = mapOf("favorites" to 10),
+                favoritesCount = 10
+            )
+            fakeBackupRepository.setLastBackupMetadata(fakeMetadata)
+            fakeBackupRepository.fakeLocalItemCount = 5
+
+            viewModel.signInWithGoogle(mockActivity)
+
+            viewModel.uiState.test {
+                val state = awaitItem()
+                assertThat(state.isSigningIn).isFalse()
+                assertThat(state.localItemCount).isEqualTo(5)
+            }
+        }
+
+    @Test
+    fun `initial state loads local item count from repository`() = runTest {
+        fakeBackupRepository.fakeLocalItemCount = 12
+        val freshVm = BackupSyncViewModel(
+            backupRepository = fakeBackupRepository,
+            billingRepository = fakeBillingRepository,
+            rewardManager = mockRewardManager,
+            rewardedAdManager = mockRewardedAdManager
+        )
+
+        freshVm.uiState.test {
+            val state = awaitItem()
+            assertThat(state.localItemCount).isEqualTo(12)
+        }
+    }
 }

@@ -67,6 +67,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
+import com.ssverma.core.backup.model.BackupMetadata
+import com.ssverma.core.backup.model.BackupOperation
+import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.Screen
@@ -139,6 +142,8 @@ fun ProfileScreen(
                     isReleaseRadarRemoteEnabled = uiState.isReleaseRadarRemoteEnabled,
                     onReleaseRadarToggled = { viewModel.updateReleaseRadarEnabled(it) },
                     googleUser = uiState.googleUser,
+                    backupStatus = uiState.backupStatus,
+                    lastBackupMetadata = uiState.lastBackupMetadata,
                     guestPseudonym = uiState.guestPseudonym,
                     isSigningIn = uiState.isSigningIn,
                     isSigningOut = uiState.isSigningOut,
@@ -305,6 +310,8 @@ private fun ProfileContent(
     isReleaseRadarRemoteEnabled: Boolean,
     onReleaseRadarToggled: (Boolean) -> Unit,
     googleUser: GoogleUser?,
+    backupStatus: BackupStatus,
+    lastBackupMetadata: BackupMetadata?,
     guestPseudonym: String,
     isSigningIn: Boolean,
     isSigningOut: Boolean,
@@ -384,6 +391,8 @@ private fun ProfileContent(
             isReleaseRadarRemoteEnabled = isReleaseRadarRemoteEnabled,
             onReleaseRadarToggled = onReleaseRadarToggled,
             googleUser = googleUser,
+            backupStatus = backupStatus,
+            lastBackupMetadata = lastBackupMetadata,
             traktAuthState = traktAuthState,
             isMockTraktEnabled = isMockTraktEnabled,
             onOpenBackup = onOpenBackup,
@@ -677,6 +686,8 @@ private fun SettingsNavGroup(
     isReleaseRadarRemoteEnabled: Boolean,
     onReleaseRadarToggled: (Boolean) -> Unit,
     googleUser: GoogleUser?,
+    backupStatus: BackupStatus,
+    lastBackupMetadata: BackupMetadata?,
     traktAuthState: TraktAuthState,
     isMockTraktEnabled: Boolean,
     onOpenBackup: () -> Unit,
@@ -701,13 +712,33 @@ private fun SettingsNavGroup(
             modifier = Modifier.padding(bottom = MaterialTheme.spacing.extraSmall)
         )
 
+        val backupSubtitle = when {
+            googleUser == null -> stringResource(R.string.cloud_backup_desc)
+            backupStatus is BackupStatus.InProgress -> {
+                if (backupStatus.operation == BackupOperation.RESTORE) {
+                    stringResource(R.string.cloud_backup_status_restoring)
+                } else {
+                    stringResource(R.string.cloud_backup_status_syncing)
+                }
+            }
+
+            lastBackupMetadata != null -> {
+                if (lastBackupMetadata.formattedDate.isNotBlank()) {
+                    stringResource(
+                        R.string.cloud_backup_status_last_backup,
+                        lastBackupMetadata.formattedDate
+                    )
+                } else {
+                    stringResource(R.string.cloud_backup_status_active)
+                }
+            }
+
+            else -> stringResource(R.string.cloud_backup_status_no_backup)
+        }
+
         SettingsNavTile(
             title = stringResource(R.string.cloud_backup),
-            subtitle = if (googleUser != null) {
-                googleUser.email
-            } else {
-                stringResource(R.string.cloud_backup_desc)
-            },
+            subtitle = backupSubtitle,
             icon = Icons.Rounded.CloudSync,
             onClick = onOpenBackup
         )

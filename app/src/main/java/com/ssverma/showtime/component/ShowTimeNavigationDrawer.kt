@@ -174,7 +174,7 @@ fun ShowTimeDrawerContent(
             // Section 4: Sync & Backup
             DrawerSectionHeader(title = stringResource(id = R.string.sync_section))
             DrawerItem(
-                label = stringResource(id = R.string.google_drive_backup),
+                label = stringResource(id = R.string.cloud_backup_and_restore),
                 icon = Icons.Rounded.CloudSync,
                 onClick = onOpenBackup
             )

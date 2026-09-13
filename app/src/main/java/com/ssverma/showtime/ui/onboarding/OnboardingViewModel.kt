@@ -33,12 +33,21 @@ class OnboardingViewModel @Inject constructor(
         loadProviders()
         loadGenres()
         observeGoogleUser()
+        observeBackupState()
     }
 
     private fun observeGoogleUser() {
         viewModelScope.launch {
             backupRepository.googleUser.collectLatest { user ->
                 _uiState.update { it.copy(googleUser = user) }
+            }
+        }
+    }
+
+    private fun observeBackupState() {
+        viewModelScope.launch {
+            backupRepository.lastBackupMetadata.collectLatest { metadata ->
+                _uiState.update { it.copy(lastBackupMetadata = metadata) }
             }
         }
     }
@@ -148,6 +157,32 @@ class OnboardingViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun restoreBackup() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRestoringBackup = true, errorMessage = null) }
+            val result = backupRepository.restoreBackup()
+            result.onSuccess {
+                _uiState.update {
+                    it.copy(
+                        isRestoringBackup = false,
+                        isBackupRestored = true
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update {
+                    it.copy(
+                        isRestoringBackup = false,
+                        errorMessage = error.message
+                    )
+                }
+            }
+        }
+    }
+
+    fun skipRestoreBackup() {
+        _uiState.update { it.copy(isBackupRestoreSkipped = true) }
     }
 
     fun clearErrorMessage() {

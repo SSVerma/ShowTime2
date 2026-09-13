@@ -101,7 +101,7 @@
     <string name="pro_badge">PRO</string>
     <string name="appearance_theme">Appearance &amp; Themes</string>
     <string name="content_region">Content Region</string>
-    <string name="google_drive_backup">Cloud Backup &amp; Restore</string>
+    <string name="cloud_backup_and_restore">Cloud Backup &amp; Restore</string>
     <string name="trakt_sync">Trakt.tv Sync</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="terms_of_service">Terms of Service</string>
@@ -304,7 +304,7 @@
     <!-- Step 4: Privacy & Cloud Sync -->
     <string name="onboarding_cloud_badge">PRIVACY &amp; SYNC</string>
     <string name="onboarding_cloud_title">Local-First, Cloud-Ready</string>
-    <string name="onboarding_cloud_tagline">Everything you log is stored offline on your device. Connect Google Drive for automatic, zero-effort backups.</string>
+    <string name="onboarding_cloud_tagline">Everything you log is stored offline on your device. Connect your Google account for automatic, zero-effort cloud backups.</string>
     <string name="onboarding_cloud_perk_offline_title">Always Available</string>
     <string name="onboarding_cloud_perk_offline_desc">Full offline support for logging films anywhere.</string>
     <string name="onboarding_cloud_perk_backup_title">Automated Backup</string>
@@ -313,6 +313,10 @@
     <string name="onboarding_cloud_signed_in_as">Signed in as %1$s</string>
     <string name="onboarding_cloud_continue_offline">Continue as Guest</string>
     <string name="onboarding_cloud_guest_hint">You can also continue offline and set up cloud backup anytime in Settings.</string>
+    <string name="onboarding_cloud_start_fresh_dialog_title">Start fresh?</string>
+    <string name="onboarding_cloud_start_fresh_dialog_msg">You can still restore your cloud backup anytime later from Settings.</string>
+    <string name="onboarding_cloud_start_fresh_dialog_confirm">Yes, Start Fresh</string>
+    <string name="cancel">Cancel</string>
     <string name="onboarding_complete_cta">Enter ShowTime</string>
 
     <!-- Curated Collections Shelf -->

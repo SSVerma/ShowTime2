@@ -330,6 +330,10 @@ class BackupRepositoryImpl @Inject constructor(
         return googleAuthClient.getEffectiveUserId()
     }
 
+    override suspend fun getLocalItemCount(): Int = withContext(Dispatchers.IO) {
+        contributors.sumOf { it.getEntityCount() }
+    }
+
     override suspend fun backupNow(): Result<BackupMetadata> = withContext(Dispatchers.IO) {
         _backupStatus.value = BackupStatus.InProgress(
             operation = BackupOperation.BACKUP,

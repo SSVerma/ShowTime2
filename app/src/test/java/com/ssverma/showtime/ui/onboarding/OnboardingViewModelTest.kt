@@ -27,15 +27,12 @@ class OnboardingViewModelTest {
 
     private val watchProviderRepository: WatchProviderRepository = mockk(relaxed = true)
     private val filterRepository: FilterRepository = mockk(relaxed = true)
-    private val backupRepository: BackupRepository = mockk(relaxed = true)
-
-    private val googleUserFlow = MutableStateFlow<com.ssverma.core.backup.model.GoogleUser?>(null)
+    private val fakeBackupRepository = com.ssverma.shared.testing.fakes.FakeBackupRepository()
 
     private lateinit var viewModel: OnboardingViewModel
 
     @Before
     fun setUp() {
-        every { backupRepository.googleUser } returns googleUserFlow
 
         val testProviders = listOf(
             ProviderInfo(
@@ -66,7 +63,7 @@ class OnboardingViewModelTest {
         viewModel = OnboardingViewModel(
             watchProviderRepository = watchProviderRepository,
             filterRepository = filterRepository,
-            backupRepository = backupRepository
+            backupRepository = fakeBackupRepository
         )
     }
 
@@ -133,5 +130,38 @@ class OnboardingViewModelTest {
 
         viewModel.toggleGenre(878)
         assertThat(viewModel.uiState.value.canProceedFromTaste).isFalse()
+    }
+
+    @Test
+    fun `restoreBackup success updates uiState to restored`() = runTest {
+        advanceUntilIdle()
+
+        val fakeMetadata = com.ssverma.core.backup.model.BackupMetadata(
+            timestamp = 1000L,
+            formattedDate = "Sep 10, 2026",
+            sizeBytes = 1024L,
+            formattedSize = "1 KB",
+            deviceName = "Pixel 8 Pro",
+            featureCounts = mapOf("favorites" to 10),
+            favoritesCount = 10
+        )
+        fakeBackupRepository.setLastBackupMetadata(fakeMetadata)
+
+        viewModel.restoreBackup()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.isRestoringBackup).isFalse()
+        assertThat(state.isBackupRestored).isTrue()
+        assertThat(state.errorMessage).isNull()
+    }
+
+    @Test
+    fun `skipRestoreBackup marks restore as skipped`() = runTest {
+        advanceUntilIdle()
+
+        viewModel.skipRestoreBackup()
+
+        assertThat(viewModel.uiState.value.isBackupRestoreSkipped).isTrue()
     }
 }

@@ -1,6 +1,7 @@
 package com.ssverma.showtime.ui.onboarding
 
 import androidx.compose.runtime.Immutable
+import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -26,7 +27,12 @@ data class OnboardingUiState(
     val selectedGenreIds: Set<Int> = emptySet(),
     val googleUser: GoogleUser? = null,
     val isSigningInWithGoogle: Boolean = false,
+    val lastBackupMetadata: BackupMetadata? = null,
+    val isRestoringBackup: Boolean = false,
+    val isBackupRestored: Boolean = false,
+    val isBackupRestoreSkipped: Boolean = false,
     val errorMessage: String? = null
 ) {
     val canProceedFromTaste: Boolean get() = selectedGenreIds.size >= 3
 }
+
