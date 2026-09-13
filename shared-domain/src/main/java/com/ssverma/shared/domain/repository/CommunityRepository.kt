@@ -50,7 +50,10 @@ interface CommunityRepository {
 
     fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>>
 
-    fun getCommunityCuratedLists(category: String? = null): Flow<List<CommunityCuratedList>>
+    fun getCommunityCuratedLists(
+        category: String? = null,
+        limit: Int = 50
+    ): Flow<List<CommunityCuratedList>>
 
     fun getCommunityListDetails(listId: String): Flow<CommunityCuratedList?>
 

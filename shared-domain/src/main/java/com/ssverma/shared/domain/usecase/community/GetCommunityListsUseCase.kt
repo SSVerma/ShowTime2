@@ -8,7 +8,10 @@ import javax.inject.Inject
 class GetCommunityListsUseCase @Inject constructor(
     private val communityRepository: CommunityRepository
 ) {
-    operator fun invoke(category: String? = null): Flow<List<CommunityCuratedList>> {
-        return communityRepository.getCommunityCuratedLists(category = category)
+    operator fun invoke(
+        category: String? = null,
+        limit: Int = 50
+    ): Flow<List<CommunityCuratedList>> {
+        return communityRepository.getCommunityCuratedLists(category = category, limit = limit)
     }
 }

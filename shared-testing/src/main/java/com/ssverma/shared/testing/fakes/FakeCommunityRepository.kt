@@ -142,7 +142,10 @@ class FakeCommunityRepository : CommunityRepository {
         return MutableStateFlow(emptyList())
     }
 
-    override fun getCommunityCuratedLists(category: String?): Flow<List<CommunityCuratedList>> {
+    override fun getCommunityCuratedLists(
+        category: String?,
+        limit: Int
+    ): Flow<List<CommunityCuratedList>> {
         return combine(communityLists, blockedUserIds) { lists, blocked ->
             lists
                 .filter {
@@ -153,6 +156,7 @@ class FakeCommunityRepository : CommunityRepository {
                     if (category.isNullOrBlank() || category == CommunityListCategories.ALL) true
                     else it.categoryTag.equals(category, ignoreCase = true)
                 }
+                .take(limit)
         }
     }
 

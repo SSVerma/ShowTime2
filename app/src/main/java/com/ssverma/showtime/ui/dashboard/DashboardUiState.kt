@@ -10,9 +10,11 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.TrendingDiscussion
 import com.ssverma.shared.domain.model.game.CinemaGameStats
+import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.model.trakt.CompletedShowDialogState
@@ -46,6 +48,10 @@ data class DashboardUiState(
     val dailyPoll: DailyPoll = DailyPoll.empty(LocalDate.now()),
     val showDailyPollSheet: Boolean = false,
     val trendingDiscussions: List<TrendingDiscussion> = emptyList(),
+    val communityLists: List<CommunityCuratedList> = emptyList(),
+    val customLists: List<CustomList> = emptyList(),
+    val isCuratedCommunitySelected: Boolean = false,
+    val selectedCommunityListForDetail: CommunityCuratedList? = null,
     val isMovieStreamingSelected: Boolean = true,
     val isMovieStudioSelected: Boolean = true,
     val isMoviePopularSelected: Boolean = true,

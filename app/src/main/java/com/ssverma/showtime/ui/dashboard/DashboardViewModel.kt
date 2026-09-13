@@ -37,12 +37,19 @@ import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
+import com.ssverma.shared.domain.model.community.CloneCommunityListParams
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
+import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
+import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
 import com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
+import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
+import com.ssverma.shared.domain.usecase.library.GetCustomListsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -69,6 +76,10 @@ class DashboardViewModel @Inject constructor(
     private val getDailyPollUseCase: GetDailyPollUseCase,
     private val voteDailyPollUseCase: VoteDailyPollUseCase,
     private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase,
+    private val getCommunityListsUseCase: GetCommunityListsUseCase,
+    private val getCustomListsUseCase: GetCustomListsUseCase,
+    private val toggleCommunityListUpvoteUseCase: ToggleCommunityListUpvoteUseCase,
+    private val cloneCommunityListUseCase: CloneCommunityListUseCase,
     private val movieGenresUseCase: MovieGenresUseCase,
     private val tvGenresUseCase: TvGenresUseCase,
     private val reminderRepository: ReminderRepository,
@@ -183,6 +194,12 @@ class DashboardViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            getCustomListsUseCase().collect { lists ->
+                _uiState.update { it.copy(customLists = lists.take(10)) }
+            }
+        }
+
+        viewModelScope.launch {
             appConfigRepository.notificationShelfLastDismissedMs.collect { dismissedEpoch ->
                 val coolingDown = dismissedEpoch > 0L &&
                         System.currentTimeMillis() - dismissedEpoch < NOTIFICATION_SHELF_COOLDOWN_MS
@@ -194,6 +211,52 @@ class DashboardViewModel @Inject constructor(
             appConfigRepository.acknowledgedFeatures.collect { acknowledged ->
                 _uiState.update { it.copy(acknowledgedFeatures = acknowledged) }
             }
+        }
+    }
+
+    private var hasLoadedCommunityLists = false
+
+    fun setCuratedCommunitySelected(selected: Boolean) {
+        _uiState.update { it.copy(isCuratedCommunitySelected = selected) }
+        if (selected && !hasLoadedCommunityLists) {
+            hasLoadedCommunityLists = true
+            loadCommunityLists()
+        }
+    }
+
+    private fun loadCommunityLists() {
+        viewModelScope.launch {
+            getCommunityListsUseCase(limit = 10).collect { lists ->
+                val topLists = lists.take(10)
+                _uiState.update { state ->
+                    val updatedSelected = state.selectedCommunityListForDetail?.let { selected ->
+                        topLists.find { it.listId == selected.listId } ?: selected
+                    }
+                    state.copy(
+                        communityLists = topLists,
+                        selectedCommunityListForDetail = updatedSelected
+                    )
+                }
+            }
+        }
+    }
+
+    fun selectCommunityListForDetail(list: CommunityCuratedList?) {
+        _uiState.update { it.copy(selectedCommunityListForDetail = list) }
+    }
+
+    fun toggleCommunityListUpvote(listId: String) = viewModelScope.launch {
+        toggleCommunityListUpvoteUseCase(ToggleListUpvoteParams(listId = listId))
+    }
+
+    fun cloneCommunityList(
+        communityList: CommunityCuratedList,
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) = viewModelScope.launch {
+        when (cloneCommunityListUseCase(CloneCommunityListParams(communityList = communityList))) {
+            is Result.Success -> onSuccess()
+            is Result.Error -> onError()
         }
     }
 

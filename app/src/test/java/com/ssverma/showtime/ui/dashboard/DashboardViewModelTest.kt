@@ -15,7 +15,10 @@ import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.domain.Result
 import com.ssverma.core.ui.UiState
 import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.community.CloneCommunityListParams
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.DailyPoll
+import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.model.feature.CinephileFeature
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
@@ -24,14 +27,19 @@ import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
+import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
+import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
 import com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
+import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
+import com.ssverma.shared.domain.usecase.library.GetCustomListsUseCase
 import com.ssverma.shared.testing.fakes.FakeTraktSyncRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -60,6 +68,11 @@ class DashboardViewModelTest {
     private val getDailyPollUseCase: GetDailyPollUseCase = mockk(relaxed = true)
     private val voteDailyPollUseCase: VoteDailyPollUseCase = mockk(relaxed = true)
     private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase = mockk(relaxed = true)
+    private val getCommunityListsUseCase: GetCommunityListsUseCase = mockk(relaxed = true)
+    private val getCustomListsUseCase: GetCustomListsUseCase = mockk(relaxed = true)
+    private val toggleCommunityListUpvoteUseCase: ToggleCommunityListUpvoteUseCase =
+        mockk(relaxed = true)
+    private val cloneCommunityListUseCase: CloneCommunityListUseCase = mockk(relaxed = true)
     private val movieGenresUseCase: MovieGenresUseCase = mockk(relaxed = true)
     private val tvGenresUseCase: TvGenresUseCase = mockk(relaxed = true)
     private val reminderRepository: ReminderRepository = mockk(relaxed = true)
@@ -104,6 +117,8 @@ class DashboardViewModelTest {
             DailyPoll.empty(LocalDate.now())
         )
         every { getTrendingDiscussionsUseCase() } returns MutableStateFlow(emptyList())
+        every { getCommunityListsUseCase(any(), any()) } returns MutableStateFlow(emptyList())
+        every { getCustomListsUseCase() } returns MutableStateFlow(emptyList())
 
         coEvery { trendingMoviesUseCase(any()) } returns Result.Success(emptyList())
         coEvery { trendingTvShowsUseCase(any()) } returns Result.Success(emptyList())
@@ -134,6 +149,10 @@ class DashboardViewModelTest {
             getDailyPollUseCase = getDailyPollUseCase,
             voteDailyPollUseCase = voteDailyPollUseCase,
             getTrendingDiscussionsUseCase = getTrendingDiscussionsUseCase,
+            getCommunityListsUseCase = getCommunityListsUseCase,
+            getCustomListsUseCase = getCustomListsUseCase,
+            toggleCommunityListUpvoteUseCase = toggleCommunityListUpvoteUseCase,
+            cloneCommunityListUseCase = cloneCommunityListUseCase,
             movieGenresUseCase = movieGenresUseCase,
             tvGenresUseCase = tvGenresUseCase,
             reminderRepository = reminderRepository,
@@ -350,5 +369,115 @@ class DashboardViewModelTest {
         assertThat(viewModel.uiState.value.acknowledgedFeatures)
             .contains(CinephileFeature.MOVIE_MATCH.id)
     }
+
+    @Test
+    fun `setCuratedCommunitySelected updates isCuratedCommunitySelected in state`() {
+        assertThat(viewModel.uiState.value.isCuratedCommunitySelected).isFalse()
+
+        viewModel.setCuratedCommunitySelected(true)
+        assertThat(viewModel.uiState.value.isCuratedCommunitySelected).isTrue()
+
+        viewModel.setCuratedCommunitySelected(false)
+        assertThat(viewModel.uiState.value.isCuratedCommunitySelected).isFalse()
+    }
+
+    @Test
+    fun `community lists are loaded on demand and not re-queried on subsequent toggles`() =
+        runTest {
+            // On initialization, community lists are not loaded
+            verify(exactly = 0) { getCommunityListsUseCase(any(), any()) }
+
+            // First toggle to community loads community lists
+            viewModel.setCuratedCommunitySelected(true)
+            advanceUntilIdle()
+            verify(exactly = 1) { getCommunityListsUseCase(any(), any()) }
+
+            // Switching back to my lists does not query again
+            viewModel.setCuratedCommunitySelected(false)
+            advanceUntilIdle()
+            verify(exactly = 1) { getCommunityListsUseCase(any(), any()) }
+
+            // Switching to community again does not re-query
+            viewModel.setCuratedCommunitySelected(true)
+            advanceUntilIdle()
+            verify(exactly = 1) { getCommunityListsUseCase(any(), any()) }
+        }
+
+    @Test
+    fun `selectCommunityListForDetail updates selectedCommunityListForDetail in state`() {
+        val testList = CommunityCuratedList(
+            listId = "list_123",
+            title = "Mind-Bending Sci-Fi",
+            description = "Great sci-fi movies",
+            categoryTag = "Sci-Fi",
+            authorId = "user_1",
+            authorName = "Alex",
+            authorAvatarUrl = null,
+            itemCount = 10,
+            previewPosters = emptyList(),
+            upvotesCount = 42,
+            clonesCount = 5,
+            isUpvotedByMe = false,
+            isClonedByMe = false,
+            isMine = false,
+            createdAtEpochMs = 1000L,
+            updatedAtEpochMs = 2000L,
+            items = emptyList()
+        )
+
+        viewModel.selectCommunityListForDetail(testList)
+        assertThat(viewModel.uiState.value.selectedCommunityListForDetail).isEqualTo(testList)
+
+        viewModel.selectCommunityListForDetail(null)
+        assertThat(viewModel.uiState.value.selectedCommunityListForDetail).isNull()
+    }
+
+    @Test
+    fun `toggleCommunityListUpvote invokes toggleCommunityListUpvoteUseCase`() = runTest {
+        viewModel.toggleCommunityListUpvote("list_123")
+        advanceUntilIdle()
+
+        coVerify { toggleCommunityListUpvoteUseCase(ToggleListUpvoteParams("list_123")) }
+    }
+
+    @Test
+    fun `cloneCommunityList invokes cloneCommunityListUseCase and triggers onSuccess callback`() =
+        runTest {
+            val testList = CommunityCuratedList(
+                listId = "list_123",
+                title = "Mind-Bending Sci-Fi",
+                description = "Great sci-fi movies",
+                categoryTag = "Sci-Fi",
+                authorId = "user_1",
+                authorName = "Alex",
+                authorAvatarUrl = null,
+                itemCount = 10,
+                previewPosters = emptyList(),
+                upvotesCount = 42,
+                clonesCount = 5,
+                isUpvotedByMe = false,
+                isClonedByMe = false,
+                isMine = false,
+                createdAtEpochMs = 1000L,
+                updatedAtEpochMs = 2000L,
+                items = emptyList()
+            )
+
+            coEvery { cloneCommunityListUseCase(any()) } returns Result.Success("local_123")
+
+            var successCalled = false
+            var errorCalled = false
+
+            viewModel.cloneCommunityList(
+                communityList = testList,
+                onSuccess = { successCalled = true },
+                onError = { errorCalled = true }
+            )
+            advanceUntilIdle()
+
+            assertThat(successCalled).isTrue()
+            assertThat(errorCalled).isFalse()
+            coVerify { cloneCommunityListUseCase(CloneCommunityListParams(testList)) }
+        }
 }
 

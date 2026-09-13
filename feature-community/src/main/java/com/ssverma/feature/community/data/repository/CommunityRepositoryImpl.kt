@@ -1315,7 +1315,10 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getCommunityCuratedLists(category: String?): Flow<List<CommunityCuratedList>> {
+    override fun getCommunityCuratedLists(
+        category: String?,
+        limit: Int
+    ): Flow<List<CommunityCuratedList>> {
         val remoteEnabledFlow =
             appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)
 
@@ -1327,7 +1330,7 @@ class CommunityRepositoryImpl @Inject constructor(
             val clonedSet = getCachedClonedListIds()
             val collectionRef = firestore.collection(colCommunityCuratedLists)
                 .whereEqualTo("isPublished", true)
-                .limit(50)
+                .limit(limit.toLong())
 
             val listener = collectionRef.addSnapshotListener { snapshot, error ->
                 if (error != null) {

@@ -305,4 +305,14 @@
     <string name="onboarding_cloud_continue_offline">Continue as Guest</string>
     <string name="onboarding_cloud_guest_hint">You can also continue offline and set up cloud backup anytime in Settings.</string>
     <string name="onboarding_complete_cta">Enter ShowTime</string>
+
+    <!-- Curated Collections Shelf -->
+    <string name="curated_collections_shelf_title">Curated Lists</string>
+    <string name="browse_all_community_lists">Browse All</string>
+    <string name="manage_lists">Manage Lists</string>
+    <string name="create_first_collection">Start a Collection</string>
+    <string name="create_collection_prompt">Organize your favorite movies and shows into themed collections</string>
+    <string name="empty_custom_lists_shelf_title">No Personal Lists Yet</string>
+    <string name="custom_lists_shelf_item_count">%1$d titles</string>
+    <string name="custom_lists_shelf_single_item">1 title</string>
 </resources>

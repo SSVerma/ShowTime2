@@ -21,6 +21,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.carousel.rememberCarouselState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.common.ui.community.CommunityListDetailSheet
 import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.image.NetworkImage
@@ -57,11 +59,13 @@ import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.ui.component.AttributionFooter
 import com.ssverma.shared.ui.component.SeasonCompletionDialog
 import com.ssverma.shared.ui.component.section.ActiveRemindersSection
+import com.ssverma.shared.ui.R as SharedR
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.ui.dashboard.shelves.AiringCalendarSyncBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.DailyPollBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
 import com.ssverma.showtime.ui.dashboard.shelves.cinephileHubShelf
+import com.ssverma.showtime.ui.dashboard.shelves.curatedCollectionsShelf
 import com.ssverma.showtime.ui.dashboard.shelves.dashboardGenreShelf
 import com.ssverma.showtime.ui.dashboard.shelves.inViewportNativeAdShelf
 import com.ssverma.showtime.ui.dashboard.shelves.notificationPermissionShelf
@@ -398,7 +402,64 @@ fun DashboardScreen(
                     modifier = Modifier.dashboardSectionSpacing()
                 )
 
-                // 11. Trending Community Discussions & Cinephile Buzz
+                // 11. Curated Collections (Community Curated Lists & My Lists)
+                curatedCollectionsShelf(
+                    isCommunitySelected = uiState.isCuratedCommunitySelected,
+                    communityLists = uiState.communityLists,
+                    customLists = uiState.customLists,
+                    onToggleCategory = viewModel::setCuratedCommunitySelected,
+                    onCommunityListClick = viewModel::selectCommunityListForDetail,
+                    onToggleCommunityUpvote = viewModel::toggleCommunityListUpvote,
+                    onCloneCommunityList = { list ->
+                        viewModel.cloneCommunityList(
+                            communityList = list,
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    val result = snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.list_cloned_success),
+                                        actionLabel = context.getString(SharedR.string.tab_my_lists),
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        openLibraryPage(LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists))
+                                    }
+                                }
+                            },
+                            onError = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.already_cloned_warning)
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    onCustomListClick = { list ->
+                        openLibraryPage(
+                            LibraryHomeNavKey(
+                                initialTab = LibraryTabDestination.CustomLists,
+                                targetCustomListId = list.listId
+                            )
+                        )
+                    },
+                    onCreateCustomListClick = {
+                        openLibraryPage(
+                            LibraryHomeNavKey(
+                                initialTab = LibraryTabDestination.CustomLists,
+                                openCreateCustomList = true
+                            )
+                        )
+                    },
+                    onBrowseAllCommunityClick = {
+                        openLibraryPage(LibraryHomeNavKey(initialTab = LibraryTabDestination.Community))
+                    },
+                    onManageMyListsClick = {
+                        openLibraryPage(LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists))
+                    },
+                    modifier = Modifier.dashboardSectionSpacing()
+                )
+
+                // 12. Trending Community Discussions & Cinephile Buzz
                 trendingDiscussionsShelf(
                     discussions = uiState.trendingDiscussions,
                     onDiscussionClick = openDiscussions,
@@ -452,6 +513,51 @@ fun DashboardScreen(
                         viewModel.exportRemindersToIcs(context)
                     },
                     onDismiss = { showCalendarSyncSheet = false }
+                )
+            }
+
+            uiState.selectedCommunityListForDetail?.let { selectedList ->
+                val updatedList =
+                    uiState.communityLists.find { it.listId == selectedList.listId } ?: selectedList
+                CommunityListDetailSheet(
+                    communityList = updatedList,
+                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                    onDismiss = { viewModel.selectCommunityListForDetail(null) },
+                    onItemClick = { mediaType, mediaId ->
+                        viewModel.selectCommunityListForDetail(null)
+                        if (mediaType == MediaType.Tv) {
+                            openTvShowDetails(mediaId)
+                        } else {
+                            openMovieDetails(mediaId)
+                        }
+                    },
+                    onToggleUpvote = {
+                        viewModel.toggleCommunityListUpvote(updatedList.listId)
+                    },
+                    onCloneList = {
+                        viewModel.cloneCommunityList(
+                            communityList = updatedList,
+                            onSuccess = {
+                                coroutineScope.launch {
+                                    val result = snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.list_cloned_success),
+                                        actionLabel = context.getString(SharedR.string.tab_my_lists),
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        openLibraryPage(LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists))
+                                    }
+                                }
+                            },
+                            onError = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showImmediateSnackbar(
+                                        message = context.getString(SharedR.string.already_cloned_warning)
+                                    )
+                                }
+                            }
+                        )
+                    }
                 )
             }
         }
