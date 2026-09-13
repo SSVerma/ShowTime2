@@ -197,7 +197,40 @@ class DefaultAppConfigRepository @Inject constructor(
         }
     }
 
+    override val lastSeenVersionCode: Flow<Int>
+        get() = keyValueStorage.observe(LastSeenVersionCodeKey, 0)
+
+    override suspend fun updateLastSeenVersionCode(versionCode: Int) {
+        keyValueStorage.write(LastSeenVersionCodeKey, versionCode)
+    }
+
+    override val lastSeenWhatsNewCampaign: Flow<String>
+        get() = keyValueStorage.observe(LastSeenWhatsNewCampaignKey, "")
+
+    override suspend fun updateLastSeenWhatsNewCampaign(campaignId: String) {
+        keyValueStorage.write(LastSeenWhatsNewCampaignKey, campaignId)
+    }
+
+    override val isWhatsNewEnabled: Flow<Boolean>
+        get() = appConfigProvider.observeBoolean("whats_new_enabled", true)
+
+    override val whatsNewCampaignId: Flow<String>
+        get() = appConfigProvider.observeString(
+            "whats_new_campaign_id",
+            DEFAULT_WHATS_NEW_CAMPAIGN_ID
+        )
+
+    override val whatsNewFeatureFilter: Flow<String>
+        get() = appConfigProvider.observeString("whats_new_feature_filter", "")
+
     companion object {
+        const val DEFAULT_WHATS_NEW_CAMPAIGN_ID = "2.0.0"
+
+        private val LastSeenWhatsNewCampaignKey =
+            stringPreferencesKey("last_seen_whats_new_campaign")
+
+        private val LastSeenVersionCodeKey = intPreferencesKey("last_seen_version_code")
+
         private val AcknowledgedFeaturesKey =
             stringSetPreferencesKey("acknowledged_features")
 

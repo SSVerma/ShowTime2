@@ -108,6 +108,7 @@ import com.ssverma.showtime.navigation.DashboardHomeNavKey
 import com.ssverma.showtime.navigation.ShowTimeNavDisplay
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
+import com.ssverma.showtime.navigation.WhatsNewNavKey
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -166,11 +167,15 @@ fun ShowTime(
         }
 
         val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
+        val lastSeenCampaign by appStateHolder.lastSeenWhatsNewCampaign.collectAsState()
+        val isWhatsNewEnabled by appStateHolder.isWhatsNewEnabled.collectAsState()
+        val currentCampaignId by appStateHolder.whatsNewCampaignId.collectAsState()
         var manuallyDismissedThisSession by remember { mutableStateOf(false) }
         var showManualAppInfoSheet by remember { mutableStateOf(false) }
         var showThemeSelectionSheet by remember { mutableStateOf(false) }
         var showLocalizationSettingsSheet by remember { mutableStateOf(false) }
         var showProPaywallSheet by remember { mutableStateOf(false) }
+        var hasAutoLaunchedTourThisSession by rememberSaveable { mutableStateOf(false) }
 
         val showAppInfoSheet =
             (!isAppInfoDismissed && !manuallyDismissedThisSession) || showManualAppInfoSheet
@@ -239,6 +244,18 @@ fun ShowTime(
                     showProPaywallSheet = false
                 }
             )
+        }
+
+        LaunchedEffect(isAppInfoDismissed, lastSeenCampaign, isWhatsNewEnabled, currentCampaignId) {
+            if (isAppInfoDismissed &&
+                !hasAutoLaunchedTourThisSession &&
+                isWhatsNewEnabled &&
+                lastSeenCampaign != "__UNINITIALIZED__" &&
+                lastSeenCampaign != currentCampaignId
+            ) {
+                hasAutoLaunchedTourThisSession = true
+                navigator.navigate(WhatsNewNavKey)
+            }
         }
 
         val currentDestination =
@@ -328,6 +345,10 @@ fun ShowTime(
                         onOpenAbout = {
                             coroutineScope.launch { drawerState.close() }
                             showManualAppInfoSheet = true
+                        },
+                        onOpenWhatsNew = {
+                            coroutineScope.launch { drawerState.close() }
+                            navigator.navigate(WhatsNewNavKey)
                         }
                     )
                 }

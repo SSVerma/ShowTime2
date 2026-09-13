@@ -117,6 +117,41 @@ class FakeAppConfigRepository(
         _acknowledgedFeatures.value = _acknowledgedFeatures.value + featureId
     }
 
+    private val _lastSeenVersionCode = MutableStateFlow(0)
+    override val lastSeenVersionCode: Flow<Int> = _lastSeenVersionCode.asStateFlow()
+
+    override suspend fun updateLastSeenVersionCode(versionCode: Int) {
+        _lastSeenVersionCode.value = versionCode
+    }
+
+    private val _lastSeenWhatsNewCampaign = MutableStateFlow("")
+    override val lastSeenWhatsNewCampaign: Flow<String> = _lastSeenWhatsNewCampaign.asStateFlow()
+
+    override suspend fun updateLastSeenWhatsNewCampaign(campaignId: String) {
+        _lastSeenWhatsNewCampaign.value = campaignId
+    }
+
+    private val _isWhatsNewEnabled = MutableStateFlow(true)
+    override val isWhatsNewEnabled: Flow<Boolean> = _isWhatsNewEnabled.asStateFlow()
+
+    fun setWhatsNewEnabled(enabled: Boolean) {
+        _isWhatsNewEnabled.value = enabled
+    }
+
+    private val _whatsNewCampaignId = MutableStateFlow("2.0.0")
+    override val whatsNewCampaignId: Flow<String> = _whatsNewCampaignId.asStateFlow()
+
+    fun setWhatsNewCampaignId(campaignId: String) {
+        _whatsNewCampaignId.value = campaignId
+    }
+
+    private val _whatsNewFeatureFilter = MutableStateFlow("")
+    override val whatsNewFeatureFilter: Flow<String> = _whatsNewFeatureFilter.asStateFlow()
+
+    fun setWhatsNewFeatureFilter(filter: String) {
+        _whatsNewFeatureFilter.value = filter
+    }
+
     fun setAppTheme(theme: AppTheme) {
         _appTheme.value = theme
     }

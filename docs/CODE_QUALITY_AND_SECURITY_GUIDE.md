@@ -144,6 +144,34 @@ the checklist in this guide before being merged into development or release bran
 
 ---
 
+### C. Zero Raw Emojis / ASCII Symbols in Production UI
+
+* **Rule**: Raw unicode emojis (e.g. 🎉, 🔥, 📅, 🏷️, 👥) and ASCII symbols (e.g. ★, ✓, →) must NEVER
+  be hardcoded into UI composables, text labels, or `res/values/strings.xml`.
+* **Rationale**: Raw emojis render inconsistently across Android OEMs (Samsung, Google, Xiaomi) and
+  OS versions, clash with Material 3 typography and dynamic contrast, lack theme color reactivity
+  (`LocalContentColor`), and harm accessibility screen readers.
+* **Standard**: Always use official semantic vector icons from Material Icons (`Icons.Rounded.*`)
+  or Compose Canvas/Vector assets for visual cues:
+  ```kotlin
+  // ❌ FORBIDDEN
+  Text(text = "🔥 12-Day Streak")
+  Text(text = "Rating: 8.7 ★")
+  Text(text = "✓ Synced")
+
+  // ✅ CORRECT
+  Row(verticalAlignment = Alignment.CenterVertically) {
+      Icon(
+          imageVector = Icons.Rounded.LocalFireDepartment,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.error
+      )
+      Text(text = streakDaysText)
+  }
+  ```
+
+---
+
 ## 4. Code Hygiene & Linting Standards
 
 ### A. Import Hygiene (Zero Wildcards & Zero Inline Classes)

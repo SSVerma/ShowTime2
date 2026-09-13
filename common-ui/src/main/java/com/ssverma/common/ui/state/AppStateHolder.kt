@@ -58,6 +58,41 @@ class AppStateHolder @Inject constructor(
             initialValue = false
         )
 
+    val lastSeenVersionCode: StateFlow<Int> = appConfigRepository.lastSeenVersionCode
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = -1
+        )
+
+    val lastSeenWhatsNewCampaign: StateFlow<String> = appConfigRepository.lastSeenWhatsNewCampaign
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = "__UNINITIALIZED__"
+        )
+
+    val isWhatsNewEnabled: StateFlow<Boolean> = appConfigRepository.isWhatsNewEnabled
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
+    val whatsNewCampaignId: StateFlow<String> = appConfigRepository.whatsNewCampaignId
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = "2.0.0"
+        )
+
+    val whatsNewFeatureFilter: StateFlow<String> = appConfigRepository.whatsNewFeatureFilter
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
+        )
+
     val watchProviderRegion: StateFlow<String> = appConfigRepository.watchProviderRegion
     val contentLanguage: StateFlow<String> = appConfigRepository.contentLanguage
     val preferredOriginalLanguage: StateFlow<String> = appConfigRepository.preferredOriginalLanguage
@@ -139,6 +174,24 @@ class AppStateHolder @Inject constructor(
             coroutineScope.launch {
                 appConfigRepository.dismissAppInfoBottomSheet()
             }
+        }
+    }
+
+    fun onDismissWhatsNew(versionCode: Int) {
+        coroutineScope.launch {
+            appConfigRepository.updateLastSeenVersionCode(versionCode)
+        }
+    }
+
+    fun onCompleteWhatsNewCampaign(campaignId: String) {
+        coroutineScope.launch {
+            appConfigRepository.updateLastSeenWhatsNewCampaign(campaignId)
+        }
+    }
+
+    fun acknowledgeFeature(featureId: String) {
+        coroutineScope.launch {
+            appConfigRepository.acknowledgeFeature(featureId)
         }
     }
 

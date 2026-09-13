@@ -66,4 +66,25 @@ interface AppConfigRepository {
 
     /** Mark a feature as acknowledged by the user. */
     suspend fun acknowledgeFeature(featureId: String)
+
+    /** Highest app versionCode the user has launched/seen, used for What's New & onboarding gating. */
+    val lastSeenVersionCode: Flow<Int>
+
+    /** Update the highest seen versionCode. */
+    suspend fun updateLastSeenVersionCode(versionCode: Int)
+
+    /** Campaign ID of the What's New tour the user has completed (e.g. "2.0.0"). */
+    val lastSeenWhatsNewCampaign: Flow<String>
+
+    /** Update the completed What's New campaign ID. */
+    suspend fun updateLastSeenWhatsNewCampaign(campaignId: String)
+
+    /** Remote kill-switch for What's New tour. */
+    val isWhatsNewEnabled: Flow<Boolean>
+
+    /** Current active campaign ID from Remote Config (defaults to "2.0.0"). */
+    val whatsNewCampaignId: Flow<String>
+
+    /** Optional filter for active features in the tour (comma-separated feature IDs). */
+    val whatsNewFeatureFilter: Flow<String>
 }

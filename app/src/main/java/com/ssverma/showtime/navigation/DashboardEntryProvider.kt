@@ -1,8 +1,12 @@
 package com.ssverma.showtime.navigation
 
 import android.net.Uri
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.showTimeEntry
 import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
@@ -29,6 +33,8 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.showtime.R
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 import com.ssverma.showtime.ui.dashboard.DashboardScreen
+import com.ssverma.showtime.ui.whatsnew.WhatsNewCatalog
+import com.ssverma.showtime.ui.whatsnew.WhatsNewScreen
 
 fun EntryProviderScope<NavKey>.dashboardEntries(
     navigator: Navigator,
@@ -173,6 +179,32 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             },
             openProPaywall = {
                 navigator.navigate(ProPaywallNavKey)
+            }
+        )
+    }
+
+    showTimeEntry<WhatsNewNavKey> {
+        val appStateHolder = LocalAppStateHolder.current
+        val featureFilter by appStateHolder.whatsNewFeatureFilter.collectAsState()
+        val campaignId by appStateHolder.whatsNewCampaignId.collectAsState()
+
+        val activeFeatures = remember(featureFilter) {
+            WhatsNewCatalog.filterActiveFeatures(featureFilter)
+        }
+
+        WhatsNewScreen(
+            features = activeFeatures,
+            onTryFeature = { feature ->
+                appStateHolder.acknowledgeFeature(feature.feature.id)
+                navigator.navigate(feature.destinationNavKey)
+            },
+            onFinishTour = {
+                appStateHolder.onCompleteWhatsNewCampaign(campaignId)
+                navigator.goBack()
+            },
+            onSkipTour = {
+                appStateHolder.onCompleteWhatsNewCampaign(campaignId)
+                navigator.goBack()
             }
         )
     }

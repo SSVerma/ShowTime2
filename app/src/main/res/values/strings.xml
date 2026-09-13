@@ -221,4 +221,40 @@
     <string name="cd_streak_flame">Current streak</string>
     <string name="cd_completed_check">Completed</string>
     <string name="cd_voted_check">Voted</string>
+
+    <!-- What's New Feature Tour -->
+    <string name="drawer_whats_new">What\'s New in 2.0</string>
+    <string name="whats_new_v2_headline">ShowTime 2.0 is Here</string>
+    <string name="whats_new_v2_subheadline">Discover powerful new tools built for cinema lovers</string>
+    <string name="whats_new_spotlight_tag">SHOWTIME 2.0 • FEATURE %1$d OF %2$d</string>
+
+    <string name="whats_new_my_lists_title">My Lists &amp; Collections</string>
+    <string name="whats_new_my_lists_desc">Build custom collections, track your watchlist, and share secret queues.</string>
+
+    <string name="whats_new_discover_title">Universal Discover</string>
+    <string name="whats_new_discover_desc">Filter across your streaming apps, mood vibes, and golden eras.</string>
+
+    <string name="whats_new_community_title">Community Lists</string>
+    <string name="whats_new_community_desc">Discover and bookmark curated cinema collections from fellow cinephiles.</string>
+
+    <string name="whats_new_match_title">Movie Match</string>
+    <string name="whats_new_match_desc">Swipe together with friends or solo to decide tonight\'s watch.</string>
+
+    <string name="whats_new_taste_title">Taste Profile</string>
+    <string name="whats_new_taste_desc">Decode your cinema DNA with genre radars, director stats, and retro receipts.</string>
+
+    <string name="whats_new_game_title">Daily Challenge</string>
+    <string name="whats_new_game_desc">Guess the mystery movie from clues each day and vote in community polls.</string>
+
+    <string name="whats_new_try_feature">Try %1$s</string>
+    <string name="whats_new_try_feature_default">Try It Now</string>
+    <string name="whats_new_revisit_feature">Revisit %1$s</string>
+    <string name="whats_new_get_started">Explore ShowTime 2.0</string>
+    <string name="whats_new_finish_tour">Finish Tour</string>
+    <string name="whats_new_next">Next</string>
+    <string name="whats_new_skip">Skip Tour</string>
+    <string name="whats_new_resume_banner">%1$s explored! Next up: %2$s</string>
+    <string name="whats_new_explored_badge">Explored</string>
+    <string name="whats_new_page_indicator_cd">Feature %1$d of %2$d</string>
+    <string name="whats_new_close_cd">Close What\'s New</string>
 </resources>

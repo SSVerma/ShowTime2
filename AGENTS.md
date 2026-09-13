@@ -52,6 +52,7 @@ Before planning, creating, or modifying any code in this repository, you **MUST*
     - Surface/Card ripples: Never use `Modifier.clickable` on container surfaces; always use container `onClick = { ... }`.
   - **Localization & Accessibility (Section 3)**:
     - Zero hardcoded English strings: All user-facing strings must reside in `res/values/strings.xml`.
+    - Zero raw emojis & ASCII symbols: Raw unicode emojis (🎉, 🔥, 📅) and ASCII art (★, ✓) are forbidden in UI code and strings; use Material icons (`Icons.Rounded.*`) or Compose graphics.
     - Every interactive icon and button must have a meaningful `contentDescription`.
   - **Code Hygiene (Section 4)**:
     - Zero wildcard imports (`import foo.bar.*` is forbidden).

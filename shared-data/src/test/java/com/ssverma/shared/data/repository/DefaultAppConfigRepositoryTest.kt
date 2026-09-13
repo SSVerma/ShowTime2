@@ -67,4 +67,41 @@ class DefaultAppConfigRepositoryTest {
             CinephileFeature.MOVIE_MATCH.id
         )
     }
+
+    @Test
+    fun `lastSeenVersionCode returns 0 initially`() = runTest {
+        val versionCode = repository.lastSeenVersionCode.first()
+        assertThat(versionCode).isEqualTo(0)
+    }
+
+    @Test
+    fun `updateLastSeenVersionCode persists and emits updated versionCode`() = runTest {
+        repository.updateLastSeenVersionCode(20000)
+
+        val updated = repository.lastSeenVersionCode.first()
+        assertThat(updated).isEqualTo(20000)
+    }
+
+    @Test
+    fun `lastSeenWhatsNewCampaign returns empty string initially`() = runTest {
+        val campaign = repository.lastSeenWhatsNewCampaign.first()
+        assertThat(campaign).isEmpty()
+    }
+
+    @Test
+    fun `updateLastSeenWhatsNewCampaign persists and emits updated campaign`() = runTest {
+        repository.updateLastSeenWhatsNewCampaign("2.0.0")
+
+        val updated = repository.lastSeenWhatsNewCampaign.first()
+        assertThat(updated).isEqualTo("2.0.0")
+    }
+
+    @Test
+    fun `isWhatsNewEnabled observes remote config`() = runTest {
+        every { mockAppConfigProvider.observeBoolean("whats_new_enabled", true) } returns
+                MutableStateFlow(true)
+
+        val enabled = repository.isWhatsNewEnabled.first()
+        assertThat(enabled).isTrue()
+    }
 }

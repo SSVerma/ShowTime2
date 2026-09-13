@@ -62,6 +62,7 @@ fun ShowTimeDrawerContent(
     onOpenPrivacy: () -> Unit,
     onOpenLicenses: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenWhatsNew: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     ModalDrawerSheet(
@@ -194,6 +195,12 @@ fun ShowTimeDrawerContent(
 
             // Section 4: About & Legal
             DrawerSectionHeader(title = stringResource(id = R.string.legal_section))
+            DrawerItem(
+                label = stringResource(id = R.string.drawer_whats_new),
+                icon = Icons.Rounded.AutoAwesome,
+                iconTint = MaterialTheme.colorScheme.primary,
+                onClick = onOpenWhatsNew
+            )
             DrawerItem(
                 label = stringResource(id = R.string.privacy_policy),
                 icon = Icons.Rounded.Policy,
