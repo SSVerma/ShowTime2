@@ -324,4 +324,6 @@
     <string name="empty_custom_lists_shelf_title">No Personal Lists Yet</string>
     <string name="custom_lists_shelf_item_count">%1$d titles</string>
     <string name="custom_lists_shelf_single_item">1 title</string>
+
+    <string name="press_back_again_to_exit">Press back again to exit</string>
 </resources>
