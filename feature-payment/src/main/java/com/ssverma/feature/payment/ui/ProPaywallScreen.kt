@@ -1,12 +1,6 @@
 package com.ssverma.feature.payment.ui
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,50 +12,45 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.CloudSync
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.common.ui.paywall.component.PaywallActiveIndicator
+import com.ssverma.common.ui.paywall.component.PaywallDisabledCard
+import com.ssverma.common.ui.paywall.component.PaywallFeaturesList
+import com.ssverma.common.ui.paywall.component.PaywallHeader
+import com.ssverma.common.ui.paywall.component.PaywallPlanCard
+import com.ssverma.common.ui.paywall.component.PaywallPriceHelper
 import com.ssverma.core.billing.BillingConstants
-import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
@@ -77,12 +66,38 @@ fun ProPaywallScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val activity = context.findActivity()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val restoreSuccessMsg = stringResource(R.string.restore_success)
+    val restoreNotFoundMsg = stringResource(R.string.restore_not_found)
+    val purchaseSuccessMsg = stringResource(R.string.purchase_success)
+    val purchaseFailedMsg = stringResource(R.string.purchase_failed)
+
+    LaunchedEffect(Unit) {
+        viewModel.restoreEvents.collect { event ->
+            val message = when (event) {
+                RestoreEvent.Success -> restoreSuccessMsg
+                RestoreEvent.NotFound -> restoreNotFoundMsg
+            }
+            snackbarHostState.showSnackbar(message = message)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.purchaseUiEvents.collect { event ->
+            val message = when (event) {
+                PurchaseUiEvent.Success -> purchaseSuccessMsg
+                is PurchaseUiEvent.Error -> event.message ?: purchaseFailedMsg
+            }
+            snackbarHostState.showSnackbar(message = message)
+        }
+    }
 
     var selectedProductId by remember(uiState.products) {
         mutableStateOf(
-            uiState.products.firstOrNull { it.id == BillingConstants.SKU_PRO_LIFETIME }?.id
+            uiState.products.firstOrNull { it.id == BillingConstants.SKU_PRO_YEARLY }?.id
                 ?: uiState.products.firstOrNull()?.id
-                ?: BillingConstants.SKU_PRO_LIFETIME
+                ?: BillingConstants.SKU_PRO_YEARLY
         )
     }
 
@@ -94,16 +109,15 @@ fun ProPaywallScreen(
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 modifier = Modifier.statusBarsPadding()
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
@@ -116,106 +130,17 @@ fun ProPaywallScreen(
                 .padding(bottom = MaterialTheme.spacing.large),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(56.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            Text(
-                text = stringResource(R.string.showtime_pro),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Text(
-                text = stringResource(R.string.pro_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+            PaywallHeader()
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-            // Pro Features List
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                FeatureHighlightRow(
-                    icon = Icons.Rounded.Block,
-                    title = stringResource(R.string.pro_feature_no_ads),
-                    subtitle = stringResource(R.string.pro_feature_no_ads_desc)
-                )
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)
-                )
-                FeatureHighlightRow(
-                    icon = Icons.Rounded.DarkMode,
-                    title = stringResource(R.string.pro_feature_oled),
-                    subtitle = stringResource(R.string.pro_feature_oled_desc)
-                )
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)
-                )
-                FeatureHighlightRow(
-                    icon = Icons.Rounded.AutoAwesome,
-                    title = stringResource(R.string.pro_feature_analytics),
-                    subtitle = stringResource(R.string.pro_feature_analytics_desc)
-                )
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)
-                )
-                FeatureHighlightRow(
-                    icon = Icons.Rounded.CloudSync,
-                    title = stringResource(R.string.pro_feature_sync),
-                    subtitle = stringResource(R.string.pro_feature_sync_desc)
-                )
-            }
+            PaywallFeaturesList()
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-            // Plans Selector
             if (!uiState.isProActive) {
                 if (!uiState.isPaywallRemoteEnabled || uiState.products.isEmpty()) {
-                    Surface(
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(MaterialTheme.spacing.medium)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.pro_purchases_temporarily_disabled),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
-                            Text(
-                                text = stringResource(R.string.pro_purchases_disabled_desc),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
+                    PaywallDisabledCard()
 
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
@@ -239,10 +164,23 @@ fun ProPaywallScreen(
                     ) {
                         uiState.products.forEach { product ->
                             val isSelected = product.id == selectedProductId
-                            PlanOptionCard(
+                            val isYearly = product.id == BillingConstants.SKU_PRO_YEARLY
+                            val savingsPercent = remember(product, uiState.products) {
+                                PaywallPriceHelper.calculateSavingsPercent(
+                                    product,
+                                    uiState.products
+                                )
+                            }
+                            val monthlyEquivalent = remember(product) {
+                                PaywallPriceHelper.calculateMonthlyEquivalentPrice(product)
+                            }
+
+                            PaywallPlanCard(
                                 product = product,
                                 isSelected = isSelected,
-                                isBestValue = product.id == BillingConstants.SKU_PRO_LIFETIME,
+                                isBestValue = isYearly,
+                                savingsPercent = savingsPercent,
+                                effectiveMonthlyPrice = monthlyEquivalent,
                                 onClick = { selectedProductId = product.id }
                             )
                         }
@@ -250,50 +188,72 @@ fun ProPaywallScreen(
 
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
+                    uiState.errorMessage?.let { error ->
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.85f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(
+                                    horizontal = MaterialTheme.spacing.medium,
+                                    vertical = MaterialTheme.spacing.small
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.ErrorOutline,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                                Text(
+                                    text = error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                    }
+
                     Button(
                         onClick = {
                             val selectedProduct =
                                 uiState.products.firstOrNull { it.id == selectedProductId }
                             if (activity != null && selectedProduct != null) {
-                                viewModel.purchaseProduct(activity, selectedProduct)
+                                viewModel.purchaseProduct(
+                                    activity = activity,
+                                    product = selectedProduct
+                                )
                             }
                         },
+                        enabled = !uiState.isPurchasing && !uiState.isRestoring,
                         shape = MaterialTheme.shapes.large,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(54.dp)
                     ) {
-                        Text(
-                            text = stringResource(R.string.upgrade_to_pro),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        if (uiState.isPurchasing) {
+                            ShowTimeLoadingIndicator(modifier = Modifier.size(20.dp))
+                        } else {
+                            Text(
+                                text = stringResource(R.string.upgrade_to_pro),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             } else {
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(MaterialTheme.spacing.medium),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                        Text(
-                            text = stringResource(R.string.pro_active),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                PaywallActiveIndicator(
+                    onManageSubscriptionClick = {
+                        val intent = viewModel.getManageSubscriptionsIntent()
+                        context.startActivity(intent)
                     }
-                }
+                )
             }
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
@@ -303,9 +263,7 @@ fun ProPaywallScreen(
                 enabled = !uiState.isRestoring
             ) {
                 if (uiState.isRestoring) {
-                    ShowTimeLoadingIndicator(
-                        modifier = Modifier.size(16.dp)
-                    )
+                    ShowTimeLoadingIndicator(modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                 }
                 Text(
@@ -314,161 +272,6 @@ fun ProPaywallScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun FeatureHighlightRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = MaterialTheme.spacing.extraSmall)
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-            modifier = Modifier.size(40.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun PlanOptionCard(
-    product: BillingProduct,
-    isSelected: Boolean,
-    isBestValue: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val borderColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "planBorderColor"
-    )
-
-    val containerColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface,
-        label = "planContainerColor"
-    )
-
-    OutlinedCard(
-        onClick = onClick,
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-        border = BorderStroke(width = if (isSelected) 2.dp else 1.dp, color = borderColor),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = MaterialTheme.spacing.medium,
-                    vertical = MaterialTheme.spacing.medium
-                )
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(20.dp)
-            ) {
-                if (isSelected) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Check,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = when (product.id) {
-                            BillingConstants.SKU_PRO_LIFETIME -> stringResource(R.string.plan_lifetime)
-                            BillingConstants.SKU_PRO_ANNUAL -> stringResource(R.string.plan_annual)
-                            BillingConstants.SKU_PRO_MONTHLY -> stringResource(R.string.plan_monthly)
-                            else -> product.name
-                        },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    if (isBestValue) {
-                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
-                        Box(
-                            modifier = Modifier
-                                .clip(MaterialTheme.shapes.extraSmall)
-                                .background(MaterialTheme.colorScheme.primary)
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.plan_best_value),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    }
-                }
-
-                Text(
-                    text = when (product.id) {
-                        BillingConstants.SKU_PRO_LIFETIME -> stringResource(R.string.plan_one_time)
-                        BillingConstants.SKU_PRO_ANNUAL -> stringResource(R.string.plan_per_year)
-                        BillingConstants.SKU_PRO_MONTHLY -> stringResource(R.string.plan_per_month)
-                        else -> product.description
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Text(
-                text = product.formattedPrice,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }

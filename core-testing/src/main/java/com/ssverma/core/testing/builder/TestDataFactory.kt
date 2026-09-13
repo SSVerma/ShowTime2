@@ -7,13 +7,14 @@ import com.ssverma.core.billing.model.ProductType
 object TestDataFactory {
 
     fun createBillingProduct(
-        id: String = BillingConstants.SKU_PRO_LIFETIME,
-        name: String = "ShowTime Pro (Lifetime)",
-        description: String = "One-time purchase for permanent ad-free access.",
-        formattedPrice: String = "$4.99",
-        priceAmountMicros: Long = 4990000,
+        id: String = BillingConstants.SKU_PRO_YEARLY,
+        name: String = "ShowTime Pro (Yearly)",
+        description: String = "Annual auto-renewing Pro subscription.",
+        formattedPrice: String = "$11.99/yr",
+        priceAmountMicros: Long = 11990000,
         priceCurrencyCode: String = "USD",
-        productType: ProductType = ProductType.INAPP
+        productType: ProductType = ProductType.SUBS,
+        billingPeriod: String? = "P1Y"
     ): BillingProduct = BillingProduct(
         id = id,
         name = name,
@@ -21,6 +22,7 @@ object TestDataFactory {
         formattedPrice = formattedPrice,
         priceAmountMicros = priceAmountMicros,
         priceCurrencyCode = priceCurrencyCode,
-        productType = productType
+        productType = productType,
+        billingPeriod = billingPeriod
     )
 }

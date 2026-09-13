@@ -21,6 +21,7 @@ data class ProfileScreenState(
     val isPaywallRemoteEnabled: Boolean = false,
     val availableProducts: List<BillingProduct> = emptyList(),
     val isRestoringPurchases: Boolean = false,
+    val isPurchasingProduct: Boolean = false,
     val currentTheme: AppTheme = AppTheme.System,
     val isDynamicColorEnabled: Boolean = true,
     val isThemeSheetVisible: Boolean = false,
@@ -46,6 +47,7 @@ data class ProfileScreenState(
     val isMockTraktEnabled: Boolean = false,
     val customTraktClientId: String = "",
     val isAdsDisabled: Boolean = false,
+    val paywallErrorMessage: UiText? = null,
     val message: UiText? = null
 )
 

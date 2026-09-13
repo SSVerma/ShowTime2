@@ -630,6 +630,14 @@ graph TD
     4. **Clean Reset & Sync Guarantee**: Local database wiping tools (e.g. in Dev Sandbox) must
        perform complete, synchronized resets across all tables (`show_watch_progress`,
        `episode_watch_history`, `library_item`, etc.) without leaving orphaned mock entries.
+    5. **Build Variant Quarantine (`src/debug` vs `src/release`)**: When external vendor services
+       (such as Google Play Billing, payment gateways, or ad providers) require fallback catalogs or
+       simulated completion logic for offline local emulator testing, all synthetic mock catalogs
+       and simulated purchase handlers MUST reside exclusively in the `src/debug` source set behind
+       a variant-isolated provider interface (e.g. `BillingSandboxProvider`). The `src/release`
+       implementation MUST be a no-op returning `emptyList()` / null, guaranteeing that synthetic
+       prices, mock tokens, and fake purchases physically do not exist in the production compilation unit
+       or release DEX.
 
 ---
 

@@ -15,5 +15,7 @@ data class TraktSyncUiState(
     val isAdLoading: Boolean = false,
     val availableProducts: List<BillingProduct> = emptyList(),
     val isRestoringPurchases: Boolean = false,
+    val isPurchasingProduct: Boolean = false,
+    val paywallErrorMessage: UiText? = null,
     val message: UiText? = null
 )

@@ -1,6 +1,8 @@
 package com.ssverma.core.testing.fakes
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
@@ -22,9 +24,8 @@ class FakeBillingRepository(
     private val _proStatus = MutableStateFlow<ProStatus>(
         if (initialProActive) {
             ProStatus.Active(
-                productId = BillingConstants.SKU_PRO_LIFETIME,
-                purchaseToken = "fake_purchase_token",
-                isLifetime = true
+                productId = BillingConstants.SKU_PRO_YEARLY,
+                purchaseToken = "fake_purchase_token"
             )
         } else {
             ProStatus.Inactive
@@ -50,44 +51,56 @@ class FakeBillingRepository(
 
     private var availableProducts: List<BillingProduct> = listOf(
         BillingProduct(
-            id = BillingConstants.SKU_PRO_LIFETIME,
-            name = "ShowTime Pro (Lifetime)",
-            description = "One-time purchase for permanent ad-free access.",
-            formattedPrice = "$4.99",
-            priceAmountMicros = 4990000,
+            id = BillingConstants.SKU_PRO_YEARLY,
+            name = "ShowTime Pro (Yearly)",
+            description = "Annual auto-renewing Pro subscription.",
+            formattedPrice = "$11.99/yr",
+            priceAmountMicros = 11990000,
             priceCurrencyCode = "USD",
-            productType = ProductType.INAPP
+            productType = ProductType.SUBS,
+            billingPeriod = "P1Y"
         ),
         BillingProduct(
-            id = BillingConstants.SKU_PRO_ANNUAL,
-            name = "ShowTime Pro (Annual)",
-            description = "Annual auto-renewing Pro subscription.",
-            formattedPrice = "$7.99/yr",
+            id = BillingConstants.SKU_PRO_SIX_MONTHS,
+            name = "ShowTime Pro (6 Months)",
+            description = "6-month auto-renewing Pro subscription.",
+            formattedPrice = "$7.99/6mo",
             priceAmountMicros = 7990000,
             priceCurrencyCode = "USD",
-            productType = ProductType.SUBS
+            productType = ProductType.SUBS,
+            billingPeriod = "P6M"
+        ),
+        BillingProduct(
+            id = BillingConstants.SKU_PRO_THREE_MONTHS,
+            name = "ShowTime Pro (3 Months)",
+            description = "3-month auto-renewing Pro subscription.",
+            formattedPrice = "$4.99/3mo",
+            priceAmountMicros = 4990000,
+            priceCurrencyCode = "USD",
+            productType = ProductType.SUBS,
+            billingPeriod = "P3M"
         ),
         BillingProduct(
             id = BillingConstants.SKU_PRO_MONTHLY,
             name = "ShowTime Pro (Monthly)",
             description = "Monthly auto-renewing Pro subscription.",
-            formattedPrice = "$1.49/mo",
-            priceAmountMicros = 1490000,
+            formattedPrice = "$1.99/mo",
+            priceAmountMicros = 1990000,
             priceCurrencyCode = "USD",
-            productType = ProductType.SUBS
+            productType = ProductType.SUBS,
+            billingPeriod = "P1M"
         )
     )
 
     var purchaseSuccessToReturn: Boolean = true
     var restoreSuccessToReturn: Boolean = true
 
-    fun setProActive(active: Boolean, productId: String = BillingConstants.SKU_PRO_LIFETIME) {
+    fun setProActive(active: Boolean, productId: String = BillingConstants.SKU_PRO_YEARLY) {
         _isProActive.value = active
         _proStatus.value = if (active) {
             ProStatus.Active(
                 productId = productId,
-                purchaseToken = "test_token_${System.currentTimeMillis()}",
-                isLifetime = productId == BillingConstants.SKU_PRO_LIFETIME
+                purchaseToken = "test_token_${System.currentTimeMillis()}"
             )
         } else {
             ProStatus.Inactive
@@ -110,7 +123,11 @@ class FakeBillingRepository(
         return availableProducts
     }
 
-    override suspend fun purchaseProduct(activity: Activity, product: BillingProduct): Boolean {
+    override suspend fun purchaseProduct(
+        activity: Activity,
+        product: BillingProduct,
+        obfuscatedAccountId: String?
+    ): Boolean {
         if (purchaseSuccessToReturn) {
             setProActive(active = true, productId = product.id)
             _purchaseEvents.emit(
@@ -128,5 +145,14 @@ class FakeBillingRepository(
             setProActive(active = true)
         }
         return restoreSuccessToReturn
+    }
+
+    override fun createManageSubscriptionIntent(sku: String?): Intent {
+        val uriString = if (sku != null) {
+            "https://play.google.com/store/account/subscriptions?sku=$sku"
+        } else {
+            "https://play.google.com/store/account/subscriptions"
+        }
+        return Intent(Intent.ACTION_VIEW, Uri.parse(uriString))
     }
 }

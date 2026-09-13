@@ -1,6 +1,7 @@
 package com.ssverma.core.billing
 
 import android.app.Activity
+import android.content.Intent
 import com.android.billingclient.api.BillingClient
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.BillingState
@@ -28,8 +29,14 @@ interface BillingRepository {
     val purchaseEvents: Flow<PurchaseResult>
 
     suspend fun getAvailableProducts(): List<BillingProduct>
-    suspend fun purchaseProduct(activity: Activity, product: BillingProduct): Boolean
+    suspend fun purchaseProduct(
+        activity: Activity,
+        product: BillingProduct,
+        obfuscatedAccountId: String? = null
+    ): Boolean
+
     suspend fun restorePurchases(): Boolean
+    fun createManageSubscriptionIntent(sku: String? = null): Intent
 }
 
 @Singleton
@@ -84,15 +91,23 @@ class BillingRepositoryImpl @Inject constructor(
         return billingClientWrapper.queryAvailableProducts()
     }
 
-    override suspend fun purchaseProduct(activity: Activity, product: BillingProduct): Boolean {
+    override suspend fun purchaseProduct(
+        activity: Activity,
+        product: BillingProduct,
+        obfuscatedAccountId: String?
+    ): Boolean {
         if (!isBillingEnabled.value) {
             return false
         }
-        val result = billingClientWrapper.launchBillingFlow(activity, product)
+        val result = billingClientWrapper.launchBillingFlow(activity, product, obfuscatedAccountId)
         return result.responseCode == BillingClient.BillingResponseCode.OK
     }
 
     override suspend fun restorePurchases(): Boolean {
         return billingClientWrapper.refreshPurchases()
+    }
+
+    override fun createManageSubscriptionIntent(sku: String?): Intent {
+        return billingClientWrapper.createManageSubscriptionIntent(sku)
     }
 }

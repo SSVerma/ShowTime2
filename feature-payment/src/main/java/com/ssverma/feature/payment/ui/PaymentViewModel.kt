@@ -1,27 +1,25 @@
 package com.ssverma.feature.payment.ui
 
 import android.app.Activity
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
+import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.ccm.AppConfigProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class PaymentUiState(
-    val products: List<BillingProduct> = emptyList(),
-    val isProActive: Boolean = false,
-    val isRestoring: Boolean = false,
-    val isPaywallRemoteEnabled: Boolean = true
-)
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
@@ -31,6 +29,12 @@ class PaymentViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(PaymentUiState())
     val uiState: StateFlow<PaymentUiState> = _uiState.asStateFlow()
+
+    private val _restoreEvents = MutableSharedFlow<RestoreEvent>()
+    val restoreEvents: SharedFlow<RestoreEvent> = _restoreEvents.asSharedFlow()
+
+    private val _purchaseUiEvents = MutableSharedFlow<PurchaseUiEvent>()
+    val purchaseUiEvents: SharedFlow<PurchaseUiEvent> = _purchaseUiEvents.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -60,20 +64,63 @@ class PaymentViewModel @Inject constructor(
                 _uiState.update { it.copy(isProActive = isPro) }
             }
         }
+
+        viewModelScope.launch {
+            billingRepository.purchaseEvents.collect { event ->
+                when (event) {
+                    is PurchaseResult.Success -> {
+                        _uiState.update { it.copy(isPurchasing = false, errorMessage = null) }
+                        _purchaseUiEvents.emit(PurchaseUiEvent.Success)
+                    }
+
+                    is PurchaseResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isPurchasing = false,
+                                errorMessage = event.message
+                            )
+                        }
+                        _purchaseUiEvents.emit(PurchaseUiEvent.Error(event.message))
+                    }
+
+                    is PurchaseResult.UserCancelled -> {
+                        _uiState.update { it.copy(isPurchasing = false, errorMessage = null) }
+                    }
+                }
+            }
+        }
     }
 
     fun purchaseProduct(activity: Activity, product: BillingProduct) {
         viewModelScope.launch {
-            billingRepository.purchaseProduct(activity, product)
+            _uiState.update { it.copy(isPurchasing = true, errorMessage = null) }
+            val launched =
+                billingRepository.purchaseProduct(activity = activity, product = product)
+            if (!launched) {
+                _uiState.update {
+                    it.copy(
+                        isPurchasing = false,
+                        errorMessage = "Purchase could not be completed. Please try again."
+                    )
+                }
+                _purchaseUiEvents.emit(PurchaseUiEvent.Error())
+            }
         }
     }
 
     fun restorePurchases() {
         viewModelScope.launch {
             _uiState.update { it.copy(isRestoring = true) }
-            billingRepository.restorePurchases()
+            val hasActivePro = billingRepository.restorePurchases()
             _uiState.update { it.copy(isRestoring = false) }
+            _restoreEvents.emit(
+                if (hasActivePro) RestoreEvent.Success else RestoreEvent.NotFound
+            )
         }
+    }
+
+    fun getManageSubscriptionsIntent(sku: String? = null): Intent {
+        return billingRepository.createManageSubscriptionIntent(sku)
     }
 
     companion object {

@@ -1,6 +1,8 @@
 package com.ssverma.feature.payment.ui
 
+import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import kotlinx.coroutines.Dispatchers
@@ -57,5 +59,49 @@ class PaymentViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.uiState.value.isProActive).isTrue()
+    }
+
+    @Test
+    fun `restorePurchases emits Success event and marks pro active on success`() = runTest {
+        advanceUntilIdle()
+        fakeBillingRepository.restoreSuccessToReturn = true
+
+        viewModel.restoreEvents.test {
+            viewModel.restorePurchases()
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(RestoreEvent.Success)
+            assertThat(viewModel.uiState.value.isProActive).isTrue()
+        }
+    }
+
+    @Test
+    fun `restorePurchases emits NotFound event when no purchases exist`() = runTest {
+        advanceUntilIdle()
+        fakeBillingRepository.restoreSuccessToReturn = false
+
+        viewModel.restoreEvents.test {
+            viewModel.restorePurchases()
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(RestoreEvent.NotFound)
+            assertThat(viewModel.uiState.value.isProActive).isFalse()
+        }
+    }
+
+    @Test
+    fun `purchaseEvents Error resets purchasing and sets errorMessage`() = runTest {
+        advanceUntilIdle()
+
+        viewModel.purchaseUiEvents.test {
+            fakeBillingRepository.emitPurchaseResult(
+                PurchaseResult.Error(responseCode = -1, message = "Play Store unavailable")
+            )
+            advanceUntilIdle()
+
+            assertThat(awaitItem()).isEqualTo(PurchaseUiEvent.Error("Play Store unavailable"))
+            assertThat(viewModel.uiState.value.isPurchasing).isFalse()
+            assertThat(viewModel.uiState.value.errorMessage).isEqualTo("Play Store unavailable")
+        }
     }
 }

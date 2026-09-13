@@ -77,9 +77,8 @@ class BillingRepositoryTest {
             assertThat(awaitItem()).isFalse()
 
             proStatusFlow.value = ProStatus.Active(
-                productId = BillingConstants.SKU_PRO_LIFETIME,
-                purchaseToken = "test_token",
-                isLifetime = true
+                productId = BillingConstants.SKU_PRO_YEARLY,
+                purchaseToken = "test_token"
             )
 
             assertThat(awaitItem()).isTrue()
@@ -90,13 +89,14 @@ class BillingRepositoryTest {
     fun `getAvailableProducts returns list from wrapper`() = runTest {
         val expectedProducts = listOf(
             BillingProduct(
-                id = BillingConstants.SKU_PRO_LIFETIME,
-                name = "ShowTime Pro Lifetime",
-                description = "Lifetime access",
-                formattedPrice = "$4.99",
-                priceAmountMicros = 4990000,
+                id = BillingConstants.SKU_PRO_YEARLY,
+                name = "ShowTime Pro (Yearly)",
+                description = "Annual auto-renewing Pro subscription.",
+                formattedPrice = "$11.99/yr",
+                priceAmountMicros = 11990000,
                 priceCurrencyCode = "USD",
-                productType = ProductType.INAPP
+                productType = ProductType.SUBS,
+                billingPeriod = "P1Y"
             )
         )
         coEvery { mockBillingClientWrapper.queryAvailableProducts() } returns expectedProducts
@@ -131,13 +131,14 @@ class BillingRepositoryTest {
         runTest {
             val expectedProducts = listOf(
                 BillingProduct(
-                    id = BillingConstants.SKU_PRO_LIFETIME,
-                    name = "ShowTime Pro Lifetime",
-                    description = "Lifetime access",
-                    formattedPrice = "$4.99",
-                    priceAmountMicros = 4990000,
+                    id = BillingConstants.SKU_PRO_YEARLY,
+                    name = "ShowTime Pro (Yearly)",
+                    description = "Annual auto-renewing Pro subscription.",
+                    formattedPrice = "$11.99/yr",
+                    priceAmountMicros = 11990000,
                     priceCurrencyCode = "USD",
-                    productType = ProductType.INAPP
+                    productType = ProductType.SUBS,
+                    billingPeriod = "P1Y"
                 )
             )
             coEvery { mockBillingClientWrapper.queryAvailableProducts() } returns expectedProducts

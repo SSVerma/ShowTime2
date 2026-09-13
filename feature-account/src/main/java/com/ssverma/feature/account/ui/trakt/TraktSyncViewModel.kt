@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
+import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.account.R
 import com.ssverma.shared.ads.quota.RewardManager
@@ -43,6 +44,45 @@ class TraktSyncViewModel @Inject constructor(
         viewModelScope.launch {
             billingRepository.isProActive.collectLatest { isPro ->
                 _uiState.update { it.copy(isProActive = isPro) }
+            }
+        }
+
+        viewModelScope.launch {
+            billingRepository.purchaseEvents.collect { event ->
+                when (event) {
+                    is PurchaseResult.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isPurchasingProduct = false,
+                                isPaywallVisible = false,
+                                message = UiText.StaticText(R.string.purchase_success)
+                            )
+                        }
+                    }
+
+                    is PurchaseResult.Error -> {
+                        val errorText = if (!event.message.isNullOrBlank()) {
+                            UiText.DynamicText(event.message)
+                        } else {
+                            UiText.StaticText(R.string.purchase_failed)
+                        }
+                        _uiState.update {
+                            it.copy(
+                                isPurchasingProduct = false,
+                                paywallErrorMessage = errorText
+                            )
+                        }
+                    }
+
+                    is PurchaseResult.UserCancelled -> {
+                        _uiState.update {
+                            it.copy(
+                                isPurchasingProduct = false,
+                                paywallErrorMessage = null
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -104,19 +144,41 @@ class TraktSyncViewModel @Inject constructor(
     }
 
     fun openPaywall() {
-        _uiState.update { it.copy(isPaywallVisible = true, isQuotaGateVisible = false) }
+        _uiState.update {
+            it.copy(
+                isPaywallVisible = true,
+                isQuotaGateVisible = false,
+                paywallErrorMessage = null
+            )
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(availableProducts = billingRepository.getAvailableProducts()) }
         }
     }
 
     fun dismissPaywall() {
-        _uiState.update { it.copy(isPaywallVisible = false) }
+        _uiState.update {
+            it.copy(
+                isPaywallVisible = false,
+                isPurchasingProduct = false,
+                paywallErrorMessage = null
+            )
+        }
     }
 
     fun purchaseProduct(activity: Activity, product: BillingProduct) {
         viewModelScope.launch {
-            billingRepository.purchaseProduct(activity, product)
+            _uiState.update { it.copy(isPurchasingProduct = true, paywallErrorMessage = null) }
+            val launched = billingRepository.purchaseProduct(activity, product)
+            if (!launched) {
+                val errorText = UiText.StaticText(R.string.purchase_failed)
+                _uiState.update {
+                    it.copy(
+                        isPurchasingProduct = false,
+                        paywallErrorMessage = errorText
+                    )
+                }
+            }
         }
     }
 
@@ -127,11 +189,9 @@ class TraktSyncViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     isRestoringPurchases = false,
-                    message = if (success) {
-                        UiText.StaticText(R.string.restore_success)
-                    } else {
-                        UiText.StaticText(R.string.restore_not_found)
-                    }
+                    isPaywallVisible = if (success) false else it.isPaywallVisible,
+                    message = if (success) UiText.StaticText(R.string.restore_success) else it.message,
+                    paywallErrorMessage = if (!success) UiText.StaticText(R.string.restore_not_found) else null
                 )
             }
         }

@@ -254,6 +254,8 @@ fun ProfileScreen(
                 products = uiState.availableProducts,
                 isProActive = uiState.isProActive,
                 isRestoring = uiState.isRestoringPurchases,
+                isPurchasing = uiState.isPurchasingProduct,
+                errorMessage = uiState.paywallErrorMessage?.asString(context),
                 onPurchaseClick = { act, product ->
                     viewModel.purchaseProduct(activity = act, product = product)
                 },
@@ -1124,17 +1126,17 @@ private fun ProUpgradeBanner(
             ) {
                 ProFeatureBadge(
                     icon = Icons.Rounded.Block,
-                    text = "100% Ad-Free",
+                    text = stringResource(R.string.badge_ad_free),
                     modifier = Modifier.weight(1f)
                 )
                 ProFeatureBadge(
                     icon = Icons.Rounded.DarkMode,
-                    text = "OLED Black",
+                    text = stringResource(R.string.badge_oled_black),
                     modifier = Modifier.weight(1f)
                 )
                 ProFeatureBadge(
                     icon = Icons.Rounded.CloudSync,
-                    text = "Trakt Sync",
+                    text = stringResource(R.string.badge_trakt_sync),
                     modifier = Modifier.weight(1f)
                 )
             }

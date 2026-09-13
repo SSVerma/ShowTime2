@@ -10,8 +10,7 @@ sealed interface BillingState {
 sealed interface ProStatus {
     data class Active(
         val productId: String,
-        val purchaseToken: String,
-        val isLifetime: Boolean
+        val purchaseToken: String
     ) : ProStatus
 
     data object Inactive : ProStatus

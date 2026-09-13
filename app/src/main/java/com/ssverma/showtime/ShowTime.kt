@@ -90,7 +90,6 @@ import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
 import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.account.navigation.ProfileNavKey
-import com.ssverma.feature.account.navigation.TraktSyncNavKey
 import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
@@ -390,10 +389,6 @@ private fun MainDashboardContent(
                     onOpenBackup = {
                         coroutineScope.launch { drawerState.close() }
                         navigator.navigate(BackupSyncNavKey)
-                    },
-                    onOpenTrakt = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(TraktSyncNavKey)
                     },
                     onOpenPro = {
                         coroutineScope.launch { drawerState.close() }

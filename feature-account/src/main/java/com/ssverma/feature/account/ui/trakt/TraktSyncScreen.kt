@@ -211,6 +211,8 @@ fun TraktSyncScreen(
                 products = uiState.availableProducts,
                 isProActive = uiState.isProActive,
                 isRestoring = uiState.isRestoringPurchases,
+                isPurchasing = uiState.isPurchasingProduct,
+                errorMessage = uiState.paywallErrorMessage?.asString(context),
                 onPurchaseClick = { act, product ->
                     viewModel.purchaseProduct(activity = act, product = product)
                 },

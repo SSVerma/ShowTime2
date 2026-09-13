@@ -5,7 +5,9 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleSignInCancelledException
+import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.billing.model.DebugProOverride
+import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.core.testing.fakes.FakeBillingRepository
@@ -131,6 +133,80 @@ class ProfileViewModelTest {
             assertThat(state.message).isInstanceOf(UiText.StaticText::class.java)
             val staticText = state.message as UiText.StaticText
             assertThat(staticText.resId).isEqualTo(R.string.restore_success)
+        }
+    }
+
+    @Test
+    fun `restorePurchases sets paywallErrorMessage on failure`() = runTest {
+        fakeBillingRepository.restoreSuccessToReturn = false
+
+        viewModel.restorePurchases()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isRestoringPurchases).isFalse()
+            assertThat(state.paywallErrorMessage).isInstanceOf(UiText.StaticText::class.java)
+            val staticText = state.paywallErrorMessage as UiText.StaticText
+            assertThat(staticText.resId).isEqualTo(R.string.restore_not_found)
+        }
+    }
+
+    @Test
+    fun `purchaseProduct sets error message when launch fails`() = runTest {
+        fakeBillingRepository.purchaseSuccessToReturn = false
+        val dummyProduct = fakeBillingRepository.getAvailableProducts().first()
+        val mockActivity: Activity = mockk(relaxed = true)
+
+        viewModel.purchaseProduct(activity = mockActivity, product = dummyProduct)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isPurchasingProduct).isFalse()
+            assertThat(state.paywallErrorMessage).isInstanceOf(UiText.StaticText::class.java)
+            val staticText = state.paywallErrorMessage as UiText.StaticText
+            assertThat(staticText.resId).isEqualTo(R.string.purchase_failed)
+        }
+    }
+
+    @Test
+    fun `purchaseEvents Success dismisses paywall and sets success message`() = runTest {
+        viewModel.openPaywall()
+        viewModel.uiState.test {
+            assertThat(awaitItem().isPaywallVisible).isTrue()
+        }
+
+        fakeBillingRepository.emitPurchaseResult(
+            PurchaseResult.Success(
+                productId = BillingConstants.SKU_PRO_YEARLY,
+                purchaseToken = "token"
+            )
+        )
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isPaywallVisible).isFalse()
+            assertThat(state.isPurchasingProduct).isFalse()
+            assertThat(state.message).isInstanceOf(UiText.StaticText::class.java)
+            val staticText = state.message as UiText.StaticText
+            assertThat(staticText.resId).isEqualTo(R.string.purchase_success)
+        }
+    }
+
+    @Test
+    fun `purchaseEvents Error sets error message and resets purchasing state`() = runTest {
+        fakeBillingRepository.emitPurchaseResult(
+            PurchaseResult.Error(
+                responseCode = -1,
+                message = "Billing test error"
+            )
+        )
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.isPurchasingProduct).isFalse()
+            assertThat(state.paywallErrorMessage).isInstanceOf(UiText.DynamicText::class.java)
+            val paywallErrorText = state.paywallErrorMessage as UiText.DynamicText
+            assertThat(paywallErrorText.text).isEqualTo("Billing test error")
         }
     }
 

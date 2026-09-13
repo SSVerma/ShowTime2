@@ -1,11 +1,8 @@
 package com.ssverma.common.ui.paywall
 
 import android.app.Activity
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,50 +10,46 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.CloudSync
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ssverma.common.ui.R
+import com.ssverma.common.ui.paywall.component.PaywallActiveIndicator
+import com.ssverma.common.ui.paywall.component.PaywallDisabledCard
+import com.ssverma.common.ui.paywall.component.PaywallFeaturesList
+import com.ssverma.common.ui.paywall.component.PaywallHeader
+import com.ssverma.common.ui.paywall.component.PaywallPlanCard
+import com.ssverma.common.ui.paywall.component.PaywallPriceHelper
 import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
+import com.ssverma.core.ui.component.ShowTimeSnackbarHost
+import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
@@ -71,6 +64,9 @@ fun ProPaywallBottomSheet(
     onRestoreClick: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    isPurchasing: Boolean = false,
+    errorMessage: String? = null,
+    onManageSubscriptionClick: (() -> Unit)? = null,
     isPaywallRemoteEnabled: Boolean = true,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
@@ -79,10 +75,21 @@ fun ProPaywallBottomSheet(
 
     var selectedProductId by remember(products) {
         mutableStateOf(
-            products.firstOrNull { it.id == BillingConstants.SKU_PRO_LIFETIME }?.id
+            products.firstOrNull { it.id == BillingConstants.SKU_PRO_YEARLY }?.id
                 ?: products.firstOrNull()?.id
-                ?: BillingConstants.SKU_PRO_LIFETIME
+                ?: BillingConstants.SKU_PRO_YEARLY
         )
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { error ->
+            snackbarHostState.showImmediateSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+        }
     }
 
     ShowTimeBottomSheet(
@@ -91,364 +98,132 @@ fun ProPaywallBottomSheet(
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = modifier
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = MaterialTheme.spacing.medium)
-                .padding(bottom = MaterialTheme.spacing.medium),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .navigationBarsPadding()
         ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(48.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
-
-            Text(
-                text = stringResource(R.string.showtime_pro),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Text(
-                text = stringResource(R.string.pro_subtitle),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = MaterialTheme.spacing.medium)
+                    .padding(bottom = MaterialTheme.spacing.medium),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ProFeatureRow(
-                    icon = Icons.Rounded.Block,
-                    title = stringResource(R.string.pro_feature_no_ads),
-                    subtitle = stringResource(R.string.pro_feature_no_ads_desc)
-                )
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.extraSmall)
-                )
-                ProFeatureRow(
-                    icon = Icons.Rounded.DarkMode,
-                    title = stringResource(R.string.pro_feature_oled),
-                    subtitle = stringResource(R.string.pro_feature_oled_desc)
-                )
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.extraSmall)
-                )
-                ProFeatureRow(
-                    icon = Icons.Rounded.AutoAwesome,
-                    title = stringResource(R.string.pro_feature_analytics),
-                    subtitle = stringResource(R.string.pro_feature_analytics_desc)
-                )
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = MaterialTheme.spacing.extraSmall)
-                )
-                ProFeatureRow(
-                    icon = Icons.Rounded.CloudSync,
-                    title = stringResource(R.string.pro_feature_sync),
-                    subtitle = stringResource(R.string.pro_feature_sync_desc)
-                )
-            }
+                PaywallHeader()
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
 
-            if (!isProActive) {
-                if (!isPaywallRemoteEnabled || products.isEmpty()) {
-                    Surface(
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(MaterialTheme.spacing.medium)
+                PaywallFeaturesList()
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
+
+                if (!isProActive) {
+                    if (!isPaywallRemoteEnabled || products.isEmpty()) {
+                        PaywallDisabledCard()
+
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+                        Button(
+                            onClick = onDismissRequest,
+                            shape = MaterialTheme.shapes.large,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp)
                         ) {
                             Text(
-                                text = stringResource(R.string.pro_purchases_temporarily_disabled),
+                                text = stringResource(R.string.pro_purchases_unavailable_cta),
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
-                            Text(
-                                text = stringResource(R.string.pro_purchases_disabled_desc),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
+                                fontWeight = FontWeight.Bold
                             )
                         }
-                    }
+                    } else {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            products.forEach { product ->
+                                val isSelected = product.id == selectedProductId
+                                val isYearly = product.id == BillingConstants.SKU_PRO_YEARLY
+                                val savingsPercent = remember(product, products) {
+                                    PaywallPriceHelper.calculateSavingsPercent(product, products)
+                                }
+                                val monthlyEquivalent = remember(product) {
+                                    PaywallPriceHelper.calculateMonthlyEquivalentPrice(product)
+                                }
 
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                                PaywallPlanCard(
+                                    product = product,
+                                    isSelected = isSelected,
+                                    isBestValue = isYearly,
+                                    savingsPercent = savingsPercent,
+                                    effectiveMonthlyPrice = monthlyEquivalent,
+                                    onClick = { selectedProductId = product.id }
+                                )
+                            }
+                        }
 
-                    Button(
-                        onClick = onDismissRequest,
-                        shape = MaterialTheme.shapes.large,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.pro_purchases_unavailable_cta),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
+
+                        Button(
+                            onClick = {
+                                val selectedProduct =
+                                    products.firstOrNull { it.id == selectedProductId }
+                                if (activity != null && selectedProduct != null) {
+                                    onPurchaseClick(activity, selectedProduct)
+                                }
+                            },
+                            enabled = !isPurchasing && !isRestoring,
+                            shape = MaterialTheme.shapes.large,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp)
+                        ) {
+                            if (isPurchasing) {
+                                ShowTimeLoadingIndicator(modifier = Modifier.size(20.dp))
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.upgrade_to_pro),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 } else {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        products.forEach { product ->
-                            val isSelected = product.id == selectedProductId
-                            PlanOptionCard(
-                                product = product,
-                                isSelected = isSelected,
-                                isBestValue = product.id == BillingConstants.SKU_PRO_LIFETIME,
-                                onClick = { selectedProductId = product.id }
-                            )
+                    PaywallActiveIndicator(
+                        onManageSubscriptionClick = onManageSubscriptionClick ?: {
+                            val uri =
+                                Uri.parse("https://play.google.com/store/account/subscriptions")
+                            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
                         }
-                    }
-
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-                    Button(
-                        onClick = {
-                            val selectedProduct =
-                                products.firstOrNull { it.id == selectedProductId }
-                            if (activity != null && selectedProduct != null) {
-                                onPurchaseClick(activity, selectedProduct)
-                            }
-                        },
-                        shape = MaterialTheme.shapes.large,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.upgrade_to_pro),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    )
                 }
-            } else {
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.fillMaxWidth()
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
+
+                TextButton(
+                    onClick = onRestoreClick,
+                    enabled = !isRestoring
                 ) {
-                    Row(
-                        modifier = Modifier.padding(MaterialTheme.spacing.medium),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    if (isRestoring) {
+                        ShowTimeLoadingIndicator(modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                        Text(
-                            text = stringResource(R.string.pro_active),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
                     }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            TextButton(
-                onClick = onRestoreClick,
-                enabled = !isRestoring
-            ) {
-                if (isRestoring) {
-                    ShowTimeLoadingIndicator(
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                }
-                Text(
-                    text = stringResource(R.string.restore_purchases),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProFeatureRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = MaterialTheme.spacing.extraSmall)
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-            modifier = Modifier.size(38.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun PlanOptionCard(
-    product: BillingProduct,
-    isSelected: Boolean,
-    isBestValue: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val borderColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "planBorderColor"
-    )
-
-    val containerColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface,
-        label = "planContainerColor"
-    )
-
-    OutlinedCard(
-        onClick = onClick,
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
-        border = BorderStroke(width = if (isSelected) 2.dp else 1.dp, color = borderColor),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = MaterialTheme.spacing.medium,
-                    vertical = MaterialTheme.spacing.small
-                )
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(20.dp)
-            ) {
-                if (isSelected) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Check,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = when (product.id) {
-                            BillingConstants.SKU_PRO_LIFETIME -> stringResource(R.string.plan_lifetime)
-                            BillingConstants.SKU_PRO_ANNUAL -> stringResource(R.string.plan_annual)
-                            BillingConstants.SKU_PRO_MONTHLY -> stringResource(R.string.plan_monthly)
-                            else -> product.name
-                        },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = stringResource(R.string.restore_purchases),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
                     )
-
-                    if (isBestValue) {
-                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
-                        Box(
-                            modifier = Modifier
-                                .clip(MaterialTheme.shapes.extraSmall)
-                                .background(MaterialTheme.colorScheme.primary)
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.plan_best_value),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    }
                 }
-
-                Text(
-                    text = when (product.id) {
-                        BillingConstants.SKU_PRO_LIFETIME -> stringResource(R.string.plan_one_time)
-                        BillingConstants.SKU_PRO_ANNUAL -> stringResource(R.string.plan_per_year)
-                        BillingConstants.SKU_PRO_MONTHLY -> stringResource(R.string.plan_per_month)
-                        else -> product.description
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
 
-            Text(
-                text = product.formattedPrice,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
+            ShowTimeSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = MaterialTheme.spacing.medium)
             )
         }
     }

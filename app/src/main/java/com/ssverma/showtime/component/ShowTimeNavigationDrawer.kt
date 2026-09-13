@@ -29,7 +29,6 @@ import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Policy
 import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material.icons.rounded.SyncAlt
 import androidx.compose.material.icons.rounded.TaskAlt
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -62,7 +61,7 @@ fun ShowTimeDrawerContent(
     onOpenReceipt: () -> Unit,
     onOpenCinemaGame: () -> Unit,
     onOpenBackup: () -> Unit,
-    onOpenTrakt: () -> Unit,
+    onOpenTrakt: () -> Unit = {},
     onOpenPro: () -> Unit,
     onOpenTheme: () -> Unit,
     onOpenLocalization: () -> Unit,
@@ -178,11 +177,6 @@ fun ShowTimeDrawerContent(
                 label = stringResource(id = R.string.google_drive_backup),
                 icon = Icons.Rounded.CloudSync,
                 onClick = onOpenBackup
-            )
-            DrawerItem(
-                label = stringResource(id = R.string.trakt_sync),
-                icon = Icons.Rounded.SyncAlt,
-                onClick = onOpenTrakt
             )
 
             DrawerDivider()
