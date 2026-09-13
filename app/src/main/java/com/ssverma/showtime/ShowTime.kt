@@ -149,14 +149,13 @@ fun ShowTime(
 
         val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
         val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
-        val lastSeenCampaign by appStateHolder.lastSeenWhatsNewCampaign.collectAsState()
         val currentCampaignId by appStateHolder.whatsNewCampaignId.collectAsState()
 
         val isFreshInstall =
             hasCompletedOnboarding == false && !isAppInfoDismissed && initialDeepLinkKey == null
 
         when {
-            hasCompletedOnboarding == null || lastSeenCampaign == "__UNINITIALIZED__" -> {
+            hasCompletedOnboarding == null -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

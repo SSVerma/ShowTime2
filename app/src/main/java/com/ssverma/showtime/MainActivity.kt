@@ -3,6 +3,9 @@ package com.ssverma.showtime
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
+import android.view.View
+import android.view.ViewTreeObserver
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -91,6 +94,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         deepLinkKey.value = extractNavKey(intent)
+
+        val content = findViewById<View>(android.R.id.content)
+        val startTime = SystemClock.uptimeMillis()
+        val maxWaitMs = 1000L
+
+        content.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    val isReady = appStateHolder.hasCompletedOnboarding.value != null
+                    val isTimedOut = SystemClock.uptimeMillis() - startTime > maxWaitMs
+                    return if (isReady || isTimedOut) {
+                        content.viewTreeObserver.removeOnPreDrawListener(this)
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+        )
 
         setContent {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {

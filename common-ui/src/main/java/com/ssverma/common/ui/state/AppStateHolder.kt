@@ -55,7 +55,7 @@ class AppStateHolder @Inject constructor(
     val isAppInfoDismissed: StateFlow<Boolean> = appConfigRepository.isAppInfoBottomSheetDismissed
         .stateIn(
             scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = false
         )
 
@@ -63,7 +63,7 @@ class AppStateHolder @Inject constructor(
         .map { it as Boolean? }
         .stateIn(
             scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = null
         )
 
@@ -77,7 +77,7 @@ class AppStateHolder @Inject constructor(
     val lastSeenWhatsNewCampaign: StateFlow<String> = appConfigRepository.lastSeenWhatsNewCampaign
         .stateIn(
             scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = "__UNINITIALIZED__"
         )
 
