@@ -170,6 +170,7 @@ dependencies {
     implementation(projects.featureMatchNavigation)
 
     implementation(libs.material)
+    implementation(libs.core.splashscreen)
     implementation(libs.compose.activity)
     implementation(projects.coreImage)
     implementation(libs.coil)

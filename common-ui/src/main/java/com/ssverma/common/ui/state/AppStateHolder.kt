@@ -41,14 +41,14 @@ class AppStateHolder @Inject constructor(
     val appTheme: StateFlow<AppTheme> = appConfigRepository.appTheme
         .stateIn(
             scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = AppTheme.System
         )
 
     val isDynamicColorEnabled: StateFlow<Boolean> = appConfigRepository.isDynamicColorEnabled
         .stateIn(
             scope = coroutineScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = false
         )
 

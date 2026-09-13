@@ -1,16 +1,18 @@
 package com.ssverma.showtime
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.SystemClock
 import android.view.View
-import android.view.ViewTreeObserver
+import android.view.animation.AccelerateInterpolator
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.animation.doOnEnd
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +72,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(
                 lightScrim = android.graphics.Color.TRANSPARENT,
@@ -83,6 +87,27 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
+        splashScreen.setKeepOnScreenCondition {
+            appStateHolder.hasCompletedOnboarding.value == null
+        }
+
+        splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
+            val splashScreenView = splashScreenViewProvider.view
+            val alphaAnim = ObjectAnimator.ofFloat(
+                splashScreenView,
+                View.ALPHA,
+                1f,
+                0f
+            ).apply {
+                interpolator = AccelerateInterpolator()
+                duration = 300L
+                doOnEnd {
+                    splashScreenViewProvider.remove()
+                }
+            }
+            alphaAnim.start()
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
@@ -94,25 +119,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         deepLinkKey.value = extractNavKey(intent)
-
-        val content = findViewById<View>(android.R.id.content)
-        val startTime = SystemClock.uptimeMillis()
-        val maxWaitMs = 1000L
-
-        content.viewTreeObserver.addOnPreDrawListener(
-            object : ViewTreeObserver.OnPreDrawListener {
-                override fun onPreDraw(): Boolean {
-                    val isReady = appStateHolder.hasCompletedOnboarding.value != null
-                    val isTimedOut = SystemClock.uptimeMillis() - startTime > maxWaitMs
-                    return if (isReady || isTimedOut) {
-                        content.viewTreeObserver.removeOnPreDrawListener(this)
-                        true
-                    } else {
-                        false
-                    }
-                }
-            }
-        )
 
         setContent {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
