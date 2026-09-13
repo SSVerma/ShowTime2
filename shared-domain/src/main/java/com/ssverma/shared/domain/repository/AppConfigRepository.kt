@@ -87,4 +87,16 @@ interface AppConfigRepository {
 
     /** Optional filter for active features in the tour (comma-separated feature IDs). */
     val whatsNewFeatureFilter: Flow<String>
+
+    /** Whether the user has completed or skipped the first-install onboarding journey. */
+    val hasCompletedOnboarding: Flow<Boolean>
+
+    /** Update the onboarding completion status. */
+    suspend fun updateHasCompletedOnboarding(completed: Boolean)
+
+    /** Genre IDs selected by the user during onboarding to seed personalized recommendations. */
+    val userSeededGenres: Flow<Set<Int>>
+
+    /** Save seeded genre IDs chosen by the user. */
+    suspend fun updateSeededGenres(genreIds: Set<Int>)
 }

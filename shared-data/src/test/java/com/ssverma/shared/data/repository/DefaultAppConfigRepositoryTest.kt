@@ -104,4 +104,32 @@ class DefaultAppConfigRepositoryTest {
         val enabled = repository.isWhatsNewEnabled.first()
         assertThat(enabled).isTrue()
     }
+
+    @Test
+    fun `hasCompletedOnboarding returns false initially`() = runTest {
+        val completed = repository.hasCompletedOnboarding.first()
+        assertThat(completed).isFalse()
+    }
+
+    @Test
+    fun `updateHasCompletedOnboarding persists and emits updated state`() = runTest {
+        repository.updateHasCompletedOnboarding(true)
+
+        val updated = repository.hasCompletedOnboarding.first()
+        assertThat(updated).isTrue()
+    }
+
+    @Test
+    fun `userSeededGenres returns empty set initially`() = runTest {
+        val genres = repository.userSeededGenres.first()
+        assertThat(genres).isEmpty()
+    }
+
+    @Test
+    fun `updateSeededGenres persists and emits updated genre IDs`() = runTest {
+        repository.updateSeededGenres(setOf(28, 12, 878))
+
+        val updated = repository.userSeededGenres.first()
+        assertThat(updated).containsExactly(28, 12, 878)
+    }
 }

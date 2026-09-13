@@ -155,4 +155,18 @@ class FakeAppConfigRepository(
     fun setAppTheme(theme: AppTheme) {
         _appTheme.value = theme
     }
+
+    private val _hasCompletedOnboarding = MutableStateFlow(false)
+    override val hasCompletedOnboarding: Flow<Boolean> = _hasCompletedOnboarding.asStateFlow()
+
+    override suspend fun updateHasCompletedOnboarding(completed: Boolean) {
+        _hasCompletedOnboarding.value = completed
+    }
+
+    private val _userSeededGenres = MutableStateFlow<Set<Int>>(emptySet())
+    override val userSeededGenres: Flow<Set<Int>> = _userSeededGenres.asStateFlow()
+
+    override suspend fun updateSeededGenres(genreIds: Set<Int>) {
+        _userSeededGenres.value = genreIds
+    }
 }

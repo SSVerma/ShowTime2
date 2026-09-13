@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,6 +57,14 @@ class AppStateHolder @Inject constructor(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = false
+        )
+
+    val hasCompletedOnboarding: StateFlow<Boolean?> = appConfigRepository.hasCompletedOnboarding
+        .map { it as Boolean? }
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
         )
 
     val lastSeenVersionCode: StateFlow<Int> = appConfigRepository.lastSeenVersionCode
@@ -174,6 +183,30 @@ class AppStateHolder @Inject constructor(
             coroutineScope.launch {
                 appConfigRepository.dismissAppInfoBottomSheet()
             }
+        }
+    }
+
+    fun onCompleteOnboarding(
+        streamingSubscriptions: Set<Int>,
+        seededGenres: Set<Int>,
+        campaignId: String
+    ) {
+        coroutineScope.launch {
+            if (streamingSubscriptions.isNotEmpty()) {
+                appConfigRepository.updateStreamingSubscriptions(streamingSubscriptions)
+            }
+            if (seededGenres.isNotEmpty()) {
+                appConfigRepository.updateSeededGenres(seededGenres)
+            }
+            appConfigRepository.updateHasCompletedOnboarding(true)
+            appConfigRepository.updateLastSeenWhatsNewCampaign(campaignId)
+            appConfigRepository.dismissAppInfoBottomSheet()
+        }
+    }
+
+    fun markOnboardingCompleted() {
+        coroutineScope.launch {
+            appConfigRepository.updateHasCompletedOnboarding(true)
         }
     }
 

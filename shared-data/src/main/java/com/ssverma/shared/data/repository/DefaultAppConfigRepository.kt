@@ -223,8 +223,32 @@ class DefaultAppConfigRepository @Inject constructor(
     override val whatsNewFeatureFilter: Flow<String>
         get() = appConfigProvider.observeString("whats_new_feature_filter", "")
 
+    override val hasCompletedOnboarding: Flow<Boolean>
+        get() = keyValueStorage.observe(HasCompletedOnboardingKey, false)
+
+    override suspend fun updateHasCompletedOnboarding(completed: Boolean) {
+        keyValueStorage.write(HasCompletedOnboardingKey, completed)
+    }
+
+    override val userSeededGenres: Flow<Set<Int>>
+        get() = keyValueStorage.observe(UserSeededGenresKey, "").map { raw ->
+            if (raw.isBlank()) emptySet()
+            else raw.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+        }
+
+    override suspend fun updateSeededGenres(genreIds: Set<Int>) {
+        val raw = genreIds.joinToString(",")
+        keyValueStorage.write(UserSeededGenresKey, raw)
+    }
+
     companion object {
         const val DEFAULT_WHATS_NEW_CAMPAIGN_ID = "2.0.0"
+
+        private val HasCompletedOnboardingKey =
+            booleanPreferencesKey("has_completed_onboarding")
+
+        private val UserSeededGenresKey =
+            stringPreferencesKey("user_seeded_genres")
 
         private val LastSeenWhatsNewCampaignKey =
             stringPreferencesKey("last_seen_whats_new_campaign")

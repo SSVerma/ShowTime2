@@ -257,4 +257,52 @@
     <string name="whats_new_explored_badge">Explored</string>
     <string name="whats_new_page_indicator_cd">Feature %1$d of %2$d</string>
     <string name="whats_new_close_cd">Close What\'s New</string>
+
+    <!-- Fresh Install Cinephile Onboarding -->
+    <string name="onboarding_step_indicator">Step %1$d of %2$d</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_next">Next</string>
+
+    <!-- Step 1: Welcome -->
+    <string name="onboarding_welcome_badge">CINEMATIC COMPANION</string>
+    <string name="onboarding_welcome_title">Welcome to ShowTime</string>
+    <string name="onboarding_welcome_tagline">Your personal cinema companion for discovering, logging, and celebrating film.</string>
+    <string name="onboarding_welcome_perk_discovery_title">Smart Discovery</string>
+    <string name="onboarding_welcome_perk_discovery_desc">Find what to watch based on what you actually stream.</string>
+    <string name="onboarding_welcome_perk_diary_title">Cinema Diary</string>
+    <string name="onboarding_welcome_perk_diary_desc">Log watches, rate films, and decode your movie DNA.</string>
+    <string name="onboarding_welcome_perk_privacy_title">Local-First &amp; Private</string>
+    <string name="onboarding_welcome_perk_privacy_desc">Your collection stays safe on your device. No unwanted tracking.</string>
+    <string name="onboarding_welcome_cta">Begin Setup</string>
+
+    <!-- Step 2: Subscriptions -->
+    <string name="onboarding_subs_badge">STREAMING HUBS</string>
+    <string name="onboarding_subs_title">Where do you watch?</string>
+    <string name="onboarding_subs_tagline">Select your active services so ShowTime can highlight movies available right now. You can change this anytime.</string>
+    <string name="onboarding_subs_select_all">Select Popular</string>
+    <string name="onboarding_subs_clear">Clear</string>
+    <string name="onboarding_subs_selected_count">%1$d services selected</string>
+    <string name="onboarding_subs_skip_note">You can change or add services anytime in Settings.</string>
+
+    <!-- Step 3: Taste Calibration -->
+    <string name="onboarding_taste_badge">GENRE CALIBRATION</string>
+    <string name="onboarding_taste_title">What moves you?</string>
+    <string name="onboarding_taste_tagline">Choose at least 3 genres to seed your personalized recommendations.</string>
+    <string name="onboarding_taste_requirement_unmet">Pick %1$d more</string>
+    <string name="onboarding_taste_requirement_met">Continue with %1$d genres</string>
+
+    <!-- Step 4: Privacy & Cloud Sync -->
+    <string name="onboarding_cloud_badge">PRIVACY &amp; SYNC</string>
+    <string name="onboarding_cloud_title">Local-First, Cloud-Ready</string>
+    <string name="onboarding_cloud_tagline">Everything you log is stored offline on your device. Connect Google Drive for automatic, zero-effort backups.</string>
+    <string name="onboarding_cloud_perk_offline_title">Always Available</string>
+    <string name="onboarding_cloud_perk_offline_desc">Full offline support for logging films anywhere.</string>
+    <string name="onboarding_cloud_perk_backup_title">Automated Backup</string>
+    <string name="onboarding_cloud_perk_backup_desc">Seamlessly restore your watchlist and diary across devices.</string>
+    <string name="onboarding_cloud_sign_in_google">Continue with Google</string>
+    <string name="onboarding_cloud_signed_in_as">Signed in as %1$s</string>
+    <string name="onboarding_cloud_continue_offline">Continue as Guest</string>
+    <string name="onboarding_cloud_guest_hint">You can also continue offline and set up cloud backup anytime in Settings.</string>
+    <string name="onboarding_complete_cta">Enter ShowTime</string>
 </resources>

@@ -105,10 +105,12 @@ import com.ssverma.showtime.component.ShowTimeDrawerContent
 import com.ssverma.showtime.component.ShowTimeTopSearchBar
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.navigation.DashboardHomeNavKey
+import com.ssverma.showtime.navigation.OnboardingNavKey
 import com.ssverma.showtime.navigation.ShowTimeNavDisplay
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 import com.ssverma.showtime.navigation.WhatsNewNavKey
+import com.ssverma.showtime.ui.onboarding.OnboardingScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -120,9 +122,6 @@ fun ShowTime(
     val appTheme by appStateHolder.appTheme.collectAsState(initial = AppTheme.System)
     val isDynamicColorEnabled by appStateHolder.isDynamicColorEnabled.collectAsState(initial = false)
     val isProActive by appStateHolder.isProActive.collectAsState(initial = false)
-    val googleUser by appStateHolder.googleUser.collectAsState(initial = null)
-    val watchProviderRegion by appStateHolder.watchProviderRegion.collectAsState()
-    val preferredOriginalLanguage by appStateHolder.preferredOriginalLanguage.collectAsState()
 
     ShowTimeTheme(
         appTheme = appTheme,
@@ -136,7 +135,6 @@ fun ShowTime(
         }
 
         val view = LocalView.current
-        val context = LocalContext.current
         if (!view.isInEditMode) {
             LaunchedEffect(darkTheme) {
                 val window = (view.context as? Activity)?.window ?: return@LaunchedEffect
@@ -149,383 +147,447 @@ fun ShowTime(
             }
         }
 
-        val topLevelRoutes = remember {
-            ShowTimeTopLevelNavItems.map { it.navKey }.toSet()
-        }
-
-        val navigationState = rememberNavigationState(
-            startRoute = DashboardHomeNavKey,
-            topLevelRoutes = topLevelRoutes
-        )
-
-        val navigator = remember(navigationState) { Navigator(navigationState) }
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-        val coroutineScope = rememberCoroutineScope()
-
-        LaunchedEffect(initialDeepLinkKey) {
-            initialDeepLinkKey?.let { navigator.navigate(it) }
-        }
-
+        val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
         val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
         val lastSeenCampaign by appStateHolder.lastSeenWhatsNewCampaign.collectAsState()
-        val isWhatsNewEnabled by appStateHolder.isWhatsNewEnabled.collectAsState()
         val currentCampaignId by appStateHolder.whatsNewCampaignId.collectAsState()
-        var manuallyDismissedThisSession by remember { mutableStateOf(false) }
-        var showManualAppInfoSheet by remember { mutableStateOf(false) }
-        var showThemeSelectionSheet by remember { mutableStateOf(false) }
-        var showLocalizationSettingsSheet by remember { mutableStateOf(false) }
-        var showProPaywallSheet by remember { mutableStateOf(false) }
-        var hasAutoLaunchedTourThisSession by rememberSaveable { mutableStateOf(false) }
 
-        val showAppInfoSheet =
-            (!isAppInfoDismissed && !manuallyDismissedThisSession) || showManualAppInfoSheet
+        val isFreshInstall =
+            hasCompletedOnboarding == false && !isAppInfoDismissed && initialDeepLinkKey == null
 
-        if (showAppInfoSheet) {
-            AppInfoBottomSheet(
-                showDontShowAgain = !showManualAppInfoSheet,
-                onDismissRequest = { dontShowAgain ->
-                    if (!showManualAppInfoSheet) {
-                        manuallyDismissedThisSession = true
-                        appStateHolder.onDismissAppInfo(dontShowAgain)
+        when {
+            hasCompletedOnboarding == null || lastSeenCampaign == "__UNINITIALIZED__" -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                )
+            }
+
+            isFreshInstall -> {
+                OnboardingScreen(
+                    onCompleteOnboarding = { streamingProviders, genres ->
+                        appStateHolder.onCompleteOnboarding(
+                            streamingSubscriptions = streamingProviders,
+                            seededGenres = genres,
+                            campaignId = currentCampaignId
+                        )
                     }
-                    showManualAppInfoSheet = false
-                }
-            )
+                )
+            }
+
+            else -> {
+                MainDashboardContent(
+                    appTheme = appTheme,
+                    isDynamicColorEnabled = isDynamicColorEnabled,
+                    isProActive = isProActive,
+                    initialDeepLinkKey = initialDeepLinkKey
+                )
+            }
         }
+    }
+}
 
-        if (showThemeSelectionSheet) {
-            ThemeSelectionBottomSheet(
-                currentTheme = appTheme,
-                isDynamicColorEnabled = isDynamicColorEnabled,
-                isProActive = isProActive,
-                onThemeSelected = { newTheme ->
-                    appStateHolder.updateAppTheme(newTheme)
-                },
-                onDynamicColorToggled = { enabled ->
-                    appStateHolder.updateDynamicColor(enabled)
-                },
-                onUpgradeToPro = {
-                    showThemeSelectionSheet = false
-                    showProPaywallSheet = true
-                },
-                onDismissRequest = {
-                    showThemeSelectionSheet = false
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@Composable
+private fun MainDashboardContent(
+    appTheme: AppTheme,
+    isDynamicColorEnabled: Boolean,
+    isProActive: Boolean,
+    initialDeepLinkKey: NavKey? = null
+) {
+    val appStateHolder = LocalAppStateHolder.current
+    val googleUser by appStateHolder.googleUser.collectAsState(initial = null)
+    val watchProviderRegion by appStateHolder.watchProviderRegion.collectAsState()
+    val preferredOriginalLanguage by appStateHolder.preferredOriginalLanguage.collectAsState()
+    val context = LocalContext.current
+
+    val topLevelRoutes = remember {
+        ShowTimeTopLevelNavItems.map { it.navKey }.toSet()
+    }
+
+    val navigationState = rememberNavigationState(
+        startRoute = DashboardHomeNavKey,
+        topLevelRoutes = topLevelRoutes
+    )
+
+    val navigator = remember(navigationState) { Navigator(navigationState) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(initialDeepLinkKey) {
+        initialDeepLinkKey?.let { navigator.navigate(it) }
+    }
+
+    val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
+    val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
+    val lastSeenCampaign by appStateHolder.lastSeenWhatsNewCampaign.collectAsState()
+    val isWhatsNewEnabled by appStateHolder.isWhatsNewEnabled.collectAsState()
+    val currentCampaignId by appStateHolder.whatsNewCampaignId.collectAsState()
+    var showManualAppInfoSheet by remember { mutableStateOf(false) }
+    var showThemeSelectionSheet by remember { mutableStateOf(false) }
+    var showLocalizationSettingsSheet by remember { mutableStateOf(false) }
+    var showProPaywallSheet by remember { mutableStateOf(false) }
+    var hasAutoNavigatedLaunchThisSession by rememberSaveable { mutableStateOf(false) }
+
+    if (showManualAppInfoSheet) {
+        AppInfoBottomSheet(
+            showDontShowAgain = false,
+            onDismissRequest = {
+                showManualAppInfoSheet = false
+            }
+        )
+    }
+
+    if (showThemeSelectionSheet) {
+        ThemeSelectionBottomSheet(
+            currentTheme = appTheme,
+            isDynamicColorEnabled = isDynamicColorEnabled,
+            isProActive = isProActive,
+            onThemeSelected = { newTheme ->
+                appStateHolder.updateAppTheme(newTheme)
+            },
+            onDynamicColorToggled = { enabled ->
+                appStateHolder.updateDynamicColor(enabled)
+            },
+            onUpgradeToPro = {
+                showThemeSelectionSheet = false
+                showProPaywallSheet = true
+            },
+            onDismissRequest = {
+                showThemeSelectionSheet = false
+            }
+        )
+    }
+
+    if (showLocalizationSettingsSheet) {
+        LocalizationSettingsBottomSheet(
+            onDismissRequest = {
+                showLocalizationSettingsSheet = false
+            }
+        )
+    }
+
+    if (showProPaywallSheet) {
+        val availableProducts by appStateHolder.availableProducts.collectAsState()
+        var isRestoring by remember { mutableStateOf(false) }
+
+        ProPaywallBottomSheet(
+            products = availableProducts,
+            isProActive = isProActive,
+            isRestoring = isRestoring,
+            onPurchaseClick = { act, product ->
+                appStateHolder.purchaseProduct(activity = act, product = product)
+            },
+            onRestoreClick = {
+                coroutineScope.launch {
+                    isRestoring = true
+                    appStateHolder.restorePurchases()
+                    isRestoring = false
                 }
-            )
-        }
+            },
+            onDismissRequest = {
+                showProPaywallSheet = false
+            }
+        )
+    }
 
-        if (showLocalizationSettingsSheet) {
-            LocalizationSettingsBottomSheet(
-                onDismissRequest = {
-                    showLocalizationSettingsSheet = false
+    LaunchedEffect(
+        hasCompletedOnboarding,
+        isAppInfoDismissed,
+        lastSeenCampaign,
+        isWhatsNewEnabled,
+        currentCampaignId
+    ) {
+        if (hasAutoNavigatedLaunchThisSession) return@LaunchedEffect
+        val completed = hasCompletedOnboarding ?: return@LaunchedEffect
+        if (lastSeenCampaign == "__UNINITIALIZED__") return@LaunchedEffect
+
+        if (!completed) {
+            if (isAppInfoDismissed) {
+                // Upgraded 1.x user who previously dismissed AppInfo: mark onboarding completed
+                appStateHolder.markOnboardingCompleted()
+                if (isWhatsNewEnabled && lastSeenCampaign != currentCampaignId) {
+                    hasAutoNavigatedLaunchThisSession = true
+                    navigator.navigate(WhatsNewNavKey)
                 }
-            )
-        }
-
-        if (showProPaywallSheet) {
-            val availableProducts by appStateHolder.availableProducts.collectAsState()
-            var isRestoring by remember { mutableStateOf(false) }
-
-            ProPaywallBottomSheet(
-                products = availableProducts,
-                isProActive = isProActive,
-                isRestoring = isRestoring,
-                onPurchaseClick = { act, product ->
-                    appStateHolder.purchaseProduct(activity = act, product = product)
-                },
-                onRestoreClick = {
-                    coroutineScope.launch {
-                        isRestoring = true
-                        appStateHolder.restorePurchases()
-                        isRestoring = false
-                    }
-                },
-                onDismissRequest = {
-                    showProPaywallSheet = false
-                }
-            )
-        }
-
-        LaunchedEffect(isAppInfoDismissed, lastSeenCampaign, isWhatsNewEnabled, currentCampaignId) {
-            if (isAppInfoDismissed &&
-                !hasAutoLaunchedTourThisSession &&
-                isWhatsNewEnabled &&
-                lastSeenCampaign != "__UNINITIALIZED__" &&
-                lastSeenCampaign != currentCampaignId
-            ) {
-                hasAutoLaunchedTourThisSession = true
+            }
+        } else {
+            // Returning user with onboarding completed: check for new What's New campaign
+            if (isWhatsNewEnabled && lastSeenCampaign != currentCampaignId) {
+                hasAutoNavigatedLaunchThisSession = true
                 navigator.navigate(WhatsNewNavKey)
             }
         }
+    }
 
-        val currentDestination =
-            navigationState.backStacks[navigationState.topLevelRoute]?.lastOrNull()
+    val currentDestination =
+        navigationState.backStacks[navigationState.topLevelRoute]?.lastOrNull()
 
-        CompositionLocalProvider(
-            LocalAppInfoTrigger provides { showManualAppInfoSheet = true }
+    CompositionLocalProvider(
+        LocalAppInfoTrigger provides { showManualAppInfoSheet = true }
+    ) {
+        val isHomePage = isHomePage(
+            currentNavKey = currentDestination,
+            bottomNavDestinations = ShowTimeTopLevelNavItems
+        )
+
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = isHomePage,
+            drawerContent = {
+                ShowTimeDrawerContent(
+                    onOpenDiscovery = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(UniversalDiscoveryNavKey())
+                    },
+                    onOpenCinemaDiary = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(CinemaDiaryNavKey)
+                    },
+                    onOpenTasteProfile = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(TasteProfileNavKey)
+                    },
+                    onOpenWrapped = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(CinephileWrappedNavKey)
+                    },
+                    onOpenBacklogChallenges = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(BacklogChallengeNavKey)
+                    },
+                    onOpenPeople = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(PersonHomeNavKey)
+                    },
+                    onOpenCinemaGame = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(CinemaGameNavKey)
+                    },
+                    onOpenReceipt = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(CinemaReceiptNavKey)
+                    },
+                    onOpenBackup = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(BackupSyncNavKey)
+                    },
+                    onOpenTrakt = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(TraktSyncNavKey)
+                    },
+                    onOpenPro = {
+                        coroutineScope.launch { drawerState.close() }
+                        showProPaywallSheet = true
+                    },
+                    onOpenTheme = {
+                        coroutineScope.launch { drawerState.close() }
+                        showThemeSelectionSheet = true
+                    },
+                    onOpenLocalization = {
+                        coroutineScope.launch { drawerState.close() }
+                        showLocalizationSettingsSheet = true
+                    },
+                    onOpenPrivacy = {
+                        coroutineScope.launch { drawerState.close() }
+                        try {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                AppConfigConstants.PRIVACY_POLICY_URL.toUri()
+                            )
+                            context.startActivity(intent)
+                        } catch (_: Exception) {
+                            showManualAppInfoSheet = true
+                        }
+                    },
+                    onOpenLicenses = {
+                        coroutineScope.launch { drawerState.close() }
+                        showManualAppInfoSheet = true
+                    },
+                    onOpenAbout = {
+                        coroutineScope.launch { drawerState.close() }
+                        showManualAppInfoSheet = true
+                    },
+                    onOpenWhatsNew = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(WhatsNewNavKey)
+                    }
+                )
+            }
         ) {
-            val isHomePage = isHomePage(
-                currentNavKey = currentDestination,
-                bottomNavDestinations = ShowTimeTopLevelNavItems
-            )
+            Scaffold(
+                contentWindowInsets = WindowInsets(0, 0, 0, 0)
+            ) { innerPaddingModifier ->
+                var isBottomBarVisible by rememberSaveable { mutableStateOf(true) }
 
-            ModalNavigationDrawer(
-                drawerState = drawerState,
-                gesturesEnabled = isHomePage,
-                drawerContent = {
-                    ShowTimeDrawerContent(
-                        onOpenDiscovery = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(UniversalDiscoveryNavKey())
-                        },
-                        onOpenCinemaDiary = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(CinemaDiaryNavKey)
-                        },
-                        onOpenTasteProfile = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(TasteProfileNavKey)
-                        },
-                        onOpenWrapped = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(CinephileWrappedNavKey)
-                        },
-                        onOpenBacklogChallenges = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(BacklogChallengeNavKey)
-                        },
-                        onOpenPeople = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(PersonHomeNavKey)
-                        },
-                        onOpenCinemaGame = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(CinemaGameNavKey)
-                        },
-                        onOpenReceipt = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(CinemaReceiptNavKey)
-                        },
-                        onOpenBackup = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(BackupSyncNavKey)
-                        },
-                        onOpenTrakt = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(TraktSyncNavKey)
-                        },
-                        onOpenPro = {
-                            coroutineScope.launch { drawerState.close() }
-                            showProPaywallSheet = true
-                        },
-                        onOpenTheme = {
-                            coroutineScope.launch { drawerState.close() }
-                            showThemeSelectionSheet = true
-                        },
-                        onOpenLocalization = {
-                            coroutineScope.launch { drawerState.close() }
-                            showLocalizationSettingsSheet = true
-                        },
-                        onOpenPrivacy = {
-                            coroutineScope.launch { drawerState.close() }
-                            try {
-                                val intent = Intent(
-                                    Intent.ACTION_VIEW,
-                                    AppConfigConstants.PRIVACY_POLICY_URL.toUri()
-                                )
-                                context.startActivity(intent)
-                            } catch (_: Exception) {
-                                showManualAppInfoSheet = true
-                            }
-                        },
-                        onOpenLicenses = {
-                            coroutineScope.launch { drawerState.close() }
-                            showManualAppInfoSheet = true
-                        },
-                        onOpenAbout = {
-                            coroutineScope.launch { drawerState.close() }
-                            showManualAppInfoSheet = true
-                        },
-                        onOpenWhatsNew = {
-                            coroutineScope.launch { drawerState.close() }
-                            navigator.navigate(WhatsNewNavKey)
-                        }
-                    )
+                LaunchedEffect(currentDestination) {
+                    isBottomBarVisible = true
                 }
-            ) {
-                Scaffold(
-                    contentWindowInsets = WindowInsets(0, 0, 0, 0)
-                ) { innerPaddingModifier ->
-                    var isBottomBarVisible by rememberSaveable { mutableStateOf(true) }
 
-                    LaunchedEffect(currentDestination) {
-                        isBottomBarVisible = true
-                    }
+                val bottomBarNestedScrollConnection = remember {
+                    object : NestedScrollConnection {
+                        private var accumulatedScroll = 0f
 
-                    val bottomBarNestedScrollConnection = remember {
-                        object : NestedScrollConnection {
-                            private var accumulatedScroll = 0f
-
-                            override fun onPreScroll(
-                                available: Offset,
-                                source: NestedScrollSource
-                            ): Offset {
-                                accumulatedScroll += available.y
-                                if (accumulatedScroll < -40f) {
-                                    if (isBottomBarVisible) {
-                                        isBottomBarVisible = false
-                                    }
-                                    accumulatedScroll = 0f
-                                } else if (accumulatedScroll > 40f) {
-                                    if (!isBottomBarVisible) {
-                                        isBottomBarVisible = true
-                                    }
-                                    accumulatedScroll = 0f
+                        override fun onPreScroll(
+                            available: Offset,
+                            source: NestedScrollSource
+                        ): Offset {
+                            accumulatedScroll += available.y
+                            if (accumulatedScroll < -40f) {
+                                if (isBottomBarVisible) {
+                                    isBottomBarVisible = false
                                 }
-                                return Offset.Zero
+                                accumulatedScroll = 0f
+                            } else if (accumulatedScroll > 40f) {
+                                if (!isBottomBarVisible) {
+                                    isBottomBarVisible = true
+                                }
+                                accumulatedScroll = 0f
                             }
+                            return Offset.Zero
                         }
                     }
+                }
 
-                    SharedTransitionLayout(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .nestedScroll(bottomBarNestedScrollConnection)
+                SharedTransitionLayout(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(bottomBarNestedScrollConnection)
+                ) {
+                    CompositionLocalProvider(
+                        LocalFloatingBarsVisible provides isBottomBarVisible,
+                        LocalSharedTransitionScope provides this
                     ) {
-                        CompositionLocalProvider(
-                            LocalFloatingBarsVisible provides isBottomBarVisible,
-                            LocalSharedTransitionScope provides this
+                        Box(
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize()
+                            ShowTimeNavDisplay(
+                                navigationState = navigationState,
+                                navigator = navigator,
+                                openLibraryPage = { navKey ->
+                                    navigator.navigate(navKey)
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(
+                                        start = innerPaddingModifier.calculateStartPadding(
+                                            LayoutDirection.Ltr
+                                        ),
+                                        end = innerPaddingModifier.calculateEndPadding(
+                                            LayoutDirection.Ltr
+                                        )
+                                    )
+                            )
+
+                            AnimatedVisibility(
+                                visible = isHomePage && isBottomBarVisible,
+                                enter = if (isHomePage) {
+                                    slideInVertically(
+                                        initialOffsetY = { -it },
+                                        animationSpec = tween(
+                                            durationMillis = 300,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    ) + fadeIn(animationSpec = tween(220))
+                                } else {
+                                    fadeIn(
+                                        animationSpec = tween(
+                                            280,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    )
+                                },
+                                exit = if (isHomePage) {
+                                    slideOutVertically(
+                                        targetOffsetY = { -it },
+                                        animationSpec = tween(
+                                            durationMillis = 300,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    ) + fadeOut(animationSpec = tween(220))
+                                } else {
+                                    fadeOut(
+                                        animationSpec = tween(
+                                            280,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    )
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .statusBarsPadding()
                             ) {
-                                ShowTimeNavDisplay(
-                                    navigationState = navigationState,
-                                    navigator = navigator,
-                                    openLibraryPage = { navKey ->
-                                        navigator.navigate(navKey)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(
-                                            start = innerPaddingModifier.calculateStartPadding(
-                                                LayoutDirection.Ltr
-                                            ),
-                                            end = innerPaddingModifier.calculateEndPadding(
-                                                LayoutDirection.Ltr
-                                            )
-                                        )
-                                )
-
-                                AnimatedVisibility(
-                                    visible = isHomePage && isBottomBarVisible,
-                                    enter = if (isHomePage) {
-                                        slideInVertically(
-                                            initialOffsetY = { -it },
-                                            animationSpec = tween(
-                                                durationMillis = 300,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        ) + fadeIn(animationSpec = tween(220))
-                                    } else {
-                                        fadeIn(
-                                            animationSpec = tween(
-                                                280,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        )
-                                    },
-                                    exit = if (isHomePage) {
-                                        slideOutVertically(
-                                            targetOffsetY = { -it },
-                                            animationSpec = tween(
-                                                durationMillis = 300,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        ) + fadeOut(animationSpec = tween(220))
-                                    } else {
-                                        fadeOut(
-                                            animationSpec = tween(
-                                                280,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        )
-                                    },
-                                    modifier = Modifier
-                                        .align(Alignment.TopCenter)
-                                        .statusBarsPadding()
+                                CompositionLocalProvider(
+                                    LocalNavAnimatedVisibilityScope provides this
                                 ) {
-                                    CompositionLocalProvider(
-                                        LocalNavAnimatedVisibilityScope provides this
-                                    ) {
-                                        ShowTimeTopSearchBar(
-                                            googleUser = googleUser,
-                                            isProActive = isProActive,
-                                            watchProviderRegion = watchProviderRegion,
-                                            preferredOriginalLanguage = preferredOriginalLanguage,
-                                            onLocalizationClick = {
-                                                showLocalizationSettingsSheet = true
-                                            },
-                                            onResetLanguageFilter = {
-                                                appStateHolder.resetPreferredOriginalLanguage()
-                                            },
-                                            onMenuClick = {
-                                                coroutineScope.launch { drawerState.open() }
-                                            },
-                                            onSearchClick = {
-                                                navigator.navigate(SearchNavKey)
-                                            },
-                                            onProfileClick = {
-                                                navigator.navigate(ProfileNavKey)
-                                            }
-                                        )
-                                    }
-                                }
-
-                                AnimatedVisibility(
-                                    visible = isHomePage && isBottomBarVisible,
-                                    enter = if (isHomePage) {
-                                        slideInVertically(
-                                            initialOffsetY = { it },
-                                            animationSpec = tween(
-                                                durationMillis = 300,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        ) + fadeIn(animationSpec = tween(220))
-                                    } else {
-                                        fadeIn(
-                                            animationSpec = tween(
-                                                280,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        )
-                                    },
-                                    exit = if (isHomePage) {
-                                        slideOutVertically(
-                                            targetOffsetY = { it },
-                                            animationSpec = tween(
-                                                durationMillis = 300,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        ) + fadeOut(animationSpec = tween(220))
-                                    } else {
-                                        fadeOut(
-                                            animationSpec = tween(
-                                                280,
-                                                easing = FastOutSlowInEasing
-                                            )
-                                        )
-                                    },
-                                    modifier = Modifier.align(Alignment.BottomCenter)
-                                ) {
-                                    ShowTimeBottomBar(
-                                        currentNavKey = currentDestination,
-                                        topLevelNavKey = navigationState.topLevelRoute,
-                                        onTopLevelNavItemSelected = { navItem ->
-                                            navigator.navigate(navItem.navKey)
+                                    ShowTimeTopSearchBar(
+                                        googleUser = googleUser,
+                                        isProActive = isProActive,
+                                        watchProviderRegion = watchProviderRegion,
+                                        preferredOriginalLanguage = preferredOriginalLanguage,
+                                        onLocalizationClick = {
+                                            showLocalizationSettingsSheet = true
+                                        },
+                                        onResetLanguageFilter = {
+                                            appStateHolder.resetPreferredOriginalLanguage()
+                                        },
+                                        onMenuClick = {
+                                            coroutineScope.launch { drawerState.open() }
+                                        },
+                                        onSearchClick = {
+                                            navigator.navigate(SearchNavKey)
+                                        },
+                                        onProfileClick = {
+                                            navigator.navigate(ProfileNavKey)
                                         }
                                     )
                                 }
+                            }
+
+                            AnimatedVisibility(
+                                visible = isHomePage && isBottomBarVisible,
+                                enter = if (isHomePage) {
+                                    slideInVertically(
+                                        initialOffsetY = { it },
+                                        animationSpec = tween(
+                                            durationMillis = 300,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    ) + fadeIn(animationSpec = tween(220))
+                                } else {
+                                    fadeIn(
+                                        animationSpec = tween(
+                                            280,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    )
+                                },
+                                exit = if (isHomePage) {
+                                    slideOutVertically(
+                                        targetOffsetY = { it },
+                                        animationSpec = tween(
+                                            durationMillis = 300,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    ) + fadeOut(animationSpec = tween(220))
+                                } else {
+                                    fadeOut(
+                                        animationSpec = tween(
+                                            280,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                            ) {
+                                ShowTimeBottomBar(
+                                    currentNavKey = currentDestination,
+                                    topLevelNavKey = navigationState.topLevelRoute,
+                                    onTopLevelNavItemSelected = { navItem ->
+                                        navigator.navigate(navItem.navKey)
+                                    }
+                                )
                             }
                         }
                     }

@@ -33,6 +33,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.showtime.R
 import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 import com.ssverma.showtime.ui.dashboard.DashboardScreen
+import com.ssverma.showtime.ui.onboarding.OnboardingScreen
 import com.ssverma.showtime.ui.whatsnew.WhatsNewCatalog
 import com.ssverma.showtime.ui.whatsnew.WhatsNewScreen
 
@@ -205,6 +206,22 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             onSkipTour = {
                 appStateHolder.onCompleteWhatsNewCampaign(campaignId)
                 navigator.goBack()
+            }
+        )
+    }
+
+    showTimeEntry<OnboardingNavKey> {
+        val appStateHolder = LocalAppStateHolder.current
+        val campaignId by appStateHolder.whatsNewCampaignId.collectAsState()
+
+        OnboardingScreen(
+            onCompleteOnboarding = { streamingProviders, genres ->
+                appStateHolder.onCompleteOnboarding(
+                    streamingSubscriptions = streamingProviders,
+                    seededGenres = genres,
+                    campaignId = campaignId
+                )
+                navigator.navigate(DashboardHomeNavKey)
             }
         )
     }
