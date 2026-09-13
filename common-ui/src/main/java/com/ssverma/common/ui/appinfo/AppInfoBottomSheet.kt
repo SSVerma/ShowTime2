@@ -1,6 +1,7 @@
 package com.ssverma.common.ui.appinfo
 
-import androidx.compose.foundation.clickable
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,31 +11,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,18 +55,17 @@ fun AppInfoBottomSheet(
     onDismissRequest: (dontShowAgain: Boolean) -> Unit,
     modifier: Modifier = Modifier,
     showDontShowAgain: Boolean = true,
+    onOpenLicenses: (() -> Unit)? = null,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
-    var dontShowAgain by remember { mutableStateOf(true) }
     val context = LocalContext.current
     val packageInfo = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0) }.getOrNull()
     }
     val versionName = packageInfo?.versionName.orEmpty()
 
-
     ShowTimeBottomSheet(
-        onDismissRequest = { onDismissRequest(dontShowAgain) },
+        onDismissRequest = { onDismissRequest(showDontShowAgain) },
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         modifier = modifier
@@ -79,8 +82,9 @@ fun AppInfoBottomSheet(
                 modifier = Modifier
                     .weight(1f, fill = false)
                     .verticalScroll(rememberScrollState())
-                    .padding(vertical = MaterialTheme.spacing.large)
+                    .padding(vertical = MaterialTheme.spacing.medium)
             ) {
+                // Brand Logo
                 ShowTimeLogo(
                     modifier = Modifier.size(72.dp)
                 )
@@ -95,7 +99,7 @@ fun AppInfoBottomSheet(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
                 Text(
                     text = stringResource(R.string.app_info_description),
@@ -107,20 +111,57 @@ fun AppInfoBottomSheet(
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-                // Feature list
+                // Trust Pillars
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
                 ) {
-                    AppInfoFeatureItem(text = stringResource(R.string.app_info_feature_tmdb))
-                    AppInfoFeatureItem(text = stringResource(R.string.app_info_feature_indie_dev))
-                    AppInfoFeatureItem(
-                        text = stringResource(R.string.app_info_feature_rating),
+                    AppInfoPillarItem(
+                        text = stringResource(R.string.app_info_pillar_privacy),
+                        icon = Icons.Rounded.Lock
+                    )
+                    AppInfoPillarItem(
+                        text = stringResource(R.string.app_info_pillar_tmdb),
+                        icon = Icons.Rounded.Movie
+                    )
+                    AppInfoPillarItem(
+                        text = stringResource(R.string.app_info_pillar_indie),
                         icon = Icons.Rounded.Favorite
                     )
                 }
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+                // Developer Spotlight
+                DeveloperSpotlight(
+                    onFollowOnTwitter = {
+                        try {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://x.com/ssverma1916")
+                            )
+                            context.startActivity(intent)
+                        } catch (_: Exception) {
+                            // Silently handle
+                        }
+                    },
+                    onSendFeedback = {
+                        try {
+                            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("mailto:ssvermahmh@gmail.com")
+                                putExtra(
+                                    Intent.EXTRA_SUBJECT,
+                                    "ShowTime Feedback (v$versionName)"
+                                )
+                            }
+                            context.startActivity(emailIntent)
+                        } catch (_: Exception) {
+                            // Silently handle
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
                 Text(
                     text = stringResource(R.string.app_info_version, versionName),
@@ -128,39 +169,78 @@ fun AppInfoBottomSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-                AppInfoLinks()
+                if (onOpenLicenses != null) {
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
+                    TextButton(onClick = onOpenLicenses) {
+                        Text(
+                            text = stringResource(R.string.license_view_licenses),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            if (showDontShowAgain) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Checkbox(checked = dontShowAgain, onCheckedChange = { dontShowAgain = it })
-                    Text(
-                        stringResource(R.string.app_info_dont_show_again),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-            }
-
+            // Rate on Play Store
             Button(
-                onClick = { onDismissRequest(dontShowAgain) },
+                onClick = {
+                    try {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("market://details?id=${context.packageName}")
+                        )
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        try {
+                            val webIntent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(
+                                    "https://play.google.com/store/apps/details?id=${context.packageName}"
+                                )
+                            )
+                            context.startActivity(webIntent)
+                        } catch (_: Exception) {
+                            // Silently handle
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
+                Icon(
+                    imageVector = Icons.Rounded.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                 Text(
-                    text = stringResource(R.string.app_info_got_it),
+                    text = stringResource(R.string.app_info_rate_action),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+            // Close
+            FilledTonalButton(
+                onClick = { onDismissRequest(showDontShowAgain) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = MaterialTheme.shapes.large,
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.app_info_close),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -168,9 +248,9 @@ fun AppInfoBottomSheet(
 }
 
 @Composable
-private fun AppInfoFeatureItem(
+private fun AppInfoPillarItem(
     text: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Info
+    icon: ImageVector
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -200,47 +280,67 @@ private fun AppInfoFeatureItem(
 }
 
 @Composable
-private fun AppInfoLinks() {
-    val uriHandler = LocalUriHandler.current
-
+private fun DeveloperSpotlight(
+    onFollowOnTwitter: () -> Unit,
+    onSendFeedback: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
     ) {
         Avatar(
             imageUrl = "https://pbs.twimg.com/profile_images/1807349302164934656/xELoSQEH_400x400.jpg",
-            onClick = {
-                uriHandler.openUri("https://x.com/ssverma1916")
-            },
+            onClick = onFollowOnTwitter,
             size = 64.dp
         )
 
         Text(
-            stringResource(R.string.app_info_developed_by),
+            text = stringResource(R.string.app_info_crafted_by),
             style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
 
+        Text(
+            text = stringResource(R.string.app_info_developer_bio),
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.large)
+        )
+
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
+
         Row(
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.large),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = stringResource(R.string.app_info_twitter),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable {
-                    uriHandler.openUri("https://x.com/ssverma1916")
-                }
-            )
-            Text(
-                text = stringResource(R.string.app_info_github),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable {
-                    uriHandler.openUri("https://github.com/SSVerma/ShowTime2")
-                }
-            )
+            FilledTonalButton(
+                onClick = onFollowOnTwitter,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text(
+                    text = stringResource(R.string.app_info_follow_twitter),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            FilledTonalButton(
+                onClick = onSendFeedback,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.Send,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
+                Text(
+                    text = stringResource(R.string.app_info_send_feedback),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }

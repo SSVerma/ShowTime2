@@ -14,17 +14,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
-import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Diamond
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Explore
+import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.rounded.NewReleases
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Policy
+import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.SyncAlt
+import androidx.compose.material.icons.rounded.TaskAlt
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -47,13 +53,14 @@ import com.ssverma.showtime.R
 @Composable
 fun ShowTimeDrawerContent(
     onOpenDiscovery: () -> Unit,
+    onOpenMovieMatch: () -> Unit,
     onOpenPeople: () -> Unit,
     onOpenCinemaDiary: () -> Unit = {},
     onOpenTasteProfile: () -> Unit = {},
     onOpenWrapped: () -> Unit = {},
     onOpenBacklogChallenges: () -> Unit = {},
-    onOpenCinemaGame: () -> Unit,
     onOpenReceipt: () -> Unit,
+    onOpenCinemaGame: () -> Unit,
     onOpenBackup: () -> Unit,
     onOpenTrakt: () -> Unit,
     onOpenPro: () -> Unit,
@@ -103,47 +110,49 @@ fun ShowTimeDrawerContent(
                 }
             }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
-            )
+            DrawerDivider()
 
-            // Section 1: Explore & Discovery
-            DrawerSectionHeader(title = stringResource(id = R.string.explore_section))
+            // Section 1: Explore & Social
+            DrawerSectionHeader(title = stringResource(id = R.string.drawer_section_explore))
             DrawerItem(
-                label = "Discover & Browse",
-                icon = Icons.Rounded.AutoAwesome,
+                label = stringResource(id = R.string.drawer_discover),
+                icon = Icons.Rounded.Explore,
                 onClick = onOpenDiscovery
             )
             DrawerItem(
-                label = "Cinema Diary",
-                icon = Icons.Rounded.Star,
-                onClick = onOpenCinemaDiary
-            )
-            DrawerItem(
-                label = "Taste Profile & Picks",
-                icon = Icons.Rounded.AutoAwesome,
-                onClick = onOpenTasteProfile
-            )
-            DrawerItem(
-                label = "Cinema Wrapped & Milestones",
-                icon = Icons.Rounded.EmojiEvents,
-                onClick = onOpenWrapped
-            )
-            DrawerItem(
-                label = "Blindspots & Challenges",
-                icon = Icons.Rounded.EmojiEvents,
-                onClick = onOpenBacklogChallenges
+                label = stringResource(id = R.string.drawer_movie_match),
+                icon = Icons.Rounded.Favorite,
+                onClick = onOpenMovieMatch
             )
             DrawerItem(
                 label = stringResource(id = R.string.people),
                 icon = Icons.Rounded.People,
                 onClick = onOpenPeople
             )
+
+            DrawerDivider()
+
+            // Section 2: Cinephile Hub
+            DrawerSectionHeader(title = stringResource(id = R.string.drawer_section_cinephile))
             DrawerItem(
-                label = stringResource(id = R.string.daily_cinema_challenge),
-                icon = Icons.Rounded.Movie,
-                onClick = onOpenCinemaGame
+                label = stringResource(id = R.string.drawer_cinema_diary),
+                icon = Icons.AutoMirrored.Rounded.MenuBook,
+                onClick = onOpenCinemaDiary
+            )
+            DrawerItem(
+                label = stringResource(id = R.string.drawer_taste_profile),
+                icon = Icons.Rounded.Psychology,
+                onClick = onOpenTasteProfile
+            )
+            DrawerItem(
+                label = stringResource(id = R.string.drawer_wrapped),
+                icon = Icons.Rounded.EmojiEvents,
+                onClick = onOpenWrapped
+            )
+            DrawerItem(
+                label = stringResource(id = R.string.drawer_challenges),
+                icon = Icons.Rounded.TaskAlt,
+                onClick = onOpenBacklogChallenges
             )
             DrawerItem(
                 label = stringResource(id = R.string.cinema_receipt),
@@ -151,29 +160,38 @@ fun ShowTimeDrawerContent(
                 onClick = onOpenReceipt
             )
 
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+            DrawerDivider()
+
+            // Section 3: Daily Habit
+            DrawerSectionHeader(title = stringResource(id = R.string.drawer_section_daily))
+            DrawerItem(
+                label = stringResource(id = R.string.daily_cinema_challenge),
+                icon = Icons.Rounded.Extension,
+                onClick = onOpenCinemaGame
             )
 
-            // Section 2: Sync & Storage
+            DrawerDivider()
+
+            // Section 4: Sync & Backup
             DrawerSectionHeader(title = stringResource(id = R.string.sync_section))
             DrawerItem(
                 label = stringResource(id = R.string.google_drive_backup),
                 icon = Icons.Rounded.CloudSync,
                 onClick = onOpenBackup
             )
-
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+            DrawerItem(
+                label = stringResource(id = R.string.trakt_sync),
+                icon = Icons.Rounded.SyncAlt,
+                onClick = onOpenTrakt
             )
 
-            // Section 3: Preferences & Membership
+            DrawerDivider()
+
+            // Section 5: Preferences & Membership
             DrawerSectionHeader(title = stringResource(id = R.string.preferences_section))
             DrawerItem(
                 label = stringResource(id = R.string.pro_membership),
-                icon = Icons.Rounded.Star,
+                icon = Icons.Rounded.Diamond,
                 iconTint = MaterialTheme.colorScheme.primary,
                 onClick = onOpenPro
             )
@@ -188,18 +206,20 @@ fun ShowTimeDrawerContent(
                 onClick = onOpenLocalization
             )
 
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
-            )
+            DrawerDivider()
 
-            // Section 4: About & Legal
+            // Section 6: About & Legal
             DrawerSectionHeader(title = stringResource(id = R.string.legal_section))
             DrawerItem(
                 label = stringResource(id = R.string.drawer_whats_new),
-                icon = Icons.Rounded.AutoAwesome,
+                icon = Icons.Rounded.NewReleases,
                 iconTint = MaterialTheme.colorScheme.primary,
                 onClick = onOpenWhatsNew
+            )
+            DrawerItem(
+                label = stringResource(id = R.string.about_showtime),
+                icon = Icons.Rounded.Info,
+                onClick = onOpenAbout
             )
             DrawerItem(
                 label = stringResource(id = R.string.privacy_policy),
@@ -210,11 +230,6 @@ fun ShowTimeDrawerContent(
                 label = stringResource(id = R.string.open_source_licenses),
                 icon = Icons.Rounded.Description,
                 onClick = onOpenLicenses
-            )
-            DrawerItem(
-                label = stringResource(id = R.string.about_showtime),
-                icon = Icons.Rounded.Info,
-                onClick = onOpenAbout
             )
         }
     }
@@ -231,6 +246,14 @@ private fun DrawerSectionHeader(
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun DrawerDivider(modifier: Modifier = Modifier) {
+    HorizontalDivider(
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
     )
 }
 

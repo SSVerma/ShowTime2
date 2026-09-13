@@ -2,17 +2,28 @@
 <resources>
     <!-- App Info Bottom Sheet -->
     <string name="app_info_welcome">Welcome to ShowTime!</string>
-    <string name="app_info_description">ShowTime is an open-source movie and TV show information provider. It is NOT a streaming service and does not play any media itself. It respects your privacy.</string>
-    <string name="app_info_feature_tmdb">Information provider only (Powered by TMDB API)</string>
-    <string name="app_info_feature_indie_dev">Independently developed and maintained by a single developer</string>
-    <string name="app_info_feature_rating">If you enjoy using ShowTime, consider leaving a 5★ review!</string>
+    <string name="app_info_description">An independently crafted cinema companion for discovering, logging, and celebrating film. Built with passion for movies, privacy, and design.</string>
+    <string name="app_info_pillar_privacy">Local-first library, private by design. No unwanted tracking.</string>
+    <string name="app_info_pillar_tmdb">Catalog powered by TMDB. Streaming data by JustWatch.</string>
+    <string name="app_info_pillar_indie">Independently developed and maintained with care.</string>
     <string name="app_info_version">Version: %s</string>
-    <string name="app_info_developed_by">Developed by: SS Verma</string>
-    <string name="app_info_twitter">X (Twitter)</string>
-    <string name="app_info_github">GitHub</string>
+    <string name="app_info_crafted_by">Crafted by SS Verma</string>
+    <string name="app_info_developer_bio">Designed, architected, and built for the love of cinema.</string>
+    <string name="app_info_follow_twitter">Follow on X</string>
+    <string name="app_info_send_feedback">Send Feedback</string>
+    <string name="app_info_rate_action">Rate ShowTime on Play Store</string>
+    <string name="app_info_close">Close</string>
     <string name="app_info_dont_show_again">Don\'t show again</string>
     <string name="app_info_got_it">Got it!</string>
     <string name="app_logo_desc">App Logo</string>
+
+    <!-- Open Source Licenses Bottom Sheet -->
+    <string name="open_source_licenses_title">Open Source Licenses</string>
+    <string name="open_source_licenses_subtitle">ShowTime is built using these third-party open-source libraries and frameworks:</string>
+    <string name="license_view_licenses">Open Source Licenses</string>
+    <string name="license_apache_2_0">Apache 2.0</string>
+    <string name="license_mit">MIT</string>
+    <string name="license_android_sdk">Android SDK</string>
     <string name="content_region">Content Region</string>
     <string name="content_region_desc">Set default country for streaming services &amp; releases</string>
     <string name="search_regions">Search country or region…</string>

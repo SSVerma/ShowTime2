@@ -77,6 +77,7 @@ import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
+import com.ssverma.common.ui.appinfo.OpenSourceLicensesBottomSheet
 import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.common.ui.state.LocalAppInfoTrigger
 import com.ssverma.common.ui.state.LocalAppStateHolder
@@ -100,6 +101,7 @@ import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.utils.AppConfigConstants
+import com.ssverma.feature.match.navigation.MatchRoomNavKey
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.showtime.component.ShowTimeDrawerContent
 import com.ssverma.showtime.component.ShowTimeTopSearchBar
@@ -224,6 +226,7 @@ private fun MainDashboardContent(
     val isWhatsNewEnabled by appStateHolder.isWhatsNewEnabled.collectAsState()
     val currentCampaignId by appStateHolder.whatsNewCampaignId.collectAsState()
     var showManualAppInfoSheet by remember { mutableStateOf(false) }
+    var showLicensesSheet by remember { mutableStateOf(false) }
     var showThemeSelectionSheet by remember { mutableStateOf(false) }
     var showLocalizationSettingsSheet by remember { mutableStateOf(false) }
     var showProPaywallSheet by remember { mutableStateOf(false) }
@@ -234,6 +237,18 @@ private fun MainDashboardContent(
             showDontShowAgain = false,
             onDismissRequest = {
                 showManualAppInfoSheet = false
+            },
+            onOpenLicenses = {
+                showManualAppInfoSheet = false
+                showLicensesSheet = true
+            }
+        )
+    }
+
+    if (showLicensesSheet) {
+        OpenSourceLicensesBottomSheet(
+            onDismissRequest = {
+                showLicensesSheet = false
             }
         )
     }
@@ -340,6 +355,10 @@ private fun MainDashboardContent(
                         coroutineScope.launch { drawerState.close() }
                         navigator.navigate(UniversalDiscoveryNavKey())
                     },
+                    onOpenMovieMatch = {
+                        coroutineScope.launch { drawerState.close() }
+                        navigator.navigate(MatchRoomNavKey())
+                    },
                     onOpenCinemaDiary = {
                         coroutineScope.launch { drawerState.close() }
                         navigator.navigate(CinemaDiaryNavKey)
@@ -402,7 +421,7 @@ private fun MainDashboardContent(
                     },
                     onOpenLicenses = {
                         coroutineScope.launch { drawerState.close() }
-                        showManualAppInfoSheet = true
+                        showLicensesSheet = true
                     },
                     onOpenAbout = {
                         coroutineScope.launch { drawerState.close() }
