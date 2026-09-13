@@ -1,5 +1,6 @@
 package com.ssverma.showtime.ui.dashboard
 
+import androidx.compose.runtime.Immutable
 import com.google.android.gms.ads.nativead.NativeAd
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.failure.MovieFailure
@@ -19,6 +20,7 @@ import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShowPreview
 import java.time.LocalDate
 
+@Immutable
 data class TrendingSpotlightItem(
     val id: Int,
     val title: String,
@@ -29,6 +31,7 @@ data class TrendingSpotlightItem(
     val mediaType: MediaType
 )
 
+@Immutable
 data class DashboardUiState(
     val trendingMedia: UiState<List<AdInjectable<TrendingSpotlightItem>>, MovieFailure> = UiState.Loading,
     val popularMovies: UiState<List<AdInjectable<MoviePreview>>, MovieFailure> = UiState.Loading,
@@ -51,5 +54,6 @@ data class DashboardUiState(
     val isTraktConnected: Boolean = false,
     val nativeAd: NativeAd? = null,
     val completedShowDialog: CompletedShowDialogState? = null,
-    val isNotificationShelfCoolingDown: Boolean = false
+    val isNotificationShelfCoolingDown: Boolean = false,
+    val acknowledgedFeatures: Set<String> = emptySet()
 )

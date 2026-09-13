@@ -16,6 +16,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.core.ui.UiState
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 import com.ssverma.shared.domain.model.community.DailyPoll
+import com.ssverma.shared.domain.model.feature.CinephileFeature
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.domain.model.tv.TvShow
@@ -67,6 +68,7 @@ class DashboardViewModelTest {
     private val isProActiveFlow = MutableStateFlow(false)
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
     private val notificationShelfDismissedFlow = MutableStateFlow(0L)
+    private val acknowledgedFeaturesFlow = MutableStateFlow<Set<String>>(emptySet())
 
     private val sampleUpNextEpisode = TraktUpNextEpisode(
         showTmdbId = 1396,
@@ -90,6 +92,10 @@ class DashboardViewModelTest {
         every { appConfigRepository.notificationShelfLastDismissedMs } returns notificationShelfDismissedFlow
         coEvery { appConfigRepository.dismissNotificationShelf() } coAnswers {
             notificationShelfDismissedFlow.value = System.currentTimeMillis()
+        }
+        every { appConfigRepository.acknowledgedFeatures } returns acknowledgedFeaturesFlow
+        coEvery { appConfigRepository.acknowledgeFeature(any()) } coAnswers {
+            acknowledgedFeaturesFlow.value = acknowledgedFeaturesFlow.value + firstArg<String>()
         }
         every { adConfigProvider.isAdsEnabled } returns false
 
@@ -322,6 +328,27 @@ class DashboardViewModelTest {
         assertThat(trendingAdsRestored.any { it is InjectableAd }).isTrue()
         assertThat(popularMoviesAdsRestored.any { it is InjectableAd }).isTrue()
         assertThat(popularTvAdsRestored.any { it is InjectableAd }).isTrue()
+    }
+
+    @Test
+    fun `acknowledgedFeatures updates uiState when repository emits`() = runTest {
+        assertThat(viewModel.uiState.value.acknowledgedFeatures).isEmpty()
+
+        acknowledgedFeaturesFlow.value = setOf(CinephileFeature.CINEMA_DIARY.id)
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.acknowledgedFeatures)
+            .contains(CinephileFeature.CINEMA_DIARY.id)
+    }
+
+    @Test
+    fun `onFeatureTapped acknowledges feature in repository`() = runTest {
+        viewModel.onFeatureTapped(CinephileFeature.MOVIE_MATCH)
+        advanceUntilIdle()
+
+        coVerify { appConfigRepository.acknowledgeFeature(CinephileFeature.MOVIE_MATCH.id) }
+        assertThat(viewModel.uiState.value.acknowledgedFeatures)
+            .contains(CinephileFeature.MOVIE_MATCH.id)
     }
 }
 

@@ -1,9 +1,11 @@
 package com.ssverma.shared.data.repository
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.observe
@@ -185,7 +187,20 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(NotificationShelfDismissedEpochKey, System.currentTimeMillis())
     }
 
+    override val acknowledgedFeatures: Flow<Set<String>>
+        get() = keyValueStorage.observe(AcknowledgedFeaturesKey, emptySet())
+
+    override suspend fun acknowledgeFeature(featureId: String) {
+        keyValueStorage.edit { storage ->
+            val current = storage[AcknowledgedFeaturesKey] ?: emptySet()
+            storage[AcknowledgedFeaturesKey] = current + featureId
+        }
+    }
+
     companion object {
+        private val AcknowledgedFeaturesKey =
+            stringSetPreferencesKey("acknowledged_features")
+
         private val AppThemeKey = stringPreferencesKey("app_theme")
 
         private val DynamicColorKey = booleanPreferencesKey("dynamic_color")

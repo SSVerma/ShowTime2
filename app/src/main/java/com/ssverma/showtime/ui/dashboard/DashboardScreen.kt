@@ -61,7 +61,7 @@ import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.ui.dashboard.shelves.AiringCalendarSyncBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.DailyPollBottomSheet
 import com.ssverma.showtime.ui.dashboard.shelves.StudioPortalItem
-import com.ssverma.showtime.ui.dashboard.shelves.cinephileQuickAccessHub
+import com.ssverma.showtime.ui.dashboard.shelves.cinephileHubShelf
 import com.ssverma.showtime.ui.dashboard.shelves.dashboardGenreShelf
 import com.ssverma.showtime.ui.dashboard.shelves.inViewportNativeAdShelf
 import com.ssverma.showtime.ui.dashboard.shelves.notificationPermissionShelf
@@ -203,11 +203,13 @@ fun DashboardScreen(
                     }
                 )
 
-                // 2. Cinephile Quick Access Hub (All drawer & list entry points)
-                cinephileQuickAccessHub(
+                // 2. Cinephile Hub Shelf (All drawer & list entry points)
+                cinephileHubShelf(
                     gameStats = uiState.gameStats,
                     isTodayGameCompleted = uiState.isTodayGameCompleted,
                     isPollVoted = uiState.dailyPoll.hasVoted,
+                    acknowledgedFeatures = uiState.acknowledgedFeatures,
+                    onFeatureTapped = viewModel::onFeatureTapped,
                     onOpenMyLists = {
                         openLibraryPage(LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists))
                     },

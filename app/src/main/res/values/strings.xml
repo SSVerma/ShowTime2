@@ -185,4 +185,40 @@
     <string name="notification_dismiss_desc">Without notifications, ShowTime cannot alert you when your tracked episodes air or when watchlist movies arrive on streaming.\n\nYou can always enable alerts later in Settings.</string>
     <string name="notification_dismiss_enable">Turn On</string>
     <string name="notification_dismiss_confirm">Dismiss</string>
+
+    <!-- Cinephile Quick Access Hub -->
+    <string name="cinephile_hub_title">Cinephile Hub</string>
+    <string name="hub_my_lists_title">My Lists</string>
+    <string name="hub_my_lists_desc">Personal Collections</string>
+    <string name="hub_community_title">Community</string>
+    <string name="hub_community_desc">Curated Lists</string>
+    <string name="hub_diary_title">Cinema Diary</string>
+    <string name="hub_diary_desc">Logs &amp; Reviews</string>
+    <string name="hub_game_title">Daily Game</string>
+    <string name="hub_game_desc">Wordle Challenge</string>
+    <string name="hub_poll_title">Daily Poll</string>
+    <string name="hub_poll_desc">Cinephile Voice</string>
+    <string name="hub_match_title">Movie Match</string>
+    <string name="hub_match_desc">Swipe Night</string>
+    <string name="hub_discover_title">Discover</string>
+    <string name="hub_discover_desc">Vibes &amp; Mood</string>
+    <string name="hub_taste_title">Taste Profile</string>
+    <string name="hub_taste_desc">Persona &amp; Picks</string>
+    <string name="hub_challenges_title">Challenges</string>
+    <string name="hub_challenges_desc">Blindspot Goals</string>
+    <string name="hub_receipt_title">Cinema Receipt</string>
+    <string name="hub_receipt_desc">Wrapped Stats</string>
+    <string name="hub_people_title">People</string>
+    <string name="hub_people_desc">Actors &amp; Crew</string>
+    <string name="hub_show_all_tools">Show all cinephile tools (%1$d)</string>
+    <string name="hub_show_less_tools">Show less</string>
+    <string name="badge_new">NEW</string>
+    <string name="badge_done">Done</string>
+    <string name="badge_voted">Voted</string>
+    <string name="badge_play">Play</string>
+    <string name="badge_vote">Vote</string>
+    <string name="streak_badge">%1$d</string>
+    <string name="cd_streak_flame">Current streak</string>
+    <string name="cd_completed_check">Completed</string>
+    <string name="cd_voted_check">Voted</string>
 </resources>

@@ -60,4 +60,10 @@ interface AppConfigRepository {
 
     /** Record the current time as the last dismissal of the notification permission shelf. */
     suspend fun dismissNotificationShelf()
+
+    /** Features that the user has tapped/explored, used to dynamically dismiss NEW badges. */
+    val acknowledgedFeatures: Flow<Set<String>>
+
+    /** Mark a feature as acknowledged by the user. */
+    suspend fun acknowledgeFeature(featureId: String)
 }

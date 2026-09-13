@@ -28,6 +28,7 @@ import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.feature.CinephileFeature
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.model.reminder.AiringReminder
@@ -188,6 +189,16 @@ class DashboardViewModel @Inject constructor(
                 _uiState.update { it.copy(isNotificationShelfCoolingDown = coolingDown) }
             }
         }
+
+        viewModelScope.launch {
+            appConfigRepository.acknowledgedFeatures.collect { acknowledged ->
+                _uiState.update { it.copy(acknowledgedFeatures = acknowledged) }
+            }
+        }
+    }
+
+    fun onFeatureTapped(feature: CinephileFeature) = viewModelScope.launch {
+        appConfigRepository.acknowledgeFeature(feature.id)
     }
 
     fun voteDailyPoll(optionIndex: Int) = viewModelScope.launch {

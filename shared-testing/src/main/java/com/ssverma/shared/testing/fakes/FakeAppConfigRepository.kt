@@ -110,6 +110,13 @@ class FakeAppConfigRepository(
         _notificationShelfLastDismissedMs.value = System.currentTimeMillis()
     }
 
+    private val _acknowledgedFeatures = MutableStateFlow<Set<String>>(emptySet())
+    override val acknowledgedFeatures: Flow<Set<String>> = _acknowledgedFeatures.asStateFlow()
+
+    override suspend fun acknowledgeFeature(featureId: String) {
+        _acknowledgedFeatures.value = _acknowledgedFeatures.value + featureId
+    }
+
     fun setAppTheme(theme: AppTheme) {
         _appTheme.value = theme
     }
