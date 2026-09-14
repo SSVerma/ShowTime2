@@ -2,6 +2,7 @@ package com.ssverma.feature.tv.navigation
 
 import android.os.Parcelable
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.core.navigation.nav3.SequentialNavKey
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -23,7 +24,8 @@ data class TvSeasonDetailNavKey(
     val tvShowId: Int,
     val seasonNumber: Int,
     val tvShowTitle: String? = null,
-    val tvShowPosterPath: String? = null
+    val tvShowPosterPath: String? = null,
+    val tvShowBackdropPath: String? = null
 ) : NavKey, Parcelable
 
 @Serializable
@@ -33,8 +35,15 @@ data class TvEpisodeDetailNavKey(
     val seasonNumber: Int,
     val episodeNumber: Int,
     val tvShowTitle: String? = null,
-    val tvShowPosterPath: String? = null
-) : NavKey, Parcelable
+    val tvShowPosterPath: String? = null,
+    val tvShowBackdropPath: String? = null
+) : SequentialNavKey, Parcelable {
+    override val sequenceGroupId: Any
+        get() = "$tvShowId-$seasonNumber"
+
+    override val sequenceOrder: Int
+        get() = episodeNumber
+}
 
 @Serializable
 @Parcelize

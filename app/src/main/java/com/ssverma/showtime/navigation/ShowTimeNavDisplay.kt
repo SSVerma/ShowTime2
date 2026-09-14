@@ -31,7 +31,7 @@ import com.ssverma.core.navigation.nav3.NavigationState
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.toEntries
 
-import com.ssverma.feature.library.navigation.LibraryHomeNavKey
+import com.ssverma.core.navigation.nav3.SequentialNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -96,6 +96,16 @@ fun ShowTimeNavDisplay(
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimeForwardTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    val initialNavKey = initialState.resolveNavKey()
+    val targetNavKey = targetState.resolveNavKey()
+
+    if (initialNavKey is SequentialNavKey && targetNavKey is SequentialNavKey) {
+        if (initialNavKey.sequenceGroupId == targetNavKey.sequenceGroupId) {
+            val isForward = targetNavKey.sequenceOrder > initialNavKey.sequenceOrder
+            return createPeerSlideTransition(isForward = isForward)
+        }
+    }
+
     val targetKey = targetState.key
     if (targetKey is SearchNavKey) {
         return createSearchPushTransition()
@@ -115,6 +125,16 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimeForwardTr
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    val initialNavKey = initialState.resolveNavKey()
+    val targetNavKey = targetState.resolveNavKey()
+
+    if (initialNavKey is SequentialNavKey && targetNavKey is SequentialNavKey) {
+        if (initialNavKey.sequenceGroupId == targetNavKey.sequenceGroupId) {
+            val isForward = targetNavKey.sequenceOrder > initialNavKey.sequenceOrder
+            return createPeerSlideTransition(isForward = isForward)
+        }
+    }
+
     val initialKey = initialState.key
     if (initialKey is SearchNavKey) {
         return createSearchPopTransition()
@@ -134,6 +154,16 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransi
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePredictivePopTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    val initialNavKey = initialState.resolveNavKey()
+    val targetNavKey = targetState.resolveNavKey()
+
+    if (initialNavKey is SequentialNavKey && targetNavKey is SequentialNavKey) {
+        if (initialNavKey.sequenceGroupId == targetNavKey.sequenceGroupId) {
+            val isForward = targetNavKey.sequenceOrder > initialNavKey.sequenceOrder
+            return createPeerSlideTransition(isForward = isForward)
+        }
+    }
+
     val initialTabKey = initialState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
     val targetTabKey = targetState.entries.firstOrNull()?.metadata?.get(Nav3MetadataKeys.TabKey)
     val isTabSwitch = initialTabKey != targetTabKey
@@ -244,4 +274,37 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createSearchPopTr
                         animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing)
                     )
         )
+}
+
+private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createPeerSlideTransition(
+    isForward: Boolean
+): ContentTransform {
+    val slideDirection = if (isForward) {
+        AnimatedContentTransitionScope.SlideDirection.Start
+    } else {
+        AnimatedContentTransitionScope.SlideDirection.End
+    }
+
+    return (slideIntoContainer(
+        towards = slideDirection,
+        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+    ) + fadeIn(
+        animationSpec = tween(durationMillis = 280),
+        initialAlpha = 0.8f
+    )).togetherWith(
+        slideOutOfContainer(
+            towards = slideDirection,
+            animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+        ) + fadeOut(
+            animationSpec = tween(durationMillis = 220),
+            targetAlpha = 0.8f
+        )
+    )
+}
+
+private fun <T : Any> Scene<T>.resolveNavKey(): NavKey? {
+    return entries.lastOrNull()?.let {
+        (it.metadata[Nav3MetadataKeys.NavKey]
+            ?: it.metadata[Nav3MetadataKeys.NavKey.toString()]) as? NavKey
+    } ?: key as? NavKey
 }

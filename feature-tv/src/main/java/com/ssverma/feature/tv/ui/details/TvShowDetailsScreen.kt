@@ -77,6 +77,7 @@ import com.ssverma.feature.tv.analytics.TvAnalyticsValues
 import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
+import com.ssverma.feature.tv.ui.details.component.TvShowAiringTimelineSection
 import com.ssverma.shared.ads.native.ShowTimeNativeAd
 import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.model.Cast
@@ -455,6 +456,15 @@ private fun TvShowContent(
                 }
             }
 
+            /*Airing Timeline*/
+            item(key = "airing_timeline") {
+                TvShowAiringTimelineSection(
+                    nextEpisodeToAir = tvShow.nextEpisodeToAir,
+                    lastEpisodeToAir = tvShow.lastEpisodeToAir,
+                    modifier = Modifier.padding(top = SectionVerticalSpacing)
+                )
+            }
+
             /*Seasons*/
             item {
                 SeasonsSection(
@@ -473,7 +483,8 @@ private fun TvShowContent(
                                 tvShowId = viewModel.tvShowId,
                                 seasonNumber = season.seasonNumber,
                                 tvShowTitle = tvShow.title,
-                                tvShowPosterPath = tvShow.posterImageUrl
+                                tvShowPosterPath = tvShow.posterImageUrl,
+                                tvShowBackdropPath = tvShow.backdropImageUrl
                             )
                         )
                     },
@@ -525,7 +536,7 @@ private fun TvShowContent(
                         )
                         openImageShot(index)
                     },
-                    maxImageShots = 6,
+                    maxImageShots = 3,
                     modifier = Modifier.padding(top = SectionVerticalSpacing)
                 )
             }

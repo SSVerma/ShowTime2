@@ -134,7 +134,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                         tvShowId = seasonLaunchable.tvShowId,
                         seasonNumber = seasonLaunchable.seasonNumber,
                         tvShowTitle = seasonLaunchable.tvShowTitle,
-                        tvShowPosterPath = seasonLaunchable.tvShowPosterPath
+                        tvShowPosterPath = seasonLaunchable.tvShowPosterPath,
+                        tvShowBackdropPath = seasonLaunchable.tvShowBackdropPath
                     )
                 )
             },
@@ -192,7 +193,8 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     tvShowId = key.tvShowId,
                     seasonNumber = key.seasonNumber,
                     tvShowTitle = key.tvShowTitle,
-                    tvShowPosterPath = key.tvShowPosterPath
+                    tvShowPosterPath = key.tvShowPosterPath,
+                    tvShowBackdropPath = key.tvShowBackdropPath
                 )
             },
             onBackPress = { navigator.goBack() },
@@ -203,7 +205,9 @@ fun EntryProviderScope<NavKey>.tvEntries(
                         seasonNumber = episodeLaunchable.seasonNumber,
                         episodeNumber = episodeLaunchable.episodeNumber,
                         tvShowTitle = episodeLaunchable.tvShowTitle,
-                        tvShowPosterPath = episodeLaunchable.tvShowPosterPath
+                        tvShowPosterPath = episodeLaunchable.tvShowPosterPath,
+                        tvShowBackdropPath = episodeLaunchable.tvShowBackdropPath
+                            ?: key.tvShowBackdropPath
                     )
                 )
             },
@@ -228,7 +232,21 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     seasonNumber = key.seasonNumber,
                     episodeNumber = key.episodeNumber,
                     tvShowTitle = key.tvShowTitle,
-                    tvShowPosterPath = key.tvShowPosterPath
+                    tvShowPosterPath = key.tvShowPosterPath,
+                    tvShowBackdropPath = key.tvShowBackdropPath
+                )
+            },
+            openEpisodeDetails = { episodeLaunchable ->
+                navigator.navigate(
+                    TvEpisodeDetailNavKey(
+                        tvShowId = episodeLaunchable.tvShowId,
+                        seasonNumber = episodeLaunchable.seasonNumber,
+                        episodeNumber = episodeLaunchable.episodeNumber,
+                        tvShowTitle = episodeLaunchable.tvShowTitle,
+                        tvShowPosterPath = episodeLaunchable.tvShowPosterPath,
+                        tvShowBackdropPath = episodeLaunchable.tvShowBackdropPath
+                            ?: key.tvShowBackdropPath
+                    )
                 )
             },
             openDiscussionsList = { args ->

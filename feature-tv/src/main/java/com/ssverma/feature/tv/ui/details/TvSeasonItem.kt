@@ -26,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -34,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
@@ -54,21 +54,21 @@ fun TvSeasonItem(
     val isInProgress = watchedEpisodeCount > 0 && watchedEpisodeCount < totalEpisodes
 
     val containerColor = when {
-        isFullyWatched -> Color(0xFF4CAF50).copy(alpha = 0.08f)
-        isInProgress -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        isFullyWatched -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+        isInProgress -> MaterialTheme.colorScheme.surfaceContainerHigh
+        else -> MaterialTheme.colorScheme.surfaceContainer
     }
 
     val actionButtonColor = when {
-        isFullyWatched -> Color(0xFF4CAF50)
-        isInProgress -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        isFullyWatched -> MaterialTheme.colorScheme.primary
+        isInProgress -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
     val actionIconTint = when {
-        isFullyWatched -> Color.White
-        isInProgress -> Color.White
-        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        isFullyWatched -> MaterialTheme.colorScheme.onPrimary
+        isInProgress -> MaterialTheme.colorScheme.onTertiary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Card(
@@ -82,7 +82,7 @@ fun TvSeasonItem(
         ) {
             NetworkImage(
                 url = tvSeason.posterImageUrl,
-                contentDescription = null,
+                contentDescription = tvSeason.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .width(88.dp)
@@ -92,91 +92,101 @@ fun TvSeasonItem(
 
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 12.dp)
+                    .padding(MaterialTheme.spacing.small)
                     .weight(1f)
             ) {
                 Text(
                     text = tvSeason.title,
                     style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
                 FlowRow(
-                    modifier = Modifier.padding(top = 6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.extraSmall),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall)
                 ) {
-                    tvSeason.displayAirDate?.let {
-                        DateBadge(dateText = it)
+                    tvSeason.displayAirDate?.let { dateText ->
+                        DateBadge(dateText = dateText)
                     }
 
                     if (isFullyWatched) {
                         TextBadge(
-                            text = "✓ $totalEpisodes eps",
-                            containerColor = Color(0xFF4CAF50).copy(alpha = 0.2f),
-                            contentColor = Color(0xFF4CAF50)
+                            text = stringResource(id = R.string.season_all_watched),
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     } else if (isInProgress) {
                         TextBadge(
-                            text = "$watchedEpisodeCount / $totalEpisodes eps",
-                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            contentColor = MaterialTheme.colorScheme.primary
+                            text = stringResource(
+                                id = R.string.progress_eps_format,
+                                watchedEpisodeCount,
+                                totalEpisodes
+                            ),
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     } else {
                         TextBadge(
                             text = stringResource(id = R.string.episodes_n, totalEpisodes),
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
 
-                Text(
-                    text = tvSeason.overview,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 3,
-                    fontStyle = FontStyle.Normal,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 8.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (tvSeason.overview.isNotBlank()) {
+                    Text(
+                        text = tvSeason.overview,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 3,
+                        fontStyle = FontStyle.Normal,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = MaterialTheme.spacing.extraSmall),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
-            // Intuitive Mark Season Watched / In-Progress Action Button
             IconButton(
                 onClick = onToggleWatched,
                 modifier = Modifier
-                    .padding(end = 8.dp)
-                    .size(40.dp)
+                    .padding(end = MaterialTheme.spacing.extraSmall)
+                    .size(48.dp)
             ) {
                 Surface(
                     shape = CircleShape,
                     color = actionButtonColor,
-                    modifier = Modifier.size(34.dp)
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         if (isInProgress) {
                             CircularProgressIndicator(
                                 progress = {
-                                    (watchedEpisodeCount.toFloat() / totalEpisodes.coerceAtLeast(
-                                        1
-                                    )).coerceIn(0f, 1f)
+                                    (watchedEpisodeCount.toFloat() / totalEpisodes.coerceAtLeast(1)).coerceIn(
+                                        0f,
+                                        1f
+                                    )
                                 },
-                                color = Color.White,
-                                trackColor = Color.White.copy(alpha = 0.25f),
-                                strokeWidth = 2.5.dp,
-                                modifier = Modifier.size(26.dp)
+                                color = MaterialTheme.colorScheme.onTertiary,
+                                trackColor = MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.25f),
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(24.dp)
                             )
                             Text(
                                 text = "$watchedEpisodeCount",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onTertiary
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.Check,
-                                contentDescription = if (isFullyWatched) "Season watched" else "Mark season watched",
+                                contentDescription = stringResource(
+                                    id = if (isFullyWatched) R.string.season_all_watched else R.string.mark_season
+                                ),
                                 tint = actionIconTint,
                                 modifier = Modifier.size(18.dp)
                             )

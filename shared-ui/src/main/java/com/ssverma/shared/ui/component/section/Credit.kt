@@ -29,6 +29,7 @@ fun CreditSection(
     modifier: Modifier = Modifier,
     @StringRes titleRes: Int = R.string.casts,
     source: String = "credit",
+    enableSharedTransition: Boolean = true,
 ) {
     Section(
         sectionHeader = {
@@ -49,6 +50,7 @@ fun CreditSection(
                     onPersonClick(it)
                 },
                 source = source,
+                enableSharedTransition = enableSharedTransition,
                 modifier = Modifier.width(104.dp)
             )
         }

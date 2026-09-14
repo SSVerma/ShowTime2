@@ -1,47 +1,33 @@
 package com.ssverma.feature.tv.ui.details
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.common.ui.community.MediaDiscussionsSection
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
-import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
+import com.ssverma.feature.tv.navigation.args.TvEpisodeArgs
+import com.ssverma.feature.tv.ui.details.component.TvEpisodeHeroHeader
+import com.ssverma.feature.tv.ui.details.component.TvEpisodeTimelineNavSection
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
@@ -50,16 +36,13 @@ import com.ssverma.shared.domain.model.community.EditCommentArgs
 import com.ssverma.shared.domain.model.community.PostCommentArgs
 import com.ssverma.shared.domain.model.community.ReportCommentArgs
 import com.ssverma.shared.domain.model.tv.TvEpisode
-import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.bottomsheet.ImageShotBottomSheet
 import com.ssverma.shared.ui.bottomsheet.SheetContentType
 import com.ssverma.shared.ui.bottomsheet.rememberImageShotBottomSheetState
-import com.ssverma.shared.ui.component.BackdropNavigationAction
-import com.ssverma.shared.ui.component.Highlight
-import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.section.CreditSection
 import com.ssverma.shared.ui.component.section.ImageShotsSection
 import com.ssverma.shared.ui.component.section.OverviewSection
+import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,10 +51,13 @@ fun TvEpisodeDetailsScreen(
     onBackPress: () -> Unit,
     openPersonDetails: (Cast) -> Unit,
     viewModel: TvEpisodeDetailsViewModel,
+    openEpisodeDetails: (TvEpisodeArgs) -> Unit = {},
     openDiscussionsList: (DiscussionNavArgs) -> Unit = {}
 ) {
     val imageSheetState = rememberImageShotBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val analytics = LocalAnalytics.current
 
     val tvEpisodeUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isWatched by viewModel.isWatched.collectAsStateWithLifecycle()
@@ -79,20 +65,65 @@ fun TvEpisodeDetailsScreen(
 
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_EPISODE)
 
-    Surface(color = MaterialTheme.colorScheme.background) {
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
         DriveCompose(
             uiState = tvEpisodeUiState,
             onRetry = { viewModel.fetchTvEpisode() }
         ) { episode ->
             ImageShotBottomSheet(
                 imageShots = episode.stills,
-                sheetState = imageSheetState,
+                sheetState = imageSheetState
             ) {
                 TvEpisodeContent(
                     episode = episode,
+                    tvShowTitle = viewModel.tvShowTitle,
+                    tvShowBackdropPath = viewModel.tvShowBackdropPath,
                     isWatched = isWatched,
                     discussions = discussions,
                     onToggleWatched = { viewModel.toggleWatched() },
+                    onShareClick = {
+                        analytics.logEvent(
+                            TvAnalyticsEvent.ShareClicked(
+                                tvShowId = viewModel.tvShowId,
+                                sourceScreen = TvAnalyticsScreenName.TV_EPISODE
+                            )
+                        )
+                        val shareText = context.getString(
+                            R.string.share_episode_text,
+                            viewModel.tvShowTitle ?: episode.title,
+                            episode.title,
+                            episode.seasonNumber,
+                            episode.episodeNumber
+                        )
+                        context.dispatchShareTextIntent(text = shareText)
+                    },
+                    onPreviousEpisodeClick = {
+                        openEpisodeDetails(
+                            TvEpisodeArgs(
+                                tvShowId = viewModel.tvShowId,
+                                seasonNumber = episode.seasonNumber,
+                                episodeNumber = episode.episodeNumber - 1,
+                                tvShowTitle = viewModel.tvShowTitle,
+                                tvShowPosterPath = viewModel.tvShowPosterPath,
+                                tvShowBackdropPath = viewModel.tvShowBackdropPath
+                            )
+                        )
+                    },
+                    onNextEpisodeClick = {
+                        openEpisodeDetails(
+                            TvEpisodeArgs(
+                                tvShowId = viewModel.tvShowId,
+                                seasonNumber = episode.seasonNumber,
+                                episodeNumber = episode.episodeNumber + 1,
+                                tvShowTitle = viewModel.tvShowTitle,
+                                tvShowPosterPath = viewModel.tvShowPosterPath,
+                                tvShowBackdropPath = viewModel.tvShowBackdropPath
+                            )
+                        )
+                    },
                     onDiscussionsViewAllClick = {
                         openDiscussionsList(
                             DiscussionNavArgs(
@@ -123,8 +154,7 @@ fun TvEpisodeDetailsScreen(
                             imageSheetState.show(SheetContentType.ImagePager(pageIndex))
                         }
                     },
-                    modifier = Modifier
-                        .padding(it)
+                    modifier = Modifier.padding(it)
                 )
             }
         }
@@ -134,9 +164,14 @@ fun TvEpisodeDetailsScreen(
 @Composable
 private fun TvEpisodeContent(
     episode: TvEpisode,
+    tvShowTitle: String?,
+    tvShowBackdropPath: String?,
     isWatched: Boolean,
     discussions: List<Comment>,
     onToggleWatched: () -> Unit,
+    onShareClick: () -> Unit,
+    onPreviousEpisodeClick: () -> Unit,
+    onNextEpisodeClick: () -> Unit,
     onDiscussionsViewAllClick: () -> Unit,
     onPostComment: (PostCommentArgs) -> Unit,
     onEditComment: (EditCommentArgs) -> Unit,
@@ -151,213 +186,124 @@ private fun TvEpisodeContent(
 ) {
     val analytics = LocalAnalytics.current
 
-    LazyColumn(modifier = modifier) {
-        item {
-            BackdropHeader(
-                backdropImageUrl = episode.posterImageUrl,
-                onBackPress = onBackPress
-            )
-        }
+    Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier.fillMaxSize()
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            // Full Width Hero Header (Episode still backdrop, show breadcrumbs, title, watched action)
+            item(key = "episode_hero_header") {
+                TvEpisodeHeroHeader(
+                    episode = episode,
+                    tvShowTitle = tvShowTitle,
+                    tvShowBackdropPath = tvShowBackdropPath,
+                    isWatched = isWatched,
+                    onBackPress = onBackPress,
+                    onShareClick = onShareClick,
+                    onToggleWatched = onToggleWatched
+                )
+            }
 
-        item {
-            Text(
-                text = episode.title,
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-        }
-
-        item {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)
-                    .padding(horizontal = 16.dp)
-            ) {
-                FilledTonalButton(
-                    onClick = onToggleWatched,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = if (isWatched) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                        }
-                    ),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = if (isWatched) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                alpha = 0.2f
-                            ),
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Check,
-                                    contentDescription = null,
-                                    tint = if (isWatched) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                        Text(
-                            text = if (isWatched) "Watched" else "Mark as Watched",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isWatched) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+            // Overview Section
+            if (episode.overview.isNotBlank()) {
+                item(key = "episode_overview") {
+                    OverviewSection(
+                        overview = episode.overview,
+                        modifier = Modifier
+                            .padding(top = SectionVerticalSpacing)
+                            .padding(horizontal = MaterialTheme.spacing.medium)
+                    )
                 }
             }
-        }
 
-        item {
-            Highlights(
-                highlights = remember { episode.highlightedItems() },
-                modifier = Modifier
-                    .padding(top = SectionSpacing)
-                    .padding(horizontal = 16.dp)
-            )
-        }
-
-        item {
-            OverviewSection(
-                overview = episode.overview,
-                modifier = Modifier
-                    .padding(top = SectionSpacing)
-                    .padding(horizontal = 16.dp)
-            )
-        }
-
-        item {
-            ImageShotsSection(
-                imageShots = episode.stills,
-                maxImageShots = MaxImageShots,
-                openImageShotsList = openImageShotsList,
-                openImageShot = openImageShot,
-                modifier = Modifier.padding(top = SectionSpacing)
-            )
-        }
-
-        item {
-            CreditSection(
-                casts = episode.casts,
-                onPersonClick = { cast ->
-                    analytics.logEvent(
-                        TvAnalyticsEvent.CastClicked(
-                            cast = cast,
-                            sourceScreen = TvAnalyticsScreenName.TV_EPISODE
-                        )
-                    )
-                    openPersonDetails(cast)
-                },
-                source = "tv_episode_credit",
-                modifier = Modifier.padding(top = SectionSpacing)
-            )
-        }
-
-        item {
-            CreditSection(
-                casts = episode.guestStars,
-                titleRes = R.string.guest_appearance,
-                onPersonClick = { cast ->
-                    analytics.logEvent(
-                        TvAnalyticsEvent.CastClicked(
-                            cast = cast,
-                            sourceScreen = TvAnalyticsScreenName.TV_EPISODE
-                        )
-                    )
-                    openPersonDetails(cast)
-                },
-                source = "tv_episode_credit",
-                modifier = Modifier.padding(top = SectionSpacing)
-            )
-        }
-
-        /*Episode Community Discussions*/
-        item(key = "media_discussions") {
-            MediaDiscussionsSection(
-                discussions = discussions,
-                onDiscussionsViewAllClick = onDiscussionsViewAllClick,
-                onPostComment = onPostComment,
-                onEditComment = onEditComment,
-                onReportComment = onReportComment,
-                onToggleUpvote = onToggleUpvote,
-                onDeleteComment = onDeleteComment,
-                modifier = Modifier.padding(top = SectionSpacing)
-            )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(SectionSpacing))
-        }
-    }
-}
-
-@Composable
-private fun BackdropHeader(
-    backdropImageUrl: String,
-    onBackPress: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier) {
-        NetworkImage(
-            url = backdropImageUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(TmdbBackdropAspectRatio)
-        )
-
-        /*Navigation*/
-        BackdropNavigationAction(onIconClick = onBackPress)
-
-        /*Rounded surface*/
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(SurfaceCornerRoundSize)
-                .background(
-                    color = MaterialTheme.colorScheme.background,
-                    shape = MaterialTheme.shapes.medium.copy(
-                        topStart = CornerSize(SurfaceCornerRoundSize),
-                        topEnd = CornerSize(SurfaceCornerRoundSize),
-                        bottomStart = CornerSize(0.dp),
-                        bottomEnd = CornerSize(0.dp)
-                    ),
+            // Timeline Navigation (Previous / Next Episode)
+            item(key = "episode_timeline_nav") {
+                TvEpisodeTimelineNavSection(
+                    currentEpisodeNumber = episode.episodeNumber,
+                    onPreviousEpisodeClick = onPreviousEpisodeClick,
+                    onNextEpisodeClick = onNextEpisodeClick,
+                    modifier = Modifier.padding(top = SectionVerticalSpacing)
                 )
-                .align(Alignment.BottomCenter)
-        )
+            }
+
+            // Image Stills / Shots (Max 3)
+            if (episode.stills.isNotEmpty()) {
+                item(key = "episode_shots") {
+                    ImageShotsSection(
+                        imageShots = episode.stills,
+                        maxImageShots = 3,
+                        openImageShotsList = openImageShotsList,
+                        openImageShot = openImageShot,
+                        modifier = Modifier.padding(top = SectionVerticalSpacing)
+                    )
+                }
+            }
+
+            // Regular Casts
+            if (episode.casts.isNotEmpty()) {
+                item(key = "episode_casts") {
+                    CreditSection(
+                        casts = episode.casts,
+                        onPersonClick = { cast ->
+                            analytics.logEvent(
+                                TvAnalyticsEvent.CastClicked(
+                                    cast = cast,
+                                    sourceScreen = TvAnalyticsScreenName.TV_EPISODE
+                                )
+                            )
+                            openPersonDetails(cast)
+                        },
+                        source = "tv_episode_${episode.id}_credit",
+                        enableSharedTransition = false,
+                        modifier = Modifier.padding(top = SectionVerticalSpacing)
+                    )
+                }
+            }
+
+            // Guest Stars
+            if (episode.guestStars.isNotEmpty()) {
+                item(key = "episode_guest_stars") {
+                    CreditSection(
+                        casts = episode.guestStars,
+                        titleRes = R.string.guest_appearance,
+                        onPersonClick = { cast ->
+                            analytics.logEvent(
+                                TvAnalyticsEvent.CastClicked(
+                                    cast = cast,
+                                    sourceScreen = TvAnalyticsScreenName.TV_EPISODE
+                                )
+                            )
+                            openPersonDetails(cast)
+                        },
+                        source = "tv_episode_${episode.id}_guest_stars",
+                        enableSharedTransition = false,
+                        modifier = Modifier.padding(top = SectionVerticalSpacing)
+                    )
+                }
+            }
+
+            // Episode Community Discussions
+            item(key = "episode_discussions") {
+                MediaDiscussionsSection(
+                    discussions = discussions,
+                    onDiscussionsViewAllClick = onDiscussionsViewAllClick,
+                    onPostComment = onPostComment,
+                    onEditComment = onEditComment,
+                    onReportComment = onReportComment,
+                    onToggleUpvote = onToggleUpvote,
+                    onDeleteComment = onDeleteComment,
+                    modifier = Modifier.padding(top = SectionVerticalSpacing)
+                )
+            }
+
+            item(key = "bottom_spacer") {
+                Spacer(modifier = Modifier.height(SectionVerticalSpacing))
+            }
+        }
     }
 }
-
-private fun TvEpisode.highlightedItems(): List<Highlight> {
-    return listOf(
-        Highlight(
-            labelRes = R.string.season_number,
-            value = seasonNumber.toString()
-        ),
-        Highlight(
-            labelRes = R.string.episode_number,
-            value = episodeNumber.toString()
-        ),
-        Highlight(
-            labelRes = R.string.air_date,
-            value = displayAirDate.orEmpty()
-        ),
-    )
-}
-
-private val SectionSpacing = 20.dp
-private val SurfaceCornerRoundSize = 12.dp
-private const val MaxImageShots = 3

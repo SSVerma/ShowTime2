@@ -98,6 +98,7 @@ import com.ssverma.shared.ui.component.section.TagsSection
 import com.ssverma.shared.ui.component.section.VideoShotsSection
 import com.ssverma.shared.ui.component.section.WatchProvidersSection
 import com.ssverma.shared.ui.component.section.WhereToWatchActionBottomSheet
+import com.ssverma.feature.movie.ui.details.component.MovieCollectionSection
 import com.ssverma.shared.ui.emptyIfAbsent
 import kotlinx.coroutines.launch
 import com.ssverma.shared.ui.R as SharedR
@@ -528,6 +529,15 @@ fun MovieContent(
                         )
                     }
                 )
+            }
+
+            movie.movieCollection?.let { collection ->
+                item(key = "movie_collection") {
+                    MovieCollectionSection(
+                        movieCollection = collection,
+                        modifier = Modifier.padding(top = SectionVerticalSpacing)
+                    )
+                }
             }
 
             item {

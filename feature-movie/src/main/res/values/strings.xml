@@ -119,5 +119,6 @@
     <string name="cinema_stats_movie_details">(%1$s) • Directed by %2$s</string>
     <string name="cinema_stats_footer_brand">Play daily on ShowTime • Available on Google Play</string>
     <string name="cinema_stats_streak_count">%1$d Days</string>
-
+    <string name="part_of_collection">Part of the %1$s</string>
+    <string name="franchise_collection">Franchise Collection</string>
 </resources>

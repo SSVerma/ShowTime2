@@ -43,19 +43,24 @@ fun ScoreBadge(
 @Composable
 fun DateBadge(
     dateText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showYear: Boolean = false
 ) {
-    val compactDateText = remember(dateText) {
-        val parts = dateText.trim().split(" ")
-        if (parts.size == 3 && parts[2].all { it.isDigit() }) {
-            "${parts[0]} ${parts[1]}"
-        } else {
+    val formattedDateText = remember(dateText, showYear) {
+        if (showYear) {
             dateText
+        } else {
+            val parts = dateText.trim().split(" ")
+            if (parts.size == 3 && parts[2].all { it.isDigit() }) {
+                "${parts[0]} ${parts[1]}"
+            } else {
+                dateText
+            }
         }
     }
 
     MediaBadge(
-        text = compactDateText,
+        text = formattedDateText,
         icon = Icons.Rounded.CalendarToday,
         iconContentDescription = stringResource(id = R.string.date_icon_cd),
         containerColor = MaterialTheme.colorScheme.secondaryContainer,

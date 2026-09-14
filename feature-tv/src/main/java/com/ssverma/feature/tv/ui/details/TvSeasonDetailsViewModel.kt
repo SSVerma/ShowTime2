@@ -26,6 +26,7 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
     @Assisted("seasonNumber") val seasonNumber: Int,
     @Assisted("tvShowTitle") val tvShowTitle: String? = null,
     @Assisted("tvShowPosterPath") val tvShowPosterPath: String? = null,
+    @Assisted("tvShowBackdropPath") val tvShowBackdropPath: String? = null,
     private val tvSeasonUseCase: TvSeasonUseCase,
     private val traktSyncRepository: TraktSyncRepository
 ) : ViewModel() {
@@ -36,7 +37,8 @@ class TvSeasonDetailsViewModel @AssistedInject constructor(
             @Assisted("tvShowId") tvShowId: Int,
             @Assisted("seasonNumber") seasonNumber: Int,
             @Assisted("tvShowTitle") tvShowTitle: String? = null,
-            @Assisted("tvShowPosterPath") tvShowPosterPath: String? = null
+            @Assisted("tvShowPosterPath") tvShowPosterPath: String? = null,
+            @Assisted("tvShowBackdropPath") tvShowBackdropPath: String? = null
         ): TvSeasonDetailsViewModel
     }
 

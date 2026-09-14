@@ -43,6 +43,7 @@ class TvEpisodeDetailsViewModel @AssistedInject constructor(
     @Assisted("episodeNumber") val episodeNumber: Int,
     @Assisted("tvShowTitle") val tvShowTitle: String? = null,
     @Assisted("tvShowPosterPath") val tvShowPosterPath: String? = null,
+    @Assisted("tvShowBackdropPath") val tvShowBackdropPath: String? = null,
     private val tvEpisodeUseCase: TvEpisodeUseCase,
     private val traktSyncRepository: TraktSyncRepository,
     private val getDiscussionsUseCase: GetDiscussionsUseCase,
@@ -60,7 +61,8 @@ class TvEpisodeDetailsViewModel @AssistedInject constructor(
             @Assisted("seasonNumber") seasonNumber: Int,
             @Assisted("episodeNumber") episodeNumber: Int,
             @Assisted("tvShowTitle") tvShowTitle: String? = null,
-            @Assisted("tvShowPosterPath") tvShowPosterPath: String? = null
+            @Assisted("tvShowPosterPath") tvShowPosterPath: String? = null,
+            @Assisted("tvShowBackdropPath") tvShowBackdropPath: String? = null
         ): TvEpisodeDetailsViewModel
     }
 
