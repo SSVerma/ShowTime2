@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.History
@@ -32,6 +33,22 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.tv.TvEpisodePreview
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
+
+fun LazyListScope.tvShowAiringTimelineSection(
+    nextEpisodeToAir: TvEpisodePreview?,
+    lastEpisodeToAir: TvEpisodePreview?,
+    modifier: Modifier = Modifier
+) {
+    if (nextEpisodeToAir != null || lastEpisodeToAir != null) {
+        item(key = "tv_airing_timeline", contentType = "airing_timeline") {
+            TvShowAiringTimelineSection(
+                nextEpisodeToAir = nextEpisodeToAir,
+                lastEpisodeToAir = lastEpisodeToAir,
+                modifier = modifier
+            )
+        }
+    }
+}
 
 @Composable
 fun TvShowAiringTimelineSection(

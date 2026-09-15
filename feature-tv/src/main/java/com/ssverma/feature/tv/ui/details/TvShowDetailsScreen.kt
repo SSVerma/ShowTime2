@@ -1,25 +1,11 @@
 package com.ssverma.feature.tv.ui.details
 
-import androidx.annotation.StringRes
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.NotificationsActive
-import androidx.compose.material.icons.rounded.NotificationsNone
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,90 +13,60 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ssverma.shared.ui.component.notification.NotificationPermissionDialogs
-import com.ssverma.shared.ui.component.notification.rememberNotificationPermissionHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.common.ui.community.MediaDiscussionsSection
-import com.ssverma.shared.ads.gate.FeatureGateConfig
-import com.ssverma.shared.ads.gate.FeaturePassPolicy
-import com.ssverma.shared.ads.gate.GatePresentationStyle
-import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
-import com.ssverma.shared.ads.quota.PassKey
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
 import com.ssverma.core.ui.DriveCompose
-import com.ssverma.core.ui.util.findActivity
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
-import com.ssverma.core.ui.foundation.Emphasize
-import com.ssverma.core.ui.layout.HorizontalLazyList
-import com.ssverma.core.ui.layout.HorizontalLazyListSection
-import com.ssverma.core.ui.layout.Section
-import com.ssverma.core.ui.layout.SectionHeader
-import androidx.navigation3.runtime.NavKey
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
-import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.analytics.TvAnalyticsValues
 import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
-import com.ssverma.feature.tv.ui.details.component.TvShowAiringTimelineSection
-import com.ssverma.shared.ads.native.ShowTimeNativeAd
-import com.ssverma.shared.ads.ui.NativeAdStyle
+import com.ssverma.feature.tv.ui.details.component.TvShowDetailsOverlays
+import com.ssverma.feature.tv.ui.details.component.tvCreditsSection
+import com.ssverma.feature.tv.ui.details.component.tvDiscussionsSection
+import com.ssverma.feature.tv.ui.details.component.tvGenresSection
+import com.ssverma.feature.tv.ui.details.component.tvImageShotsSection
+import com.ssverma.feature.tv.ui.details.component.tvKeywordsSection
+import com.ssverma.feature.tv.ui.details.component.tvOverviewSection
+import com.ssverma.feature.tv.ui.details.component.tvReactionsSection
+import com.ssverma.feature.tv.ui.details.component.tvRecommendationsSection
+import com.ssverma.feature.tv.ui.details.component.tvReviewsSection
+import com.ssverma.feature.tv.ui.details.component.tvSeasonsSection
+import com.ssverma.feature.tv.ui.details.component.tvShowAiringTimelineSection
+import com.ssverma.feature.tv.ui.details.component.tvShowDetailsHeroSection
+import com.ssverma.feature.tv.ui.details.component.tvSimilarShowsSection
+import com.ssverma.feature.tv.ui.details.component.tvVideoShotsSection
+import com.ssverma.feature.tv.ui.details.component.tvWatchProvidersSection
 import com.ssverma.shared.domain.model.Cast
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
-import com.ssverma.shared.domain.model.tv.TvSeason
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.utils.ShareMediaUtils
-import com.ssverma.shared.ui.component.BackdropActionButton
-import com.ssverma.shared.ui.component.BackdropHeader
-import com.ssverma.shared.ui.component.GenreItem
-import com.ssverma.shared.ui.component.Highlight
-import com.ssverma.shared.ui.component.Highlights
-import com.ssverma.shared.ui.component.diary.LogAndRateDialog
-import com.ssverma.shared.ui.component.media.MediaItemDefaults
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
-import com.ssverma.shared.ui.component.media.UniversalMediaCard
-import com.ssverma.shared.ui.component.media.asUniversalMediaItem
-import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
-import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
-import com.ssverma.shared.ui.component.section.CreditSection
-import com.ssverma.shared.ui.component.section.ImageShotsSection
-import com.ssverma.shared.ui.component.section.MediaReactionsSection
-import com.ssverma.shared.ui.component.section.OverviewSection
-import com.ssverma.shared.ui.component.section.ReviewsSection
-import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
-import com.ssverma.shared.ui.component.section.SectionDefaults.SectionVerticalSpacing
-import com.ssverma.shared.ui.component.section.TagsSection
-import com.ssverma.shared.ui.component.section.VideoShotsSection
-import com.ssverma.shared.ui.component.section.WatchProvidersSection
-import com.ssverma.shared.ui.component.section.WhereToWatchActionBottomSheet
-import com.ssverma.shared.ui.emptyIfAbsent
+import com.ssverma.shared.ui.component.notification.rememberNotificationPermissionHandler
+import com.ssverma.shared.ui.component.section.topSectionSpacing
 import kotlinx.coroutines.launch
 import com.ssverma.shared.ui.R as SharedR
 
@@ -194,14 +150,11 @@ private fun TvShowContent(
 ) {
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
-    val selectedProviderPayload by viewModel.selectedProviderForAction.collectAsStateWithLifecycle()
     val seasonWatchCounts by viewModel.seasonWatchCounts.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
     val diaryEntries by viewModel.diaryEntries.collectAsStateWithLifecycle()
     val hasReminder by viewModel.hasReminder.collectAsStateWithLifecycle()
-    val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
-    val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
     val reminderSnackbarEvent by viewModel.reminderSnackbarEvent.collectAsStateWithLifecycle()
     var showLogDialog by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
@@ -211,6 +164,19 @@ private fun TvShowContent(
 
     val notificationPermissionHandler = rememberNotificationPermissionHandler()
 
+    val handleShowFeedback: (ShowFeedbackArgs) -> Unit = { args ->
+        coroutineScope.launch {
+            val result = snackbarHostState.showImmediateSnackbar(
+                message = args.message,
+                actionLabel = args.actionLabel,
+                duration = SnackbarDuration.Short
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
+            }
+        }
+    }
+
     LaunchedEffect(reminderSnackbarEvent) {
         reminderSnackbarEvent?.let { message ->
             snackbarHostState.showImmediateSnackbar(message)
@@ -218,681 +184,337 @@ private fun TvShowContent(
         }
     }
 
+    val diaryUpdatedMessage = stringResource(
+        SharedR.string.media_menu_diary_updated_success,
+        tvShow.title
+    )
+    val diaryLoggedMessage = stringResource(
+        SharedR.string.media_menu_diary_logged_success,
+        tvShow.title
+    )
+    val viewInDiaryLabel = stringResource(SharedR.string.media_menu_view_in_diary)
+    val horizontalSpacing = MaterialTheme.spacing.medium
+
     Scaffold(
         snackbarHost = { ShowTimeSnackbarHost(hostState = snackbarHostState) },
-        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            item {
-                BackdropHeader(
-                    backdropImageUrl = tvShow.backdropImageUrl,
-                    onCloseIconClick = onBackPressed,
-                    showTrailerFab = tvShow.primaryTrailer != null,
-                    onTrailerFabClick = {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.TrailerClicked(
-                                tvShowId = tvShow.id,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
+            tvShowDetailsHeroSection(
+                tvShow = tvShow,
+                hasReminder = hasReminder,
+                existingDiaryEntry = diaryEntries.firstOrNull(),
+                hasDiaryEntries = diaryEntries.isNotEmpty(),
+                onBackPressed = onBackPressed,
+                onPlayTrailer = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.TrailerClicked(
+                            tvShowId = tvShow.id,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
                         )
-                        viewModel.onPlayTrailerClicked(tvShow)
-                    },
-                    secondaryActions = {
-                        if (!tvShow.isUpcoming) {
-                            BackdropActionButton(
-                                onClick = { showLogDialog = true },
-                                icon = if (diaryEntries.isNotEmpty()) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                                contentDescription = stringResource(id = SharedR.string.log_and_rate_cd)
-                            )
-                        }
-                        MediaOmniActionMenu(
-                            mediaId = tvShow.id,
-                            mediaType = MediaType.Tv,
-                            title = tvShow.title,
-                            posterImageUrl = tvShow.posterImageUrl,
-                            backdropImageUrl = tvShow.backdropImageUrl,
-                            voteAvg = tvShow.voteAvg,
-                            releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
-                            config = MediaOmniMenuConfig(
-                                isUpcoming = tvShow.isUpcoming,
-                                showReminder = false
-                            ),
-                            existingDiaryEntry = diaryEntries.firstOrNull(),
-                            onLogToDiary = { showLogDialog = true },
-                            onOpenDiscussions = openDiscussionsList,
-                            onShare = {
-                                analytics.logEvent(
-                                    TvAnalyticsEvent.ShareClicked(
-                                        tvShowId = tvShow.id,
-                                        sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                                    )
-                                )
-                                val shareableText = ShareMediaUtils.buildShareableMediaText(
-                                    mediaTitle = tvShow.title,
-                                    mediaTagline = tvShow.tagline,
-                                    mediaOverview = tvShow.overview,
-                                    appPackageName = context.packageName,
-                                    mediaType = "tv",
-                                    mediaId = tvShow.id
-                                )
-                                context.dispatchShareTextIntent(text = shareableText)
-                            },
-                            onShowFeedback = { args ->
-                                coroutineScope.launch {
-                                    val result = snackbarHostState.showImmediateSnackbar(
-                                        message = args.message,
-                                        actionLabel = args.actionLabel,
-                                        duration = SnackbarDuration.Short
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        openLibraryPage(
-                                            args.destination ?: LibraryHomeNavKey.Default
-                                        )
-                                    }
-                                }
-                            },
-                            actionContent = { onClick ->
-                                BackdropActionButton(
-                                    onClick = onClick,
-                                    icon = Icons.Rounded.Add,
-                                    contentDescription = stringResource(id = SharedR.string.more_options_cd)
-                                )
-                            }
-                        )
-                        if (tvShow.hasUpcomingEpisodes || hasReminder) {
-                            BackdropActionButton(
-                                onClick = {
-                                    if (hasReminder) {
-                                        viewModel.toggleReminder(tvShow)
-                                    } else {
-                                        notificationPermissionHandler.requestPermissionThen {
-                                            viewModel.toggleReminder(tvShow)
-                                        }
-                                    }
-                                },
-                                icon = if (hasReminder) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
-                                containerColor = if (hasReminder) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                                contentColor = if (hasReminder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                contentDescription = stringResource(id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me)
-                            )
-                        }
-                    }
-                )
-            }
-
-            /*Title*/
-            item {
-                Text(
-                    text = tvShow.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 24.dp)
-                )
-            }
-
-            /*Tagline*/
-            tvShow.tagline?.let { tagline ->
-                item {
-                    Emphasize {
-                        Text(
-                            text = tagline,
-                            style = MaterialTheme.typography.labelSmall,
-                            textAlign = TextAlign.Center,
-                            fontStyle = FontStyle.Italic,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .padding(top = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            /*Highlights*/
-            item {
-                Highlights(
-                    highlights = remember(tvShow) { tvShow.highlightedItems() },
-                    modifier = Modifier.padding(top = SectionVerticalSpacing)
-                )
-            }
-
-            val watchProvider = tvShow.watchProviders[watchProviderRegion]
-            if (watchProvider != null && watchProvider.hasProviders) {
-                item(key = "watch_providers") {
-                    WatchProvidersSection(
-                        watchProvider = watchProvider,
-                        modifier = Modifier.padding(top = SectionVerticalSpacing),
-                        adContent = {
-                            ShowTimeNativeAd(
-                                ad = watchProviderAd,
-                                loadInternally = false,
-                                style = NativeAdStyle.CircularLogo,
-                                modifier = Modifier.size(44.dp),
-                                analyticsEventPrefix = "tv_details_watch_provider"
-                            )
-                        },
-                        onWatchProviderClick = {
-                            analytics.logEvent(
-                                TvAnalyticsEvent.WatchProviderClicked(
-                                    providerInfo = it,
-                                    sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                                )
-                            )
-                            openWatchHub(it)
-                        },
-                        onWatchProviderWithCategoryClick = { providerInfo, category ->
-                            analytics.logEvent(
-                                TvAnalyticsEvent.WatchProviderClicked(
-                                    providerInfo = providerInfo,
-                                    sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                                )
-                            )
-                            viewModel.onProviderSelectedForAction(providerInfo, category)
-                        },
-                        onJustWatchClick = {
-                            analytics.logEvent(
-                                TvAnalyticsEvent.JustWatchClicked(
-                                    sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                                )
-                            )
-                        }
                     )
-                }
-            }
-
-            item(key = "community_reactions") {
-                MediaReactionsSection(
-                    reactions = mediaReactions,
-                    onTagClick = { tag ->
-                        viewModel.onReactionTagClicked(tag = tag)
-                    },
-                    modifier = Modifier.padding(top = SectionVerticalSpacing)
-                )
-            }
-
-            /*Overview section title*/
-            item {
-                OverviewSection(
-                    overview = tvShow.overview,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = SectionVerticalSpacing)
-                )
-            }
-
-            /*Genre*/
-            item {
-                HorizontalLazyList(
-                    items = tvShow.generes,
-                    contentPadding = PaddingValues(
-                        top = SectionVerticalSpacing,
-                        start = 16.dp,
-                        end = 16.dp
+                    viewModel.onPlayTrailerClicked(tvShow)
+                },
+                onOpenLogDialog = { showLogDialog = true },
+                onReminderClick = {
+                    if (hasReminder) {
+                        viewModel.toggleReminder(tvShow)
+                    } else {
+                        notificationPermissionHandler.requestPermissionThen {
+                            viewModel.toggleReminder(tvShow)
+                        }
+                    }
+                },
+                onOpenDiscussions = {
+                    openDiscussionsList()
+                },
+                onShare = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.ShareClicked(
+                            tvShowId = tvShow.id,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
                     )
-                ) { genre ->
-                    GenreItem(genre = genre) {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.GenreClicked(
-                                genre = genre,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
-                        )
-                        openTvShowList(
-                            TvShowListingRoute(
-                                args = TvShowListingArgs.ByGenre(
-                                    genreId = genre.id,
-                                    title = genre.name
-                                )
-                            )
-                        )
-                    }
-                }
-            }
+                    val shareableText = ShareMediaUtils.buildShareableMediaText(
+                        mediaTitle = tvShow.title,
+                        mediaTagline = tvShow.tagline,
+                        mediaOverview = tvShow.overview,
+                        appPackageName = context.packageName,
+                        mediaType = "tv",
+                        mediaId = tvShow.id
+                    )
+                    context.dispatchShareTextIntent(text = shareableText)
+                },
+                onShowFeedback = handleShowFeedback
+            )
 
-            /*Airing Timeline*/
-            item(key = "airing_timeline") {
-                TvShowAiringTimelineSection(
-                    nextEpisodeToAir = tvShow.nextEpisodeToAir,
-                    lastEpisodeToAir = tvShow.lastEpisodeToAir,
-                    modifier = Modifier.padding(top = SectionVerticalSpacing)
-                )
-            }
+            tvWatchProvidersSection(
+                tvShow = tvShow,
+                watchProviderRegion = watchProviderRegion,
+                watchProviderAd = watchProviderAd,
+                onWatchProviderClick = { providerInfo ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.WatchProviderClicked(
+                            providerInfo = providerInfo,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openWatchHub(providerInfo)
+                },
+                onWatchProviderWithCategoryClick = { providerInfo, category ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.WatchProviderClicked(
+                            providerInfo = providerInfo,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    viewModel.onProviderSelectedForAction(providerInfo, category)
+                },
+                onJustWatchClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.JustWatchClicked(
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                },
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Seasons*/
-            item {
-                SeasonsSection(
-                    seasons = tvShow.seasons,
-                    seasonWatchCounts = seasonWatchCounts,
-                    onSeasonClick = { season ->
-                        analytics.logEvent(
-                            TvAnalyticsEvent.SeasonClicked(
-                                season = season,
-                                tvShowId = tvShow.id,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
-                        )
-                        openTvSeasonDetails(
-                            TvSeasonArgs(
-                                tvShowId = viewModel.tvShowId,
-                                seasonNumber = season.seasonNumber,
-                                tvShowTitle = tvShow.title,
-                                tvShowPosterPath = tvShow.posterImageUrl,
-                                tvShowBackdropPath = tvShow.backdropImageUrl
-                            )
-                        )
-                    },
-                    onToggleSeasonWatched = { season ->
-                        viewModel.toggleSeasonWatched(season)
-                    },
-                    modifier = Modifier
-                        .padding(top = SectionVerticalSpacing)
-                )
-            }
+            tvReactionsSection(
+                mediaReactions = mediaReactions,
+                onReactionTagClicked = viewModel::onReactionTagClicked,
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Cast*/
-            item {
-                CreditSection(
-                    casts = tvShow.casts,
-                    onPersonClick = { cast ->
-                        analytics.logEvent(
-                            TvAnalyticsEvent.CastClicked(
-                                cast = cast,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
-                        )
-                        openPersonDetails(cast)
-                    },
-                    source = "tv_show_credit",
-                    modifier = Modifier.padding(top = SectionVerticalSpacing)
-                )
-            }
+            tvOverviewSection(
+                overview = tvShow.overview,
+                modifier = Modifier
+                    .topSectionSpacing()
+                    .padding(horizontal = horizontalSpacing)
+            )
 
-            /*Image shots*/
-            item {
-                ImageShotsSection(
-                    imageShots = uiState.imageShots,
-                    openImageShotsList = {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.SeeAllClicked(
-                                section = TvAnalyticsValues.SECTION_SHOTS,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+            tvGenresSection(
+                genres = tvShow.generes,
+                onGenreClicked = { genre ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.GenreClicked(
+                            genre = genre,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openTvShowList(
+                        TvShowListingRoute(
+                            args = TvShowListingArgs.ByGenre(
+                                genreId = genre.id,
+                                title = genre.name
                             )
                         )
-                        openImageShotsList()
-                    },
-                    openImageShot = { index ->
-                        analytics.logEvent(
-                            TvAnalyticsEvent.ImageShotClicked(
-                                index = index,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
-                        )
-                        openImageShot(index)
-                    },
-                    maxImageShots = 3,
-                    modifier = Modifier.padding(top = SectionVerticalSpacing)
-                )
-            }
+                    )
+                },
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Video shots*/
-            item {
-                VideoShotsSection(
-                    videos = tvShow.videos,
-                    onVideoClick = {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.VideoClicked(
-                                video = it,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
-                        )
-                        openYoutube(it.key)
-                    },
-                    modifier = Modifier.padding(top = SectionVerticalSpacing),
-                )
-            }
+            tvShowAiringTimelineSection(
+                nextEpisodeToAir = tvShow.nextEpisodeToAir,
+                lastEpisodeToAir = tvShow.lastEpisodeToAir,
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Community Discussions*/
-            item(key = "media_discussions") {
-                MediaDiscussionsSection(
-                    discussions = discussions,
-                    onDiscussionsViewAllClick = openDiscussionsList,
-                    onPostComment = viewModel::postComment,
-                    onEditComment = viewModel::editComment,
-                    onReportComment = viewModel::reportComment,
-                    onToggleUpvote = viewModel::toggleCommentUpvote,
-                    onDeleteComment = viewModel::deleteComment,
-                    modifier = Modifier.padding(top = SectionVerticalSpacing)
-                )
-            }
+            tvSeasonsSection(
+                seasons = tvShow.seasons,
+                seasonWatchCounts = seasonWatchCounts,
+                onSeasonClick = { season ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeasonClicked(
+                            season = season,
+                            tvShowId = tvShow.id,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openTvSeasonDetails(
+                        TvSeasonArgs(
+                            tvShowId = viewModel.tvShowId,
+                            seasonNumber = season.seasonNumber,
+                            tvShowTitle = tvShow.title,
+                            tvShowPosterPath = tvShow.posterImageUrl,
+                            tvShowBackdropPath = tvShow.backdropImageUrl
+                        )
+                    )
+                },
+                onToggleSeasonWatched = viewModel::toggleSeasonWatched,
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Reviews*/
-            item {
-                ReviewsSection(
-                    reviews = tvShow.reviews,
-                    onReviewsViewAllClick = {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.SeeAllClicked(
-                                section = TvAnalyticsValues.SECTION_REVIEWS,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
+            tvCreditsSection(
+                casts = tvShow.casts,
+                onPersonClick = { cast ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.CastClicked(
+                            cast = cast,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
                         )
-                        openReviewsList()
-                    },
-                    modifier = Modifier.padding(top = SectionVerticalSpacing),
-                    onReviewClick = {
-                        analytics.logEvent(
-                            TvAnalyticsEvent.ReviewClicked(
-                                review = it,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
-                        )
-                    }
-                )
-            }
+                    )
+                    openPersonDetails(cast)
+                },
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Similar TV shows*/
-            item {
-                SimilarTvShowsSection(
-                    tvShows = tvShow.similarTvShows,
-                    sectionTitleRes = R.string.similar_shows,
-                    onTvShowClick = { tvShowPreview ->
-                        analytics.logEvent(
-                            TvAnalyticsEvent.TvShowClicked(
-                                tvShowId = tvShowPreview.id,
-                                tvShowTitle = tvShowPreview.title,
-                                section = TvAnalyticsValues.SECTION_SIMILAR,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
+            tvImageShotsSection(
+                imageShots = uiState.imageShots,
+                openImageShotsList = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeeAllClicked(
+                            section = TvAnalyticsValues.SECTION_SHOTS,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
                         )
-                        openTvShowDetails(tvShowPreview.id)
-                    },
-                    onShowFeedback = { args ->
-                        coroutineScope.launch {
-                            val result = snackbarHostState.showImmediateSnackbar(
-                                message = args.message,
-                                actionLabel = args.actionLabel,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
-                            }
-                        }
-                    },
-                    modifier = Modifier.padding(top = SectionVerticalSpacing),
-                )
-            }
+                    )
+                    openImageShotsList()
+                },
+                openImageShot = { index ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.ImageShotClicked(
+                            index = index,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openImageShot(index)
+                },
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Recommendations*/
-            item {
-                SimilarTvShowsSection(
-                    tvShows = tvShow.recommendations,
-                    sectionTitleRes = R.string.recommendations,
-                    onTvShowClick = { tvShowPreview ->
-                        analytics.logEvent(
-                            TvAnalyticsEvent.TvShowClicked(
-                                tvShowId = tvShowPreview.id,
-                                tvShowTitle = tvShowPreview.title,
-                                section = TvAnalyticsValues.SECTION_RECOMMENDED,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
+            tvVideoShotsSection(
+                videos = tvShow.videos,
+                onVideoClick = { video ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.VideoClicked(
+                            video = video,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
                         )
-                        openTvShowDetails(tvShowPreview.id)
-                    },
-                    onShowFeedback = { args ->
-                        coroutineScope.launch {
-                            val result = snackbarHostState.showImmediateSnackbar(
-                                message = args.message,
-                                actionLabel = args.actionLabel,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                openLibraryPage(args.destination ?: LibraryHomeNavKey.Default)
-                            }
-                        }
-                    },
-                    modifier = Modifier.padding(top = SectionVerticalSpacing),
-                )
-            }
+                    )
+                    openYoutube(video.key)
+                },
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Keyword*/
-            item {
-                TagsSection(
-                    keywords = tvShow.keywords,
-                    onClick = { keyword ->
-                        analytics.logEvent(
-                            TvAnalyticsEvent.KeywordClicked(
-                                keyword = keyword,
-                                sourceScreen = TvAnalyticsScreenName.TV_DETAILS
-                            )
-                        )
-                        openTvShowList(
-                            TvShowListingRoute(
-                                args = TvShowListingArgs.ByKeyword(
-                                    keywordId = keyword.id,
-                                    title = keyword.name
-                                )
-                            )
-                        )
-                    },
-                    modifier = Modifier.padding(top = SectionVerticalSpacing)
-                )
-            }
+            tvDiscussionsSection(
+                discussions = discussions,
+                onDiscussionsViewAllClick = openDiscussionsList,
+                onPostComment = viewModel::postComment,
+                onEditComment = viewModel::editComment,
+                onReportComment = viewModel::reportComment,
+                onToggleUpvote = viewModel::toggleCommentUpvote,
+                onDeleteComment = viewModel::deleteComment,
+                modifier = Modifier.topSectionSpacing()
+            )
 
-            /*Bottom spacing*/
-            item {
+            tvReviewsSection(
+                reviews = tvShow.reviews,
+                onReviewsViewAllClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.SeeAllClicked(
+                            section = TvAnalyticsValues.SECTION_REVIEWS,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openReviewsList()
+                },
+                onReviewClick = {
+                    analytics.logEvent(
+                        TvAnalyticsEvent.ReviewClicked(
+                            review = it,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                },
+                modifier = Modifier.topSectionSpacing()
+            )
+
+            tvSimilarShowsSection(
+                tvShows = tvShow.similarTvShows,
+                onTvShowClick = { tvShowPreview ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.TvShowClicked(
+                            tvShowId = tvShowPreview.id,
+                            tvShowTitle = tvShowPreview.title,
+                            section = TvAnalyticsValues.SECTION_SIMILAR,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openTvShowDetails(tvShowPreview.id)
+                },
+                onShowFeedback = handleShowFeedback,
+                modifier = Modifier.topSectionSpacing()
+            )
+
+            tvRecommendationsSection(
+                tvShows = tvShow.recommendations,
+                onTvShowClick = { tvShowPreview ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.TvShowClicked(
+                            tvShowId = tvShowPreview.id,
+                            tvShowTitle = tvShowPreview.title,
+                            section = TvAnalyticsValues.SECTION_RECOMMENDED,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openTvShowDetails(tvShowPreview.id)
+                },
+                onShowFeedback = handleShowFeedback,
+                modifier = Modifier.topSectionSpacing()
+            )
+
+            tvKeywordsSection(
+                keywords = tvShow.keywords,
+                onKeywordClick = { keyword ->
+                    analytics.logEvent(
+                        TvAnalyticsEvent.KeywordClicked(
+                            keyword = keyword,
+                            sourceScreen = TvAnalyticsScreenName.TV_DETAILS
+                        )
+                    )
+                    openTvShowList(
+                        TvShowListingRoute(
+                            args = TvShowListingArgs.ByKeyword(
+                                keywordId = keyword.id,
+                                title = keyword.name
+                            )
+                        )
+                    )
+                },
+                modifier = Modifier.topSectionSpacing()
+            )
+
+            item(key = "tv_bottom_spacer", contentType = "bottom_spacer") {
                 Spacer(modifier = Modifier.height(48.dp))
             }
         }
-        NotificationPermissionDialogs(handler = notificationPermissionHandler)
 
-        if (showLogDialog) {
-            LogAndRateDialog(
-                mediaId = tvShow.id,
-                mediaType = MediaType.Tv,
-                title = tvShow.title,
-                posterImageUrl = tvShow.posterImageUrl,
-                backdropImageUrl = tvShow.backdropImageUrl,
-                releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
-                tmdbRating = tvShow.voteAvg,
-                existingEntry = diaryEntries.firstOrNull(),
-                onDismiss = { showLogDialog = false },
-                onSave = { entry ->
-                    val wasExisting = diaryEntries.isNotEmpty()
-                    viewModel.saveDiaryEntry(entry)
-                    showLogDialog = false
-                    coroutineScope.launch {
-                        val result = snackbarHostState.showImmediateSnackbar(
-                            message = context.getString(
-                                if (wasExisting) {
-                                    SharedR.string.media_menu_diary_updated_success
-                                } else {
-                                    SharedR.string.media_menu_diary_logged_success
-                                },
-                                tvShow.title
-                            ),
-                            actionLabel = context.getString(SharedR.string.media_menu_view_in_diary),
-                            duration = SnackbarDuration.Short
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            openLibraryPage(CinemaDiaryNavKey)
-                        }
+        TvShowDetailsOverlays(
+            tvShow = tvShow,
+            viewModel = viewModel,
+            watchProviderRegion = watchProviderRegion,
+            diaryEntries = diaryEntries,
+            showLogDialog = showLogDialog,
+            onDismissLogDialog = { showLogDialog = false },
+            onSaveDiaryEntry = { _, wasExisting ->
+                coroutineScope.launch {
+                    val result = snackbarHostState.showImmediateSnackbar(
+                        message = if (wasExisting) diaryUpdatedMessage else diaryLoggedMessage,
+                        actionLabel = viewInDiaryLabel,
+                        duration = SnackbarDuration.Short
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        openLibraryPage(CinemaDiaryNavKey)
                     }
                 }
-            )
-        }
-
-        selectedProviderPayload?.let { payload ->
-            val currentWatchProvider = tvShow.watchProviders[watchProviderRegion]
-            WhereToWatchActionBottomSheet(
-                provider = payload.provider,
-                mediaTitle = tvShow.title,
-                categoryName = payload.category,
-                watchProviderLink = currentWatchProvider?.link,
-                region = watchProviderRegion,
-                affiliateRepository = viewModel.affiliateRepository,
-                onDismissRequest = viewModel::dismissProviderAction,
-                onBrowseHubClick = { provider ->
-                    openWatchHub(provider)
-                }
-            )
-        }
-
-        if (isQuotaGateVisible) {
-            ShowTimeFeatureGate(
-                config = AiringReminderGateConfig,
-                isAdLoading = isAdLoading,
-                isProPaymentEnabled = viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle().value,
-                onWatchAdClick = {
-                    val activity = context.findActivity()
-                    if (activity != null) {
-                        viewModel.onWatchAdForReminderPass(activity, tvShow)
-                    }
-                },
-                onUpgradeProClick = {
-                    viewModel.dismissQuotaGate()
-                    openProPaywall()
-                },
-                onDismissRequest = { viewModel.dismissQuotaGate() }
-            )
-        }
-    }
-}
-
-private val AiringReminderPassKey = PassKey("airing_reminders")
-
-private val AiringReminderGateConfig = FeatureGateConfig(
-    titleRes = SharedR.string.reminder_quota_title,
-    descriptionRes = SharedR.string.reminder_quota_desc,
-    rewardActionLabelRes = SharedR.string.reminder_quota_reward_label,
-    icon = Icons.Rounded.Lock,
-    presentationStyle = GatePresentationStyle.BottomSheet,
-    passPolicy = FeaturePassPolicy.ConsumableSlot(
-        passKey = AiringReminderPassKey,
-        slotsGranted = 1
-    )
-)
-
-@Composable
-private fun SimilarTvShowsSection(
-    tvShows: List<TvShow>,
-    @StringRes sectionTitleRes: Int,
-    onTvShowClick: (tvShow: TvShow) -> Unit,
-    onShowFeedback: (ShowFeedbackArgs) -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    HorizontalLazyListSection(
-        items = tvShows,
-        sectionHeader = {
-            SectionHeader(
-                title = stringResource(id = sectionTitleRes),
-                modifier = Modifier.padding(horizontal = 16.dp),
-                hideTrailingAction = true
-            )
-        },
-        itemContent = {
-            UniversalMediaCard(
-                item = it.asUniversalMediaItem(),
-                isGridView = true,
-                onShowFeedback = onShowFeedback,
-                onClick = { onTvShowClick(it) },
-                modifier = Modifier.width(MediaItemDefaults.PosterWidth)
-            )
-        },
-        hideIf = tvShows.isEmpty(),
-        modifier = modifier
-    )
-}
-
-@Composable
-private fun SeasonsSection(
-    seasons: List<TvSeason>,
-    seasonWatchCounts: Map<Int, Int>,
-    onSeasonClick: (season: TvSeason) -> Unit,
-    onToggleSeasonWatched: (season: TvSeason) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var seasonCount by rememberSaveable {
-        mutableIntStateOf(if (seasons.size < 3) seasons.size else 3)
-    }
-
-    val showSeasonViewAll by remember { derivedStateOf { seasonCount < seasons.size } }
-
-    Section(
-        sectionHeader = {
-            SectionHeader(
-                title = stringResource(id = R.string.seasons_n, seasons.size),
-                modifier = Modifier.padding(horizontal = 16.dp),
-                hideTrailingAction = true
-            )
-        },
-        headerContentSpacing = SectionContentHeaderSpacing,
-        hideIf = seasons.isEmpty(),
-        modifier = modifier
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .animateContentSize()
-        ) {
-            for (i in 0 until seasonCount) {
-                val season = seasons[i]
-                val watchedCount = seasonWatchCounts[season.seasonNumber] ?: 0
-                TvSeasonItem(
-                    tvSeason = season,
-                    watchedEpisodeCount = watchedCount,
-                    onClick = {
-                        onSeasonClick(season)
-                    },
-                    onToggleWatched = {
-                        onToggleSeasonWatched(season)
-                    }
-                )
-            }
-            if (showSeasonViewAll) {
-                TextButton(
-                    onClick = { seasonCount = seasons.size },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = stringResource(id = R.string.view_more))
-                }
-            }
-        }
-    }
-}
-
-private fun TvShow.highlightedItems(): List<Highlight> {
-    return listOf(
-        Highlight(
-            labelRes = R.string.rating,
-            value = voteAvg.emptyIfAbsent()
-        ),
-        Highlight(
-            labelRes = R.string.first_air_date,
-            value = displayFirstAirDate.orEmpty(),
-        ),
-        Highlight(
-            labelRes = R.string.status,
-            value = status
-        ),
-        Highlight(
-            labelRes = R.string.language,
-            value = originalLanguage
-        ),
-        Highlight(
-            labelRes = R.string.seasons,
-            value = seasonCount.toString()
-        ),
-        Highlight(
-            labelRes = R.string.episode_number,
-            value = episodeCount.toString()
+            },
+            notificationPermissionHandler = notificationPermissionHandler,
+            openWatchHub = openWatchHub,
+            openProPaywall = openProPaywall
         )
-    )
+    }
 }

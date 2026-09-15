@@ -58,7 +58,28 @@ import com.ssverma.shared.domain.model.movie.MovieCollection
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import com.ssverma.shared.ui.component.media.MediaCardRatingBadge
 import com.ssverma.shared.ui.component.media.ShowTimeMediaGridCard
+import androidx.compose.foundation.lazy.LazyListScope
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
+
+fun LazyListScope.movieCollectionSection(
+    movieCollection: MovieCollection?,
+    currentMovieId: Int,
+    isLoadingParts: Boolean,
+    onMovieClick: (movieId: Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (movieCollection != null) {
+        item(key = "movie_collection", contentType = "movie_collection") {
+            MovieCollectionSection(
+                movieCollection = movieCollection,
+                currentMovieId = currentMovieId,
+                isLoadingParts = isLoadingParts,
+                onMovieClick = onMovieClick,
+                modifier = modifier
+            )
+        }
+    }
+}
 
 @Composable
 fun MovieCollectionSection(
