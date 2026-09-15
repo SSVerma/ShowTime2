@@ -407,5 +407,10 @@
     <string name="release_radar_streaming_desc_general">Now available to stream. Tap to check providers.</string>
     <string name="settings_release_radar_title">Smart Release Radar</string>
     <string name="settings_release_radar_desc">Alerts when watchlisted movies hit theaters or arrive on streaming</string>
+
+    <!-- Reviews & Videos UI -->
+    <string name="read_more">Read more</string>
+    <string name="show_less">Show less</string>
+    <string name="play_video_cd">Play video</string>
 </resources>
 
