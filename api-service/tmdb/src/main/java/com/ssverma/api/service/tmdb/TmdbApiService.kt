@@ -11,6 +11,7 @@ import com.ssverma.api.service.tmdb.response.AccountPayload
 import com.ssverma.api.service.tmdb.response.GenrePayload
 import com.ssverma.api.service.tmdb.response.MediaStatsPayload
 import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteCollectionDetails
 import com.ssverma.api.service.tmdb.response.RemoteCompany
 import com.ssverma.api.service.tmdb.response.RemoteImageShot
 import com.ssverma.api.service.tmdb.response.RemoteKeyword
@@ -85,6 +86,11 @@ interface TmdbApiService {
         @Path("movieId") movieId: Int,
         @Query("page") page: Int
     ): TmdbApiResponse<PagedPayload<RemoteReview>>
+
+    @GET("3/collection/{collectionId}")
+    suspend fun getCollectionDetails(
+        @Path("collectionId") collectionId: Int
+    ): TmdbApiResponse<RemoteCollectionDetails>
 
     @GET("3/person/{personId}")
     suspend fun getPersonDetails(

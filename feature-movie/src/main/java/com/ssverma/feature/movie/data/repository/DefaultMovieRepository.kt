@@ -18,6 +18,7 @@ import com.ssverma.feature.movie.domain.repository.MovieRepository
 import com.ssverma.shared.data.mapper.ListMapper
 import com.ssverma.shared.data.mapper.Mapper
 import com.ssverma.shared.data.mapper.asDomainResult
+import com.ssverma.shared.data.mapper.asMovieCollection
 import com.ssverma.shared.data.mapper.asQueryMap
 import com.ssverma.shared.data.mapper.asTmdbQueryValue
 import com.ssverma.shared.data.mapper.asWatchProvidersMap
@@ -29,6 +30,7 @@ import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.movie.MovieCollection
 import kotlinx.coroutines.flow.Flow
 import java.net.HttpURLConnection
 import javax.inject.Inject
@@ -164,6 +166,24 @@ class DefaultMovieRepository @Inject constructor(
         val apiResponse = movieRemoteDataSource.fetchMovieWatchProviders(movieId = movieId)
         return apiResponse.asDomainResult(
             mapRemoteToDomain = { it.body.asWatchProvidersMap() }
+        )
+    }
+
+    override suspend fun fetchMovieCollection(
+        collectionId: Int
+    ): Result<MovieCollection, Failure<MovieFailure>> {
+        val apiResponse = movieRemoteDataSource.fetchCollectionDetails(collectionId = collectionId)
+        return apiResponse.asDomainResult(
+            mapFeatureFailure = {
+                if (it.payload.httpCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    Failure.FeatureFailure(MovieFailure.NotFound)
+                } else {
+                    Failure.CoreFailure.UnexpectedFailure
+                }
+            },
+            mapRemoteToDomain = {
+                it.body.asMovieCollection(moviesMapper)
+            }
         )
     }
 }

@@ -189,6 +189,8 @@ fun MovieContent(
     val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
     val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
     val reminderSnackbarEvent by viewModel.reminderSnackbarEvent.collectAsStateWithLifecycle()
+    val movieCollection by viewModel.movieCollection.collectAsStateWithLifecycle()
+    val isCollectionLoading by viewModel.isCollectionLoading.collectAsStateWithLifecycle()
     var showLogDialog by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
     val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "movie_details_watch_provider")
@@ -473,7 +475,7 @@ fun MovieContent(
                         )
                         openImageShot(index)
                     },
-                    maxImageShots = 6,
+                    maxImageShots = 3,
                     modifier = Modifier.padding(top = SectionVerticalSpacing),
                 )
             }
@@ -531,10 +533,24 @@ fun MovieContent(
                 )
             }
 
-            movie.movieCollection?.let { collection ->
+            val effectiveCollection = movieCollection ?: movie.movieCollection
+            effectiveCollection?.let { collection ->
                 item(key = "movie_collection") {
                     MovieCollectionSection(
                         movieCollection = collection,
+                        currentMovieId = movie.id,
+                        isLoadingParts = isCollectionLoading,
+                        onMovieClick = { collectionMovieId ->
+                            analytics.logEvent(
+                                MovieAnalyticsEvent.MovieClicked(
+                                    movieId = collectionMovieId,
+                                    movieTitle = "",
+                                    section = MovieAnalyticsValues.SECTION_COLLECTION,
+                                    sourceScreen = MovieAnalyticsScreenName.MOVIE_DETAILS
+                                )
+                            )
+                            openMovieDetails(collectionMovieId)
+                        },
                         modifier = Modifier.padding(top = SectionVerticalSpacing)
                     )
                 }

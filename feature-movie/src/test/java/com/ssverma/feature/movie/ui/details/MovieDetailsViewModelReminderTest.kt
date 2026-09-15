@@ -5,6 +5,7 @@ import android.app.Application
 import com.ssverma.core.ads.manager.RewardedAdManager
 import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
+import com.ssverma.feature.movie.domain.usecase.MovieCollectionUseCase
 import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
@@ -35,6 +36,7 @@ class MovieDetailsViewModelReminderTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val movieDetailsUseCase: MovieDetailsUseCase = mockk(relaxed = true)
+    private val movieCollectionUseCase: MovieCollectionUseCase = mockk(relaxed = true)
     private val appConfigRepository: AppConfigRepository = mockk(relaxed = true)
     private val fakeReminderRepository = FakeReminderRepository()
     private val fakeBillingRepository = FakeBillingRepository()
@@ -50,11 +52,13 @@ class MovieDetailsViewModelReminderTest {
         every { nextFutureReleaseDate } returns LocalDate.now().plusDays(10)
         every { posterImageUrl } returns "https://image.tmdb.org/poster.jpg"
         every { watchProviders } returns emptyMap()
+        every { movieCollection } returns null
     }
 
     @Before
     fun setUp() {
         coEvery { movieDetailsUseCase(any()) } returns Result.Success(upcomingMovie)
+        coEvery { movieCollectionUseCase(any()) } returns Result.Success(mockk(relaxed = true))
         every { appConfigRepository.reminderNotificationHour } returns flowOf(9)
         every { appConfigRepository.reminderNotificationMinute } returns flowOf(0)
 
@@ -62,6 +66,7 @@ class MovieDetailsViewModelReminderTest {
             application = mockk(relaxed = true),
             movieId = 101,
             movieDetailsUseCase = movieDetailsUseCase,
+            movieCollectionUseCase = movieCollectionUseCase,
             getMediaReactionsUseCase = mockk(relaxed = true),
             toggleMediaReactionUseCase = mockk(relaxed = true),
             getDiscussionsUseCase = mockk(relaxed = true),

@@ -4,6 +4,7 @@ import com.ssverma.api.service.tmdb.TmdbApiResponse
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.response.GenrePayload
 import com.ssverma.api.service.tmdb.response.PagedPayload
+import com.ssverma.api.service.tmdb.response.RemoteCollectionDetails
 import com.ssverma.api.service.tmdb.response.RemoteMovie
 import com.ssverma.api.service.tmdb.response.RemoteReview
 import com.ssverma.api.service.tmdb.response.RemoteWatchProviderResponse
@@ -59,5 +60,11 @@ class DefaultMovieRemoteDataSource @Inject constructor(
 
     override suspend fun fetchMovieWatchProviders(movieId: Int): TmdbApiResponse<RemoteWatchProviderResponse> {
         return tmdbApiService.getMovieWatchProviders(movieId = movieId)
+    }
+
+    override suspend fun fetchCollectionDetails(
+        collectionId: Int
+    ): TmdbApiResponse<RemoteCollectionDetails> {
+        return tmdbApiService.getCollectionDetails(collectionId = collectionId)
     }
 }

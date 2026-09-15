@@ -4,5 +4,7 @@ data class MovieCollection(
     val id: Int,
     val name: String,
     val posterImageUrl: String,
-    val backdropImageUrl: String
+    val backdropImageUrl: String,
+    val overview: String = "",
+    val parts: List<Movie> = emptyList()
 )

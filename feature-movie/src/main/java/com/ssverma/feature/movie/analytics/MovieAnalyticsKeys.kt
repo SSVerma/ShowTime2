@@ -45,4 +45,5 @@ object MovieAnalyticsValues {
     const val SECTION_KEYWORDS = "keywords"
     const val SECTION_VIDEOS = "videos"
     const val SECTION_REVIEWS = "reviews"
+    const val SECTION_COLLECTION = "collection"
 }

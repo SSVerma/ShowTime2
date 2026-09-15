@@ -121,4 +121,9 @@
     <string name="cinema_stats_streak_count">%1$d Days</string>
     <string name="part_of_collection">Part of the %1$s</string>
     <string name="franchise_collection">Franchise Collection</string>
+    <string name="now_viewing">Now Viewing</string>
+    <string name="n_movies_in_collection">%1$d Movies</string>
+    <string name="franchise_timeline">Franchise Timeline</string>
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
 </resources>

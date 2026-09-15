@@ -10,6 +10,7 @@ import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchYoutubeIn
 import com.ssverma.core.ui.UiState
 import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
+import com.ssverma.feature.movie.domain.usecase.MovieCollectionUseCase
 import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
@@ -30,6 +31,7 @@ import com.ssverma.shared.domain.model.community.ReportCommentParams
 import com.ssverma.shared.domain.model.community.ToggleCommentUpvoteParams
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.movie.MovieCollection
 import com.ssverma.shared.domain.model.movie.imageShots
 import com.ssverma.shared.domain.model.reminder.AiringReminder
 import com.ssverma.shared.domain.model.reminder.ReminderType
@@ -77,6 +79,7 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val application: Application,
     @Assisted val movieId: Int,
     private val movieDetailsUseCase: MovieDetailsUseCase,
+    private val movieCollectionUseCase: MovieCollectionUseCase,
     private val getMediaReactionsUseCase: GetMediaReactionsUseCase,
     private val toggleMediaReactionUseCase: ToggleMediaReactionUseCase,
     private val getDiscussionsUseCase: GetDiscussionsUseCase,
@@ -223,6 +226,13 @@ class MovieDetailsViewModel @AssistedInject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    private val _movieCollection = MutableStateFlow<MovieCollection?>(null)
+    val movieCollection: StateFlow<MovieCollection?> = _movieCollection.asStateFlow()
+
+    private val _isCollectionLoading = MutableStateFlow(false)
+    val isCollectionLoading: StateFlow<Boolean> = _isCollectionLoading.asStateFlow()
+
     val watchProviderRegion: StateFlow<String> = appConfigRepository.watchProviderRegion
 
     val mediaReactions: StateFlow<MediaReactions> = getMediaReactionsUseCase(
@@ -270,14 +280,32 @@ class MovieDetailsViewModel @AssistedInject constructor(
             _uiState.update {
                 when (result) {
                     is Result.Error -> UiState.Error(result.error)
-                    is Result.Success -> UiState.Success(
-                        MovieDetailsData(
-                            movie = result.data,
-                            imageShots = result.data.imageShots()
+                    is Result.Success -> {
+                        val movie = result.data
+                        movie.movieCollection?.let { collection ->
+                            _movieCollection.value = collection
+                            fetchCollectionDetails(collection.id)
+                        }
+                        UiState.Success(
+                            MovieDetailsData(
+                                movie = movie,
+                                imageShots = movie.imageShots()
+                            )
                         )
-                    )
+                    }
                 }
             }
+        }
+    }
+
+    private fun fetchCollectionDetails(collectionId: Int) {
+        viewModelScope.launch {
+            _isCollectionLoading.value = true
+            val result = movieCollectionUseCase(collectionId)
+            if (result is Result.Success) {
+                _movieCollection.value = result.data
+            }
+            _isCollectionLoading.value = false
         }
     }
 

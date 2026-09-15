@@ -11,6 +11,7 @@ import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.Review
 import com.ssverma.shared.domain.model.WatchProvider
 import com.ssverma.shared.domain.model.movie.Movie
+import com.ssverma.shared.domain.model.movie.MovieCollection
 import kotlinx.coroutines.flow.Flow
 
 interface MovieRepository {
@@ -79,4 +80,11 @@ interface MovieRepository {
     suspend fun fetchWatchProviders(
         movieId: Int
     ): Result<Map<String, WatchProvider>, Failure<MovieFailure>>
+
+    /**
+     * Fetch movie collection details by its collection ID.
+     */
+    suspend fun fetchMovieCollection(
+        collectionId: Int
+    ): Result<MovieCollection, Failure<MovieFailure>>
 }
