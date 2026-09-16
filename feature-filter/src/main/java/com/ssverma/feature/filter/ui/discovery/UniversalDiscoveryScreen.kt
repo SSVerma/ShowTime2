@@ -82,9 +82,14 @@ import com.ssverma.feature.filter.ui.discovery.component.SpinTheReelDialog
 import com.ssverma.feature.filter.ui.discovery.component.StreamingFilterRow
 import com.ssverma.feature.filter.ui.discovery.component.StreamingMultiServiceGateDialog
 import com.ssverma.feature.filter.ui.discovery.component.UniversalMediaCard
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
+import com.ssverma.feature.filter.analytics.FilterAnalyticsEvent
+import com.ssverma.feature.filter.analytics.FilterAnalyticsScreenName
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
+import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
@@ -105,6 +110,9 @@ fun UniversalDiscoveryScreen(
     onOpenProUpgrade: () -> Unit = {},
     viewModel: UniversalDiscoveryViewModel = hiltViewModel()
 ) {
+    TrackScreenView(screenName = FilterAnalyticsScreenName.UNIVERSAL_DISCOVER)
+    val analytics = LocalAnalytics.current
+
     var hasHandledInitialArgs by rememberSaveable(navKey) {
         mutableStateOf(false)
     }
@@ -236,7 +244,10 @@ fun UniversalDiscoveryScreen(
         snackbarHost = { ShowTimeSnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { viewModel.spinRoulette() },
+                onClick = {
+                    analytics.logEvent(FilterAnalyticsEvent.RouletteOpened())
+                    viewModel.spinRoulette()
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape,
@@ -451,6 +462,12 @@ fun UniversalDiscoveryScreen(
                             item = item,
                             isGridView = uiState.isGridView,
                             onClick = {
+                                analytics.logEvent(
+                                    FilterAnalyticsEvent.ItemClicked(
+                                        itemId = item.id,
+                                        mediaType = item.mediaType.asAnalyticsValue()
+                                    )
+                                )
                                 if (item.mediaType == MediaType.Movie) {
                                     onOpenMovieDetails(item.id)
                                 } else {
@@ -537,6 +554,12 @@ fun UniversalDiscoveryScreen(
             isSpinning = uiState.isRouletteSpinning,
             onSpinAgain = { viewModel.spinRoulette() },
             onOpenDetails = { mediaType, id ->
+                analytics.logEvent(
+                    FilterAnalyticsEvent.RouletteAccepted(
+                        itemId = id,
+                        mediaType = mediaType.asAnalyticsValue()
+                    )
+                )
                 viewModel.dismissRoulette()
                 if (mediaType == MediaType.Movie) {
                     onOpenMovieDetails(id)

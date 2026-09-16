@@ -34,8 +34,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
+import com.ssverma.feature.library.analytics.share.SecretListAnalyticsEvent
 import com.ssverma.feature.library.ui.share.component.SecretShareRevokeConfirmDialog
 import com.ssverma.feature.library.ui.share.component.SecretSharedListAddAllConfirmDialog
 import com.ssverma.feature.library.ui.share.component.SecretSharedListCloneConfirmDialog
@@ -46,6 +50,7 @@ import com.ssverma.feature.library.ui.share.component.SecretSharedListRemoveItem
 import com.ssverma.feature.library.ui.share.component.SecretSharedListRevokedState
 import com.ssverma.feature.library.ui.share.component.SecretSharedListTopAppBar
 import com.ssverma.feature.library.ui.share.component.SharedMediaGridCard
+import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.library.SecretSharedListItem
 import com.ssverma.shared.domain.utils.ShareMediaUtils
@@ -60,6 +65,9 @@ fun SecretSharedListScreen(
     modifier: Modifier = Modifier,
     viewModel: SecretSharedListViewModel = hiltViewModel()
 ) {
+    val analytics = LocalAnalytics.current
+    TrackScreenView(screenName = LibraryAnalyticsScreenName.SECRET_SHARED_LIST)
+
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -161,6 +169,9 @@ fun SecretSharedListScreen(
                                 onAddTitleClick = { viewModel.setShowAddDialog(true) },
                                 onAddAllToWatchlistClick = { showAddAllConfirmDialog = true },
                                 onShareLinkClick = {
+                                    analytics.logEvent(
+                                        SecretListAnalyticsEvent.CodeShared(shareCode = list.shareCode)
+                                    )
                                     val shareText =
                                         ShareMediaUtils.buildFormattedSecretListMarkdown(
                                             title = list.title,
@@ -202,6 +213,12 @@ fun SecretSharedListScreen(
                                 isAddedByCurrentUser = isAddedByCurrentUser,
                                 onRemove = { itemToRemove = item },
                                 onClick = {
+                                    analytics.logEvent(
+                                        SecretListAnalyticsEvent.ItemClicked(
+                                            mediaId = item.mediaId,
+                                            mediaType = item.mediaType.asAnalyticsValue()
+                                        )
+                                    )
                                     if (item.mediaType == MediaType.Tv) {
                                         onOpenTvShowDetails(item.mediaId)
                                     } else {
@@ -231,6 +248,15 @@ fun SecretSharedListScreen(
                     itemCount = uiState.secretSharedList?.items?.size ?: 0,
                     onConfirm = {
                         showCloneConfirmDialog = false
+                        val currentList = uiState.secretSharedList
+                        if (currentList != null) {
+                            analytics.logEvent(
+                                SecretListAnalyticsEvent.ListCloned(
+                                    shareCode = currentList.shareCode,
+                                    itemsCount = currentList.items.size
+                                )
+                            )
+                        }
                         viewModel.cloneToMyLists()
                     },
                     onDismissRequest = { showCloneConfirmDialog = false }

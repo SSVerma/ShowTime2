@@ -11,6 +11,8 @@ import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.notifications.ShowTimeNotificationManager
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
 import com.ssverma.shared.data.local.db.entity.WatchlistEntity
+import com.ssverma.core.analytics.Analytics
+import com.ssverma.shared.analytics.radar.ReleaseRadarAnalyticsEvent
 import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import io.mockk.coEvery
@@ -32,6 +34,7 @@ class ReleaseRadarProcessorTest {
     private val mockAppConfigRepository: AppConfigRepository = mockk(relaxed = true)
     private val mockAppConfigProvider: AppConfigProvider = mockk(relaxed = true)
     private val mockNotificationManager: ShowTimeNotificationManager = mockk(relaxed = true)
+    private val mockAnalytics: Analytics = mockk(relaxed = true)
     private val mockContext: Context = mockk(relaxed = true)
 
     private val watchProviderRegionFlow = MutableStateFlow("US")
@@ -69,6 +72,7 @@ class ReleaseRadarProcessorTest {
             appConfigRepository = mockAppConfigRepository,
             appConfigProvider = mockAppConfigProvider,
             notificationManager = mockNotificationManager,
+            analytics = mockAnalytics,
             context = mockContext
         )
     }
@@ -522,4 +526,33 @@ class ReleaseRadarProcessorTest {
             )
         }
     }
+
+    @Test
+    fun `executeRadar logs sync completed analytics event on completion`() = runTest {
+        coEvery { mockWatchlistDao.getTheatricalReleaseAlertCandidates(any()) } returns emptyList()
+        coEvery {
+            mockWatchlistDao.getStreamingRadarCandidates(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns emptyList()
+
+        val result = processor.executeRadar(testDate)
+
+        assertThat(result).isEqualTo(ReleaseRadarResult.Success)
+        verify {
+            mockAnalytics.logEvent(
+                match {
+                    it is ReleaseRadarAnalyticsEvent.SyncCompleted &&
+                            it.success &&
+                            it.theatricalNotifiedCount == 0 &&
+                            it.streamingCheckedCount == 0 &&
+                            it.streamingNotifiedCount == 0
+                }
+            )
+        }
+    }
 }
+

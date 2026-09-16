@@ -4,6 +4,7 @@ import android.app.Activity
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleSignInCancelledException
@@ -32,6 +33,7 @@ class BackupSyncViewModelTest {
     private val fakeBackupRepository = FakeBackupRepository()
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
+    private val mockAnalytics: Analytics = mockk(relaxed = true)
 
     private lateinit var viewModel: BackupSyncViewModel
 
@@ -41,7 +43,8 @@ class BackupSyncViewModelTest {
             backupRepository = fakeBackupRepository,
             billingRepository = fakeBillingRepository,
             rewardManager = mockRewardManager,
-            rewardedAdManager = mockRewardedAdManager
+            rewardedAdManager = mockRewardedAdManager,
+            analytics = mockAnalytics
         )
     }
 
@@ -244,7 +247,8 @@ class BackupSyncViewModelTest {
             backupRepository = fakeBackupRepository,
             billingRepository = fakeBillingRepository,
             rewardManager = mockRewardManager,
-            rewardedAdManager = mockRewardedAdManager
+            rewardedAdManager = mockRewardedAdManager,
+            analytics = mockAnalytics
         )
 
         freshVm.uiState.test {

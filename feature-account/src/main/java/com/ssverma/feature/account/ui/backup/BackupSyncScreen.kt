@@ -66,6 +66,7 @@ import com.ssverma.shared.ads.gate.GatePresentationStyle
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.shared.backup.ui.component.RestoreConfirmationDialog
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupOperation
@@ -77,6 +78,7 @@ import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
+import com.ssverma.feature.account.AccountAnalyticsScreenName
 import com.ssverma.feature.account.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +89,8 @@ fun BackupSyncScreen(
     modifier: Modifier = Modifier,
     viewModel: BackupSyncViewModel = hiltViewModel()
 ) {
+    TrackScreenView(screenName = AccountAnalyticsScreenName.BACKUP_SYNC)
+
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val activity = context.findActivity()

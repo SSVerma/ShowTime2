@@ -4,13 +4,16 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.backup.BackupRepository
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.isGoogleSignInCancelled
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
+import com.ssverma.feature.account.AccountAnalyticsScreenName
 import com.ssverma.feature.account.R
 import com.ssverma.shared.ads.quota.RewardManager
+import com.ssverma.shared.analytics.backup.BackupAnalyticsEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +28,8 @@ class BackupSyncViewModel @Inject constructor(
     private val backupRepository: BackupRepository,
     private val billingRepository: BillingRepository,
     private val rewardManager: RewardManager,
-    private val rewardedAdManager: RewardedAdManager
+    private val rewardedAdManager: RewardedAdManager,
+    private val analytics: Analytics
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BackupSyncUiState())
@@ -157,9 +161,23 @@ class BackupSyncViewModel @Inject constructor(
     }
 
     fun backupNow() {
+        analytics.logEvent(
+            BackupAnalyticsEvent.BackupStarted(
+                isAutomated = false,
+                sourceScreen = AccountAnalyticsScreenName.BACKUP_SYNC
+            )
+        )
         viewModelScope.launch {
             val result = backupRepository.backupNow()
             result.onSuccess {
+                analytics.logEvent(
+                    BackupAnalyticsEvent.BackupCompleted(
+                        success = true,
+                        isAutomated = false,
+                        itemCount = _uiState.value.localItemCount,
+                        sourceScreen = AccountAnalyticsScreenName.BACKUP_SYNC
+                    )
+                )
                 _uiState.update {
                     it.copy(
                         message = UiText.StaticText(R.string.backup_success)
@@ -167,6 +185,13 @@ class BackupSyncViewModel @Inject constructor(
                 }
                 refreshLocalItemCount()
             }.onFailure {
+                analytics.logEvent(
+                    BackupAnalyticsEvent.BackupCompleted(
+                        success = false,
+                        isAutomated = false,
+                        sourceScreen = AccountAnalyticsScreenName.BACKUP_SYNC
+                    )
+                )
                 _uiState.update {
                     it.copy(
                         message = UiText.StaticText(R.string.backup_failed)
@@ -177,9 +202,20 @@ class BackupSyncViewModel @Inject constructor(
     }
 
     fun restoreBackup() {
+        analytics.logEvent(
+            BackupAnalyticsEvent.RestoreStarted(
+                sourceScreen = AccountAnalyticsScreenName.BACKUP_SYNC
+            )
+        )
         viewModelScope.launch {
             val result = backupRepository.restoreBackup()
             result.onSuccess {
+                analytics.logEvent(
+                    BackupAnalyticsEvent.RestoreCompleted(
+                        success = true,
+                        sourceScreen = AccountAnalyticsScreenName.BACKUP_SYNC
+                    )
+                )
                 _uiState.update {
                     it.copy(
                         message = UiText.StaticText(R.string.restore_success_msg)
@@ -187,6 +223,12 @@ class BackupSyncViewModel @Inject constructor(
                 }
                 refreshLocalItemCount()
             }.onFailure {
+                analytics.logEvent(
+                    BackupAnalyticsEvent.RestoreCompleted(
+                        success = false,
+                        sourceScreen = AccountAnalyticsScreenName.BACKUP_SYNC
+                    )
+                )
                 _uiState.update {
                     it.copy(
                         message = UiText.StaticText(R.string.restore_failed)
@@ -197,6 +239,12 @@ class BackupSyncViewModel @Inject constructor(
     }
 
     fun onBackupFrequencySelected(frequency: BackupFrequency) {
+        analytics.logEvent(
+            BackupAnalyticsEvent.FrequencyChanged(
+                frequency = frequency.name,
+                sourceScreen = AccountAnalyticsScreenName.BACKUP_SYNC
+            )
+        )
         if (frequency == BackupFrequency.OFF) {
             viewModelScope.launch {
                 backupRepository.setBackupFrequency(BackupFrequency.OFF)

@@ -10,6 +10,8 @@ dependencies {
     api(projects.featureMatchNavigation)
     implementation(projects.featureMovieNavigation)
     implementation(projects.featurePaymentNavigation)
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
 
     implementation(projects.coreBilling)
     implementation(projects.coreStorage)

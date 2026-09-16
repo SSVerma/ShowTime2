@@ -46,8 +46,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.feature.match.R
+import com.ssverma.feature.match.analytics.MatchAnalyticsScreenName
 import com.ssverma.feature.match.ui.component.HandoffPhaseContent
 import com.ssverma.feature.match.ui.component.JoinPhaseContent
 import com.ssverma.feature.match.ui.component.MatchCelebrationDialog
@@ -71,6 +73,8 @@ fun MovieMatchRoomScreen(
     openProPaywall: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    TrackScreenView(screenName = MatchAnalyticsScreenName.MOVIE_MATCH_ROOM)
+
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current

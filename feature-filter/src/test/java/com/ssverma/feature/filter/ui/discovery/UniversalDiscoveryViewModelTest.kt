@@ -44,6 +44,7 @@ class UniversalDiscoveryViewModelTest {
     private val mockBillingRepository: BillingRepository = mockk(relaxed = true)
     private val mockRewardManager: RewardManager = mockk(relaxed = true)
     private val mockRewardedAdManager: RewardedAdManager = mockk(relaxed = true)
+    private val mockAnalytics: com.ssverma.core.analytics.Analytics = mockk(relaxed = true)
 
     private val watchRegionFlow = MutableStateFlow("US")
     private val streamingSubscriptionsFlow = MutableStateFlow(setOf(8, 9))
@@ -79,6 +80,7 @@ class UniversalDiscoveryViewModelTest {
             billingRepository = mockBillingRepository,
             rewardManager = mockRewardManager,
             rewardedAdManager = mockRewardedAdManager,
+            analytics = mockAnalytics,
             savedStateHandle = SavedStateHandle(
                 mapOf(
                     "initialMediaType" to "Movie",
@@ -129,6 +131,7 @@ class UniversalDiscoveryViewModelTest {
             billingRepository = mockBillingRepository,
             rewardManager = mockRewardManager,
             rewardedAdManager = mockRewardedAdManager,
+            analytics = mockAnalytics,
             savedStateHandle = SavedStateHandle(
                 mapOf(
                     "initialMediaType" to "Tv",
@@ -278,6 +281,7 @@ class UniversalDiscoveryViewModelTest {
             billingRepository = mockBillingRepository,
             rewardManager = mockRewardManager,
             rewardedAdManager = mockRewardedAdManager,
+            analytics = mockAnalytics,
             savedStateHandle = SavedStateHandle()
         )
         advanceUntilIdle()

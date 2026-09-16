@@ -50,11 +50,13 @@ import com.ssverma.common.ui.paywall.component.PaywallFeaturesList
 import com.ssverma.common.ui.paywall.component.PaywallHeader
 import com.ssverma.common.ui.paywall.component.PaywallPlanCard
 import com.ssverma.common.ui.paywall.component.PaywallPriceHelper
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.billing.BillingConstants
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.payment.R
+import com.ssverma.feature.payment.analytics.PaymentAnalyticsScreenName
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +65,8 @@ fun ProPaywallScreen(
     modifier: Modifier = Modifier,
     viewModel: PaymentViewModel = hiltViewModel()
 ) {
+    TrackScreenView(screenName = PaymentAnalyticsScreenName.PRO_PAYWALL)
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val activity = context.findActivity()

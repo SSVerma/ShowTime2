@@ -4,9 +4,11 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.match.R
+import com.ssverma.feature.match.analytics.MatchAnalyticsEvent
 import com.ssverma.feature.match.ui.component.MatchRoomPassKey
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
@@ -31,7 +33,8 @@ class MovieMatchRoomViewModel @Inject constructor(
     private val matchRoomRepository: MatchRoomRepository,
     private val rewardManager: RewardManager,
     private val billingRepository: BillingRepository,
-    private val rewardedAdManager: RewardedAdManager
+    private val rewardedAdManager: RewardedAdManager,
+    private val analytics: Analytics
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieMatchRoomUiState())
@@ -145,6 +148,12 @@ class MovieMatchRoomViewModel @Inject constructor(
                 is Result.Success -> {
                     val cards = deckResult.data
                     if (config.mode == MatchMode.COUCH) {
+                        analytics.logEvent(
+                            MatchAnalyticsEvent.RoomCreated(
+                                mode = MatchMode.COUCH.name,
+                                cardsCount = cards.size
+                            )
+                        )
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -182,6 +191,13 @@ class MovieMatchRoomViewModel @Inject constructor(
                 is Result.Success -> {
                     val room = roomResult.data
                     currentRemoteRoomId = room.id
+                    analytics.logEvent(
+                        MatchAnalyticsEvent.RoomCreated(
+                            mode = MatchMode.REMOTE.name,
+                            roomCode = room.roomCode,
+                            cardsCount = cards.size
+                        )
+                    )
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -218,6 +234,9 @@ class MovieMatchRoomViewModel @Inject constructor(
                 is Result.Success -> {
                     val room = joinResult.data
                     currentRemoteRoomId = room.id
+                    analytics.logEvent(
+                        MatchAnalyticsEvent.RoomJoined(roomCode = code)
+                    )
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -264,6 +283,16 @@ class MovieMatchRoomViewModel @Inject constructor(
                     val newlyMatched =
                         latestMatches.firstOrNull { !existingMatchIds.contains(it.id) }
 
+                    if (newlyMatched != null) {
+                        analytics.logEvent(
+                            MatchAnalyticsEvent.MatchFound(
+                                mediaId = newlyMatched.id,
+                                mode = MatchMode.REMOTE.name,
+                                totalMatches = latestMatches.size
+                            )
+                        )
+                    }
+
                     _uiState.update { current ->
                         current.copy(
                             player1Name = room.hostName.ifBlank { current.player1Name },
@@ -283,6 +312,14 @@ class MovieMatchRoomViewModel @Inject constructor(
         val isLiked = direction == SwipeDirection.LIKE
         val newHistory = state.swipeHistory + (card.id to isLiked)
 
+        analytics.logEvent(
+            MatchAnalyticsEvent.CardSwiped(
+                mediaId = card.id,
+                direction = direction.name,
+                mode = state.mode.name
+            )
+        )
+
         if (state.mode == MatchMode.COUCH) {
             val isPlayer1 = state.activePlayerIndex == 0
             val p1Likes =
@@ -296,6 +333,13 @@ class MovieMatchRoomViewModel @Inject constructor(
             if (!isPlayer1 && isLiked && p1Likes.contains(card.id)) {
                 newMatch = card
                 updatedMatches = updatedMatches + card
+                analytics.logEvent(
+                    MatchAnalyticsEvent.MatchFound(
+                        mediaId = card.id,
+                        mode = state.mode.name,
+                        totalMatches = updatedMatches.size
+                    )
+                )
             }
 
             val nextIndex = state.topCardIndex + 1
@@ -313,6 +357,12 @@ class MovieMatchRoomViewModel @Inject constructor(
                     }
                 } else {
                     // Round Finished
+                    analytics.logEvent(
+                        MatchAnalyticsEvent.RoomCompleted(
+                            mode = state.mode.name,
+                            totalMatches = updatedMatches.size
+                        )
+                    )
                     _uiState.update {
                         it.copy(
                             phase = MatchScreenPhase.SUMMARY,
@@ -350,6 +400,12 @@ class MovieMatchRoomViewModel @Inject constructor(
 
             val nextIndex = state.topCardIndex + 1
             if (nextIndex >= state.cards.size) {
+                analytics.logEvent(
+                    MatchAnalyticsEvent.RoomCompleted(
+                        mode = state.mode.name,
+                        totalMatches = state.matches.size
+                    )
+                )
                 _uiState.update {
                     it.copy(
                         phase = MatchScreenPhase.SUMMARY,

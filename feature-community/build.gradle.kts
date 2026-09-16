@@ -11,6 +11,8 @@ dependencies {
     implementation(projects.featureMovieNavigation)
     implementation(projects.featureTvNavigation)
 
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
     implementation(projects.coreBackup)
     implementation(projects.coreCcm)
     implementation(projects.coreStorage)

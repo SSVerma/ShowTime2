@@ -5,8 +5,11 @@ import com.ssverma.core.analytics.AnalyticsDispatcher
 import com.ssverma.core.analytics.AnalyticsEvent
 import com.ssverma.core.analytics.AnalyticsProvider
 import com.ssverma.core.analytics.BuildConfig
+import com.ssverma.core.analytics.CrashReporter
 import com.ssverma.core.analytics.DebugAnalyticsProvider
+import com.ssverma.core.analytics.DebugCrashReporter
 import com.ssverma.core.analytics.firebase.FirebaseAnalyticsProvider
+import com.ssverma.core.analytics.firebase.FirebaseCrashReporter
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -31,17 +34,25 @@ abstract class AnalyticsModule {
         @Provides
         @IntoSet
         fun provideFirebaseProvider(
-            firebaseAnalyticsProvider: FirebaseAnalyticsProvider
+            firebaseAnalyticsProvider: dagger.Lazy<FirebaseAnalyticsProvider>
         ): AnalyticsProvider {
             return if (BuildConfig.DEBUG) {
-                // In debug, we could either skip firebase or use a separate instance.
-                // To avoid pollution:
-                // We'll return a NoOp or just the debug provider.
-                // Let's return a special wrapper or just skip adding it to the set.
-//                NoOpAnalyticsProvider()
-                DebugAnalyticsProvider()
+                NoOpAnalyticsProvider()
             } else {
-                firebaseAnalyticsProvider
+                firebaseAnalyticsProvider.get()
+            }
+        }
+
+        @Provides
+        @Singleton
+        fun provideCrashReporter(
+            debugCrashReporter: DebugCrashReporter,
+            firebaseCrashReporter: dagger.Lazy<FirebaseCrashReporter>
+        ): CrashReporter {
+            return if (BuildConfig.DEBUG) {
+                debugCrashReporter
+            } else {
+                firebaseCrashReporter.get()
             }
         }
     }

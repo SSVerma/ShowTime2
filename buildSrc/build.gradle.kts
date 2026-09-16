@@ -20,4 +20,5 @@ dependencies {
     implementation("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.3.6")
     implementation("com.android.legacy-kapt:com.android.legacy-kapt.gradle.plugin:9.1.1")
     implementation("com.google.gms:google-services:4.4.2")
+    implementation("com.google.firebase:firebase-crashlytics-gradle:3.0.3")
 }

@@ -41,7 +41,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
+import com.ssverma.feature.library.analytics.wrapped.WrappedAnalyticsEvent
 import com.ssverma.feature.library.ui.wrapped.component.MilestoneDetailBottomSheet
 import com.ssverma.feature.library.ui.wrapped.component.WrappedHeroCard
 import com.ssverma.feature.library.ui.wrapped.component.WrappedMilestonesGrid
@@ -65,12 +69,16 @@ fun CinephileWrappedScreen(
     onOpenProPaywall: () -> Unit = {},
     viewModel: CinephileWrappedViewModel = hiltViewModel()
 ) {
+    TrackScreenView(screenName = LibraryAnalyticsScreenName.CINEMA_WRAPPED)
+    val analytics = LocalAnalytics.current
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val onShareWrapped = {
+        analytics.logEvent(WrappedAnalyticsEvent.StoryExportClicked(year = uiState.selectedYear))
         viewModel.openExportSheet()
     }
 
@@ -172,7 +180,10 @@ fun CinephileWrappedScreen(
 
                             FilterChip(
                                 selected = isSelected,
-                                onClick = { viewModel.onSelectYear(year) },
+                                onClick = {
+                                    analytics.logEvent(WrappedAnalyticsEvent.YearSelected(year = year))
+                                    viewModel.onSelectYear(year)
+                                },
                                 label = {
                                     Text(
                                         text = label,
@@ -241,6 +252,12 @@ fun CinephileWrappedScreen(
                     WrappedMilestonesGrid(
                         milestones = summary.milestones,
                         onMilestoneClick = { milestone ->
+                            analytics.logEvent(
+                                WrappedAnalyticsEvent.MilestoneClicked(
+                                    milestoneId = milestone.id,
+                                    isUnlocked = milestone.isUnlocked
+                                )
+                            )
                             viewModel.onSelectMilestone(milestone)
                         },
                         modifier = Modifier

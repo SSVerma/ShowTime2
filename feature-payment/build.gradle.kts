@@ -12,6 +12,7 @@ dependencies {
     implementation(projects.coreBilling)
     implementation(projects.coreCcm)
     implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
     implementation(projects.sharedUi)
     implementation(projects.commonUi)
 

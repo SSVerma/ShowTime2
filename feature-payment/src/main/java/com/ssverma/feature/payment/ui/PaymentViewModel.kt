@@ -4,10 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.billing.model.BillingProduct
 import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.ccm.AppConfigProvider
+import com.ssverma.feature.payment.analytics.PaymentAnalyticsEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val billingRepository: BillingRepository,
-    private val appConfigProvider: AppConfigProvider
+    private val appConfigProvider: AppConfigProvider,
+    private val analytics: Analytics
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PaymentUiState())
@@ -69,6 +72,7 @@ class PaymentViewModel @Inject constructor(
             billingRepository.purchaseEvents.collect { event ->
                 when (event) {
                     is PurchaseResult.Success -> {
+                        analytics.logEvent(PaymentAnalyticsEvent.PurchaseCompleted())
                         _uiState.update { it.copy(isPurchasing = false, errorMessage = null) }
                         _purchaseUiEvents.emit(PurchaseUiEvent.Success)
                     }
@@ -92,6 +96,12 @@ class PaymentViewModel @Inject constructor(
     }
 
     fun purchaseProduct(activity: Activity, product: BillingProduct) {
+        analytics.logEvent(
+            PaymentAnalyticsEvent.PurchaseInitiated(
+                sku = product.id,
+                price = product.formattedPrice
+            )
+        )
         viewModelScope.launch {
             _uiState.update { it.copy(isPurchasing = true, errorMessage = null) }
             val launched =
@@ -112,6 +122,7 @@ class PaymentViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isRestoring = true) }
             val hasActivePro = billingRepository.restorePurchases()
+            analytics.logEvent(PaymentAnalyticsEvent.RestorePurchases(success = hasActivePro))
             _uiState.update { it.copy(isRestoring = false) }
             _restoreEvents.emit(
                 if (hasActivePro) RestoreEvent.Success else RestoreEvent.NotFound

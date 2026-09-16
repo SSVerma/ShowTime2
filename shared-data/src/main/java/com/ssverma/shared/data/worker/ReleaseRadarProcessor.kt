@@ -3,9 +3,11 @@ package com.ssverma.shared.data.worker
 import android.content.Context
 import com.ssverma.api.service.tmdb.TmdbApiService
 import com.ssverma.api.service.tmdb.response.RemoteProviderInfo
+import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.networking.adapter.ApiResponse
 import com.ssverma.core.notifications.ShowTimeNotificationManager
+import com.ssverma.shared.analytics.radar.ReleaseRadarAnalyticsEvent
 import com.ssverma.shared.data.R
 import com.ssverma.shared.data.local.db.dao.WatchlistDao
 import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
@@ -38,6 +40,7 @@ class ReleaseRadarProcessor @Inject constructor(
     private val appConfigRepository: AppConfigRepository,
     private val appConfigProvider: AppConfigProvider,
     private val notificationManager: ShowTimeNotificationManager,
+    private val analytics: Analytics,
     @param:ApplicationContext private val context: Context
 ) {
     /**
@@ -47,6 +50,10 @@ class ReleaseRadarProcessor @Inject constructor(
      * @return [ReleaseRadarResult.Success] on clean completion or intentional no-op, [ReleaseRadarResult.Retry] on fatal exception.
      */
     suspend fun executeRadar(currentDate: LocalDate = DateUtils.currentDate()): ReleaseRadarResult {
+        var theatricalNotifiedCount = 0
+        var streamingCheckedCount = 0
+        var streamingNotifiedCount = 0
+
         return try {
             // 1. Remote Kill-Switch Check
             val isRemotelyEnabled = appConfigProvider.getBoolean(
@@ -97,6 +104,13 @@ class ReleaseRadarProcessor @Inject constructor(
                         deepLink = deepLink
                     )
                     notificationDispatched = true
+                    theatricalNotifiedCount++
+                    analytics.logEvent(
+                        ReleaseRadarAnalyticsEvent.TheatricalAlertTriggered(
+                            mediaId = candidate.mediaId,
+                            title = candidate.title
+                        )
+                    )
                 }
                 // Always mark as notified to prevent re-alerts
                 watchlistDao.markTheatricalNotified(candidate.mediaId)
@@ -144,6 +158,8 @@ class ReleaseRadarProcessor @Inject constructor(
                         continue
                     }
 
+                    streamingCheckedCount++
+
                     try {
                         val response = tmdbApiService.getMovieWatchProviders(candidate.mediaId)
                         if (response is ApiResponse.Success) {
@@ -184,6 +200,14 @@ class ReleaseRadarProcessor @Inject constructor(
                                         deepLink = deepLink
                                     )
                                     notificationDispatched = true
+                                    streamingNotifiedCount++
+                                    analytics.logEvent(
+                                        ReleaseRadarAnalyticsEvent.StreamingAlertTriggered(
+                                            mediaId = candidate.mediaId,
+                                            title = candidate.title,
+                                            providers = providerNames
+                                        )
+                                    )
 
                                     watchlistDao.updateStreamingCheckStatus(
                                         mediaId = candidate.mediaId,
@@ -208,8 +232,25 @@ class ReleaseRadarProcessor @Inject constructor(
                 }
             }
 
+            analytics.logEvent(
+                ReleaseRadarAnalyticsEvent.SyncCompleted(
+                    theatricalNotifiedCount = theatricalNotifiedCount,
+                    streamingCheckedCount = streamingCheckedCount,
+                    streamingNotifiedCount = streamingNotifiedCount,
+                    success = true
+                )
+            )
+
             ReleaseRadarResult.Success
         } catch (e: Exception) {
+            analytics.logEvent(
+                ReleaseRadarAnalyticsEvent.SyncCompleted(
+                    theatricalNotifiedCount = theatricalNotifiedCount,
+                    streamingCheckedCount = streamingCheckedCount,
+                    streamingNotifiedCount = streamingNotifiedCount,
+                    success = false
+                )
+            )
             ReleaseRadarResult.Retry
         }
     }

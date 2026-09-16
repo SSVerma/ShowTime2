@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssverma.common.ui.community.CommentUiModel
 import com.ssverma.common.ui.community.toUiModel
+import com.ssverma.core.analytics.Analytics
+import com.ssverma.feature.community.analytics.DiscussionAnalyticsEvent
+import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.DeleteCommentParams
 import com.ssverma.shared.domain.model.community.DiscussionTarget
@@ -48,7 +51,8 @@ class DiscussionsViewModel @AssistedInject constructor(
     private val toggleCommentUpvoteUseCase: ToggleCommentUpvoteUseCase,
     private val deleteCommentUseCase: DeleteCommentUseCase,
     private val filterAndSortCommentsUseCase: FilterAndSortCommentsUseCase,
-    @ApplicationContext private val context: Context,
+    private val analytics: Analytics,
+    @param:ApplicationContext private val context: Context,
     @Assisted("discussionTarget") private val discussionTarget: DiscussionTarget,
     @Assisted("mediaTitle") private val mediaTitle: String?,
     @Assisted("posterImageUrl") private val posterImageUrl: String?,
@@ -99,6 +103,9 @@ class DiscussionsViewModel @AssistedInject constructor(
         )
 
     fun onFilterSelected(filter: ThreadFilter) {
+        analytics.logEvent(
+            DiscussionAnalyticsEvent.FilterSelected(filter = filter.name)
+        )
         _selectedFilter.value = filter
     }
 
@@ -108,6 +115,14 @@ class DiscussionsViewModel @AssistedInject constructor(
         parentId: String? = null,
         replyToAuthorName: String? = null
     ) {
+        analytics.logEvent(
+            DiscussionAnalyticsEvent.CommentPosted(
+                targetType = discussionTarget.mediaType.asAnalyticsValue(),
+                targetId = discussionTarget.mediaId,
+                isSpoiler = isSpoiler,
+                isReply = parentId != null
+            )
+        )
         viewModelScope.launch {
             postCommentUseCase(
                 PostCommentParams(
@@ -162,6 +177,14 @@ class DiscussionsViewModel @AssistedInject constructor(
         commentId: String,
         reason: String
     ) {
+        analytics.logEvent(
+            DiscussionAnalyticsEvent.CommentReported(
+                targetType = discussionTarget.mediaType.asAnalyticsValue(),
+                targetId = discussionTarget.mediaId,
+                commentId = commentId,
+                reason = reason
+            )
+        )
         _locallyReportedCommentIds.update { it + commentId }
         viewModelScope.launch {
             reportCommentUseCase(
@@ -182,6 +205,13 @@ class DiscussionsViewModel @AssistedInject constructor(
     }
 
     fun toggleCommentUpvote(commentId: String) {
+        analytics.logEvent(
+            DiscussionAnalyticsEvent.CommentUpvoted(
+                targetType = discussionTarget.mediaType.asAnalyticsValue(),
+                targetId = discussionTarget.mediaId,
+                commentId = commentId
+            )
+        )
         viewModelScope.launch {
             toggleCommentUpvoteUseCase(
                 ToggleCommentUpvoteParams(

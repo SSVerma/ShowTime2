@@ -147,8 +147,8 @@ graph TD
     C4 -->|No - Full Screen| FeatureScreen["Belongs in feature-* with NavKey"]
 ```
 
-1. **Cross-Feature Reusability**: Actively consumed by $\ge 2$ distinct feature modules. Never preemptively add components to `common-ui` for hypothetical reuse.
-2. **Domain-Agnostic / App-Wide Scope**: Represents global settings, preferences, app chrome, or universal overlays (e.g. `LanguageSelectionBottomSheet`, `ThemeSelectionBottomSheet`, `RegionSelectionBottomSheet`, `AppInfoBottomSheet`, `MediaOmniActionMenu`). Specialized capabilities (Ads $\rightarrow$ `shared-ads`, Analytics $\rightarrow$ `shared-analytics`) must NEVER be dumped into `common-ui`.
+1. **Cross-Feature Reusability**: Actively consumed by ≥ 2 distinct feature modules. Never preemptively add components to `common-ui` for hypothetical reuse.
+2. **Domain-Agnostic / App-Wide Scope**: Represents global settings, preferences, app chrome, or universal overlays (e.g. `LanguageSelectionBottomSheet`, `ThemeSelectionBottomSheet`, `RegionSelectionBottomSheet`, `AppInfoBottomSheet`, `MediaOmniActionMenu`). Specialized capabilities (Ads → `shared-ads`, Analytics → `shared-analytics`) must NEVER be dumped into `common-ui`.
 3. **Stateful Plug-and-Play**: Manages internal UI state or coordinates with domain state holders. If it is purely stateless presentation, it belongs in `shared-ui`.
 4. **Overlay / Embedded Form Factor**: It is a modal bottom sheet, dialog, or floating menu that appears in-context over an existing screen—NOT a full-screen route on the navigation backstack.
 

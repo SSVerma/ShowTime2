@@ -20,6 +20,8 @@ dependencies {
     implementation(projects.commonUi)
     implementation(projects.featurePaymentNavigation)
     implementation(projects.coreBackup)
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

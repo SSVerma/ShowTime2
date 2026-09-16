@@ -5,6 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.ssverma.common.ui.community.DiscussionsScreenContent
+import com.ssverma.core.analytics.ui.TrackScreenView
+import com.ssverma.feature.community.analytics.CommunityAnalyticsScreenName
 
 @Composable
 fun DiscussionsScreen(
@@ -12,6 +14,8 @@ fun DiscussionsScreen(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    TrackScreenView(screenName = CommunityAnalyticsScreenName.COMMUNITY_DISCUSSIONS)
+
     val comments by viewModel.uiComments.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
 

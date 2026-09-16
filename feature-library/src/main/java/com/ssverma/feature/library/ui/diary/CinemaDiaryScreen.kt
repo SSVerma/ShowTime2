@@ -52,13 +52,18 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.component.showImmediateSnackbar
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
+import com.ssverma.feature.library.analytics.diary.DiaryAnalyticsEvent
 import com.ssverma.feature.library.ui.diary.component.DiaryEmptyView
 import com.ssverma.feature.library.ui.diary.component.DiaryFilterRow
 import com.ssverma.feature.library.ui.diary.component.DiaryStatsHeader
 import com.ssverma.feature.library.ui.diary.component.DiaryTimelineItemCard
 import com.ssverma.feature.library.ui.diary.component.LogMediaSearchView
 import com.ssverma.feature.library.ui.diary.util.DiaryShareHelper
+import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import kotlinx.coroutines.launch
@@ -75,6 +80,9 @@ fun CinemaDiaryScreen(
     onOpenChallenges: () -> Unit = {},
     viewModel: CinemaDiaryViewModel = hiltViewModel()
 ) {
+    TrackScreenView(screenName = LibraryAnalyticsScreenName.CINEMA_DIARY)
+    val analytics = LocalAnalytics.current
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val listState = rememberLazyListState()
@@ -235,6 +243,12 @@ fun CinemaDiaryScreen(
                                 DiaryTimelineItemCard(
                                     entry = entry,
                                     onClick = {
+                                        analytics.logEvent(
+                                            DiaryAnalyticsEvent.ItemClicked(
+                                                mediaId = entry.mediaId,
+                                                mediaType = entry.mediaType.asAnalyticsValue()
+                                            )
+                                        )
                                         if (entry.mediaType == MediaType.Tv) {
                                             onOpenTvShowDetails(entry.mediaId)
                                         } else {
@@ -242,8 +256,25 @@ fun CinemaDiaryScreen(
                                         }
                                     },
                                     onEdit = { viewModel.onEditEntry(entry) },
-                                    onDelete = { viewModel.onRequestDeleteEntry(entry) },
-                                    onShare = { DiaryShareHelper.shareDiaryEntry(context, entry) },
+                                    onDelete = {
+                                        analytics.logEvent(
+                                            DiaryAnalyticsEvent.EntryDeleted(
+                                                mediaId = entry.mediaId,
+                                                mediaType = entry.mediaType.asAnalyticsValue()
+                                            )
+                                        )
+                                        viewModel.onRequestDeleteEntry(entry)
+                                    },
+                                    onShare = {
+                                        analytics.logEvent(
+                                            DiaryAnalyticsEvent.ReviewShared(
+                                                mediaId = entry.mediaId,
+                                                mediaType = entry.mediaType.asAnalyticsValue(),
+                                                rating = entry.userRating
+                                            )
+                                        )
+                                        DiaryShareHelper.shareDiaryEntry(context, entry)
+                                    },
                                     modifier = Modifier.padding(horizontal = 16.dp)
                                 )
                             }
@@ -284,6 +315,15 @@ fun CinemaDiaryScreen(
             tmdbRating = mediaItem.voteAvg,
             onDismiss = { viewModel.onDismissLogDialog() },
             onSave = { entry ->
+                analytics.logEvent(
+                    DiaryAnalyticsEvent.EntryLogged(
+                        mediaId = entry.mediaId,
+                        mediaType = entry.mediaType.asAnalyticsValue(),
+                        rating = entry.userRating,
+                        isRewatch = entry.isRewatch,
+                        hasReview = !entry.review.isNullOrBlank()
+                    )
+                )
                 viewModel.onSaveNewEntry(entry)
                 coroutineScope.launch {
                     snackbarHostState.showImmediateSnackbar(

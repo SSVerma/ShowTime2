@@ -13,6 +13,8 @@ dependencies {
     implementation(projects.sharedDomain)
 
     implementation(projects.coreNetworking)
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
     implementation(projects.coreStorage)
     implementation(projects.coreBackup)
     implementation(projects.coreBilling)

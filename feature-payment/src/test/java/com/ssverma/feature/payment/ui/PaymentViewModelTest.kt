@@ -2,9 +2,11 @@ package com.ssverma.feature.payment.ui
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.billing.model.PurchaseResult
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.core.testing.fakes.FakeBillingRepository
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -22,6 +24,7 @@ class PaymentViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private val fakeBillingRepository = FakeBillingRepository(initialProActive = false)
     private val fakeAppConfigProvider = FakeAppConfigProvider()
+    private val analytics: Analytics = mockk(relaxed = true)
 
     private lateinit var viewModel: PaymentViewModel
 
@@ -31,7 +34,8 @@ class PaymentViewModelTest {
         fakeAppConfigProvider.setBoolean("show_pro_paywall_enabled", true)
         viewModel = PaymentViewModel(
             billingRepository = fakeBillingRepository,
-            appConfigProvider = fakeAppConfigProvider
+            appConfigProvider = fakeAppConfigProvider,
+            analytics = analytics
         )
     }
 

@@ -36,6 +36,8 @@ dependencies {
     implementation(projects.corePaging)
     implementation(projects.coreDi)
     implementation(projects.coreImage)
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
     implementation(libs.hilt.navigation.compose)
 
     testImplementation(libs.junit)

@@ -62,9 +62,14 @@ import com.ssverma.feature.library.ui.taste.component.CinephilePersonaCard
 import com.ssverma.feature.library.ui.taste.component.TasteEraDistributionCard
 import com.ssverma.feature.library.ui.taste.component.TasteKeyMetricsRow
 import com.ssverma.feature.library.ui.taste.component.TastePersonaShareBottomSheet
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
+import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
+import com.ssverma.feature.library.analytics.taste.TasteProfileAnalyticsEvent
 import com.ssverma.feature.library.ui.taste.component.TasteRatingHistogram
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationShelfRow
 import com.ssverma.feature.library.ui.taste.component.TasteRecommendationsHeroCard
+import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.stats.TasteEraDistribution
 
@@ -78,6 +83,9 @@ fun TasteProfileScreen(
     onOpenProPaywall: () -> Unit = {},
     viewModel: TasteProfileViewModel = hiltViewModel()
 ) {
+    TrackScreenView(screenName = LibraryAnalyticsScreenName.TASTE_PROFILE)
+    val analytics = LocalAnalytics.current
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val listState = rememberLazyListState()
@@ -103,7 +111,17 @@ fun TasteProfileScreen(
                 },
                 onBackPressed = onBackClick,
                 actions = {
-                    IconButton(onClick = viewModel::openShareSheet) {
+                    IconButton(
+                        onClick = {
+                            val archetype = uiState.stats.persona.name
+                            analytics.logEvent(
+                                TasteProfileAnalyticsEvent.ProfileShared(
+                                    archetypeName = archetype
+                                )
+                            )
+                            viewModel.openShareSheet()
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.Share,
                             contentDescription = stringResource(R.string.taste_share_cd)
@@ -218,6 +236,12 @@ fun TasteProfileScreen(
                             TasteRecommendationShelfRow(
                                 shelf = shelf,
                                 onMediaClick = { mediaItem ->
+                                    analytics.logEvent(
+                                        TasteProfileAnalyticsEvent.RecommendationClicked(
+                                            mediaId = mediaItem.id,
+                                            mediaType = mediaItem.mediaType.asAnalyticsValue()
+                                        )
+                                    )
                                     if (mediaItem.mediaType == MediaType.Movie) {
                                         onOpenMovieDetails(mediaItem.id)
                                     } else {

@@ -52,14 +52,19 @@ import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
+import com.ssverma.feature.library.analytics.backlog.BacklogAnalyticsEvent
 import com.ssverma.feature.library.ui.backlog.component.ActiveChallengeCard
 import com.ssverma.feature.library.ui.backlog.component.BacklogHeroIntroCard
 import com.ssverma.feature.library.ui.backlog.component.BlindspotRadarSection
 import com.ssverma.feature.library.ui.backlog.component.ChallengeMediaSearchView
 import com.ssverma.feature.library.ui.backlog.component.CreateChallengeBottomSheet
 import com.ssverma.feature.library.ui.backlog.component.CuratedChallengeShelf
+import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.domain.model.challenge.CinephileChallenge
 import kotlinx.coroutines.launch
 
@@ -74,6 +79,9 @@ fun BacklogChallengeScreen(
     onNavigateToProPaywall: () -> Unit = {},
     viewModel: BacklogChallengeViewModel = hiltViewModel()
 ) {
+    TrackScreenView(screenName = LibraryAnalyticsScreenName.BACKLOG_CHALLENGES)
+    val analytics = LocalAnalytics.current
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val listState = rememberLazyListState()
@@ -156,6 +164,11 @@ fun BacklogChallengeScreen(
                                     ActiveChallengeCard(
                                         progress = progress,
                                         onClick = {
+                                            analytics.logEvent(
+                                                BacklogAnalyticsEvent.ChallengeClicked(
+                                                    challengeId = progress.challenge.id
+                                                )
+                                            )
                                             viewModel.openChallengeDetail(progress)
                                             onOpenChallengeDetail(progress.challenge.id)
                                         },
@@ -196,6 +209,7 @@ fun BacklogChallengeScreen(
                             challengeToJoin = challenge
                         },
                         onOpenChallengeDetail = { challenge ->
+                            analytics.logEvent(BacklogAnalyticsEvent.ChallengeClicked(challengeId = challenge.id))
                             onOpenChallengeDetail(challenge.id)
                         }
                     )
@@ -230,6 +244,7 @@ fun BacklogChallengeScreen(
                         onClick = {
                             val toJoin = challenge
                             challengeToJoin = null
+                            analytics.logEvent(BacklogAnalyticsEvent.ChallengeJoined(challengeId = toJoin.id))
                             viewModel.joinCuratedChallenge(toJoin)
                             coroutineScope.launch {
                                 val result = snackbarHostState.showSnackbar(

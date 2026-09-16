@@ -52,18 +52,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.ssverma.shared.ads.gate.FeatureGateConfig
-import com.ssverma.shared.ads.gate.FeaturePassPolicy
-import com.ssverma.shared.ads.gate.GatePresentationStyle
-import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
+import com.ssverma.core.analytics.ui.LocalAnalytics
+import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.R
+import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
+import com.ssverma.feature.library.analytics.receipt.CinemaReceiptAnalyticsEvent
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.util.ShareImageHelper
+import com.ssverma.shared.ads.gate.FeatureGateConfig
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +78,9 @@ fun CinemaReceiptScreen(
     onOpenProPaywall: () -> Unit = {},
     viewModel: CinemaReceiptViewModel = hiltViewModel()
 ) {
+    val analytics = LocalAnalytics.current
+    TrackScreenView(screenName = LibraryAnalyticsScreenName.CINEMA_RECEIPT)
+
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -131,37 +138,55 @@ fun CinemaReceiptScreen(
             ) {
                 FilterChip(
                     selected = uiState.selectedSource == ReceiptSource.HISTORY && uiState.selectedCustomList == null,
-                    onClick = { viewModel.selectSource(ReceiptSource.HISTORY) },
+                    onClick = {
+                        analytics.logEvent(CinemaReceiptAnalyticsEvent.PeriodSelected(ReceiptSource.HISTORY.name))
+                        viewModel.selectSource(ReceiptSource.HISTORY)
+                    },
                     label = { Text(stringResource(R.string.receipt_period_history)) },
                     colors = FilterChipDefaults.filterChipColors()
                 )
                 FilterChip(
                     selected = uiState.selectedSource == ReceiptSource.THIS_MONTH && uiState.selectedCustomList == null,
-                    onClick = { viewModel.selectSource(ReceiptSource.THIS_MONTH) },
+                    onClick = {
+                        analytics.logEvent(CinemaReceiptAnalyticsEvent.PeriodSelected(ReceiptSource.THIS_MONTH.name))
+                        viewModel.selectSource(ReceiptSource.THIS_MONTH)
+                    },
                     label = { Text(stringResource(R.string.receipt_period_this_month)) },
                     colors = FilterChipDefaults.filterChipColors()
                 )
                 FilterChip(
                     selected = uiState.selectedSource == ReceiptSource.THIS_YEAR && uiState.selectedCustomList == null,
-                    onClick = { viewModel.selectSource(ReceiptSource.THIS_YEAR) },
+                    onClick = {
+                        analytics.logEvent(CinemaReceiptAnalyticsEvent.PeriodSelected(ReceiptSource.THIS_YEAR.name))
+                        viewModel.selectSource(ReceiptSource.THIS_YEAR)
+                    },
                     label = { Text(stringResource(R.string.receipt_period_this_year)) },
                     colors = FilterChipDefaults.filterChipColors()
                 )
                 FilterChip(
                     selected = uiState.selectedSource == ReceiptSource.LAST_90_DAYS && uiState.selectedCustomList == null,
-                    onClick = { viewModel.selectSource(ReceiptSource.LAST_90_DAYS) },
+                    onClick = {
+                        analytics.logEvent(CinemaReceiptAnalyticsEvent.PeriodSelected(ReceiptSource.LAST_90_DAYS.name))
+                        viewModel.selectSource(ReceiptSource.LAST_90_DAYS)
+                    },
                     label = { Text(stringResource(R.string.receipt_period_last_90_days)) },
                     colors = FilterChipDefaults.filterChipColors()
                 )
                 FilterChip(
                     selected = uiState.selectedSource == ReceiptSource.FAVORITES && uiState.selectedCustomList == null,
-                    onClick = { viewModel.selectSource(ReceiptSource.FAVORITES) },
+                    onClick = {
+                        analytics.logEvent(CinemaReceiptAnalyticsEvent.PeriodSelected(ReceiptSource.FAVORITES.name))
+                        viewModel.selectSource(ReceiptSource.FAVORITES)
+                    },
                     label = { Text(stringResource(R.string.receipt_period_favorites)) },
                     colors = FilterChipDefaults.filterChipColors()
                 )
                 FilterChip(
                     selected = uiState.selectedSource == ReceiptSource.WATCHLIST && uiState.selectedCustomList == null,
-                    onClick = { viewModel.selectSource(ReceiptSource.WATCHLIST) },
+                    onClick = {
+                        analytics.logEvent(CinemaReceiptAnalyticsEvent.PeriodSelected(ReceiptSource.WATCHLIST.name))
+                        viewModel.selectSource(ReceiptSource.WATCHLIST)
+                    },
                     label = { Text(stringResource(R.string.receipt_period_watchlist)) },
                     colors = FilterChipDefaults.filterChipColors()
                 )
@@ -321,6 +346,12 @@ fun CinemaReceiptScreen(
                 ) {
                     OutlinedButton(
                         onClick = {
+                            analytics.logEvent(
+                                CinemaReceiptAnalyticsEvent.ReceiptSaved(
+                                    period = uiState.selectedSource.name,
+                                    itemCount = snapshot.items.size
+                                )
+                            )
                             viewModel.attemptExport {
                                 coroutineScope.launch {
                                     viewModel.setExporting(true)
@@ -365,6 +396,12 @@ fun CinemaReceiptScreen(
 
                     Button(
                         onClick = {
+                            analytics.logEvent(
+                                CinemaReceiptAnalyticsEvent.ReceiptShared(
+                                    period = uiState.selectedSource.name,
+                                    itemCount = snapshot.items.size
+                                )
+                            )
                             viewModel.attemptExport {
                                 coroutineScope.launch {
                                     viewModel.setExporting(true)

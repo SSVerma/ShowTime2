@@ -51,6 +51,7 @@ javax-inject = "1"
 # Firebase
 firebase-bom = "34.17.0"
 google-services = "4.5.0"
+firebase-crashlytics-plugin = "3.0.3"
 play-services = "25.4.0"
 play-billing = "9.1.0"
 
@@ -123,6 +124,7 @@ desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-remote-config = { group = "com.google.firebase", name = "firebase-config" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
@@ -177,4 +179,5 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

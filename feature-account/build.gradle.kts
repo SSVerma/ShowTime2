@@ -12,6 +12,8 @@ android {
 }
 
 dependencies {
+    implementation(projects.coreAnalytics)
+    implementation(projects.sharedAnalytics)
     implementation(projects.coreStorage)
     implementation(projects.coreBilling)
     implementation(projects.sharedAds)

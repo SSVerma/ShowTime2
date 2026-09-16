@@ -3,6 +3,7 @@ package com.ssverma.feature.match.ui
 import android.app.Activity
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.core.ads.manager.RewardedAdManager
+import com.ssverma.core.analytics.Analytics
 import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.match.R
@@ -45,6 +46,7 @@ class MovieMatchRoomViewModelTest {
     private val rewardManager: RewardManager = mockk(relaxed = true)
     private val billingRepository: BillingRepository = mockk(relaxed = true)
     private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
+    private val analytics: Analytics = mockk(relaxed = true)
 
     private val isProFlow = MutableStateFlow(false)
     private val isPassActiveFlow = MutableStateFlow(false)
@@ -91,7 +93,8 @@ class MovieMatchRoomViewModelTest {
             matchRoomRepository = matchRoomRepository,
             rewardManager = rewardManager,
             billingRepository = billingRepository,
-            rewardedAdManager = rewardedAdManager
+            rewardedAdManager = rewardedAdManager,
+            analytics = analytics
         )
     }
 

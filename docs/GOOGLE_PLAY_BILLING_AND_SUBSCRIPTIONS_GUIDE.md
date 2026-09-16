@@ -23,7 +23,7 @@ Google Play Console will not allow creating or configuring subscriptions until a
    `app/build/outputs/bundle/release/app-release.aab`
 
 3. **Upload to Play Console**:
-   - Go to **Google Play Console** $\rightarrow$ Select ShowTime.
+   - Go to **Google Play Console** → Select ShowTime.
    - Under **Testing**, open **Internal testing**.
    - Create a new release and upload `app-release.aab`.
 
@@ -31,7 +31,7 @@ Google Play Console will not allow creating or configuring subscriptions until a
 
 ### Step 2: Create Subscriptions & Base Plans
 
-Navigate to **Monetize** $\rightarrow$ **Products** $\rightarrow$ **Subscriptions**.
+Navigate to **Monetize** → **Products** → **Subscriptions**.
 Create the 4 subscription products matching `BillingConstants.kt`:
 
 | Subscription Product ID | Recommended Base Plan ID | Billing Period | Type | Plan Notes |
@@ -59,11 +59,11 @@ Create the 4 subscription products matching `BillingConstants.kt`:
 To test real Google Play billing flows without spending actual money:
 
 1. **Add License Testers**:
-   - In Google Play Console, go to **Setup** $\rightarrow$ **License testing**.
+   - In Google Play Console, go to **Setup** → **License testing**.
    - Add your Gmail address(es) to the list of license testers.
    - Set **License test response** to `RESPOND_NORMALLY`.
 2. **Internal Testing Track Access**:
-   - Under **Testing** $\rightarrow$ **Internal testing** $\rightarrow$ **Testers** tab:
+   - Under **Testing** → **Internal testing** → **Testers** tab:
    - Select your email list.
    - Copy the **"Join on the web" / "Join on Android"** link.
    - Open the link on your test device using the tester Google account and click **Accept Invite**.

@@ -111,7 +111,7 @@ sequenceDiagram
    - Tapping **"Restore My Library"** restores all data in-place with a progress spinner.
    - Upon completion, the user lands on the Home Dashboard with their "Up Next" carousel and Watchlists populated!
 2. **Returning User in Settings**:
-   - Signing into Google in Settings $\rightarrow$ Cloud Backup signs the user in and updates the status card in-place (last backup date, origin device, item breakdown badges). It does **NOT** present an unprompted modal dialog.
+   - Signing into Google in Settings → Cloud Backup signs the user in and updates the status card in-place (last backup date, origin device, item breakdown badges). It does **NOT** present an unprompted modal dialog.
    - Tapping **"Restore"** on the card opens `RestoreConfirmationDialog`.
    - If local items exist (`localItemCount > 0`), it displays the smart merge reassurance:
      > *"Your existing local items will be safely merged with [N] items from your cloud backup ([Device]). No local data will be deleted."*
@@ -147,7 +147,7 @@ Use this step-by-step checklist to validate all backup and restore flows using t
 ### Scenario 1: Clean Sign-In in Settings (No Auto-Prompt)
 - **Objective**: Ensure signing into Google in Settings does not throw an intrusive, unexpected restore modal.
 - **Steps**:
-  1. Open ShowTime $\rightarrow$ **Account** tab $\rightarrow$ **Cloud Backup**.
+  1. Open ShowTime → **Account** tab → **Cloud Backup**.
   2. If already signed in, tap **Sign Out**.
   3. Tap **Sign in with Google** and choose an account that already has a cloud backup.
 - **Expected Outcome**:
@@ -158,36 +158,36 @@ Use this step-by-step checklist to validate all backup and restore flows using t
 ### Scenario 2: Manual Backup Flow (Free Ad Gate vs. Pro Instant)
 - **Objective**: Verify that free users receive the Rewarded Ad feature gate while Pro users backup instantly.
 - **Steps (Free Tier)**:
-  1. In **Account** tab $\rightarrow$ tap 🪲 (Developer Panel) $\rightarrow$ set Pro Override to **FORCE_INACTIVE**.
+  1. In **Account** tab → tap 🪲 (Developer Panel) → set Pro Override to **FORCE_INACTIVE**.
   2. In Cloud Backup, tap **Back Up Now**.
   3. Verify the Rewarded Ad feature gate bottom sheet appears ("Watch an ad to back up your library").
 - **Steps (Pro Tier)**:
-  1. In Developer Panel $\rightarrow$ set Pro Override to **FORCE_ACTIVE**.
+  1. In Developer Panel → set Pro Override to **FORCE_ACTIVE**.
   2. Tap **Back Up Now**.
   3. Verify instant backup execution with progress spinner, followed by success message.
 
 ### Scenario 3: Smart Merge with Existing Local Data
 - **Objective**: Ensure existing local items are merged safely without data loss, and the smart merge dialog informs the user.
 - **Steps**:
-  1. Open Developer Panel 🪲 $\rightarrow$ tap **Seed Fake Library Data** (or search and favorite/watchlist movies locally).
+  1. Open Developer Panel 🪲 → tap **Seed Fake Library Data** (or search and favorite/watchlist movies locally).
   2. Open **Cloud Backup** screen (signed in to Google).
   3. Tap **Restore**.
 - **Expected Outcome**:
   - The `RestoreConfirmationDialog` appears displaying the smart merge message:
     > *"Your existing local items will be safely merged with [N] items from your cloud backup ([Device]). No local data will be deleted."*
   - CTAs show **"Restore & Merge"** and **"Keep Local Only"**.
-  - Tap **"Restore & Merge"** $\rightarrow$ progress spinner runs $\rightarrow$ success message displayed.
+  - Tap **"Restore & Merge"** → progress spinner runs → success message displayed.
   - Verify your local items and cloud backup items are both present in your Library.
 
 ### Scenario 4: Onboarding Cloud Step & "Start Fresh" Confirmation
 - **Objective**: Ensure the first-launch migration experience is smooth and "Start Fresh" asks for confirmation before discarding the card.
 - **Steps**:
-  1. In Developer Panel 🪲 $\rightarrow$ tap **Reset Onboarding** (or clear app storage and launch app).
+  1. In Developer Panel 🪲 → tap **Reset Onboarding** (or clear app storage and launch app).
   2. Proceed through Onboarding steps to Step 4 (**Privacy & Sync**).
   3. Tap **Continue with Google** and sign into an account with an existing backup.
   4. Notice the **Cloud Backup Found** card appears showing origin device, date, and badges.
   5. Tap **Start Fresh**:
      - A confirmation dialog appears: *"Start fresh? You can still restore your cloud backup anytime later from Settings."*
      - Tap **Cancel**: Dialog dismisses; Cloud Backup Found card remains visible.
-     - Tap **Start Fresh** again $\rightarrow$ tap **Yes, Start Fresh**: Dialog dismisses; card disappears and shows signed-in / guest state.
-  6. Tap **Enter ShowTime** $\rightarrow$ User successfully lands on Home screen.
+     - Tap **Start Fresh** again → tap **Yes, Start Fresh**: Dialog dismisses; card disappears and shows signed-in / guest state.
+  6. Tap **Enter ShowTime** → User successfully lands on Home screen.

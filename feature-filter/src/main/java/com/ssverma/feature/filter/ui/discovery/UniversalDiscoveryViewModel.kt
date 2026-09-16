@@ -40,6 +40,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.ssverma.core.analytics.Analytics
+import com.ssverma.feature.filter.analytics.FilterAnalyticsEvent
+import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.ui.R as SharedUiR
 
 sealed interface UniversalDiscoveryUiEffect {
@@ -61,6 +64,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
     private val billingRepository: BillingRepository,
     private val rewardManager: RewardManager,
     private val rewardedAdManager: RewardedAdManager,
+    private val analytics: Analytics,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -362,6 +366,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
 
     fun setMediaType(mediaType: MediaType) {
         if (_uiState.value.filter.mediaType == mediaType) return
+        analytics.logEvent(FilterAnalyticsEvent.MediaTypeSwitched(mediaType = mediaType.asAnalyticsValue()))
         _uiState.update {
             it.copy(filter = it.filter.copy(mediaType = mediaType))
         }
@@ -370,6 +375,12 @@ class UniversalDiscoveryViewModel @Inject constructor(
     }
 
     fun setVibePreset(vibePreset: DiscoveryVibePreset) {
+        analytics.logEvent(
+            FilterAnalyticsEvent.VibeSelected(
+                vibeId = vibePreset.name,
+                vibeName = vibePreset.name
+            )
+        )
         _uiState.update {
             it.copy(filter = it.filter.copy(vibePreset = vibePreset))
         }
@@ -377,6 +388,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
     }
 
     fun applyFilter(newFilter: UniversalDiscoveryFilter) {
+        analytics.logEvent(FilterAnalyticsEvent.FilterSheetApplied(sortBy = newFilter.sortOrder.name))
         _uiState.update {
             it.copy(
                 filter = newFilter,
@@ -405,6 +417,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
     }
 
     fun setDecade(decade: DiscoveryDecade) {
+        analytics.logEvent(FilterAnalyticsEvent.DecadeSelected(decade = decade.label))
         _uiState.update {
             it.copy(filter = it.filter.copy(decade = decade))
         }
@@ -419,6 +432,14 @@ class UniversalDiscoveryViewModel @Inject constructor(
     }
 
     fun setStudioHub(studioHub: DiscoveryStudioHub?) {
+        studioHub?.let {
+            analytics.logEvent(
+                FilterAnalyticsEvent.StudioClicked(
+                    studioId = it.companyId,
+                    studioName = it.label
+                )
+            )
+        }
         _uiState.update {
             it.copy(filter = it.filter.copy(studioHub = studioHub))
         }
@@ -427,6 +448,16 @@ class UniversalDiscoveryViewModel @Inject constructor(
 
     fun toggleStreamingProvider(providerId: Int) {
         val current = _uiState.value.filter.selectedProviderIds
+        val isSelected = !current.contains(providerId)
+        val providerName =
+            _uiState.value.availableProviders.firstOrNull { it.providerId == providerId }?.providerName.orEmpty()
+        analytics.logEvent(
+            FilterAnalyticsEvent.ProviderToggled(
+                providerId = providerId,
+                providerName = providerName,
+                isSelected = isSelected
+            )
+        )
         if (current.contains(providerId)) {
             _uiState.update {
                 it.copy(filter = it.filter.copy(selectedProviderIds = current - providerId))
@@ -555,7 +586,9 @@ class UniversalDiscoveryViewModel @Inject constructor(
     }
 
     fun toggleViewMode() {
-        _uiState.update { it.copy(isGridView = !it.isGridView) }
+        val newIsGrid = !_uiState.value.isGridView
+        analytics.logEvent(FilterAnalyticsEvent.LayoutToggled(isGrid = newIsGrid))
+        _uiState.update { it.copy(isGridView = newIsGrid) }
     }
 
     fun openFilterSheet(open: Boolean) {
@@ -574,6 +607,14 @@ class UniversalDiscoveryViewModel @Inject constructor(
             val result = getRouletteSurpriseUseCase(_uiState.value.filter)
             when (result) {
                 is Result.Success -> {
+                    val item = result.data
+                    analytics.logEvent(
+                        FilterAnalyticsEvent.RouletteSpun(
+                            itemId = item.id,
+                            itemTitle = item.title,
+                            mediaType = item.mediaType.asAnalyticsValue()
+                        )
+                    )
                     _uiState.update {
                         it.copy(isRouletteSpinning = false, rouletteItem = result.data)
                     }

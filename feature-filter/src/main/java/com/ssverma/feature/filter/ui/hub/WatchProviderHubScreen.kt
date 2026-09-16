@@ -27,6 +27,8 @@ import com.ssverma.shared.domain.MovieDiscoverConfig
 import com.ssverma.shared.domain.TvDiscoverConfig
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
+import com.ssverma.core.analytics.ui.TrackScreenView
+import com.ssverma.feature.filter.analytics.FilterAnalyticsScreenName
 import com.ssverma.shared.domain.model.ProviderInfo
 import kotlinx.coroutines.launch
 
@@ -42,6 +44,8 @@ fun WatchProviderHubScreen(
     viewModel: WatchProviderHubViewModel,
     source: String = "default"
 ) {
+    TrackScreenView(screenName = FilterAnalyticsScreenName.WATCH_PROVIDER_HUB)
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
