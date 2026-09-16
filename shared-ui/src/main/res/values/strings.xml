@@ -316,6 +316,13 @@
     <string name="streaming_subscriptions_free_tier_hint">Free: 1 service • Pro: Combine unlimited</string>
     <string name="streaming_subscriptions_pro_badge">PRO UNLIMITED</string>
     <string name="streaming_subscriptions_pass_badge">PASS ACTIVE</string>
+    <string name="streaming_subscriptions_pass_title">24h Multi-Service Pass Active</string>
+    <string name="streaming_subscriptions_pass_desc">Unlimited selections unlocked. Combine any streaming services to aggregate content across them.</string>
+    <string name="streaming_subscriptions_pro_title">ShowTime Pro Active</string>
+    <string name="streaming_subscriptions_pro_desc">Unlimited streaming provider combinations unlocked</string>
+    <string name="streaming_subscriptions_free_title">Free Plan • 1 Service Included</string>
+    <string name="streaming_subscriptions_free_desc">Select 1 streaming service, or unlock a 24h Pass to combine multiple</string>
+    <string name="streaming_subscriptions_selected_badge">Subscribed</string>
     <string name="streaming_multi_service_gate_title">Multi-Service Streaming</string>
     <string name="streaming_multi_service_gate_desc">Combine Netflix, Prime Video, Disney+, Apple TV+, and more into a single unified discovery feed with ShowTime Pro.</string>
     <string name="streaming_multi_service_unlock_pro">Upgrade to Pro</string>

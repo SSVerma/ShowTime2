@@ -1,6 +1,10 @@
 package com.ssverma.common.ui.subscription
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,27 +14,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Tv
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,21 +42,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.core.image.NetworkImage
+import com.ssverma.common.ui.subscription.component.MultiServiceGateDialog
+import com.ssverma.common.ui.subscription.component.StreamingTierContextBanner
+import com.ssverma.common.ui.subscription.component.SubscriptionProviderItem
 import com.ssverma.core.ui.UiState
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
-import com.ssverma.core.ui.util.findActivity
-import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.ui.R
 import kotlinx.coroutines.flow.collectLatest
 
@@ -72,7 +65,6 @@ fun StreamingSubscriptionsBottomSheet(
     onUpgradeToPro: () -> Unit = {},
     viewModel: StreamingSubscriptionsViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -83,7 +75,7 @@ fun StreamingSubscriptionsBottomSheet(
                 }
 
                 is StreamingSubscriptionsUiEffect.ShowMultiServiceGate -> {
-                    // Dialog will be shown via uiState.showMultiServiceGate
+                    // Dialog shown via uiState.showMultiServiceGate
                 }
             }
         }
@@ -106,132 +98,16 @@ fun StreamingSubscriptionsBottomSheet(
     }
 
     if (uiState.showMultiServiceGate) {
-        AlertDialog(
-            onDismissRequest = { viewModel.dismissMultiServiceGate() },
-            shape = RoundedCornerShape(24.dp),
-            icon = {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.AutoAwesome,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
+        MultiServiceGateDialog(
+            isProPaymentEnabled = uiState.isProPaymentEnabled,
+            onDismiss = { viewModel.dismissMultiServiceGate() },
+            onUpgradeToPro = {
+                viewModel.dismissMultiServiceGate()
+                onDismissRequest()
+                onUpgradeToPro()
             },
-            title = {
-                Text(
-                    text = stringResource(R.string.streaming_multi_service_gate_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(R.string.streaming_multi_service_gate_desc),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (uiState.isProPaymentEnabled) {
-                        Button(
-                            onClick = {
-                                viewModel.dismissMultiServiceGate()
-                                onDismissRequest()
-                                onUpgradeToPro()
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Star,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.streaming_multi_service_unlock_pro),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        FilledTonalButton(
-                            onClick = {
-                                val activity = context.findActivity()
-                                if (activity != null) {
-                                    viewModel.watchAdForMultiServicePass(activity)
-                                }
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Tv,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.streaming_multi_service_pass_reward),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    } else {
-                        Button(
-                            onClick = {
-                                val activity = context.findActivity()
-                                if (activity != null) {
-                                    viewModel.watchAdForMultiServicePass(activity)
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Tv,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.streaming_multi_service_pass_reward),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { viewModel.dismissMultiServiceGate() }) {
-                    Text(text = stringResource(R.string.cancel))
-                }
+            onWatchAd = { activity ->
+                viewModel.watchAdForMultiServicePass(activity)
             }
         )
     }
@@ -261,6 +137,7 @@ private fun StreamingSubscriptionsContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .imePadding()
             .padding(top = MaterialTheme.spacing.small)
     ) {
         // Header
@@ -295,67 +172,25 @@ private fun StreamingSubscriptionsContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        // Tier / Pro Status Pill
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = when {
-                uiState.isProActive -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                uiState.isPassActive -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
-                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            },
-            border = BorderStroke(
-                1.dp,
-                when {
-                    uiState.isProActive -> MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                    uiState.isPassActive -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
-                    else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                }
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.spacing.medium)
+        // Tier / Pro / Pass Context Banner (collapses when searching to maximize result area)
+        AnimatedVisibility(
+            visible = uiState.searchQuery.isBlank(),
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                Icon(
-                    imageVector = when {
-                        uiState.isProActive -> Icons.Rounded.Star
-                        uiState.isPassActive -> Icons.Rounded.AutoAwesome
-                        else -> Icons.Rounded.Tv
-                    },
-                    contentDescription = null,
-                    tint = when {
-                        uiState.isProActive -> MaterialTheme.colorScheme.primary
-                        uiState.isPassActive -> MaterialTheme.colorScheme.tertiary
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = when {
-                        uiState.isProActive -> stringResource(R.string.streaming_subscriptions_pro_badge)
-                        uiState.isPassActive -> stringResource(R.string.streaming_subscriptions_pass_badge)
-                        else -> stringResource(R.string.streaming_subscriptions_free_tier_hint)
-                    },
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = when {
-                        uiState.isProActive -> MaterialTheme.colorScheme.onPrimaryContainer
-                        uiState.isPassActive -> MaterialTheme.colorScheme.onTertiaryContainer
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+            Column {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+                StreamingTierContextBanner(
+                    isProActive = uiState.isProActive,
+                    isPassActive = uiState.isPassActive,
+                    modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-        // Search Bar
+        // Search Bar (pinned in view above results)
         OutlinedTextField(
             value = uiState.searchQuery,
             onValueChange = onSearchQueryChanged,
@@ -400,78 +235,85 @@ private fun StreamingSubscriptionsContent(
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-        // Providers List
-        when (uiState.providersState) {
-            is UiState.Loading -> {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(260.dp)
-                ) {
-                    ShowTimeLoadingIndicator()
-                }
-            }
-
-            is UiState.Error -> {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(horizontal = MaterialTheme.spacing.medium)
-                ) {
-                    Text(
-                        text = stringResource(R.string.unexpected_error_msg),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-
-            is UiState.Success -> {
-                if (filteredProviders.isEmpty()) {
+        // Providers List Container - uses weight(1f, fill = false) so it contracts above keyboard and CTA
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false)
+        ) {
+            when (uiState.providersState) {
+                is UiState.Loading -> {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
+                    ) {
+                        ShowTimeLoadingIndicator()
+                    }
+                }
+
+                is UiState.Error -> {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
                             .padding(horizontal = MaterialTheme.spacing.medium)
                     ) {
                         Text(
-                            text = stringResource(R.string.streaming_subscriptions_empty_services),
+                            text = stringResource(R.string.unexpected_error_msg),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            horizontal = MaterialTheme.spacing.medium,
-                            vertical = MaterialTheme.spacing.extraSmall
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 380.dp)
-                    ) {
-                        items(
-                            items = filteredProviders,
-                            key = { it.providerId }
-                        ) { provider ->
-                            val isSelected =
-                                uiState.selectedProviderIds.contains(provider.providerId)
-                            SubscriptionProviderItem(
-                                provider = provider,
-                                isSelected = isSelected,
-                                onClick = { onProviderToggle(provider.providerId) }
+                }
+
+                is UiState.Success -> {
+                    if (filteredProviders.isEmpty()) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .padding(horizontal = MaterialTheme.spacing.medium)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.streaming_subscriptions_empty_services),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(
+                                horizontal = MaterialTheme.spacing.medium,
+                                vertical = MaterialTheme.spacing.extraSmall
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 420.dp)
+                        ) {
+                            items(
+                                items = filteredProviders,
+                                key = { it.providerId },
+                                contentType = { "provider_item" }
+                            ) { provider ->
+                                val isSelected =
+                                    uiState.selectedProviderIds.contains(provider.providerId)
+                                SubscriptionProviderItem(
+                                    provider = provider,
+                                    isSelected = isSelected,
+                                    onClick = { onProviderToggle(provider.providerId) }
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            is UiState.Idle -> Unit
+                is UiState.Idle -> Unit
+            }
         }
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
@@ -519,71 +361,6 @@ private fun StreamingSubscriptionsContent(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SubscriptionProviderItem(
-    provider: ProviderInfo,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(14.dp),
-        color = if (isSelected) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-        } else {
-            MaterialTheme.colorScheme.surface
-        },
-        border = BorderStroke(
-            1.dp,
-            if (isSelected) {
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-            } else {
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
-            }
-        ),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
-        ) {
-            if (provider.logoPath.isNotBlank()) {
-                NetworkImage(
-                    url = provider.logoPath,
-                    contentDescription = provider.providerName,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-            }
-
-            Text(
-                text = provider.providerName,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.weight(1f)
-            )
-
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = { onClick() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.outlineVariant
-                )
-            )
         }
     }
 }
