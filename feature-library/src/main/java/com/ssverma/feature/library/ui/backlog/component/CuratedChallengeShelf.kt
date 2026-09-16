@@ -16,12 +16,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Flag
+import androidx.compose.material.icons.rounded.HistoryEdu
+import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.MovieFilter
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.challenge.ChallengeCategory
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
@@ -61,14 +68,14 @@ fun CuratedChallengeShelf(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.mediumLarge)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
 
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.mediumLarge),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallMedium),
             modifier = Modifier.fillMaxWidth()
         ) {
             items(curatedChallenges, key = { it.id }) { challenge ->
@@ -97,21 +104,21 @@ fun CuratedChallengeItemCard(
         onClick = onOpenDetail,
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = modifier
-            .width(260.dp)
-            .height(246.dp)
+            .width(264.dp)
+            .height(252.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(MaterialTheme.spacing.smallMedium),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // 1. Poster Collage Banner Header
@@ -124,11 +131,11 @@ fun CuratedChallengeItemCard(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(104.dp)
+                        .height(106.dp)
                 ) {
                     displayItems.forEach { item ->
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(10.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             border = BorderStroke(
                                 width = 0.5.dp,
@@ -149,7 +156,7 @@ fun CuratedChallengeItemCard(
 
                     repeat(placeholderCount) {
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(10.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
                             border = BorderStroke(
                                 width = 0.5.dp,
@@ -178,22 +185,10 @@ fun CuratedChallengeItemCard(
                     }
                 }
             } else {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(104.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.EmojiEvents,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
+                CinemaSprintBanner(
+                    targetCount = challenge.targetCount,
+                    height = 106.dp
+                )
             }
 
             // 2. Info Section (Category Pill + Title Count + Title)
@@ -203,24 +198,55 @@ fun CuratedChallengeItemCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val (catLabel, catIcon) = when (challenge.category) {
+                        ChallengeCategory.Curated -> Pair(
+                            stringResource(R.string.challenges_category_essential),
+                            Icons.Rounded.Star
+                        )
+
+                        ChallengeCategory.DirectorSpotlight -> Pair(
+                            stringResource(R.string.challenges_category_director),
+                            Icons.Rounded.MovieFilter
+                        )
+
+                        ChallengeCategory.DecadeClassics -> Pair(
+                            stringResource(R.string.challenges_category_decade),
+                            Icons.Rounded.HistoryEdu
+                        )
+
+                        ChallengeCategory.GenreSprint -> Pair(
+                            stringResource(R.string.challenges_category_genre),
+                            Icons.Rounded.LocalFireDepartment
+                        )
+
+                        ChallengeCategory.PersonalGoal -> Pair(
+                            stringResource(R.string.challenges_category_goal),
+                            Icons.Rounded.Flag
+                        )
+                    }
+
                     Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ) {
-                        val catLabel = when (challenge.category) {
-                            ChallengeCategory.Curated -> stringResource(R.string.challenges_category_essential)
-                            ChallengeCategory.DirectorSpotlight -> stringResource(R.string.challenges_category_director)
-                            ChallengeCategory.DecadeClassics -> stringResource(R.string.challenges_category_decade)
-                            ChallengeCategory.GenreSprint -> stringResource(R.string.challenges_category_genre)
-                            ChallengeCategory.PersonalGoal -> stringResource(R.string.challenges_category_goal)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Icon(
+                                imageVector = catIcon,
+                                contentDescription = null,
+                                modifier = Modifier.size(11.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = catLabel,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
-                        Text(
-                            text = catLabel,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                        )
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -233,7 +259,7 @@ fun CuratedChallengeItemCard(
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
-                                modifier = Modifier.size(14.dp),
+                                modifier = Modifier.size(13.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -250,7 +276,7 @@ fun CuratedChallengeItemCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
                 Text(
                     text = challenge.title,
@@ -262,12 +288,16 @@ fun CuratedChallengeItemCard(
                 )
             }
 
-            // 3. Bottom Action Button
+            // 3. Bottom Action Button (Pill shaped)
             if (isJoined) {
                 OutlinedButton(
                     onClick = onOpenDetail,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = CircleShape,
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(38.dp)
@@ -289,7 +319,7 @@ fun CuratedChallengeItemCard(
             } else {
                 FilledTonalButton(
                     onClick = onJoin,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = CircleShape,
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,

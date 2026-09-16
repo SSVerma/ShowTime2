@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,17 +20,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AddCircleOutline
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Tv
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -37,10 +39,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.api.service.tmdb.convertToTmdbPosterUrl
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaItem
 import com.ssverma.shared.domain.model.challenge.ChallengeMediaTypeFilter
@@ -102,29 +106,51 @@ fun CreateChallengeBottomSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .imePadding()
-                .padding(bottom = 24.dp)
+                .padding(bottom = MaterialTheme.spacing.large)
                 .verticalScroll(scrollState)
         ) {
-            // Header Row (Standard ShowTime Sheet header, no oversized emoji)
+            // 1. Header with Icon Badge & Close Action
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = MaterialTheme.spacing.mediumLarge),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.challenges_create_goal_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(R.string.challenges_create_goal_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Rounded.EmojiEvents,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.smallMedium))
+
+                    Column {
+                        Text(
+                            text = stringResource(R.string.challenges_create_goal_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.challenges_create_goal_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 IconButton(onClick = onDismiss) {
@@ -136,68 +162,95 @@ fun CreateChallengeBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            // Goal Title Field
+            // 2. Goal Title Field
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text(stringResource(R.string.challenges_create_goal_name_label)) },
                 placeholder = { Text(stringResource(R.string.challenges_create_goal_name_placeholder)) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = MaterialTheme.spacing.mediumLarge)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
 
-            // Description Field (Optional)
+            // 3. Description Field (Optional)
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text(stringResource(R.string.challenges_create_goal_desc_label)) },
                 placeholder = { Text(stringResource(R.string.challenges_create_goal_desc_placeholder)) },
                 maxLines = 2,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = MaterialTheme.spacing.mediumLarge)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            // Media Type Selector
+            // 4. Media Type Selector Section
             Text(
                 text = stringResource(R.string.challenges_create_goal_media_focus),
                 style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp)
+                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.mediumLarge)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+            val chipColors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                labelColor = MaterialTheme.colorScheme.onSurface,
+                iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = MaterialTheme.spacing.mediumLarge)
             ) {
+                val isAll = mediaTypeFilter == ChallengeMediaTypeFilter.ALL
                 FilterChip(
-                    selected = mediaTypeFilter == ChallengeMediaTypeFilter.ALL,
+                    selected = isAll,
                     onClick = { mediaTypeFilter = ChallengeMediaTypeFilter.ALL },
                     label = { Text(stringResource(R.string.filter_all)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                    shape = CircleShape,
+                    colors = chipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isAll,
+                        borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                        selectedBorderColor = Color.Transparent
                     )
                 )
 
+                val isMovies = mediaTypeFilter == ChallengeMediaTypeFilter.MOVIE
                 FilterChip(
-                    selected = mediaTypeFilter == ChallengeMediaTypeFilter.MOVIE,
+                    selected = isMovies,
                     onClick = { mediaTypeFilter = ChallengeMediaTypeFilter.MOVIE },
                     leadingIcon = {
                         Icon(
@@ -207,15 +260,19 @@ fun CreateChallengeBottomSheet(
                         )
                     },
                     label = { Text(stringResource(R.string.filter_movies)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                    shape = CircleShape,
+                    colors = chipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isMovies,
+                        borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                        selectedBorderColor = Color.Transparent
                     )
                 )
 
+                val isTv = mediaTypeFilter == ChallengeMediaTypeFilter.TV
                 FilterChip(
-                    selected = mediaTypeFilter == ChallengeMediaTypeFilter.TV,
+                    selected = isTv,
                     onClick = { mediaTypeFilter = ChallengeMediaTypeFilter.TV },
                     leadingIcon = {
                         Icon(
@@ -225,55 +282,58 @@ fun CreateChallengeBottomSheet(
                         )
                     },
                     label = { Text(stringResource(R.string.filter_tv_shows)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary
+                    shape = CircleShape,
+                    colors = chipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isTv,
+                        borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                        selectedBorderColor = Color.Transparent
                     )
                 )
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumLarge))
 
-            // Specific Titles Section
+            // 5. Goal Titles Section
             Text(
                 text = stringResource(R.string.challenges_create_goal_titles_label),
                 style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp)
+                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.mediumLarge)
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
 
             Text(
                 text = stringResource(R.string.challenges_create_goal_titles_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 20.dp)
+                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.mediumLarge)
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
 
-            // Search Trigger Surface (Launches full screen search like Cinema Diary)
+            // Search Trigger Surface
             Surface(
                 onClick = onOpenSearch,
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
                 border = BorderStroke(
-                    0.5.dp,
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .height(48.dp)
+                    .padding(horizontal = MaterialTheme.spacing.mediumLarge)
+                    .height(50.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 14.dp)
+                        .padding(horizontal = MaterialTheme.spacing.medium)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Search,
@@ -282,32 +342,40 @@ fun CreateChallengeBottomSheet(
                         modifier = Modifier.size(20.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.smallMedium))
 
                     Text(
                         text = stringResource(R.string.challenges_create_goal_search_trigger),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
 
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
             }
 
-            // Selected Titles Preview
+            // 6. Selected Titles Carousel or Interactive Prompt
             if (selectedTitles.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
+                        .padding(horizontal = MaterialTheme.spacing.mediumLarge),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -324,37 +392,38 @@ fun CreateChallengeBottomSheet(
                     Text(
                         text = stringResource(R.string.challenges_create_goal_clear_all),
                         style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.clickable { showClearAllConfirmation = true }
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallMedium),
+                    contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.mediumLarge),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     itemsIndexed(
                         selectedTitles,
                         key = { index, item -> "${item.mediaType}_${item.id}_$index" }) { _, item ->
                         Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainer,
                             border = BorderStroke(
-                                width = 0.5.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
                             ),
-                            modifier = Modifier.width(170.dp)
+                            modifier = Modifier.width(180.dp)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(6.dp)
+                                modifier = Modifier.padding(MaterialTheme.spacing.small)
                             ) {
                                 Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    modifier = Modifier.size(width = 30.dp, height = 44.dp)
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.size(width = 34.dp, height = 48.dp)
                                 ) {
                                     NetworkImage(
                                         url = item.posterImageUrl.convertToTmdbPosterUrl(),
@@ -364,13 +433,13 @@ fun CreateChallengeBottomSheet(
                                     )
                                 }
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = item.title,
                                         style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.SemiBold,
+                                        fontWeight = FontWeight.Bold,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -385,7 +454,7 @@ fun CreateChallengeBottomSheet(
 
                                 IconButton(
                                     onClick = { itemPendingRemoval = item },
-                                    modifier = Modifier.size(22.dp)
+                                    modifier = Modifier.size(24.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Close,
@@ -398,30 +467,40 @@ fun CreateChallengeBottomSheet(
                         }
                     }
                 }
-            }
+            } else {
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Target Count Summary or Prompt to Add Titles
-            if (selectedTitles.isEmpty()) {
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    onClick = onOpenSearch,
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
+                        .padding(horizontal = MaterialTheme.spacing.mediumLarge)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(14.dp)
+                        modifier = Modifier.padding(MaterialTheme.spacing.medium)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Rounded.AddCircleOutline,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.smallMedium))
                         Text(
                             text = stringResource(R.string.challenges_create_goal_add_titles_hint),
                             style = MaterialTheme.typography.bodySmall,
@@ -429,38 +508,15 @@ fun CreateChallengeBottomSheet(
                         )
                     }
                 }
-            } else {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.challenges_create_goal_target_titles),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.challenges_titles_count,
-                            selectedTitles.size
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-            // Create Goal Button
+            // 7. Primary Call to Action Button
+            val isFormValid = title.isNotBlank() && selectedTitles.isNotEmpty()
             Button(
                 onClick = {
-                    if (title.isNotBlank() && selectedTitles.isNotEmpty()) {
+                    if (isFormValid) {
                         onCreateGoal(
                             title.trim(),
                             description.trim(),
@@ -470,11 +526,12 @@ fun CreateChallengeBottomSheet(
                         )
                     }
                 },
-                enabled = title.isNotBlank() && selectedTitles.isNotEmpty(),
-                shape = RoundedCornerShape(14.dp),
+                enabled = isFormValid,
+                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = MaterialTheme.spacing.mediumLarge)
+                    .height(50.dp)
             ) {
                 Text(
                     text = if (selectedTitles.isNotEmpty()) {
@@ -486,93 +543,32 @@ fun CreateChallengeBottomSheet(
                         stringResource(R.string.challenges_create_goal_btn_disabled)
                     },
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
     }
 
-    // Clear All Confirmation Dialog
+    // Confirmation Dialogs
     if (showClearAllConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showClearAllConfirmation = false },
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.Close,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
+        ClearAllSelectedTitlesDialog(
+            selectedCount = selectedTitles.size,
+            onConfirm = {
+                showClearAllConfirmation = false
+                onClearSelectedTitles()
             },
-            title = {
-                Text(stringResource(R.string.challenges_clear_all_confirm_title))
-            },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.challenges_clear_all_confirm_msg,
-                        selectedTitles.size
-                    )
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showClearAllConfirmation = false
-                        onClearSelectedTitles()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text(stringResource(R.string.challenges_create_goal_clear_all))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showClearAllConfirmation = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { showClearAllConfirmation = false }
         )
     }
 
-    // Remove Single Title Confirmation Dialog
     itemPendingRemoval?.let { item ->
-        AlertDialog(
-            onDismissRequest = { itemPendingRemoval = null },
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.Close,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
+        RemoveSelectedTitleDialog(
+            item = item,
+            onConfirm = {
+                itemPendingRemoval = null
+                onRemoveSelectedTitle(item)
             },
-            title = {
-                Text(stringResource(R.string.challenges_remove_title_confirm_title))
-            },
-            text = {
-                Text(stringResource(R.string.challenges_remove_title_confirm_msg, item.title))
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        itemPendingRemoval = null
-                        onRemoveSelectedTitle(item)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text(stringResource(R.string.remove_item))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { itemPendingRemoval = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { itemPendingRemoval = null }
         )
     }
 }
