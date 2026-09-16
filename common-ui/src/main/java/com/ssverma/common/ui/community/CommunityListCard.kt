@@ -31,7 +31,6 @@ import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Flag
-import androidx.compose.material.icons.rounded.FolderSpecial
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.PublicOff
@@ -222,7 +221,7 @@ fun CommunityListCard(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f))
                         ) {
                             NetworkImage(
                                 url = posterUrl,
@@ -242,16 +241,16 @@ fun CommunityListCard(
                                 .clip(RoundedCornerShape(8.dp))
                                 .border(
                                     width = 1.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
                                     shape = RoundedCornerShape(8.dp)
                                 )
-                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f))
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.FolderSpecial,
+                                imageVector = Icons.Rounded.Movie,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-                                modifier = Modifier.size(24.dp)
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f),
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }

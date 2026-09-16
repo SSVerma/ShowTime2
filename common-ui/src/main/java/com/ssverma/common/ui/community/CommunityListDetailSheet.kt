@@ -495,10 +495,10 @@ private fun CommunityCuratedGridItem(
                 .clip(RoundedCornerShape(10.dp))
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
                     shape = RoundedCornerShape(10.dp)
                 )
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f))
         ) {
             if (item.posterImageUrl.isNotBlank()) {
                 NetworkImage(
@@ -512,8 +512,8 @@ private fun CommunityCuratedGridItem(
                     Icon(
                         imageVector = Icons.Rounded.Movie,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-                        modifier = Modifier.size(32.dp)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                        modifier = Modifier.size(28.dp)
                     )
                 }
             }
