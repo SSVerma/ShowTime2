@@ -236,7 +236,30 @@ fun EntryProviderScope<NavKey>.tvEntries(
                     tvShowBackdropPath = key.tvShowBackdropPath
                 )
             },
-            openEpisodeDetails = { episodeLaunchable ->
+            onPreviousEpisodeClick = { episodeLaunchable ->
+                navigator.popOr(
+                    predicate = { prevKey ->
+                        prevKey is TvEpisodeDetailNavKey &&
+                                prevKey.tvShowId == episodeLaunchable.tvShowId &&
+                                prevKey.seasonNumber == episodeLaunchable.seasonNumber &&
+                                prevKey.episodeNumber == episodeLaunchable.episodeNumber
+                    },
+                    onFallback = {
+                        navigator.navigateReplace(
+                            TvEpisodeDetailNavKey(
+                                tvShowId = episodeLaunchable.tvShowId,
+                                seasonNumber = episodeLaunchable.seasonNumber,
+                                episodeNumber = episodeLaunchable.episodeNumber,
+                                tvShowTitle = episodeLaunchable.tvShowTitle,
+                                tvShowPosterPath = episodeLaunchable.tvShowPosterPath,
+                                tvShowBackdropPath = episodeLaunchable.tvShowBackdropPath
+                                    ?: key.tvShowBackdropPath
+                            )
+                        )
+                    }
+                )
+            },
+            onNextEpisodeClick = { episodeLaunchable ->
                 navigator.navigate(
                     TvEpisodeDetailNavKey(
                         tvShowId = episodeLaunchable.tvShowId,

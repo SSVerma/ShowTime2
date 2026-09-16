@@ -51,7 +51,8 @@ fun TvEpisodeDetailsScreen(
     onBackPress: () -> Unit,
     openPersonDetails: (Cast) -> Unit,
     viewModel: TvEpisodeDetailsViewModel,
-    openEpisodeDetails: (TvEpisodeArgs) -> Unit = {},
+    onPreviousEpisodeClick: (TvEpisodeArgs) -> Unit = {},
+    onNextEpisodeClick: (TvEpisodeArgs) -> Unit = {},
     openDiscussionsList: (DiscussionNavArgs) -> Unit = {}
 ) {
     val imageSheetState = rememberImageShotBottomSheetState()
@@ -101,7 +102,7 @@ fun TvEpisodeDetailsScreen(
                         context.dispatchShareTextIntent(text = shareText)
                     },
                     onPreviousEpisodeClick = {
-                        openEpisodeDetails(
+                        onPreviousEpisodeClick(
                             TvEpisodeArgs(
                                 tvShowId = viewModel.tvShowId,
                                 seasonNumber = episode.seasonNumber,
@@ -113,7 +114,7 @@ fun TvEpisodeDetailsScreen(
                         )
                     },
                     onNextEpisodeClick = {
-                        openEpisodeDetails(
+                        onNextEpisodeClick(
                             TvEpisodeArgs(
                                 tvShowId = viewModel.tvShowId,
                                 seasonNumber = episode.seasonNumber,

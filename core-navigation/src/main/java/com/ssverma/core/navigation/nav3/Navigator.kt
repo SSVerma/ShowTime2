@@ -52,6 +52,38 @@ class Navigator(val state: NavigationState) {
     }
 
     /**
+     * Replaces the current top destination with a new one.
+     * Useful for in-place episode navigation (prev/next) where the backstack should not grow.
+     */
+    fun navigateReplace(route: NavKey) {
+        val currentStack = state.backStacks[state.topLevelRoute] ?: return
+        if (currentStack.isNotEmpty()) {
+            currentStack.removeLastOrNull()
+        }
+        currentStack.add(route)
+    }
+
+    /**
+     * Checks if the destination immediately below the current destination in the stack matches [predicate].
+     */
+    fun isPreviousDestination(predicate: (NavKey) -> Boolean): Boolean {
+        val currentStack = state.backStacks[state.topLevelRoute] ?: return false
+        if (currentStack.size < 2) return false
+        return predicate(currentStack[currentStack.size - 2])
+    }
+
+    /**
+     * Pops to previous destination if it matches [predicate], otherwise executes [onFallback].
+     */
+    fun popOr(predicate: (NavKey) -> Boolean, onFallback: () -> Unit) {
+        if (isPreviousDestination(predicate)) {
+            goBack()
+        } else {
+            onFallback()
+        }
+    }
+
+    /**
      * Pops the current destination and sets a result for the previous one.
      */
     fun goBack(result: Any) {
