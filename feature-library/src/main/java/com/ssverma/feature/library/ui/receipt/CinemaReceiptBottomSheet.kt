@@ -18,11 +18,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -64,6 +68,8 @@ import com.ssverma.feature.library.R
 import com.ssverma.feature.library.domain.model.ReceiptSnapshot
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
+import com.ssverma.feature.library.ui.receipt.component.CinemaReceiptEmptyState
+import com.ssverma.feature.library.ui.receipt.component.CinemaReceiptStyleSelector
 import com.ssverma.feature.library.util.ShareImageHelper
 import kotlinx.coroutines.launch
 
@@ -169,72 +175,115 @@ fun CinemaReceiptBottomSheet(
                             .padding(horizontal = MaterialTheme.spacing.medium)
                     )
 
+                    val chipColors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
                     // Edge-to-edge horizontal chip scroll
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = MaterialTheme.spacing.medium, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(horizontal = MaterialTheme.spacing.medium),
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
                     ) {
+                        val isHistory = selectedSource == ReceiptSource.HISTORY
                         FilterChip(
-                            selected = selectedSource == ReceiptSource.HISTORY,
+                            selected = isHistory,
                             onClick = { onSourceSelected(ReceiptSource.HISTORY) },
-                            label = { Text(stringResource(R.string.receipt_period_history)) },
-                            colors = FilterChipDefaults.filterChipColors()
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.receipt_period_history),
+                                    fontWeight = if (isHistory) FontWeight.Bold else FontWeight.Medium
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.History,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            shape = CircleShape,
+                            colors = chipColors,
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = isHistory,
+                                borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                                selectedBorderColor = Color.Transparent
+                            )
                         )
+
+                        val isFavorites = selectedSource == ReceiptSource.FAVORITES
                         FilterChip(
-                            selected = selectedSource == ReceiptSource.FAVORITES,
+                            selected = isFavorites,
                             onClick = { onSourceSelected(ReceiptSource.FAVORITES) },
-                            label = { Text(stringResource(R.string.receipt_period_favorites)) },
-                            colors = FilterChipDefaults.filterChipColors()
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.receipt_period_favorites),
+                                    fontWeight = if (isFavorites) FontWeight.Bold else FontWeight.Medium
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Favorite,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            shape = CircleShape,
+                            colors = chipColors,
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = isFavorites,
+                                borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                                selectedBorderColor = Color.Transparent
+                            )
                         )
+
+                        val isWatchlist = selectedSource == ReceiptSource.WATCHLIST
                         FilterChip(
-                            selected = selectedSource == ReceiptSource.WATCHLIST,
+                            selected = isWatchlist,
                             onClick = { onSourceSelected(ReceiptSource.WATCHLIST) },
-                            label = { Text(stringResource(R.string.receipt_period_watchlist)) },
-                            colors = FilterChipDefaults.filterChipColors()
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.receipt_period_watchlist),
+                                    fontWeight = if (isWatchlist) FontWeight.Bold else FontWeight.Medium
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Rounded.Bookmark,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            shape = CircleShape,
+                            colors = chipColors,
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = isWatchlist,
+                                borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                                selectedBorderColor = Color.Transparent
+                            )
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
                 }
 
                 // Style Selector Chips
-                Text(
-                    text = stringResource(R.string.receipt_style),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.spacing.medium)
+                CinemaReceiptStyleSelector(
+                    selectedStyle = selectedStyle,
+                    isProActive = true,
+                    isPassActive = true,
+                    onStyleSelected = onStyleSelected
                 )
-
-                // Edge-to-edge horizontal style chip scroll
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = MaterialTheme.spacing.medium, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterChip(
-                        selected = selectedStyle == ReceiptStyle.THERMAL,
-                        onClick = { onStyleSelected(ReceiptStyle.THERMAL) },
-                        label = { Text(stringResource(R.string.receipt_style_thermal)) }
-                    )
-                    FilterChip(
-                        selected = selectedStyle == ReceiptStyle.GOLDEN_PASS,
-                        onClick = { onStyleSelected(ReceiptStyle.GOLDEN_PASS) },
-                        label = { Text(stringResource(R.string.receipt_style_gold)) }
-                    )
-                    FilterChip(
-                        selected = selectedStyle == ReceiptStyle.CYBERPUNK,
-                        onClick = { onStyleSelected(ReceiptStyle.CYBERPUNK) },
-                        label = { Text(stringResource(R.string.receipt_style_cyberpunk)) }
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
@@ -258,19 +307,10 @@ fun CinemaReceiptBottomSheet(
                         )
                     }
                 } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = MaterialTheme.spacing.medium)
-                            .padding(vertical = MaterialTheme.spacing.large),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.receipt_no_items),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    CinemaReceiptEmptyState(
+                        selectedSource = selectedSource,
+                        selectedCustomListTitle = null
+                    )
                 }
 
                 // Bottom spacer ensuring all receipt content scrolls completely above the lifted bottom action bar

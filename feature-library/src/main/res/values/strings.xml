@@ -102,6 +102,14 @@
     <string name="close">Close</string>
     <string name="receipt_saved_success">Receipt image saved successfully</string>
     <string name="receipt_save_failed">Failed to save receipt image</string>
+    <string name="receipt_empty_title_history">No Watch History Yet</string>
+    <string name="receipt_empty_title_this_month">No Titles This Month</string>
+    <string name="receipt_empty_title_this_year">No Titles This Year</string>
+    <string name="receipt_empty_title_last_90_days">No Titles in Last 90 Days</string>
+    <string name="receipt_empty_title_favorites">No Favorites Saved</string>
+    <string name="receipt_empty_title_watchlist">Watchlist is Empty</string>
+    <string name="receipt_empty_title_custom_list">Collection is Empty</string>
+    <string name="receipt_empty_subtitle">Mark movies as watched, add favorites, or select another source above to generate your receipt.</string>
 
     <!-- Custom List Quota & Monetization -->
     <string name="custom_list_quota_reached_title">Custom List Limit Reached</string>
