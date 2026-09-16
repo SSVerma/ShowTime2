@@ -1,5 +1,6 @@
 package com.ssverma.feature.tv.ui.details.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,6 +74,10 @@ fun TvShowAiringTimelineSection(
             shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
             ),
             modifier = Modifier
                 .fillMaxWidth()

@@ -1,5 +1,6 @@
 package com.ssverma.feature.tv.ui.details.component
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -11,6 +12,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -94,6 +98,18 @@ fun TvEpisodeTimelineItem(
         },
         animationSpec = tween(durationMillis = 300),
         label = "card_container_color"
+    )
+
+    val cardBorderColor by animateColorAsState(
+        targetValue = if (isWatched) {
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        } else if (isUpNext) {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        } else {
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+        },
+        animationSpec = tween(durationMillis = 300),
+        label = "card_border_color"
     )
 
     Row(
@@ -146,6 +162,7 @@ fun TvEpisodeTimelineItem(
         Card(
             onClick = onClick,
             colors = CardDefaults.cardColors(containerColor = cardContainerColor),
+            border = BorderStroke(width = 1.dp, color = cardBorderColor),
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier
                 .weight(1f)
@@ -235,8 +252,30 @@ fun TvEpisodeTimelineItem(
                     } else {
                         MaterialTheme.colorScheme.surfaceVariant
                     },
-                    animationSpec = tween(durationMillis = 300),
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
                     label = "watch_button_color"
+                )
+
+                val buttonTint by animateColorAsState(
+                    targetValue = if (isWatched) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    animationSpec = tween(durationMillis = 200),
+                    label = "watch_button_tint"
+                )
+
+                val buttonScale by animateFloatAsState(
+                    targetValue = if (isWatched) 1.05f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    label = "watch_button_scale"
                 )
 
                 IconButton(
@@ -246,21 +285,41 @@ fun TvEpisodeTimelineItem(
                     Surface(
                         shape = CircleShape,
                         color = buttonColor,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier
+                            .size(28.dp)
+                            .graphicsLayer {
+                                scaleX = buttonScale
+                                scaleY = buttonScale
+                            }
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Rounded.Check,
-                                contentDescription = stringResource(
-                                    id = if (isWatched) R.string.episode_watched else R.string.mark_watched
-                                ),
-                                tint = if (isWatched) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            AnimatedContent(
+                                targetState = isWatched,
+                                transitionSpec = {
+                                    (fadeIn(animationSpec = tween(180)) + scaleIn(
+                                        initialScale = 0.6f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    )).togetherWith(
+                                        fadeOut(animationSpec = tween(140)) + scaleOut(
+                                            targetScale = 0.6f,
+                                            animationSpec = tween(140)
+                                        )
+                                    )
                                 },
-                                modifier = Modifier.size(16.dp)
-                            )
+                                label = "episode_check_icon"
+                            ) { watched ->
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = stringResource(
+                                        id = if (watched) R.string.episode_watched else R.string.mark_watched
+                                    ),
+                                    tint = buttonTint,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }

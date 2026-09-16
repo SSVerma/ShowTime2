@@ -1,13 +1,22 @@
 package com.ssverma.feature.tv.ui.details.component
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -20,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.feature.tv.ui.details.TvSeasonItem
 import com.ssverma.shared.domain.model.tv.TvSeason
@@ -92,11 +102,25 @@ fun SeasonsSection(
                 )
             }
             if (showSeasonViewAll) {
-                TextButton(
+                OutlinedButton(
                     onClick = { seasonCount = seasons.size },
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = stringResource(id = R.string.view_more))
+                    Text(
+                        text = stringResource(id = R.string.view_more),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }
