@@ -479,5 +479,56 @@ class DashboardViewModelTest {
             assertThat(errorCalled).isFalse()
             coVerify { cloneCommunityListUseCase(CloneCommunityListParams(testList)) }
         }
+
+    @Test
+    fun `retryDailyPoll resets loading and updates poll state`() = runTest {
+        val samplePoll = DailyPoll(
+            dateString = "2026-09-17",
+            questionId = 42,
+            question = "Which film is Nolan's masterpiece?",
+            options = listOf("Inception", "Interstellar", "Oppenheimer"),
+            voteCounts = listOf(10, 20, 30),
+            totalVotes = 60,
+            selectedOptionIndex = null,
+            isEnabled = true
+        )
+        val pollFlow = MutableStateFlow(DailyPoll.empty(LocalDate.now()))
+        every { getDailyPollUseCase(any()) } returns pollFlow
+
+        viewModel.retryDailyPoll()
+        pollFlow.value = samplePoll
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.isDailyPollLoading).isFalse()
+        assertThat(state.dailyPoll.questionId).isEqualTo(42)
+        assertThat(state.dailyPoll.question).isEqualTo("Which film is Nolan's masterpiece?")
+        assertThat(state.dailyPollError).isNull()
+    }
+
+    @Test
+    fun `voteDailyPoll updates poll state on success`() = runTest {
+        val votedPoll = DailyPoll(
+            dateString = "2026-09-17",
+            questionId = 42,
+            question = "Which film is Nolan's masterpiece?",
+            options = listOf("Inception", "Interstellar", "Oppenheimer"),
+            voteCounts = listOf(10, 21, 30),
+            totalVotes = 61,
+            selectedOptionIndex = 1,
+            isEnabled = true
+        )
+        coEvery { voteDailyPollUseCase(date = any(), optionIndex = 1) } returns Result.Success(
+            votedPoll
+        )
+
+        viewModel.voteDailyPoll(optionIndex = 1)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.dailyPoll.selectedOptionIndex).isEqualTo(1)
+        assertThat(state.dailyPoll.totalVotes).isEqualTo(61)
+        assertThat(state.dailyPoll.hasVoted).isTrue()
+    }
 }
 

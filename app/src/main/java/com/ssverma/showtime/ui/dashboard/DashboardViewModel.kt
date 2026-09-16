@@ -51,9 +51,11 @@ import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseC
 import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
 import com.ssverma.shared.domain.usecase.library.GetCustomListsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
@@ -181,11 +183,7 @@ class DashboardViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
-            getDailyPollUseCase().collect { poll ->
-                _uiState.update { it.copy(dailyPoll = poll) }
-            }
-        }
+        loadDailyPoll()
 
         viewModelScope.launch {
             getTrendingDiscussionsUseCase().collect { discussions ->
@@ -264,8 +262,47 @@ class DashboardViewModel @Inject constructor(
         appConfigRepository.acknowledgeFeature(feature.id)
     }
 
+    private var dailyPollJob: Job? = null
+
+    fun loadDailyPoll() {
+        dailyPollJob?.cancel()
+        dailyPollJob = viewModelScope.launch {
+            _uiState.update { it.copy(isDailyPollLoading = true, dailyPollError = null) }
+            getDailyPollUseCase()
+                .catch { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            isDailyPollLoading = false,
+                            dailyPollError = throwable.localizedMessage
+                        )
+                    }
+                }
+                .collect { poll ->
+                    _uiState.update {
+                        it.copy(
+                            dailyPoll = poll,
+                            isDailyPollLoading = false,
+                            dailyPollError = null
+                        )
+                    }
+                }
+        }
+    }
+
+    fun retryDailyPoll() {
+        loadDailyPoll()
+    }
+
     fun voteDailyPoll(optionIndex: Int) = viewModelScope.launch {
-        voteDailyPollUseCase(optionIndex = optionIndex)
+        when (val result = voteDailyPollUseCase(optionIndex = optionIndex)) {
+            is Result.Success -> {
+                _uiState.update { it.copy(dailyPoll = result.data, dailyPollError = null) }
+            }
+
+            is Result.Error -> {
+                _uiState.update { it.copy(dailyPollError = null) }
+            }
+        }
     }
 
     fun fetchAllDashboardData() {

@@ -13,12 +13,18 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.ui.component.section.DailyPollCard
+import com.ssverma.shared.ui.component.section.DailyPollCardSkeleton
+import com.ssverma.shared.ui.component.section.DailyPollEmptyView
+import com.ssverma.shared.ui.component.section.DailyPollErrorView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyPollBottomSheet(
     poll: DailyPoll,
+    isLoading: Boolean,
+    errorMessage: String?,
     onOptionClick: (Int) -> Unit,
+    onRetry: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -36,13 +42,45 @@ fun DailyPollBottomSheet(
                 .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            DailyPollCard(
-                poll = poll,
-                onOptionClick = onOptionClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            )
+            when {
+                isLoading -> {
+                    DailyPollCardSkeleton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                    )
+                }
+
+                errorMessage != null -> {
+                    DailyPollErrorView(
+                        errorMessage = errorMessage,
+                        onRetry = onRetry,
+                        onDismiss = onDismiss,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                    )
+                }
+
+                !poll.isEnabled || poll.options.isEmpty() || poll.question.isBlank() -> {
+                    DailyPollEmptyView(
+                        onDismiss = onDismiss,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                    )
+                }
+
+                else -> {
+                    DailyPollCard(
+                        poll = poll,
+                        onOptionClick = onOptionClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                    )
+                }
+            }
         }
     }
 }

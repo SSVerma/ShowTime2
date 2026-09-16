@@ -517,7 +517,10 @@ fun DashboardScreen(
             if (uiState.showDailyPollSheet) {
                 DailyPollBottomSheet(
                     poll = uiState.dailyPoll,
+                    isLoading = uiState.isDailyPollLoading,
+                    errorMessage = uiState.dailyPollError,
                     onOptionClick = viewModel::voteDailyPoll,
+                    onRetry = viewModel::retryDailyPoll,
                     onDismiss = viewModel::dismissDailyPollSheet
                 )
             }

@@ -21,8 +21,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Poll
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Poll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.ui.R
 
@@ -56,18 +58,18 @@ fun DailyPollCard(
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         ),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(MaterialTheme.spacing.medium)
         ) {
             // Header Row
             Row(
@@ -77,14 +79,14 @@ fun DailyPollCard(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Poll,
+                            imageVector = Icons.Rounded.Poll,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
@@ -106,7 +108,7 @@ fun DailyPollCard(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
                     ) {
                         Text(
                             text = stringResource(
@@ -122,7 +124,7 @@ fun DailyPollCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
 
             // Question Text
             Text(
@@ -132,7 +134,7 @@ fun DailyPollCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
             // Options Column
             Column(
@@ -155,6 +157,38 @@ fun DailyPollCard(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
+
+            // Footer Status Indicator
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = if (poll.hasVoted) Icons.Rounded.CheckCircle else Icons.Rounded.Info,
+                    contentDescription = null,
+                    tint = if (poll.hasVoted) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    },
+                    modifier = Modifier.size(13.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = stringResource(
+                        id = if (poll.hasVoted) {
+                            R.string.daily_poll_voted_footer
+                        } else {
+                            R.string.daily_poll_unvoted_footer
+                        }
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -176,9 +210,9 @@ private fun PollOptionItem(
 
     val containerColor by animateColorAsState(
         targetValue = if (isSelected) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
         } else {
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+            MaterialTheme.colorScheme.surfaceContainerHigh
         },
         animationSpec = spring(),
         label = "PollOptionBg"
@@ -186,9 +220,9 @@ private fun PollOptionItem(
 
     val progressFillColor by animateColorAsState(
         targetValue = if (isSelected) {
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
         } else {
-            MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f)
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
         },
         animationSpec = spring(),
         label = "PollProgressFill"
@@ -202,7 +236,7 @@ private fun PollOptionItem(
     } else {
         BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
         )
     }
 
@@ -241,7 +275,7 @@ private fun PollOptionItem(
                 ) {
                     if (isSelected) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = Icons.Rounded.CheckCircle,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)

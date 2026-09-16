@@ -123,6 +123,14 @@
     <string name="daily_poll_title">Community Cinema Poll</string>
     <string name="daily_poll_votes_count">%1$d votes</string>
     <string name="daily_poll_vote_cta">Tap an option to vote</string>
+    <string name="daily_poll_empty_title">No Debate Active Today</string>
+    <string name="daily_poll_empty_desc">Today\'s daily cinema poll has concluded or is taking an intermission. Check back tomorrow at midnight for a fresh debate!</string>
+    <string name="daily_poll_error_title">Unable to Load Debate</string>
+    <string name="daily_poll_error_desc">We couldn\'t connect to the community debate server. Check your connection and try again.</string>
+    <string name="daily_poll_voted_footer">Your vote is recorded • New debate tomorrow</string>
+    <string name="daily_poll_unvoted_footer">Tap an option to participate in today\'s debate</string>
+    <string name="daily_poll_loading">Loading today\'s debate…</string>
+    <string name="daily_poll_dismiss">Got It</string>
 
     <!-- Community Discussions & Spoiler Shield -->
     <string name="community_discussions_title">Discussions &amp; Thoughts</string>
