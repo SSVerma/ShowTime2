@@ -2,6 +2,7 @@ package com.ssverma.feature.tv.ui.details.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,12 +33,21 @@ import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.NotificationsNone
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.draw.clip
 import com.ssverma.shared.domain.model.tv.TvEpisodePreview
 import com.ssverma.shared.ui.component.section.SectionDefaults.SectionContentHeaderSpacing
+import com.ssverma.shared.ui.R as SharedR
 
 fun LazyListScope.tvShowAiringTimelineSection(
     nextEpisodeToAir: TvEpisodePreview?,
     lastEpisodeToAir: TvEpisodePreview?,
+    hasReminder: Boolean = false,
+    onToggleReminder: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (nextEpisodeToAir != null || lastEpisodeToAir != null) {
@@ -45,6 +55,8 @@ fun LazyListScope.tvShowAiringTimelineSection(
             TvShowAiringTimelineSection(
                 nextEpisodeToAir = nextEpisodeToAir,
                 lastEpisodeToAir = lastEpisodeToAir,
+                hasReminder = hasReminder,
+                onToggleReminder = onToggleReminder,
                 modifier = modifier
             )
         }
@@ -55,6 +67,8 @@ fun LazyListScope.tvShowAiringTimelineSection(
 fun TvShowAiringTimelineSection(
     nextEpisodeToAir: TvEpisodePreview?,
     lastEpisodeToAir: TvEpisodePreview?,
+    hasReminder: Boolean = false,
+    onToggleReminder: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (nextEpisodeToAir == null && lastEpisodeToAir == null) return
@@ -99,7 +113,48 @@ fun TvShowAiringTimelineSection(
                         episodeTitle = nextEp.title,
                         displayDate = nextEp.displayAirDate,
                         icon = Icons.Rounded.CalendarToday,
-                        isUpcoming = true
+                        isUpcoming = true,
+                        trailingAction = {
+                            IconButton(
+                                onClick = onToggleReminder,
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (hasReminder) {
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceContainerHigh
+                                            }
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (hasReminder) {
+                                            Icons.Rounded.NotificationsActive
+                                        } else {
+                                            Icons.Rounded.NotificationsNone
+                                        },
+                                        contentDescription = stringResource(
+                                            id = if (hasReminder) {
+                                                SharedR.string.reminder_set
+                                            } else {
+                                                SharedR.string.remind_me
+                                            }
+                                        ),
+                                        tint = if (hasReminder) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
                     )
                 }
 
@@ -138,7 +193,8 @@ private fun AiringTimelineRow(
     displayDate: String?,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     isUpcoming: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    trailingAction: (@Composable () -> Unit)? = null
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -213,6 +269,11 @@ private fun AiringTimelineRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+
+        if (trailingAction != null) {
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+            trailingAction()
         }
     }
 }

@@ -64,47 +64,66 @@ class AiringReminderWorker(
             deepLink = deepLink
         )
 
-        // For TV shows, attempt rolling scheduling for the next upcoming episode
-        if (mediaType == "tv") {
+        val entryPoint = EntryPointAccessors.fromApplication(
+            applicationContext,
+            ReminderWorkerEntryPoint::class.java
+        )
+
+        // For movies, once the release reminder fires, remove it from the database
+        if (mediaType != "tv") {
             try {
-                val entryPoint = EntryPointAccessors.fromApplication(
-                    applicationContext,
-                    ReminderWorkerEntryPoint::class.java
-                )
-                val response = entryPoint.tmdbApiService().getTvShowDetails(mediaId, emptyMap())
-                if (response is ApiResponse.Success) {
-                    val nextEpisode = response.body.nextEpisodeToAir
-                    val airDate = DateUtils.parseIsoDate(nextEpisode?.airDate)
-                    if (nextEpisode != null && airDate != null) {
-                        val hour = entryPoint.appConfigRepository().reminderNotificationHour.first()
-                        val minute =
-                            entryPoint.appConfigRepository().reminderNotificationMinute.first()
-                        val nextReminderTime = ReminderTimeCalculator.calculateReminderTime(
-                            airDate = airDate,
-                            hour = hour,
-                            minute = minute
+                entryPoint.airingReminderDao().deleteByMediaId(mediaId, mediaType)
+            } catch (_: Exception) {
+            }
+            return Result.success()
+        }
+
+        // For TV shows, attempt rolling scheduling strictly for a NEW, FUTURE upcoming episode
+        try {
+            val response = entryPoint.tmdbApiService().getTvShowDetails(mediaId, emptyMap())
+            if (response is ApiResponse.Success) {
+                val nextEpisode = response.body.nextEpisodeToAir
+                val nextAirDate = DateUtils.parseIsoDate(nextEpisode?.airDate)
+                val today = java.time.LocalDate.now()
+
+                val isSameEpisode = nextEpisode != null &&
+                        nextEpisode.seasonNumber == seasonNumber &&
+                        nextEpisode.episodeNumber == episodeNumber
+
+                val isFutureAirDate = nextAirDate != null && nextAirDate.isAfter(today)
+
+                // Only schedule if it's a genuinely new episode airing on a future date
+                if (nextEpisode != null && nextAirDate != null && !isSameEpisode && isFutureAirDate) {
+                    val hour = entryPoint.appConfigRepository().reminderNotificationHour.first()
+                    val minute = entryPoint.appConfigRepository().reminderNotificationMinute.first()
+                    val leadDays = entryPoint.appConfigRepository().reminderLeadDays.first()
+                    val nextReminderTime = ReminderTimeCalculator.calculateReminderTime(
+                        airDate = nextAirDate,
+                        hour = hour,
+                        minute = minute,
+                        leadDays = leadDays,
+                        allowSameDayFallback = false
+                    )
+                    if (nextReminderTime != null) {
+                        val nextReminder = AiringReminder(
+                            mediaId = mediaId,
+                            mediaType = MediaType.Tv,
+                            reminderType = ReminderType.TV_EPISODE,
+                            mediaTitle = mediaTitle,
+                            posterImageUrl = posterUrl.orEmpty(),
+                            seasonNumber = nextEpisode.seasonNumber,
+                            episodeNumber = nextEpisode.episodeNumber,
+                            episodeTitle = nextEpisode.title.takeIf { !it.isNullOrBlank() },
+                            airDate = nextAirDate.formatLocally() ?: nextEpisode.airDate.orEmpty(),
+                            reminderTimeMillis = nextReminderTime,
+                            providerName = providerName
                         )
-                        if (nextReminderTime != null) {
-                            val nextReminder = AiringReminder(
-                                mediaId = mediaId,
-                                mediaType = MediaType.Tv,
-                                reminderType = ReminderType.TV_EPISODE,
-                                mediaTitle = mediaTitle,
-                                posterImageUrl = posterUrl.orEmpty(),
-                                seasonNumber = nextEpisode.seasonNumber,
-                                episodeNumber = nextEpisode.episodeNumber,
-                                episodeTitle = nextEpisode.title.takeIf { !it.isNullOrBlank() },
-                                airDate = airDate.formatLocally() ?: nextEpisode.airDate.orEmpty(),
-                                reminderTimeMillis = nextReminderTime,
-                                providerName = providerName
-                            )
-                            entryPoint.reminderRepository().addReminder(nextReminder)
-                        }
+                        entryPoint.reminderRepository().addReminder(nextReminder)
                     }
                 }
-            } catch (_: Exception) {
-                // Best-effort rolling schedule; daily worker handles it if TMDB hasn't updated yet
             }
+        } catch (_: Exception) {
+            // Best-effort rolling schedule; daily worker handles it if TMDB hasn't updated yet
         }
 
         return Result.success()

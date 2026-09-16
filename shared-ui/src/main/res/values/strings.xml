@@ -368,6 +368,27 @@
     <string name="reminder_quota_exceeded">Reminder limit reached. Upgrade to Pro for unlimited reminders.</string>
     <string name="reminder_no_upcoming_schedule">No upcoming release or episode scheduled for \"%1$s\".</string>
     <string name="reminder_permission_required">Notification permission is required to receive reminders.</string>
+
+    <!-- Airing Reminder Rationale & Schedule Sheet -->
+    <string name="airing_reminder_sheet_title">Airing Reminder</string>
+    <string name="airing_reminder_rationale_title">How Airing Reminders Work</string>
+    <string name="airing_reminder_rationale_notifications">You will be notified when new episodes air so you can watch them as soon as they release.</string>
+    <string name="airing_reminder_rationale_rolling">Reminders automatically roll forward to each subsequent episode throughout the season.</string>
+    <string name="airing_reminder_schedule_header">Notification Schedule</string>
+    <string name="airing_reminder_delivery_preview">Scheduled for %1$s</string>
+    <string name="airing_reminder_lead_time_header">Remind Me</string>
+    <string name="airing_reminder_option_air_day_morning">Air Day · 9:00 AM</string>
+    <string name="airing_reminder_option_air_day_evening">Air Day · 6:00 PM</string>
+    <string name="airing_reminder_option_one_day_before">1 Day Before · 9:00 AM</string>
+    <string name="airing_reminder_option_two_days_before">2 Days Before · 9:00 AM</string>
+    <string name="airing_reminder_option_passed">%1$s (Passed)</string>
+    <string name="airing_reminder_passed_warning">This reminder time has already passed.</string>
+    <string name="airing_reminder_today_times_passed">All reminder times for today\'s episode have passed.</string>
+    <string name="airing_reminder_set_action">Set Reminder</string>
+    <string name="airing_reminder_active_badge">Reminder Active</string>
+    <string name="airing_reminder_update_action">Update Schedule</string>
+    <string name="airing_reminder_remove_action">Remove Reminder</string>
+    <string name="cd_reminder_bell">Episode airing reminder</string>
     <string name="reminder_notifications_disabled">Notifications are disabled in device settings. Please enable them to receive reminders.</string>
     <string name="notification_rationale_title">Enable Release Alerts</string>
     <string name="notification_rationale_desc">ShowTime notifies you when movies on your watchlist release and when new TV episodes air. We only send relevant alerts for titles you track.</string>

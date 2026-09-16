@@ -97,9 +97,16 @@ class FakeAppConfigRepository(
     private val _reminderNotificationMinute = MutableStateFlow(0)
     override val reminderNotificationMinute: Flow<Int> = _reminderNotificationMinute.asStateFlow()
 
+    private val _reminderLeadDays = MutableStateFlow(0)
+    override val reminderLeadDays: Flow<Int> = _reminderLeadDays.asStateFlow()
+
     override suspend fun updateReminderNotificationTime(hour: Int, minute: Int) {
         _reminderNotificationHour.value = hour
         _reminderNotificationMinute.value = minute
+    }
+
+    override suspend fun updateReminderLeadDays(leadDays: Int) {
+        _reminderLeadDays.value = leadDays
     }
 
     private val _notificationShelfLastDismissedMs = MutableStateFlow(0L)

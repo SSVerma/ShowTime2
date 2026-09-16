@@ -12,6 +12,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -249,67 +250,66 @@ fun TvSeasonItem(
                     .padding(end = MaterialTheme.spacing.extraSmall)
                     .size(48.dp)
             ) {
-                Surface(
-                    shape = CircleShape,
-                    color = animatedActionButtonColor,
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .size(32.dp)
                         .graphicsLayer {
                             scaleX = checkButtonScale
                             scaleY = checkButtonScale
                         }
+                        .clip(CircleShape)
+                        .background(animatedActionButtonColor)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        AnimatedContent(
-                            targetState = isFullyWatched to isInProgress,
-                            transitionSpec = {
-                                (fadeIn(animationSpec = tween(200)) + scaleIn(
-                                    initialScale = 0.6f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessMedium
-                                    )
-                                )).togetherWith(
-                                    fadeOut(animationSpec = tween(150)) + scaleOut(
-                                        targetScale = 0.6f,
-                                        animationSpec = tween(150)
-                                    )
+                    AnimatedContent(
+                        targetState = isFullyWatched to isInProgress,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(200)) + scaleIn(
+                                initialScale = 0.6f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMedium
                                 )
-                            },
-                            label = "season_check_action_content"
-                        ) { (fullyWatched, inProgress) ->
-                            if (inProgress) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(
-                                        progress = {
-                                            (watchedEpisodeCount.toFloat() / totalEpisodes.coerceAtLeast(
-                                                1
-                                            )).coerceIn(
-                                                0f,
-                                                1f
-                                            )
-                                        },
-                                        color = MaterialTheme.colorScheme.onTertiary,
-                                        trackColor = MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.25f),
-                                        strokeWidth = 2.dp,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Text(
-                                        text = "$watchedEpisodeCount",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.onTertiary
-                                    )
-                                }
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Rounded.Check,
-                                    contentDescription = stringResource(
-                                        id = if (fullyWatched) R.string.season_all_watched else R.string.mark_season
-                                    ),
-                                    tint = animatedActionIconTint,
-                                    modifier = Modifier.size(18.dp)
+                            )).togetherWith(
+                                fadeOut(animationSpec = tween(150)) + scaleOut(
+                                    targetScale = 0.6f,
+                                    animationSpec = tween(150)
+                                )
+                            )
+                        },
+                        label = "season_check_action_content"
+                    ) { (fullyWatched, inProgress) ->
+                        if (inProgress) {
+                            Box(contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(
+                                    progress = {
+                                        (watchedEpisodeCount.toFloat() / totalEpisodes.coerceAtLeast(
+                                            1
+                                        )).coerceIn(
+                                            0f,
+                                            1f
+                                        )
+                                    },
+                                    color = MaterialTheme.colorScheme.onTertiary,
+                                    trackColor = MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.25f),
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Text(
+                                    text = "$watchedEpisodeCount",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onTertiary
                                 )
                             }
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = stringResource(
+                                    id = if (fullyWatched) R.string.season_all_watched else R.string.mark_season
+                                ),
+                                tint = animatedActionIconTint,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 }

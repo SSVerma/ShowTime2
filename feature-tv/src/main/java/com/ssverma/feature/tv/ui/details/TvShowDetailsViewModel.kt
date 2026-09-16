@@ -130,68 +130,114 @@ class TvShowDetailsViewModel @AssistedInject constructor(
         _reminderSnackbarEvent.value = null
     }
 
+    private val _isReminderSheetVisible = MutableStateFlow(false)
+    val isReminderSheetVisible: StateFlow<Boolean> = _isReminderSheetVisible.asStateFlow()
+
+    val reminderLeadDays: StateFlow<Int> = appConfigRepository.reminderLeadDays
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val reminderNotificationHour: StateFlow<Int> = appConfigRepository.reminderNotificationHour
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 9)
+
+    val reminderNotificationMinute: StateFlow<Int> = appConfigRepository.reminderNotificationMinute
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    fun openReminderSheet() {
+        _isReminderSheetVisible.value = true
+    }
+
+    fun dismissReminderSheet() {
+        _isReminderSheetVisible.value = false
+    }
+
+    fun scheduleReminder(
+        tvShow: TvShow,
+        leadDays: Int,
+        hour: Int,
+        minute: Int
+    ) {
+        viewModelScope.launch {
+            _isReminderSheetVisible.value = false
+
+            // Save user schedule preference
+            appConfigRepository.updateReminderLeadDays(leadDays)
+            appConfigRepository.updateReminderNotificationTime(hour, minute)
+
+            val nextEpisode = tvShow.nextEpisodeToAir
+            val targetAirDate = nextEpisode?.airDate
+            if (nextEpisode == null || targetAirDate == null) {
+                _reminderSnackbarEvent.value =
+                    "No upcoming episodes scheduled for ${tvShow.title}"
+                return@launch
+            }
+
+            val activeCount = reminderRepository.getActiveReminderCount()
+            val isPro = billingRepository.isProActive.value
+            val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
+            if (!canSchedule) {
+                _isQuotaGateVisible.value = true
+                rewardedAdManager.loadAd()
+                return@launch
+            }
+
+            val reminderTime = ReminderTimeCalculator.calculateReminderTime(
+                airDate = targetAirDate,
+                hour = hour,
+                minute = minute,
+                leadDays = leadDays
+            )
+
+            if (reminderTime == null) {
+                _reminderSnackbarEvent.value = "Scheduled reminder time has already passed"
+                return@launch
+            }
+
+            val airDateStr = nextEpisode.displayAirDate
+                ?: targetAirDate.formatLocally()
+                ?: targetAirDate.toString()
+
+            val providerName = tvShow.watchProviders.values
+                .firstNotNullOfOrNull {
+                    it.flatrate.firstOrNull()?.providerName
+                        ?: it.rent.firstOrNull()?.providerName
+                }
+
+            val reminder = AiringReminder(
+                mediaId = tvShow.id,
+                mediaType = MediaType.Tv,
+                reminderType = ReminderType.TV_EPISODE,
+                mediaTitle = tvShow.title,
+                posterImageUrl = tvShow.posterImageUrl,
+                seasonNumber = nextEpisode.seasonNumber,
+                episodeNumber = nextEpisode.episodeNumber,
+                episodeTitle = nextEpisode.title.takeIf { it.isNotBlank() },
+                airDate = airDateStr,
+                reminderTimeMillis = reminderTime,
+                providerName = providerName
+            )
+            reminderRepository.addReminder(reminder)
+            val epInfo = "S${nextEpisode.seasonNumber}E${nextEpisode.episodeNumber}"
+            _reminderSnackbarEvent.value = "Reminder set for ${tvShow.title} ($epInfo)!"
+        }
+    }
+
+    fun removeReminder(tvShow: TvShow) {
+        viewModelScope.launch {
+            _isReminderSheetVisible.value = false
+            reminderRepository.removeReminder(tvShow.id, MediaType.Tv)
+            _reminderSnackbarEvent.value = "Reminder removed for ${tvShow.title}"
+        }
+    }
+
     fun toggleReminder(tvShow: TvShow) {
         viewModelScope.launch {
             if (hasReminder.value) {
-                reminderRepository.removeReminder(tvShow.id, MediaType.Tv)
-                _reminderSnackbarEvent.value = "Reminder removed for ${tvShow.title}"
+                removeReminder(tvShow)
             } else {
-                val nextEpisode = tvShow.nextEpisodeToAir
-                val targetAirDate = nextEpisode?.airDate
-                if (nextEpisode == null || targetAirDate == null) {
-                    _reminderSnackbarEvent.value =
-                        "No upcoming episodes scheduled for ${tvShow.title}"
-                    return@launch
-                }
-
-                val activeCount = reminderRepository.getActiveReminderCount()
-                val isPro = billingRepository.isProActive.value
-                val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
-                if (!canSchedule) {
-                    _isQuotaGateVisible.value = true
-                    rewardedAdManager.loadAd()
-                    return@launch
-                }
-
                 val hour = appConfigRepository.reminderNotificationHour.first()
                 val minute = appConfigRepository.reminderNotificationMinute.first()
-                val reminderTime = ReminderTimeCalculator.calculateReminderTime(
-                    airDate = targetAirDate,
-                    hour = hour,
-                    minute = minute
-                )
-
-                if (reminderTime == null) {
-                    _reminderSnackbarEvent.value = "Next episode air date has already passed"
-                    return@launch
-                }
-
-                val airDateStr = nextEpisode.displayAirDate
-                    ?: targetAirDate.formatLocally()
-                    ?: targetAirDate.toString()
-
-                val providerName = tvShow.watchProviders.values
-                    .firstNotNullOfOrNull {
-                        it.flatrate.firstOrNull()?.providerName
-                            ?: it.rent.firstOrNull()?.providerName
-                    }
-
-                val reminder = AiringReminder(
-                    mediaId = tvShow.id,
-                    mediaType = MediaType.Tv,
-                    reminderType = ReminderType.TV_EPISODE,
-                    mediaTitle = tvShow.title,
-                    posterImageUrl = tvShow.posterImageUrl,
-                    seasonNumber = nextEpisode.seasonNumber,
-                    episodeNumber = nextEpisode.episodeNumber,
-                    episodeTitle = nextEpisode.title.takeIf { it.isNotBlank() },
-                    airDate = airDateStr,
-                    reminderTimeMillis = reminderTime,
-                    providerName = providerName
-                )
-                reminderRepository.addReminder(reminder)
-                val epInfo = "S${nextEpisode.seasonNumber}E${nextEpisode.episodeNumber}"
-                _reminderSnackbarEvent.value = "Reminder set for ${tvShow.title} ($epInfo)!"
+                val leadDays = appConfigRepository.reminderLeadDays.first()
+                scheduleReminder(tvShow, leadDays, hour, minute)
             }
         }
     }

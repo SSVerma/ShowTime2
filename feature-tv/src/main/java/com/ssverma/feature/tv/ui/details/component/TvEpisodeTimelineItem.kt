@@ -15,6 +15,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -282,44 +283,43 @@ fun TvEpisodeTimelineItem(
                     onClick = onToggleWatched,
                     modifier = Modifier.size(36.dp)
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = buttonColor,
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .size(28.dp)
                             .graphicsLayer {
                                 scaleX = buttonScale
                                 scaleY = buttonScale
                             }
+                            .clip(CircleShape)
+                            .background(buttonColor)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            AnimatedContent(
-                                targetState = isWatched,
-                                transitionSpec = {
-                                    (fadeIn(animationSpec = tween(180)) + scaleIn(
-                                        initialScale = 0.6f,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessMedium
-                                        )
-                                    )).togetherWith(
-                                        fadeOut(animationSpec = tween(140)) + scaleOut(
-                                            targetScale = 0.6f,
-                                            animationSpec = tween(140)
-                                        )
+                        AnimatedContent(
+                            targetState = isWatched,
+                            transitionSpec = {
+                                (fadeIn(animationSpec = tween(180)) + scaleIn(
+                                    initialScale = 0.6f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMedium
                                     )
-                                },
-                                label = "episode_check_icon"
-                            ) { watched ->
-                                Icon(
-                                    imageVector = Icons.Rounded.Check,
-                                    contentDescription = stringResource(
-                                        id = if (watched) R.string.episode_watched else R.string.mark_watched
-                                    ),
-                                    tint = buttonTint,
-                                    modifier = Modifier.size(16.dp)
+                                )).togetherWith(
+                                    fadeOut(animationSpec = tween(140)) + scaleOut(
+                                        targetScale = 0.6f,
+                                        animationSpec = tween(140)
+                                    )
                                 )
-                            }
+                            },
+                            label = "episode_check_icon"
+                        ) { watched ->
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = stringResource(
+                                    id = if (watched) R.string.episode_watched else R.string.mark_watched
+                                ),
+                                tint = buttonTint,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
                     }
                 }

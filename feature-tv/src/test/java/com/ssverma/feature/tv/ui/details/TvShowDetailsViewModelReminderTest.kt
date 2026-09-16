@@ -68,6 +68,9 @@ class TvShowDetailsViewModelReminderTest {
         coEvery { tvShowDetailsUseCase(any()) } returns Result.Success(upcomingTvShow)
         every { appConfigRepository.reminderNotificationHour } returns flowOf(9)
         every { appConfigRepository.reminderNotificationMinute } returns flowOf(0)
+        every { appConfigRepository.reminderLeadDays } returns flowOf(0)
+        coEvery { appConfigRepository.updateReminderLeadDays(any()) } returns Unit
+        coEvery { appConfigRepository.updateReminderNotificationTime(any(), any()) } returns Unit
 
         viewModel = TvShowDetailsViewModel(
             application = application,
@@ -146,4 +149,36 @@ class TvShowDetailsViewModelReminderTest {
             assertFalse(viewModel.isAdLoading.value)
             assertEquals(1, fakeReminderRepository.getActiveReminderCount())
         }
+
+    @Test
+    fun `openReminderSheet and dismissReminderSheet toggle sheet visibility`() = runTest {
+        assertFalse(viewModel.isReminderSheetVisible.value)
+
+        viewModel.openReminderSheet()
+        assertTrue(viewModel.isReminderSheetVisible.value)
+
+        viewModel.dismissReminderSheet()
+        assertFalse(viewModel.isReminderSheetVisible.value)
+    }
+
+    @Test
+    fun `scheduleReminder saves preferences and schedules reminder successfully`() = runTest {
+        coEvery { rewardManager.canScheduleReminder(any(), any()) } returns true
+
+        viewModel.openReminderSheet()
+        assertTrue(viewModel.isReminderSheetVisible.value)
+
+        viewModel.scheduleReminder(
+            tvShow = upcomingTvShow,
+            leadDays = 1,
+            hour = 18,
+            minute = 0
+        )
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isReminderSheetVisible.value)
+        assertEquals(1, fakeReminderRepository.getActiveReminderCount())
+        coVerify(exactly = 1) { appConfigRepository.updateReminderLeadDays(1) }
+        coVerify(exactly = 1) { appConfigRepository.updateReminderNotificationTime(18, 0) }
+    }
 }

@@ -371,7 +371,44 @@ the checklist in this guide before being merged into development or release bran
   }.flowOn(Dispatchers.Default).stateIn(...)
   ```
 
-### F. Lambda Parameter Encapsulation (`*Args` Data Classes)
+### F. ViewModel Scoping: Zero ViewModel Propagation Below Screen/Content Layer
+
+* **Strict Invariant**: `ViewModel` instances must **never** be passed as parameters to composables
+  below the `*Screen` or its immediate `*Content` layer. All child composables must receive
+  pre-collected state values and lambda callbacks — not the ViewModel itself.
+* **Why**:
+    - **Testability**: Composables receiving raw state and lambdas are trivially previewable and
+      testable without ViewModel mocking.
+    - **Reusability**: Components become decoupled from specific ViewModel types, enabling reuse
+      across features.
+    - **Principle of Least Privilege**: Child composables should only know about the data they
+      render and the actions they can trigger — not the entire ViewModel surface.
+* **Standard**:
+  ```kotlin
+  // ❌ FORBIDDEN — ViewModel leaked into child composable
+  @Composable
+  fun DetailsOverlays(viewModel: DetailsViewModel) {
+      val state by viewModel.uiState.collectAsStateWithLifecycle()
+      ChildComponent(state = state, onClick = viewModel::onAction)
+  }
+
+  // ✅ CORRECT — Screen collects state and passes primitives/lambdas
+  @Composable
+  fun DetailsScreen(viewModel: DetailsViewModel = hiltViewModel()) {
+      val state by viewModel.uiState.collectAsStateWithLifecycle()
+      DetailsOverlays(
+          uiState = state,
+          onAction = viewModel::onAction
+      )
+  }
+
+  @Composable
+  fun DetailsOverlays(uiState: DetailsUiState, onAction: () -> Unit) {
+      ChildComponent(state = uiState, onClick = onAction)
+  }
+  ```
+
+### G. Lambda Parameter Encapsulation (`*Args` Data Classes)
 
 * **Rule**: Kotlin lambdas **do not support named arguments** at call sites. Whenever a callback or
   lambda parameter accepts more than 1 argument (or has an expanding parameter set), wrap the
@@ -383,7 +420,7 @@ the checklist in this guide before being merged into development or release bran
     - **Refactor Resilient**: Adding or modifying arguments does not break callback signatures across trees.
     - **Idiomatic Method References**: Enables clean method references (e.g., `onClick = viewModel::onAction`).
 
-### G. Phased State Reads & `derivedStateOf`
+### H. Phased State Reads & `derivedStateOf`
 
 * **Rule**: Defer reading rapidly changing state (scroll offsets, animated values) to Layout or Draw
   phases using lambda modifiers (`Modifier.offset { ... }` or `Modifier.graphicsLayer { ... }`) to
@@ -394,7 +431,7 @@ the checklist in this guide before being merged into development or release bran
   val showBackToTop by remember {
       derivedStateOf { listState.firstVisibleItemIndex > 0 }
   }
-### H. Memory Performance & Leak Prevention
+### I. Memory Performance & Leak Prevention
 
 * **Coil Viewport Downsampling**: Never load raw 4K posters or backdrops directly into RAM. Always
   constrain image dimensions to viewport bounds (`.size(width, height)`).
@@ -410,7 +447,7 @@ the checklist in this guide before being merged into development or release bran
     - Use Android Paging 3 (`core-paging`, `core-ui-paging`) for infinite scrolling feeds instead of
       loading thousands of items into a single in-memory `List<T>`.
 
-### I. CPU & Coroutine Dispatcher Governance
+### J. CPU & Coroutine Dispatcher Governance
 
 * **Strict Thread Offloading**:
     - **`Dispatchers.Main`**: Strictly reserved for UI rendering and light state orchestration.
@@ -705,6 +742,9 @@ npx firebase-tools deploy --only firestore:rules --dry-run
 - [ ] **Lean ViewModels & Single-Responsibility UseCases**: Are ViewModels kept lean (~200–300 lines) with
   `*UiState.kt` in separate files, and complex logic offloaded into `processor/` or `mapper/` subpackages?
   Do UseCases have a single `operator fun invoke(...)` with zero Android framework imports?
+- [ ] **ViewModel Scoping**: Are ViewModel instances confined to `*Screen` or the first `*Content`
+  composable layer? Are child composables receiving only pre-collected state values and lambda
+  callbacks — never the ViewModel itself?
 - [ ] **Open-Source Security & Android Component Protection**: Are secrets quarantined to gitignored
   `core.properties` with a sanitized `core.properties.example` template? Are all non-launcher Android
   components set to `android:exported="false"`?

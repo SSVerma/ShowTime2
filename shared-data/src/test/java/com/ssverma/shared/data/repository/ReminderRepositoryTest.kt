@@ -44,6 +44,7 @@ class ReminderRepositoryTest {
     fun setUp() {
         every { mockAppConfigRepository.reminderNotificationHour } returns flowOf(9)
         every { mockAppConfigRepository.reminderNotificationMinute } returns flowOf(0)
+        every { mockAppConfigRepository.reminderLeadDays } returns flowOf(0)
         every { mockBillingRepository.isProActive } returns isProFlow
         fakeReminderQuotaManager.extraReminderSlots = 0
         fakeReminderQuotaManager.freeLimit = 3

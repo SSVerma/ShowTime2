@@ -56,12 +56,16 @@ class ReminderRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addReminder(reminder: AiringReminder) {
-        val entity = reminder.asEntity()
+        val existing = airingReminderDao.getByMediaId(
+            reminder.mediaId,
+            reminder.mediaType.toStorageString()
+        )
+        val entity = reminder.asEntity().copy(id = existing?.id ?: 0L)
         airingReminderDao.insert(entity)
 
         val isPro = billingRepository.isProActive.value
         val activeCount = airingReminderDao.getActiveCount()
-        if (!isPro && activeCount > FREE_REMINDERS_LIMIT) {
+        if (existing == null && !isPro && activeCount > FREE_REMINDERS_LIMIT) {
             reminderQuotaManager.consumeReminderPass()
         }
 
@@ -227,10 +231,12 @@ class ReminderRepositoryImpl @Inject constructor(
 
         val hour = appConfigRepository.reminderNotificationHour.first()
         val minute = appConfigRepository.reminderNotificationMinute.first()
+        val leadDays = appConfigRepository.reminderLeadDays.first()
         val reminderTime = ReminderTimeCalculator.calculateReminderTime(
             airDate = resolvedAirDate,
             hour = hour,
-            minute = minute
+            minute = minute,
+            leadDays = leadDays
         ) ?: return ReminderToggleResult.NoUpcomingSchedule
 
         val reminder = AiringReminder(

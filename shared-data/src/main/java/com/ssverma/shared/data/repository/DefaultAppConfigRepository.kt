@@ -175,9 +175,19 @@ class DefaultAppConfigRepository @Inject constructor(
             ReminderTimeCalculator.DEFAULT_NOTIFICATION_MINUTE
         )
 
+    override val reminderLeadDays: Flow<Int>
+        get() = keyValueStorage.observe(
+            ReminderLeadDaysKey,
+            0
+        )
+
     override suspend fun updateReminderNotificationTime(hour: Int, minute: Int) {
         keyValueStorage.write(ReminderNotificationHourKey, hour)
         keyValueStorage.write(ReminderNotificationMinuteKey, minute)
+    }
+
+    override suspend fun updateReminderLeadDays(leadDays: Int) {
+        keyValueStorage.write(ReminderLeadDaysKey, leadDays)
     }
 
     override val notificationShelfLastDismissedMs: Flow<Long>
@@ -287,6 +297,8 @@ class DefaultAppConfigRepository @Inject constructor(
 
         private val ReminderNotificationMinuteKey =
             intPreferencesKey("reminder_notification_minute")
+
+        private val ReminderLeadDaysKey = intPreferencesKey("reminder_lead_days")
 
         private val NotificationShelfDismissedEpochKey =
             longPreferencesKey("notification_shelf_dismissed_epoch_ms")

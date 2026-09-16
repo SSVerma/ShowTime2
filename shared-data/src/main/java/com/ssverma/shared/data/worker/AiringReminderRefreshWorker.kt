@@ -64,6 +64,8 @@ class AiringReminderRefreshWorker(
 
             val hour = appConfigRepository.reminderNotificationHour.first()
             val minute = appConfigRepository.reminderNotificationMinute.first()
+            val leadDays = appConfigRepository.reminderLeadDays.first()
+            val today = java.time.LocalDate.now()
 
             for (expiredReminder in expiredTvReminders) {
                 try {
@@ -74,11 +76,18 @@ class AiringReminderRefreshWorker(
                     if (response is ApiResponse.Success) {
                         val nextEpisode = response.body.nextEpisodeToAir
                         val nextAirDate = DateUtils.parseIsoDate(nextEpisode?.airDate)
-                        if (nextEpisode != null && nextAirDate != null) {
+                        val isSameEpisode = nextEpisode != null &&
+                                nextEpisode.seasonNumber == expiredReminder.seasonNumber &&
+                                nextEpisode.episodeNumber == expiredReminder.episodeNumber
+                        val isFutureDate = nextAirDate != null && nextAirDate.isAfter(today)
+
+                        if (nextEpisode != null && nextAirDate != null && !isSameEpisode && isFutureDate) {
                             val nextReminderTime = ReminderTimeCalculator.calculateReminderTime(
                                 airDate = nextAirDate,
                                 hour = hour,
-                                minute = minute
+                                minute = minute,
+                                leadDays = leadDays,
+                                allowSameDayFallback = false
                             )
                             if (nextReminderTime != null) {
                                 val nextReminder = AiringReminder(
@@ -122,11 +131,15 @@ class AiringReminderRefreshWorker(
                         if (response is ApiResponse.Success) {
                             val nextEpisode = response.body.nextEpisodeToAir
                             val nextAirDate = DateUtils.parseIsoDate(nextEpisode?.airDate)
-                            if (nextEpisode != null && nextAirDate != null) {
+                            val isFutureDate = nextAirDate != null && nextAirDate.isAfter(today)
+
+                            if (nextEpisode != null && nextAirDate != null && isFutureDate) {
                                 val scheduledTime = ReminderTimeCalculator.calculateReminderTime(
                                     airDate = nextAirDate,
                                     hour = hour,
-                                    minute = minute
+                                    minute = minute,
+                                    leadDays = leadDays,
+                                    allowSameDayFallback = false
                                 )
                                 if (scheduledTime != null) {
                                     val autoReminder = AiringReminder(

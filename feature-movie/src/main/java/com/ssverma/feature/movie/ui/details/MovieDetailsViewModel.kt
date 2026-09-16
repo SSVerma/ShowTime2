@@ -154,10 +154,12 @@ class MovieDetailsViewModel @AssistedInject constructor(
 
                 val hour = appConfigRepository.reminderNotificationHour.first()
                 val minute = appConfigRepository.reminderNotificationMinute.first()
+                val leadDays = appConfigRepository.reminderLeadDays.first()
                 val reminderTime = ReminderTimeCalculator.calculateReminderTime(
                     airDate = targetReleaseDate,
                     hour = hour,
-                    minute = minute
+                    minute = minute,
+                    leadDays = leadDays
                 )
 
                 if (reminderTime == null) {

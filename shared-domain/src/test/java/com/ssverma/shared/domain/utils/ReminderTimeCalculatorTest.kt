@@ -79,4 +79,61 @@ class ReminderTimeCalculatorTest {
 
         assertThat(result).isEqualTo(nowMillis + 5_000L)
     }
+
+    @Test
+    fun `calculateReminderTime for today with allowSameDayFallback false returns null`() {
+        val today = LocalDate.of(2026, 9, 10)
+        val nowMillis = today.atTime(14, 0).atZone(testZoneId).toInstant().toEpochMilli()
+
+        val result = ReminderTimeCalculator.calculateReminderTime(
+            airDate = today,
+            hour = 9,
+            minute = 0,
+            allowSameDayFallback = false,
+            zoneId = testZoneId,
+            nowMillis = nowMillis
+        )
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `calculateReminderTime with leadDays schedules before air date`() {
+        val today = LocalDate.of(2026, 9, 10)
+        val futureDate = today.plusDays(5)
+        val nowMillis = today.atTime(12, 0).atZone(testZoneId).toInstant().toEpochMilli()
+
+        val result = ReminderTimeCalculator.calculateReminderTime(
+            airDate = futureDate,
+            hour = 9,
+            minute = 0,
+            leadDays = 1,
+            zoneId = testZoneId,
+            nowMillis = nowMillis
+        )
+
+        val expected = futureDate.minusDays(1).atTime(LocalTime.of(9, 0)).atZone(testZoneId)
+            .toInstant().toEpochMilli()
+        assertThat(result).isEqualTo(expected)
+    }
+
+    @Test
+    fun `calculateReminderTime with leadDays 2 schedules 2 days before air date`() {
+        val today = LocalDate.of(2026, 9, 10)
+        val futureDate = today.plusDays(5)
+        val nowMillis = today.atTime(12, 0).atZone(testZoneId).toInstant().toEpochMilli()
+
+        val result = ReminderTimeCalculator.calculateReminderTime(
+            airDate = futureDate,
+            hour = 18,
+            minute = 0,
+            leadDays = 2,
+            zoneId = testZoneId,
+            nowMillis = nowMillis
+        )
+
+        val expected = futureDate.minusDays(2).atTime(LocalTime.of(18, 0)).atZone(testZoneId)
+            .toInstant().toEpochMilli()
+        assertThat(result).isEqualTo(expected)
+    }
 }

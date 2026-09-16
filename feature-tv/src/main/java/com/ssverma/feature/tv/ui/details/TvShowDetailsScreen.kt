@@ -34,6 +34,7 @@ import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
@@ -150,6 +151,14 @@ private fun TvShowContent(
 ) {
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
+    val selectedProviderPayload by viewModel.selectedProviderForAction.collectAsStateWithLifecycle()
+    val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
+    val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
+    val isBillingEnabled by viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle()
+    val isReminderSheetVisible by viewModel.isReminderSheetVisible.collectAsStateWithLifecycle()
+    val reminderLeadDays by viewModel.reminderLeadDays.collectAsStateWithLifecycle()
+    val reminderNotificationHour by viewModel.reminderNotificationHour.collectAsStateWithLifecycle()
+    val reminderNotificationMinute by viewModel.reminderNotificationMinute.collectAsStateWithLifecycle()
     val seasonWatchCounts by viewModel.seasonWatchCounts.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
@@ -222,10 +231,10 @@ private fun TvShowContent(
                 onOpenLogDialog = { showLogDialog = true },
                 onReminderClick = {
                     if (hasReminder) {
-                        viewModel.toggleReminder(tvShow)
+                        viewModel.openReminderSheet()
                     } else {
                         notificationPermissionHandler.requestPermissionThen {
-                            viewModel.toggleReminder(tvShow)
+                            viewModel.openReminderSheet()
                         }
                     }
                 },
@@ -321,6 +330,16 @@ private fun TvShowContent(
             tvShowAiringTimelineSection(
                 nextEpisodeToAir = tvShow.nextEpisodeToAir,
                 lastEpisodeToAir = tvShow.lastEpisodeToAir,
+                hasReminder = hasReminder,
+                onToggleReminder = {
+                    if (hasReminder) {
+                        viewModel.openReminderSheet()
+                    } else {
+                        notificationPermissionHandler.requestPermissionThen {
+                            viewModel.openReminderSheet()
+                        }
+                    }
+                },
                 modifier = Modifier.topSectionSpacing()
             )
 
@@ -495,12 +514,13 @@ private fun TvShowContent(
 
         TvShowDetailsOverlays(
             tvShow = tvShow,
-            viewModel = viewModel,
-            watchProviderRegion = watchProviderRegion,
-            diaryEntries = diaryEntries,
+            notificationPermissionHandler = notificationPermissionHandler,
             showLogDialog = showLogDialog,
+            diaryEntries = diaryEntries,
             onDismissLogDialog = { showLogDialog = false },
-            onSaveDiaryEntry = { _, wasExisting ->
+            onSaveDiaryEntry = { entry, wasExisting ->
+                viewModel.saveDiaryEntry(entry)
+                showLogDialog = false
                 coroutineScope.launch {
                     val result = snackbarHostState.showImmediateSnackbar(
                         message = if (wasExisting) diaryUpdatedMessage else diaryLoggedMessage,
@@ -512,9 +532,37 @@ private fun TvShowContent(
                     }
                 }
             },
-            notificationPermissionHandler = notificationPermissionHandler,
-            openWatchHub = openWatchHub,
-            openProPaywall = openProPaywall
+            selectedProviderPayload = selectedProviderPayload,
+            watchProviderRegion = watchProviderRegion,
+            affiliateRepository = viewModel.affiliateRepository,
+            onDismissProviderAction = viewModel::dismissProviderAction,
+            onBrowseWatchHub = openWatchHub,
+            isQuotaGateVisible = isQuotaGateVisible,
+            isAdLoading = isAdLoading,
+            isProPaymentEnabled = isBillingEnabled,
+            onWatchAdForReminder = {
+                val activity = context.findActivity()
+                if (activity != null) {
+                    viewModel.onWatchAdForReminderPass(activity, tvShow)
+                }
+            },
+            onUpgradeProClick = {
+                viewModel.dismissQuotaGate()
+                openProPaywall()
+            },
+            onDismissQuotaGate = viewModel::dismissQuotaGate,
+            isReminderSheetVisible = isReminderSheetVisible,
+            hasReminder = hasReminder,
+            reminderLeadDays = reminderLeadDays,
+            reminderNotificationHour = reminderNotificationHour,
+            reminderNotificationMinute = reminderNotificationMinute,
+            onScheduleReminder = { leadDays, hour, minute ->
+                viewModel.scheduleReminder(tvShow, leadDays, hour, minute)
+            },
+            onRemoveReminder = {
+                viewModel.removeReminder(tvShow)
+            },
+            onDismissReminderSheet = viewModel::dismissReminderSheet
         )
     }
 }

@@ -29,6 +29,8 @@ interface AppConfigRepository {
 
     val reminderNotificationMinute: Flow<Int>
 
+    val reminderLeadDays: Flow<Int>
+
     suspend fun updateAppTheme(theme: AppTheme)
 
     suspend fun updateDynamicColor(enabled: Boolean)
@@ -54,6 +56,8 @@ interface AppConfigRepository {
     suspend fun updateReleaseRadarEnabled(enabled: Boolean)
 
     suspend fun updateReminderNotificationTime(hour: Int, minute: Int)
+
+    suspend fun updateReminderLeadDays(leadDays: Int)
 
     /** Epoch millis when the notification permission shelf was last dismissed by the user. */
     val notificationShelfLastDismissedMs: Flow<Long>

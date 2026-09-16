@@ -61,6 +61,7 @@ class MovieDetailsViewModelReminderTest {
         coEvery { movieCollectionUseCase(any()) } returns Result.Success(mockk(relaxed = true))
         every { appConfigRepository.reminderNotificationHour } returns flowOf(9)
         every { appConfigRepository.reminderNotificationMinute } returns flowOf(0)
+        every { appConfigRepository.reminderLeadDays } returns flowOf(0)
 
         viewModel = MovieDetailsViewModel(
             application = mockk(relaxed = true),

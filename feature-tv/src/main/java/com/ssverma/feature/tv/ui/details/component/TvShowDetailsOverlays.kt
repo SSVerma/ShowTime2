@@ -3,10 +3,7 @@ package com.ssverma.feature.tv.ui.details.component
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.core.ui.util.findActivity
-import com.ssverma.feature.tv.ui.details.TvShowDetailsViewModel
+import com.ssverma.feature.tv.ui.details.TvProviderActionPayload
 import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
@@ -16,9 +13,11 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.tv.TvShow
+import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.notification.NotificationPermissionDialogs
 import com.ssverma.shared.ui.component.notification.NotificationPermissionHandler
+import com.ssverma.shared.ui.component.reminder.AiringReminderSheet
 import com.ssverma.shared.ui.component.section.WhereToWatchActionBottomSheet
 import com.ssverma.shared.ui.R as SharedR
 
@@ -39,24 +38,31 @@ private val AiringReminderGateConfig = FeatureGateConfig(
 @Composable
 fun TvShowDetailsOverlays(
     tvShow: TvShow,
-    viewModel: TvShowDetailsViewModel,
-    watchProviderRegion: String,
-    diaryEntries: List<DiaryEntry>,
+    notificationPermissionHandler: NotificationPermissionHandler,
     showLogDialog: Boolean,
+    diaryEntries: List<DiaryEntry>,
     onDismissLogDialog: () -> Unit,
     onSaveDiaryEntry: (DiaryEntry, Boolean) -> Unit,
-    notificationPermissionHandler: NotificationPermissionHandler,
-    openWatchHub: (ProviderInfo) -> Unit,
-    openProPaywall: () -> Unit
+    selectedProviderPayload: TvProviderActionPayload?,
+    watchProviderRegion: String,
+    affiliateRepository: AffiliateRepository,
+    onDismissProviderAction: () -> Unit,
+    onBrowseWatchHub: (ProviderInfo) -> Unit,
+    isQuotaGateVisible: Boolean,
+    isAdLoading: Boolean,
+    isProPaymentEnabled: Boolean,
+    onWatchAdForReminder: () -> Unit,
+    onUpgradeProClick: () -> Unit,
+    onDismissQuotaGate: () -> Unit,
+    isReminderSheetVisible: Boolean,
+    hasReminder: Boolean,
+    reminderLeadDays: Int,
+    reminderNotificationHour: Int,
+    reminderNotificationMinute: Int,
+    onScheduleReminder: (leadDays: Int, hour: Int, minute: Int) -> Unit,
+    onRemoveReminder: () -> Unit,
+    onDismissReminderSheet: () -> Unit
 ) {
-    val context = LocalContext.current
-    val selectedProviderPayload =
-        viewModel.selectedProviderForAction.collectAsStateWithLifecycle().value
-    val isQuotaGateVisible = viewModel.isQuotaGateVisible.collectAsStateWithLifecycle().value
-    val isAdLoading = viewModel.isAdLoading.collectAsStateWithLifecycle().value
-    val isBillingEnabled =
-        viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle().value
-
     NotificationPermissionDialogs(handler = notificationPermissionHandler)
 
     if (showLogDialog) {
@@ -72,7 +78,6 @@ fun TvShowDetailsOverlays(
             existingEntry = diaryEntries.firstOrNull(),
             onDismiss = onDismissLogDialog,
             onSave = { entry ->
-                viewModel.saveDiaryEntry(entry)
                 onDismissLogDialog()
                 onSaveDiaryEntry(entry, wasExisting)
             }
@@ -87,11 +92,9 @@ fun TvShowDetailsOverlays(
             categoryName = payload.category,
             watchProviderLink = currentWatchProvider?.link,
             region = watchProviderRegion,
-            affiliateRepository = viewModel.affiliateRepository,
-            onDismissRequest = viewModel::dismissProviderAction,
-            onBrowseHubClick = { provider ->
-                openWatchHub(provider)
-            }
+            affiliateRepository = affiliateRepository,
+            onDismissRequest = onDismissProviderAction,
+            onBrowseHubClick = onBrowseWatchHub
         )
     }
 
@@ -99,18 +102,31 @@ fun TvShowDetailsOverlays(
         ShowTimeFeatureGate(
             config = AiringReminderGateConfig,
             isAdLoading = isAdLoading,
-            isProPaymentEnabled = isBillingEnabled,
-            onWatchAdClick = {
-                val activity = context.findActivity()
-                if (activity != null) {
-                    viewModel.onWatchAdForReminderPass(activity, tvShow)
-                }
-            },
-            onUpgradeProClick = {
-                viewModel.dismissQuotaGate()
-                openProPaywall()
-            },
-            onDismissRequest = { viewModel.dismissQuotaGate() }
+            isProPaymentEnabled = isProPaymentEnabled,
+            onWatchAdClick = onWatchAdForReminder,
+            onUpgradeProClick = onUpgradeProClick,
+            onDismissRequest = onDismissQuotaGate
         )
+    }
+
+    if (isReminderSheetVisible) {
+        val nextEpisode = tvShow.nextEpisodeToAir
+        val airDate = nextEpisode?.airDate
+        if (airDate != null) {
+            val epSubtitle = "S${nextEpisode.seasonNumber}E${nextEpisode.episodeNumber}" +
+                    if (!nextEpisode.title.isNullOrBlank()) " · ${nextEpisode.title}" else ""
+            AiringReminderSheet(
+                mediaTitle = tvShow.title,
+                episodeSubtitle = epSubtitle,
+                airDate = airDate,
+                hasReminder = hasReminder,
+                initialLeadDays = reminderLeadDays,
+                initialHour = reminderNotificationHour,
+                initialMinute = reminderNotificationMinute,
+                onConfirm = onScheduleReminder,
+                onRemove = onRemoveReminder,
+                onDismissRequest = onDismissReminderSheet
+            )
+        }
     }
 }

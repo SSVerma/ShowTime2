@@ -46,6 +46,9 @@ Before planning, creating, or modifying any code in this repository, you **MUST*
   - **Lean ViewModels & UseCases (Section 6.F)**:
     - ViewModels must be lean (~200–300 lines) with UI State and Actions in separate files; offload calculations into `processor/` or `mapper/` subpackages.
     - UseCases follow Single Responsibility Principle with a single `operator fun invoke(...)`.
+  - **ViewModel Scoping (Section 5.F)**:
+    - ViewModel instances must NEVER be passed as parameters below `*Screen` or the first `*Content` composable layer.
+    - All child composables must receive pre-collected state values and lambda callbacks — not the ViewModel itself.
   - **Design System & Token Purity (Section 2)**:
     - Zero hardcoded hex colors: Use semantic `MaterialTheme.colorScheme.*` tokens.
     - Zero arbitrary magic numbers for padding/spacing: Use `MaterialTheme.spacing.*` tokens.
