@@ -10,6 +10,7 @@ import com.ssverma.core.ui.UiText
 import com.ssverma.feature.match.R
 import com.ssverma.feature.match.analytics.MatchAnalyticsEvent
 import com.ssverma.feature.match.ui.component.MatchRoomPassKey
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
@@ -23,7 +24,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,18 +41,14 @@ class MovieMatchRoomViewModel @Inject constructor(
     val uiState: StateFlow<MovieMatchRoomUiState> = _uiState.asStateFlow()
 
     private var currentRemoteRoomId: String? = null
+    private var pendingStartConfig: MatchPendingStart? = null
 
     init {
         rewardedAdManager.loadAd()
 
         viewModelScope.launch {
-            combine(
-                billingRepository.isProActive,
-                rewardManager.isPassActive(MatchRoomPassKey)
-            ) { isPro, isPassActive ->
-                isPro || isPassActive
-            }.collect { isUnlocked ->
-                _uiState.update { it.copy(isProOrPassActive = isUnlocked) }
+            billingRepository.isProActive.collect { isPro ->
+                _uiState.update { it.copy(isProOrPassActive = isPro) }
             }
         }
 
@@ -121,15 +117,22 @@ class MovieMatchRoomViewModel @Inject constructor(
 
     fun startGame(config: MatchRoomConfig, player1: String, player2: String) {
         viewModelScope.launch {
-            val isProOrPass = _uiState.value.isProOrPassActive
-            val canStart = matchRoomRepository.canStartMatchSession(isProOrPass)
+            val isPro = _uiState.value.isProOrPassActive
+            val canStart = matchRoomRepository.canStartMatchSession(isPro)
 
             if (!canStart) {
+                pendingStartConfig = MatchPendingStart(config, player1, player2)
                 rewardedAdManager.loadAd()
                 _uiState.update { it.copy(showQuotaModal = true) }
                 return@launch
             }
 
+            startGameInternal(config, player1, player2)
+        }
+    }
+
+    private fun startGameInternal(config: MatchRoomConfig, player1: String, player2: String) {
+        viewModelScope.launch {
             _uiState.update {
                 it.copy(
                     isLoading = true,
@@ -495,20 +498,31 @@ class MovieMatchRoomViewModel @Inject constructor(
     fun watchRewardedAdForPass(activity: Activity) {
         rewardedAdManager.showRewardedAdIfReady(activity) {
             viewModelScope.launch {
-                rewardManager.grantTimedPass(MatchRoomPassKey)
+                rewardManager.grantPass(FeaturePassPolicy.ActionUnlock(MatchRoomPassKey))
                 _uiState.update { it.copy(showQuotaModal = false) }
+                val pending = pendingStartConfig
+                pendingStartConfig = null
+                if (pending != null) {
+                    startGameInternal(pending.config, pending.player1, pending.player2)
+                }
             }
         }
     }
 
     fun grantRewardedPass() {
         viewModelScope.launch {
-            rewardManager.grantTimedPass(MatchRoomPassKey)
+            rewardManager.grantPass(FeaturePassPolicy.ActionUnlock(MatchRoomPassKey))
             _uiState.update { it.copy(showQuotaModal = false) }
+            val pending = pendingStartConfig
+            pendingStartConfig = null
+            if (pending != null) {
+                startGameInternal(pending.config, pending.player1, pending.player2)
+            }
         }
     }
 
     fun dismissQuotaModal() {
+        pendingStartConfig = null
         _uiState.update { it.copy(showQuotaModal = false) }
     }
 
@@ -524,3 +538,9 @@ class MovieMatchRoomViewModel @Inject constructor(
         }
     }
 }
+
+private data class MatchPendingStart(
+    val config: MatchRoomConfig,
+    val player1: String,
+    val player2: String
+)

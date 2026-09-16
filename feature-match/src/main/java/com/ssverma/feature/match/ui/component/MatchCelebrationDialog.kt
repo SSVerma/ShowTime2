@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BookmarkAdd
+import androidx.compose.material.icons.rounded.Celebration
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,7 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
@@ -82,16 +84,10 @@ fun MatchCelebrationDialog(
                 shape = RoundedCornerShape(28.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(
-                    width = 2.dp,
-                    brush = Brush.linearGradient(
-                        listOf(
-                            MovieMatchColor.RatingGold,
-                            MovieMatchColor.CelebrationOrange,
-                            MovieMatchColor.CelebrationPink
-                        )
-                    )
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -100,7 +96,7 @@ fun MatchCelebrationDialog(
                         onClick = onDismiss,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(8.dp)
+                            .padding(MaterialTheme.spacing.small)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
@@ -113,18 +109,36 @@ fun MatchCelebrationDialog(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp)
+                            .padding(MaterialTheme.spacing.large)
                     ) {
+                        // Celebration Badge Icon
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Celebration,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
+
                         // Celebration Header
                         Text(
-                            text = "🎉 " + stringResource(R.string.match_room_its_a_match),
+                            text = stringResource(R.string.match_room_its_a_match),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Black,
-                            color = MovieMatchColor.RatingGold,
-                            letterSpacing = 1.sp
+                            color = MaterialTheme.colorScheme.onSurface,
+                            letterSpacing = 0.5.sp
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
 
                         Text(
                             text = stringResource(
@@ -136,7 +150,7 @@ fun MatchCelebrationDialog(
                             textAlign = TextAlign.Center
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
                         // Movie Poster Preview (Clickable)
                         Surface(
@@ -156,7 +170,7 @@ fun MatchCelebrationDialog(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
                         // Title & Year
                         Text(
@@ -169,7 +183,7 @@ fun MatchCelebrationDialog(
                             overflow = TextOverflow.Ellipsis
                         )
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall + 2.dp))
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -181,12 +195,12 @@ fun MatchCelebrationDialog(
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                                 Text(
                                     text = "•",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                             }
 
                             Icon(
@@ -195,7 +209,7 @@ fun MatchCelebrationDialog(
                                 tint = MovieMatchColor.RatingGold,
                                 modifier = Modifier.size(14.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
                             Text(
                                 text = String.format(Locale.US, "%.1f", matchedCard.voteAvg),
                                 style = MaterialTheme.typography.labelMedium,
@@ -204,9 +218,9 @@ fun MatchCelebrationDialog(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
-                        // Primary Action: Watch Now
+                        // Primary Action: View Details
                         Button(
                             onClick = { onWatchNow(matchedCard) },
                             shape = RoundedCornerShape(16.dp),
@@ -219,18 +233,18 @@ fun MatchCelebrationDialog(
                                 .height(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.PlayArrow,
+                                imageVector = Icons.Rounded.Info,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                             Text(
                                 text = stringResource(R.string.match_room_watch_now),
                                 fontWeight = FontWeight.Bold
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.smallMedium))
 
                         // Secondary Action: Add to Watchlist
                         OutlinedButton(
@@ -241,10 +255,10 @@ fun MatchCelebrationDialog(
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(
                                 1.dp,
-                                if (isAdded) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.outlineVariant
+                                if (isAdded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
                             ),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = if (isAdded) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.onSurface
+                                contentColor = if (isAdded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -253,10 +267,10 @@ fun MatchCelebrationDialog(
                             Icon(
                                 imageVector = if (isAdded) Icons.Rounded.Check else Icons.Rounded.BookmarkAdd,
                                 contentDescription = null,
-                                tint = if (isAdded) MovieMatchColor.LikeGreen else MaterialTheme.colorScheme.onSurface,
+                                tint = if (isAdded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall + 2.dp))
                             Text(
                                 text = stringResource(if (isAdded) R.string.match_room_watchlist_added else R.string.match_room_add_to_watchlist),
                                 style = MaterialTheme.typography.labelLarge,
@@ -264,7 +278,7 @@ fun MatchCelebrationDialog(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
 
                         // Tertiary Action: Keep Swiping
                         TextButton(onClick = onDismiss) {

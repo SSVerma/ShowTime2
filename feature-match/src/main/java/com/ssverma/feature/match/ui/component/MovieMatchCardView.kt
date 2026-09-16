@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
@@ -118,7 +119,7 @@ fun MovieMatchCardView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(MaterialTheme.spacing.medium),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -129,7 +130,10 @@ fun MovieMatchCardView(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        modifier = Modifier.padding(
+                            horizontal = MaterialTheme.spacing.smallMedium,
+                            vertical = MaterialTheme.spacing.extraSmall + 2.dp
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Star,
@@ -137,7 +141,7 @@ fun MovieMatchCardView(
                             tint = MovieMatchColor.RatingGold,
                             modifier = Modifier.size(16.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
                         Text(
                             text = String.format(Locale.US, "%.1f", card.voteAvg),
                             style = MaterialTheme.typography.labelLarge,
@@ -169,7 +173,7 @@ fun MovieMatchCardView(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding(MaterialTheme.spacing.mediumLarge)
                     .clickable { onOpenDetails() }
             ) {
                 // Title
@@ -182,12 +186,12 @@ fun MovieMatchCardView(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
 
                 // Release Year & Genres
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
                 ) {
                     card.releaseYear?.let { year ->
                         Surface(
@@ -199,7 +203,10 @@ fun MovieMatchCardView(
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(
+                                    horizontal = MaterialTheme.spacing.small,
+                                    vertical = MaterialTheme.spacing.extraSmall
+                                )
                             )
                         }
                     }
@@ -215,7 +222,7 @@ fun MovieMatchCardView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
                 // Overview Preview
                 if (card.overview.isNotBlank()) {

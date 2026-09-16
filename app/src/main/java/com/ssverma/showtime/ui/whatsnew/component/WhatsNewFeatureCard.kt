@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.feature.CinephileFeature
 import com.ssverma.showtime.ui.whatsnew.WhatsNewFeature
+import com.ssverma.feature.match.ui.component.MovieMatchIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.CommunityListsIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.DailyGameIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.DiscoverIllustration
-import com.ssverma.showtime.ui.whatsnew.illustration.MovieMatchIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.MyListsIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.TasteProfileIllustration
 

@@ -21,7 +21,7 @@
     <string name="match_room_no_matches">No mutual matches found this round.</string>
     <string name="match_room_no_matches_desc">Try another deck or unlock custom streaming filters!</string>
     <string name="match_room_free_quota_exceeded">Daily Free Match Room Used</string>
-    <string name="match_room_unlock_with_pass">Unlock unlimited rooms &amp; custom streaming filters with Pro or watch a quick video for a 24h pass.</string>
+    <string name="match_room_unlock_with_pass">Unlock unlimited rooms &amp; custom streaming filters with Pro or watch a short video to play another round.</string>
     <string name="match_room_deck_trending">Trending Tonight</string>
     <string name="match_room_deck_trending_desc">Top trending movies and shows (1 free daily session)</string>
     <string name="match_room_deck_subscriptions">My Subscriptions Only</string>
@@ -35,7 +35,7 @@
     <string name="match_room_watchlist_removed">Removed from Watchlist</string>
     <string name="match_room_add_to_watchlist">Add to Watchlist</string>
     <string name="match_room_remove_from_watchlist">Remove from Watchlist</string>
-    <string name="match_room_watch_now">Watch Now</string>
+    <string name="match_room_watch_now">View Details</string>
     <string name="match_room_finish">Finish</string>
     <string name="match_room_invite_text">Join my ShowTime Match Room: %1$s. Let\'s pick tonight\'s movie or show together!</string>
 
@@ -73,10 +73,10 @@
     <string name="match_room_no_mutual_matches_desc">You and your partner didn\'t swipe right on the same titles this round. Try another deck or unlock custom streaming filters!</string>
     <string name="match_room_match_count_badge">%1$d Matches</string>
     <string name="match_room_match_count_badge_single">1 Match</string>
-    <string name="match_room_watch_action">Watch</string>
+    <string name="match_room_watch_action">Details</string>
 
     <!-- Quota & Pro -->
-    <string name="match_room_watch_video_pass">Watch Video (24h Pass)</string>
+    <string name="match_room_watch_video_pass">Watch Video to Play</string>
     <string name="match_room_get_pro">Get Pro Unlimited</string>
     <string name="match_room_not_now">Not Now</string>
 

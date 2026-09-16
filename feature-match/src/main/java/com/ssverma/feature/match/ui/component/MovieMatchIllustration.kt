@@ -1,4 +1,4 @@
-package com.ssverma.showtime.ui.whatsnew.illustration
+package com.ssverma.feature.match.ui.component
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -81,7 +81,7 @@ fun MovieMatchIllustration(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.2f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
                             Color.Transparent
                         )
                     )
@@ -116,7 +116,7 @@ fun MovieMatchIllustration(
                 .graphicsLayer { rotationZ = cardRotation }
                 .border(
                     width = 1.2.dp,
-                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.35f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                     shape = RoundedCornerShape(22.dp)
                 )
         ) {
@@ -143,7 +143,7 @@ fun MovieMatchIllustration(
                             Icon(
                                 imageVector = Icons.Rounded.Groups,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -179,8 +179,8 @@ fun MovieMatchIllustration(
                         .background(
                             Brush.horizontalGradient(
                                 listOf(
-                                    MaterialTheme.colorScheme.error.copy(alpha = 0.25f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.25f)
                                 )
                             )
                         )
@@ -212,7 +212,7 @@ fun MovieMatchIllustration(
                     // Like / Match Button
                     Surface(
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                         shadowElevation = 2.dp,
                         modifier = Modifier.size(28.dp)
                     ) {
@@ -220,7 +220,7 @@ fun MovieMatchIllustration(
                             Icon(
                                 imageVector = Icons.Rounded.Favorite,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -232,7 +232,7 @@ fun MovieMatchIllustration(
         // Floating Heart Match Crown Badge (Top Center, Pulsing)
         Surface(
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.error,
+            color = MaterialTheme.colorScheme.primary,
             shadowElevation = 8.dp,
             modifier = Modifier
                 .offset(x = 64.dp, y = (-54).dp)
@@ -246,7 +246,7 @@ fun MovieMatchIllustration(
                 Icon(
                     imageVector = Icons.Rounded.Favorite,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onError,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(20.dp)
                 )
             }

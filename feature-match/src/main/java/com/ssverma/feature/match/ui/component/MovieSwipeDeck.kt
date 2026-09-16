@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,6 +38,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.MovieMatchColor
 import com.ssverma.shared.domain.model.match.MovieMatchCard
@@ -81,7 +81,12 @@ fun MovieSwipeDeck(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(
+                    start = MaterialTheme.spacing.medium,
+                    end = MaterialTheme.spacing.medium,
+                    top = MaterialTheme.spacing.extraSmall,
+                    bottom = MaterialTheme.spacing.small
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (topCard == null) {
@@ -95,7 +100,7 @@ fun MovieSwipeDeck(
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
                     Text(
                         text = stringResource(R.string.match_room_reviewed_all),
                         style = MaterialTheme.typography.bodyMedium,
@@ -113,8 +118,7 @@ fun MovieSwipeDeck(
                         MovieMatchCardView(
                             card = nextCard,
                             modifier = Modifier
-                                .fillMaxWidth(0.92f)
-                                .aspectRatio(0.68f)
+                                .fillMaxSize()
                                 .offset(y = backgroundOffset)
                                 .graphicsLayer {
                                     scaleX = backgroundScale
@@ -133,8 +137,7 @@ fun MovieSwipeDeck(
                         nopeOverlayAlpha = nopeAlpha,
                         onOpenDetails = { onOpenDetails(topCard) },
                         modifier = Modifier
-                            .fillMaxWidth(0.92f)
-                            .aspectRatio(0.68f)
+                            .fillMaxSize()
                             .offset {
                                 IntOffset(
                                     offsetX.value.roundToInt(),
@@ -195,7 +198,12 @@ fun MovieSwipeDeck(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                    .padding(
+                        start = MaterialTheme.spacing.large,
+                        end = MaterialTheme.spacing.large,
+                        top = MaterialTheme.spacing.extraSmall,
+                        bottom = MaterialTheme.spacing.medium
+                    ),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {

@@ -8,6 +8,7 @@ import com.ssverma.core.billing.BillingRepository
 import com.ssverma.core.ui.UiText
 import com.ssverma.feature.match.R
 import com.ssverma.feature.match.ui.component.MatchRoomPassKey
+import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
@@ -314,7 +315,7 @@ class MovieMatchRoomViewModelTest {
     }
 
     @Test
-    fun `watchRewardedAdForPass invokes showRewardedAdIfReady and grants pass on reward`() =
+    fun `watchRewardedAdForPass invokes showRewardedAdIfReady and grants action unlock and launches game`() =
         runTest {
             val mockActivity: Activity = mockk(relaxed = true)
             val rewardSlot = slot<() -> Unit>()
@@ -327,12 +328,20 @@ class MovieMatchRoomViewModelTest {
                 rewardSlot.captured.invoke()
             }
 
-            viewModel.openSetupSheet()
+            coEvery { matchRoomRepository.canStartMatchSession(any()) } returns false
+
+            viewModel.startGame(MatchRoomConfig(mode = MatchMode.COUCH), "Player 1", "Player 2")
+            advanceUntilIdle()
+
+            assertThat(viewModel.uiState.value.showQuotaModal).isTrue()
+
             viewModel.watchRewardedAdForPass(mockActivity)
             advanceUntilIdle()
 
-            coVerify { rewardManager.grantTimedPass(MatchRoomPassKey) }
+            coVerify { rewardManager.grantPass(FeaturePassPolicy.ActionUnlock(MatchRoomPassKey)) }
             assertThat(viewModel.uiState.value.showQuotaModal).isFalse()
+            assertThat(viewModel.uiState.value.phase).isEqualTo(MatchScreenPhase.SWIPING)
+            assertThat(viewModel.uiState.value.cards).isNotEmpty()
         }
 
     @Test

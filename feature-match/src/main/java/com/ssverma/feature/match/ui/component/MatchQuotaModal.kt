@@ -47,7 +47,7 @@ private val MatchRoomGateConfig = FeatureGateConfig(
     rewardActionLabelRes = R.string.match_room_watch_video_pass,
     icon = Icons.Rounded.People,
     presentationStyle = GatePresentationStyle.BottomSheet,
-    passPolicy = FeaturePassPolicy.TimedPass(MatchRoomPassKey)
+    passPolicy = FeaturePassPolicy.ActionUnlock(MatchRoomPassKey)
 )
 
 
