@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.shared.domain.model.community.EditCommentArgs
 import com.ssverma.shared.domain.model.community.PostCommentArgs
@@ -80,7 +81,8 @@ fun DiscussionsScreenContent(
     onToggleUpvote: (commentId: String) -> Unit,
     onDeleteComment: (commentId: String) -> Unit,
     modifier: Modifier = Modifier,
-    posterImageUrl: String? = null
+    posterImageUrl: String? = null,
+    isLoading: Boolean = false
 ) {
     var inputContent by remember { mutableStateOf("") }
     var isSpoiler by remember { mutableStateOf(false) }
@@ -321,7 +323,18 @@ fun DiscussionsScreenContent(
             }
 
             // Feed Items
-            if (comments.isEmpty()) {
+            if (isLoading) {
+                item(contentType = "loading_state") {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 96.dp)
+                    ) {
+                        ShowTimeLoadingIndicator()
+                    }
+                }
+            } else if (comments.isEmpty()) {
                 item(contentType = "empty_state") {
                     Box(
                         contentAlignment = Alignment.Center,

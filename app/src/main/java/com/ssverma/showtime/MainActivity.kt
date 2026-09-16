@@ -2,6 +2,7 @@ package com.ssverma.showtime
 
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -13,6 +14,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
+import com.ssverma.shared.domain.model.AppTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -71,21 +75,38 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun updateSystemBars(theme: AppTheme) {
+        val isDark = when (theme) {
+            AppTheme.System -> (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            AppTheme.Light -> false
+            AppTheme.Dark, AppTheme.OledMidnight -> true
+        }
+        val barStyle = SystemBarStyle.auto(
+            lightScrim = android.graphics.Color.TRANSPARENT,
+            darkScrim = android.graphics.Color.TRANSPARENT,
+            detectDarkMode = { _ -> isDark }
+        )
+        enableEdgeToEdge(
+            statusBarStyle = barStyle,
+            navigationBarStyle = barStyle
+        )
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !isDark
+            isAppearanceLightNavigationBars = !isDark
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
-
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(
-                lightScrim = android.graphics.Color.TRANSPARENT,
-                darkScrim = android.graphics.Color.TRANSPARENT
-            ),
-            navigationBarStyle = SystemBarStyle.auto(
-                lightScrim = android.graphics.Color.TRANSPARENT,
-                darkScrim = android.graphics.Color.TRANSPARENT
-            )
-        )
-
         super.onCreate(savedInstanceState)
+
+        updateSystemBars(appStateHolder.appTheme.value)
+
+        lifecycleScope.launch {
+            appStateHolder.appTheme.collect { theme ->
+                updateSystemBars(theme)
+            }
+        }
 
         splashScreen.setKeepOnScreenCondition {
             appStateHolder.hasCompletedOnboarding.value == null
@@ -103,6 +124,7 @@ class MainActivity : AppCompatActivity() {
                 duration = 300L
                 doOnEnd {
                     splashScreenViewProvider.remove()
+                    updateSystemBars(appStateHolder.appTheme.value)
                 }
             }
             alphaAnim.start()

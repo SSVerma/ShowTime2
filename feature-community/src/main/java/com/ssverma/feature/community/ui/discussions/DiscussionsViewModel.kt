@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -83,19 +84,30 @@ class DiscussionsViewModel @AssistedInject constructor(
         initialValue = emptyList()
     )
 
-    val uiComments: StateFlow<List<CommentUiModel>> = combine(
+    val uiState: StateFlow<DiscussionsUiState> = combine(
         getDiscussionsUseCase(discussionTarget),
         _selectedFilter,
         _locallyReportedCommentIds
     ) { rawComments, filter, reportedIds ->
-        filterAndSortCommentsUseCase(
+        val models = filterAndSortCommentsUseCase(
             comments = rawComments,
             filter = filter,
             excludedCommentIds = reportedIds
         ).map { comment ->
             comment.toUiModel(context = context)
         }
+        DiscussionsUiState(
+            isLoading = false,
+            comments = models
+        )
     }.flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = DiscussionsUiState(isLoading = true, comments = emptyList())
+        )
+
+    val uiComments: StateFlow<List<CommentUiModel>> = uiState.map { it.comments }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

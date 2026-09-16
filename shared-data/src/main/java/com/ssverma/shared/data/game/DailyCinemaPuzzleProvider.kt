@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,45 +50,16 @@ class DailyCinemaPuzzleProvider @Inject constructor(
         568124  // Encanto (2021)
     )
 
-    private var cachedMoviePool: List<Int>? = null
-
-    private suspend fun getCandidateMoviePool(): List<Int> {
-        val cached = cachedMoviePool
-        if (!cached.isNullOrEmpty()) {
-            return cached
-        }
-
-        return try {
-            val response = tmdbApiService.getTrendingMovies(
-                timeWindow = TmdbApiTiedConstants.AvailableTimeWindows.WEEK,
-                page = 1
-            )
-            if (response is ApiResponse.Success) {
-                val trendingIds = response.body.results?.filter { movie ->
-                    (movie.voteCount
-                        ?: 0) >= 150 && !movie.backdropPath.isNullOrBlank() && !movie.title.isNullOrBlank()
-                }?.map { it.id }.orEmpty()
-
-                val pool = if (trendingIds.isNotEmpty()) {
-                    (trendingIds + curatedMovieIds).distinct()
-                } else {
-                    curatedMovieIds
-                }
-                cachedMoviePool = pool
-                pool
-            } else {
-                curatedMovieIds
-            }
-        } catch (e: Exception) {
-            curatedMovieIds
-        }
-    }
+    private val puzzleCache = ConcurrentHashMap<Pair<Long, Int>, DailyCinemaPuzzle>()
 
     suspend fun getPuzzleForEpochDay(
         epochDay: Long,
         attemptNumber: Int = 1
     ): DailyCinemaPuzzle = withContext(Dispatchers.IO) {
-        val pool = getCandidateMoviePool()
+        val cacheKey = Pair(epochDay, attemptNumber)
+        puzzleCache[cacheKey]?.let { return@withContext it }
+
+        val pool = curatedMovieIds
         val offset = if (attemptNumber > 1) 13L else 0L
         val index = Math.floorMod(epochDay + offset, pool.size.toLong()).toInt()
         val targetMovieId = pool[index]
@@ -117,11 +89,24 @@ class DailyCinemaPuzzleProvider @Inject constructor(
 
             val synopsis = movie.overview.orEmpty()
             val posterUrl = movie.posterPath.convertToTmdbPosterUrl()
-            val backdropUrl = movie.backdropPath.convertToTmdbBackdropUrl()
 
-            val secondBackdropPath = movie.imagePayload?.backdrops?.getOrNull(1)?.imagePath
+            // Filter out any backdrops containing text/logos (iso6391 is null/blank for textless images)
+            val textlessBackdrops =
+                movie.imagePayload?.backdrops?.filter { it.iso6391.isNullOrBlank() }
+                    ?: emptyList()
+
+            val primaryBackdropPath = textlessBackdrops.firstOrNull()?.imagePath
+                ?: movie.backdropPath
+            val backdropUrl = primaryBackdropPath.convertToTmdbBackdropUrl()
+
+            // For Clue 2: Pick a secondary clean textless backdrop or production still to avoid revealing the title
+            val secondBackdropPath = textlessBackdrops.getOrNull(1)?.imagePath
+                ?: movie.imagePayload?.stills?.firstOrNull()?.imagePath
+                ?: textlessBackdrops.firstOrNull()?.imagePath
+                ?: movie.imagePayload?.backdrops?.getOrNull(1)?.imagePath
             val sceneStillUrl =
-                secondBackdropPath.convertToTmdbBackdropUrl().ifBlank { backdropUrl }
+                secondBackdropPath?.convertToTmdbBackdropUrl()?.ifBlank { backdropUrl }
+                    ?: backdropUrl
 
             val clues = listOf(
                 GameClue(
@@ -161,7 +146,7 @@ class DailyCinemaPuzzleProvider @Inject constructor(
                 )
             )
 
-            return@withContext DailyCinemaPuzzle(
+            val resolvedPuzzle = DailyCinemaPuzzle(
                 puzzleNumber = puzzleNumber,
                 epochDay = epochDay,
                 targetMovieId = targetMovieId,
@@ -175,9 +160,13 @@ class DailyCinemaPuzzleProvider @Inject constructor(
                 backdropImageUrl = backdropUrl,
                 clues = clues
             )
+            puzzleCache[cacheKey] = resolvedPuzzle
+            return@withContext resolvedPuzzle
         } else {
             // Offline / fallback puzzle
-            return@withContext createFallbackPuzzle(puzzleNumber, epochDay, targetMovieId)
+            val fallback = createFallbackPuzzle(puzzleNumber, epochDay, targetMovieId)
+            puzzleCache[cacheKey] = fallback
+            return@withContext fallback
         }
     }
 

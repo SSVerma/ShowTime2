@@ -55,7 +55,6 @@ fun WrappedHeroCard(
             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
         ),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
         modifier = modifier.fillMaxWidth()
     ) {
         Box(

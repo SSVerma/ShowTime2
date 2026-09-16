@@ -16,11 +16,12 @@ fun DiscussionsScreen(
 ) {
     TrackScreenView(screenName = CommunityAnalyticsScreenName.COMMUNITY_DISCUSSIONS)
 
-    val comments by viewModel.uiComments.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
 
     DiscussionsScreenContent(
-        comments = comments,
+        comments = uiState.comments,
+        isLoading = uiState.isLoading,
         selectedFilter = selectedFilter,
         onFilterSelected = viewModel::onFilterSelected,
         mediaTitle = viewModel.title,

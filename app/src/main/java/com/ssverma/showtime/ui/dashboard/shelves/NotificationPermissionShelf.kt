@@ -123,7 +123,7 @@ fun NotificationPermissionShelf(
             ),
             border = BorderStroke(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
             ),
             modifier = modifier
                 .fillMaxWidth()

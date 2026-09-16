@@ -64,7 +64,7 @@ fun ShowTimeMediaGridCard(
         ),
         border = border ?: BorderStroke(
             1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
         modifier = modifier.fillMaxWidth()
     ) {
@@ -224,7 +224,7 @@ fun ShowTimeMediaListCard(
         ),
         border = border ?: BorderStroke(
             1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
         modifier = modifier
             .fillMaxWidth()

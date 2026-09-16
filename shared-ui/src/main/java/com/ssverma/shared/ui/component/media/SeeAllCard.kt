@@ -47,7 +47,7 @@ fun SeeAllCard(
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
         modifier = modifier
             .width(cardWidth)

@@ -7,11 +7,15 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -481,6 +485,20 @@ fun DashboardScreen(
                     )
                 }
             }
+
+            // Subtle translucent status bar protection scrim when content scrolls under the status bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsTopHeight(WindowInsets.statusBars)
+                    .align(Alignment.TopCenter)
+                    .graphicsLayer {
+                        val firstIndex = lazyListState.firstVisibleItemIndex
+                        val offset = lazyListState.firstVisibleItemScrollOffset
+                        alpha = if (firstIndex > 0) 0.35f else (offset / 160f).coerceIn(0f, 0.35f)
+                    }
+                    .background(MaterialTheme.colorScheme.background)
+            )
 
             // Snackbar Host with floating bottom bar offset
             ShowTimeSnackbarHost(

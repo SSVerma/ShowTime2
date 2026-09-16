@@ -390,11 +390,11 @@ fun CinephileHubShelf(
         // Toggle Expansion Button
         Surface(
             onClick = { isExpanded = !isExpanded },
-            shape = RoundedCornerShape(MaterialTheme.spacing.smallMedium),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
             border = BorderStroke(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -412,7 +412,7 @@ fun CinephileHubShelf(
                         stringResource(R.string.hub_show_all_tools, 7)
                     },
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
@@ -450,7 +450,7 @@ private fun HubTile(
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
         modifier = modifier.height(52.dp)
     ) {
@@ -509,7 +509,7 @@ private fun HubTile(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -529,7 +529,7 @@ private fun NewBadge(modifier: Modifier = Modifier) {
             text = stringResource(R.string.badge_new),
             style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
         )
     }
@@ -602,7 +602,7 @@ private fun ActionBadge(label: String, modifier: Modifier = Modifier) {
             text = label,
             style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
         )
     }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,6 +41,7 @@ import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -68,6 +70,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -89,6 +92,7 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.component.GameFeedbackParticles
 import com.ssverma.core.ui.component.GameParticleType
 import com.ssverma.core.ui.component.ScratchCard
+import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.movie.R
 import com.ssverma.shared.domain.model.game.DailyCinemaPuzzle
@@ -257,7 +261,7 @@ fun CinemaGameScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    ShowTimeLoadingIndicator()
                 }
             } else {
                 val puzzle = uiState.puzzle
@@ -505,6 +509,8 @@ private fun ClueCard(
 
             val imageUrl = clue.imageUrl
             if (!imageUrl.isNullOrBlank()) {
+                var isStillRevealed by remember(clue.imageUrl) { mutableStateOf(false) }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -566,6 +572,57 @@ private fun ClueCard(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
+
+                        // For Clue 2 (Scene Still): obscure the top half to prevent early face & title spoilers
+                        if (clue.type == GameClueType.SCENE_STILL && !isGameOver && !isStillRevealed) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(0.55f)
+                                    .align(Alignment.TopCenter)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.scrim.copy(alpha = 0.95f),
+                                                MaterialTheme.colorScheme.scrim.copy(alpha = 0.80f),
+                                                MaterialTheme.colorScheme.scrim.copy(alpha = 0.0f)
+                                            )
+                                        )
+                                    )
+                                    .clickable { isStillRevealed = true }
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .align(Alignment.TopCenter)
+                                        .padding(top = 14.dp)
+                                        .background(
+                                            color = Color.Black.copy(alpha = 0.55f),
+                                            shape = RoundedCornerShape(20.dp)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = Color.White.copy(alpha = 0.2f),
+                                            shape = RoundedCornerShape(20.dp)
+                                        )
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Visibility,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = stringResource(id = R.string.cinema_challenge_obscured_tap_hint),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 

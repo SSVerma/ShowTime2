@@ -3,6 +3,9 @@ package com.ssverma.showtime
 import android.app.Activity
 import android.content.Intent
 import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -44,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -67,6 +71,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
+import com.ssverma.core.ui.util.findActivity
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
 import com.ssverma.common.ui.appinfo.OpenSourceLicensesBottomSheet
@@ -116,7 +121,7 @@ fun ShowTime(
     initialDeepLinkKey: NavKey? = null
 ) {
     val appStateHolder = LocalAppStateHolder.current
-    val appTheme by appStateHolder.appTheme.collectAsState(initial = AppTheme.System)
+    val appTheme by appStateHolder.appTheme.collectAsState()
     val isDynamicColorEnabled by appStateHolder.isDynamicColorEnabled.collectAsState(initial = false)
     val isProActive by appStateHolder.isProActive.collectAsState(initial = false)
 
@@ -131,16 +136,31 @@ fun ShowTime(
             AppTheme.OledMidnight -> true
         }
 
+        val context = LocalContext.current
         val view = LocalView.current
         if (!view.isInEditMode) {
-            LaunchedEffect(darkTheme) {
-                val window = (view.context as? Activity)?.window ?: return@LaunchedEffect
-                val insetsController = WindowCompat.getInsetsController(window, view)
-                insetsController.isAppearanceLightStatusBars = !darkTheme
-                insetsController.isAppearanceLightNavigationBars = !darkTheme
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    window.isNavigationBarContrastEnforced = false
+            DisposableEffect(darkTheme) {
+                val activity = context.findActivity() as? ComponentActivity
+                val barStyle = SystemBarStyle.auto(
+                    lightScrim = android.graphics.Color.TRANSPARENT,
+                    darkScrim = android.graphics.Color.TRANSPARENT,
+                    detectDarkMode = { _ -> darkTheme }
+                )
+                activity?.enableEdgeToEdge(
+                    statusBarStyle = barStyle,
+                    navigationBarStyle = barStyle
+                )
+                val window = activity?.window ?: context.findActivity()?.window
+                if (window != null) {
+                    val insetsController =
+                        WindowCompat.getInsetsController(window, window.decorView)
+                    insetsController.isAppearanceLightStatusBars = !darkTheme
+                    insetsController.isAppearanceLightNavigationBars = !darkTheme
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        window.isNavigationBarContrastEnforced = false
+                    }
                 }
+                onDispose {}
             }
         }
 

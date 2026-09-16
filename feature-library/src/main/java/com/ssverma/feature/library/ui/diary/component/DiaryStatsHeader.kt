@@ -47,9 +47,8 @@ fun DiaryStatsHeader(
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)
         ),
-        tonalElevation = 1.dp,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(

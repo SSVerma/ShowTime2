@@ -72,10 +72,9 @@ fun WrappedMilestonesGrid(
         shape = RoundedCornerShape(24.dp),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)
         ),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
