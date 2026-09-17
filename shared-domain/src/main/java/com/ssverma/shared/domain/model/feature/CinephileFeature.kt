@@ -14,7 +14,8 @@ enum class CinephileFeature(
     BACKLOG_CHALLENGES("hub_challenges", isBadgeEligible = true),
     CINEMA_RECEIPT("hub_receipt", isBadgeEligible = true),
     PEOPLE("hub_people", isBadgeEligible = false),
-    DISCOVERY("hub_discovery", isBadgeEligible = true);
+    DISCOVERY("hub_discovery", isBadgeEligible = true),
+    HOME_SCREEN_WIDGETS("hub_widgets", isBadgeEligible = true);
 
     fun isNew(acknowledgedFeatures: Set<String>): Boolean {
         return isBadgeEligible && id !in acknowledgedFeatures

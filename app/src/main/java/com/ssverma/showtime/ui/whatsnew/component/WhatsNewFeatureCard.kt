@@ -20,11 +20,15 @@ import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.feature.CinephileFeature
 import com.ssverma.showtime.ui.whatsnew.WhatsNewFeature
 import com.ssverma.feature.match.ui.component.MovieMatchIllustration
+import com.ssverma.showtime.ui.whatsnew.illustration.BacklogChallengesIllustration
+import com.ssverma.showtime.ui.whatsnew.illustration.CinemaDiaryIllustration
+import com.ssverma.showtime.ui.whatsnew.illustration.CinemaReceiptIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.CommunityListsIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.DailyGameIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.DiscoverIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.MyListsIllustration
 import com.ssverma.showtime.ui.whatsnew.illustration.TasteProfileIllustration
+import com.ssverma.showtime.ui.whatsnew.illustration.WidgetsIllustration
 
 @Composable
 fun WhatsNewFeatureCard(
@@ -45,6 +49,10 @@ fun WhatsNewFeatureCard(
                 .height(210.dp)
         ) {
             when (feature.feature) {
+                CinephileFeature.CINEMA_DIARY -> CinemaDiaryIllustration()
+                CinephileFeature.CINEMA_RECEIPT -> CinemaReceiptIllustration()
+                CinephileFeature.BACKLOG_CHALLENGES -> BacklogChallengesIllustration()
+                CinephileFeature.HOME_SCREEN_WIDGETS -> WidgetsIllustration()
                 CinephileFeature.MY_LISTS -> MyListsIllustration()
                 CinephileFeature.DISCOVERY -> DiscoverIllustration()
                 CinephileFeature.COMMUNITY_LISTS -> CommunityListsIllustration()

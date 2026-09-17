@@ -253,7 +253,22 @@
     <string name="whats_new_taste_desc">Decode your cinema DNA with genre radars, director stats, and retro receipts.</string>
 
     <string name="whats_new_game_title">Daily Challenge</string>
-    <string name="whats_new_game_desc">Guess the mystery movie from clues each day and vote in community polls.</string>
+    <string name="whats_new_game_desc">Guess the mystery movie from clues each day and build your streak.</string>
+
+    <string name="whats_new_diary_title">Cinema Diary</string>
+    <string name="whats_new_diary_desc">Log every film you watch with custom ratings, dates, personal tags, and watch records.</string>
+
+    <string name="whats_new_receipt_title">Cinema Receipt</string>
+    <string name="whats_new_receipt_desc">A stylized vintage paper receipt of your movie stats, top directors, and cinema diet.</string>
+
+    <string name="whats_new_challenges_title">Film Challenges</string>
+    <string name="whats_new_challenges_desc">Conquer 52 Films in a Year, Oscar quests, and custom watchlist challenges.</string>
+
+    <string name="whats_new_widgets_title">Home Screen Widgets</string>
+    <string name="whats_new_widgets_desc">Glanceable TV episode tracker and instant watchlist bookmarks directly on your home screen.</string>
+
+    <string name="whats_new_poll_title">Daily Cinephile Poll</string>
+    <string name="whats_new_poll_desc">Vote in daily cinema debates, see real-time community consensus, and build streaks.</string>
 
     <string name="whats_new_try_feature">Try %1$s</string>
     <string name="whats_new_try_feature_default">Try It Now</string>

@@ -68,6 +68,10 @@ fun WhatsNewScreen(
     val currentFeature = features.getOrNull(pagerState.currentPage) ?: features.first()
 
     val auraTargetColor = when (currentFeature.feature) {
+        CinephileFeature.CINEMA_DIARY -> MaterialTheme.colorScheme.primary
+        CinephileFeature.CINEMA_RECEIPT -> MaterialTheme.colorScheme.tertiary
+        CinephileFeature.BACKLOG_CHALLENGES -> MaterialTheme.colorScheme.secondary
+        CinephileFeature.HOME_SCREEN_WIDGETS -> MaterialTheme.colorScheme.primary
         CinephileFeature.MY_LISTS -> MaterialTheme.colorScheme.primary
         CinephileFeature.DISCOVERY -> MaterialTheme.colorScheme.secondary
         CinephileFeature.COMMUNITY_LISTS -> MaterialTheme.colorScheme.tertiary
@@ -202,15 +206,22 @@ fun WhatsNewScreen(
                 }
             }
 
-            // 2. Fixed-Height Feature Showcase Carousel
+            // 2. Feature Showcase Carousel (Full gesture coverage between top and bottom bars)
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             ) { page ->
-                WhatsNewFeatureCard(
-                    feature = features[page],
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    WhatsNewFeatureCard(
+                        feature = features[page],
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             // 3. Bottom Action Dock
