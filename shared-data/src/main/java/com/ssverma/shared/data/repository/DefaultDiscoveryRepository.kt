@@ -57,14 +57,18 @@ class DefaultDiscoveryRepository @Inject constructor(
 
         queryMap["sort_by"] = filter.sortOrder.apiValue
 
-        val minVoteAvg = filter.minRating
-            ?: if (filter.vibePreset != DiscoveryVibePreset.ALL) filter.vibePreset.minVoteAverage else null
-        if (minVoteAvg != null && minVoteAvg > 0f) {
-            queryMap["vote_average.gte"] = minVoteAvg.toString()
+        val effectiveMinRating = if (filter.ratingThreshold.minRating > 0f) {
+            filter.ratingThreshold.minRating
+        } else {
+            filter.minRating
+                ?: if (filter.vibePreset != DiscoveryVibePreset.ALL) filter.vibePreset.minVoteAverage else null
+        }
+        if (effectiveMinRating != null && effectiveMinRating > 0f) {
+            queryMap["vote_average.gte"] = effectiveMinRating.toString()
         }
 
         val minVoteCount = if (filter.vibePreset == DiscoveryVibePreset.ALL) {
-            if (filter.minRating != null) 50 else 20
+            if (effectiveMinRating != null && effectiveMinRating > 0f) 50 else 20
         } else {
             filter.vibePreset.minVoteCount
         }
@@ -85,8 +89,20 @@ class DefaultDiscoveryRepository @Inject constructor(
             queryMap["watch_region"] = filter.watchRegion
         }
 
-        filter.studioHub?.let { hub ->
-            queryMap["with_companies"] = hub.companyId.toString()
+        if (filter.monetizationTypes.isNotEmpty()) {
+            queryMap["with_watch_monetization_types"] =
+                filter.monetizationTypes.joinToString("|") { it.apiValue }
+            queryMap["watch_region"] = filter.watchRegion
+        }
+
+        if (filter.mediaType == MediaType.Movie) {
+            filter.studioHub?.let { hub ->
+                queryMap["with_companies"] = hub.companyId.toString()
+            }
+        } else {
+            filter.tvNetworkHub?.let { hub ->
+                queryMap["with_networks"] = hub.networkId.toString()
+            }
         }
 
         filter.decade.startYear?.let { start ->
@@ -104,10 +120,24 @@ class DefaultDiscoveryRepository @Inject constructor(
             }
         }
 
-        filter.vibePreset.maxRuntimeMinutes?.let { maxRuntime ->
-            if (filter.mediaType == MediaType.Movie) {
-                queryMap["with_runtime.lte"] = maxRuntime.toString()
+        if (filter.mediaType == MediaType.Movie) {
+            filter.runtimeRange.minMinutes?.let { minRuntime ->
+                queryMap["with_runtime.gte"] = minRuntime.toString()
             }
+            val maxRuntime =
+                filter.runtimeRange.maxMinutes ?: filter.vibePreset.maxRuntimeMinutes
+            maxRuntime?.let {
+                queryMap["with_runtime.lte"] = it.toString()
+            }
+        }
+
+        filter.language.isoCode?.let { langIso ->
+            queryMap["with_original_language"] = langIso
+        }
+
+        filter.certification?.let { cert ->
+            queryMap["certification_country"] = filter.watchRegion
+            queryMap["certification"] = cert
         }
 
         return if (filter.mediaType == MediaType.Movie) {

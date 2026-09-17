@@ -10,8 +10,15 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.discovery.DiscoveryDecade
+import com.ssverma.shared.domain.model.discovery.DiscoveryLanguage
+import com.ssverma.shared.domain.model.discovery.DiscoveryMonetizationType
+import com.ssverma.shared.domain.model.discovery.DiscoveryRatingThreshold
+import com.ssverma.shared.domain.model.discovery.DiscoveryRuntimeRange
 import com.ssverma.shared.domain.model.discovery.DiscoverySortOrder
+import com.ssverma.shared.domain.model.discovery.DiscoveryStudioHub
+import com.ssverma.shared.domain.model.discovery.DiscoveryTvNetworkHub
 import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
+import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.DiscoveryRepository
@@ -338,5 +345,74 @@ class UniversalDiscoveryViewModelTest {
         advanceUntilIdle()
 
         assertThat(viewModel.uiState.value.filter.selectedProviderIds).isEmpty()
+    }
+
+    @Test
+    fun `activeFilterCount accurately computes applied filter count`() {
+        val defaultFilter = UniversalDiscoveryFilter()
+        assertThat(defaultFilter.activeFilterCount()).isEqualTo(0)
+
+        val richFilter = UniversalDiscoveryFilter(
+            mediaType = MediaType.Movie,
+            vibePreset = DiscoveryVibePreset.MIND_BENDING,
+            decade = DiscoveryDecade.TWENTIES_2020S,
+            sortOrder = DiscoverySortOrder.VOTE_AVERAGE_DESC,
+            studioHub = DiscoveryStudioHub.A24,
+            ratingThreshold = DiscoveryRatingThreshold.GREAT_7_PLUS,
+            runtimeRange = DiscoveryRuntimeRange.SHORT,
+            monetizationTypes = setOf(
+                DiscoveryMonetizationType.STREAM,
+                DiscoveryMonetizationType.FREE
+            ),
+            language = DiscoveryLanguage.KOREAN,
+            certification = "R",
+            selectedGenreIds = setOf(28, 878),
+            selectedProviderIds = setOf(8)
+        )
+        // 1(vibe) + 1(decade) + 1(sort) + 1(studio) + 1(rating) + 1(runtime) + 2(monetization) + 1(lang) + 1(cert) + 2(genres) + 1(provider) = 13
+        assertThat(richFilter.activeFilterCount()).isEqualTo(13)
+    }
+
+    @Test
+    fun `applyFilter applies rich context-aware filter and activeFilterCount updates`() = runTest {
+        advanceUntilIdle()
+        val richFilter = viewModel.uiState.value.filter.copy(
+            studioHub = DiscoveryStudioHub.NEON,
+            ratingThreshold = DiscoveryRatingThreshold.MASTERPIECE_8_PLUS,
+            runtimeRange = DiscoveryRuntimeRange.STANDARD,
+            monetizationTypes = setOf(DiscoveryMonetizationType.STREAM),
+            language = DiscoveryLanguage.JAPANESE,
+            certification = "PG-13"
+        )
+        viewModel.applyFilter(richFilter)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.filter.studioHub).isEqualTo(DiscoveryStudioHub.NEON)
+        assertThat(state.filter.ratingThreshold).isEqualTo(DiscoveryRatingThreshold.MASTERPIECE_8_PLUS)
+        assertThat(state.filter.runtimeRange).isEqualTo(DiscoveryRuntimeRange.STANDARD)
+        assertThat(state.filter.monetizationTypes).containsExactly(DiscoveryMonetizationType.STREAM)
+        assertThat(state.filter.language).isEqualTo(DiscoveryLanguage.JAPANESE)
+        assertThat(state.filter.certification).isEqualTo("PG-13")
+        assertThat(state.filter.activeFilterCount()).isGreaterThan(0)
+    }
+
+    @Test
+    fun `setMediaType to TV resets movie-only runtime filter`() = runTest {
+        advanceUntilIdle()
+        val movieFilter = viewModel.uiState.value.filter.copy(
+            mediaType = MediaType.Movie,
+            runtimeRange = DiscoveryRuntimeRange.SHORT
+        )
+        viewModel.applyFilter(movieFilter)
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.filter.runtimeRange).isEqualTo(DiscoveryRuntimeRange.SHORT)
+
+        viewModel.setMediaType(MediaType.Tv)
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.filter.mediaType).isEqualTo(MediaType.Tv)
+        assertThat(viewModel.uiState.value.filter.runtimeRange).isEqualTo(DiscoveryRuntimeRange.ALL)
     }
 }

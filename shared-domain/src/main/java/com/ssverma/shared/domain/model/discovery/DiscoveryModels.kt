@@ -110,12 +110,103 @@ enum class DiscoveryStudioHub(
     val label: String
 ) {
     A24(41077, "A24"),
-    HBO(3268, "HBO"),
     NEON(93475, "NEON"),
     STUDIO_GHIBLI(10342, "Studio Ghibli"),
     PIXAR(3, "Pixar"),
     MARVEL(420, "Marvel Studios"),
-    WARNER_BROS(174, "Warner Bros.")
+    WARNER_BROS(174, "Warner Bros."),
+    UNIVERSAL(33, "Universal Pictures"),
+    PARAMOUNT(4, "Paramount"),
+    COLUMBIA(5, "Columbia Pictures"),
+    BLUMHOUSE(3172, "Blumhouse")
+}
+
+enum class DiscoveryTvNetworkHub(
+    val networkId: Int,
+    val label: String
+) {
+    HBO(49, "HBO"),
+    NETFLIX(213, "Netflix"),
+    APPLE_TV_PLUS(2552, "Apple TV+"),
+    AMC(174, "AMC"),
+    FX(88, "FX"),
+    BBC(4, "BBC"),
+    DISNEY_PLUS(2739, "Disney+"),
+    SHOWTIME(67, "Showtime"),
+    AMAZON(1024, "Prime Video"),
+    PARAMOUNT_PLUS(4330, "Paramount+"),
+    HULU(453, "Hulu")
+}
+
+enum class DiscoveryRatingThreshold(
+    val minRating: Float,
+    val label: String
+) {
+    ALL(0.0f, "Any Rating"),
+    GOOD_6_PLUS(6.0f, "6.0+ Good"),
+    GREAT_7_PLUS(7.0f, "7.0+ Great"),
+    MASTERPIECE_8_PLUS(8.0f, "8.0+ Masterpiece")
+}
+
+enum class DiscoveryRuntimeRange(
+    val minMinutes: Int?,
+    val maxMinutes: Int?,
+    val label: String
+) {
+    ALL(null, null, "Any Length"),
+    SHORT(null, 90, "Under 90m"),
+    STANDARD(90, 120, "90 – 120m"),
+    EPIC(120, null, "Over 2 hours")
+}
+
+enum class DiscoveryMonetizationType(
+    val apiValue: String,
+    val label: String
+) {
+    STREAM("flatrate", "Stream"),
+    FREE("free", "Free"),
+    ADS("ads", "With Ads"),
+    RENT("rent", "Rent"),
+    BUY("buy", "Buy")
+}
+
+enum class DiscoveryLanguage(
+    val isoCode: String?,
+    val label: String
+) {
+    ALL(null, "All Languages"),
+    ENGLISH("en", "English"),
+    HINDI("hi", "Hindi"),
+    KOREAN("ko", "Korean"),
+    JAPANESE("ja", "Japanese"),
+    SPANISH("es", "Spanish"),
+    FRENCH("fr", "French"),
+    GERMAN("de", "German"),
+    ITALIAN("it", "Italian")
+}
+
+object DiscoveryCertificationHelper {
+    fun getCertifications(regionCode: String, mediaType: MediaType): List<String> {
+        return when (regionCode.uppercase()) {
+            "IN" -> listOf("U", "U/A 7+", "U/A 13+", "U/A 16+", "A")
+            "GB" -> listOf("U", "PG", "12A", "15", "18")
+            "US" -> if (mediaType == MediaType.Movie) {
+                listOf("G", "PG", "PG-13", "R", "NC-17")
+            } else {
+                listOf("TV-Y", "TV-G", "TV-PG", "TV-14", "TV-MA")
+            }
+
+            "CA" -> listOf("G", "PG", "14A", "18A", "R")
+            "AU" -> listOf("G", "PG", "M", "MA15+", "R18+")
+            "FR" -> listOf("U", "10", "12", "16", "18")
+            "DE" -> listOf("0", "6", "12", "16", "18")
+            else -> if (mediaType == MediaType.Movie) {
+                listOf("G", "PG", "PG-13", "R", "NC-17")
+            } else {
+                listOf("TV-Y", "TV-PG", "TV-14", "TV-MA")
+            }
+        }
+    }
 }
 
 data class UniversalDiscoveryFilter(
@@ -124,12 +215,36 @@ data class UniversalDiscoveryFilter(
     val decade: DiscoveryDecade = DiscoveryDecade.ALL_TIME,
     val sortOrder: DiscoverySortOrder = DiscoverySortOrder.POPULARITY_DESC,
     val studioHub: DiscoveryStudioHub? = null,
+    val tvNetworkHub: DiscoveryTvNetworkHub? = null,
+    val ratingThreshold: DiscoveryRatingThreshold = DiscoveryRatingThreshold.ALL,
+    val runtimeRange: DiscoveryRuntimeRange = DiscoveryRuntimeRange.ALL,
+    val monetizationTypes: Set<DiscoveryMonetizationType> = emptySet(),
+    val language: DiscoveryLanguage = DiscoveryLanguage.ALL,
+    val certification: String? = null,
     val selectedGenreIds: Set<Int> = emptySet(),
     val selectedProviderIds: Set<Int> = emptySet(),
     val watchRegion: String = "US",
     val minRating: Float? = null,
     val hideWatched: Boolean = true
-)
+) {
+    fun activeFilterCount(): Int {
+        var count = 0
+        if (vibePreset != DiscoveryVibePreset.ALL) count++
+        if (decade != DiscoveryDecade.ALL_TIME) count++
+        if (sortOrder != DiscoverySortOrder.POPULARITY_DESC) count++
+        if (mediaType == MediaType.Movie && studioHub != null) count++
+        if (mediaType == MediaType.Tv && tvNetworkHub != null) count++
+        if (ratingThreshold != DiscoveryRatingThreshold.ALL || (minRating != null && minRating > 0f)) count++
+        if (mediaType == MediaType.Movie && runtimeRange != DiscoveryRuntimeRange.ALL) count++
+        if (monetizationTypes.isNotEmpty()) count += monetizationTypes.size
+        if (language != DiscoveryLanguage.ALL) count++
+        if (!certification.isNullOrBlank()) count++
+        if (selectedGenreIds.isNotEmpty()) count += selectedGenreIds.size
+        if (selectedProviderIds.isNotEmpty()) count += selectedProviderIds.size
+        if (!hideWatched) count++
+        return count
+    }
+}
 
 data class UniversalMediaItem(
     val id: Int,

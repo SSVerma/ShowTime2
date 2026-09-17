@@ -14,8 +14,12 @@ import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.discovery.DiscoveryDecade
+import com.ssverma.shared.domain.model.discovery.DiscoveryLanguage
+import com.ssverma.shared.domain.model.discovery.DiscoveryRatingThreshold
+import com.ssverma.shared.domain.model.discovery.DiscoveryRuntimeRange
 import com.ssverma.shared.domain.model.discovery.DiscoverySortOrder
 import com.ssverma.shared.domain.model.discovery.DiscoveryStudioHub
+import com.ssverma.shared.domain.model.discovery.DiscoveryTvNetworkHub
 import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
 import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
@@ -368,7 +372,12 @@ class UniversalDiscoveryViewModel @Inject constructor(
         if (_uiState.value.filter.mediaType == mediaType) return
         analytics.logEvent(FilterAnalyticsEvent.MediaTypeSwitched(mediaType = mediaType.asAnalyticsValue()))
         _uiState.update {
-            it.copy(filter = it.filter.copy(mediaType = mediaType))
+            it.copy(
+                filter = it.filter.copy(
+                    mediaType = mediaType,
+                    runtimeRange = if (mediaType == MediaType.Tv) DiscoveryRuntimeRange.ALL else it.filter.runtimeRange
+                )
+            )
         }
         loadAvailableProviders()
         scheduleQuery(debounceMs = 0)
@@ -406,6 +415,12 @@ class UniversalDiscoveryViewModel @Inject constructor(
                     decade = DiscoveryDecade.ALL_TIME,
                     sortOrder = DiscoverySortOrder.POPULARITY_DESC,
                     studioHub = null,
+                    tvNetworkHub = null,
+                    ratingThreshold = DiscoveryRatingThreshold.ALL,
+                    runtimeRange = DiscoveryRuntimeRange.ALL,
+                    monetizationTypes = emptySet(),
+                    language = DiscoveryLanguage.ALL,
+                    certification = null,
                     selectedGenreIds = emptySet(),
                     selectedProviderIds = emptySet(),
                     minRating = null,

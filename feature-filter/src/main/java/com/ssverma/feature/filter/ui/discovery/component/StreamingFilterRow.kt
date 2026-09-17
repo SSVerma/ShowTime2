@@ -47,6 +47,7 @@ fun StreamingFilterRow(
     availableProviders: List<ProviderInfo>,
     selectedProviderIds: Set<Int>,
     userSubscriptions: Set<Int> = emptySet(),
+    activeFilterCount: Int = 0,
     onToggleProvider: (Int) -> Unit,
     onToggleMyServices: () -> Unit = {},
     onOpenSubscriptionsSheet: () -> Unit = {},
@@ -91,14 +92,23 @@ fun StreamingFilterRow(
 
         // Advanced Filter & Sort Button
         item(key = "filter_chip") {
+            val isFilterActive = activeFilterCount > 0
+            val containerColor by animateColorAsState(
+                targetValue = if (isFilterActive) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                label = "filter_chip_bg"
+            )
+            val borderColor by animateColorAsState(
+                targetValue = if (isFilterActive) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                label = "filter_chip_border"
+            )
+
             Surface(
                 onClick = onOpenFilterSheet,
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                border = BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                )
+                color = containerColor,
+                border = BorderStroke(1.dp, borderColor)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -112,10 +122,14 @@ fun StreamingFilterRow(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = stringResource(R.string.filter),
+                        text = if (isFilterActive) {
+                            stringResource(R.string.filter_count_badge, activeFilterCount)
+                        } else {
+                            stringResource(R.string.filter)
+                        },
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        fontWeight = if (isFilterActive) FontWeight.Bold else FontWeight.SemiBold,
+                        color = if (isFilterActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

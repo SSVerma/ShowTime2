@@ -88,4 +88,27 @@
     <string name="empty_discovery_title">No titles found matching your criteria</string>
     <string name="empty_discovery_desc">Try switching vibes, adjusting streaming filters, or changing decade.</string>
     <string name="reset_filters">Reset Filters</string>
+    <string name="filter_sheet_title">Advanced Discovery Filters</string>
+    <string name="filter_reset">Reset</string>
+    <string name="hide_watched_title">Hide Watched Titles</string>
+    <string name="hide_watched_desc">Exclude movies and shows in your watch history</string>
+    <string name="filter_section_sort">Sort By</string>
+    <string name="filter_section_rating">Minimum Rating</string>
+    <string name="filter_section_era">Era &amp; Decade</string>
+    <string name="filter_section_studios">Cinephile Movie Studios</string>
+    <string name="filter_section_networks">Top TV Networks</string>
+    <string name="filter_section_runtime">Movie Runtime</string>
+    <string name="filter_section_monetization">Availability &amp; Watch Options</string>
+    <string name="filter_section_language">Original Language</string>
+    <string name="filter_section_certification">Age &amp; Content Certification</string>
+    <string name="filter_count_badge">Filter (%1$d)</string>
+    <string name="filter_apply_with_count">Apply Filters (%1$d)</string>
+    <string name="filter_apply_cta">Apply Filters</string>
+    <string name="all_studios">All Studios</string>
+    <string name="all_networks">All Networks</string>
+    <string name="all_languages">All Languages</string>
+    <string name="all_ratings">All Ratings</string>
+    <string name="all_runtimes">Any Length</string>
+    <string name="any_rating">Any Rating</string>
+    <string name="cancel">Cancel</string>
 </resources>

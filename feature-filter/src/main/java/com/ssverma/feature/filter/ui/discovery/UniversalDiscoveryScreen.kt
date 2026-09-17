@@ -219,6 +219,7 @@ fun UniversalDiscoveryScreen(
                             availableProviders = uiState.availableProviders,
                             selectedProviderIds = uiState.filter.selectedProviderIds,
                             userSubscriptions = uiState.userStreamingSubscriptions,
+                            activeFilterCount = uiState.filter.activeFilterCount(),
                             onToggleProvider = { viewModel.toggleStreamingProvider(it) },
                             onToggleMyServices = { viewModel.toggleMyServicesFilter() },
                             onOpenSubscriptionsSheet = { viewModel.openSubscriptionsSheet(true) },
