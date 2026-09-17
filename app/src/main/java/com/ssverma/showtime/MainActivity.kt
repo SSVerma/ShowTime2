@@ -180,7 +180,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun extractNavKey(intent: Intent): NavKey? {
         // 1. Check data URI (from adb or PendingIntent)
-        intent.data?.let {
+        intent.data?.toString()?.let {
             val navKey = ShowTimeDeepLinkHandler.parse(it)
             if (navKey != null) return navKey
         }

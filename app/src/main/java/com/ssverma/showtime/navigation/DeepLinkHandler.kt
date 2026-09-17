@@ -1,6 +1,5 @@
 package com.ssverma.showtime.navigation
 
-import android.net.Uri
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
 import com.ssverma.feature.library.navigation.ChallengeDetailNavKey
@@ -21,26 +20,107 @@ import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowHomeNavKey
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
+import java.net.URI
 
 object ShowTimeDeepLinkHandler {
-    const val PRIMARY_HOST = "showtime.ssverma.in"
-    private val ALLOWED_HOSTS = setOf(
-        "showtime.ssverma.in",
-        "www.ssverma.in",
-        "ssverma.in"
-    )
-    private val ALLOWED_SCHEMES = setOf("showtime", "https", "http")
 
-    fun parse(uri: Uri): NavKey? {
-        return parseParts(uri.scheme, uri.host, uri.pathSegments)
-    }
+    // Schemes
+    const val SCHEME_SHOWTIME = "showtime"
+    const val SCHEME_HTTPS = "https"
+    const val SCHEME_HTTP = "http"
+
+    // Hosts
+    const val PRIMARY_HOST = "showtime.ssverma.in"
+    const val HOST_PRIMARY = PRIMARY_HOST
+    const val HOST_WWW = "www.ssverma.in"
+    const val HOST_ROOT = "ssverma.in"
+
+    // Path Prefixes & Special Tokens
+    private const val PREFIX_SHOWTIME = "showtime"
+    private const val PREFIX_SECRET_LIST = "SL-"
+    private const val DEFAULT_DISCOVERY_VIBE = "ALL"
+
+    // Path Keywords
+    private const val PATH_HOME = "home"
+    private const val PATH_DASHBOARD = "dashboard"
+
+    private const val PATH_GAME = "game"
+    private const val PATH_PUZZLE = "puzzle"
+
+    private const val PATH_CHALLENGES = "challenges"
+    private const val PATH_CHALLENGE = "challenge"
+    private const val PATH_BACKLOG = "backlog"
+    private const val PATH_BLINDSPOT = "blindspot"
+    private const val PATH_BLINDSPOTS = "blindspots"
+
+    private const val PATH_SEARCH = "search"
+
+    private const val PATH_DISCOVER = "discover"
+    private const val PATH_DISCOVERY = "discovery"
+    private const val PATH_BROWSE = "browse"
+
+    private const val PATH_RECEIPT = "receipt"
+    private const val PATH_RECEIPTS = "receipts"
+
+    private const val PATH_WRAPPED = "wrapped"
+    private const val PATH_MILESTONES = "milestones"
+
+    private const val PATH_TASTE = "taste"
+    private const val PATH_RECOMMENDATIONS = "recommendations"
+
+    private const val PATH_DIARY = "diary"
+
+    private const val PATH_SECRET_LIST_SHORT = "l"
+    private const val PATH_SECRET_LIST = "secret_list"
+    private const val PATH_SHARED_LIST = "shared_list"
+
+    private const val PATH_LISTS = "lists"
+    private const val PATH_LIST = "list"
+
+    private const val PATH_COMMUNITY = "community"
+    private const val PATH_LIBRARY = "library"
+
+    private const val PATH_TV = "tv"
+    private const val PATH_MOVIE = "movie"
+    private const val PATH_PERSON = "person"
+    private const val PATH_PEOPLE = "people"
+
+    private const val PATH_MATCH = "match"
+    private const val PATH_MATCHROOM = "matchroom"
+    private const val PATH_SWIPENIGHT = "swipenight"
+
+    // Library Sub-tab Keywords
+    private const val TAB_WATCHLIST = "watchlist"
+    private const val TAB_FAVORITES = "favorites"
+    private const val TAB_FAVORITE = "favorite"
+    private const val TAB_HISTORY = "history"
+    private const val TAB_CUSTOM_LISTS = "custom_lists"
+    private const val TAB_MY_LISTS = "my_lists"
+    private const val TAB_EXPLORE = "explore"
+    private const val TAB_COMMUNITY_LISTS = "community_lists"
+
+    private val ALLOWED_HOSTS = setOf(
+        HOST_PRIMARY,
+        HOST_WWW,
+        HOST_ROOT
+    )
+
+    private val ALLOWED_SCHEMES = setOf(
+        SCHEME_SHOWTIME,
+        SCHEME_HTTPS,
+        SCHEME_HTTP
+    )
 
     fun parse(uriString: String?): NavKey? {
         if (uriString.isNullOrBlank()) return null
         return try {
-            val javaUri = java.net.URI(uriString)
+            val javaUri = URI(uriString)
             val segments = javaUri.path?.split("/")?.filter { it.isNotEmpty() } ?: emptyList()
-            parseParts(javaUri.scheme, javaUri.host, segments)
+            parseParts(
+                scheme = javaUri.scheme,
+                host = javaUri.host,
+                pathSegments = segments
+            )
         } catch (_: Exception) {
             null
         }
@@ -55,7 +135,7 @@ object ShowTimeDeepLinkHandler {
         }
 
         val effectiveSegments = if (pathSegments.isNotEmpty() && pathSegments[0].equals(
-                "showtime",
+                PREFIX_SHOWTIME,
                 ignoreCase = true
             )
         ) {
@@ -72,34 +152,35 @@ object ShowTimeDeepLinkHandler {
 
         return try {
             when (type) {
-                "home", "dashboard" -> DashboardHomeNavKey
+                PATH_HOME, PATH_DASHBOARD -> DashboardHomeNavKey
 
-                "game", "puzzle" -> CinemaGameNavKey
+                PATH_GAME, PATH_PUZZLE -> CinemaGameNavKey
 
-                "challenges", "challenge", "backlog", "blindspot", "blindspots" -> {
+                PATH_CHALLENGES, PATH_CHALLENGE, PATH_BACKLOG, PATH_BLINDSPOT, PATH_BLINDSPOTS -> {
                     if (effectiveSegments.size >= 2 && effectiveSegments[1].isNotBlank()) {
-                        ChallengeDetailNavKey(effectiveSegments[1])
+                        ChallengeDetailNavKey(challengeId = effectiveSegments[1])
                     } else {
                         BacklogChallengeNavKey
                     }
                 }
 
-                "search" -> SearchNavKey
+                PATH_SEARCH -> SearchNavKey
 
-                "discover", "discovery", "browse" -> {
-                    val vibe = if (effectiveSegments.size >= 2) effectiveSegments[1] else "ALL"
+                PATH_DISCOVER, PATH_DISCOVERY, PATH_BROWSE -> {
+                    val vibe =
+                        if (effectiveSegments.size >= 2) effectiveSegments[1] else DEFAULT_DISCOVERY_VIBE
                     UniversalDiscoveryNavKey(initialVibe = vibe)
                 }
 
-                "receipt", "receipts" -> CinemaReceiptNavKey
+                PATH_RECEIPT, PATH_RECEIPTS -> CinemaReceiptNavKey
 
-                "wrapped", "milestones" -> CinephileWrappedNavKey
+                PATH_WRAPPED, PATH_MILESTONES -> CinephileWrappedNavKey
 
-                "taste", "recommendations" -> TasteProfileNavKey
+                PATH_TASTE, PATH_RECOMMENDATIONS -> TasteProfileNavKey
 
-                "diary" -> CinemaDiaryNavKey
+                PATH_DIARY -> CinemaDiaryNavKey
 
-                "l", "secret_list", "shared_list" -> {
+                PATH_SECRET_LIST_SHORT, PATH_SECRET_LIST, PATH_SHARED_LIST -> {
                     if (effectiveSegments.size >= 2) {
                         SecretSharedListNavKey(shareCode = effectiveSegments[1].uppercase())
                     } else {
@@ -107,14 +188,10 @@ object ShowTimeDeepLinkHandler {
                     }
                 }
 
-                "lists", "list" -> {
+                PATH_LISTS, PATH_LIST -> {
                     if (effectiveSegments.size >= 2) {
                         val segment = effectiveSegments[1]
-                        if (segment.startsWith(
-                                "SL-",
-                                ignoreCase = true
-                            ) || segment.startsWith("sl-", ignoreCase = true)
-                        ) {
+                        if (segment.startsWith(PREFIX_SECRET_LIST, ignoreCase = true)) {
                             SecretSharedListNavKey(shareCode = segment.uppercase())
                         } else {
                             LibraryHomeNavKey(
@@ -127,7 +204,7 @@ object ShowTimeDeepLinkHandler {
                     }
                 }
 
-                "community" -> {
+                PATH_COMMUNITY -> {
                     if (effectiveSegments.size >= 2) {
                         LibraryHomeNavKey(
                             initialTab = LibraryTabDestination.Community,
@@ -138,13 +215,22 @@ object ShowTimeDeepLinkHandler {
                     }
                 }
 
-                "library" -> {
-                    val subTab =
-                        if (effectiveSegments.size > 1) effectiveSegments[1].lowercase() else "watchlist"
+                PATH_LIBRARY -> {
+                    val subTab = if (effectiveSegments.size > 1) {
+                        effectiveSegments[1].lowercase()
+                    } else {
+                        TAB_WATCHLIST
+                    }
                     when (subTab) {
-                        "favorites", "favorite" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.Favorites)
-                        "history" -> LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
-                        "custom_lists", "lists", "my_lists" -> {
+                        TAB_FAVORITES, TAB_FAVORITE -> {
+                            LibraryHomeNavKey(initialTab = LibraryTabDestination.Favorites)
+                        }
+
+                        TAB_HISTORY -> {
+                            LibraryHomeNavKey(initialTab = LibraryTabDestination.History)
+                        }
+
+                        TAB_CUSTOM_LISTS, PATH_LISTS, TAB_MY_LISTS -> {
                             if (effectiveSegments.size >= 3) {
                                 LibraryHomeNavKey(
                                     initialTab = LibraryTabDestination.CustomLists,
@@ -155,7 +241,7 @@ object ShowTimeDeepLinkHandler {
                             }
                         }
 
-                        "community", "explore", "community_lists" -> {
+                        PATH_COMMUNITY, TAB_EXPLORE, TAB_COMMUNITY_LISTS -> {
                             if (effectiveSegments.size >= 3) {
                                 LibraryHomeNavKey(
                                     initialTab = LibraryTabDestination.Community,
@@ -170,41 +256,41 @@ object ShowTimeDeepLinkHandler {
                     }
                 }
 
-                "tv" -> {
+                PATH_TV -> {
                     if (effectiveSegments.size >= 2) {
                         val id = effectiveSegments[1].toIntOrNull()
-                        if (id != null) TvShowDetailNavKey(id) else TvShowHomeNavKey
+                        if (id != null) TvShowDetailNavKey(tvShowId = id) else TvShowHomeNavKey
                     } else {
                         TvShowHomeNavKey
                     }
                 }
 
-                "match", "matchroom", "swipenight" -> {
+                PATH_MATCH, PATH_MATCHROOM, PATH_SWIPENIGHT -> {
                     val code = if (effectiveSegments.size >= 2) effectiveSegments[1] else null
                     MatchRoomNavKey(roomCode = code)
                 }
 
-                "movie" -> {
+                PATH_MOVIE -> {
                     if (effectiveSegments.size >= 2) {
-                        if (effectiveSegments[1].equals("match", ignoreCase = true) ||
-                            effectiveSegments[1].equals("matchroom", ignoreCase = true)
+                        if (effectiveSegments[1].equals(PATH_MATCH, ignoreCase = true) ||
+                            effectiveSegments[1].equals(PATH_MATCHROOM, ignoreCase = true)
                         ) {
                             val code =
                                 if (effectiveSegments.size >= 3) effectiveSegments[2] else null
                             MatchRoomNavKey(roomCode = code)
                         } else {
                             val id = effectiveSegments[1].toIntOrNull()
-                            if (id != null) MovieDetailNavKey(id) else MovieHomeNavKey
+                            if (id != null) MovieDetailNavKey(movieId = id) else MovieHomeNavKey
                         }
                     } else {
                         MovieHomeNavKey
                     }
                 }
 
-                "person", "people" -> {
+                PATH_PERSON, PATH_PEOPLE -> {
                     if (effectiveSegments.size >= 2) {
                         val id = effectiveSegments[1].toIntOrNull()
-                        if (id != null) PersonDetailNavKey(id) else PersonHomeNavKey
+                        if (id != null) PersonDetailNavKey(personId = id) else PersonHomeNavKey
                     } else {
                         PersonHomeNavKey
                     }

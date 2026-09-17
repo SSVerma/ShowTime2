@@ -1,6 +1,7 @@
 package com.ssverma.showtime.navigation
 
 import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
+import com.ssverma.feature.library.navigation.ChallengeDetailNavKey
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
@@ -8,6 +9,7 @@ import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.feature.library.navigation.SecretSharedListNavKey
 import com.ssverma.feature.library.navigation.TasteProfileNavKey
+import com.ssverma.feature.match.navigation.MatchRoomNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.movie.navigation.MovieDetailNavKey
 import com.ssverma.feature.movie.navigation.MovieHomeNavKey
@@ -175,13 +177,13 @@ class ShowTimeDeepLinkHandlerTest {
     }
 
     @Test
-    fun `parse discover deep link returns UniversalDiscoveryNavKey`() {
+    fun parse_discoverDeepLink_returnsUniversalDiscoveryNavKey() {
         val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/discover")
         assertEquals(UniversalDiscoveryNavKey(initialVibe = "ALL"), navKey)
     }
 
     @Test
-    fun `parse discover vibe deep link returns UniversalDiscoveryNavKey with vibe`() {
+    fun parse_discoverVibeDeepLink_returnsUniversalDiscoveryNavKeyWithVibe() {
         val navKey =
             ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/discover/MIND_BENDING")
         assertEquals(UniversalDiscoveryNavKey(initialVibe = "MIND_BENDING"), navKey)
@@ -203,6 +205,89 @@ class ShowTimeDeepLinkHandlerTest {
     fun parse_secretListPrefixedDeepLink_returnsSecretSharedListNavKey() {
         val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/list/SL-4821")
         assertEquals(SecretSharedListNavKey("SL-4821"), navKey)
+    }
+
+    @Test
+    fun parse_nullOrBlankUri_returnsNull() {
+        assertNull(ShowTimeDeepLinkHandler.parse(null))
+        assertNull(ShowTimeDeepLinkHandler.parse(""))
+        assertNull(ShowTimeDeepLinkHandler.parse("   "))
+    }
+
+    @Test
+    fun parse_invalidScheme_returnsNull() {
+        val navKey = ShowTimeDeepLinkHandler.parse("ftp://showtime.ssverma.in/movie/550")
+        assertNull(navKey)
+    }
+
+    @Test
+    fun parse_puzzleDeepLink_returnsCinemaGameNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/puzzle")
+        assertEquals(CinemaGameNavKey, navKey)
+    }
+
+    @Test
+    fun parse_challengeDetailDeepLink_returnsChallengeDetailNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/challenges/c_123")
+        assertEquals(ChallengeDetailNavKey("c_123"), navKey)
+    }
+
+    @Test
+    fun parse_milestonesDeepLink_returnsCinephileWrappedNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/milestones")
+        assertEquals(CinephileWrappedNavKey, navKey)
+    }
+
+    @Test
+    fun parse_recommendationsDeepLink_returnsTasteProfileNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/recommendations")
+        assertEquals(TasteProfileNavKey, navKey)
+    }
+
+    @Test
+    fun parse_libraryHistoryDeepLink_returnsLibraryHomeNavKeyWithHistory() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/library/history")
+        assertEquals(LibraryHomeNavKey(initialTab = LibraryTabDestination.History), navKey)
+    }
+
+    @Test
+    fun parse_libraryCustomListsDeepLink_returnsLibraryHomeNavKeyWithCustomLists() {
+        val navKey =
+            ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/library/custom_lists")
+        assertEquals(LibraryHomeNavKey(initialTab = LibraryTabDestination.CustomLists), navKey)
+    }
+
+    @Test
+    fun parse_libraryCustomListDetailDeepLink_returnsLibraryHomeNavKeyWithTargetListId() {
+        val navKey =
+            ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/library/custom_lists/my_list_42")
+        assertEquals(
+            LibraryHomeNavKey(
+                initialTab = LibraryTabDestination.CustomLists,
+                targetCustomListId = "my_list_42"
+            ),
+            navKey
+        )
+    }
+
+    @Test
+    fun parse_matchRoomDeepLink_returnsMatchRoomNavKey() {
+        val navKey = ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/match/ROOM123")
+        assertEquals(MatchRoomNavKey(roomCode = "ROOM123"), navKey)
+    }
+
+    @Test
+    fun parse_movieMatchDeepLink_returnsMatchRoomNavKey() {
+        val navKey =
+            ShowTimeDeepLinkHandler.parse("https://showtime.ssverma.in/movie/match/ROOM456")
+        assertEquals(MatchRoomNavKey(roomCode = "ROOM456"), navKey)
+    }
+
+    @Test
+    fun parse_swipenightDeepLink_returnsMatchRoomNavKey() {
+        val navKey =
+            ShowTimeDeepLinkHandler.parse("showtime://showtime.ssverma.in/swipenight/ROOM789")
+        assertEquals(MatchRoomNavKey(roomCode = "ROOM789"), navKey)
     }
 }
 
