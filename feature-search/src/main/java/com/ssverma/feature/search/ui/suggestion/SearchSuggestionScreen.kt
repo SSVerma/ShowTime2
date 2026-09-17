@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,13 +27,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -228,6 +232,23 @@ private fun SearchBar(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var textFieldValue by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = query,
+                selection = TextRange(query.length)
+            )
+        )
+    }
+
+    LaunchedEffect(query) {
+        if (textFieldValue.text != query) {
+            textFieldValue = textFieldValue.copy(
+                text = query,
+                selection = TextRange(query.length)
+            )
+        }
+    }
 
     val focusRequester = remember { FocusRequester() }
 
@@ -242,10 +263,13 @@ private fun SearchBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackPressed) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.cd_back)
+            )
         }
         Box(Modifier.weight(1f)) {
-            if (query.isEmpty()) {
+            if (textFieldValue.text.isEmpty()) {
                 Text(
                     text = stringResource(R.string.search),
                     style = MaterialTheme.typography.bodyLarge,
@@ -253,8 +277,13 @@ private fun SearchBar(
                 )
             }
             BasicTextField(
-                value = query,
-                onValueChange = onQueryChanged,
+                value = textFieldValue,
+                onValueChange = { newValue ->
+                    textFieldValue = newValue
+                    if (newValue.text != query) {
+                        onQueryChanged(newValue.text)
+                    }
+                },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = MaterialTheme.colorScheme.onBackground
                 ),
@@ -266,9 +295,15 @@ private fun SearchBar(
                     .focusRequester(focusRequester)
             )
         }
-        AnimatedVisibility(visible = query.isNotBlank()) {
-            IconButton(onClick = { onQueryChanged("") }) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+        AnimatedVisibility(visible = textFieldValue.text.isNotBlank()) {
+            IconButton(onClick = {
+                textFieldValue = TextFieldValue(text = "", selection = TextRange.Zero)
+                onQueryChanged("")
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.cd_clear_search)
+                )
             }
         }
     }

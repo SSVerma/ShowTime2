@@ -3,4 +3,6 @@
     <string name="movie">Movie</string>
     <string name="tv">TV</string>
     <string name="search">Search</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_clear_search">Clear search</string>
 </resources>
