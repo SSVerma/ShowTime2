@@ -1,10 +1,10 @@
 package com.ssverma.feature.search.navigation
 
 import android.os.Parcelable
-import androidx.navigation3.runtime.NavKey
+import com.ssverma.core.navigation.nav3.TopRevealNavKey
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
-data object SearchNavKey : NavKey, Parcelable
+data object SearchNavKey : TopRevealNavKey, Parcelable

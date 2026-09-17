@@ -10,4 +10,15 @@ object Nav3MetadataKeys {
     object TabKey : NavMetadataKey<androidx.navigation3.runtime.NavKey> {
         override fun toString(): String = "Nav3MetadataKeys.TabKey"
     }
+
+    object TransitionStyle : NavMetadataKey<NavTransitionStyle> {
+        override fun toString(): String = "Nav3MetadataKeys.TransitionStyle"
+    }
+}
+
+enum class NavTransitionStyle {
+    Default,
+    TopReveal,
+    PeerSequential,
+    TabSwitch
 }
