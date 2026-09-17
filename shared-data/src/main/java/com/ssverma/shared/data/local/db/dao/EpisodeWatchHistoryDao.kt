@@ -32,8 +32,11 @@ interface EpisodeWatchHistoryDao {
     @Query("SELECT * FROM episode_watch_history")
     suspend fun getAllHistory(): List<EpisodeWatchHistoryEntity>
 
-    @Query("SELECT * FROM episode_watch_history WHERE showId = :showId")
+    @Query("SELECT * FROM episode_watch_history WHERE showId = :showId ORDER BY watchedAt DESC")
     suspend fun getAllWatchedEpisodes(showId: Int): List<EpisodeWatchHistoryEntity>
+
+    @Query("SELECT * FROM episode_watch_history WHERE showId = :showId ORDER BY watchedAt DESC LIMIT 1")
+    suspend fun getLatestWatchedEpisode(showId: Int): EpisodeWatchHistoryEntity?
 
     @Query("SELECT EXISTS(SELECT 1 FROM episode_watch_history WHERE showId = :showId AND seasonNumber = :seasonNumber AND episodeNumber = :episodeNumber)")
     fun isEpisodeWatchedFlow(showId: Int, seasonNumber: Int, episodeNumber: Int): Flow<Boolean>

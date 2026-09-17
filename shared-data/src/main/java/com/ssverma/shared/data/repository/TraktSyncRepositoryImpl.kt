@@ -353,18 +353,25 @@ class TraktSyncRepositoryImpl @Inject constructor(
             if (actualCompleted == 0) {
                 showWatchProgressDao.deleteByShowId(showTmdbId)
             } else {
+                val anchor = if (!isCurrentlyWatched) {
+                    Pair(season, episode)
+                } else {
+                    watchedEpisodes.firstOrNull()?.let { Pair(it.seasonNumber, it.episodeNumber) }
+                }
+
                 val resolution = resolveNextEpisodeResolution(
                     showTmdbId = showTmdbId,
                     watchedSet = watchedSet,
                     currentProgress = currentProgress,
                     passedSeason = season,
-                    passedTotalAired = totalAired
+                    passedTotalAired = totalAired,
+                    anchorEpisode = anchor
                 )
                 val nextEpTitle = resolveEpisodeTitle(
                     showTmdbId = showTmdbId,
                     seasonNumber = resolution.seasonNumber,
                     episodeNumber = resolution.episodeNumber,
-                    explicitTitle = episodeTitle
+                    explicitTitle = if (resolution.seasonNumber == season && resolution.episodeNumber == episode + 1) episodeTitle else null
                 )
 
                 showWatchProgressDao.insertOrUpdate(
@@ -438,12 +445,15 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 } else {
                     val watchedSet =
                         remainingWatched.map { Pair(it.seasonNumber, it.episodeNumber) }.toSet()
+                    val anchor = remainingWatched.firstOrNull()
+                        ?.let { Pair(it.seasonNumber, it.episodeNumber) }
                     val resolution = resolveNextEpisodeResolution(
                         showTmdbId = showTmdbId,
                         watchedSet = watchedSet,
                         currentProgress = currentProgress,
                         passedSeason = season,
-                        passedTotalAired = totalAired
+                        passedTotalAired = totalAired,
+                        anchorEpisode = anchor
                     )
                     val nextEpTitle = resolveEpisodeTitle(
                         showTmdbId = showTmdbId,
@@ -470,12 +480,13 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 }
             } else {
                 // Mark all episodes in season
-                val entities = episodeNumbers.map { epNum ->
+                val now = System.currentTimeMillis()
+                val entities = episodeNumbers.mapIndexed { index, epNum ->
                     EpisodeWatchHistoryEntity(
                         showId = showTmdbId,
                         seasonNumber = season,
                         episodeNumber = epNum,
-                        watchedAt = System.currentTimeMillis()
+                        watchedAt = now + index
                     )
                 }
                 episodeWatchHistoryDao.insertAll(entities)
@@ -483,13 +494,15 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 val watchedEpisodes = episodeWatchHistoryDao.getAllWatchedEpisodes(showTmdbId)
                 val watchedSet =
                     watchedEpisodes.map { Pair(it.seasonNumber, it.episodeNumber) }.toSet()
+                val maxEpInSeason = episodeNumbers.maxOrNull() ?: 1
                 val resolution = resolveNextEpisodeResolution(
                     showTmdbId = showTmdbId,
                     watchedSet = watchedSet,
                     currentProgress = currentProgress,
                     passedSeason = season,
                     passedTotalAired = totalAired,
-                    isSeasonCompleteAction = true
+                    isSeasonCompleteAction = true,
+                    anchorEpisode = Pair(season, maxEpInSeason)
                 )
                 val nextEpTitle = resolveEpisodeTitle(
                     showTmdbId = showTmdbId,
@@ -577,7 +590,8 @@ class TraktSyncRepositoryImpl @Inject constructor(
         currentProgress: ShowWatchProgressEntity?,
         passedSeason: Int,
         passedTotalAired: Int,
-        isSeasonCompleteAction: Boolean = false
+        isSeasonCompleteAction: Boolean = false,
+        anchorEpisode: Pair<Int, Int>? = null
     ): NextEpisodeResolution {
         if (watchedSet.isEmpty()) {
             return NextEpisodeResolution(
@@ -604,14 +618,14 @@ class TraktSyncRepositoryImpl @Inject constructor(
             ?.map { Pair(it.seasonNumber, it.episodeCount) }
             .orEmpty()
 
-        val minSeason = watchedSet.minOf { it.first }
-        val maxSeason = maxOf(watchedSet.maxOf { it.first }, passedSeason)
+        val maxWatchedSeason = watchedSet.maxOf { it.first }
+        val maxKnownSeason = maxOf(maxWatchedSeason, passedSeason)
 
         // 2. Build complete seasons list combining remote TMDB, watched set, and passed params
         val allSeasonNumbers = if (remoteSeasons.isNotEmpty()) {
             remoteSeasons.map { it.first }
         } else {
-            (minSeason..maxSeason).toList()
+            (1..maxKnownSeason).toList()
         }
 
         val totalShowAired = remoteShow?.episodeCount?.takeIf { it > 0 }
@@ -630,56 +644,105 @@ class TraktSyncRepositoryImpl @Inject constructor(
                 currentProgress?.seasonNumber == sNum && currentProgress.seasonTotalAired > 0 -> currentProgress.seasonTotalAired
                 sNum == passedSeason && passedTotalAired > 0 && passedTotalAired < totalShowAired -> passedTotalAired
                 sNum == passedSeason && isSeasonCompleteAction -> maxWatchedInSeason
-                allSeasonNumbers.size > 1 && sNum < maxSeason -> maxWatchedInSeason
+                allSeasonNumbers.size > 1 && sNum < maxKnownSeason -> {
+                    val remainingOtherSeasonsCount = when {
+                        currentProgress?.seasonTotalAired != null && currentProgress.seasonTotalAired > 0 -> currentProgress.seasonTotalAired
+                        passedSeason > sNum && passedTotalAired > 0 && passedTotalAired < totalShowAired -> passedTotalAired
+                        else -> maxWatchedInSeason
+                    }
+                    val inferredCount =
+                        if (totalShowAired > remainingOtherSeasonsCount) totalShowAired - remainingOtherSeasonsCount else maxWatchedInSeason
+                    maxOf(inferredCount, maxWatchedInSeason, 1)
+                }
+
                 else -> maxOf(maxWatchedInSeason + 1, 1)
             }
             Pair(sNum, maxOf(seasonCount, maxWatchedInSeason, 1))
         }
 
-        // 3. Find earliest unwatched episode across seasons (Option A: Continuous Chronological Watch Front)
-        var targetSeason = seasonMetaList.firstOrNull()?.first ?: minSeason
-        var targetEpisode = 1
-        var targetSeasonCompleted = 0
-        var targetSeasonTotalAired = seasonMetaList.firstOrNull()?.second ?: 1
+        // 3. Determine Active Anchor (S_anchor, E_anchor)
+        val (anchorS, anchorE) = anchorEpisode ?: run {
+            val maxS = watchedSet.maxOf { it.first }
+            val maxE = watchedSet.filter { it.first == maxS }.maxOf { it.second }
+            Pair(maxS, maxE)
+        }
+
+        var targetSeason = anchorS
+        var targetEpisode = anchorE + 1
         var foundUnwatched = false
 
-        for ((sNum, sCount) in seasonMetaList) {
-            val sCompleted = watchedSet.count { it.first == sNum }
-            for (e in 1..sCount) {
-                if (Pair(sNum, e) !in watchedSet) {
-                    targetSeason = sNum
-                    targetEpisode = e
-                    targetSeasonCompleted = sCompleted
-                    targetSeasonTotalAired = sCount
-                    foundUnwatched = true
-                    break
-                }
+        // Phase 1: Forward Stream (Continue forward from anchor episode)
+        val anchorSeasonCount = seasonMetaList.firstOrNull { it.first == anchorS }?.second
+            ?: maxOf(anchorE + 1, 1)
+
+        for (e in (anchorE + 1)..anchorSeasonCount) {
+            if (Pair(anchorS, e) !in watchedSet) {
+                targetSeason = anchorS
+                targetEpisode = e
+                foundUnwatched = true
+                break
             }
-            if (foundUnwatched) break
         }
 
         if (!foundUnwatched) {
+            val forwardSeasons = seasonMetaList.filter { it.first > anchorS }
+            for ((sNum, sCount) in forwardSeasons) {
+                for (e in 1..sCount) {
+                    if (Pair(sNum, e) !in watchedSet) {
+                        targetSeason = sNum
+                        targetEpisode = e
+                        foundUnwatched = true
+                        break
+                    }
+                }
+                if (foundUnwatched) break
+            }
+        }
+
+        // If forward seasons in known list are exhausted, but the show has more aired episodes overall
+        if (!foundUnwatched && watchedSet.size < totalShowAired && anchorS >= maxKnownSeason && isSeasonCompleteAction) {
+            targetSeason = maxKnownSeason + 1
+            targetEpisode = 1
+            foundUnwatched = true
+        }
+
+        // Phase 2: Backlog Fallback (If forward stream is exhausted, scan from S01E01 for skipped backlog episodes)
+        if (!foundUnwatched) {
+            for ((sNum, sCount) in seasonMetaList) {
+                for (e in 1..sCount) {
+                    if (Pair(sNum, e) !in watchedSet) {
+                        targetSeason = sNum
+                        targetEpisode = e
+                        foundUnwatched = true
+                        break
+                    }
+                }
+                if (foundUnwatched) break
+            }
+        }
+
+        // Phase 3: All Episodes 100% Completed
+        if (!foundUnwatched) {
             if (watchedSet.size < totalShowAired) {
-                // Advance to next season episode 1
-                targetSeason = maxSeason + 1
+                targetSeason = maxKnownSeason + 1
                 targetEpisode = 1
-                targetSeasonCompleted = 0
-                targetSeasonTotalAired =
-                    remoteSeasons.firstOrNull { it.first == targetSeason }?.second ?: 10
             } else {
-                // All episodes across all seasons completed
                 val lastSeason = seasonMetaList.lastOrNull() ?: Pair(passedSeason, 1)
                 targetSeason = lastSeason.first
                 targetEpisode = lastSeason.second
-                targetSeasonCompleted = lastSeason.second
-                targetSeasonTotalAired = lastSeason.second
             }
         }
+
+        val targetSeasonMeta = seasonMetaList.firstOrNull { it.first == targetSeason }
+        val targetSeasonTotalAired = targetSeasonMeta?.second
+            ?: remoteSeasons.firstOrNull { it.first == targetSeason }?.second
+            ?: 1
+        val targetSeasonCompleted = watchedSet.count { it.first == targetSeason }
 
         return NextEpisodeResolution(
             seasonNumber = targetSeason,
             episodeNumber = targetEpisode,
-            seasonCompleted = targetSeasonCompleted,
+            seasonCompleted = if (!foundUnwatched && watchedSet.size >= totalShowAired) targetSeasonTotalAired else targetSeasonCompleted,
             seasonTotalAired = targetSeasonTotalAired,
             totalCompleted = watchedSet.size,
             totalAired = maxOf(totalShowAired, watchedSet.size)

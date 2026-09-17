@@ -22,7 +22,7 @@ sealed class ShowTimeTopLevelNavItem(
 
     object Movie : ShowTimeTopLevelNavItem(
         navKey = MovieHomeNavKey,
-        titleResId = R.string.movies,
+        titleResId = R.string.movie,
         iconResId = R.drawable.ic_movie
     )
 
