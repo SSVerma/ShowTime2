@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,6 +70,7 @@ import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.repository.ReminderToggleResult
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
+import com.ssverma.shared.ui.component.media.MediaActionParticleType
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 
@@ -118,6 +120,8 @@ fun MediaOmniActionMenu(
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showLogDialog by remember { mutableStateOf(false) }
     var showQuotaGate by remember { mutableStateOf(false) }
+    var particleType by remember { mutableStateOf(MediaActionParticleType.NONE) }
+    var particleTriggerKey by remember { mutableStateOf(0L) }
 
     val effectiveInWatchlist = isInWatchlist
         ?: viewModel.isInWatchlist(mediaId).collectAsState(initial = false).value
@@ -148,9 +152,6 @@ fun MediaOmniActionMenu(
 
     val viewInLibraryText = stringResource(R.string.media_menu_view_in_library)
     val mediaTypeStr = if (mediaType == MediaType.Movie) "movie" else "tv"
-
-    val quickActionTint = MaterialTheme.colorScheme.primary
-    val quickActionContainer = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
 
     val executeToggleReminder: () -> Unit = {
         if (onToggleReminder != null) {
@@ -221,12 +222,12 @@ fun MediaOmniActionMenu(
             val remindTint = if (effectiveHasReminder) {
                 MaterialTheme.colorScheme.primary
             } else {
-                null
+                MaterialTheme.colorScheme.onSurfaceVariant
             }
             val remindContainer = if (effectiveHasReminder) {
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
             } else {
-                null
+                MaterialTheme.colorScheme.surfaceVariant
             }
             add(
                 QuickActionItem(
@@ -253,6 +254,8 @@ fun MediaOmniActionMenu(
                 QuickActionItem(
                     label = stringResource(R.string.media_menu_quick_discuss),
                     icon = Icons.AutoMirrored.Rounded.Comment,
+                    tint = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                     onClick = {
                         isMenuExpanded = false
                         if (onOpenDiscussions != null) {
@@ -291,6 +294,8 @@ fun MediaOmniActionMenu(
                         stringResource(R.string.media_menu_quick_diary)
                     },
                     icon = Icons.Rounded.EditCalendar,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    containerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f),
                     onClick = {
                         isMenuExpanded = false
                         if (onLogToDiary != null) {
@@ -308,6 +313,8 @@ fun MediaOmniActionMenu(
                 QuickActionItem(
                     label = stringResource(R.string.share),
                     icon = Icons.Rounded.Share,
+                    tint = MaterialTheme.colorScheme.secondary,
+                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
                     onClick = {
                         isMenuExpanded = false
                         if (onShare != null) {
@@ -332,6 +339,8 @@ fun MediaOmniActionMenu(
         onDismissRequest = { isMenuExpanded = false },
         showActiveDot = effectiveActionActive || effectiveHasReminder,
         isOverPoster = config.isOverPoster,
+        particleType = particleType,
+        particleTriggerKey = particleTriggerKey,
         actionContent = actionContent,
         modifier = modifier
     ) {
@@ -354,14 +363,15 @@ fun MediaOmniActionMenu(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = action.containerColor ?: quickActionContainer,
+                            color = action.containerColor
+                                ?: MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier.size(36.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = action.icon,
                                     contentDescription = action.label,
-                                    tint = action.tint ?: quickActionTint,
+                                    tint = action.tint ?: MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -370,7 +380,8 @@ fun MediaOmniActionMenu(
                         Text(
                             text = action.label,
                             style = MaterialTheme.typography.labelSmall,
-                            color = action.tint ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -380,7 +391,7 @@ fun MediaOmniActionMenu(
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 4.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
         }
 
@@ -399,9 +410,17 @@ fun MediaOmniActionMenu(
                     onClick = {
                         isMenuExpanded = false
                         if (onToggleWatchlist != null) {
+                            if (!effectiveInWatchlist) {
+                                particleType = MediaActionParticleType.WATCHLIST
+                                particleTriggerKey = System.currentTimeMillis()
+                            }
                             onToggleWatchlist()
                         } else {
                             val wasInWatchlist = effectiveInWatchlist
+                            if (!wasInWatchlist) {
+                                particleType = MediaActionParticleType.WATCHLIST
+                                particleTriggerKey = System.currentTimeMillis()
+                            }
                             viewModel.toggleWatchlist(
                                 mediaId = mediaId,
                                 mediaType = mediaType,
@@ -445,9 +464,17 @@ fun MediaOmniActionMenu(
                     onClick = {
                         isMenuExpanded = false
                         if (onToggleWatched != null) {
+                            if (!effectiveIsWatched) {
+                                particleType = MediaActionParticleType.WATCHED
+                                particleTriggerKey = System.currentTimeMillis()
+                            }
                             onToggleWatched()
                         } else {
                             val wasWatched = effectiveIsWatched
+                            if (!wasWatched) {
+                                particleType = MediaActionParticleType.WATCHED
+                                particleTriggerKey = System.currentTimeMillis()
+                            }
                             viewModel.toggleWatched(
                                 mediaId = mediaId,
                                 mediaType = mediaType,
@@ -489,9 +516,17 @@ fun MediaOmniActionMenu(
                     onClick = {
                         isMenuExpanded = false
                         if (onToggleFavorite != null) {
+                            if (!effectiveIsFavorite) {
+                                particleType = MediaActionParticleType.FAVORITE
+                                particleTriggerKey = System.currentTimeMillis()
+                            }
                             onToggleFavorite()
                         } else {
                             val wasFavorite = effectiveIsFavorite
+                            if (!wasFavorite) {
+                                particleType = MediaActionParticleType.FAVORITE
+                                particleTriggerKey = System.currentTimeMillis()
+                            }
                             viewModel.toggleFavorite(
                                 mediaId = mediaId,
                                 mediaType = mediaType,
@@ -544,6 +579,10 @@ fun MediaOmniActionMenu(
                 onToggleCustomListOverride = onToggleCustomList,
                 onCustomListClick = onCustomListClick,
                 onDismissMenu = { isMenuExpanded = false },
+                onTriggerParticle = { type ->
+                    particleType = type
+                    particleTriggerKey = System.currentTimeMillis()
+                },
                 onShowFeedback = onShowFeedback,
                 viewModel = viewModel
             )
@@ -637,6 +676,7 @@ private fun CustomListsMenuItems(
     onToggleCustomListOverride: ((CustomListOption) -> Unit)?,
     onCustomListClick: (() -> Unit)?,
     onDismissMenu: () -> Unit,
+    onTriggerParticle: ((MediaActionParticleType) -> Unit)? = null,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)?,
     viewModel: MediaOmniMenuViewModel
 ) {
@@ -671,6 +711,9 @@ private fun CustomListsMenuItems(
                 isActive = option.isContained,
                 onClick = {
                     onDismissMenu()
+                    if (!option.isContained) {
+                        onTriggerParticle?.invoke(MediaActionParticleType.COLLECTION)
+                    }
                     if (onToggleCustomListOverride != null) {
                         onToggleCustomListOverride(option)
                     } else {

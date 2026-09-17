@@ -36,6 +36,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -223,10 +227,15 @@ fun MediaCardOverflowAction(
     modifier: Modifier = Modifier,
     showActiveDot: Boolean = false,
     isOverPoster: Boolean = true,
+    particleType: MediaActionParticleType = MediaActionParticleType.NONE,
+    particleTriggerKey: Long = 0L,
     actionContent: (@Composable (onClick: () -> Unit) -> Unit)? = null,
     menuContent: @Composable ColumnScope.() -> Unit
 ) {
-    Box(modifier = modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
         if (actionContent != null) {
             actionContent(onToggleExpand)
         } else {
@@ -240,6 +249,12 @@ fun MediaCardOverflowAction(
             )
         }
 
+        MediaActionFeedbackParticles(
+            type = particleType,
+            triggerKey = particleTriggerKey,
+            modifier = Modifier.align(Alignment.Center)
+        )
+
         val scrollState = rememberScrollState()
         val scrollbarColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         LaunchedEffect(expanded) {
@@ -252,17 +267,17 @@ fun MediaCardOverflowAction(
             expanded = expanded,
             onDismissRequest = onDismissRequest,
             scrollState = scrollState,
-            shape = RoundedCornerShape(16.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 3.dp,
-            shadowElevation = 6.dp,
+            shape = RoundedCornerShape(20.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            tonalElevation = 6.dp,
+            shadowElevation = 10.dp,
             border = BorderStroke(
                 1.dp,
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
             ),
             modifier = Modifier
                 .widthIn(min = 230.dp, max = 290.dp)
-                .heightIn(max = 420.dp)
+                .heightIn(max = 440.dp)
                 .drawWithContent {
                     drawContent()
                     if (scrollState.maxValue > 0) {
@@ -292,19 +307,37 @@ fun MediaCardFavoriteButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(24.dp)
+    var particleTriggerKey by remember { mutableStateOf(0L) }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
     ) {
-        Icon(
-            imageVector = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-            contentDescription = stringResource(R.string.media_card_favorite_cd),
-            tint = if (isFavorite) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        IconButton(
+            onClick = {
+                if (!isFavorite) {
+                    particleTriggerKey = System.currentTimeMillis()
+                }
+                onClick()
             },
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                contentDescription = stringResource(R.string.media_card_favorite_cd),
+                tint = if (isFavorite) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                },
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        MediaActionFeedbackParticles(
+            type = MediaActionParticleType.FAVORITE,
+            triggerKey = particleTriggerKey,
+            modifier = Modifier.align(Alignment.Center)
         )
     }
 }

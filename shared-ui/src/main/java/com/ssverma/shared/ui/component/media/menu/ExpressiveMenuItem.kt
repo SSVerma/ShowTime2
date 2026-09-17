@@ -1,5 +1,6 @@
 package com.ssverma.shared.ui.component.media.menu
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,7 +42,8 @@ fun ExpressiveMenuItem(
         leadingIcon = {
             Surface(
                 shape = CircleShape,
-                color = iconTint.copy(alpha = 0.12f),
+                color = if (isActive) iconTint.copy(alpha = 0.20f) else iconTint.copy(alpha = 0.14f),
+                border = if (isActive) BorderStroke(1.dp, iconTint.copy(alpha = 0.35f)) else null,
                 modifier = Modifier.size(32.dp)
             ) {
                 Row(
@@ -52,7 +54,7 @@ fun ExpressiveMenuItem(
                         imageVector = icon,
                         contentDescription = null,
                         tint = iconTint,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(17.dp)
                     )
                 }
             }
