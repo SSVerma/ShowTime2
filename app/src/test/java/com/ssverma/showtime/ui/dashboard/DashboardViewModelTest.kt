@@ -82,6 +82,9 @@ class DashboardViewModelTest {
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
     private val notificationShelfDismissedFlow = MutableStateFlow(0L)
     private val acknowledgedFeaturesFlow = MutableStateFlow<Set<String>>(emptySet())
+    private val lastSeenWhatsNewCampaignFlow = MutableStateFlow("")
+    private val whatsNewCampaignIdFlow = MutableStateFlow("2.0.0")
+    private val isWhatsNewEnabledFlow = MutableStateFlow(true)
 
     private val sampleUpNextEpisode = TraktUpNextEpisode(
         showTmdbId = 1396,
@@ -109,6 +112,12 @@ class DashboardViewModelTest {
         every { appConfigRepository.acknowledgedFeatures } returns acknowledgedFeaturesFlow
         coEvery { appConfigRepository.acknowledgeFeature(any()) } coAnswers {
             acknowledgedFeaturesFlow.value = acknowledgedFeaturesFlow.value + firstArg<String>()
+        }
+        every { appConfigRepository.lastSeenWhatsNewCampaign } returns lastSeenWhatsNewCampaignFlow
+        every { appConfigRepository.whatsNewCampaignId } returns whatsNewCampaignIdFlow
+        every { appConfigRepository.isWhatsNewEnabled } returns isWhatsNewEnabledFlow
+        coEvery { appConfigRepository.updateLastSeenWhatsNewCampaign(any()) } coAnswers {
+            lastSeenWhatsNewCampaignFlow.value = firstArg<String>()
         }
         every { adConfigProvider.isAdsEnabled } returns false
 
@@ -529,6 +538,48 @@ class DashboardViewModelTest {
         assertThat(state.dailyPoll.selectedOptionIndex).isEqualTo(1)
         assertThat(state.dailyPoll.totalVotes).isEqualTo(61)
         assertThat(state.dailyPoll.hasVoted).isTrue()
+    }
+
+    @Test
+    fun `whats new banner is visible when user has not seen current campaign and whats new is enabled`() =
+        runTest {
+            lastSeenWhatsNewCampaignFlow.value = ""
+            whatsNewCampaignIdFlow.value = "2.0.0"
+            isWhatsNewEnabledFlow.value = true
+            advanceUntilIdle()
+
+            val state = viewModel.uiState.value
+            assertThat(state.showWhatsNewBanner).isTrue()
+            assertThat(state.currentCampaignId).isEqualTo("2.0.0")
+        }
+
+    @Test
+    fun `whats new banner is hidden when last seen campaign matches current campaign`() =
+        runTest {
+            lastSeenWhatsNewCampaignFlow.value = "2.0.0"
+            whatsNewCampaignIdFlow.value = "2.0.0"
+            isWhatsNewEnabledFlow.value = true
+            advanceUntilIdle()
+
+            val state = viewModel.uiState.value
+            assertThat(state.showWhatsNewBanner).isFalse()
+        }
+
+    @Test
+    fun `dismissWhatsNewBanner updates last seen campaign in repository`() = runTest {
+        lastSeenWhatsNewCampaignFlow.value = ""
+        whatsNewCampaignIdFlow.value = "2.0.0"
+        isWhatsNewEnabledFlow.value = true
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.showWhatsNewBanner).isTrue()
+
+        viewModel.dismissWhatsNewBanner()
+        advanceUntilIdle()
+
+        coVerify { appConfigRepository.updateLastSeenWhatsNewCampaign("2.0.0") }
+        assertThat(lastSeenWhatsNewCampaignFlow.value).isEqualTo("2.0.0")
+        assertThat(viewModel.uiState.value.showWhatsNewBanner).isFalse()
     }
 }
 

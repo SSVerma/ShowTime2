@@ -8,39 +8,46 @@ To celebrate these features without overwhelming users, ShowTime 2.0 features an
 
 ---
 
-## 2. Architecture & Navigation
+## 2. Architecture & Discovery Entry Points
 
 ```mermaid
 flowchart TD
-    Launch([App Foreground / Launch]) --> GateCheck{Show Tour?}
+    Launch([App Launch]) --> OnboardCheck{Completed Onboarding?}
     
-    subgraph Gating["Campaign Gating via CCM & DataStore"]
-        GateCheck -->|Evaluate| C1["isAppInfoBottomSheetDismissed == true"]
-        GateCheck -->|Evaluate| C2["isWhatsNewEnabled == true (CCM)"]
-        GateCheck -->|Evaluate| C3["lastSeenCampaign != currentCampaignId ('2.0.0')"]
+    OnboardCheck -- Fresh Install --> OnboardFlow["Onboarding Wizard<br/>(Providers, Genres, Cloud Sync)"]
+    OnboardFlow --> FinishOnboard["Finish Onboarding"] --> Dashboard([Home Dashboard])
+    
+    OnboardCheck -- Existing / Upgraded --> Dashboard
+    
+    Dashboard --> BannerCheck{"Has seen 2.0 Campaign?<br/>(lastSeen != currentCampaignId)"}
+    BannerCheck -- "No" --> SpotlightBanner["✨ What's New in 2.0 Spotlight Banner<br/>(Top of Dashboard, dismissible)"]
+    BannerCheck -- "Yes" --> NormalDashboard["Normal Cinephile Hub"]
+    
+    SpotlightBanner -- "[ Take the Tour ]" --> TourScreen["WhatsNewScreen (10 Flagship Features)"]
+    SpotlightBanner -- "[ ✕ Dismiss ]" --> DismissBanner["updateLastSeenWhatsNewCampaign('2.0.0')"]
+    
+    subgraph OnDemand["On-Demand Entry Points"]
+        Drawer["Navigation Drawer ('What's New')"] --> TourScreen
+        Profile["Profile / Release Highlights"] --> TourScreen
     end
     
-    GateCheck -- All Pass --> PushTour["Navigator.push(WhatsNewNavKey)"]
-    GateCheck -- Gate Closed --> HomeDashboard["DashboardScreen (Home)"]
-    
-    subgraph TourScreen["WhatsNewScreen (com.ssverma.showtime.ui.whatsnew)"]
-        PushTour --> Carousel["HorizontalPager (6 Powerhouse Features)"]
-        Carousel --> CTA["Try [Feature] Button"]
-    end
-    
-    CTA -->|Pushes Feature onto Backstack| TargetFeature["Feature Screen\n(e.g., MatchRoomScreen, UniversalDiscover)"]
-    TargetFeature -->|User Presses System Back| ResumeTour["WhatsNewScreen (Resumed)\nAdvances to Next Feature + 'Explored' Badge"]
-    TourScreen -->|Finish / Skip| CompleteCampaign["onCompleteWhatsNewCampaign('2.0.0')\nPersisted to DataStore"]
-    CompleteCampaign --> HomeDashboard
+    TourScreen --> CTA["Try [Feature] Button"]
+    CTA -->|Pushes onto Backstack| TargetFeature["Feature Screen\n(e.g., Diary, Receipt, Match, Challenges)"]
+    TargetFeature -->|System Back| ResumeTour["WhatsNewScreen (Resumed)\nAdvances + 'Explored' Badge"]
+    TourScreen -->|Finish / Skip| CompleteCampaign["onCompleteWhatsNewCampaign('2.0.0')"]
 ```
 
-### A. Resumable Backstack Navigation (`WhatsNewNavKey`)
-- Previous modal bottom sheet implementations were destroyed when the user navigated into a feature, preventing them from finishing the tour.
+### A. Non-Intrusive Dashboard Spotlight Banner (`WhatsNewSpotlightShelf.kt`)
+- Rather than violently hijacking users into full-screen modal flows on app launch, ShowTime 2.0 presents an ambient, dismissible **Spotlight Banner** at the top of the Home Dashboard (`WhatsNewSpotlightShelf.kt`).
+- Greets both **fresh installs** (after completing setup onboarding) and **upgraded users** with a celebratory 2.0 banner.
+- Users can tap **"Take the Tour"** to launch the full-screen interactive tour or **"✕"** to dismiss it cleanly.
+
+### B. Resumable Backstack Navigation (`WhatsNewNavKey`)
 - In 2.0, `WhatsNewNavKey` is registered as a first-class route in [`DashboardEntryProvider.kt`](file:///Users/ss/Projects/ShowTime/app/src/main/java/com/ssverma/showtime/navigation/DashboardEntryProvider.kt).
 - When a user taps **"Try [Feature]"**, the destination screen is pushed directly onto the existing backstack.
 - When the user presses the system Back button, the tour is preserved and automatically advances to the next spotlight feature, displaying an **"Explored"** badge.
 
-### B. Remote Campaign Gating (`core-ccm`)
+### C. Remote Campaign Gating (`core-ccm`)
 Decoupled from raw Android build codes (`versionCode`):
 - `whats_new_enabled`: Remote kill-switch boolean.
 - `whats_new_campaign_id`: Campaign version string (defaults to `"2.0.0"`). Bugfix releases (e.g. 2.0.1) do not re-trigger the tour.
@@ -48,15 +55,19 @@ Decoupled from raw Android build codes (`versionCode`):
 
 ---
 
-## 3. The 6 Headline Features
+## 3. The 10 Headline Features
 
 | Feature ID | Title | Navigation Route | Primary Capability |
 |:---|:---|:---|:---|
+| `CINEMA_DIARY` | **Cinema Diary** | `CinemaDiaryNavKey` | Log watched films, custom star ratings, watch dates, and personal reviews. |
+| `CINEMA_RECEIPT` | **Cinema Receipt** | `CinemaReceiptNavKey` | Stylized vintage thermal paper receipt with cinema stats and top directors. |
+| `BACKLOG_CHALLENGES` | **Film Challenges** | `BacklogChallengeNavKey` | 52 Films in a Year, Oscar quests, and milestone tracking badges. |
+| `HOME_SCREEN_WIDGETS` | **Home Screen Widgets** | `ProfileNavKey` | Glanceable 4×2 Up Next TV tracker & 4×3 Watchlist bookmarks with 1-tap pinning. |
 | `MY_LISTS` | **My Lists & Collections** | `LibraryHomeNavKey(initialTab = CustomLists)` | Custom cinema collections, cloud-synced watchlists, and shared queues. |
-| `DISCOVERY` | **Universal Discover** | `UniversalDiscoveryNavKey()` | Multi-provider streaming filters (Netflix, Prime, Disney+), era matrix, and vibe sliders. |
+| `DISCOVERY` | **Universal Discover** | `UniversalDiscoveryNavKey()` | Multi-provider streaming filters (Netflix, Prime, Disney+), era matrix, and vibes. |
 | `COMMUNITY_LISTS` | **Community Lists** | `LibraryHomeNavKey(initialTab = Community)` | Discover, save, and 1-tap fork curated collections crafted by cinephiles worldwide. |
 | `MOVIE_MATCH` | **Movie Match** | `MatchRoomNavKey()` | Swipe Night card deck with live party rooms or solo matching. |
-| `TASTE_PROFILE` | **Taste Profile** | `TasteProfileNavKey` | Cinema DNA decoding, 5-axis genre radar, director affinities, and vintage receipts. |
+| `TASTE_PROFILE` | **Taste Profile** | `TasteProfileNavKey` | Cinema DNA decoding, 5-axis genre radar, and director affinities. |
 | `DAILY_GAME` | **Daily Challenge** | `CinemaGameNavKey` | Daily mystery movie guessing puzzle, streak ranks, and community debate polls. |
 
 ---

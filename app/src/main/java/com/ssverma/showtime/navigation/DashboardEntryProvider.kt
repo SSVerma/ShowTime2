@@ -180,6 +180,9 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             },
             openProPaywall = {
                 navigator.navigate(ProPaywallNavKey)
+            },
+            openWhatsNew = {
+                navigator.navigate(WhatsNewNavKey)
             }
         )
     }
@@ -212,14 +215,12 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
 
     showTimeEntry<OnboardingNavKey> {
         val appStateHolder = LocalAppStateHolder.current
-        val campaignId by appStateHolder.whatsNewCampaignId.collectAsState()
 
         OnboardingScreen(
             onCompleteOnboarding = { streamingProviders, genres ->
                 appStateHolder.onCompleteOnboarding(
                     streamingSubscriptions = streamingProviders,
-                    seededGenres = genres,
-                    campaignId = campaignId
+                    seededGenres = genres
                 )
                 navigator.navigate(DashboardHomeNavKey)
             }

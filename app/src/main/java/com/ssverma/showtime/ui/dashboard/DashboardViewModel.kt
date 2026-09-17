@@ -210,6 +210,32 @@ class DashboardViewModel @Inject constructor(
                 _uiState.update { it.copy(acknowledgedFeatures = acknowledged) }
             }
         }
+
+        viewModelScope.launch {
+            combine(
+                appConfigRepository.lastSeenWhatsNewCampaign,
+                appConfigRepository.whatsNewCampaignId,
+                appConfigRepository.isWhatsNewEnabled
+            ) { lastSeen, currentCampaign, isEnabled ->
+                val showBanner =
+                    isEnabled && lastSeen != currentCampaign && lastSeen != "__UNINITIALIZED__"
+                _uiState.update {
+                    it.copy(
+                        showWhatsNewBanner = showBanner,
+                        currentCampaignId = currentCampaign
+                    )
+                }
+            }.collect { }
+        }
+    }
+
+    fun dismissWhatsNewBanner() {
+        val currentCampaign = _uiState.value.currentCampaignId
+        if (currentCampaign.isNotEmpty()) {
+            viewModelScope.launch {
+                appConfigRepository.updateLastSeenWhatsNewCampaign(currentCampaign)
+            }
+        }
     }
 
     private var hasLoadedCommunityLists = false

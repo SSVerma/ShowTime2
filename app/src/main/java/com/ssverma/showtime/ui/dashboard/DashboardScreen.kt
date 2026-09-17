@@ -80,6 +80,7 @@ import com.ssverma.showtime.ui.dashboard.shelves.trendingDiscussionsShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingSpotlightShelf
 import com.ssverma.showtime.ui.dashboard.shelves.trendingWorldwideShelf
 import com.ssverma.showtime.ui.dashboard.shelves.universalDiscoveryShelf
+import com.ssverma.showtime.ui.dashboard.shelves.whatsNewSpotlightShelf
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,6 +106,7 @@ fun DashboardScreen(
     openMovieGenreListing: (Genre) -> Unit = {},
     openTvGenreListing: (Genre) -> Unit = {},
     openProPaywall: () -> Unit = {},
+    openWhatsNew: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -209,6 +211,14 @@ fun DashboardScreen(
                             }
                         }
                     }
+                )
+
+                // 1b. What's New in 2.0 Spotlight Banner (Conditional for new and returning users)
+                whatsNewSpotlightShelf(
+                    isVisible = uiState.showWhatsNewBanner,
+                    onOpenWhatsNew = openWhatsNew,
+                    onDismiss = viewModel::dismissWhatsNewBanner,
+                    modifier = Modifier.dashboardSectionSpacing()
                 )
 
                 // 2. Cinephile Hub Shelf (All drawer & list entry points)

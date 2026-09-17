@@ -281,6 +281,11 @@
     <string name="whats_new_explored_badge">Explored</string>
     <string name="whats_new_page_indicator_cd">Feature %1$d of %2$d</string>
     <string name="whats_new_close_cd">Close What\'s New</string>
+    <string name="whats_new_banner_badge">SHOWTIME 2.0</string>
+    <string name="whats_new_banner_title">What\'s New in ShowTime 2.0</string>
+    <string name="whats_new_banner_desc">Discover Cinema Diary, Cinema Receipt, Challenges, Home Screen Widgets &amp; more.</string>
+    <string name="whats_new_banner_cta">Take the Tour</string>
+    <string name="whats_new_banner_dismiss_cd">Dismiss What\'s New banner</string>
 
     <!-- Fresh Install Cinephile Onboarding -->
     <string name="onboarding_step_indicator">Step %1$d of %2$d</string>

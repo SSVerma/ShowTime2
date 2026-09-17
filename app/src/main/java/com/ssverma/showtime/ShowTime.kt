@@ -166,7 +166,6 @@ fun ShowTime(
 
         val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
         val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
-        val currentCampaignId by appStateHolder.whatsNewCampaignId.collectAsState()
 
         val isFreshInstall =
             hasCompletedOnboarding == false && !isAppInfoDismissed && initialDeepLinkKey == null
@@ -185,8 +184,7 @@ fun ShowTime(
                     onCompleteOnboarding = { streamingProviders, genres ->
                         appStateHolder.onCompleteOnboarding(
                             streamingSubscriptions = streamingProviders,
-                            seededGenres = genres,
-                            campaignId = currentCampaignId
+                            seededGenres = genres
                         )
                     }
                 )
@@ -238,15 +236,11 @@ private fun MainDashboardContent(
 
     val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
     val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
-    val lastSeenCampaign by appStateHolder.lastSeenWhatsNewCampaign.collectAsState()
-    val isWhatsNewEnabled by appStateHolder.isWhatsNewEnabled.collectAsState()
-    val currentCampaignId by appStateHolder.whatsNewCampaignId.collectAsState()
     var showManualAppInfoSheet by remember { mutableStateOf(false) }
     var showLicensesSheet by remember { mutableStateOf(false) }
     var showThemeSelectionSheet by remember { mutableStateOf(false) }
     var showLocalizationSettingsSheet by remember { mutableStateOf(false) }
     var showProPaywallSheet by remember { mutableStateOf(false) }
-    var hasAutoNavigatedLaunchThisSession by rememberSaveable { mutableStateOf(false) }
 
     if (showManualAppInfoSheet) {
         AppInfoBottomSheet(
@@ -324,30 +318,12 @@ private fun MainDashboardContent(
 
     LaunchedEffect(
         hasCompletedOnboarding,
-        isAppInfoDismissed,
-        lastSeenCampaign,
-        isWhatsNewEnabled,
-        currentCampaignId
+        isAppInfoDismissed
     ) {
-        if (hasAutoNavigatedLaunchThisSession) return@LaunchedEffect
         val completed = hasCompletedOnboarding ?: return@LaunchedEffect
-        if (lastSeenCampaign == "__UNINITIALIZED__") return@LaunchedEffect
-
-        if (!completed) {
-            if (isAppInfoDismissed) {
-                // Upgraded 1.x user who previously dismissed AppInfo: mark onboarding completed
-                appStateHolder.markOnboardingCompleted()
-                if (isWhatsNewEnabled && lastSeenCampaign != currentCampaignId) {
-                    hasAutoNavigatedLaunchThisSession = true
-                    navigator.navigate(WhatsNewNavKey)
-                }
-            }
-        } else {
-            // Returning user with onboarding completed: check for new What's New campaign
-            if (isWhatsNewEnabled && lastSeenCampaign != currentCampaignId) {
-                hasAutoNavigatedLaunchThisSession = true
-                navigator.navigate(WhatsNewNavKey)
-            }
+        if (!completed && isAppInfoDismissed) {
+            // Upgraded 1.x user who previously dismissed AppInfo: mark onboarding completed
+            appStateHolder.markOnboardingCompleted()
         }
     }
 

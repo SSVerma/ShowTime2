@@ -63,5 +63,7 @@ data class DashboardUiState(
     val nativeAd: NativeAd? = null,
     val completedShowDialog: CompletedShowDialogState? = null,
     val isNotificationShelfCoolingDown: Boolean = false,
-    val acknowledgedFeatures: Set<String> = emptySet()
+    val acknowledgedFeatures: Set<String> = emptySet(),
+    val showWhatsNewBanner: Boolean = false,
+    val currentCampaignId: String = ""
 )

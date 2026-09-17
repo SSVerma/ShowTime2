@@ -189,7 +189,7 @@ class AppStateHolder @Inject constructor(
     fun onCompleteOnboarding(
         streamingSubscriptions: Set<Int>,
         seededGenres: Set<Int>,
-        campaignId: String
+        campaignId: String = ""
     ) {
         coroutineScope.launch {
             if (streamingSubscriptions.isNotEmpty()) {
@@ -199,7 +199,9 @@ class AppStateHolder @Inject constructor(
                 appConfigRepository.updateSeededGenres(seededGenres)
             }
             appConfigRepository.updateHasCompletedOnboarding(true)
-            appConfigRepository.updateLastSeenWhatsNewCampaign(campaignId)
+            if (campaignId.isNotEmpty()) {
+                appConfigRepository.updateLastSeenWhatsNewCampaign(campaignId)
+            }
             appConfigRepository.dismissAppInfoBottomSheet()
         }
     }
