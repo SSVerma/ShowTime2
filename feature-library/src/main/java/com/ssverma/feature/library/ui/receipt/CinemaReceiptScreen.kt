@@ -47,6 +47,7 @@ import com.ssverma.feature.library.util.ShareImageHelper
 import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.PassDurations
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import kotlinx.coroutines.launch
 
@@ -267,6 +268,8 @@ private val CinemaReceiptGateConfig = FeatureGateConfig(
     icon = Icons.Rounded.Star,
     presentationStyle = GatePresentationStyle.BottomSheet,
     passPolicy = FeaturePassPolicy.TimedPass(
-        passKey = CinemaReceiptPassKey
+        passKey = CinemaReceiptPassKey,
+        durationMs = PassDurations.SHORT_EXPORT_WINDOW_MS,
+        durationLabel = "2h"
     )
 )

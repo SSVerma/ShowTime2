@@ -130,7 +130,7 @@ flowchart TD
     FrostedTeaser -->|Unlock Click| QuotaSheet
     QuotaSheet -->|Watch Ad| RewardMgr
     QuotaSheet -->|Go Pro| BillingRepo
-    RewardMgr -->|24h Pass Granted| TasteVM
+    RewardMgr -->|Pass Granted (6h default / OTA Config)| TasteVM
     TasteVM -->|Trigger on Unlock| GetSmartRecs
     GetSmartRecs --> TasteScreen
 
@@ -140,7 +140,7 @@ flowchart TD
 
 ### 4.2 Monetization & Quota Gating Architecture
 
-| Feature Component                      | Free Tier                       | Unlocked Tier (Pro / 24h Rewarded Pass) |
+| Feature Component                      | Free Tier                       | Unlocked Tier (Pro / 6h Rewarded Pass) |
 |:---------------------------------------|:--------------------------------|:----------------------------------------|
 | **Cinephile Persona**                  | 100% Free                       | 100% Free                               |
 | **Key Metrics (Hours, Items, Rating)** | 100% Free                       | 100% Free                               |

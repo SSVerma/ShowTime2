@@ -56,6 +56,7 @@ import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.PassDurations
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.shared.ads.quota.PassKey
 import com.ssverma.common.ui.trakt.TraktConnectBottomSheet
@@ -448,7 +449,11 @@ private val TraktSyncGateConfig = FeatureGateConfig(
     rewardActionLabelRes = R.string.watch_ad_for_trakt_pass,
     icon = Icons.Rounded.Sync,
     presentationStyle = GatePresentationStyle.BottomSheet,
-    passPolicy = FeaturePassPolicy.TimedPass(TraktSyncPassKey)
+    passPolicy = FeaturePassPolicy.TimedPass(
+        passKey = TraktSyncPassKey,
+        durationMs = PassDurations.BROWSING_SESSION_MS,
+        durationLabel = "6h"
+    )
 )
 
 

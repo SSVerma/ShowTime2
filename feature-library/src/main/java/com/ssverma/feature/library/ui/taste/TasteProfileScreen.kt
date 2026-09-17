@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.PassDurations
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
 import com.ssverma.core.ui.util.findActivity
@@ -511,6 +512,8 @@ private val TasteAnalyticsGateConfig = FeatureGateConfig(
     icon = Icons.Rounded.AutoAwesome,
     presentationStyle = GatePresentationStyle.BottomSheet,
     passPolicy = FeaturePassPolicy.TimedPass(
-        passKey = TasteRadarPassKey
+        passKey = TasteRadarPassKey,
+        durationMs = PassDurations.BROWSING_SESSION_MS,
+        durationLabel = "6h"
     )
 )

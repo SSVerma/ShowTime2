@@ -10,6 +10,7 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.PassDurations
 import com.ssverma.shared.domain.repository.ReminderQuotaManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +41,7 @@ interface RewardManager : ReminderQuotaManager {
      * Grants a timed pass for [key] lasting [durationMs].
      * If the pass is already active, extends the expiry timestamp.
      */
-    suspend fun grantTimedPass(key: PassKey, durationMs: Long = TimeUnit.HOURS.toMillis(24))
+    suspend fun grantTimedPass(key: PassKey, durationMs: Long = PassDurations.BROWSING_SESSION_MS)
 
     /** Observe extra consumable slots granted for [key]. */
     fun getExtraSlots(key: PassKey): Flow<Int>
@@ -65,7 +66,7 @@ interface RewardManager : ReminderQuotaManager {
 
             is FeaturePassPolicy.ActionUnlock -> grantTimedPass(
                 policy.passKey,
-                TimeUnit.HOURS.toMillis(24)
+                PassDurations.ACTION_UNLOCK_WINDOW_MS
             )
         }
     }
@@ -145,12 +146,21 @@ class RewardManagerImpl @Inject constructor(
     }
 
     override suspend fun grantTimedPass(key: PassKey, durationMs: Long) {
+        val remoteDurationHours = appConfigProvider.getLong(
+            "${KEY_PREFIX_PASS_DURATION_HOURS}${key.value}_hours",
+            -1L
+        )
+        val effectiveDurationMs = if (remoteDurationHours > 0L) {
+            TimeUnit.HOURS.toMillis(remoteDurationHours)
+        } else {
+            durationMs
+        }
         val now = System.currentTimeMillis()
         val expiryKey = key.toExpiryKey()
         storage.edit { prefs ->
             val currentExpiry = prefs[expiryKey] ?: 0L
             val baseTime = if (currentExpiry > now) currentExpiry else now
-            prefs[expiryKey] = baseTime + durationMs
+            prefs[expiryKey] = baseTime + effectiveDurationMs
         }
     }
 
@@ -221,5 +231,6 @@ class RewardManagerImpl @Inject constructor(
             intPreferencesKey("pass_slots_$value")
 
         const val KEY_CONFIG_FREE_REMINDERS_LIMIT = "config_free_reminders_limit"
+        const val KEY_PREFIX_PASS_DURATION_HOURS = "config_pass_duration_"
     }
 }

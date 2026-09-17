@@ -189,18 +189,18 @@
     <!-- Receipt Freemium Monetization -->
     <string name="receipt_watermark_free_title">Watermark-Free Export</string>
     <string name="receipt_watermark_free_active">Pro / Pass active • Pristine HD receipt without app branding</string>
-    <string name="receipt_watermark_free_hint">Remove app branding with ShowTime Pro or 24h Pass</string>
+    <string name="receipt_watermark_free_hint">Remove app branding with ShowTime Pro or Pass</string>
     <string name="receipt_gate_title">Unlock Luxury Styles &amp; HD Export</string>
-    <string name="receipt_gate_desc">Exclusive receipt styles (Golden VIP Pass, Cyberpunk Neon) and watermark-free exports are unlocked with ShowTime Pro or a 24-Hour Pass.</string>
-    <string name="receipt_watch_ad_pass">Watch Video for 24h Pass</string>
+    <string name="receipt_gate_desc">Exclusive receipt styles (Golden VIP Pass, Cyberpunk Neon) and watermark-free exports are unlocked with ShowTime Pro or a Rewarded Pass.</string>
+    <string name="receipt_watch_ad_pass">Watch Video for Export Pass</string>
 
     <!-- Taste Profile Freemium Monetization -->
     <string name="taste_gate_title">Unlock Deep Taste Analytics</string>
-    <string name="taste_gate_desc">Explore your full Decades Time Machine and tailored AI recommendations with ShowTime Pro or a 24-Hour Pass.</string>
+    <string name="taste_gate_desc">Explore your full Decades Time Machine and tailored AI recommendations with ShowTime Pro or a Rewarded Pass.</string>
     <string name="taste_locked_title">Decades Time Machine &amp; AI Recommendations</string>
     <string name="taste_locked_desc">Unlock era breakdown and tailored recommendations powered by your diary ratings.</string>
-    <string name="taste_unlock_cta">Unlock with Pro or 24h Pass</string>
-    <string name="taste_watch_ad_pass">Watch Video for 24h Pass</string>
+    <string name="taste_unlock_cta">Unlock with Pro or Pass</string>
+    <string name="taste_watch_ad_pass">Watch Video for Analytics Pass</string>
     <string name="taste_frosted_teaser_title">Decades Time Machine &amp; AI Recommendations</string>
     <string name="taste_frosted_teaser_desc">Discover your cinematic eras and personalized recommendations based on your unique taste.</string>
     <string name="taste_frosted_teaser_cta">Unlock with Ad or Pro</string>
@@ -225,11 +225,11 @@
     <string name="wrapped_save_story_card">Save Card</string>
     <string name="wrapped_watermark_free_title">Watermark-Free Export</string>
     <string name="wrapped_watermark_free_active">Pro / Pass active • Pristine HD story card without app branding</string>
-    <string name="wrapped_watermark_free_hint">Remove app branding with ShowTime Pro or 24h Pass</string>
+    <string name="wrapped_watermark_free_hint">Remove app branding with ShowTime Pro or Pass</string>
     <string name="wrapped_watermark_label">Shared via ShowTime • Cinephile Wrapped</string>
     <string name="wrapped_gate_title">Unlock Luxury Story Styles &amp; HD Export</string>
-    <string name="wrapped_gate_desc">Exclusive Wrapped story styles (OLED Noir, Cyberpunk Neon, Golden VIP) and watermark-free exports are unlocked with ShowTime Pro or a 24-Hour Pass.</string>
-    <string name="wrapped_watch_ad_pass">Watch Video for 24h Pass</string>
+    <string name="wrapped_gate_desc">Exclusive Wrapped story styles (OLED Noir, Cyberpunk Neon, Golden VIP) and watermark-free exports are unlocked with ShowTime Pro or a Rewarded Pass.</string>
+    <string name="wrapped_watch_ad_pass">Watch Video for Export Pass</string>
     <string name="wrapped_save_success">Story card saved to gallery!</string>
     <string name="wrapped_save_failed">Failed to save story card</string>
     <string name="wrapped_share_chooser">Share Cinephile Wrapped Story</string>
@@ -254,8 +254,8 @@
     <string name="secret_share_export_image">Share Story Card</string>
     <string name="secret_share_save_image">Save to Photos</string>
     <string name="secret_share_gate_title">Unlock Luxury Story Themes</string>
-    <string name="secret_share_gate_desc">Access Vintage 35mm, OLED Noir, Cyberpunk Neon, and watermark-free cards with Pro or a 24-Hour Pass.</string>
-    <string name="secret_share_watch_ad_pass">Watch Video for 24h Pass</string>
+    <string name="secret_share_gate_desc">Access Vintage 35mm, OLED Noir, Cyberpunk Neon, and watermark-free cards with Pro or a Rewarded Pass.</string>
+    <string name="secret_share_watch_ad_pass">Watch Video for Theme Pass</string>
     <string name="get_showtime_pro">Get ShowTime Pro</string>
     <string name="showtime_pro">ShowTime Pro</string>
     <string name="secret_share_theme_classic">Classic</string>

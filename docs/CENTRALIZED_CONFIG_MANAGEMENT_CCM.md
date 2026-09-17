@@ -93,6 +93,8 @@ The following table documents the centralized remote configuration keys used acr
 | **Discussions** | `discussion_trending_decay_hours` | `Double` | `24.0` | Half-life decay duration in hours for community discussion velocity. |
 | **Cloud & Pro** | `cloud_backup_enabled` | `Boolean` | `true` | Gates Google Drive / Firestore user watch history synchronization. |
 | **Cloud & Pro** | `pro_features_enabled` | `Boolean` | `true` | Gates Pro paywall triggers and premium feature locks. |
+| **Rewarded Ads** | `config_pass_duration_<key>_hours` | `Long` | `2 / 6` | Over-the-air pass duration override in hours for specific `PassKey` (e.g. `config_pass_duration_watermark_free_receipt_hours`). |
+| **Rewarded Ads** | `config_free_reminders_limit` | `Long` | `3` | Free quota limit for active release reminders before requiring ad tokens or Pro. |
 
 ---
 

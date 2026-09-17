@@ -110,7 +110,7 @@
     <string name="trakt_syncing">Syncing your cinema library…</string>
     <string name="trakt_pro_locked_title">Trakt.tv Cloud Sync</string>
     <string name="trakt_pro_locked_desc">Sync your watchlists, ratings, and TV progress across all your devices.</string>
-    <string name="watch_ad_for_trakt_pass">Watch Video for 24h Pass</string>
+    <string name="watch_ad_for_trakt_pass">Watch Video for Sync Pass</string>
 
     <string name="developer_controls">Developer &amp; Debug Controls</string>
     <string name="developer_controls_desc">Debug-only feature flag overrides and DB seeders</string>

@@ -7,6 +7,7 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.testing.fakes.FakeAppConfigProvider
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
+import com.ssverma.shared.ads.gate.PassDurations
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -136,11 +137,31 @@ class RewardManagerTest {
     }
 
     @Test
-    fun `grantPass with ActionUnlock policy activates 24h pass`() = runTest {
+    fun `grantPass with ActionUnlock policy activates 30min action pass`() = runTest {
         val policy = FeaturePassPolicy.ActionUnlock(passKey = testPassKey)
+        val before = System.currentTimeMillis()
         rewardManager.grantPass(policy)
 
         assertThat(rewardManager.isPassActiveNow(testPassKey)).isTrue()
+        val expiry = rewardManager.getPassExpiryTimestamp(testPassKey).first()
+        assertThat(expiry).isAtLeast(before + PassDurations.ACTION_UNLOCK_WINDOW_MS)
+    }
+
+    @Test
+    fun `grantTimedPass applies Remote Config duration override when configured`() = runTest {
+        val customDurationHours = 12L
+        fakeAppConfigProvider.setLong(
+            "${RewardManagerImpl.KEY_PREFIX_PASS_DURATION_HOURS}${testPassKey.value}_hours",
+            customDurationHours
+        )
+        val before = System.currentTimeMillis()
+
+        // Call with 2h default, but Remote Config specifies 12h
+        rewardManager.grantTimedPass(testPassKey, PassDurations.SHORT_EXPORT_WINDOW_MS)
+
+        val expiry = rewardManager.getPassExpiryTimestamp(testPassKey).first()
+        val expectedMinExpiry = before + TimeUnit.HOURS.toMillis(customDurationHours)
+        assertThat(expiry).isAtLeast(expectedMinExpiry)
     }
 
     @Test

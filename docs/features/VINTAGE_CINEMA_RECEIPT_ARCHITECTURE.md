@@ -136,11 +136,11 @@ flowchart LR
     User([User Previews Any Style]) --> TapAction[User Taps 'Share' or 'Save Image']
     TapAction --> StyleCheck{Is Style Pro Only?}
     StyleCheck -- No (Thermal) --> ExportDirect[Lossless Export to Share Sheet / Gallery]
-    StyleCheck -- Yes (Golden VIP / Cyberpunk) --> EntitlementCheck{Is Pro Active or 24h Pass Active?}
+    StyleCheck -- Yes (Golden VIP / Cyberpunk) --> EntitlementCheck{Is Pro Active or Rewarded Pass Active?}
     EntitlementCheck -- Yes --> ExportDirect
     EntitlementCheck -- No --> ShowGate[Open VIP Export Gate]
     ShowGate --> OptionA[Subscribe to ShowTime Pro]
-    ShowGate --> OptionB[Watch 1 Rewarded Ad for 24h VIP Export Pass]
+    ShowGate --> OptionB[Watch 1 Rewarded Ad for VIP Export Pass]
 ```
 
 1. **Free Tier**:
@@ -155,8 +155,8 @@ flowchart LR
       zero ads.
 3. **Rewarded Ad Pass (Share-Action Hook)**:
     - Free users attempting to export/save a luxury VIP pass can watch 1 rewarded video ad to unlock
-      a **24-hour VIP Export Pass** (`PassKey("watermark_free_receipt")`).
-    - Grants 24 hours of unlimited exports for all styles.
+      a **2-Hour VIP Export Pass** (`PassKey("watermark_free_receipt")`, configurable via Remote Config `config_pass_duration_watermark_free_receipt_hours`).
+    - Grants 2 hours of unlimited exports for all styles.
 
 ---
 

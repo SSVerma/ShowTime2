@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.PassDurations
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.feature.library.ui.wrapped.CinemaWrappedPassKey
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
@@ -305,6 +306,8 @@ private val CinemaWrappedGateConfig = FeatureGateConfig(
     icon = Icons.Rounded.AutoAwesome,
     presentationStyle = GatePresentationStyle.BottomSheet,
     passPolicy = FeaturePassPolicy.TimedPass(
-        passKey = CinemaWrappedPassKey
+        passKey = CinemaWrappedPassKey,
+        durationMs = PassDurations.SHORT_EXPORT_WINDOW_MS,
+        durationLabel = "2h"
     )
 )

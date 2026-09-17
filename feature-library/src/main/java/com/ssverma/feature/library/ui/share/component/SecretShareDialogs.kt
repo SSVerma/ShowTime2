@@ -26,6 +26,7 @@ import com.ssverma.feature.library.R
 import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.GatePresentationStyle
+import com.ssverma.shared.ads.gate.PassDurations
 import com.ssverma.shared.ads.gate.ShowTimeFeatureGate
 import com.ssverma.feature.library.ui.share.SecretShareThemesPassKey
 
@@ -142,8 +143,10 @@ private val SecretShareThemesGateConfig = FeatureGateConfig(
     descriptionRes = R.string.secret_share_gate_desc,
     rewardActionLabelRes = R.string.secret_share_watch_ad_pass,
     icon = Icons.Rounded.Star,
-    presentationStyle = GatePresentationStyle.Dialog,
+    presentationStyle = GatePresentationStyle.BottomSheet,
     passPolicy = FeaturePassPolicy.TimedPass(
-        passKey = SecretShareThemesPassKey
+        passKey = SecretShareThemesPassKey,
+        durationMs = PassDurations.SHORT_EXPORT_WINDOW_MS,
+        durationLabel = "2h"
     )
 )
