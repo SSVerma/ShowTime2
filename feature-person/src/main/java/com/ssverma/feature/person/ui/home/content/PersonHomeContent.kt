@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +38,7 @@ fun PersonHomeContent(
     val layoutDirection = LocalLayoutDirection.current
     var selectedPersonId by rememberSaveable { mutableIntStateOf(-1) }
 
-    val combinedPadding = PaddingValues(
+    val listPadding = PaddingValues(
         start = contentPadding.calculateStartPadding(layoutDirection),
         top = contentPadding.calculateTopPadding() + 8.dp,
         end = contentPadding.calculateEndPadding(layoutDirection),
@@ -45,9 +47,9 @@ fun PersonHomeContent(
 
     PagedListIndexed(
         pagingItems = pagedPersons,
-        contentPadding = combinedPadding,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = modifier
+        contentPadding = listPadding,
+        verticalArrangement = Arrangement.spacedBy(0.dp),
+        modifier = modifier.fillMaxSize()
     ) { index, person ->
         PersonListItem(
             person = person,
@@ -86,7 +88,7 @@ fun PersonHomeContent(
                     }
                 }
             },
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

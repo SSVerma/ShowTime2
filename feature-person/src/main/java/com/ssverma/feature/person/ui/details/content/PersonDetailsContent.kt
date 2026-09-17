@@ -1,5 +1,6 @@
 package com.ssverma.feature.person.ui.details.content
 
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,12 +46,13 @@ import com.ssverma.feature.person.analytics.PersonAnalyticsScreenName
 import com.ssverma.feature.person.analytics.PersonAnalyticsValues
 import com.ssverma.feature.person.ui.common.PersonDetailUiState
 import com.ssverma.feature.person.ui.details.component.PersonDetailsBackdropHeader
+import com.ssverma.feature.person.ui.details.component.PersonHighlightsCard
+import com.ssverma.feature.person.ui.details.component.PersonKnownForShelf
 import com.ssverma.feature.person.ui.details.component.PersonMediaTabRow
+import com.ssverma.feature.person.ui.details.component.PersonSocialLinksRow
 import com.ssverma.feature.person.ui.details.component.PersonTimelineItem
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.ui.TmdbPersonAspectRatio
-import com.ssverma.shared.ui.component.Highlight
-import com.ssverma.shared.ui.component.Highlights
 import com.ssverma.shared.ui.component.ImageShotItem
 import com.ssverma.shared.ui.component.section.OverviewSection
 import com.ssverma.shared.ui.component.section.SectionDefaults
@@ -73,6 +76,7 @@ fun PersonDetailsContent(
     modifier: Modifier = Modifier,
     source: String = "default"
 ) {
+    val context = LocalContext.current
     val analytics = LocalAnalytics.current
     val person = (personState as? UiState.Success)?.data
 
@@ -82,6 +86,26 @@ fun PersonDetailsContent(
 
     var clickedMediaInfo: String? by remember {
         mutableStateOf(null)
+    }
+
+    val onSharePerson: () -> Unit = {
+        if (person != null) {
+            val shareText = context.getString(
+                R.string.person_share_text,
+                person.name,
+                "https://www.themoviedb.org/person/${person.id}"
+            )
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(
+                    Intent.EXTRA_SUBJECT,
+                    context.getString(R.string.person_share_subject, person.name)
+                )
+                putExtra(Intent.EXTRA_TEXT, shareText)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(Intent.createChooser(shareIntent, person.name))
+        }
     }
 
     if (clickedMediaInfo != null) {
@@ -118,6 +142,7 @@ fun PersonDetailsContent(
                 backdropImageUrl = displayBackdropUrl,
                 profileImageUrl = displayProfileUrl,
                 onBackPress = onBackPress,
+                onShareClick = onSharePerson,
                 source = source
             )
         }
@@ -132,7 +157,7 @@ fun PersonDetailsContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
-                            top = MaterialTheme.spacing.medium,
+                            top = 8.dp,
                             start = MaterialTheme.spacing.medium,
                             end = MaterialTheme.spacing.medium
                         )
@@ -142,7 +167,7 @@ fun PersonDetailsContent(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = MaterialTheme.spacing.medium)
+                        .padding(top = 8.dp)
                         .padding(horizontal = MaterialTheme.spacing.medium)
                 ) {
                     ShimmerPlaceholder(
@@ -156,28 +181,54 @@ fun PersonDetailsContent(
         }
 
         if (person != null) {
+            // Social Links Row (IMDb, Instagram, X/Twitter, TikTok, Website)
             item {
-                val na = stringResource(id = R.string.na)
-
-                Highlights(
-                    highlights = remember(person) {
-                        listOf(
-                            Highlight(labelRes = R.string.known_for, person.knownFor),
-                            Highlight(labelRes = R.string.place_of_birth, person.placeOfBirth),
-                            Highlight(labelRes = R.string.dob, person.dob ?: na),
-                        )
-                    },
-                    modifier = Modifier.padding(top = MaterialTheme.spacing.large)
+                PersonSocialLinksRow(
+                    externalIds = person.externalIds,
+                    homepage = person.homepage,
+                    modifier = Modifier.padding(top = 10.dp)
                 )
             }
 
+            // Rich Biographical Highlights Card (Age, Place of Birth, Known For, Aliases)
+            item {
+                PersonHighlightsCard(
+                    person = person,
+                    modifier = Modifier.padding(top = 14.dp)
+                )
+            }
+
+            // Overview / Biography
             item {
                 OverviewSection(
                     overview = person.biography,
-                    modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
+                    modifier = Modifier
+                        .padding(top = 18.dp)
+                        .padding(horizontal = MaterialTheme.spacing.medium)
                 )
             }
 
+            // Known For & Signature Career Highlights
+            item {
+                val knownForItems = remember(person) {
+                    person.popularMedia?.takeIf { it.isNotEmpty() }
+                        ?: person.mediaByType.values.flatten().sortedByDescending { it.voteAverage }
+                            .take(6)
+                }
+                PersonKnownForShelf(
+                    mediaList = knownForItems,
+                    onMediaClick = { media ->
+                        when (media.mediaType) {
+                            MediaType.Movie -> openMovieDetails(media.id)
+                            MediaType.Tv -> openTvShowDetails(media.id)
+                            else -> { /* no-op */
+                            }
+                        }
+                    }
+                )
+            }
+
+            // Photos / Shots Gallery
             item {
                 Section(
                     sectionHeader = {
@@ -206,6 +257,7 @@ fun PersonDetailsContent(
                 }
             }
 
+            // Complete Filmography Timeline
             if (person.mediaByType.isNotEmpty()) {
                 stickyHeader {
                     PersonMediaTabRow(
@@ -220,9 +272,15 @@ fun PersonDetailsContent(
 
                 val mediaList = person.mediaByType[selectedMediaType] ?: emptyList()
 
-                itemsIndexed(mediaList) { index, media ->
+                itemsIndexed(
+                    items = mediaList,
+                    key = { index, media -> "${media.id}_${media.character}_${media.job}_$index" },
+                    contentType = { _, _ -> "person_timeline_item" }
+                ) { index, media ->
                     PersonTimelineItem(
                         media = media,
+                        isFirstItem = index == 0,
+                        isLastItem = index == mediaList.lastIndex,
                         onInfoIconClick = { clickedMediaInfo = media.overview },
                         openMovieDetails = { movieId ->
                             analytics.logEvent(
@@ -244,14 +302,7 @@ fun PersonDetailsContent(
                             )
                             openTvShowDetails(tvShowId)
                         },
-                        modifier = Modifier
-                            .padding(horizontal = MaterialTheme.spacing.medium)
-                            .padding(
-                                vertical = if (index == 0 || index == mediaList.lastIndex)
-                                    MaterialTheme.spacing.medium
-                                else
-                                    MaterialTheme.spacing.small
-                            )
+                        modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium)
                     )
                 }
             }
@@ -277,23 +328,19 @@ fun PersonDetailsContent(
         } else {
             // Loading placeholder shimmers below header and name
             item {
-                Highlights(
-                    highlights = listOf(
-                        Highlight(labelRes = R.string.known_for, value = "—"),
-                        Highlight(labelRes = R.string.place_of_birth, value = "—"),
-                        Highlight(labelRes = R.string.dob, value = "—"),
-                    ),
-                    modifier = Modifier.padding(top = MaterialTheme.spacing.large)
-                )
-            }
-
-            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = MaterialTheme.spacing.medium)
                         .padding(top = MaterialTheme.spacing.large)
                 ) {
+                    ShimmerPlaceholder(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                     ShimmerPlaceholder(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -304,13 +351,6 @@ fun PersonDetailsContent(
                     ShimmerPlaceholder(
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
-                            .height(16.dp),
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ShimmerPlaceholder(
-                        modifier = Modifier
-                            .fillMaxWidth(0.6f)
                             .height(16.dp),
                         shape = RoundedCornerShape(4.dp)
                     )

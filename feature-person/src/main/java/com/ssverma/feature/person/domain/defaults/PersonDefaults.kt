@@ -8,6 +8,7 @@ object PersonDefaults {
         return listOf(
             PersonDetailAppendable.CombinedCredits,
             PersonDetailAppendable.Images,
+            PersonDetailAppendable.ExternalIds,
         )
     }
 }

@@ -18,7 +18,37 @@
     <string name="see_all">See All</string>
     <string name="unknown">Unknown</string>
     <string name="na">N/A</string>
+    <string name="tba">TBA</string>
     <string name="see_more">See more</string>
     <string name="popular_people">Popular People</string>
     <string name="people">People</string>
+
+    <!-- Rich Person Details & Career Context -->
+    <string name="person_age_format">%1$d years old</string>
+    <string name="person_age_born">Age %1$d • Born %2$s</string>
+    <string name="person_deceased_format">%1$s – %2$s • Passed away at age %3$d</string>
+    <string name="person_deceased_badge">In Memoriam</string>
+    <string name="person_born">Born</string>
+    <string name="person_died">Died</string>
+    <string name="person_aliases">Also Known As</string>
+    <string name="person_social_links">Official &amp; Social Links</string>
+    <string name="person_imdb">IMDb</string>
+    <string name="person_instagram">Instagram</string>
+    <string name="person_twitter">X / Twitter</string>
+    <string name="person_tiktok">TikTok</string>
+    <string name="person_website">Website</string>
+    <string name="person_known_for_shelf">Known For &amp; Career Highlights</string>
+    <string name="person_filmography">Filmography</string>
+    <string name="person_filter_all">All</string>
+    <string name="person_filter_acting">Acting</string>
+    <string name="person_filter_directing">Directing</string>
+    <string name="person_filter_writing">Writing</string>
+    <string name="person_filter_production">Production</string>
+    <string name="person_filter_crew">Crew</string>
+    <string name="person_sort_release_date">Release Date</string>
+    <string name="person_sort_rating">TMDB Rating</string>
+    <string name="person_share_subject">Check out %1$s on ShowTime</string>
+    <string name="person_share_text">Explore the filmography and profile of %1$s on ShowTime: %2$s</string>
+    <string name="person_share_cd">Share person profile</string>
+    <string name="person_popularity_rank">#%1$d Trending</string>
 </resources>

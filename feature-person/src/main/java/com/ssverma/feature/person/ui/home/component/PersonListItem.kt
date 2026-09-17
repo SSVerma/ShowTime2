@@ -24,12 +24,10 @@ import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,8 +40,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ssverma.core.ui.layout.HorizontalLazyList
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.person.R
 import com.ssverma.feature.person.ui.details.component.asUiText
 import com.ssverma.shared.domain.model.person.Person
@@ -64,28 +62,22 @@ fun PersonListItem(
     showPopularMedia: Boolean,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
+    Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
-        ),
+        color = Color.Transparent,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Column(
-                modifier = Modifier.padding(14.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.spacing.medium, vertical = 12.dp)
             ) {
-                // Top row: Avatar + Info + Expand button
+                // Top row: Avatar with Rank + Information + Expand Button
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Avatar with rank badge
                     RankAvatar(
                         personId = person.id,
                         imageUrl = person.imageUrl,
@@ -93,9 +85,8 @@ fun PersonListItem(
                         onClick = onClick
                     )
 
-                    Spacer(modifier = Modifier.width(14.dp))
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
 
-                    // Name and descriptive data
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = person.name,
@@ -129,20 +120,8 @@ fun PersonListItem(
                                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-
-                        if (person.placeOfBirth.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = person.placeOfBirth,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
                     }
 
-                    // Expand/Collapse button for known-for media
                     if (!person.popularMedia.isNullOrEmpty()) {
                         IconButton(
                             onClick = { onPopularMediaBtnClick(person.id) },
@@ -161,128 +140,109 @@ fun PersonListItem(
                     }
                 }
 
-                // Biography snippet (if available)
-                if (person.biography.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = person.biography,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 18.sp
-                    )
-                }
-            }
-
-            // Expandable popular media section
-            AnimatedVisibility(visible = showPopularMedia) {
-                person.popularMedia?.let { mediaList ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                            .padding(bottom = 12.dp)
-                    ) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                            thickness = 0.5.dp
-                        )
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                AnimatedVisibility(visible = showPopularMedia) {
+                    person.popularMedia?.let { mediaList ->
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                                .padding(top = 10.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(vertical = 10.dp)
                         ) {
                             Text(
                                 text = stringResource(id = R.string.popular_media),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
                             )
-                        }
 
-                        HorizontalLazyList(
-                            items = mediaList,
-                            contentPadding = PaddingValues(horizontal = 14.dp)
-                        ) { media ->
-                            Column(
-                                modifier = Modifier.width(PopularMediaItemWidth)
-                            ) {
-                                MediaItem(
-                                    title = media.title,
-                                    posterImageUrl = media.posterImageUrl,
-                                    titleTextStyle = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.width(PopularMediaItemWidth),
-                                    posterModifier = Modifier
-                                        .width(PopularMediaItemWidth)
-                                        .aspectRatio(TmdbPosterAspectRatio)
-                                        .clip(RoundedCornerShape(10.dp)),
-                                    indicator = {
-                                        if (media.voteAverage > 0) {
-                                            Surface(
-                                                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                                                    alpha = 0.85f
-                                                ),
-                                                shape = RoundedCornerShape(
-                                                    topStart = 4.dp,
-                                                    bottomEnd = 4.dp
-                                                )
-                                            ) {
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    modifier = Modifier.padding(
-                                                        horizontal = 4.dp,
-                                                        vertical = 2.dp
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            HorizontalLazyList(
+                                items = mediaList,
+                                contentPadding = PaddingValues(horizontal = 14.dp)
+                            ) { media ->
+                                Column(
+                                    modifier = Modifier.width(PopularMediaItemWidth)
+                                ) {
+                                    MediaItem(
+                                        title = media.title,
+                                        posterImageUrl = media.posterImageUrl,
+                                        titleTextStyle = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.width(PopularMediaItemWidth),
+                                        posterModifier = Modifier
+                                            .width(PopularMediaItemWidth)
+                                            .aspectRatio(TmdbPosterAspectRatio)
+                                            .clip(RoundedCornerShape(10.dp)),
+                                        indicator = {
+                                            if (media.voteAverage > 0) {
+                                                Surface(
+                                                    color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                                                        alpha = 0.85f
+                                                    ),
+                                                    shape = RoundedCornerShape(
+                                                        topStart = 4.dp,
+                                                        bottomEnd = 4.dp
                                                     )
                                                 ) {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.Star,
-                                                        contentDescription = null,
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                        modifier = Modifier.size(10.dp)
-                                                    )
-                                                    Spacer(modifier = Modifier.width(2.dp))
-                                                    Text(
-                                                        text = FormatterUtils.formatRating(media.voteAverage * 10f),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        modifier = Modifier.padding(
+                                                            horizontal = 4.dp,
+                                                            vertical = 2.dp
+                                                        )
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Rounded.Star,
+                                                            contentDescription = null,
+                                                            tint = MaterialTheme.colorScheme.primary,
+                                                            modifier = Modifier.size(10.dp)
+                                                        )
+                                                        Spacer(modifier = Modifier.width(2.dp))
+                                                        Text(
+                                                            text = FormatterUtils.formatRating(media.voteAverage * 10f),
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = MaterialTheme.colorScheme.onSurface
+                                                        )
+                                                    }
                                                 }
                                             }
+                                        },
+                                        onClick = { onMediaClick(media) }
+                                    )
+
+                                    val releaseYear = media.displayReleaseDate?.takeLast(4)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .width(PopularMediaItemWidth)
+                                            .padding(top = 2.dp)
+                                    ) {
+                                        if (releaseYear != null) {
+                                            Text(
+                                                text = releaseYear,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
                                         }
-                                    },
-                                    onClick = { onMediaClick(media) }
-                                )
 
-                                val releaseDate = media.displayReleaseDate
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .width(PopularMediaItemWidth)
-                                        .padding(top = 2.dp)
-                                ) {
-                                    if (releaseDate != null) {
-                                        Text(
-                                            text = releaseDate.takeLast(4),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                    }
-
-                                    if (media.character.isNotBlank()) {
-                                        Text(
-                                            text = media.character,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.weight(1f)
-                                        )
+                                        if (media.character.isNotBlank()) {
+                                            Text(
+                                                text = media.character,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -290,6 +250,14 @@ fun PersonListItem(
                     }
                 }
             }
+
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 86.dp, end = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                thickness = 1.dp
+            )
         }
     }
 }
@@ -342,29 +310,43 @@ private fun RankAvatar(
             imageUrl = imageUrl,
             onClick = onClick,
             size = AvatarSize,
-            borderWidth = 1.dp,
-            borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+            borderWidth = if (rank <= 3) 2.dp else 1.dp,
+            borderColor = when (rank) {
+                1 -> MaterialTheme.colorScheme.primary
+                2 -> MaterialTheme.colorScheme.secondary
+                3 -> MaterialTheme.colorScheme.tertiary
+                else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+            },
             borderSpacing = 2.dp,
             enableSharedTransition = true,
             sharedContentKey = personSharedContentKey(personId, source = "person_list")
         )
 
-        // Rank badge - subtle circular pill at corner
         Surface(
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            color = when (rank) {
+                1 -> MaterialTheme.colorScheme.primary
+                2 -> MaterialTheme.colorScheme.secondary
+                3 -> MaterialTheme.colorScheme.tertiary
+                else -> MaterialTheme.colorScheme.surfaceContainerHighest
+            },
+            contentColor = when (rank) {
+                1 -> MaterialTheme.colorScheme.onPrimary
+                2 -> MaterialTheme.colorScheme.onSecondary
+                3 -> MaterialTheme.colorScheme.onTertiary
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            },
             shape = CircleShape,
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.surface),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .offset(x = 2.dp, y = 2.dp)
+                .offset(x = 3.dp, y = 3.dp)
         ) {
             Text(
                 text = "$rank",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
             )
         }
     }

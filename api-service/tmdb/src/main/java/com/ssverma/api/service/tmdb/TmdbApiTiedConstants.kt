@@ -123,6 +123,7 @@ object TmdbApiTiedConstants {
     object PersonDetailsAppendableResponseTypes {
         const val Images = "images"
         const val Credits = "combined_credits"
+        const val ExternalIds = "external_ids"
     }
 
     const val AppendToResponse = "append_to_response"

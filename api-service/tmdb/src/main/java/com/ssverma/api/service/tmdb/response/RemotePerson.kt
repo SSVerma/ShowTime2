@@ -18,6 +18,9 @@ class RemotePerson(
     @SerializedName("birthday")
     val dob: String?,
 
+    @SerializedName("deathday")
+    val deathday: String?,
+
     @SerializedName("known_for_department")
     val knownFor: String?,
 
@@ -26,6 +29,18 @@ class RemotePerson(
 
     @SerializedName("place_of_birth")
     val placeOfBirth: String?,
+
+    @SerializedName("also_known_as")
+    val alsoKnownAs: List<String>?,
+
+    @SerializedName("homepage")
+    val homepage: String?,
+
+    @SerializedName("imdb_id")
+    val imdbId: String?,
+
+    @SerializedName("external_ids")
+    val externalIds: RemoteExternalIds?,
 
     @SerializedName("images")
     val personImage: RemotePersonImage?,
@@ -38,6 +53,29 @@ class RemotePerson(
 
     @SerializedName("popularity")
     val popularity: Float
+)
+
+class RemoteExternalIds(
+    @SerializedName("imdb_id")
+    val imdbId: String?,
+
+    @SerializedName("facebook_id")
+    val facebookId: String?,
+
+    @SerializedName("instagram_id")
+    val instagramId: String?,
+
+    @SerializedName("twitter_id")
+    val twitterId: String?,
+
+    @SerializedName("tiktok_id")
+    val tiktokId: String?,
+
+    @SerializedName("wikidata_id")
+    val wikidataId: String?,
+
+    @SerializedName("youtube_id")
+    val youtubeId: String?
 )
 
 class RemotePersonImage(

@@ -4,27 +4,38 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
+import com.ssverma.feature.person.R
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
-import com.ssverma.shared.ui.component.BackdropNavigationAction
 import com.ssverma.shared.ui.component.personSharedContentKey
+import com.ssverma.core.ui.R as CoreUiR
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -33,6 +44,7 @@ fun PersonDetailsBackdropHeader(
     backdropImageUrl: String,
     profileImageUrl: String,
     onBackPress: () -> Unit,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier,
     source: String = "default",
     enableSharedTransition: Boolean = true
@@ -79,7 +91,6 @@ fun PersonDetailsBackdropHeader(
                     end.linkTo(parent.end)
                 }
         ) {
-
             /*Backdrop image*/
             NetworkImage(
                 url = backdropImageUrl,
@@ -88,8 +99,42 @@ fun PersonDetailsBackdropHeader(
                 modifier = Modifier.fillMaxSize()
             )
 
-            /*Navigation*/
-            BackdropNavigationAction(onIconClick = onBackPress)
+            /*Top Navigation Actions (Back & Share)*/
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    IconButton(onClick = onBackPress) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = stringResource(id = CoreUiR.string.back),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    IconButton(onClick = onShareClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = stringResource(id = R.string.person_share_cd),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
         }
 
         /*Rounded surface*/
@@ -113,10 +158,10 @@ fun PersonDetailsBackdropHeader(
                 }
         )
 
-        /*Profile*/
+        /*Profile Hero Avatar*/
         Surface(
             modifier = Modifier
-                .size(110.dp)
+                .size(116.dp)
                 .constrainAs(refProfile) {
                     top.linkTo(refRoundedSurface.top)
                     bottom.linkTo(refRoundedSurface.bottom)
@@ -129,7 +174,7 @@ fun PersonDetailsBackdropHeader(
                 width = 4.dp,
                 color = MaterialTheme.colorScheme.background
             ),
-            tonalElevation = 4.dp
+            tonalElevation = 6.dp
         ) {
             NetworkImage(
                 url = profileImageUrl,

@@ -16,4 +16,5 @@ sealed interface MediaDetailsAppendable {
 sealed interface PersonDetailAppendable {
     object CombinedCredits : PersonDetailAppendable
     object Images : PersonDetailAppendable
+    object ExternalIds : PersonDetailAppendable
 }

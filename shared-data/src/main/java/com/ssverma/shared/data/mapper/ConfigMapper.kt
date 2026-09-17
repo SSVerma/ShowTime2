@@ -69,6 +69,10 @@ fun List<PersonDetailAppendable>.asQueryMap(): Map<String, String> {
             PersonDetailAppendable.Images -> {
                 queryBuilder.and(TmdbApiTiedConstants.PersonDetailsAppendableResponseTypes.Images)
             }
+
+            PersonDetailAppendable.ExternalIds -> {
+                queryBuilder.and(TmdbApiTiedConstants.PersonDetailsAppendableResponseTypes.ExternalIds)
+            }
         }
     }
 

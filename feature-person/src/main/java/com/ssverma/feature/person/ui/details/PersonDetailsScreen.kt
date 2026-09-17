@@ -67,7 +67,7 @@ fun PersonDetailsScreen(
             ShowTimeBottomSheet(
                 onDismissRequest = { showSheet = false },
                 sheetState = sheetState,
-                containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
+                containerColor = MaterialTheme.colorScheme.background,
                 dragHandle = null,
                 modifier = Modifier.fillMaxSize()
             ) {
