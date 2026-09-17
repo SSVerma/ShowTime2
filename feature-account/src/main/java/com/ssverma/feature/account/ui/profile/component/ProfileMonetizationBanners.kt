@@ -199,7 +199,7 @@ fun ProUpgradeBanner(
                 )
                 ProFeatureBadge(
                     icon = Icons.Rounded.CloudSync,
-                    text = stringResource(R.string.badge_trakt_sync),
+                    text = stringResource(R.string.badge_cloud_backup),
                     modifier = Modifier.weight(1f)
                 )
             }

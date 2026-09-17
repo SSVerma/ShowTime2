@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
@@ -39,11 +38,11 @@ import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import com.ssverma.showtime.R
 import com.ssverma.showtime.widget.UpNextWidgetEntry
 import com.ssverma.showtime.widget.WidgetUpdateHelper
 import java.io.File
+import androidx.core.net.toUri
 
 class UpNextGlanceWidget : GlanceAppWidget() {
 
@@ -76,7 +75,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
     ) {
         val tvIntent = Intent(
             Intent.ACTION_VIEW,
-            Uri.parse("showtime://www.ssverma.in/tv")
+            "showtime://www.ssverma.in/tv".toUri()
         ).apply {
             setPackage(context.packageName)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -85,7 +84,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(ColorProvider(Color(0xFF141218)))
+                .background(GlanceTheme.colors.widgetBackground)
                 .cornerRadius(18.dp)
                 .padding(12.dp)
         ) {
@@ -101,7 +100,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                     modifier = GlanceModifier
                         .width(8.dp)
                         .height(8.dp)
-                        .background(ColorProvider(Color(0xFFED1C24)))
+                        .background(GlanceTheme.colors.primary)
                         .cornerRadius(4.dp)
                 ) {}
 
@@ -110,7 +109,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = context.getString(R.string.widget_up_next_title),
                     style = TextStyle(
-                        color = ColorProvider(Color.White),
+                        color = GlanceTheme.colors.onSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     ),
@@ -120,14 +119,14 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                 if (items.isNotEmpty()) {
                     Box(
                         modifier = GlanceModifier
-                            .background(ColorProvider(Color(0xFF331418)))
+                            .background(GlanceTheme.colors.primaryContainer)
                             .cornerRadius(10.dp)
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = "${items.size}",
                             style = TextStyle(
-                                color = ColorProvider(Color(0xFFFF5252)),
+                                color = GlanceTheme.colors.onPrimaryContainer,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -155,7 +154,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                 context.getString(R.string.widget_open_app)
                             },
                             style = TextStyle(
-                                color = ColorProvider(Color(0xFFE6E1E5)),
+                                color = GlanceTheme.colors.onSurface,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -165,10 +164,10 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                             text = if (isConnected) {
                                 context.getString(R.string.widget_up_next_desc)
                             } else {
-                                "Connect Trakt in ShowTime to track your queue"
+                                context.getString(R.string.widget_up_next_empty_hint)
                             },
                             style = TextStyle(
-                                color = ColorProvider(Color(0xFF938F99)),
+                                color = GlanceTheme.colors.onSurfaceVariant,
                                 fontSize = 11.sp
                             )
                         )
@@ -182,7 +181,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                         val episode = items[index]
                         val showIntent = Intent(
                             Intent.ACTION_VIEW,
-                            Uri.parse("showtime://www.ssverma.in/tv/${episode.showTmdbId}")
+                            "showtime://www.ssverma.in/tv/${episode.showTmdbId}".toUri()
                         ).apply {
                             setPackage(context.packageName)
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -198,7 +197,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
-                                    .background(ColorProvider(Color(0xFF232128)))
+                                    .background(GlanceTheme.colors.surface)
                                     .cornerRadius(12.dp)
                                     .padding(8.dp)
                                     .clickable(actionStartActivity(showIntent))
@@ -225,14 +224,9 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                         modifier = GlanceModifier
                                             .width(36.dp)
                                             .height(50.dp)
-                                            .background(ColorProvider(Color(0xFF332F3A)))
+                                            .background(GlanceTheme.colors.surfaceVariant)
                                             .cornerRadius(6.dp)
-                                    ) {
-                                        Text(
-                                            text = "📺",
-                                            style = TextStyle(fontSize = 14.sp)
-                                        )
-                                    }
+                                    ) {}
                                 }
 
                                 Spacer(modifier = GlanceModifier.width(10.dp))
@@ -249,7 +243,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                             text = episode.showTitle,
                                             maxLines = 1,
                                             style = TextStyle(
-                                                color = ColorProvider(Color.White),
+                                                color = GlanceTheme.colors.onSurface,
                                                 fontSize = 13.sp,
                                                 fontWeight = FontWeight.Bold
                                             ),
@@ -261,7 +255,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                         // Episode Badge (S02E01)
                                         Box(
                                             modifier = GlanceModifier
-                                                .background(ColorProvider(Color(0xFF423753)))
+                                                .background(GlanceTheme.colors.secondaryContainer)
                                                 .cornerRadius(4.dp)
                                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                                         ) {
@@ -273,7 +267,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                             Text(
                                                 text = episodeCode,
                                                 style = TextStyle(
-                                                    color = ColorProvider(Color(0xFFE8DEF8)),
+                                                    color = GlanceTheme.colors.onSecondaryContainer,
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold
                                                 )
@@ -288,7 +282,7 @@ class UpNextGlanceWidget : GlanceAppWidget() {
                                             text = title,
                                             maxLines = 1,
                                             style = TextStyle(
-                                                color = ColorProvider(Color(0xFFCAC4D0)),
+                                                color = GlanceTheme.colors.onSurfaceVariant,
                                                 fontSize = 11.sp
                                             )
                                         )

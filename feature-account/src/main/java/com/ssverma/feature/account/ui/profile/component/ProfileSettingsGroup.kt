@@ -15,7 +15,6 @@ import androidx.compose.material.icons.rounded.MovieFilter
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,7 +32,6 @@ import com.ssverma.feature.account.R
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
-import com.ssverma.shared.domain.model.auth.TraktAuthState
 
 @Composable
 fun SettingsNavGroup(
@@ -50,10 +48,7 @@ fun SettingsNavGroup(
     googleUser: GoogleUser?,
     backupStatus: BackupStatus,
     lastBackupMetadata: BackupMetadata?,
-    traktAuthState: TraktAuthState,
-    isMockTraktEnabled: Boolean,
     onOpenBackup: () -> Unit,
-    onOpenTrakt: () -> Unit,
     onOpenTheme: () -> Unit,
     onOpenLocalization: () -> Unit,
     onOpenStreamingSubscriptions: () -> Unit,
@@ -99,22 +94,6 @@ fun SettingsNavGroup(
             icon = Icons.Rounded.CloudSync,
             onClick = onOpenBackup
         )
-
-        if (BuildConfig.DEBUG && (isMockTraktEnabled || traktAuthState is TraktAuthState.Connected)) {
-            SettingsNavTile(
-                title = stringResource(R.string.trakt_cloud_sync),
-                subtitle = when (traktAuthState) {
-                    is TraktAuthState.Connected -> stringResource(
-                        id = R.string.trakt_connected_as,
-                        traktAuthState.user.username
-                    )
-
-                    else -> stringResource(R.string.trakt_cloud_sync_desc)
-                },
-                icon = Icons.Rounded.Tv,
-                onClick = onOpenTrakt
-            )
-        }
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 

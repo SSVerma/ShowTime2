@@ -26,9 +26,6 @@ fun EntryProviderScope<NavKey>.accountEntries(
             onOpenBackup = {
                 navigator.navigate(BackupSyncNavKey)
             },
-            onOpenTrakt = {
-                navigator.navigate(TraktSyncNavKey)
-            },
             onOpenAbout = {
                 appInfoTrigger.invoke()
             }

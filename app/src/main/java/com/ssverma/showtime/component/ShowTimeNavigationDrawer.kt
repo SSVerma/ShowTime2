@@ -61,7 +61,6 @@ fun ShowTimeDrawerContent(
     onOpenReceipt: () -> Unit,
     onOpenCinemaGame: () -> Unit,
     onOpenBackup: () -> Unit,
-    onOpenTrakt: () -> Unit = {},
     onOpenPro: () -> Unit,
     onOpenTheme: () -> Unit,
     onOpenLocalization: () -> Unit,

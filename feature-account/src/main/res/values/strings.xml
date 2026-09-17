@@ -13,11 +13,7 @@
     <string name="pro_subtitle">Enjoy pure cinema with zero distractions</string>
     <string name="badge_ad_free">100% Ad-Free</string>
     <string name="badge_oled_black">OLED Black</string>
-    <string name="badge_trakt_sync">Trakt Sync</string>
-    <string name="trakt_pro_locked_title">Trakt.tv Cloud Sync</string>
-    <string name="trakt_pro_locked_desc">Sync your watchlists, ratings, and TV progress across all your devices with Trakt.tv. Upgrade to ShowTime Pro for unlimited sync or watch a short video to unlock a 24-hour pass.</string>
-    <string name="watch_ad_for_trakt_pass">Watch Video for 24h Pass</string>
-    <string name="trakt_pass_active">24h Pass Active</string>
+    <string name="badge_cloud_backup">Cloud Backup</string>
     <string name="restore_purchases">Restore Purchases</string>
     <string name="restore_success">Pro purchase successfully restored!</string>
     <string name="restore_not_found">No active Pro purchase found.</string>
@@ -99,19 +95,25 @@
     <string name="free_badge">FREE</string>
     <string name="never">Never</string>
     <string name="sign_out">Sign out</string>
+    <string name="disconnect">Disconnect</string>
+
+    <!-- Internal Trakt (Dormant / Non-user facing) -->
     <string name="trakt_cloud_sync">Trakt.tv Cloud Sync</string>
     <string name="trakt_cloud_sync_desc">2-Way watchlist &amp; TV show progress sync</string>
     <string name="trakt_connected_as">Connected as \@%1$s</string>
     <string name="trakt_sync_now">Sync Now</string>
     <string name="trakt_sync_success">Synced %1$d items with Trakt</string>
     <string name="trakt_sync_failed">Trakt sync failed. Please check connection.</string>
-    <string name="disconnect">Disconnect</string>
     <string name="disconnect_trakt_confirm_title">Disconnect Trakt.tv?</string>
     <string name="disconnect_trakt_confirm_msg">Are you sure you want to disconnect your Trakt.tv account? Your local library will remain intact.</string>
     <string name="connect_trakt">Connect Trakt.tv</string>
     <string name="trakt_syncing">Syncing your cinema library…</string>
+    <string name="trakt_pro_locked_title">Trakt.tv Cloud Sync</string>
+    <string name="trakt_pro_locked_desc">Sync your watchlists, ratings, and TV progress across all your devices.</string>
+    <string name="watch_ad_for_trakt_pass">Watch Video for 24h Pass</string>
+
     <string name="developer_controls">Developer &amp; Debug Controls</string>
-    <string name="developer_controls_desc">Debug-only feature flag overrides, Trakt mock, and DB seeders</string>
+    <string name="developer_controls_desc">Debug-only feature flag overrides and DB seeders</string>
     <string name="developer_panel_title">Developer Sandbox</string>
     <string name="developer_panel_subtitle">Debug &amp; developer options</string>
     <string name="dev_pro_override">Pro Status Override</string>
