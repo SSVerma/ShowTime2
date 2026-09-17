@@ -98,19 +98,19 @@ internal val LightColorScheme = expressiveLightColorScheme().copy(
 
     surface = Color(0xFFFFFFFF),
     onSurface = Color(0xFF0F172A),
-    surfaceVariant = Color(0xFFF1F3F5),
-    onSurfaceVariant = Color(0xFF475569),
+    surfaceVariant = Color(0xFFF1F5F9),
+    onSurfaceVariant = Color(0xFF334155),
 
     surfaceContainerLowest = Color(0xFFFFFFFF),
     surfaceContainerLow = Color(0xFFFFFFFF),
-    surfaceContainer = Color(0xFFFFFFFF),
-    surfaceContainerHigh = Color(0xFFE5E7EB),
-    surfaceContainerHighest = Color(0xFFD1D5DB),
+    surfaceContainer = Color(0xFFF8FAFC),
+    surfaceContainerHigh = Color(0xFFF1F5F9),
+    surfaceContainerHighest = Color(0xFFE2E8F0),
     surfaceDim = Color(0xFFE2E8F0),
     surfaceBright = Color(0xFFFFFFFF),
     surfaceTint = Color.Transparent,
 
-    outline = Color(0xFF94A3B8),
+    outline = Color(0xFF64748B),
     outlineVariant = Color(0xFFE2E8F0),
 
     error = Color(0xFFDC2626),

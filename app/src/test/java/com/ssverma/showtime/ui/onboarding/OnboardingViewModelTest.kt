@@ -164,4 +164,40 @@ class OnboardingViewModelTest {
 
         assertThat(viewModel.uiState.value.isBackupRestoreSkipped).isTrue()
     }
+
+    @Test
+    fun `toggleGenre enforces maximum cap of 5 genres`() = runTest {
+        advanceUntilIdle()
+
+        viewModel.toggleGenre(1)
+        viewModel.toggleGenre(2)
+        viewModel.toggleGenre(3)
+        viewModel.toggleGenre(4)
+        viewModel.toggleGenre(5)
+        assertThat(viewModel.uiState.value.selectedGenreIds).containsExactly(1, 2, 3, 4, 5)
+
+        // Attempting to add a 6th genre is ignored
+        viewModel.toggleGenre(6)
+        assertThat(viewModel.uiState.value.selectedGenreIds).containsExactly(1, 2, 3, 4, 5)
+
+        // Deselecting one allows selecting another
+        viewModel.toggleGenre(5)
+        assertThat(viewModel.uiState.value.selectedGenreIds).containsExactly(1, 2, 3, 4)
+        viewModel.toggleGenre(6)
+        assertThat(viewModel.uiState.value.selectedGenreIds).containsExactly(1, 2, 3, 4, 6)
+    }
+
+    @Test
+    fun `clearSelectedGenres clears genre selection`() = runTest {
+        advanceUntilIdle()
+
+        viewModel.toggleGenre(1)
+        viewModel.toggleGenre(2)
+        viewModel.toggleGenre(3)
+        assertThat(viewModel.uiState.value.selectedGenreIds).isNotEmpty()
+
+        viewModel.clearSelectedGenres()
+        assertThat(viewModel.uiState.value.selectedGenreIds).isEmpty()
+        assertThat(viewModel.uiState.value.canProceedFromTaste).isFalse()
+    }
 }

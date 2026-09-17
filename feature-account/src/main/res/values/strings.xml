@@ -164,4 +164,16 @@
     <string name="streaming_subscriptions_count_format">%1$d services selected</string>
     <string name="settings_release_radar_title">Smart Release Radar</string>
     <string name="settings_release_radar_desc">Alerts when watchlisted movies hit theaters or arrive on streaming</string>
+
+    <!-- Preferred Genres Preferences -->
+    <string name="preferred_genres_title">Preferred Genres</string>
+    <string name="preferred_genres_select_hint">Select 3 to 5 favorite genres</string>
+    <string name="preferred_genres_count_format">%1$d genres selected</string>
+    <string name="preferred_genres_desc">Seed and tune your personalized recommendations</string>
+    <string name="preferred_genres_tagline">Choose 3 to 5 genres to focus your personalized recommendations.</string>
+    <string name="preferred_genres_requirement_unmet">Pick %1$d more (min 3)</string>
+    <string name="preferred_genres_requirement_met">%1$d of %2$d genres selected</string>
+    <string name="preferred_genres_requirement_max">Maximum %1$d genres selected</string>
+    <string name="save_preferences">Save Preferences</string>
+    <string name="preferred_genres_saved">Genre preferences updated successfully</string>
 </resources>

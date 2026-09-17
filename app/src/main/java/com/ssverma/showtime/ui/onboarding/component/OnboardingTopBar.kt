@@ -3,8 +3,8 @@ package com.ssverma.showtime.ui.onboarding.component
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,17 +31,15 @@ fun OnboardingTopBar(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(
-                horizontal = MaterialTheme.spacing.medium,
-                vertical = MaterialTheme.spacing.small
-            )
+            .height(56.dp)
+            .padding(horizontal = MaterialTheme.spacing.medium),
+        contentAlignment = Alignment.CenterStart
     ) {
+        // Back button on steps 2..4
         AnimatedVisibility(
             visible = !currentStep.isFirst,
             enter = fadeIn(),
@@ -59,23 +57,30 @@ fun OnboardingTopBar(
             }
         }
 
-        if (currentStep.isFirst) {
+        // App logo/name on step 1
+        AnimatedVisibility(
+            visible = currentStep.isFirst,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             Text(
                 text = stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = MaterialTheme.spacing.small)
+                modifier = Modifier.padding(start = MaterialTheme.spacing.extraSmall)
             )
         }
 
+        // Step indicator pinned on right
         Text(
             text = stringResource(
                 id = R.string.onboarding_step_indicator,
                 currentStep.stepIndex + 1,
-                OnboardingStep.values().size
+                OnboardingStep.entries.size
             ),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.CenterEnd)
         )
     }
 }

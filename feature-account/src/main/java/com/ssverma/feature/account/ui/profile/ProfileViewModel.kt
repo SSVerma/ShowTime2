@@ -204,6 +204,12 @@ class ProfileViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            appConfigRepository.userSeededGenres.collectLatest { genres ->
+                _uiState.update { it.copy(userSeededGenres = genres) }
+            }
+        }
+
+        viewModelScope.launch {
             appConfigRepository.isReleaseRadarEnabled.collectLatest { enabled ->
                 _uiState.update { it.copy(isReleaseRadarEnabled = enabled) }
             }
@@ -381,6 +387,14 @@ class ProfileViewModel @Inject constructor(
 
     fun closeStreamingSubscriptionsSheet() {
         _uiState.update { it.copy(isStreamingSubscriptionsSheetVisible = false) }
+    }
+
+    fun openPreferredGenresSheet() {
+        _uiState.update { it.copy(isPreferredGenresSheetVisible = true) }
+    }
+
+    fun closePreferredGenresSheet() {
+        _uiState.update { it.copy(isPreferredGenresSheetVisible = false) }
     }
 
     fun updateReleaseRadarEnabled(enabled: Boolean) {

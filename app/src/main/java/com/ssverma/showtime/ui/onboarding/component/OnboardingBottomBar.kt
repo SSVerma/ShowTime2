@@ -54,7 +54,12 @@ fun OnboardingBottomBar(
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 3.dp,
+        tonalElevation = 0.dp,
+        shadowElevation = 8.dp,
+        border = BorderStroke(
+            width = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        ),
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -73,7 +78,7 @@ fun OnboardingBottomBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = MaterialTheme.spacing.small)
             ) {
-                OnboardingStep.values().forEach { step ->
+                OnboardingStep.entries.forEach { step ->
                     val isCurrent = step == uiState.currentStep
                     val isPast = step.stepIndex < uiState.currentStep.stepIndex
 
@@ -86,8 +91,8 @@ fun OnboardingBottomBar(
                     val dotColor by animateColorAsState(
                         targetValue = when {
                             isCurrent -> MaterialTheme.colorScheme.primary
-                            isPast -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                            isPast -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                            else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                         },
                         animationSpec = tween(300),
                         label = "dot_color"
@@ -105,7 +110,7 @@ fun OnboardingBottomBar(
 
             val isPrimaryEnabled = when (uiState.currentStep) {
                 OnboardingStep.Welcome -> true
-                OnboardingStep.Subscriptions -> true
+                OnboardingStep.Subscriptions -> uiState.selectedProviderIds.isNotEmpty()
                 OnboardingStep.Taste -> uiState.canProceedFromTaste
                 OnboardingStep.Cloud -> true
             }
@@ -115,7 +120,7 @@ fun OnboardingBottomBar(
                 OnboardingStep.Subscriptions -> {
                     if (uiState.selectedProviderIds.isNotEmpty()) {
                         stringResource(
-                            id = R.string.onboarding_subs_selected_count,
+                            id = R.string.onboarding_subs_continue_count,
                             uiState.selectedProviderIds.size
                         )
                     } else {
@@ -126,7 +131,7 @@ fun OnboardingBottomBar(
                 OnboardingStep.Taste -> {
                     if (uiState.canProceedFromTaste) {
                         stringResource(
-                            id = R.string.onboarding_taste_requirement_met,
+                            id = R.string.onboarding_taste_continue_count,
                             uiState.selectedGenreIds.size
                         )
                     } else {

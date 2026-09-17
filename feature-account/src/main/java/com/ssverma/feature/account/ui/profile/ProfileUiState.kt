@@ -32,6 +32,8 @@ data class ProfileScreenState(
     val isLocalizationSheetVisible: Boolean = false,
     val userStreamingSubscriptions: Set<Int> = emptySet(),
     val isStreamingSubscriptionsSheetVisible: Boolean = false,
+    val userSeededGenres: Set<Int> = emptySet(),
+    val isPreferredGenresSheetVisible: Boolean = false,
     val isReleaseRadarEnabled: Boolean = true,
     val isReleaseRadarRemoteEnabled: Boolean = true,
     val googleUser: GoogleUser? = null,

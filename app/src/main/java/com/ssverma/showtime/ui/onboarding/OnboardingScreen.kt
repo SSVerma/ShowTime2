@@ -19,7 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.showtime.ui.onboarding.component.OnboardingBottomBar
 import com.ssverma.showtime.ui.onboarding.component.OnboardingTopBar
 import com.ssverma.showtime.ui.onboarding.step.OnboardingCloudStep
@@ -143,6 +143,11 @@ fun OnboardingScreen(
                     }
                 },
                 onSkipStep = {
+                    when (currentStep) {
+                        OnboardingStep.Subscriptions -> viewModel.clearSelectedProviders()
+                        OnboardingStep.Taste -> viewModel.clearSelectedGenres()
+                        else -> Unit
+                    }
                     coroutineScope.launch {
                         if (pagerState.currentPage < pagerState.pageCount - 1) {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)

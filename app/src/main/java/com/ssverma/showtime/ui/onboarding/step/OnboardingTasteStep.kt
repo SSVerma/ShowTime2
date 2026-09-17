@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -54,6 +53,7 @@ fun OnboardingTasteStep(
 ) {
     val selectedCount = selectedGenreIds.size
     val isThresholdMet = selectedCount >= 3
+    val isMaxReached = selectedCount >= 5
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -68,21 +68,21 @@ fun OnboardingTasteStep(
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                     shape = CircleShape
                 )
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .padding(horizontal = 16.dp, vertical = 7.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.onboarding_taste_badge),
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
+                    letterSpacing = 1.2.sp
                 ),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
@@ -113,14 +113,14 @@ fun OnboardingTasteStep(
             color = if (isThresholdMet) {
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
             } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                MaterialTheme.colorScheme.surface
             },
             border = BorderStroke(
                 width = 1.dp,
                 color = if (isThresholdMet) {
                     MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 } else {
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
                 }
             )
         ) {
@@ -138,13 +138,19 @@ fun OnboardingTasteStep(
                     Spacer(modifier = Modifier.width(6.dp))
                 }
                 Text(
-                    text = if (isThresholdMet) {
-                        stringResource(
-                            id = R.string.onboarding_taste_requirement_met,
-                            selectedCount
+                    text = when {
+                        isMaxReached -> stringResource(
+                            id = R.string.onboarding_taste_requirement_max,
+                            5
                         )
-                    } else {
-                        stringResource(
+
+                        isThresholdMet -> stringResource(
+                            id = R.string.onboarding_taste_requirement_met,
+                            selectedCount,
+                            5
+                        )
+
+                        else -> stringResource(
                             id = R.string.onboarding_taste_requirement_unmet,
                             3 - selectedCount
                         )
@@ -184,39 +190,36 @@ fun OnboardingTasteStep(
             ) {
                 genres.forEach { genre ->
                     val isSelected = genre.id in selectedGenreIds
+                    val isChipEnabled = isSelected || !isMaxReached
                     FilterChip(
                         selected = isSelected,
                         onClick = { onToggleGenre(genre.id) },
+                        enabled = isChipEnabled,
                         label = {
                             Text(
                                 text = genre.name,
                                 style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             )
                         },
-                        leadingIcon = if (isSelected) {
-                            {
-                                Icon(
-                                    imageVector = Icons.Rounded.Check,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        } else null,
                         shape = RoundedCornerShape(20.dp),
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary,
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                            labelColor = MaterialTheme.colorScheme.onSurface
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            labelColor = MaterialTheme.colorScheme.onSurface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                         ),
                         border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
+                            enabled = isChipEnabled,
                             selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                            selectedBorderColor = MaterialTheme.colorScheme.primary
+                            borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f),
+                            selectedBorderColor = MaterialTheme.colorScheme.primary,
+                            disabledBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(
+                                alpha = 0.3f
+                            )
                         )
                     )
                 }

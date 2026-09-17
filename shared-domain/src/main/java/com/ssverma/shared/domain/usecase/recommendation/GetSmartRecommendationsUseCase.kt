@@ -7,13 +7,16 @@ import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
 import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
 import com.ssverma.shared.domain.model.stats.RecommendationShelf
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.DiscoveryRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class GetSmartRecommendationsUseCase @Inject constructor(
-    private val discoveryRepository: DiscoveryRepository
+    private val discoveryRepository: DiscoveryRepository,
+    private val appConfigRepository: AppConfigRepository? = null
 ) {
     suspend operator fun invoke(
         filterType: DiaryFilterType = DiaryFilterType.ALL,
@@ -22,6 +25,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
         page: Int = 1
     ): Result<List<RecommendationShelf>, Failure.CoreFailure> = coroutineScope {
         val shelves = mutableListOf<RecommendationShelf>()
+        val seededGenreIds = appConfigRepository?.userSeededGenres?.first() ?: emptySet()
 
         val targetMediaType = when (filterType) {
             DiaryFilterType.ALL,
@@ -37,6 +41,7 @@ class GetSmartRecommendationsUseCase @Inject constructor(
                 filter = UniversalDiscoveryFilter(
                     mediaType = targetMediaType,
                     vibePreset = DiscoveryVibePreset.MIND_BENDING,
+                    selectedGenreIds = seededGenreIds,
                     selectedProviderIds = selectedProviderIds,
                     watchRegion = watchRegion,
                     minRating = 7.0f

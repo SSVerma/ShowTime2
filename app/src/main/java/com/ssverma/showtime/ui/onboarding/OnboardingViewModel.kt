@@ -126,12 +126,20 @@ class OnboardingViewModel @Inject constructor(
         _uiState.update { it.copy(selectedProviderIds = emptySet()) }
     }
 
+    fun clearSelectedGenres() {
+        _uiState.update { it.copy(selectedGenreIds = emptySet()) }
+    }
+
     fun toggleGenre(genreId: Int) {
         _uiState.update { current ->
             val updated = if (genreId in current.selectedGenreIds) {
                 current.selectedGenreIds - genreId
             } else {
-                current.selectedGenreIds + genreId
+                if (current.selectedGenreIds.size >= MAX_GENRE_SELECTIONS) {
+                    current.selectedGenreIds
+                } else {
+                    current.selectedGenreIds + genreId
+                }
             }
             current.copy(selectedGenreIds = updated)
         }
@@ -240,6 +248,9 @@ class OnboardingViewModel @Inject constructor(
                 displayPriority = 7
             )
         )
+
+        const val MIN_GENRE_SELECTIONS = 3
+        const val MAX_GENRE_SELECTIONS = 5
 
         val FallbackGenres = listOf(
             Genre(id = 28, name = "Action"),

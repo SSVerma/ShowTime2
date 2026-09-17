@@ -1,53 +1,18 @@
 package com.ssverma.feature.account.ui.profile
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Block
-import androidx.compose.material.icons.rounded.BugReport
-import androidx.compose.material.icons.rounded.ChevronRight
-import androidx.compose.material.icons.rounded.CloudSync
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.LiveTv
-import androidx.compose.material.icons.rounded.NotificationsActive
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Public
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.Tv
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,24 +23,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
 import com.ssverma.core.backup.model.BackupMetadata
-import com.ssverma.core.backup.model.BackupOperation
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleUser
 import com.ssverma.core.ui.DefaultCoreErrorIndicator
 import com.ssverma.core.ui.Screen
 import com.ssverma.core.ui.ScreenLoadingIndicator
 import com.ssverma.core.ui.asString
-import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.core.ui.component.showImmediateSnackbar
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.core.ui.util.findActivity
@@ -83,13 +44,18 @@ import com.ssverma.feature.account.BuildConfig
 import com.ssverma.feature.account.R
 import com.ssverma.feature.account.domain.model.Profile
 import com.ssverma.feature.account.ui.debug.DeveloperPanelBottomSheet
+import com.ssverma.feature.account.ui.profile.component.GoogleSignInPromptCard
+import com.ssverma.feature.account.ui.profile.component.PreferredGenresBottomSheet
+import com.ssverma.feature.account.ui.profile.component.ProActiveBanner
+import com.ssverma.feature.account.ui.profile.component.ProUpgradeBanner
+import com.ssverma.feature.account.ui.profile.component.ProfileHeader
+import com.ssverma.feature.account.ui.profile.component.SettingsNavGroup
+import com.ssverma.feature.account.ui.profile.component.SignOutConfirmDialog
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.domain.model.auth.TraktAuthState
-import com.ssverma.shared.ui.component.Avatar
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
-import com.ssverma.shared.ui.component.ProfileAvatarSharedKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,6 +104,7 @@ fun ProfileScreen(
                     contentLanguage = uiState.contentLanguage,
                     availableLanguages = uiState.availableLanguages,
                     userStreamingSubscriptions = uiState.userStreamingSubscriptions,
+                    userSeededGenres = uiState.userSeededGenres,
                     isReleaseRadarEnabled = uiState.isReleaseRadarEnabled,
                     isReleaseRadarRemoteEnabled = uiState.isReleaseRadarRemoteEnabled,
                     onReleaseRadarToggled = { viewModel.updateReleaseRadarEnabled(it) },
@@ -155,6 +122,7 @@ fun ProfileScreen(
                     onOpenTheme = { viewModel.openThemeSheet() },
                     onOpenLocalization = { viewModel.openLocalizationSheet() },
                     onOpenStreamingSubscriptions = { viewModel.openStreamingSubscriptionsSheet() },
+                    onOpenPreferredGenres = { viewModel.openPreferredGenresSheet() },
                     onOpenAbout = onOpenAbout,
                     onLogoutClick = { showSignOutConfirmDialog = true },
                     onGoogleSignInClick = { activity?.let { viewModel.signInWithGoogle(it) } },
@@ -178,44 +146,12 @@ fun ProfileScreen(
 
         // Sign Out Confirmation Dialog
         if (showSignOutConfirmDialog) {
-            AlertDialog(
-                onDismissRequest = { showSignOutConfirmDialog = false },
-                shape = RoundedCornerShape(24.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
+            SignOutConfirmDialog(
+                onConfirm = {
+                    showSignOutConfirmDialog = false
+                    viewModel.signOutGoogle()
                 },
-                title = {
-                    Text(
-                        text = stringResource(R.string.sign_out_confirm_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Text(text = stringResource(R.string.sign_out_confirm_msg))
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showSignOutConfirmDialog = false
-                            viewModel.signOutGoogle()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
-                        )
-                    ) {
-                        Text(text = stringResource(R.string.sign_out))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showSignOutConfirmDialog = false }) {
-                        Text(text = stringResource(R.string.cancel))
-                    }
-                }
+                onDismissRequest = { showSignOutConfirmDialog = false }
             )
         }
 
@@ -250,6 +186,13 @@ fun ProfileScreen(
                     viewModel.closeStreamingSubscriptionsSheet()
                     viewModel.openPaywall()
                 }
+            )
+        }
+
+        // Preferred Genres Bottom Sheet
+        if (uiState.isPreferredGenresSheetVisible) {
+            PreferredGenresBottomSheet(
+                onDismissRequest = { viewModel.closePreferredGenresSheet() }
             )
         }
 
@@ -306,6 +249,7 @@ private fun ProfileContent(
     contentLanguage: String,
     availableLanguages: List<Language>,
     userStreamingSubscriptions: Set<Int>,
+    userSeededGenres: Set<Int>,
     isReleaseRadarEnabled: Boolean,
     isReleaseRadarRemoteEnabled: Boolean,
     onReleaseRadarToggled: (Boolean) -> Unit,
@@ -323,6 +267,7 @@ private fun ProfileContent(
     onOpenTheme: () -> Unit,
     onOpenLocalization: () -> Unit,
     onOpenStreamingSubscriptions: () -> Unit,
+    onOpenPreferredGenres: () -> Unit,
     onOpenAbout: () -> Unit,
     onLogoutClick: () -> Unit,
     onGoogleSignInClick: () -> Unit,
@@ -387,6 +332,7 @@ private fun ProfileContent(
             contentLanguage = contentLanguage,
             availableLanguages = availableLanguages,
             userStreamingSubscriptions = userStreamingSubscriptions,
+            userSeededGenres = userSeededGenres,
             isReleaseRadarEnabled = isReleaseRadarEnabled,
             isReleaseRadarRemoteEnabled = isReleaseRadarRemoteEnabled,
             onReleaseRadarToggled = onReleaseRadarToggled,
@@ -400,835 +346,11 @@ private fun ProfileContent(
             onOpenTheme = onOpenTheme,
             onOpenLocalization = onOpenLocalization,
             onOpenStreamingSubscriptions = onOpenStreamingSubscriptions,
+            onOpenPreferredGenres = onOpenPreferredGenres,
             onOpenAbout = onOpenAbout,
             onOpenDeveloperPanelClick = onOpenDeveloperPanelClick
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
-    }
-}
-
-@Composable
-private fun ProfileHeader(
-    profile: Profile,
-    googleUser: GoogleUser?,
-    guestPseudonym: String,
-    isProActive: Boolean,
-    isGuest: Boolean,
-    isSigningOut: Boolean,
-    onLogoutClick: () -> Unit
-) {
-    val displayName = googleUser?.displayName?.takeIf { it.isNotBlank() }
-        ?: googleUser?.email?.substringBefore("@")
-        ?: profile.displayName.takeIf {
-            it.isNotBlank() && !it.equals(
-                "Guest User",
-                ignoreCase = true
-            ) && !it.equals("guest", ignoreCase = true)
-        }
-        ?: guestPseudonym
-    val avatarUrl = googleUser?.photoUrl?.toString()?.ifBlank { null } ?: profile.imageUrl
-
-    Avatar(
-        imageUrl = avatarUrl,
-        onClick = {},
-        size = 96.dp,
-        enableSharedTransition = true,
-        sharedContentKey = ProfileAvatarSharedKey
-    )
-
-    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-    Text(
-        text = displayName,
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface
-    )
-
-    if (googleUser != null && googleUser.email.isNotBlank()) {
-        Text(
-            text = googleUser.email,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-        modifier = Modifier.padding(top = MaterialTheme.spacing.small)
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = if (isProActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHighest
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                if (isProActive) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.showtime_pro),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                } else if (isGuest) {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.guest),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.google_account),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        if (!isGuest) {
-            OutlinedButton(
-                onClick = onLogoutClick,
-                enabled = !isSigningOut,
-                shape = CircleShape,
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
-                modifier = Modifier.height(32.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                ),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
-                )
-            ) {
-                if (isSigningOut) {
-                    ShowTimeLoadingIndicator(
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.signing_out),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                } else {
-                    Text(
-                        text = stringResource(R.string.sign_out),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun GoogleSignInPromptCard(
-    isSigningIn: Boolean,
-    onSignInClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 2.dp,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.AccountCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-                Column {
-                    Text(
-                        text = stringResource(R.string.connect_google_account_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(R.string.connect_google_account_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(start = 4.dp, top = 2.dp, bottom = 4.dp)
-            ) {
-                BenefitBulletItem(
-                    icon = Icons.Rounded.CloudSync,
-                    text = stringResource(R.string.sync_benefit_backup)
-                )
-                BenefitBulletItem(
-                    icon = Icons.Rounded.Public,
-                    text = stringResource(R.string.sync_benefit_community)
-                )
-                BenefitBulletItem(
-                    icon = Icons.Rounded.Tv,
-                    text = stringResource(R.string.sync_benefit_devices)
-                )
-            }
-
-            Button(
-                onClick = onSignInClick,
-                enabled = !isSigningIn,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-            ) {
-                if (isSigningIn) {
-                    ShowTimeLoadingIndicator(
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.signing_in),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.sign_in_with_google),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BenefitBulletItem(
-    icon: ImageVector,
-    text: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(16.dp)
-        )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun SettingsNavGroup(
-    currentTheme: AppTheme,
-    watchProviderRegion: String,
-    availableRegions: List<WatchProviderRegion>,
-    contentLanguage: String,
-    availableLanguages: List<Language>,
-    userStreamingSubscriptions: Set<Int>,
-    isReleaseRadarEnabled: Boolean,
-    isReleaseRadarRemoteEnabled: Boolean,
-    onReleaseRadarToggled: (Boolean) -> Unit,
-    googleUser: GoogleUser?,
-    backupStatus: BackupStatus,
-    lastBackupMetadata: BackupMetadata?,
-    traktAuthState: TraktAuthState,
-    isMockTraktEnabled: Boolean,
-    onOpenBackup: () -> Unit,
-    onOpenTrakt: () -> Unit,
-    onOpenTheme: () -> Unit,
-    onOpenLocalization: () -> Unit,
-    onOpenStreamingSubscriptions: () -> Unit,
-    onOpenAbout: () -> Unit,
-    onOpenDeveloperPanelClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        // Section 1: Sync & Storage
-        Text(
-            text = stringResource(R.string.sync_section),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = MaterialTheme.spacing.extraSmall)
-        )
-
-        val backupSubtitle = when {
-            googleUser == null -> stringResource(R.string.cloud_backup_desc)
-            backupStatus is BackupStatus.InProgress -> {
-                if (backupStatus.operation == BackupOperation.RESTORE) {
-                    stringResource(R.string.cloud_backup_status_restoring)
-                } else {
-                    stringResource(R.string.cloud_backup_status_syncing)
-                }
-            }
-
-            lastBackupMetadata != null -> {
-                if (lastBackupMetadata.formattedDate.isNotBlank()) {
-                    stringResource(
-                        R.string.cloud_backup_status_last_backup,
-                        lastBackupMetadata.formattedDate
-                    )
-                } else {
-                    stringResource(R.string.cloud_backup_status_active)
-                }
-            }
-
-            else -> stringResource(R.string.cloud_backup_status_no_backup)
-        }
-
-        SettingsNavTile(
-            title = stringResource(R.string.cloud_backup),
-            subtitle = backupSubtitle,
-            icon = Icons.Rounded.CloudSync,
-            onClick = onOpenBackup
-        )
-
-        if (BuildConfig.DEBUG && (isMockTraktEnabled || traktAuthState is TraktAuthState.Connected)) {
-            SettingsNavTile(
-                title = stringResource(R.string.trakt_cloud_sync),
-                subtitle = when (traktAuthState) {
-                    is TraktAuthState.Connected -> stringResource(
-                        id = R.string.trakt_connected_as,
-                        traktAuthState.user.username
-                    )
-
-                    else -> stringResource(R.string.trakt_cloud_sync_desc)
-                },
-                icon = Icons.Rounded.Tv,
-                onClick = onOpenTrakt
-            )
-        }
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        HorizontalDivider(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-        )
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        // Section 2: Preferences
-        Text(
-            text = stringResource(R.string.preferences_section),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = MaterialTheme.spacing.extraSmall)
-        )
-
-        val themeTitle = when (currentTheme) {
-            AppTheme.System -> stringResource(R.string.theme_system)
-            AppTheme.Light -> stringResource(R.string.theme_light)
-            AppTheme.Dark -> stringResource(R.string.theme_dark)
-            AppTheme.OledMidnight -> stringResource(R.string.theme_oled)
-        }
-        SettingsNavTile(
-            title = stringResource(R.string.appearance),
-            subtitle = themeTitle,
-            icon = Icons.Rounded.Palette,
-            onClick = onOpenTheme
-        )
-
-        val currentRegionName =
-            availableRegions.find { it.iso31661.equals(watchProviderRegion, ignoreCase = true) }
-                ?.let {
-                    "${it.englishName} (${it.iso31661})"
-                } ?: watchProviderRegion
-        val currentLanguageName =
-            availableLanguages.find { it.iso6391.equals(contentLanguage, ignoreCase = true) }?.let {
-                "${it.englishName} (${it.iso6391})"
-            } ?: contentLanguage
-        SettingsNavTile(
-            title = stringResource(R.string.localization_settings),
-            subtitle = "$currentRegionName • $currentLanguageName",
-            icon = Icons.Rounded.Public,
-            onClick = onOpenLocalization
-        )
-
-        val streamingSubtitle = if (userStreamingSubscriptions.isEmpty()) {
-            stringResource(R.string.streaming_subscriptions_select_hint)
-        } else {
-            stringResource(
-                R.string.streaming_subscriptions_count_format,
-                userStreamingSubscriptions.size
-            )
-        }
-        SettingsNavTile(
-            title = stringResource(R.string.streaming_subscriptions_title),
-            subtitle = streamingSubtitle,
-            icon = Icons.Rounded.LiveTv,
-            onClick = onOpenStreamingSubscriptions
-        )
-
-        if (isReleaseRadarRemoteEnabled) {
-            SettingsSwitchTile(
-                title = stringResource(R.string.settings_release_radar_title),
-                subtitle = stringResource(R.string.settings_release_radar_desc),
-                icon = Icons.Rounded.NotificationsActive,
-                checked = isReleaseRadarEnabled,
-                onCheckedChange = onReleaseRadarToggled
-            )
-        }
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        HorizontalDivider(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-        )
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        // Section 3: About & Advanced
-        Text(
-            text = stringResource(R.string.about_section),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = MaterialTheme.spacing.extraSmall)
-        )
-
-        SettingsNavTile(
-            title = stringResource(R.string.about_showtime),
-            subtitle = stringResource(R.string.about_showtime_desc),
-            icon = Icons.Rounded.Info,
-            onClick = onOpenAbout
-        )
-
-        if (BuildConfig.DEBUG) {
-            SettingsNavTile(
-                title = stringResource(R.string.developer_controls),
-                subtitle = stringResource(R.string.developer_controls_desc),
-                icon = Icons.Rounded.BugReport,
-                onClick = onOpenDeveloperPanelClick
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingsNavTile(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedCard(
-        onClick = onClick,
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-        ),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Rounded.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingsSwitchTile(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedCard(
-        onClick = { onCheckedChange(!checked) },
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-        ),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
-            )
-        }
-    }
-}
-
-@Composable
-private fun ProActiveBanner(
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-        ),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium)
-        ) {
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(44.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall)
-                ) {
-                    Text(
-                        text = stringResource(R.string.showtime_pro),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.padding(start = 2.dp)
-                    ) {
-                        Text(
-                            text = "ACTIVE",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                }
-                Text(
-                    text = stringResource(R.string.pro_subtitle),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProUpgradeBanner(
-    onUpgradeClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        onClick = onUpgradeClick,
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-        ),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(MaterialTheme.spacing.medium)
-        ) {
-            // Header Row: Icon + Title/Subtitle + PRO Pill
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(44.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.AutoAwesome,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.showtime_pro),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(start = 2.dp)
-                        ) {
-                            Text(
-                                text = "PRO",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                    Text(
-                        text = stringResource(R.string.pro_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            // Feature Highlights Row
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ProFeatureBadge(
-                    icon = Icons.Rounded.Block,
-                    text = stringResource(R.string.badge_ad_free),
-                    modifier = Modifier.weight(1f)
-                )
-                ProFeatureBadge(
-                    icon = Icons.Rounded.DarkMode,
-                    text = stringResource(R.string.badge_oled_black),
-                    modifier = Modifier.weight(1f)
-                )
-                ProFeatureBadge(
-                    icon = Icons.Rounded.CloudSync,
-                    text = stringResource(R.string.badge_trakt_sync),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            // Primary Call-to-Action
-            Button(
-                onClick = onUpgradeClick,
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.AutoAwesome,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Text(
-                    text = stringResource(R.string.upgrade_to_pro),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProFeatureBadge(
-    icon: ImageVector,
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-        ),
-        modifier = modifier
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(vertical = 6.dp, horizontal = 4.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(14.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
     }
 }

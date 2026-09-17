@@ -292,14 +292,17 @@
     <string name="onboarding_subs_select_all">Select Popular</string>
     <string name="onboarding_subs_clear">Clear</string>
     <string name="onboarding_subs_selected_count">%1$d services selected</string>
+    <string name="onboarding_subs_continue_count">Continue (%1$d)</string>
     <string name="onboarding_subs_skip_note">You can change or add services anytime in Settings.</string>
 
     <!-- Step 3: Taste Calibration -->
     <string name="onboarding_taste_badge">GENRE CALIBRATION</string>
     <string name="onboarding_taste_title">What moves you?</string>
-    <string name="onboarding_taste_tagline">Choose at least 3 genres to seed your personalized recommendations.</string>
-    <string name="onboarding_taste_requirement_unmet">Pick %1$d more</string>
-    <string name="onboarding_taste_requirement_met">Continue with %1$d genres</string>
+    <string name="onboarding_taste_tagline">Choose 3 to 5 genres to focus your personalized recommendations.</string>
+    <string name="onboarding_taste_requirement_unmet">Pick %1$d more (min 3)</string>
+    <string name="onboarding_taste_requirement_met">%1$d of %2$d genres selected</string>
+    <string name="onboarding_taste_requirement_max">Maximum %1$d genres selected</string>
+    <string name="onboarding_taste_continue_count">Continue (%1$d)</string>
 
     <!-- Step 4: Privacy & Cloud Sync -->
     <string name="onboarding_cloud_badge">PRIVACY &amp; SYNC</string>

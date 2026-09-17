@@ -70,21 +70,21 @@ fun OnboardingSubscriptionsStep(
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                     shape = CircleShape
                 )
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .padding(horizontal = 16.dp, vertical = 7.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.onboarding_subs_badge),
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
+                    letterSpacing = 1.2.sp
                 ),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
@@ -134,13 +134,13 @@ fun OnboardingSubscriptionsStep(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    containerColor = MaterialTheme.colorScheme.surface,
                     labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 border = FilterChipDefaults.filterChipBorder(
                     enabled = true,
                     selected = false,
-                    borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                    borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
                 )
             )
 
@@ -215,11 +215,11 @@ private fun ProviderSelectionCard(
         color = if (isSelected) {
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
         } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.40f)
+            MaterialTheme.colorScheme.surface
         },
         border = BorderStroke(
             width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) primaryColor else outlineVariant.copy(alpha = 0.35f)
+            color = if (isSelected) primaryColor else outlineVariant.copy(alpha = 0.8f)
         ),
         modifier = modifier.fillMaxWidth()
     ) {

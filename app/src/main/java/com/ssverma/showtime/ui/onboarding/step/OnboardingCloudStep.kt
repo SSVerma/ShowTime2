@@ -86,21 +86,21 @@ fun OnboardingCloudStep(
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                     shape = CircleShape
                 )
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .padding(horizontal = 16.dp, vertical = 7.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.onboarding_cloud_badge),
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
+                    letterSpacing = 1.2.sp
                 ),
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
@@ -138,7 +138,9 @@ fun OnboardingCloudStep(
         CloudPerkCard(
             icon = Icons.Rounded.Storage,
             title = stringResource(id = R.string.onboarding_cloud_perk_offline_title),
-            description = stringResource(id = R.string.onboarding_cloud_perk_offline_desc)
+            description = stringResource(id = R.string.onboarding_cloud_perk_offline_desc),
+            iconContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            iconTint = MaterialTheme.colorScheme.secondary
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
@@ -146,7 +148,9 @@ fun OnboardingCloudStep(
         CloudPerkCard(
             icon = Icons.Rounded.CloudSync,
             title = stringResource(id = R.string.onboarding_cloud_perk_backup_title),
-            description = stringResource(id = R.string.onboarding_cloud_perk_backup_desc)
+            description = stringResource(id = R.string.onboarding_cloud_perk_backup_desc),
+            iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            iconTint = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
@@ -291,14 +295,16 @@ private fun CloudPerkCard(
     icon: ImageVector,
     title: String,
     description: String,
+    iconContainerColor: androidx.compose.ui.graphics.Color,
+    iconTint: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
         ),
         modifier = modifier.fillMaxWidth()
     ) {
@@ -306,21 +312,21 @@ private fun CloudPerkCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(
                 horizontal = MaterialTheme.spacing.medium,
-                vertical = MaterialTheme.spacing.small
+                vertical = MaterialTheme.spacing.medium
             )
         ) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(iconContainerColor)
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
+                    tint = iconTint,
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
@@ -331,12 +337,13 @@ private fun CloudPerkCard(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = description,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

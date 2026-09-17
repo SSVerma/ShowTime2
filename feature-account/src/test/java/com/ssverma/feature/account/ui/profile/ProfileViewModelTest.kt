@@ -356,4 +356,20 @@ class ProfileViewModelTest {
             assertThat(reEnabledState.isReleaseRadarRemoteEnabled).isTrue()
         }
     }
+
+    @Test
+    fun `openPreferredGenresSheet and closePreferredGenresSheet update visibility correctly`() =
+        runTest {
+            viewModel.openPreferredGenresSheet()
+            assertThat(viewModel.uiState.value.isPreferredGenresSheetVisible).isTrue()
+
+            viewModel.closePreferredGenresSheet()
+            assertThat(viewModel.uiState.value.isPreferredGenresSheetVisible).isFalse()
+        }
+
+    @Test
+    fun `userSeededGenres reflects repository updates`() = runTest {
+        fakeAppConfigRepository.updateSeededGenres(setOf(28, 12, 878))
+        assertThat(viewModel.uiState.value.userSeededGenres).containsExactly(28, 12, 878)
+    }
 }
