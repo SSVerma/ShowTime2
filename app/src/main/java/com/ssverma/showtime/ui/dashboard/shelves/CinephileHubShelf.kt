@@ -362,26 +362,19 @@ fun CinephileHubShelf(
                     )
                 }
 
-                // Expanded Row 4: People (Actors & Crew) - balanced with Spacer
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-                ) {
-                    HubTile(
-                        title = stringResource(R.string.hub_people_title),
-                        subtitle = stringResource(R.string.hub_people_desc),
-                        icon = Icons.Rounded.People,
-                        iconContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = {
-                            onFeatureTapped(CinephileFeature.PEOPLE)
-                            onOpenPeople()
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-                }
+                // Expanded Row 4: People (Actors & Crew) - full width anchor tile
+                HubTile(
+                    title = stringResource(R.string.hub_people_title),
+                    subtitle = stringResource(R.string.hub_people_desc),
+                    icon = Icons.Rounded.People,
+                    iconContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    onClick = {
+                        onFeatureTapped(CinephileFeature.PEOPLE)
+                        onOpenPeople()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
