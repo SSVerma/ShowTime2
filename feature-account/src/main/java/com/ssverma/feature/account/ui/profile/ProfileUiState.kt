@@ -1,5 +1,6 @@
 package com.ssverma.feature.account.ui.profile
 
+import androidx.compose.runtime.Immutable
 import com.ssverma.core.backup.model.BackupFrequency
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupStatus
@@ -14,6 +15,7 @@ import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.domain.model.auth.TraktAuthState
 
+@Immutable
 data class ProfileScreenState(
     val profileContent: ProfileContentState = ProfileContentState.Loading,
     val isProActive: Boolean = false,
@@ -34,6 +36,7 @@ data class ProfileScreenState(
     val isStreamingSubscriptionsSheetVisible: Boolean = false,
     val userSeededGenres: Set<Int> = emptySet(),
     val isPreferredGenresSheetVisible: Boolean = false,
+    val isWidgetsSheetVisible: Boolean = false,
     val isReleaseRadarEnabled: Boolean = true,
     val isReleaseRadarRemoteEnabled: Boolean = true,
     val googleUser: GoogleUser? = null,

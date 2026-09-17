@@ -15,6 +15,7 @@ import androidx.compose.material.icons.rounded.MovieFilter
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material.icons.rounded.Widgets
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,6 +54,7 @@ fun SettingsNavGroup(
     onOpenLocalization: () -> Unit,
     onOpenStreamingSubscriptions: () -> Unit,
     onOpenPreferredGenres: () -> Unit,
+    onOpenWidgets: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenDeveloperPanelClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -182,6 +184,13 @@ fun SettingsNavGroup(
                 onCheckedChange = onReleaseRadarToggled
             )
         }
+
+        SettingsNavTile(
+            title = stringResource(R.string.widgets_setting_title),
+            subtitle = stringResource(R.string.widgets_setting_desc),
+            icon = Icons.Rounded.Widgets,
+            onClick = onOpenWidgets
+        )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 

@@ -397,6 +397,14 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(isPreferredGenresSheetVisible = false) }
     }
 
+    fun openWidgetsSheet() {
+        _uiState.update { it.copy(isWidgetsSheetVisible = true) }
+    }
+
+    fun closeWidgetsSheet() {
+        _uiState.update { it.copy(isWidgetsSheetVisible = false) }
+    }
+
     fun updateReleaseRadarEnabled(enabled: Boolean) {
         viewModelScope.launch {
             appConfigRepository.updateReleaseRadarEnabled(enabled)

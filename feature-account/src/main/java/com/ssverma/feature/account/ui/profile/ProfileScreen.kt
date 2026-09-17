@@ -30,6 +30,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.common.ui.subscription.StreamingSubscriptionsBottomSheet
 import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
+import com.ssverma.common.ui.widget.HomeScreenWidgetsBottomSheet
 import com.ssverma.core.backup.model.BackupMetadata
 import com.ssverma.core.backup.model.BackupStatus
 import com.ssverma.core.backup.model.GoogleUser
@@ -121,6 +122,7 @@ fun ProfileScreen(
                     onOpenLocalization = { viewModel.openLocalizationSheet() },
                     onOpenStreamingSubscriptions = { viewModel.openStreamingSubscriptionsSheet() },
                     onOpenPreferredGenres = { viewModel.openPreferredGenresSheet() },
+                    onOpenWidgets = { viewModel.openWidgetsSheet() },
                     onOpenAbout = onOpenAbout,
                     onLogoutClick = { showSignOutConfirmDialog = true },
                     onGoogleSignInClick = { activity?.let { viewModel.signInWithGoogle(it) } },
@@ -191,6 +193,13 @@ fun ProfileScreen(
         if (uiState.isPreferredGenresSheetVisible) {
             PreferredGenresBottomSheet(
                 onDismissRequest = { viewModel.closePreferredGenresSheet() }
+            )
+        }
+
+        // Home Screen Widgets Discovery Bottom Sheet
+        if (uiState.isWidgetsSheetVisible) {
+            HomeScreenWidgetsBottomSheet(
+                onDismissRequest = { viewModel.closeWidgetsSheet() }
             )
         }
 
@@ -265,6 +274,7 @@ private fun ProfileContent(
     onOpenLocalization: () -> Unit,
     onOpenStreamingSubscriptions: () -> Unit,
     onOpenPreferredGenres: () -> Unit,
+    onOpenWidgets: () -> Unit,
     onOpenAbout: () -> Unit,
     onLogoutClick: () -> Unit,
     onGoogleSignInClick: () -> Unit,
@@ -341,6 +351,7 @@ private fun ProfileContent(
             onOpenLocalization = onOpenLocalization,
             onOpenStreamingSubscriptions = onOpenStreamingSubscriptions,
             onOpenPreferredGenres = onOpenPreferredGenres,
+            onOpenWidgets = onOpenWidgets,
             onOpenAbout = onOpenAbout,
             onOpenDeveloperPanelClick = onOpenDeveloperPanelClick
         )

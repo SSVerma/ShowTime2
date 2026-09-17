@@ -183,4 +183,34 @@
     <string name="close">Close</string>
     <string name="try_again">Try Again</string>
     <string name="cancel">Cancel</string>
+
+    <!-- Home Screen Widgets Discovery & Showcase -->
+    <string name="widgets_sheet_title">Home Screen Widgets</string>
+    <string name="widgets_sheet_subtitle">Glanceable cinema updates and quick access right from your home screen</string>
+    <string name="widget_up_next_card_title">Up Next TV Episodes</string>
+    <string name="widget_up_next_card_desc">See upcoming episodes from your tracked TV shows with 1-tap episode details.</string>
+    <string name="widget_up_next_grid_size">4 × 2</string>
+    <string name="widget_up_next_badge_sync">Live Tracker</string>
+    <string name="widget_watchlist_card_title">Watchlist &amp; Bookmarks</string>
+    <string name="widget_watchlist_card_desc">Instant access to your saved movies and TV shows right from your home screen.</string>
+    <string name="widget_watchlist_grid_size">4 × 3</string>
+    <string name="widget_watchlist_badge_bookmarks">Quick Access</string>
+    <string name="widget_add_to_home">Add to Home Screen</string>
+    <string name="widget_pin_requested">Pin request sent to launcher</string>
+    <string name="widget_pin_dialog_title">Add Widget to Home Screen</string>
+    <string name="widget_pin_dialog_desc">Your launcher doesn\'t support 1-tap pinning. You can add the widget in 3 quick steps:</string>
+    <string name="widget_manual_guide_title">Manual Setup Guide</string>
+    <string name="widget_manual_guide_desc">If your launcher doesn\'t support direct pinning, add widgets manually:</string>
+    <string name="widget_manual_step_1">Touch and hold any empty space on your home screen</string>
+    <string name="widget_manual_step_2">Tap Widgets from the popup menu</string>
+    <string name="widget_manual_step_3">Search for ShowTime and drag the widget onto your screen</string>
+    <string name="widget_how_to_add">How to add manually</string>
+    <string name="widget_tip_resize">Tip: You can resize and position widgets anytime by long-pressing them on your home screen.</string>
+    <string name="widget_preview_up_next_show">House of the Dragon</string>
+    <string name="widget_preview_up_next_episode">S2 · E1 • A Son for a Son</string>
+    <string name="widget_preview_up_next_status">Today</string>
+    <string name="widget_preview_watchlist_item_1">Dune: Part Two</string>
+    <string name="widget_preview_watchlist_item_1_tag">Sci-Fi • 8.6</string>
+    <string name="widget_preview_watchlist_item_2">Severance</string>
+    <string name="widget_preview_watchlist_item_2_tag">Drama • 8.7</string>
 </resources>

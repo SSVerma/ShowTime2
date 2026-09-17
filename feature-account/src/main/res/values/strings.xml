@@ -178,4 +178,8 @@
     <string name="preferred_genres_requirement_max">Maximum %1$d genres selected</string>
     <string name="save_preferences">Save Preferences</string>
     <string name="preferred_genres_saved">Genre preferences updated successfully</string>
+
+    <!-- Home Screen Widgets Settings Tile -->
+    <string name="widgets_setting_title">Home Screen Widgets</string>
+    <string name="widgets_setting_desc">Up Next TV • Watchlist &amp; Bookmarks</string>
 </resources>
