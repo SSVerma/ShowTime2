@@ -143,8 +143,10 @@
     <string name="tap_to_hide_spoiler">Tap to hide</string>
     <string name="post_thought_hint">Share your thoughts or theories...</string>
     <string name="join_the_discussion">Join the discussion</string>
+    <string name="discussion_sheet_subtitle">Share your thoughts or theories with the community</string>
     <string name="leave_a_thought">Leave a thought...</string>
     <string name="contains_spoilers_toggle">Contains spoilers</string>
+    <string name="spoiler_toggle_desc">Blur thought to protect others from spoilers</string>
     <string name="post_action">Post</string>
     <string name="cancel_action">Cancel</string>
     <string name="filter_all">All</string>
