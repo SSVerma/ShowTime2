@@ -26,14 +26,16 @@ fun LazyListScope.tvWatchProvidersSection(
             WatchProvidersSection(
                 watchProvider = watchProvider,
                 modifier = modifier,
-                adContent = {
-                    ShowTimeNativeAd(
-                        ad = watchProviderAd,
-                        loadInternally = false,
-                        style = NativeAdStyle.CircularLogo,
-                        modifier = Modifier.size(44.dp),
-                        analyticsEventPrefix = "tv_details_watch_provider"
-                    )
+                adContent = watchProviderAd?.let { ad ->
+                    {
+                        ShowTimeNativeAd(
+                            ad = ad,
+                            loadInternally = false,
+                            style = NativeAdStyle.CircularLogo,
+                            modifier = Modifier.size(44.dp),
+                            analyticsEventPrefix = "tv_details_watch_provider"
+                        )
+                    }
                 },
                 onWatchProviderClick = onWatchProviderClick,
                 onWatchProviderWithCategoryClick = onWatchProviderWithCategoryClick,

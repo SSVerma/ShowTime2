@@ -19,7 +19,9 @@ data class HomeUiState(
     val genres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Idle,
     val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle,
     val watchProviderAd: NativeAd? = null,
+    val isWatchProviderAdFailed: Boolean = false,
     val feedInlineAd: NativeAd? = null,
+    val isFeedInlineAdFailed: Boolean = false,
     val gameStats: CinemaGameStats = CinemaGameStats(),
     val isTodayGameCompleted: Boolean = false,
 )

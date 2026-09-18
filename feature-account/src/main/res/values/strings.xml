@@ -182,4 +182,5 @@
     <!-- Home Screen Widgets Settings Tile -->
     <string name="widgets_setting_title">Home Screen Widgets</string>
     <string name="widgets_setting_desc">Up Next TV • Watchlist &amp; Bookmarks</string>
+    <string name="trakt_pass_unlocked">Trakt Sync Pass Unlocked</string>
 </resources>

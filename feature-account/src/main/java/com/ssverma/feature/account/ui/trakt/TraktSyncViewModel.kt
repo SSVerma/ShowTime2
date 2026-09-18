@@ -127,7 +127,7 @@ class TraktSyncViewModel @Inject constructor(
                     it.copy(
                         isQuotaGateVisible = false,
                         isAdLoading = false,
-                        message = UiText.DynamicText("24-Hour Trakt Sync Pass Unlocked! 🎬")
+                        message = UiText.StaticText(R.string.trakt_pass_unlocked)
                     )
                 }
                 openTraktConnect()

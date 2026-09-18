@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
@@ -336,16 +337,27 @@ class SecretSharedListRepositoryImpl @Inject constructor(
 }
 
 internal data class SecretSharedListItemDto(
+    @SerializedName("mediaId")
     val mediaId: Int = 0,
+    @SerializedName("mediaType")
     val mediaType: String = "",
+    @SerializedName("title")
     val title: String = "",
+    @SerializedName("posterImageUrl")
     val posterImageUrl: String = "",
+    @SerializedName("backdropImageUrl")
     val backdropImageUrl: String = "",
+    @SerializedName("voteAvg")
     val voteAvg: Float = 0f,
+    @SerializedName("releaseYear")
     val releaseYear: String? = null,
+    @SerializedName("overview")
     val overview: String? = null,
+    @SerializedName("addedByName")
     val addedByName: String? = null,
+    @SerializedName("addedByUserId")
     val addedByUserId: String? = null,
+    @SerializedName("addedAtEpochMs")
     val addedAtEpochMs: Long = 0L
 ) {
     fun toDomain(): SecretSharedListItem = SecretSharedListItem(

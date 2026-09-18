@@ -9,14 +9,14 @@ import javax.inject.Singleton
 
 @Singleton
 class AdInitializer @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-    private val adConfigProvider: AdConfigProvider
+    @param:ApplicationContext private val context: Context
 ) {
     fun initialize() {
-        if (!adConfigProvider.isAdsEnabled) return
-
-        MobileAds.initialize(context) { initializationStatus ->
-            // Ready to load ads
+        try {
+            MobileAds.initialize(context) {
+                // Ready to load ads
+            }
+        } catch (_: Exception) {
         }
     }
 }

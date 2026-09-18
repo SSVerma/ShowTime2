@@ -13,22 +13,21 @@ import com.ssverma.shared.ads.ui.NativeAdStyle
 fun LazyListScope.inViewportNativeAdShelf(
     nativeAd: NativeAd?,
     onAdLoaded: (NativeAd) -> Unit,
+    onAdFailed: () -> Unit = {},
     isAdsEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     if (!isAdsEnabled) return
     item(key = "in_viewport_native_ad_shelf") {
-        Box(
+        ShowTimeNativeAd(
+            ad = nativeAd,
+            onAdLoaded = onAdLoaded,
+            onAdFailed = onAdFailed,
+            style = NativeAdStyle.List,
+            analyticsEventPrefix = "dashboard_native_ad",
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-        ) {
-            ShowTimeNativeAd(
-                ad = nativeAd,
-                onAdLoaded = onAdLoaded,
-                style = NativeAdStyle.List,
-                analyticsEventPrefix = "dashboard_native_ad"
-            )
-        }
+        )
     }
 }

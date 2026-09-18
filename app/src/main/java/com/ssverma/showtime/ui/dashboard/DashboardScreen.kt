@@ -198,6 +198,7 @@ fun DashboardScreen(
                     onMovieClick = { openMovieDetails(it.id) },
                     onTvShowClick = { openTvShowDetails(it.id) },
                     onAdLoaded = viewModel::onCarouselNativeAdLoaded,
+                    onAdFailed = viewModel::onCarouselNativeAdFailed,
                     onRetry = { viewModel.fetchTrendingMedia() },
                     onShowFeedback = { args ->
                         coroutineScope.launch {
@@ -247,12 +248,15 @@ fun DashboardScreen(
                 )
 
                 // 3. In-Viewport Native Ad Showcase (Guaranteed initial viewport viewability & high CPM)
-                inViewportNativeAdShelf(
-                    nativeAd = uiState.nativeAd,
-                    onAdLoaded = viewModel::onNativeAdLoaded,
-                    isAdsEnabled = isAdsEnabled,
-                    modifier = Modifier.dashboardSectionSpacing()
-                )
+                if (isAdsEnabled && !uiState.isNativeAdFailed) {
+                    inViewportNativeAdShelf(
+                        nativeAd = uiState.nativeAd,
+                        onAdLoaded = viewModel::onNativeAdLoaded,
+                        onAdFailed = viewModel::onNativeAdFailed,
+                        isAdsEnabled = isAdsEnabled,
+                        modifier = Modifier.dashboardSectionSpacing()
+                    )
+                }
 
                 // 4. Notification Permission Shelf (Conditional, Android 13+)
                 notificationPermissionShelf(
@@ -375,6 +379,7 @@ fun DashboardScreen(
                         }
                     },
                     onAdLoaded = viewModel::onPopularAdLoaded,
+                    onAdFailed = viewModel::onPopularAdFailed,
                     onRetry = {
                         if (uiState.isMoviePopularSelected) {
                             viewModel.fetchPopularMovies()

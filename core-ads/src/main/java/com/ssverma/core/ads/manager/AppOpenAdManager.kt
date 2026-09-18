@@ -33,7 +33,7 @@ class AppOpenAdManager @Inject constructor(
     private var lastDismissedTime: Long = 0
 
     fun loadAd() {
-        if (!adConfigProvider.isAdsEnabled || isAdAvailable() || isAdLoading) return
+        if (!adConfigProvider.isAdsEnabled || adConfigProvider.appOpenAdId.isBlank() || isAdAvailable() || isAdLoading) return
 
         isAdLoading = true
         val request = AdRequest.Builder().build()
@@ -85,7 +85,7 @@ class AppOpenAdManager @Inject constructor(
             return
         }
 
-        if (!adConfigProvider.isAdsEnabled || !canShowAdFrequency()) {
+        if (!adConfigProvider.isAdsEnabled || adConfigProvider.appOpenAdId.isBlank() || !canShowAdFrequency()) {
             onAdDismissed()
             return
         }

@@ -31,7 +31,7 @@ fun rememberNativeAd(
 ): NativeAd? {
     val adConfigProvider = LocalAdConfigProvider.current
 
-    if (!adConfigProvider.isAdsEnabled) return null
+    if (!adConfigProvider.isAdsEnabled || adConfigProvider.nativeAdId.isBlank()) return null
 
     val context = LocalContext.current
     val analytics = LocalAnalytics.current

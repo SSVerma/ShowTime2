@@ -89,13 +89,20 @@ fun ShowTimeNativeAd(
     ad: NativeAd? = null,
     loadInternally: Boolean = ad == null,
     onAdLoaded: (NativeAd) -> Unit = {},
+    onAdFailed: () -> Unit = {},
     state: NativeAdState = rememberNativeAdState(initialLoaded = ad != null),
     style: NativeAdStyle = NativeAdStyle.List,
     analyticsEventPrefix: String = "native_ad"
 ) {
     val adConfigProvider = LocalAdConfigProvider.current
+    val currentOnAdFailed by androidx.compose.runtime.rememberUpdatedState(onAdFailed)
 
-    if (!adConfigProvider.isAdsEnabled) return
+    if (!adConfigProvider.isAdsEnabled || adConfigProvider.nativeAdId.isBlank()) {
+        SideEffect {
+            currentOnAdFailed()
+        }
+        return
+    }
 
     // Sync state if a pre-loaded ad is passed in from outside (e.g., from a ViewModel)
     SideEffect {
@@ -116,11 +123,15 @@ fun ShowTimeNativeAd(
         onAdFailedToLoad = {
             state.isLoaded = false
             state.isFailed = true
+            currentOnAdFailed()
         }
     )
 
     // Use whichever ad is available
     val activeAd = ad ?: internallyLoadedAd
+
+    if (activeAd == null && state.isFailed) return
+    if (!loadInternally && activeAd == null) return
 
     val rootModifier = when (style) {
         NativeAdStyle.Carousel -> modifier.fillMaxSize()

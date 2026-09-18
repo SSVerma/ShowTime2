@@ -295,6 +295,23 @@ class HomeTvShowViewModel @Inject constructor(
         }
     }
 
+    fun onNativeAdFailed(injectableAd: InjectableAd) {
+        _uiState.update { currentState ->
+            fun <T> List<AdInjectable<T>>.removeAdIfPresent(): List<AdInjectable<T>> {
+                return this.filterNot { it is InjectableAd && it.id == injectableAd.id }
+            }
+
+            currentState.copy(
+                trendingTvShows = currentState.trendingTvShows.mapSuccess { it.removeAdIfPresent() },
+                todayAiringTvShows = currentState.todayAiringTvShows.mapSuccess { it.removeAdIfPresent() },
+                popularTvShows = currentState.popularTvShows.mapSuccess { it.removeAdIfPresent() },
+                topRatedTvShows = currentState.topRatedTvShows.mapSuccess { it.removeAdIfPresent() },
+                upcomingTvShows = currentState.upcomingTvShows.mapSuccess { it.removeAdIfPresent() },
+                nowAiringTvShows = currentState.nowAiringTvShows.mapSuccess { it.removeAdIfPresent() }
+            )
+        }
+    }
+
     fun fetchWatchProviders() = viewModelScope.launch {
         _uiState.update { it.copy(watchProviders = UiState.Loading) }
         when (val result = fetchAllWatchProvidersUseCase.fetchTvWatchProviders()) {
@@ -304,11 +321,19 @@ class HomeTvShowViewModel @Inject constructor(
     }
 
     fun onFeedInlineAdLoaded(nativeAd: NativeAd) {
-        _uiState.update { it.copy(feedInlineAd = nativeAd) }
+        _uiState.update { it.copy(feedInlineAd = nativeAd, isFeedInlineAdFailed = false) }
+    }
+
+    fun onFeedInlineAdFailed() {
+        _uiState.update { it.copy(feedInlineAd = null, isFeedInlineAdFailed = true) }
     }
 
     fun onWatchProviderAdLoaded(nativeAd: NativeAd) {
-        _uiState.update { it.copy(watchProviderAd = nativeAd) }
+        _uiState.update { it.copy(watchProviderAd = nativeAd, isWatchProviderAdFailed = false) }
+    }
+
+    fun onWatchProviderAdFailed() {
+        _uiState.update { it.copy(watchProviderAd = null, isWatchProviderAdFailed = true) }
     }
 
     fun fetchUpNextQueue(accessToken: String? = null) = viewModelScope.launch {

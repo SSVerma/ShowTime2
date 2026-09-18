@@ -15,7 +15,7 @@ android {
 
     val releaseAdsProps by lazy {
         Properties().apply {
-            val file = file("../release-ads.properties")
+            val file = rootProject.file("release-ads.properties")
             if (file.canRead()) {
                 file.inputStream().use { load(it) }
             }

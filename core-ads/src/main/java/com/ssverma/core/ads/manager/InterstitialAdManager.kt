@@ -26,7 +26,7 @@ class InterstitialAdManager @Inject constructor(
     private var isAdLoading = false
 
     fun loadAd() {
-        if (!adConfigProvider.isAdsEnabled || interstitialAd != null || isAdLoading) return
+        if (!adConfigProvider.isAdsEnabled || adConfigProvider.interstitialAdId.isBlank() || interstitialAd != null || isAdLoading) return
 
         isAdLoading = true
         val adRequest = AdRequest.Builder().build()

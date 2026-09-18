@@ -34,7 +34,7 @@ fun BannerAd(
     val adConfigProvider = LocalAdConfigProvider.current
 
     // THE KILL SWITCH
-    if (!adConfigProvider.isAdsEnabled) return
+    if (!adConfigProvider.isAdsEnabled || adConfigProvider.bannerAdId.isBlank()) return
 
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current

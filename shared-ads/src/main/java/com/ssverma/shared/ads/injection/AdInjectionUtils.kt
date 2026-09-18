@@ -24,7 +24,12 @@ fun <T> List<T>.injectAds(
             var currentIndex = 0
             while (contentIndex < content.size || posIndex < sortedPositions.size) {
                 if (posIndex < sortedPositions.size && currentIndex == sortedPositions[posIndex]) {
-                    result.add(InjectableAd(config.style))
+                    result.add(
+                        InjectableAd(
+                            style = config.style,
+                            id = "ad_${config.style.name}_$currentIndex"
+                        )
+                    )
                     posIndex++
                 } else if (contentIndex < content.size) {
                     result.add(InjectableContent(content[contentIndex]))
@@ -46,7 +51,12 @@ fun <T> List<T>.injectAds(
                 if (currentIndex >= placement.start &&
                     (currentIndex - placement.start) % (placement.frequency + 1) == 0
                 ) {
-                    result.add(InjectableAd(config.style))
+                    result.add(
+                        InjectableAd(
+                            style = config.style,
+                            id = "ad_${config.style.name}_$currentIndex"
+                        )
+                    )
                 } else {
                     result.add(InjectableContent(content[contentIndex]))
                     contentIndex++

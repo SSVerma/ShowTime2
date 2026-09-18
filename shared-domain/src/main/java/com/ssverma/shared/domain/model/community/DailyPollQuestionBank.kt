@@ -1,12 +1,17 @@
 package com.ssverma.shared.domain.model.community
 
+import com.google.gson.annotations.SerializedName
 import java.time.LocalDate
 import kotlin.math.abs
 
 data class DailyPollQuestion(
+    @SerializedName("id")
     val id: Int,
+    @SerializedName("question")
     val question: String,
+    @SerializedName("options")
     val options: List<String>,
+    @SerializedName("scheduledDate")
     val scheduledDate: String? = null
 )
 

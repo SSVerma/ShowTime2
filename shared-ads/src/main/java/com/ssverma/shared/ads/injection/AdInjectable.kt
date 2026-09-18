@@ -11,5 +11,5 @@ data class InjectableContent<out T>(val item: T) : AdInjectable<T>
 data class InjectableAd(
     val style: NativeAdStyle,
     val ad: NativeAd? = null,
-    val id: String = UUID.randomUUID().toString()
+    val id: String = "ad_slot_${style.name}"
 ) : AdInjectable<Nothing>

@@ -154,6 +154,7 @@ fun MovieHomeContent(
                     onWatchProviderClick = openWatchProviderHub,
                     onRetry = { viewModel.fetchTrendingMovies() },
                     onAdLoaded = viewModel::onNativeAdLoaded,
+                    onAdFailed = viewModel::onNativeAdFailed,
                     onShowFeedback = onShowFeedback
                 )
             }
@@ -196,26 +197,30 @@ fun MovieHomeContent(
                     onRetry = { viewModel.fetchWatchProviders() },
                     isMovie = true,
                     source = "movie_home",
-                    adContent = {
-                        ShowTimeNativeAd(
-                            ad = uiState.watchProviderAd,
-                            loadInternally = uiState.watchProviderAd == null,
-                            onAdLoaded = viewModel::onWatchProviderAdLoaded,
-                            style = NativeAdStyle.CircularLogo,
-                            modifier = Modifier.size(56.dp),
-                            analyticsEventPrefix = "movie_home_watch_provider"
-                        )
-                    },
+                    adContent = if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank() && !uiState.isWatchProviderAdFailed) {
+                        {
+                            ShowTimeNativeAd(
+                                ad = uiState.watchProviderAd,
+                                loadInternally = uiState.watchProviderAd == null,
+                                onAdLoaded = viewModel::onWatchProviderAdLoaded,
+                                onAdFailed = viewModel::onWatchProviderAdFailed,
+                                style = NativeAdStyle.CircularLogo,
+                                modifier = Modifier.size(56.dp),
+                                analyticsEventPrefix = "movie_home_watch_provider"
+                            )
+                        }
+                    } else null,
                     modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
             }
 
-            if (adConfigProvider.isAdsEnabled) {
+            if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank() && !uiState.isFeedInlineAdFailed) {
                 item {
                     ShowTimeNativeAd(
                         ad = uiState.feedInlineAd,
                         loadInternally = uiState.feedInlineAd == null,
                         onAdLoaded = viewModel::onFeedInlineAdLoaded,
+                        onAdFailed = viewModel::onFeedInlineAdFailed,
                         style = NativeAdStyle.List,
                         analyticsEventPrefix = "movie_home_feed_inline_native",
                         modifier = Modifier
@@ -255,6 +260,7 @@ fun MovieHomeContent(
                     onFetchUpcoming = { viewModel.fetchUpcomingMovies() },
                     onWatchProviderClick = openWatchProviderHub,
                     onAdLoaded = viewModel::onNativeAdLoaded,
+                    onAdFailed = viewModel::onNativeAdFailed,
                     onShowFeedback = onShowFeedback,
                     modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
@@ -296,6 +302,9 @@ fun MovieHomeContent(
                                             injectableItem,
                                             ad
                                         )
+                                    },
+                                    onAdFailed = {
+                                        viewModel.onNativeAdFailed(injectableItem)
                                     },
                                     style = injectableItem.style
                                 )

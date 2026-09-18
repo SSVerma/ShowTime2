@@ -34,6 +34,7 @@ fun LazyListScope.trendingSpotlightShelf(
     onMovieClick: (TrendingSpotlightItem) -> Unit,
     onTvShowClick: (TrendingSpotlightItem) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onAdFailed: (InjectableAd) -> Unit = {},
     onRetry: () -> Unit,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
     isAdsEnabled: Boolean = true,
@@ -66,6 +67,7 @@ fun LazyListScope.trendingSpotlightShelf(
                             modifier = Modifier.fillMaxSize(),
                             ad = injectableItem.ad,
                             onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                            onAdFailed = { onAdFailed(injectableItem) },
                             style = injectableItem.style
                         )
                     }

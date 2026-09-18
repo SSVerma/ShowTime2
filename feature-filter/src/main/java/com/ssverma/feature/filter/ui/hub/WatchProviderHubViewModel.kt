@@ -136,6 +136,34 @@ class WatchProviderHubViewModel @AssistedInject constructor(
         }
     }
 
+    fun onCarouselNativeAdFailed(injectableAd: InjectableAd) {
+        _uiState.update { currentState ->
+            val content = (currentState.hubContentState as? UiState.Success)?.data
+                ?: return@update currentState
+
+            fun filterList(list: List<AdInjectable<MediaPreview>>): List<AdInjectable<MediaPreview>> {
+                return list.filterNot { item ->
+                    item is InjectableAd && item.id == injectableAd.id
+                }
+            }
+
+            val updatedContent = content.copy(
+                heroItems = filterList(content.heroItems),
+                newItems = filterList(content.newItems),
+                upcomingItems = filterList(content.upcomingItems),
+                topRatedItems = filterList(content.topRatedItems)
+            )
+
+            if (currentState.isMovieMode) {
+                cachedMovieHub = updatedContent
+            } else {
+                cachedTvHub = updatedContent
+            }
+
+            currentState.copy(hubContentState = UiState.Success(updatedContent))
+        }
+    }
+
     private suspend fun fetchMovieHub() {
         val heroDeferred = viewModelScope.async {
             discoveryRepository.discoverMovies(

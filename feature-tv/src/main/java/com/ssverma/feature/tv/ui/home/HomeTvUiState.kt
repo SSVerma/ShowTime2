@@ -21,7 +21,9 @@ data class HomeTvUiState(
     val genres: UiState<List<Genre>, Failure.CoreFailure> = UiState.Idle,
     val watchProviders: UiState<List<ProviderInfo>, Failure.CoreFailure> = UiState.Idle,
     val watchProviderAd: NativeAd? = null,
+    val isWatchProviderAdFailed: Boolean = false,
     val feedInlineAd: NativeAd? = null,
+    val isFeedInlineAdFailed: Boolean = false,
     val upNextQueue: List<TraktUpNextEpisode> = emptyList(),
     val isTraktConnected: Boolean = false,
     val completedShowDialog: CompletedShowDialogState? = null

@@ -162,6 +162,7 @@ fun TvShowHomeContent(
                     onWatchProviderClick = openWatchProviderHub,
                     onRetry = { viewModel.fetchTrendingTvShows() },
                     onAdLoaded = viewModel::onNativeAdLoaded,
+                    onAdFailed = viewModel::onNativeAdFailed,
                     onShowFeedback = onShowFeedback
                 )
             }
@@ -227,26 +228,30 @@ fun TvShowHomeContent(
                     onRetry = { viewModel.fetchWatchProviders() },
                     isMovie = false,
                     source = "tv_home",
-                    adContent = {
-                        ShowTimeNativeAd(
-                            ad = uiState.watchProviderAd,
-                            loadInternally = uiState.watchProviderAd == null,
-                            onAdLoaded = viewModel::onWatchProviderAdLoaded,
-                            style = NativeAdStyle.CircularLogo,
-                            modifier = Modifier.size(56.dp),
-                            analyticsEventPrefix = "tv_home_watch_provider"
-                        )
-                    },
+                    adContent = if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank() && !uiState.isWatchProviderAdFailed) {
+                        {
+                            ShowTimeNativeAd(
+                                ad = uiState.watchProviderAd,
+                                loadInternally = uiState.watchProviderAd == null,
+                                onAdLoaded = viewModel::onWatchProviderAdLoaded,
+                                onAdFailed = viewModel::onWatchProviderAdFailed,
+                                style = NativeAdStyle.CircularLogo,
+                                modifier = Modifier.size(56.dp),
+                                analyticsEventPrefix = "tv_home_watch_provider"
+                            )
+                        }
+                    } else null,
                     modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
             }
 
-            if (adConfigProvider.isAdsEnabled) {
+            if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank() && !uiState.isFeedInlineAdFailed) {
                 item {
                     ShowTimeNativeAd(
                         ad = uiState.feedInlineAd,
                         loadInternally = uiState.feedInlineAd == null,
                         onAdLoaded = viewModel::onFeedInlineAdLoaded,
+                        onAdFailed = viewModel::onFeedInlineAdFailed,
                         style = NativeAdStyle.List,
                         analyticsEventPrefix = "tv_home_feed_inline_native",
                         modifier = Modifier
@@ -286,6 +291,7 @@ fun TvShowHomeContent(
                     onFetchUpcoming = { viewModel.fetchUpcomingTvShows() },
                     onWatchProviderClick = openWatchProviderHub,
                     onAdLoaded = viewModel::onNativeAdLoaded,
+                    onAdFailed = viewModel::onNativeAdFailed,
                     onShowFeedback = onShowFeedback,
                     modifier = Modifier.padding(top = MaterialTheme.spacing.medium)
                 )
@@ -327,6 +333,9 @@ fun TvShowHomeContent(
                                             injectableItem,
                                             ad
                                         )
+                                    },
+                                    onAdFailed = {
+                                        viewModel.onNativeAdFailed(injectableItem)
                                     },
                                     style = injectableItem.style
                                 )
@@ -399,6 +408,9 @@ fun TvShowHomeContent(
                                             injectableItem,
                                             ad
                                         )
+                                    },
+                                    onAdFailed = {
+                                        viewModel.onNativeAdFailed(injectableItem)
                                     },
                                     style = injectableItem.style
                                 )

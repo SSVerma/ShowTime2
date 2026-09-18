@@ -62,6 +62,7 @@ fun HeroSection(
     onWatchProviderClick: (ProviderInfo) -> Unit,
     onRetry: () -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onAdFailed: (InjectableAd) -> Unit = {},
     modifier: Modifier = Modifier,
     carouselState: androidx.compose.material3.carousel.CarouselState? = null,
     showBackdrop: Boolean = false,
@@ -179,6 +180,7 @@ fun HeroSection(
                                 modifier = Modifier.fillMaxSize(),
                                 ad = injectableItem.ad,
                                 onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                                onAdFailed = { onAdFailed(injectableItem) },
                                 style = injectableItem.style
                             )
                         }

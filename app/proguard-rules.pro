@@ -50,8 +50,44 @@
 }
 
 # ------------------------------------------------------------------------------
-# 3. Serialization & Networking Models
+# 3. Serialization, Gson & Reflection Models
 # ------------------------------------------------------------------------------
+# Preserve generic signatures & annotations for Gson reflection and Kotlin reflection
+-keepattributes Signature
+-keepattributes *Annotation*
+
+# Keep Gson library and TypeToken subclasses
+-keep class com.google.gson.** { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+-keepclassmembers class * extends com.google.gson.reflect.TypeToken {
+    *;
+}
+
+# Keep all domain, data, entity, database and backup models
+-keep class com.ssverma.shared.domain.model.** { *; }
+-keep class com.ssverma.shared.data.model.** { *; }
+-keep class com.ssverma.shared.data.backup.** { *; }
+-keep class com.ssverma.shared.data.local.db.entity.** { *; }
+-keep class com.ssverma.shared.data.entity.** { *; }
+-keep class com.ssverma.feature.**.domain.model.** { *; }
+-keep class com.ssverma.feature.**.data.model.** { *; }
+-keep class com.ssverma.feature.**.data.entity.** { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep class * extends androidx.room.RoomDatabase
+
+# Keep Parcelable CREATORs and Navigation NavKeys
+-keepclassmembers class * implements android.os.Parcelable {
+    static ** CREATOR;
+}
+-keep class com.ssverma.**.navigation.**NavKey* { *; }
+-keep class * implements androidx.navigation3.runtime.NavKey { *; }
+
+# Keep enums used in serialization and reflection
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
 -keepclassmembers,allowobfuscation class * {
     @com.google.gson.annotations.SerializedName <fields>;
 }
@@ -69,7 +105,33 @@
     @retrofit2.http.* <methods>;
 }
 
+# Keep Hilt EntryPoints and injected classes
+-keep @dagger.hilt.EntryPoint interface * { *; }
+-keep @dagger.hilt.InstallIn interface * { *; }
+
+# Keep WorkManager workers instantiated via reflection
+-keep public class * extends androidx.work.ListenableWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}
+-keep public class * extends androidx.work.CoroutineWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}
+
+# Keep AppWidgetProvider and Glance Receivers
+-keep class * extends android.appwidget.AppWidgetProvider { *; }
+-keep class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver { *; }
+
 # ------------------------------------------------------------------------------
-# 4. Jetpack Compose & UI Runtime
+# 4. Google Mobile Ads (AdMob) SDK
+# ------------------------------------------------------------------------------
+-keep public class com.google.android.gms.ads.** {
+    public *;
+}
+-keep public class com.google.ads.** {
+    public *;
+}
+
+# ------------------------------------------------------------------------------
+# 5. Jetpack Compose & UI Runtime
 # ------------------------------------------------------------------------------
 -dontwarn androidx.compose.**

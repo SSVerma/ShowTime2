@@ -120,6 +120,7 @@ fun WatchProviderHubContent(
     onMovieSeeAllClick: (MovieDiscoverConfig) -> Unit,
     onTvSeeAllClick: (TvDiscoverConfig) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onAdFailed: (InjectableAd) -> Unit = {},
     isLoading: Boolean = false,
     modifier: Modifier = Modifier,
     source: String = "default",
@@ -176,6 +177,7 @@ fun WatchProviderHubContent(
                     onMovieClick = onMovieClick,
                     onTvShowClick = onTvShowClick,
                     onAdLoaded = onAdLoaded,
+                    onAdFailed = onAdFailed,
                     onShowFeedback = onShowFeedback,
                     modifier = Modifier.padding(bottom = MaterialTheme.spacing.small)
                 )
@@ -190,6 +192,7 @@ fun WatchProviderHubContent(
                     onMovieClick = onMovieClick,
                     onTvShowClick = onTvShowClick,
                     onAdLoaded = onAdLoaded,
+                    onAdFailed = onAdFailed,
                     onShowFeedback = onShowFeedback,
                     onSeeAllClick = {
                         if (isMovieMode) {
@@ -215,6 +218,7 @@ fun WatchProviderHubContent(
                     onMovieClick = onMovieClick,
                     onTvShowClick = onTvShowClick,
                     onAdLoaded = onAdLoaded,
+                    onAdFailed = onAdFailed,
                     onShowFeedback = onShowFeedback,
                     onSeeAllClick = {
                         if (isMovieMode) {
@@ -240,6 +244,7 @@ fun WatchProviderHubContent(
                     onMovieClick = onMovieClick,
                     onTvShowClick = onTvShowClick,
                     onAdLoaded = onAdLoaded,
+                    onAdFailed = onAdFailed,
                     onShowFeedback = onShowFeedback,
                     onSeeAllClick = {
                         if (isMovieMode) {
@@ -634,6 +639,7 @@ private fun HeroPagerSection(
     onMovieClick: (MoviePreview) -> Unit,
     onTvShowClick: (TvShowPreview) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onAdFailed: (InjectableAd) -> Unit = {},
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
@@ -683,6 +689,7 @@ private fun HeroPagerSection(
                         ShowTimeNativeAd(
                             ad = injectableItem.ad,
                             onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                            onAdFailed = { onAdFailed(injectableItem) },
                             style = injectableItem.style,
                             modifier = Modifier.fillMaxSize()
                         )
@@ -732,6 +739,7 @@ private fun HubSectionRow(
     onMovieClick: (MoviePreview) -> Unit,
     onTvShowClick: (TvShowPreview) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onAdFailed: (InjectableAd) -> Unit = {},
     onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
@@ -790,6 +798,7 @@ private fun HubSectionRow(
                             ShowTimeNativeAd(
                                 ad = injectableItem.ad,
                                 onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                                onAdFailed = { onAdFailed(injectableItem) },
                                 style = injectableItem.style
                             )
                         }

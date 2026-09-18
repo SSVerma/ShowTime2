@@ -70,6 +70,7 @@ fun LazyListScope.trendingWorldwideShelf(
     onTvShowClick: (TvShowPreview) -> Unit,
     onSeeAllClick: () -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onAdFailed: (InjectableAd) -> Unit = {},
     onRetry: () -> Unit,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null,
     isAdsEnabled: Boolean = true,
@@ -185,6 +186,7 @@ fun LazyListScope.trendingWorldwideShelf(
                                         ShowTimeNativeAd(
                                             ad = injectableItem.ad,
                                             onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                                            onAdFailed = { onAdFailed(injectableItem) },
                                             style = injectableItem.style
                                         )
                                     }
@@ -250,6 +252,7 @@ fun LazyListScope.trendingWorldwideShelf(
                                         ShowTimeNativeAd(
                                             ad = injectableItem.ad,
                                             onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                                            onAdFailed = { onAdFailed(injectableItem) },
                                             style = injectableItem.style
                                         )
                                     }

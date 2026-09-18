@@ -98,6 +98,7 @@ fun WatchProviderHubScreen(
                         onTvSeeAllClick(uiState.provider, discoverConfig)
                     },
                     onAdLoaded = viewModel::onCarouselNativeAdLoaded,
+                    onAdFailed = viewModel::onCarouselNativeAdFailed,
                     source = source,
                     onShowFeedback = { args ->
                         coroutineScope.launch {

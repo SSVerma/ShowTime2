@@ -22,6 +22,7 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.model.movie.asMoviePreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.repository.CinemaGameRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +44,7 @@ class HomeMovieViewModel @Inject constructor(
     private val fetchAllWatchProvidersUseCase: FetchAllWatchProvidersUseCase,
     private val appConfigRepository: AppConfigRepository,
     private val adConfigProvider: AdConfigProvider,
-    private val cinemaGameRepository: com.ssverma.shared.domain.repository.CinemaGameRepository
+    private val cinemaGameRepository: CinemaGameRepository
 ) : ViewModel() {
 
 
@@ -259,11 +260,35 @@ class HomeMovieViewModel @Inject constructor(
         }
     }
 
+    fun onNativeAdFailed(injectableAd: InjectableAd) {
+        _uiState.update { currentState ->
+            fun <T> List<AdInjectable<T>>.removeAdIfPresent(): List<AdInjectable<T>> {
+                return this.filterNot { it is InjectableAd && it.id == injectableAd.id }
+            }
+
+            currentState.copy(
+                trendingMovies = currentState.trendingMovies.mapSuccess { it.removeAdIfPresent() },
+                inCinemasMovies = currentState.inCinemasMovies.mapSuccess { it.removeAdIfPresent() },
+                popularMovies = currentState.popularMovies.mapSuccess { it.removeAdIfPresent() },
+                topRatedMovies = currentState.topRatedMovies.mapSuccess { it.removeAdIfPresent() },
+                upcomingMovies = currentState.upcomingMovies.mapSuccess { it.removeAdIfPresent() }
+            )
+        }
+    }
+
     fun onFeedInlineAdLoaded(nativeAd: NativeAd) {
         _uiState.update { it.copy(feedInlineAd = nativeAd) }
     }
 
+    fun onFeedInlineAdFailed() {
+        _uiState.update { it.copy(feedInlineAd = null, isFeedInlineAdFailed = true) }
+    }
+
     fun onWatchProviderAdLoaded(nativeAd: NativeAd) {
-        _uiState.update { it.copy(watchProviderAd = nativeAd) }
+        _uiState.update { it.copy(watchProviderAd = nativeAd, isWatchProviderAdFailed = false) }
+    }
+
+    fun onWatchProviderAdFailed() {
+        _uiState.update { it.copy(watchProviderAd = null, isWatchProviderAdFailed = true) }
     }
 }

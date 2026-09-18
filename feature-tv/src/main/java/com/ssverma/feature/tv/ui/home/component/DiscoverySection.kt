@@ -37,6 +37,7 @@ fun DiscoverySection(
     onSeeAllClicked: (TvShowListingRoute) -> Unit,
     onWatchProviderClick: (provider: ProviderInfo) -> Unit,
     onAdLoaded: (InjectableAd, NativeAd) -> Unit,
+    onAdFailed: (InjectableAd) -> Unit = {},
     modifier: Modifier = Modifier,
     showHeader: Boolean = false,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
@@ -92,6 +93,7 @@ fun DiscoverySection(
                 ShowTimeNativeAd(
                     ad = injectableItem.ad,
                     onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
+                    onAdFailed = { onAdFailed(injectableItem) },
                     style = injectableItem.style
                 )
             }

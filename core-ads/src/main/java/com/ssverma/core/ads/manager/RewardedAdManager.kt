@@ -30,7 +30,7 @@ class RewardedAdManager @Inject constructor(
         get() = rewardedAd != null
 
     fun loadAd() {
-        if (!adConfigProvider.isAdsEnabled || rewardedAd != null || isAdLoading) return
+        if (!adConfigProvider.isAdsEnabled || adConfigProvider.rewardedAdId.isBlank() || rewardedAd != null || isAdLoading) return
 
         isAdLoading = true
         val adRequest = AdRequest.Builder().build()
@@ -94,7 +94,7 @@ class RewardedAdManager @Inject constructor(
         onAdDismissed: (() -> Unit)?,
         onUserEarnedReward: () -> Unit
     ) {
-        if (!adConfigProvider.isAdsEnabled) {
+        if (!adConfigProvider.isAdsEnabled || adConfigProvider.rewardedAdId.isBlank()) {
             onUserEarnedReward()
             onAdDismissed?.invoke()
             return

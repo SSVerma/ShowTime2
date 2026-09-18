@@ -62,8 +62,13 @@ class CinephileMilestoneRepositoryImpl @Inject constructor(
                 if (!cachedJson.isNullOrBlank()) {
                     try {
                         val type = object : TypeToken<List<CinephileMilestoneDefinition>>() {}.type
-                        gson.fromJson<List<CinephileMilestoneDefinition>>(cachedJson, type)
-                            ?: emptyList()
+                        val list =
+                            gson.fromJson<List<CinephileMilestoneDefinition>>(cachedJson, type)
+                        if (!list.isNullOrEmpty()) {
+                            list
+                        } else {
+                            loadMilestonesFromAsset()
+                        }
                     } catch (_: Exception) {
                         loadMilestonesFromAsset()
                     }
