@@ -250,6 +250,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadCommunityLists() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isCommunityListsLoading = true) }
             getCommunityListsUseCase(limit = 10).collect { lists ->
                 val topLists = lists.take(10)
                 _uiState.update { state ->
@@ -258,6 +259,7 @@ class DashboardViewModel @Inject constructor(
                     }
                     state.copy(
                         communityLists = topLists,
+                        isCommunityListsLoading = false,
                         selectedCommunityListForDetail = updatedSelected
                     )
                 }

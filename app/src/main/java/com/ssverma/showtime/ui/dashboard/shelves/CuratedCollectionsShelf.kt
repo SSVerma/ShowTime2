@@ -54,6 +54,7 @@ import com.ssverma.showtime.R
 
 fun LazyListScope.curatedCollectionsShelf(
     isCommunitySelected: Boolean,
+    isCommunityListsLoading: Boolean,
     communityLists: List<CommunityCuratedList>,
     customLists: List<CustomList>,
     onToggleCategory: (isCommunity: Boolean) -> Unit,
@@ -155,7 +156,7 @@ fun LazyListScope.curatedCollectionsShelf(
                                 )
                             }
                         }
-                    } else {
+                    } else if (isCommunityListsLoading) {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
@@ -164,6 +165,13 @@ fun LazyListScope.curatedCollectionsShelf(
                         ) {
                             ScreenLoadingIndicator()
                         }
+                    } else {
+                        EmptyCommunityListsShelfCard(
+                            onExploreClick = onBrowseAllCommunityClick,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
                     }
                 } else {
                     if (customLists.isNotEmpty()) {

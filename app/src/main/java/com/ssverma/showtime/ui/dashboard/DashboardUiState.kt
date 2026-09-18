@@ -51,6 +51,7 @@ data class DashboardUiState(
     val showDailyPollSheet: Boolean = false,
     val trendingDiscussions: List<TrendingDiscussion> = emptyList(),
     val communityLists: List<CommunityCuratedList> = emptyList(),
+    val isCommunityListsLoading: Boolean = false,
     val customLists: List<CustomList> = emptyList(),
     val isCuratedCommunitySelected: Boolean = false,
     val selectedCommunityListForDetail: CommunityCuratedList? = null,

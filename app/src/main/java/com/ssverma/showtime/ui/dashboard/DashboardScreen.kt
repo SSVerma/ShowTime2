@@ -424,6 +424,7 @@ fun DashboardScreen(
                 // 11. Curated Collections (Community Curated Lists & My Lists)
                 curatedCollectionsShelf(
                     isCommunitySelected = uiState.isCuratedCommunitySelected,
+                    isCommunityListsLoading = uiState.isCommunityListsLoading,
                     communityLists = uiState.communityLists,
                     customLists = uiState.customLists,
                     onToggleCategory = viewModel::setCuratedCommunitySelected,
