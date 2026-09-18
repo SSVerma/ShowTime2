@@ -16,6 +16,7 @@ class DiaryUseCasesTest {
     private lateinit var fakeRepository: FakeDiaryRepository
     private lateinit var saveDiaryEntryUseCase: SaveDiaryEntryUseCase
     private lateinit var getDiaryEntriesUseCase: GetDiaryEntriesUseCase
+    private lateinit var getDiaryEntryForMediaUseCase: GetDiaryEntryForMediaUseCase
     private lateinit var deleteDiaryEntryUseCase: DeleteDiaryEntryUseCase
     private lateinit var getDiarySummaryStatsUseCase: GetDiarySummaryStatsUseCase
 
@@ -24,6 +25,7 @@ class DiaryUseCasesTest {
         fakeRepository = FakeDiaryRepository()
         saveDiaryEntryUseCase = SaveDiaryEntryUseCase(fakeRepository)
         getDiaryEntriesUseCase = GetDiaryEntriesUseCase(fakeRepository)
+        getDiaryEntryForMediaUseCase = GetDiaryEntryForMediaUseCase(fakeRepository)
         deleteDiaryEntryUseCase = DeleteDiaryEntryUseCase(fakeRepository)
         getDiarySummaryStatsUseCase = GetDiarySummaryStatsUseCase(fakeRepository)
     }
@@ -114,4 +116,41 @@ class DiaryUseCasesTest {
         assertEquals(1, stats.rewatchCount)
         assertEquals(1, stats.fiveStarCount)
     }
+
+    @Test
+    fun `getDiaryEntryForMedia returns correct entry and duplicate saves update existing entry`() =
+        runTest {
+            val entry1 = DiaryEntry(
+                mediaId = 550,
+                mediaType = MediaType.Movie,
+                title = "Fight Club",
+                posterImageUrl = "/fc.jpg",
+                userRating = 4.0f
+            )
+            val id1 = saveDiaryEntryUseCase(entry1)
+
+            val retrieved = getDiaryEntryForMediaUseCase(550, MediaType.Movie)
+            assertEquals(id1, retrieved?.id)
+            assertEquals("Fight Club", retrieved?.title)
+            assertEquals(4.0f, retrieved?.userRating ?: 0f, 0.01f)
+
+            // Attempting to save again with id=0 should update rather than duplicate
+            val entry2 = DiaryEntry(
+                id = 0L,
+                mediaId = 550,
+                mediaType = MediaType.Movie,
+                title = "Fight Club",
+                posterImageUrl = "/fc_new.jpg",
+                userRating = 5.0f,
+                review = "Masterpiece on second watch",
+                isRewatch = true
+            )
+            val id2 = saveDiaryEntryUseCase(entry2)
+            assertEquals(id1, id2)
+
+            val allEntries = getDiaryEntriesUseCase(DiaryFilterType.ALL).first()
+            assertEquals(1, allEntries.size)
+            assertEquals(5.0f, allEntries.first().userRating, 0.01f)
+            assertTrue(allEntries.first().isRewatch)
+        }
 }

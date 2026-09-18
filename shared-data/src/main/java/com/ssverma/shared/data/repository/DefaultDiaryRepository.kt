@@ -35,12 +35,38 @@ class DefaultDiaryRepository @Inject constructor(
         }
     }
 
+    override suspend fun getDiaryEntryForMedia(
+        mediaId: Int,
+        mediaType: MediaType
+    ): DiaryEntry? {
+        val mediaTypeString = if (mediaType == MediaType.Tv) "tv" else "movie"
+        return diaryDao.getDiaryEntryByMedia(
+            mediaId = mediaId,
+            mediaType = mediaTypeString
+        )?.toDomain()
+    }
+
     override suspend fun getDiaryEntryById(id: Long): DiaryEntry? {
         return diaryDao.getDiaryEntryById(id)?.toDomain()
     }
 
     override suspend fun saveDiaryEntry(entry: DiaryEntry): Long {
-        return diaryDao.insertDiaryEntry(entry.toEntity())
+        val mediaTypeString = if (entry.mediaType == MediaType.Tv) "tv" else "movie"
+        val existing = if (entry.id == 0L) {
+            diaryDao.getDiaryEntryByMedia(entry.mediaId, mediaTypeString)
+        } else {
+            diaryDao.getDiaryEntryById(entry.id)
+        }
+
+        val entityToSave = if (existing != null) {
+            entry.toEntity().copy(
+                id = existing.id,
+                loggedAt = if (entry.loggedAt != 0L) entry.loggedAt else existing.loggedAt
+            )
+        } else {
+            entry.toEntity()
+        }
+        return diaryDao.insertDiaryEntry(entityToSave)
     }
 
     override suspend fun deleteDiaryEntry(id: Long) {

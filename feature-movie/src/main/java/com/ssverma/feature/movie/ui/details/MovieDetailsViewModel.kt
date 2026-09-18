@@ -48,6 +48,9 @@ import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
+import com.ssverma.shared.domain.usecase.reminder.RemoveAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleReminderResult
 import com.ssverma.shared.domain.utils.ReminderTimeCalculator
 import com.ssverma.shared.domain.utils.formatLocally
 import dagger.assisted.Assisted
@@ -93,6 +96,8 @@ class MovieDetailsViewModel @AssistedInject constructor(
     val appConfigRepository: AppConfigRepository,
     val affiliateRepository: AffiliateRepository,
     val reminderRepository: ReminderRepository,
+    private val scheduleAiringReminderUseCase: ScheduleAiringReminderUseCase,
+    private val removeAiringReminderUseCase: RemoveAiringReminderUseCase,
     val billingRepository: BillingRepository,
     val rewardManager: RewardManager,
     val rewardedAdManager: RewardedAdManager
@@ -130,62 +135,103 @@ class MovieDetailsViewModel @AssistedInject constructor(
         _reminderSnackbarEvent.value = null
     }
 
+    private val _isReminderSheetVisible = MutableStateFlow(false)
+    val isReminderSheetVisible: StateFlow<Boolean> = _isReminderSheetVisible.asStateFlow()
+
+    val reminderLeadDays: StateFlow<Int> = appConfigRepository.reminderLeadDays
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val reminderNotificationHour: StateFlow<Int> = appConfigRepository.reminderNotificationHour
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 9)
+
+    val reminderNotificationMinute: StateFlow<Int> = appConfigRepository.reminderNotificationMinute
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    fun openReminderSheet() {
+        _isReminderSheetVisible.value = true
+    }
+
+    fun dismissReminderSheet() {
+        _isReminderSheetVisible.value = false
+    }
+
+    fun scheduleReminder(
+        movie: Movie,
+        leadDays: Int,
+        hour: Int,
+        minute: Int
+    ) {
+        viewModelScope.launch {
+            _isReminderSheetVisible.value = false
+            val targetReleaseDate = movie.nextFutureReleaseDate ?: movie.releaseDate
+            if (targetReleaseDate == null) {
+                _reminderSnackbarEvent.value =
+                    "No upcoming release date found for ${movie.title}"
+                return@launch
+            }
+
+            val providerName = movie.watchProviders.values
+                .firstNotNullOfOrNull {
+                    it.flatrate.firstOrNull()?.providerName
+                        ?: it.rent.firstOrNull()?.providerName
+                }
+
+            val result = scheduleAiringReminderUseCase(
+                mediaId = movie.id,
+                mediaType = MediaType.Movie,
+                mediaTitle = movie.title,
+                posterImageUrl = movie.posterImageUrl.orEmpty(),
+                targetAirDate = targetReleaseDate,
+                leadDays = leadDays,
+                hour = hour,
+                minute = minute,
+                isProActive = billingRepository.isProActive.value,
+                providerName = providerName
+            )
+
+            when (result) {
+                is ScheduleReminderResult.Success -> {
+                    _reminderSnackbarEvent.value = "Reminder set for ${movie.title}!"
+                }
+
+                is ScheduleReminderResult.QuotaExceeded -> {
+                    _isQuotaGateVisible.value = true
+                    rewardedAdManager.loadAd()
+                }
+
+                is ScheduleReminderResult.TimePassed -> {
+                    _reminderSnackbarEvent.value = "Release date has already passed"
+                }
+
+                is ScheduleReminderResult.NoSchedule -> {
+                    _reminderSnackbarEvent.value =
+                        "No upcoming release date found for ${movie.title}"
+                }
+
+                is ScheduleReminderResult.Error -> {
+                    _reminderSnackbarEvent.value = result.message ?: "Failed to set reminder"
+                }
+            }
+        }
+    }
+
+    fun removeReminder(movie: Movie) {
+        viewModelScope.launch {
+            _isReminderSheetVisible.value = false
+            removeAiringReminderUseCase(movie.id, MediaType.Movie)
+            _reminderSnackbarEvent.value = "Reminder removed for ${movie.title}"
+        }
+    }
+
     fun toggleReminder(movie: Movie) {
         viewModelScope.launch {
             if (hasReminder.value) {
-                reminderRepository.removeReminder(movie.id, MediaType.Movie)
-                _reminderSnackbarEvent.value = "Reminder removed for ${movie.title}"
+                removeReminder(movie)
             } else {
-                val targetReleaseDate = movie.nextFutureReleaseDate
-                if (targetReleaseDate == null) {
-                    _reminderSnackbarEvent.value =
-                        "No upcoming release date found for ${movie.title}"
-                    return@launch
-                }
-
-                val activeCount = reminderRepository.getActiveReminderCount()
-                val isPro = billingRepository.isProActive.value
-                val canSchedule = rewardManager.canScheduleReminder(activeCount, isPro)
-                if (!canSchedule) {
-                    _isQuotaGateVisible.value = true
-                    rewardedAdManager.loadAd()
-                    return@launch
-                }
-
                 val hour = appConfigRepository.reminderNotificationHour.first()
                 val minute = appConfigRepository.reminderNotificationMinute.first()
                 val leadDays = appConfigRepository.reminderLeadDays.first()
-                val reminderTime = ReminderTimeCalculator.calculateReminderTime(
-                    airDate = targetReleaseDate,
-                    hour = hour,
-                    minute = minute,
-                    leadDays = leadDays
-                )
-
-                if (reminderTime == null) {
-                    _reminderSnackbarEvent.value = "Release date has already passed"
-                    return@launch
-                }
-
-                val airDateStr = targetReleaseDate.formatLocally() ?: targetReleaseDate.toString()
-                val providerName = movie.watchProviders.values
-                    .firstNotNullOfOrNull {
-                        it.flatrate.firstOrNull()?.providerName
-                            ?: it.rent.firstOrNull()?.providerName
-                    }
-
-                val reminder = AiringReminder(
-                    mediaId = movie.id,
-                    mediaType = MediaType.Movie,
-                    reminderType = ReminderType.MOVIE_RELEASE,
-                    mediaTitle = movie.title,
-                    posterImageUrl = movie.posterImageUrl,
-                    airDate = airDateStr,
-                    reminderTimeMillis = reminderTime,
-                    providerName = providerName
-                )
-                reminderRepository.addReminder(reminder)
-                _reminderSnackbarEvent.value = "Reminder set for ${movie.title}!"
+                scheduleReminder(movie, leadDays, hour, minute)
             }
         }
     }

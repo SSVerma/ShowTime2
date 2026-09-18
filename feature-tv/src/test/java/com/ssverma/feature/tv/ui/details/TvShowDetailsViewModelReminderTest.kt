@@ -12,6 +12,8 @@ import com.ssverma.shared.domain.model.tv.TvEpisodePreview
 import com.ssverma.shared.domain.model.tv.TvShow
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeReminderRepository
+import com.ssverma.shared.domain.usecase.reminder.RemoveAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleAiringReminderUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -44,6 +46,8 @@ class TvShowDetailsViewModelReminderTest {
     private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
     private val activity: Activity = mockk()
 
+    private lateinit var scheduleAiringReminderUseCase: ScheduleAiringReminderUseCase
+    private lateinit var removeAiringReminderUseCase: RemoveAiringReminderUseCase
     private lateinit var viewModel: TvShowDetailsViewModel
 
     private val nextEpisode = TvEpisodePreview(
@@ -72,6 +76,15 @@ class TvShowDetailsViewModelReminderTest {
         coEvery { appConfigRepository.updateReminderLeadDays(any()) } returns Unit
         coEvery { appConfigRepository.updateReminderNotificationTime(any(), any()) } returns Unit
 
+        scheduleAiringReminderUseCase = ScheduleAiringReminderUseCase(
+            reminderRepository = fakeReminderRepository,
+            reminderQuotaManager = rewardManager,
+            appConfigRepository = appConfigRepository
+        )
+        removeAiringReminderUseCase = RemoveAiringReminderUseCase(
+            reminderRepository = fakeReminderRepository
+        )
+
         viewModel = TvShowDetailsViewModel(
             application = application,
             tvShowId = 202,
@@ -90,6 +103,8 @@ class TvShowDetailsViewModelReminderTest {
             affiliateRepository = mockk(relaxed = true),
             traktSyncRepository = mockk(relaxed = true),
             reminderRepository = fakeReminderRepository,
+            scheduleAiringReminderUseCase = scheduleAiringReminderUseCase,
+            removeAiringReminderUseCase = removeAiringReminderUseCase,
             billingRepository = fakeBillingRepository,
             rewardManager = rewardManager,
             rewardedAdManager = rewardedAdManager

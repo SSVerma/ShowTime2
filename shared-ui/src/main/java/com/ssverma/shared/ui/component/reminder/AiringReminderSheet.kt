@@ -61,6 +61,7 @@ fun AiringReminderSheet(
     onRemove: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    isMovie: Boolean = false,
     episodeSubtitle: String? = null,
     initialLeadDays: Int = 0,
     initialHour: Int = 9,
@@ -145,7 +146,9 @@ fun AiringReminderSheet(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(id = R.string.airing_reminder_sheet_title),
+                        text = stringResource(
+                            id = if (isMovie) R.string.movie_reminder_sheet_title else R.string.airing_reminder_sheet_title
+                        ),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -218,7 +221,13 @@ fun AiringReminderSheet(
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
-                            text = stringResource(id = R.string.airing_reminder_rationale_notifications),
+                            text = stringResource(
+                                id = if (isMovie) {
+                                    R.string.movie_reminder_rationale_notifications
+                                } else {
+                                    R.string.airing_reminder_rationale_notifications
+                                }
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -229,13 +238,19 @@ fun AiringReminderSheet(
                         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Autorenew,
+                            imageVector = if (isMovie) Icons.Rounded.Schedule else Icons.Rounded.Autorenew,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
-                            text = stringResource(id = R.string.airing_reminder_rationale_rolling),
+                            text = stringResource(
+                                id = if (isMovie) {
+                                    R.string.movie_reminder_rationale_schedule
+                                } else {
+                                    R.string.airing_reminder_rationale_rolling
+                                }
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

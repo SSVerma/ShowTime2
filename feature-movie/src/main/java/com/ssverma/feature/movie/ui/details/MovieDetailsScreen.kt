@@ -150,6 +150,10 @@ private fun MovieContent(
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
     val diaryEntries by viewModel.diaryEntries.collectAsStateWithLifecycle()
     val hasReminder by viewModel.hasReminder.collectAsStateWithLifecycle()
+    val isReminderSheetVisible by viewModel.isReminderSheetVisible.collectAsStateWithLifecycle()
+    val reminderLeadDays by viewModel.reminderLeadDays.collectAsStateWithLifecycle()
+    val reminderNotificationHour by viewModel.reminderNotificationHour.collectAsStateWithLifecycle()
+    val reminderNotificationMinute by viewModel.reminderNotificationMinute.collectAsStateWithLifecycle()
     val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
     val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
     val reminderSnackbarEvent by viewModel.reminderSnackbarEvent.collectAsStateWithLifecycle()
@@ -221,10 +225,10 @@ private fun MovieContent(
                 onOpenLogDialog = { showLogDialog = true },
                 onReminderClick = {
                     if (hasReminder) {
-                        viewModel.toggleReminder(movie)
+                        viewModel.openReminderSheet()
                     } else {
                         notificationPermissionHandler.requestPermissionThen {
-                            viewModel.toggleReminder(movie)
+                            viewModel.openReminderSheet()
                         }
                     }
                 },
@@ -515,7 +519,19 @@ private fun MovieContent(
                 viewModel.dismissQuotaGate()
                 openProPaywall()
             },
-            onDismissQuotaGate = { viewModel.dismissQuotaGate() }
+            onDismissQuotaGate = { viewModel.dismissQuotaGate() },
+            isReminderSheetVisible = isReminderSheetVisible,
+            hasReminder = hasReminder,
+            reminderLeadDays = reminderLeadDays,
+            reminderNotificationHour = reminderNotificationHour,
+            reminderNotificationMinute = reminderNotificationMinute,
+            onScheduleReminder = { leadDays, hour, minute ->
+                viewModel.scheduleReminder(movie, leadDays, hour, minute)
+            },
+            onRemoveReminder = {
+                viewModel.removeReminder(movie)
+            },
+            onDismissReminderSheet = viewModel::dismissReminderSheet
         )
     }
 }

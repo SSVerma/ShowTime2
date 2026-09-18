@@ -119,7 +119,7 @@ fun CinemaDiaryScreen(
             },
             snackbarHost = { SnackbarHost(snackbarHostState) },
             floatingActionButton = {
-                if (!uiState.isSearchingToLog) {
+                if (!uiState.isSearchingToLog && uiState.timelineGroups.isNotEmpty()) {
                     FloatingActionButton(
                         onClick = { viewModel.onOpenLogSearch() },
                         containerColor = MaterialTheme.colorScheme.primary,

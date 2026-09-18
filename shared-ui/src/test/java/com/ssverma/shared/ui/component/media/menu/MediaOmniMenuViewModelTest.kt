@@ -15,11 +15,18 @@ import com.ssverma.shared.testing.fakes.FakeDiaryRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
 import com.ssverma.shared.testing.fakes.FakeReminderQuotaManager
 import com.ssverma.shared.testing.fakes.FakeReminderRepository
+import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.usecase.reminder.RemoveAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleReminderResult
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -39,8 +46,11 @@ class MediaOmniMenuViewModelTest {
     private lateinit var fakeDiaryRepository: FakeDiaryRepository
     private lateinit var fakeReminderRepository: FakeReminderRepository
     private lateinit var fakeReminderQuotaManager: FakeReminderQuotaManager
+    private val appConfigRepository: AppConfigRepository = mockk(relaxed = true)
     private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
     private val fakeBillingRepository = FakeBillingRepository()
+    private lateinit var scheduleAiringReminderUseCase: ScheduleAiringReminderUseCase
+    private lateinit var removeAiringReminderUseCase: RemoveAiringReminderUseCase
     private lateinit var viewModel: MediaOmniMenuViewModel
 
     @Before
@@ -49,12 +59,30 @@ class MediaOmniMenuViewModelTest {
         fakeDiaryRepository = FakeDiaryRepository()
         fakeReminderRepository = FakeReminderRepository()
         fakeReminderQuotaManager = FakeReminderQuotaManager()
+        every { appConfigRepository.reminderNotificationHour } returns flowOf(9)
+        every { appConfigRepository.reminderNotificationMinute } returns flowOf(0)
+        every { appConfigRepository.reminderLeadDays } returns flowOf(0)
+        coEvery { appConfigRepository.updateReminderLeadDays(any()) } returns Unit
+        coEvery { appConfigRepository.updateReminderNotificationTime(any(), any()) } returns Unit
+
+        scheduleAiringReminderUseCase = ScheduleAiringReminderUseCase(
+            reminderRepository = fakeReminderRepository,
+            reminderQuotaManager = fakeReminderQuotaManager,
+            appConfigRepository = appConfigRepository
+        )
+        removeAiringReminderUseCase = RemoveAiringReminderUseCase(
+            reminderRepository = fakeReminderRepository
+        )
+
         viewModel = MediaOmniMenuViewModel(
             libraryRepository = fakeLibraryRepository,
             saveDiaryEntryUseCase = SaveDiaryEntryUseCase(fakeDiaryRepository),
             getDiaryEntriesUseCase = GetDiaryEntriesUseCase(fakeDiaryRepository),
             reminderRepository = fakeReminderRepository,
             reminderQuotaManager = fakeReminderQuotaManager,
+            scheduleAiringReminderUseCase = scheduleAiringReminderUseCase,
+            removeAiringReminderUseCase = removeAiringReminderUseCase,
+            appConfigRepository = appConfigRepository,
             rewardedAdManager = rewardedAdManager,
             billingRepository = fakeBillingRepository
         )
@@ -251,6 +279,42 @@ class MediaOmniMenuViewModelTest {
         assertTrue(toggleResult is ReminderToggleResult.Added)
         val hasReminder = viewModel.hasReminder(mediaId = 4, mediaType = MediaType.Movie).first()
         assertTrue(hasReminder)
+    }
+
+    @Test
+    fun `scheduleReminder schedules reminder and updates preferences`() = runTest {
+        var scheduleResult: ScheduleReminderResult? = null
+        val airDate = LocalDate.now().plusDays(5)
+
+        viewModel.scheduleReminder(
+            mediaId = 55,
+            mediaType = MediaType.Movie,
+            title = "Oppenheimer",
+            posterImageUrl = "/oppenheimer.jpg",
+            targetAirDate = airDate,
+            leadDays = 2,
+            hour = 18,
+            minute = 0
+        ) { result ->
+            scheduleResult = result
+        }
+        advanceUntilIdle()
+
+        assertTrue(scheduleResult is ScheduleReminderResult.Success)
+        val hasReminder = viewModel.hasReminder(mediaId = 55, mediaType = MediaType.Movie).first()
+        assertTrue(hasReminder)
+
+        // Remove reminder
+        var removeCompleted = false
+        viewModel.removeReminder(mediaId = 55, mediaType = MediaType.Movie) {
+            removeCompleted = true
+        }
+        advanceUntilIdle()
+
+        assertTrue(removeCompleted)
+        val afterRemoveReminder =
+            viewModel.hasReminder(mediaId = 55, mediaType = MediaType.Movie).first()
+        assertFalse(afterRemoveReminder)
     }
 }
 

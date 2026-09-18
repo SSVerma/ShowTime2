@@ -16,6 +16,7 @@ import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.notification.NotificationPermissionDialogs
 import com.ssverma.shared.ui.component.notification.NotificationPermissionHandler
+import com.ssverma.shared.ui.component.reminder.AiringReminderSheet
 import com.ssverma.shared.ui.component.section.WhereToWatchActionBottomSheet
 import com.ssverma.feature.movie.ui.details.ProviderActionPayload
 import com.ssverma.shared.ui.R as SharedR
@@ -52,7 +53,15 @@ fun MovieDetailsOverlays(
     isProPaymentEnabled: Boolean,
     onWatchAdForReminder: () -> Unit,
     onUpgradeProClick: () -> Unit,
-    onDismissQuotaGate: () -> Unit
+    onDismissQuotaGate: () -> Unit,
+    isReminderSheetVisible: Boolean,
+    hasReminder: Boolean,
+    reminderLeadDays: Int,
+    reminderNotificationHour: Int,
+    reminderNotificationMinute: Int,
+    onScheduleReminder: (leadDays: Int, hour: Int, minute: Int) -> Unit,
+    onRemoveReminder: () -> Unit,
+    onDismissReminderSheet: () -> Unit
 ) {
     NotificationPermissionDialogs(handler = notificationPermissionHandler)
 
@@ -94,5 +103,23 @@ fun MovieDetailsOverlays(
             onUpgradeProClick = onUpgradeProClick,
             onDismissRequest = onDismissQuotaGate
         )
+    }
+
+    if (isReminderSheetVisible) {
+        val targetReleaseDate = movie.nextFutureReleaseDate ?: movie.releaseDate
+        if (targetReleaseDate != null) {
+            AiringReminderSheet(
+                mediaTitle = movie.title,
+                airDate = targetReleaseDate,
+                hasReminder = hasReminder,
+                isMovie = true,
+                initialLeadDays = reminderLeadDays,
+                initialHour = reminderNotificationHour,
+                initialMinute = reminderNotificationMinute,
+                onConfirm = onScheduleReminder,
+                onRemove = onRemoveReminder,
+                onDismissRequest = onDismissReminderSheet
+            )
+        }
     }
 }

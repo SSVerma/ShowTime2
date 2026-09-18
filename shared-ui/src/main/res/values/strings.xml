@@ -258,6 +258,8 @@
     <string name="log_and_rate_cd">Log &amp; Rate</string>
 
     <!-- Cinema Diary Log and Rate Dialog -->
+    <string name="cinema_diary">Cinema Diary</string>
+    <string name="diary_badge_logged">Logged</string>
     <string name="diary_dialog_edit_title">Edit Diary Log</string>
     <string name="diary_dialog_log_title">Log to Cinema Diary</string>
     <string name="diary_dialog_subtitle">Personal rating &amp; review</string>
@@ -270,6 +272,17 @@
     <string name="diary_dialog_save_action">Save to Diary</string>
     <string name="diary_dialog_update_action">Update Log</string>
     <string name="diary_dialog_tmdb_rating">%1$.1f TMDB</string>
+    <string name="diary_dialog_rating_masterpiece">Masterpiece</string>
+    <string name="diary_dialog_rating_amazing">Amazing</string>
+    <string name="diary_dialog_rating_great">Great</string>
+    <string name="diary_dialog_rating_good">Good</string>
+    <string name="diary_dialog_rating_decent">Decent</string>
+    <string name="diary_dialog_rating_average">Average</string>
+    <string name="diary_dialog_rating_mediocre">Mediocre</string>
+    <string name="diary_dialog_rating_poor">Poor</string>
+    <string name="diary_dialog_rating_terrible">Terrible</string>
+    <string name="diary_dialog_rating_prompt">Swipe or tap to rate</string>
+    <string name="diary_dialog_rewatch_desc">You have watched this title before</string>
     <string name="cancel">Cancel</string>
 
     <!-- Reusable Media Card -->
@@ -379,9 +392,12 @@
 
     <!-- Airing Reminder Rationale & Schedule Sheet -->
     <string name="airing_reminder_sheet_title">Airing Reminder</string>
+    <string name="movie_reminder_sheet_title">Release Reminder</string>
     <string name="airing_reminder_rationale_title">How Airing Reminders Work</string>
     <string name="airing_reminder_rationale_notifications">You will be notified when new episodes air so you can watch them as soon as they release.</string>
     <string name="airing_reminder_rationale_rolling">Reminders automatically roll forward to each subsequent episode throughout the season.</string>
+    <string name="movie_reminder_rationale_notifications">You will be notified when this movie releases in theaters or streaming so you don\'t miss opening day.</string>
+    <string name="movie_reminder_rationale_schedule">Alerts will be delivered according to your chosen advance notification time.</string>
     <string name="airing_reminder_schedule_header">Notification Schedule</string>
     <string name="airing_reminder_delivery_preview">Scheduled for %1$s</string>
     <string name="airing_reminder_lead_time_header">Remind Me</string>

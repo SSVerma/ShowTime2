@@ -12,6 +12,7 @@ import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.domain.usecase.diary.DeleteDiaryEntryUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
+import com.ssverma.shared.domain.usecase.diary.GetDiaryEntryForMediaUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiarySummaryStatsUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import com.ssverma.shared.testing.fakes.FakeDiaryRepository
@@ -46,6 +47,7 @@ class CinemaDiaryViewModelTest {
         viewModel = CinemaDiaryViewModel(
             getDiaryEntriesUseCase = GetDiaryEntriesUseCase(fakeRepository),
             getDiarySummaryStatsUseCase = GetDiarySummaryStatsUseCase(fakeRepository),
+            getDiaryEntryForMediaUseCase = GetDiaryEntryForMediaUseCase(fakeRepository),
             saveDiaryEntryUseCase = SaveDiaryEntryUseCase(fakeRepository),
             deleteDiaryEntryUseCase = DeleteDiaryEntryUseCase(fakeRepository),
             tmdbApiService = tmdbApiService
@@ -243,6 +245,40 @@ class CinemaDiaryViewModelTest {
             assertEquals(1, state.totalEntriesCount)
             assertEquals("Fight Club", state.timelineGroups.first().entries.first().title)
             assertEquals(5.0f, state.timelineGroups.first().entries.first().userRating, 0.01f)
+        }
+
+    @Test
+    fun `selecting an already logged media item opens in edit mode instead of creating duplicate`() =
+        runTest {
+            val existing = DiaryEntry(
+                id = 42L,
+                mediaId = 550,
+                mediaType = MediaType.Movie,
+                title = "Fight Club",
+                posterImageUrl = "/poster.jpg",
+                userRating = 4.0f,
+                review = "Great film",
+                isRewatch = false
+            )
+            fakeRepository.saveDiaryEntry(existing)
+            advanceUntilIdle()
+
+            val mediaItem = ChallengeMediaItem(
+                id = 550,
+                title = "Fight Club",
+                mediaType = MediaType.Movie,
+                posterImageUrl = "/poster.jpg",
+                releaseYear = "1999",
+                voteAvg = 8.4f
+            )
+
+            viewModel.onSelectMediaToLog(mediaItem)
+            advanceUntilIdle()
+
+            val state = viewModel.uiState.first()
+            assertFalse(state.isSearchingToLog)
+            assertNull(state.mediaItemPendingLog)
+            assertEquals(existing, state.entryPendingEdit)
         }
 }
 

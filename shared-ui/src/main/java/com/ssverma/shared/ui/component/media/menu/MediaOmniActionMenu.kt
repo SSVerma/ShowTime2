@@ -68,11 +68,13 @@ import com.ssverma.feature.library.navigation.StandaloneLibraryNavKey
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.repository.ReminderToggleResult
+import com.ssverma.shared.domain.usecase.reminder.ScheduleReminderResult
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaActionParticleType
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
+import com.ssverma.shared.ui.component.reminder.AiringReminderSheet
 
 private data class QuickActionItem(
     val label: String,
@@ -119,6 +121,7 @@ fun MediaOmniActionMenu(
     val navigator = LocalNavigator.current
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showLogDialog by remember { mutableStateOf(false) }
+    var showReminderSheet by remember { mutableStateOf(false) }
     var showQuotaGate by remember { mutableStateOf(false) }
     var particleType by remember { mutableStateOf(MediaActionParticleType.NONE) }
     var particleTriggerKey by remember { mutableStateOf(0L) }
@@ -137,7 +140,24 @@ fun MediaOmniActionMenu(
         .collectAsState(initial = emptyList())
     val effectiveExistingDiaryEntry = existingDiaryEntry ?: loadedDiaryEntries.firstOrNull()
 
-    val canRemind = config.isEligibleForReminder(effectiveHasReminder)
+    val parsedAirDate = remember(releaseDate) {
+        if (releaseDate.isNotEmpty()) {
+            try {
+                LocalDate.parse(releaseDate)
+            } catch (e: Exception) {
+                null
+            }
+        } else null
+    }
+
+    val isDateInFuture = remember(parsedAirDate) {
+        parsedAirDate?.isAfter(LocalDate.now()) == true
+    }
+
+    val canRemind = config.isEligibleForReminder(
+        hasActiveReminder = effectiveHasReminder,
+        isFutureDate = isDateInFuture
+    )
     val canOpenDiscussions =
         config.showDiscussions && (onOpenDiscussions != null || navigator != null)
     val canLogToDiary = config.effectiveShowDiaryLog
@@ -153,58 +173,6 @@ fun MediaOmniActionMenu(
     val viewInLibraryText = stringResource(R.string.media_menu_view_in_library)
     val mediaTypeStr = if (mediaType == MediaType.Movie) "movie" else "tv"
 
-    val executeToggleReminder: () -> Unit = {
-        if (onToggleReminder != null) {
-            onToggleReminder()
-        } else {
-            val parsedAirDate = if (releaseDate.isNotEmpty()) {
-                try {
-                    LocalDate.parse(releaseDate)
-                } catch (e: Exception) {
-                    null
-                }
-            } else null
-
-            viewModel.toggleReminder(
-                mediaId = mediaId,
-                mediaType = mediaType,
-                title = title,
-                posterImageUrl = posterImageUrl,
-                targetAirDate = parsedAirDate
-            ) { result ->
-                val feedbackMsg = when (result) {
-                    is ReminderToggleResult.Added -> {
-                        context.getString(R.string.reminder_added_snackbar, result.label)
-                    }
-
-                    ReminderToggleResult.Removed -> {
-                        context.getString(R.string.reminder_removed_snackbar, title)
-                    }
-
-                    ReminderToggleResult.QuotaExceeded -> {
-                        showQuotaGate = true
-                        null
-                    }
-
-                    ReminderToggleResult.NoUpcomingSchedule -> {
-                        context.getString(R.string.reminder_no_upcoming_schedule, title)
-                    }
-
-                    is ReminderToggleResult.Error -> {
-                        result.message ?: context.getString(R.string.unexpected_error_msg)
-                    }
-                }
-                feedbackMsg?.let { msg ->
-                    onShowFeedback?.invoke(
-                        ShowFeedbackArgs(
-                            message = msg
-                        )
-                    )
-                }
-            }
-        }
-    }
-
     val notificationPermissionHandler = rememberNotificationPermissionHandler()
 
     val quickActions = buildList {
@@ -219,15 +187,11 @@ fun MediaOmniActionMenu(
             } else {
                 Icons.Rounded.NotificationsNone
             }
-            val remindTint = if (effectiveHasReminder) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            val remindTint = MaterialTheme.colorScheme.primary
             val remindContainer = if (effectiveHasReminder) {
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
             } else {
-                MaterialTheme.colorScheme.surfaceVariant
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
             }
             add(
                 QuickActionItem(
@@ -235,11 +199,21 @@ fun MediaOmniActionMenu(
                     icon = remindIcon,
                     onClick = {
                         isMenuExpanded = false
-                        if (effectiveHasReminder) {
-                            executeToggleReminder()
+                        if (onToggleReminder != null) {
+                            if (effectiveHasReminder) {
+                                onToggleReminder()
+                            } else {
+                                notificationPermissionHandler.requestPermissionThen {
+                                    onToggleReminder()
+                                }
+                            }
                         } else {
-                            notificationPermissionHandler.requestPermissionThen {
-                                executeToggleReminder()
+                            if (effectiveHasReminder) {
+                                showReminderSheet = true
+                            } else {
+                                notificationPermissionHandler.requestPermissionThen {
+                                    showReminderSheet = true
+                                }
                             }
                         }
                     },
@@ -599,6 +573,83 @@ fun MediaOmniActionMenu(
         }
     }
 
+    if (showReminderSheet) {
+        val effectiveAirDate = parsedAirDate ?: remember { LocalDate.now().plusDays(1) }
+        val reminderLeadDays by viewModel.reminderLeadDays.collectAsState(initial = 0)
+        val reminderNotificationHour by viewModel.reminderNotificationHour.collectAsState(
+            initial = 9
+        )
+        val reminderNotificationMinute by viewModel.reminderNotificationMinute.collectAsState(
+            initial = 0
+        )
+
+        AiringReminderSheet(
+            mediaTitle = title,
+            airDate = effectiveAirDate,
+            hasReminder = effectiveHasReminder,
+            isMovie = mediaType == MediaType.Movie,
+            initialLeadDays = reminderLeadDays,
+            initialHour = reminderNotificationHour,
+            initialMinute = reminderNotificationMinute,
+            onConfirm = { leadDays, hour, minute ->
+                showReminderSheet = false
+                viewModel.scheduleReminder(
+                    mediaId = mediaId,
+                    mediaType = mediaType,
+                    title = title,
+                    posterImageUrl = posterImageUrl,
+                    targetAirDate = effectiveAirDate,
+                    leadDays = leadDays,
+                    hour = hour,
+                    minute = minute
+                ) { result ->
+                    val feedbackMsg = when (result) {
+                        is ScheduleReminderResult.Success -> {
+                            context.getString(
+                                R.string.reminder_added_snackbar,
+                                result.reminder.displayLabel
+                            )
+                        }
+
+                        ScheduleReminderResult.QuotaExceeded -> {
+                            showQuotaGate = true
+                            null
+                        }
+
+                        ScheduleReminderResult.TimePassed -> {
+                            context.getString(R.string.airing_reminder_passed_warning)
+                        }
+
+                        ScheduleReminderResult.NoSchedule -> {
+                            context.getString(R.string.reminder_no_upcoming_schedule, title)
+                        }
+
+                        is ScheduleReminderResult.Error -> {
+                            result.message ?: context.getString(R.string.unexpected_error_msg)
+                        }
+                    }
+                    feedbackMsg?.let { msg ->
+                        onShowFeedback?.invoke(ShowFeedbackArgs(message = msg))
+                    }
+                }
+            },
+            onRemove = {
+                showReminderSheet = false
+                viewModel.removeReminder(mediaId, mediaType) {
+                    onShowFeedback?.invoke(
+                        ShowFeedbackArgs(
+                            message = context.getString(
+                                R.string.reminder_removed_snackbar,
+                                title
+                            )
+                        )
+                    )
+                }
+            },
+            onDismissRequest = { showReminderSheet = false }
+        )
+    }
+
     if (showQuotaGate) {
         FeatureQuotaGateBottomSheet(
             title = stringResource(id = R.string.reminder_quota_title),
@@ -610,7 +661,7 @@ fun MediaOmniActionMenu(
                 if (activity != null) {
                     viewModel.onWatchAdForReminderPass(activity) {
                         showQuotaGate = false
-                        executeToggleReminder()
+                        showReminderSheet = true
                     }
                 }
             },

@@ -14,6 +14,7 @@ import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 import com.ssverma.shared.domain.usecase.diary.DeleteDiaryEntryUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
+import com.ssverma.shared.domain.usecase.diary.GetDiaryEntryForMediaUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiarySummaryStatsUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,6 +49,7 @@ private data class SearchToLogState(
 class CinemaDiaryViewModel @Inject constructor(
     private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
     private val getDiarySummaryStatsUseCase: GetDiarySummaryStatsUseCase,
+    private val getDiaryEntryForMediaUseCase: GetDiaryEntryForMediaUseCase,
     private val saveDiaryEntryUseCase: SaveDiaryEntryUseCase,
     private val deleteDiaryEntryUseCase: DeleteDiaryEntryUseCase,
     private val tmdbApiService: TmdbApiService
@@ -271,7 +273,15 @@ class CinemaDiaryViewModel @Inject constructor(
 
     fun onSelectMediaToLog(item: ChallengeMediaItem) {
         _isSearchingToLog.value = false
-        _mediaItemPendingLog.value = item
+        viewModelScope.launch {
+            val existing =
+                getDiaryEntryForMediaUseCase(mediaId = item.id, mediaType = item.mediaType)
+            if (existing != null) {
+                _entryPendingEdit.value = existing
+            } else {
+                _mediaItemPendingLog.value = item
+            }
+        }
     }
 
     fun onDismissLogDialog() {

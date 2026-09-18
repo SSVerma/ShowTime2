@@ -16,6 +16,9 @@ interface DiaryDao {
     @Query("SELECT * FROM diary_entries WHERE mediaId = :mediaId AND mediaType = :mediaType ORDER BY loggedAt DESC")
     fun getDiaryEntriesForMedia(mediaId: Int, mediaType: String): Flow<List<DiaryEntryEntity>>
 
+    @Query("SELECT * FROM diary_entries WHERE mediaId = :mediaId AND mediaType = :mediaType LIMIT 1")
+    suspend fun getDiaryEntryByMedia(mediaId: Int, mediaType: String): DiaryEntryEntity?
+
     @Query("SELECT * FROM diary_entries WHERE id = :id LIMIT 1")
     suspend fun getDiaryEntryById(id: Long): DiaryEntryEntity?
 

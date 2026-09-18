@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface DiaryRepository {
     fun getAllDiaryEntries(): Flow<List<DiaryEntry>>
     fun getDiaryEntriesForMedia(mediaId: Int, mediaType: MediaType): Flow<List<DiaryEntry>>
+    suspend fun getDiaryEntryForMedia(mediaId: Int, mediaType: MediaType): DiaryEntry?
     suspend fun getDiaryEntryById(id: Long): DiaryEntry?
     suspend fun saveDiaryEntry(entry: DiaryEntry): Long
     suspend fun deleteDiaryEntry(id: Long)

@@ -268,34 +268,16 @@ fun MediaCardOverflowAction(
             onDismissRequest = onDismissRequest,
             scrollState = scrollState,
             shape = RoundedCornerShape(20.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            tonalElevation = 6.dp,
-            shadowElevation = 10.dp,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 3.dp,
+            shadowElevation = 8.dp,
             border = BorderStroke(
                 1.dp,
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
             ),
             modifier = Modifier
                 .widthIn(min = 230.dp, max = 290.dp)
-                .heightIn(max = 440.dp)
-                .drawWithContent {
-                    drawContent()
-                    if (scrollState.maxValue > 0) {
-                        val viewHeight = size.height
-                        val totalHeight = scrollState.maxValue + viewHeight
-                        val scrollBarHeight =
-                            (viewHeight * (viewHeight / totalHeight)).coerceAtLeast(28.dp.toPx())
-                        val scrollBarOffset =
-                            (scrollState.value.toFloat() / scrollState.maxValue) * (viewHeight - scrollBarHeight)
-
-                        drawRoundRect(
-                            color = scrollbarColor,
-                            topLeft = Offset(size.width - 5.dp.toPx(), scrollBarOffset),
-                            size = Size(3.dp.toPx(), scrollBarHeight),
-                            cornerRadius = CornerRadius(2.dp.toPx())
-                        )
-                    }
-                },
+                .heightIn(max = 440.dp),
             content = menuContent
         )
     }

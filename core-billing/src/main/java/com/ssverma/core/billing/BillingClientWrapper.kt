@@ -59,7 +59,7 @@ class BillingClientWrapper @Inject constructor(
     private val _billingState = MutableStateFlow<BillingState>(BillingState.Disconnected)
     val billingState: StateFlow<BillingState> = _billingState.asStateFlow()
 
-    private val _proStatus = MutableStateFlow<ProStatus>(
+    private val _proStatus = MutableStateFlow(
         entitlementStorage.getInitialProStatus().takeIf { it is ProStatus.Active }
             ?: ProStatus.Loading
     )

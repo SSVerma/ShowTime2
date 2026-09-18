@@ -43,16 +43,33 @@ class FakeDiaryRepository : DiaryRepository {
         return entries.map { list -> list.filter { it.mediaId == mediaId && it.mediaType == mediaType } }
     }
 
+    override suspend fun getDiaryEntryForMedia(
+        mediaId: Int,
+        mediaType: MediaType
+    ): DiaryEntry? {
+        return entries.value.find { it.mediaId == mediaId && it.mediaType == mediaType }
+    }
+
     override suspend fun getDiaryEntryById(id: Long): DiaryEntry? {
         return entries.value.find { it.id == id }
     }
 
     override suspend fun saveDiaryEntry(entry: DiaryEntry): Long {
-        val nextId =
-            if (entry.id == 0L) (entries.value.maxOfOrNull { it.id } ?: 0L) + 1L else entry.id
-        val finalEntry = entry.copy(id = nextId)
+        val existing = if (entry.id == 0L) {
+            entries.value.find { it.mediaId == entry.mediaId && it.mediaType == entry.mediaType }
+        } else {
+            entries.value.find { it.id == entry.id }
+        }
+
+        val nextId = existing?.id ?: if (entry.id == 0L) (entries.value.maxOfOrNull { it.id }
+            ?: 0L) + 1L else entry.id
+        val finalEntry = entry.copy(
+            id = nextId,
+            loggedAt = if (entry.loggedAt != 0L) entry.loggedAt else existing?.loggedAt
+                ?: System.currentTimeMillis()
+        )
         entries.update { current ->
-            val index = current.indexOfFirst { it.id == finalEntry.id }
+            val index = current.indexOfFirst { it.id == nextId }
             if (index != -1) {
                 current.toMutableList().apply { set(index, finalEntry) }
             } else {

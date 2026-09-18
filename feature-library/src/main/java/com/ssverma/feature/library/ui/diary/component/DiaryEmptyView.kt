@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.feature.library.R
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
 
+import com.ssverma.shared.ui.component.illustration.CinemaDiaryIllustration
+
 @Composable
 fun DiaryEmptyView(
     activeFilter: DiaryFilterType,
@@ -39,24 +41,32 @@ fun DiaryEmptyView(
         verticalArrangement = Arrangement.Center,
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 48.dp, horizontal = 24.dp)
+            .padding(vertical = 32.dp, horizontal = 24.dp)
     ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(72.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.HistoryEdu,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        if (activeFilter == DiaryFilterType.ALL) {
+            CinemaDiaryIllustration(
                 modifier = Modifier
-                    .padding(18.dp)
-                    .size(36.dp)
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
             )
-        }
+        } else {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(72.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.HistoryEdu,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier
+                        .padding(18.dp)
+                        .size(36.dp)
+                )
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         Text(
             text = if (activeFilter == DiaryFilterType.ALL) {

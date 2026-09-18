@@ -18,8 +18,8 @@ data class MediaOmniMenuConfig(
     val effectiveShowDiaryLog: Boolean
         get() = showDiaryLog && !isUpcoming
 
-    fun isEligibleForReminder(hasActiveReminder: Boolean): Boolean =
-        showReminder && (isUpcoming || hasActiveReminder)
+    fun isEligibleForReminder(hasActiveReminder: Boolean, isFutureDate: Boolean = false): Boolean =
+        showReminder && (isUpcoming || isFutureDate || hasActiveReminder)
 
     companion object {
         val Default = MediaOmniMenuConfig()

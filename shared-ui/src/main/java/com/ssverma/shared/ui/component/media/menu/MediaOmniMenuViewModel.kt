@@ -8,12 +8,16 @@ import com.ssverma.core.billing.BillingRepository
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.library.CustomList
+import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.LibraryRepository
 import com.ssverma.shared.domain.repository.ReminderQuotaManager
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.repository.ReminderToggleResult
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
+import com.ssverma.shared.domain.usecase.reminder.RemoveAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleReminderResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,9 +35,16 @@ class MediaOmniMenuViewModel @Inject constructor(
     private val getDiaryEntriesUseCase: GetDiaryEntriesUseCase,
     private val reminderRepository: ReminderRepository,
     private val reminderQuotaManager: ReminderQuotaManager,
+    private val scheduleAiringReminderUseCase: ScheduleAiringReminderUseCase,
+    private val removeAiringReminderUseCase: RemoveAiringReminderUseCase,
+    val appConfigRepository: AppConfigRepository,
     private val rewardedAdManager: RewardedAdManager,
     private val billingRepository: BillingRepository
 ) : ViewModel() {
+
+    val reminderLeadDays: Flow<Int> = appConfigRepository.reminderLeadDays
+    val reminderNotificationHour: Flow<Int> = appConfigRepository.reminderNotificationHour
+    val reminderNotificationMinute: Flow<Int> = appConfigRepository.reminderNotificationMinute
 
     val isProPaymentEnabled: StateFlow<Boolean> = billingRepository.isBillingEnabled
 
@@ -82,6 +93,45 @@ class MediaOmniMenuViewModel @Inject constructor(
                 targetAirDate = targetAirDate
             )
             onResult?.invoke(result)
+        }
+    }
+
+    fun scheduleReminder(
+        mediaId: Int,
+        mediaType: MediaType,
+        title: String,
+        posterImageUrl: String,
+        targetAirDate: LocalDate,
+        leadDays: Int,
+        hour: Int,
+        minute: Int,
+        onResult: ((ScheduleReminderResult) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val isPro = billingRepository.isProActive.value
+            val result = scheduleAiringReminderUseCase(
+                mediaId = mediaId,
+                mediaType = mediaType,
+                mediaTitle = title,
+                posterImageUrl = posterImageUrl,
+                targetAirDate = targetAirDate,
+                leadDays = leadDays,
+                hour = hour,
+                minute = minute,
+                isProActive = isPro
+            )
+            onResult?.invoke(result)
+        }
+    }
+
+    fun removeReminder(
+        mediaId: Int,
+        mediaType: MediaType,
+        onComplete: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            removeAiringReminderUseCase(mediaId, mediaType)
+            onComplete?.invoke()
         }
     }
 

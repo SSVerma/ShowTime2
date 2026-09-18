@@ -12,6 +12,8 @@ import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeReminderRepository
+import com.ssverma.shared.domain.usecase.reminder.RemoveAiringReminderUseCase
+import com.ssverma.shared.domain.usecase.reminder.ScheduleAiringReminderUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -44,6 +46,8 @@ class MovieDetailsViewModelReminderTest {
     private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
     private val activity: Activity = mockk()
 
+    private lateinit var scheduleAiringReminderUseCase: ScheduleAiringReminderUseCase
+    private lateinit var removeAiringReminderUseCase: RemoveAiringReminderUseCase
     private lateinit var viewModel: MovieDetailsViewModel
 
     private val upcomingMovie: Movie = mockk(relaxed = true) {
@@ -62,6 +66,17 @@ class MovieDetailsViewModelReminderTest {
         every { appConfigRepository.reminderNotificationHour } returns flowOf(9)
         every { appConfigRepository.reminderNotificationMinute } returns flowOf(0)
         every { appConfigRepository.reminderLeadDays } returns flowOf(0)
+        coEvery { appConfigRepository.updateReminderLeadDays(any()) } returns Unit
+        coEvery { appConfigRepository.updateReminderNotificationTime(any(), any()) } returns Unit
+
+        scheduleAiringReminderUseCase = ScheduleAiringReminderUseCase(
+            reminderRepository = fakeReminderRepository,
+            reminderQuotaManager = rewardManager,
+            appConfigRepository = appConfigRepository
+        )
+        removeAiringReminderUseCase = RemoveAiringReminderUseCase(
+            reminderRepository = fakeReminderRepository
+        )
 
         viewModel = MovieDetailsViewModel(
             application = mockk(relaxed = true),
@@ -81,6 +96,8 @@ class MovieDetailsViewModelReminderTest {
             appConfigRepository = appConfigRepository,
             affiliateRepository = mockk(relaxed = true),
             reminderRepository = fakeReminderRepository,
+            scheduleAiringReminderUseCase = scheduleAiringReminderUseCase,
+            removeAiringReminderUseCase = removeAiringReminderUseCase,
             billingRepository = fakeBillingRepository,
             rewardManager = rewardManager,
             rewardedAdManager = rewardedAdManager
@@ -107,6 +124,38 @@ class MovieDetailsViewModelReminderTest {
         viewModel.dismissQuotaGate()
 
         assertFalse(viewModel.isQuotaGateVisible.value)
+    }
+
+    @Test
+    fun `openReminderSheet and dismissReminderSheet toggle sheet visibility`() = runTest {
+        assertFalse(viewModel.isReminderSheetVisible.value)
+
+        viewModel.openReminderSheet()
+        assertTrue(viewModel.isReminderSheetVisible.value)
+
+        viewModel.dismissReminderSheet()
+        assertFalse(viewModel.isReminderSheetVisible.value)
+    }
+
+    @Test
+    fun `scheduleReminder saves preferences and schedules reminder successfully`() = runTest {
+        coEvery { rewardManager.canScheduleReminder(any(), any()) } returns true
+
+        viewModel.openReminderSheet()
+        assertTrue(viewModel.isReminderSheetVisible.value)
+
+        viewModel.scheduleReminder(
+            movie = upcomingMovie,
+            leadDays = 1,
+            hour = 18,
+            minute = 0
+        )
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isReminderSheetVisible.value)
+        assertEquals(1, fakeReminderRepository.getActiveReminderCount())
+        coVerify(exactly = 1) { appConfigRepository.updateReminderLeadDays(1) }
+        coVerify(exactly = 1) { appConfigRepository.updateReminderNotificationTime(18, 0) }
     }
 
     @Test

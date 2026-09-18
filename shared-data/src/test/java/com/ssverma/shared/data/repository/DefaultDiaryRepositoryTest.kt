@@ -55,7 +55,25 @@ class DefaultDiaryRepositoryTest {
     }
 
     @Test
-    fun `saveDiaryEntry calls dao insert with entity conversion`() = runTest {
+    fun `getDiaryEntryForMedia calls dao and maps to domain`() = runTest {
+        val entity = DiaryEntryEntity(
+            id = 5L,
+            mediaId = 101,
+            mediaType = "movie",
+            title = "Inception",
+            posterImageUrl = "/inc.jpg",
+            userRating = 5.0f
+        )
+        coEvery { mockDiaryDao.getDiaryEntryByMedia(101, "movie") } returns entity
+
+        val result = repository.getDiaryEntryForMedia(101, MediaType.Movie)
+        assertThat(result).isNotNull()
+        assertThat(result?.id).isEqualTo(5L)
+        assertThat(result?.title).isEqualTo("Inception")
+    }
+
+    @Test
+    fun `saveDiaryEntry with id 0 and no existing record inserts new entity`() = runTest {
         val entry = DiaryEntry(
             id = 0L,
             mediaId = 1399,
@@ -65,6 +83,7 @@ class DefaultDiaryRepositoryTest {
             userRating = 4.0f
         )
 
+        coEvery { mockDiaryDao.getDiaryEntryByMedia(1399, "tv") } returns null
         coEvery { mockDiaryDao.insertDiaryEntry(any()) } returns 42L
 
         val generatedId = repository.saveDiaryEntry(entry)
@@ -72,10 +91,47 @@ class DefaultDiaryRepositoryTest {
 
         coVerify {
             mockDiaryDao.insertDiaryEntry(
-                match { it.mediaId == 1399 && it.mediaType == "tv" && it.title == "Game of Thrones" }
+                match { it.id == 0L && it.mediaId == 1399 && it.mediaType == "tv" && it.title == "Game of Thrones" }
             )
         }
     }
+
+    @Test
+    fun `saveDiaryEntry with id 0 reuses existing entity id and loggedAt to prevent duplicates`() =
+        runTest {
+            val existingEntity = DiaryEntryEntity(
+                id = 77L,
+                mediaId = 101,
+                mediaType = "movie",
+                title = "Inception",
+                posterImageUrl = "/old_poster.jpg",
+                userRating = 4.0f,
+                loggedAt = 1000L
+            )
+            val updatedEntry = DiaryEntry(
+                id = 0L,
+                mediaId = 101,
+                mediaType = MediaType.Movie,
+                title = "Inception",
+                posterImageUrl = "/new_poster.jpg",
+                userRating = 5.0f,
+                review = "Rewatched and loved it!",
+                isRewatch = true,
+                loggedAt = 0L
+            )
+
+            coEvery { mockDiaryDao.getDiaryEntryByMedia(101, "movie") } returns existingEntity
+            coEvery { mockDiaryDao.insertDiaryEntry(any()) } returns 77L
+
+            val resultId = repository.saveDiaryEntry(updatedEntry)
+            assertThat(resultId).isEqualTo(77L)
+
+            coVerify {
+                mockDiaryDao.insertDiaryEntry(
+                    match { it.id == 77L && it.userRating == 5.0f && it.loggedAt == 1000L && it.isRewatch }
+                )
+            }
+        }
 
     @Test
     fun `deleteDiaryEntry calls dao delete by id`() = runTest {
