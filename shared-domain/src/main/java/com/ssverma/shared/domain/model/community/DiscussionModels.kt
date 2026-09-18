@@ -37,7 +37,8 @@ data class PostCommentParams(
     val replyToAuthorName: String? = null,
     val mediaTitle: String? = null,
     val posterImageUrl: String? = null,
-    val backdropImageUrl: String? = null
+    val backdropImageUrl: String? = null,
+    val isProUser: Boolean = false
 )
 
 data class EditCommentParams(

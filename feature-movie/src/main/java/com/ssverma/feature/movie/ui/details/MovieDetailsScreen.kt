@@ -154,7 +154,7 @@ private fun MovieContent(
     val reminderLeadDays by viewModel.reminderLeadDays.collectAsStateWithLifecycle()
     val reminderNotificationHour by viewModel.reminderNotificationHour.collectAsStateWithLifecycle()
     val reminderNotificationMinute by viewModel.reminderNotificationMinute.collectAsStateWithLifecycle()
-    val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
+    val activeGateConfig by viewModel.activeGateConfig.collectAsStateWithLifecycle()
     val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
     val reminderSnackbarEvent by viewModel.reminderSnackbarEvent.collectAsStateWithLifecycle()
     val movieCollection by viewModel.movieCollection.collectAsStateWithLifecycle()
@@ -506,13 +506,13 @@ private fun MovieContent(
             affiliateRepository = viewModel.affiliateRepository,
             onDismissProviderAction = viewModel::dismissProviderAction,
             onBrowseWatchHub = { provider -> openWatchHub(provider) },
-            isQuotaGateVisible = isQuotaGateVisible,
+            activeGateConfig = activeGateConfig,
             isAdLoading = isAdLoading,
             isProPaymentEnabled = viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle().value,
-            onWatchAdForReminder = {
+            onWatchAd = {
                 val activity = context.findActivity()
                 if (activity != null) {
-                    viewModel.onWatchAdForReminderPass(activity, movie)
+                    viewModel.onWatchAdForActiveGate(activity, movie)
                 }
             },
             onUpgradeProClick = {

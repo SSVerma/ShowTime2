@@ -88,7 +88,8 @@ class FakeCommunityRepository : CommunityRepository {
             authorId = "fake_user",
             authorName = "Fake User",
             content = params.content,
-            isSpoiler = params.isSpoiler
+            isSpoiler = params.isSpoiler,
+            isProUser = params.isProUser
         )
         val currentList = discussions.value[key] ?: emptyList()
         discussions.value = discussions.value + (key to (currentList + newComment))

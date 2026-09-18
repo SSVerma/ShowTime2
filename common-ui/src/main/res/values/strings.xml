@@ -135,6 +135,8 @@
     <string name="pro_feature_unlimited_desc">Unlimited movie matching &amp; premiere alerts</string>
     <string name="pro_feature_sync">Cinephile Cloud Backup</string>
     <string name="pro_feature_sync_desc">Automatic private cloud backup &amp; restore</string>
+    <string name="pro_feature_discussions">Unlimited Community Debates</string>
+    <string name="pro_feature_discussions_desc">Uncapped thoughts &amp; Verified Pro Cinephile badge</string>
     <string name="show_all_benefits">Show all benefits</string>
     <string name="show_less_benefits">Show less</string>
     <string name="pro_badge">PRO</string>

@@ -71,6 +71,7 @@ flowchart TD
 | **10** | **Trakt.tv Two-Way Cloud Sync** | `:feature-account` | `trakt_sync` | `TimedPass(6h)` | `ShowTimeFeatureGate` (BottomSheet) | 6h window allows full bidirectional initial sync and history verification. |
 | **11** | **Manual Cloud Backup Trigger** | `:feature-account` | `auto_backup` | `ActionUnlock(30m)` | `ShowTimeFeatureGate` (BottomSheet) | Free users trigger immediate manual backup push on ad completion. |
 | **12** | **Cinema Trivia Streak Saver (Revive)** | `:feature-movie` | `cinema_game_revive` | On-Click Action | `CinemaGameSecondChanceBanner` | Immediate consumable second-chance puzzle revive. |
+| **13** | **Community Discussions Quota** | `:feature-community`, `:feature-movie`, `:feature-tv` | `community_comments` | `ConsumableSlot(3)` | `ShowTimeFeatureGate` (BottomSheet) | Free limit is 3 comments/day. Watching an ad grants +3 bonus thoughts. Pro users get unlimited comments and Verified Pro badge. |
 
 ---
 
@@ -99,6 +100,7 @@ All rewarded pass durations and free quotas can be tuned dynamically via Firebas
 | `config_free_custom_lists_limit` | `Long` | `3` | Maximum custom lists allowed for free users before requiring ad slots. |
 | `config_free_custom_goals_limit` | `Long` | `1` | Maximum active backlog challenges allowed for free users. |
 | `config_free_match_daily_decks` | `Long` | `1` | Daily free match decks allowed per room before requiring ad unlocks. |
+| `config_free_comments_daily_limit` | `Long` | `3` | Maximum daily community comments for free users before requiring Pro or ad pass. |
 
 ---
 

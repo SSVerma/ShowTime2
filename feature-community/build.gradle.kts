@@ -13,6 +13,9 @@ dependencies {
 
     implementation(projects.coreAnalytics)
     implementation(projects.sharedAnalytics)
+    implementation(projects.coreBilling)
+    implementation(projects.coreAds)
+    implementation(projects.sharedAds)
     implementation(projects.coreBackup)
     implementation(projects.coreCcm)
     implementation(projects.coreStorage)

@@ -332,4 +332,39 @@ class RewardManagerTest {
             )
         ).isFalse()
     }
+
+    @Test
+    fun `CommentQuotaManager delegation operates correctly`() = runTest {
+        fakeAppConfigProvider.setLong(RewardManagerImpl.KEY_CONFIG_FREE_COMMENTS_DAILY_LIMIT, 3L)
+
+        // Pro user can always post
+        assertThat(rewardManager.canPostComment(isProActive = true)).isTrue()
+
+        // Free user can post up to 3 comments
+        assertThat(rewardManager.canPostComment(isProActive = false)).isTrue()
+        rewardManager.recordCommentPosted()
+
+        assertThat(rewardManager.canPostComment(isProActive = false)).isTrue()
+        rewardManager.recordCommentPosted()
+
+        assertThat(rewardManager.canPostComment(isProActive = false)).isTrue()
+        rewardManager.recordCommentPosted()
+
+        // 4th comment is blocked
+        assertThat(rewardManager.canPostComment(isProActive = false)).isFalse()
+
+        // Watching ad grants 3 extra slots
+        rewardManager.grantCommentPass()
+        assertThat(rewardManager.canPostComment(isProActive = false)).isTrue()
+
+        // Consumes bonus slots
+        rewardManager.recordCommentPosted()
+        assertThat(rewardManager.canPostComment(isProActive = false)).isTrue()
+        rewardManager.recordCommentPosted()
+        assertThat(rewardManager.canPostComment(isProActive = false)).isTrue()
+        rewardManager.recordCommentPosted()
+
+        // Now blocked again
+        assertThat(rewardManager.canPostComment(isProActive = false)).isFalse()
+    }
 }

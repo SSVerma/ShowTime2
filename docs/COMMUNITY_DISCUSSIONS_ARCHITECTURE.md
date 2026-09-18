@@ -212,3 +212,21 @@ anytime:
 | `trending_weight_upvotes`      | `2.0`   | Multiplier for community appreciation          |
 | `trending_weight_comments`     | `1.0`   | Multiplier for raw conversation count          |
 | `trending_recency_hours`       | `48`    | Active time decay half-life                    |
+| `config_free_comments_daily_limit` | `3` | Daily free comments allowed before requiring Pro or rewarded ad pass |
+
+---
+
+## 6. Community Discussions Monetization & Pro Cinephile Identity
+
+To preserve conversation quality, prevent spam, and deliver a fair, value-driven freemium experience, discussions incorporate a seamless monetization and social proof layer:
+
+### A. Daily Quota & Rewarded Ad Unlocks
+1. **Free Allowance**: Free users are granted `config_free_comments_daily_limit` (default: 3 thoughts/day).
+2. **Rewarded Video Pass**: Upon reaching the daily limit, users can watch a Rewarded Ad via `ShowTimeFeatureGate` (`PassKey("community_comments")`) to instantly receive **+3 consumable bonus comment slots**.
+3. **Pending Action Replay**: The comment payload is preserved in memory and automatically submitted upon successful ad completion without requiring user re-entry.
+
+### B. Pro Cinephile Social Proof & Verified Identity
+1. **Unlimited Discussions**: Active ShowTime Pro subscribers bypass all comment limits unconditionally.
+2. **Verified Pro Badge (⭐ `PRO`)**: Every thought posted by an active Pro member is stamped with `isProUser = true` in Firestore, rendering the elegant `ProBadge` (`tertiaryContainer` Material 3 badge) next to their author display name across all comment rows and preview cards.
+3. **Paywall Integration**: `ProPaywallBottomSheet` highlights "Unlimited Community Debates & Pro Cinephile Badge" alongside custom lists, unlimited reminders, and ad-free browsing.
+

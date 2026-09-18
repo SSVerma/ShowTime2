@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ssverma.common.ui.component.ProBadge
 import com.ssverma.core.ui.layout.Section
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.shared.domain.model.community.Comment
@@ -347,6 +348,11 @@ private fun IntegratedDiscussionRow(
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                             )
                         }
+                    }
+
+                    if (comment.isProUser) {
+                        Spacer(modifier = Modifier.width(width = 6.dp))
+                        ProBadge()
                     }
 
                     Spacer(modifier = Modifier.width(width = 6.dp))

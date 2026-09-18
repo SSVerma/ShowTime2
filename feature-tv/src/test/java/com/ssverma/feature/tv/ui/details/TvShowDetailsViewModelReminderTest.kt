@@ -196,4 +196,69 @@ class TvShowDetailsViewModelReminderTest {
         coVerify(exactly = 1) { appConfigRepository.updateReminderLeadDays(1) }
         coVerify(exactly = 1) { appConfigRepository.updateReminderNotificationTime(18, 0) }
     }
+
+    @Test
+    fun `postComment when quota exceeded shows community quota gate and watching ad submits pending comment`() =
+        runTest {
+            val postCommentUseCase: com.ssverma.shared.domain.usecase.community.PostCommentUseCase =
+                mockk(relaxed = true)
+            val vm = TvShowDetailsViewModel(
+                application = application,
+                tvShowId = 202,
+                tvShowDetailsUseCase = tvShowDetailsUseCase,
+                getMediaReactionsUseCase = mockk(relaxed = true),
+                toggleMediaReactionUseCase = mockk(relaxed = true),
+                getDiscussionsUseCase = mockk(relaxed = true),
+                postCommentUseCase = postCommentUseCase,
+                editCommentUseCase = mockk(relaxed = true),
+                reportCommentUseCase = mockk(relaxed = true),
+                toggleCommentUpvoteUseCase = mockk(relaxed = true),
+                deleteCommentUseCase = mockk(relaxed = true),
+                getDiaryEntriesUseCase = mockk(relaxed = true),
+                saveDiaryEntryUseCase = mockk(relaxed = true),
+                appConfigRepository = appConfigRepository,
+                affiliateRepository = mockk(relaxed = true),
+                traktSyncRepository = mockk(relaxed = true),
+                reminderRepository = fakeReminderRepository,
+                scheduleAiringReminderUseCase = scheduleAiringReminderUseCase,
+                removeAiringReminderUseCase = removeAiringReminderUseCase,
+                billingRepository = fakeBillingRepository,
+                rewardManager = rewardManager,
+                rewardedAdManager = rewardedAdManager
+            )
+
+            coEvery { postCommentUseCase(any()) } returnsMany listOf(
+                com.ssverma.shared.domain.usecase.community.PostCommentResult.QuotaExceeded,
+                com.ssverma.shared.domain.usecase.community.PostCommentResult.Success(
+                    mockk(relaxed = true)
+                )
+            )
+
+            vm.postComment("Masterpiece TV series!", isSpoiler = false)
+            advanceUntilIdle()
+
+            assertTrue(vm.isQuotaGateVisible.value)
+            assertEquals(
+                com.ssverma.feature.tv.ui.details.component.CommunityCommentsGateConfig,
+                vm.activeGateConfig.value
+            )
+
+            val onRewardSlot = slot<() -> Unit>()
+            every {
+                rewardedAdManager.showRewardedAdIfReady(
+                    activity = activity,
+                    onAdDismissed = any(),
+                    onUserEarnedReward = capture(onRewardSlot)
+                )
+            } answers {
+                onRewardSlot.captured.invoke()
+            }
+
+            vm.onWatchAdForActiveGate(activity, upcomingTvShow)
+            advanceUntilIdle()
+
+            coVerify(exactly = 1) { rewardManager.grantCommentPass() }
+            assertFalse(vm.isQuotaGateVisible.value)
+            coVerify(exactly = 2) { postCommentUseCase(any()) }
+        }
 }

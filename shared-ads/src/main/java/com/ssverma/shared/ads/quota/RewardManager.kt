@@ -5,18 +5,21 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
 import com.ssverma.shared.ads.gate.PassDurations
+import com.ssverma.shared.domain.repository.CommentQuotaManager
 import com.ssverma.shared.domain.repository.ReminderQuotaManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,7 +30,7 @@ import javax.inject.Singleton
  * Manages timed passes and consumable slots keyed by [PassKey].
  * Contains zero knowledge of vertical feature implementations.
  */
-interface RewardManager : ReminderQuotaManager {
+interface RewardManager : ReminderQuotaManager, CommentQuotaManager {
     /** Observe whether a timed pass for [key] is currently active (unexpired). */
     fun isPassActive(key: PassKey): Flow<Boolean>
 
@@ -221,8 +224,64 @@ class RewardManagerImpl @Inject constructor(
         return consumeSlot(AiringReminderPassKey)
     }
 
+    // --- CommentQuotaManager Implementation ---
+
+    override suspend fun canPostComment(isProActive: Boolean): Boolean {
+        if (isProActive) return true
+        val today = LocalDate.now().toString()
+        val prefs = storage.data.first()
+        val lastDate = prefs[KEY_LAST_COMMENT_DATE]
+        val dailyCount = if (lastDate == today) prefs[KEY_DAILY_COMMENT_COUNT] ?: 0 else 0
+        val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_COMMENTS_DAILY_LIMIT, 3L).toInt()
+
+        if (dailyCount < freeLimit) {
+            return true
+        }
+
+        val extraSlots = getExtraSlotsCount(CommunityCommentsPassKey)
+        if (extraSlots > 0) return true
+
+        return isPassActiveNow(CommunityCommentsPassKey)
+    }
+
+    override suspend fun recordCommentPosted() {
+        val today = LocalDate.now().toString()
+        val freeLimit = appConfigProvider.getLong(KEY_CONFIG_FREE_COMMENTS_DAILY_LIMIT, 3L).toInt()
+
+        storage.edit { prefs ->
+            val lastDate = prefs[KEY_LAST_COMMENT_DATE]
+            val currentDailyCount =
+                if (lastDate == today) prefs[KEY_DAILY_COMMENT_COUNT] ?: 0 else 0
+
+            if (currentDailyCount < freeLimit) {
+                if (lastDate != today) {
+                    prefs[KEY_LAST_COMMENT_DATE] = today
+                }
+                prefs[KEY_DAILY_COMMENT_COUNT] = currentDailyCount + 1
+            } else {
+                val slotsKey = CommunityCommentsPassKey.toSlotsKey()
+                val currentSlots = prefs[slotsKey] ?: 0
+                if (currentSlots > 0) {
+                    prefs[slotsKey] = currentSlots - 1
+                }
+            }
+        }
+    }
+
+    override suspend fun grantCommentPass() {
+        grantExtraSlots(CommunityCommentsPassKey, 3)
+    }
+
+    override suspend fun consumeCommentPass(): Boolean {
+        return consumeSlot(CommunityCommentsPassKey)
+    }
+
     companion object {
         val AiringReminderPassKey = PassKey("airing_reminders")
+        val CommunityCommentsPassKey = PassKey("community_comments")
+
+        private val KEY_LAST_COMMENT_DATE = stringPreferencesKey("last_comment_date")
+        private val KEY_DAILY_COMMENT_COUNT = intPreferencesKey("daily_comment_count")
 
         private fun PassKey.toExpiryKey(): Preferences.Key<Long> =
             longPreferencesKey("pass_expiry_$value")
@@ -231,6 +290,7 @@ class RewardManagerImpl @Inject constructor(
             intPreferencesKey("pass_slots_$value")
 
         const val KEY_CONFIG_FREE_REMINDERS_LIMIT = "config_free_reminders_limit"
+        const val KEY_CONFIG_FREE_COMMENTS_DAILY_LIMIT = "config_free_comments_daily_limit"
         const val KEY_PREFIX_PASS_DURATION_HOURS = "config_pass_duration_"
     }
 }

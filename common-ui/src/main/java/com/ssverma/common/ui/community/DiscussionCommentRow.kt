@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssverma.common.ui.component.ProBadge
 import com.ssverma.shared.ui.R
 
 @Composable
@@ -112,6 +113,11 @@ fun DiscussionCommentRow(
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                             )
                         }
+                    }
+
+                    if (comment.isProUser) {
+                        Spacer(modifier = Modifier.width(width = 6.dp))
+                        ProBadge()
                     }
 
                     Spacer(modifier = Modifier.width(width = 6.dp))

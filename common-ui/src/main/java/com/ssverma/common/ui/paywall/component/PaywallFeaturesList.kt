@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.CloudSync
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Forum
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.HorizontalDivider
@@ -84,6 +85,11 @@ private val secondaryFeatures = listOf(
         icon = Icons.Rounded.AutoAwesome,
         titleRes = R.string.pro_feature_analytics,
         subtitleRes = R.string.pro_feature_analytics_desc
+    ),
+    PaywallFeature(
+        icon = Icons.Rounded.Forum,
+        titleRes = R.string.pro_feature_discussions,
+        subtitleRes = R.string.pro_feature_discussions_desc
     )
 )
 

@@ -152,7 +152,7 @@ private fun TvShowContent(
     val context = LocalContext.current
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
     val selectedProviderPayload by viewModel.selectedProviderForAction.collectAsStateWithLifecycle()
-    val isQuotaGateVisible by viewModel.isQuotaGateVisible.collectAsStateWithLifecycle()
+    val activeGateConfig by viewModel.activeGateConfig.collectAsStateWithLifecycle()
     val isAdLoading by viewModel.isAdLoading.collectAsStateWithLifecycle()
     val isBillingEnabled by viewModel.billingRepository.isBillingEnabled.collectAsStateWithLifecycle()
     val isReminderSheetVisible by viewModel.isReminderSheetVisible.collectAsStateWithLifecycle()
@@ -537,13 +537,13 @@ private fun TvShowContent(
             affiliateRepository = viewModel.affiliateRepository,
             onDismissProviderAction = viewModel::dismissProviderAction,
             onBrowseWatchHub = openWatchHub,
-            isQuotaGateVisible = isQuotaGateVisible,
+            activeGateConfig = activeGateConfig,
             isAdLoading = isAdLoading,
             isProPaymentEnabled = isBillingEnabled,
-            onWatchAdForReminder = {
+            onWatchAd = {
                 val activity = context.findActivity()
                 if (activity != null) {
-                    viewModel.onWatchAdForReminderPass(activity, tvShow)
+                    viewModel.onWatchAdForActiveGate(activity, tvShow)
                 }
             },
             onUpgradeProClick = {

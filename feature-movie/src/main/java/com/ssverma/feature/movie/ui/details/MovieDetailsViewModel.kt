@@ -12,6 +12,9 @@ import com.ssverma.feature.movie.domain.failure.MovieFailure
 import com.ssverma.feature.movie.domain.model.MovieDetailsConfig
 import com.ssverma.feature.movie.domain.usecase.MovieCollectionUseCase
 import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
+import com.ssverma.feature.movie.ui.details.component.AiringReminderGateConfig
+import com.ssverma.feature.movie.ui.details.component.CommunityCommentsGateConfig
+import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.model.ImageShot
@@ -42,6 +45,7 @@ import com.ssverma.shared.domain.usecase.community.DeleteCommentUseCase
 import com.ssverma.shared.domain.usecase.community.EditCommentUseCase
 import com.ssverma.shared.domain.usecase.community.GetDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.GetMediaReactionsUseCase
+import com.ssverma.shared.domain.usecase.community.PostCommentResult
 import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
@@ -117,8 +121,16 @@ class MovieDetailsViewModel @AssistedInject constructor(
             initialValue = false
         )
 
-    private val _isQuotaGateVisible = MutableStateFlow(false)
-    val isQuotaGateVisible: StateFlow<Boolean> = _isQuotaGateVisible.asStateFlow()
+    private val _activeGateConfig = MutableStateFlow<FeatureGateConfig?>(null)
+    val activeGateConfig: StateFlow<FeatureGateConfig?> = _activeGateConfig.asStateFlow()
+
+    val isQuotaGateVisible: StateFlow<Boolean> = _activeGateConfig
+        .map { it != null }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = false
+        )
 
     private val _isAdLoading = MutableStateFlow(false)
     val isAdLoading: StateFlow<Boolean> = _isAdLoading.asStateFlow()
@@ -126,9 +138,12 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val _reminderSnackbarEvent = MutableStateFlow<String?>(null)
     val reminderSnackbarEvent: StateFlow<String?> = _reminderSnackbarEvent.asStateFlow()
 
+    private var pendingCommentParams: PostCommentParams? = null
+
     fun dismissQuotaGate() {
-        _isQuotaGateVisible.value = false
+        _activeGateConfig.value = null
         _isAdLoading.value = false
+        pendingCommentParams = null
     }
 
     fun clearReminderSnackbarEvent() {
@@ -195,7 +210,7 @@ class MovieDetailsViewModel @AssistedInject constructor(
                 }
 
                 is ScheduleReminderResult.QuotaExceeded -> {
-                    _isQuotaGateVisible.value = true
+                    _activeGateConfig.value = AiringReminderGateConfig
                     rewardedAdManager.loadAd()
                 }
 
@@ -236,7 +251,8 @@ class MovieDetailsViewModel @AssistedInject constructor(
         }
     }
 
-    fun onWatchAdForReminderPass(activity: Activity, movie: Movie) {
+    fun onWatchAdForActiveGate(activity: Activity, movie: Movie) {
+        val gateConfig = _activeGateConfig.value ?: return
         _isAdLoading.value = true
         rewardedAdManager.showRewardedAdIfReady(
             activity = activity,
@@ -244,12 +260,32 @@ class MovieDetailsViewModel @AssistedInject constructor(
         ) {
             viewModelScope.launch {
                 _isAdLoading.value = false
-                rewardManager.grantReminderPass()
-                _isQuotaGateVisible.value = false
-                toggleReminder(movie)
+                when (gateConfig) {
+                    AiringReminderGateConfig -> {
+                        rewardManager.grantReminderPass()
+                        _activeGateConfig.value = null
+                        toggleReminder(movie)
+                    }
+
+                    CommunityCommentsGateConfig -> {
+                        rewardManager.grantCommentPass()
+                        _activeGateConfig.value = null
+                        pendingCommentParams?.let { params ->
+                            postCommentUseCase(params)
+                            pendingCommentParams = null
+                        }
+                    }
+
+                    else -> {
+                        _activeGateConfig.value = null
+                    }
+                }
             }
         }
     }
+
+    fun onWatchAdForReminderPass(activity: Activity, movie: Movie) =
+        onWatchAdForActiveGate(activity, movie)
 
     private val _selectedProviderForAction = MutableStateFlow<ProviderActionPayload?>(null)
     val selectedProviderForAction: StateFlow<ProviderActionPayload?> =
@@ -372,16 +408,30 @@ class MovieDetailsViewModel @AssistedInject constructor(
     fun postComment(content: String, isSpoiler: Boolean) {
         viewModelScope.launch {
             val movie = (_uiState.value as? UiState.Success)?.data?.movie
-            postCommentUseCase(
-                PostCommentParams(
-                    target = discussionTarget,
-                    content = content,
-                    isSpoiler = isSpoiler,
-                    mediaTitle = movie?.title,
-                    posterImageUrl = movie?.posterImageUrl,
-                    backdropImageUrl = movie?.backdropImageUrl
-                )
+            val params = PostCommentParams(
+                target = discussionTarget,
+                content = content,
+                isSpoiler = isSpoiler,
+                mediaTitle = movie?.title,
+                posterImageUrl = movie?.posterImageUrl,
+                backdropImageUrl = movie?.backdropImageUrl,
+                isProUser = billingRepository.isProActive.value
             )
+            when (val result = postCommentUseCase(params)) {
+                is PostCommentResult.Success -> {
+                    pendingCommentParams = null
+                }
+
+                is PostCommentResult.QuotaExceeded -> {
+                    pendingCommentParams = params
+                    _activeGateConfig.value = CommunityCommentsGateConfig
+                    rewardedAdManager.loadAd()
+                }
+
+                is PostCommentResult.Error -> {
+                    pendingCommentParams = null
+                }
+            }
         }
     }
 

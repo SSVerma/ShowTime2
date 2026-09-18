@@ -392,6 +392,11 @@
     <string name="reminder_no_upcoming_schedule">No upcoming release or episode scheduled for \"%1$s\".</string>
     <string name="reminder_permission_required">Notification permission is required to receive reminders.</string>
 
+    <!-- Community Discussion Quota & Monetization -->
+    <string name="discussion_quota_title">Unlock Daily Thoughts</string>
+    <string name="discussion_quota_desc">Free members can share up to 3 thoughts per day. Watch a short video to unlock 3 more thoughts, or upgrade to ShowTime Pro for unlimited discussions and a Verified Pro Cinephile badge.</string>
+    <string name="discussion_quota_reward_label">Watch Video for 3 Thoughts</string>
+
     <!-- Airing Reminder Rationale & Schedule Sheet -->
     <string name="airing_reminder_sheet_title">Airing Reminder</string>
     <string name="movie_reminder_sheet_title">Release Reminder</string>

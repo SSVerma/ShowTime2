@@ -21,9 +21,9 @@ import com.ssverma.shared.ui.component.section.WhereToWatchActionBottomSheet
 import com.ssverma.feature.movie.ui.details.ProviderActionPayload
 import com.ssverma.shared.ui.R as SharedR
 
-private val AiringReminderPassKey = PassKey("airing_reminders")
+val AiringReminderPassKey = PassKey("airing_reminders")
 
-private val AiringReminderGateConfig = FeatureGateConfig(
+val AiringReminderGateConfig = FeatureGateConfig(
     titleRes = SharedR.string.reminder_quota_title,
     descriptionRes = SharedR.string.reminder_quota_desc,
     rewardActionLabelRes = SharedR.string.reminder_quota_reward_label,
@@ -32,6 +32,20 @@ private val AiringReminderGateConfig = FeatureGateConfig(
     passPolicy = FeaturePassPolicy.ConsumableSlot(
         passKey = AiringReminderPassKey,
         slotsGranted = 1
+    )
+)
+
+val CommunityCommentsPassKey = PassKey("community_comments")
+
+val CommunityCommentsGateConfig = FeatureGateConfig(
+    titleRes = SharedR.string.discussion_quota_title,
+    descriptionRes = SharedR.string.discussion_quota_desc,
+    rewardActionLabelRes = SharedR.string.discussion_quota_reward_label,
+    icon = Icons.Rounded.Lock,
+    presentationStyle = GatePresentationStyle.BottomSheet,
+    passPolicy = FeaturePassPolicy.ConsumableSlot(
+        passKey = CommunityCommentsPassKey,
+        slotsGranted = 3
     )
 )
 
@@ -48,10 +62,10 @@ fun MovieDetailsOverlays(
     affiliateRepository: AffiliateRepository,
     onDismissProviderAction: () -> Unit,
     onBrowseWatchHub: (ProviderInfo) -> Unit,
-    isQuotaGateVisible: Boolean,
+    activeGateConfig: FeatureGateConfig?,
     isAdLoading: Boolean,
     isProPaymentEnabled: Boolean,
-    onWatchAdForReminder: () -> Unit,
+    onWatchAd: () -> Unit,
     onUpgradeProClick: () -> Unit,
     onDismissQuotaGate: () -> Unit,
     isReminderSheetVisible: Boolean,
@@ -94,12 +108,12 @@ fun MovieDetailsOverlays(
         )
     }
 
-    if (isQuotaGateVisible) {
+    if (activeGateConfig != null) {
         ShowTimeFeatureGate(
-            config = AiringReminderGateConfig,
+            config = activeGateConfig,
             isAdLoading = isAdLoading,
             isProPaymentEnabled = isProPaymentEnabled,
-            onWatchAdClick = onWatchAdForReminder,
+            onWatchAdClick = onWatchAd,
             onUpgradeProClick = onUpgradeProClick,
             onDismissRequest = onDismissQuotaGate
         )

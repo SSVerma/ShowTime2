@@ -874,6 +874,7 @@ class CommunityRepositoryImpl @Inject constructor(
                         val isUpvotedByMe = upvoterIds.any { it.toString() == userId }
                         val isOwner = authorId == userId
                         val isEdited = doc.getBoolean("isEdited") ?: false
+                        val isProUser = doc.getBoolean("isProUser") ?: false
                         val parentId = doc.getString("parentId")
                         val replyToAuthorName = doc.getString("replyToAuthorName")
                         val repliesCount = doc.getLong("repliesCount")?.toInt() ?: 0
@@ -899,6 +900,7 @@ class CommunityRepositoryImpl @Inject constructor(
                                 isUpvotedByMe = isUpvotedByMe,
                                 isOwner = isOwner,
                                 isEdited = isEdited,
+                                isProUser = isProUser,
                                 parentId = parentId,
                                 replyToAuthorName = replyToAuthorName,
                                 repliesCount = repliesCount,
@@ -1008,6 +1010,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 isUpvotedByMe = false,
                 isOwner = true,
                 isEdited = false,
+                isProUser = params.isProUser,
                 parentId = params.parentId,
                 replyToAuthorName = params.replyToAuthorName,
                 repliesCount = 0,
@@ -1028,6 +1031,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 "authorAvatarUrl" to authorAvatarUrl,
                 "content" to params.content.trim(),
                 "isSpoiler" to params.isSpoiler,
+                "isProUser" to params.isProUser,
                 "upvotesCount" to 0L,
                 "upvoterIds" to emptyList<String>(),
                 "parentId" to params.parentId,

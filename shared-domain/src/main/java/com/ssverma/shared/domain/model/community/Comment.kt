@@ -16,5 +16,6 @@ data class Comment(
     val repliesCount: Int = 0,
     val replies: List<Comment> = emptyList(),
     val reportCount: Int = 0,
+    val isProUser: Boolean = false,
     val createdAtEpochMs: Long = System.currentTimeMillis()
 )

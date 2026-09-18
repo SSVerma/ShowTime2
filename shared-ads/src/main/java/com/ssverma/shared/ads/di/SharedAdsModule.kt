@@ -4,6 +4,7 @@ import com.ssverma.core.ads.config.AdConfigProvider
 import com.ssverma.shared.ads.AppAdConfigProvider
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.ads.quota.RewardManagerImpl
+import com.ssverma.shared.domain.repository.CommentQuotaManager
 import com.ssverma.shared.domain.repository.ReminderQuotaManager
 import dagger.Binds
 import dagger.Module
@@ -32,4 +33,10 @@ abstract class SharedAdsModule {
     abstract fun bindReminderQuotaManager(
         rewardManagerImpl: RewardManagerImpl
     ): ReminderQuotaManager
+
+    @Binds
+    @Singleton
+    abstract fun bindCommentQuotaManager(
+        rewardManagerImpl: RewardManagerImpl
+    ): CommentQuotaManager
 }
