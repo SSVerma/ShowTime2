@@ -36,12 +36,8 @@
     <string name="best_value">BEST VALUE</string>
     <string name="save_percent">SAVE %d%%</string>
     <string name="best_value_with_savings">BEST VALUE • SAVE %1$d%%</string>
-    <string name="plan_annual_desc">Billed annually • Cancel anytime</string>
-    <string name="plan_six_months_desc">Billed every 6 months • Cancel anytime</string>
-    <string name="plan_three_months_desc">Billed every 3 months • Cancel anytime</string>
-    <string name="plan_monthly_desc">Billed monthly • Cancel anytime</string>
-    <string name="plan_effective_monthly">~%1$s / mo • Billed annually</string>
-    <string name="plan_effective_monthly_period">~%1$s / mo • Billed every %2$d months</string>
+    <string name="plan_auto_renews_cancel_anytime">Auto-renews • Cancel anytime</string>
+    <string name="plan_effective_monthly">~%1$s per month</string>
     <string name="plan_free_trial">Includes %1$s free trial</string>
     <string name="pro_purchases_temporarily_disabled">Purchases Temporarily Paused</string>
     <string name="pro_purchases_disabled_desc">In-app purchases are currently paused. You can continue unlocking premium features using free 24-hour passes by watching short videos!</string>

@@ -69,6 +69,11 @@ class PaywallPriceHelperTest {
         assertThat(PaywallPriceHelper.getPlanDurationMonths(BillingConstants.SKU_PRO_MONTHLY)).isEqualTo(
             1
         )
+
+        assertThat(PaywallPriceHelper.getPlanDurationMonths(yearly)).isEqualTo(12)
+        assertThat(PaywallPriceHelper.getPlanDurationMonths(sixMonths)).isEqualTo(6)
+        assertThat(PaywallPriceHelper.getPlanDurationMonths(threeMonths)).isEqualTo(3)
+        assertThat(PaywallPriceHelper.getPlanDurationMonths(monthly)).isEqualTo(1)
     }
 
     @Test
@@ -100,5 +105,32 @@ class PaywallPriceHelperTest {
 
         val monthlyResult = PaywallPriceHelper.calculateMonthlyEquivalentPrice(monthly)
         assertThat(monthlyResult).isNull()
+    }
+
+    @Test
+    fun `calculateMonthlyEquivalentPrice formats INR prices correctly`() {
+        val inrYearly = BillingProduct(
+            id = BillingConstants.SKU_PRO_YEARLY,
+            name = "Yearly",
+            description = "",
+            formattedPrice = "₹999",
+            priceAmountMicros = 999_000_000,
+            priceCurrencyCode = "INR",
+            productType = ProductType.SUBS,
+            billingPeriod = "P1Y"
+        )
+        val inrMonthly = PaywallPriceHelper.calculateMonthlyEquivalentPrice(inrYearly)
+        assertThat(inrMonthly).contains("83.25")
+        assertThat(inrMonthly).contains("₹")
+    }
+
+    @Test
+    fun `getCleanPrice strips period suffixes cleanly`() {
+        assertThat(PaywallPriceHelper.getCleanPrice(yearly)).isEqualTo("$11.99")
+        val suffixedYearly = yearly.copy(formattedPrice = "$11.99/yr")
+        assertThat(PaywallPriceHelper.getCleanPrice(suffixedYearly)).isEqualTo("$11.99")
+
+        val inrSuffixed = yearly.copy(formattedPrice = "₹999/yr")
+        assertThat(PaywallPriceHelper.getCleanPrice(inrSuffixed)).isEqualTo("₹999")
     }
 }

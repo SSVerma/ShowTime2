@@ -190,6 +190,14 @@ fun ProPaywallScreen(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                    Text(
+                        text = stringResource(R.string.plan_auto_renews_cancel_anytime),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
                     uiState.errorMessage?.let { error ->
