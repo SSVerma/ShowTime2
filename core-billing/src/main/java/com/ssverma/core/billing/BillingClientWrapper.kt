@@ -37,12 +37,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.milliseconds
 
 @Singleton
 class BillingClientWrapper @Inject constructor(
@@ -121,7 +122,7 @@ class BillingClientWrapper @Inject constructor(
             val delayMs = INITIAL_RECONNECT_DELAY_MS * (1L shl reconnectAttempts)
             reconnectAttempts++
             scope.launch {
-                delay(delayMs)
+                delay(delayMs.milliseconds)
                 startBillingConnection()
             }
         }
@@ -166,9 +167,12 @@ class BillingClientWrapper @Inject constructor(
             // Graceful fallback to default catalog
         }
 
-        return if (allProducts.isNotEmpty()) {
-            allProducts
-        } else {
+        val sortedProducts = allProducts.sortedBy { product ->
+            val index = BillingConstants.SUBS_SKUS.indexOf(product.id)
+            if (index == -1) Int.MAX_VALUE else index
+        }
+
+        return sortedProducts.ifEmpty {
             sandboxProvider.getSandboxProducts()
         }
     }
