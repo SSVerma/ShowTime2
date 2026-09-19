@@ -190,3 +190,19 @@ To eliminate redundant Firestore reads when users repeatedly open and close movi
 2. **0ms Immediate Emission**: If a user revisits a title within 15 minutes, `CommunityRepositoryImpl` immediately emits `cachedAggregateReactions` and `cachedUserReactions` at 0ms.
 3. **Zero Read Surge**: Rapid navigation in and out of the details screen incurs **0 Firestore reads** during the active session window.
 
+---
+
+## 10. Production Firestore Telemetry & Quota Audit System
+
+To monitor Firestore query volume, document read counts, server vs. cache hits, and outages in production with **zero UX overhead**:
+
+1. **Non-Blocking Telemetry**:
+   - Integrated via `FirestoreAuditTracker` in `shared-analytics`.
+   - Simple timestamp delta math on background `Dispatchers.IO` thread.
+   - Dispatches structured `firestore_query_audit` analytics events (`query_tag`, `docs_count`, `is_from_cache`, `duration_ms`, `screen_name`).
+2. **Remote Kill-Switch**:
+   - Managed via Remote Config key `firestore_audit_enabled` (defaults to `true` in production).
+3. **Instant Admin Outage Alerts via Crashlytics**:
+   - Classifies `RESOURCE_EXHAUSTED` into `FirestoreQuotaExhaustedException`, triggering instant High-Velocity issue emails to admins.
+   - Classifies `PERMISSION_DENIED` and `UNAVAILABLE` into `FirestorePermissionDeniedException` and `FirestoreOutageException`.
+

@@ -173,6 +173,39 @@ class DefaultNetworkErrorTracker @Inject constructor(
 }
 ```
 
+### D. Firestore Query Auditing & Quota Telemetry
+```kotlin
+class DefaultFirestoreAuditTracker @Inject constructor(
+    private val analytics: Analytics,
+    private val crashReporter: CrashReporter,
+    private val appConfigProvider: AppConfigProvider
+) : FirestoreAuditTracker {
+
+    override fun trackQuery(
+        queryTag: String,
+        screenName: String?,
+        docsCount: Int,
+        isFromCache: Boolean,
+        durationMs: Long
+    ) {
+        // Asynchronously dispatches firestore_query_audit event (0ms UI overhead, 0 extra reads)
+        analytics.logEvent(
+            FirestoreAuditAnalyticsEvent(queryTag, screenName, docsCount, isFromCache, durationMs)
+        )
+    }
+
+    override fun trackFirestoreError(queryTag: String, throwable: Throwable, durationMs: Long) {
+        // Classifies RESOURCE_EXHAUSTED / PERMISSION_DENIED / UNAVAILABLE for instant Admin alerting
+        if (throwable.message?.contains("RESOURCE_EXHAUSTED", ignoreCase = true) == true) {
+            crashReporter.recordException(
+                FirestoreQuotaExhaustedException("Firestore Quota Exceeded on $queryTag", throwable),
+                mapOf("query_tag" to queryTag, "duration_ms" to durationMs.toString())
+            )
+        }
+    }
+}
+```
+
 ---
 
 ## 6. ProGuard & R8 Symbolication Rules

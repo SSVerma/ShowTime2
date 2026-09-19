@@ -21,6 +21,7 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.core.storage.keyvalue.observe
 import com.ssverma.core.storage.keyvalue.read
 import com.ssverma.core.storage.keyvalue.write
+import com.ssverma.shared.analytics.community.FirestoreAuditTracker
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
@@ -75,6 +76,7 @@ class CommunityRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val googleAuthClient: GoogleAuthClient,
     private val appConfigProvider: AppConfigProvider,
+    private val firestoreAuditTracker: FirestoreAuditTracker,
     keyValueStorageClient: KeyValueStorageClient
 ) : CommunityRepository {
 
@@ -462,14 +464,38 @@ class CommunityRepositoryImpl @Inject constructor(
             )
 
         val aggregateFlow = callbackFlow {
+            val queryStartTime = System.currentTimeMillis()
             if (isSessionValid) {
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "reactions_aggregate",
+                    screenName = null,
+                    docsCount = 1,
+                    isFromCache = true,
+                    durationMs = 0L
+                )
                 trySend(cachedAggregateReactions[mediaKey] ?: Pair(emptyMap(), 0))
             }
 
             val docRef = firestore.collection(colMediaReactions).document(mediaKey)
             val listener = docRef.addSnapshotListener { snapshot, error ->
+                val durationMs = System.currentTimeMillis() - queryStartTime
                 if (error != null) {
+                    firestoreAuditTracker.trackFirestoreError(
+                        queryTag = "reactions_aggregate",
+                        throwable = error,
+                        durationMs = durationMs
+                    )
                     return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    firestoreAuditTracker.trackQuery(
+                        queryTag = "reactions_aggregate",
+                        screenName = null,
+                        docsCount = if (snapshot.exists()) 1 else 0,
+                        isFromCache = snapshot.metadata.isFromCache,
+                        durationMs = durationMs
+                    )
                 }
 
                 if (snapshot != null && snapshot.exists()) {
@@ -502,19 +528,43 @@ class CommunityRepositoryImpl @Inject constructor(
         }
 
         val userReactionFlow = callbackFlow {
+            val queryStartTime = System.currentTimeMillis()
             val userId = getEffectiveUserId()
             val userDocKey =
                 getUserDocKey(userId = userId, mediaType = mediaType, mediaId = mediaId)
 
             if (isSessionValid) {
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "reactions_user",
+                    screenName = null,
+                    docsCount = 1,
+                    isFromCache = true,
+                    durationMs = 0L
+                )
                 trySend(cachedUserReactions[userDocKey] ?: emptySet())
             }
 
             val docRef = firestore.collection(colUserMediaReactions).document(userDocKey)
 
             val listener = docRef.addSnapshotListener { snapshot, error ->
+                val durationMs = System.currentTimeMillis() - queryStartTime
                 if (error != null) {
+                    firestoreAuditTracker.trackFirestoreError(
+                        queryTag = "reactions_user",
+                        throwable = error,
+                        durationMs = durationMs
+                    )
                     return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    firestoreAuditTracker.trackQuery(
+                        queryTag = "reactions_user",
+                        screenName = null,
+                        docsCount = if (snapshot.exists()) 1 else 0,
+                        isFromCache = snapshot.metadata.isFromCache,
+                        durationMs = durationMs
+                    )
                 }
 
                 if (snapshot != null && snapshot.exists()) {
@@ -735,11 +785,19 @@ class CommunityRepositoryImpl @Inject constructor(
             val isCacheValid = !forceRefresh && (lastFetch > 0L) && (now - lastFetch < ttlMs)
 
             if (isCacheValid) {
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "poll_active",
+                    screenName = null,
+                    docsCount = 1,
+                    isFromCache = true,
+                    durationMs = 0L
+                )
                 trySend(optimisticFlow.value)
                 awaitClose { }
                 return@callbackFlow
             }
 
+            val queryStartTime = System.currentTimeMillis()
             try {
                 val userId = getEffectiveUserId()
                 val userVoteDocKey = "${userId}_$dateStr"
@@ -775,6 +833,17 @@ class CommunityRepositoryImpl @Inject constructor(
                         .await()
                 val selectedIndex = userDoc?.getLong("selectedOptionIndex")?.toInt()
 
+                val durationMs = System.currentTimeMillis() - queryStartTime
+                val fetchedDocsCount = (if (pollDoc != null && pollDoc.exists()) 1 else 0) +
+                        (if (userDoc != null && userDoc.exists()) 1 else 0)
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "poll_active",
+                    screenName = null,
+                    docsCount = fetchedDocsCount,
+                    isFromCache = pollDoc?.metadata?.isFromCache ?: false,
+                    durationMs = durationMs
+                )
+
                 if (selectedIndex != null) {
                     storage.write(
                         key = scopedPollVotedKey(userId = userId, dateStr = dateStr),
@@ -796,7 +865,13 @@ class CommunityRepositoryImpl @Inject constructor(
                 optimisticFlow.value = mergedDailyPoll
                 dailyPollFetchTimestamps[dateStr] = now
                 trySend(mergedDailyPoll)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                val durationMs = System.currentTimeMillis() - queryStartTime
+                firestoreAuditTracker.trackFirestoreError(
+                    queryTag = "poll_active",
+                    throwable = e,
+                    durationMs = durationMs
+                )
                 trySend(optimisticFlow.value)
             }
 
@@ -813,6 +888,7 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_DAILY_POLLS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
+        val startTime = System.currentTimeMillis()
         return try {
             val dateStr = date.toString()
             val userId = getEffectiveUserId()
@@ -908,8 +984,23 @@ class CommunityRepositoryImpl @Inject constructor(
 
             batch.commit().await()
 
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackQuery(
+                queryTag = "poll_vote",
+                screenName = null,
+                docsCount = 2,
+                isFromCache = false,
+                durationMs = durationMs
+            )
+
             Result.Success(optimisticUpdated)
         } catch (e: Exception) {
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackFirestoreError(
+                queryTag = "poll_vote",
+                throwable = e,
+                durationMs = durationMs
+            )
             Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
@@ -986,12 +1077,22 @@ class CommunityRepositoryImpl @Inject constructor(
         val isSessionValid = (lastFetch > 0L) && (now - lastFetch < ttlMs) && (cached != null) &&
                 (limit != null || cached.size >= effectiveLimit || cached.size < CommunityOptimizationConfig.DEFAULT_DISCUSSION_PREVIEW_LIMIT)
 
+        val queryTag = if (limit != null) "discussions_preview" else "discussions_thread"
+
         if (isSessionValid) {
             optimisticFlow.value = cachedThreadComments[pathKey].orEmpty()
         }
 
         val firestoreFlow = callbackFlow {
+            val queryStartTime = System.currentTimeMillis()
             if (isSessionValid) {
+                firestoreAuditTracker.trackQuery(
+                    queryTag = queryTag,
+                    screenName = null,
+                    docsCount = cachedThreadComments[pathKey]?.size ?: 0,
+                    isFromCache = true,
+                    durationMs = 0L
+                )
                 trySend(cachedThreadComments[pathKey].orEmpty())
             }
 
@@ -1024,11 +1125,25 @@ class CommunityRepositoryImpl @Inject constructor(
             }
 
             val listener = commentsCollection.addSnapshotListener { snapshot, error ->
+                val durationMs = System.currentTimeMillis() - queryStartTime
                 if (error != null) {
+                    firestoreAuditTracker.trackFirestoreError(
+                        queryTag = queryTag,
+                        throwable = error,
+                        durationMs = durationMs
+                    )
                     return@addSnapshotListener
                 }
 
                 if (snapshot != null) {
+                    firestoreAuditTracker.trackQuery(
+                        queryTag = queryTag,
+                        screenName = null,
+                        docsCount = snapshot.documents.size,
+                        isFromCache = snapshot.metadata.isFromCache,
+                        durationMs = durationMs
+                    )
+
                     val parsedComments = snapshot.documents.mapNotNull { doc ->
                         parseCommentDocument(doc, userId, maxReportThreshold)
                     }
@@ -1058,13 +1173,13 @@ class CommunityRepositoryImpl @Inject constructor(
             appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)
 
         return combine(
-            optimisticFlow,
             firestoreFlow,
             overridesFlow,
+            optimisticFlow,
             remoteEnabledFlow
-        ) { optimistic, firestoreList, overrides, isRemotelyEnabled ->
+        ) { firestoreList, overrides, optimistic, isRemotelyEnabled ->
             if (!isRemotelyEnabled) {
-                return@combine emptyList<Comment>()
+                return@combine emptyList()
             }
 
             val firestoreIds = firestoreList.map { it.id }.toSet()
@@ -1124,6 +1239,7 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
+        val startTime = System.currentTimeMillis()
         return try {
             val pathKey = getDiscussionPathKey(target)
             val userId = getEffectiveUserId()
@@ -1149,6 +1265,15 @@ class CommunityRepositoryImpl @Inject constructor(
                 .get()
                 .await()
 
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackQuery(
+                queryTag = "discussions_pagination",
+                screenName = null,
+                docsCount = snapshot.documents.size,
+                isFromCache = snapshot.metadata.isFromCache,
+                durationMs = durationMs
+            )
+
             val olderComments = snapshot.documents.mapNotNull { doc ->
                 parseCommentDocument(doc, userId, maxReportThreshold)
             }
@@ -1165,6 +1290,12 @@ class CommunityRepositoryImpl @Inject constructor(
 
             Result.Success(olderComments)
         } catch (e: Exception) {
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackFirestoreError(
+                queryTag = "discussions_pagination",
+                throwable = e,
+                durationMs = durationMs
+            )
             Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
@@ -1175,6 +1306,7 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
+        val startTime = System.currentTimeMillis()
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1259,8 +1391,23 @@ class CommunityRepositoryImpl @Inject constructor(
             batch.set(mediaDoc.collection("comments").document(commentId), commentDoc)
             batch.commit().await()
 
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackQuery(
+                queryTag = "post_comment",
+                screenName = null,
+                docsCount = 1,
+                isFromCache = false,
+                durationMs = durationMs
+            )
+
             Result.Success(newComment)
         } catch (e: Exception) {
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackFirestoreError(
+                queryTag = "post_comment",
+                throwable = e,
+                durationMs = durationMs
+            )
             Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
@@ -1271,6 +1418,7 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
+        val startTime = System.currentTimeMillis()
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1304,8 +1452,23 @@ class CommunityRepositoryImpl @Inject constructor(
                 ).await()
             }
 
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackQuery(
+                queryTag = "edit_comment",
+                screenName = null,
+                docsCount = 1,
+                isFromCache = false,
+                durationMs = durationMs
+            )
+
             Result.Success(Unit)
         } catch (e: Exception) {
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackFirestoreError(
+                queryTag = "edit_comment",
+                throwable = e,
+                durationMs = durationMs
+            )
             Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
@@ -1316,6 +1479,7 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
+        val startTime = System.currentTimeMillis()
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1340,8 +1504,23 @@ class CommunityRepositoryImpl @Inject constructor(
             )
             batch.commit().await()
 
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackQuery(
+                queryTag = "report_comment",
+                screenName = null,
+                docsCount = 1,
+                isFromCache = false,
+                durationMs = durationMs
+            )
+
             Result.Success(Unit)
         } catch (e: Exception) {
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackFirestoreError(
+                queryTag = "report_comment",
+                throwable = e,
+                durationMs = durationMs
+            )
             Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
@@ -1353,6 +1532,7 @@ class CommunityRepositoryImpl @Inject constructor(
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
         val lock = upvoteLocks.getOrPut(params.commentId) { Mutex() }
+        val startTime = System.currentTimeMillis()
         return lock.withLock {
             try {
                 val pathKey = getDiscussionPathKey(params.target)
@@ -1407,8 +1587,23 @@ class CommunityRepositoryImpl @Inject constructor(
                     ).await()
                 }
 
+                val durationMs = System.currentTimeMillis() - startTime
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "toggle_comment_upvote",
+                    screenName = null,
+                    docsCount = 1,
+                    isFromCache = false,
+                    durationMs = durationMs
+                )
+
                 Result.Success(Unit)
             } catch (e: Exception) {
+                val durationMs = System.currentTimeMillis() - startTime
+                firestoreAuditTracker.trackFirestoreError(
+                    queryTag = "toggle_comment_upvote",
+                    throwable = e,
+                    durationMs = durationMs
+                )
                 Result.Error(Failure.CoreFailure.UnexpectedFailure)
             }
         }
@@ -1420,6 +1615,7 @@ class CommunityRepositoryImpl @Inject constructor(
         if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
             return Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
+        val startTime = System.currentTimeMillis()
         return try {
             val pathKey = getDiscussionPathKey(params.target)
             val userId = getEffectiveUserId()
@@ -1449,8 +1645,23 @@ class CommunityRepositoryImpl @Inject constructor(
                 batch.commit().await()
             }
 
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackQuery(
+                queryTag = "delete_comment",
+                screenName = null,
+                docsCount = 1,
+                isFromCache = false,
+                durationMs = durationMs
+            )
+
             Result.Success(Unit)
         } catch (e: Exception) {
+            val durationMs = System.currentTimeMillis() - startTime
+            firestoreAuditTracker.trackFirestoreError(
+                queryTag = "delete_comment",
+                throwable = e,
+                durationMs = durationMs
+            )
             Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
@@ -1468,6 +1679,13 @@ class CommunityRepositoryImpl @Inject constructor(
             val now = System.currentTimeMillis()
 
             if (!forceRefresh && cachedTrendingDiscussions != null && (now - lastTrendingDiscussionsFetchMs) < ttlMs) {
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "trending_discussions",
+                    screenName = null,
+                    docsCount = cachedTrendingDiscussions?.size ?: 0,
+                    isFromCache = true,
+                    durationMs = 0L
+                )
                 emit(cachedTrendingDiscussions.orEmpty())
                 return@flow
             }
@@ -1477,6 +1695,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 CommunityOptimizationConfig.DEFAULT_TRENDING_DISCUSSIONS_LIMIT
             )
 
+            val queryStartTime = System.currentTimeMillis()
             try {
                 val snapshot = firestore
                     .collection(colMediaDiscussions)
@@ -1488,6 +1707,15 @@ class CommunityRepositoryImpl @Inject constructor(
                     .limit(limit)
                     .get()
                     .await()
+
+                val durationMs = System.currentTimeMillis() - queryStartTime
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "trending_discussions",
+                    screenName = null,
+                    docsCount = snapshot.documents.size,
+                    isFromCache = snapshot.metadata.isFromCache,
+                    durationMs = durationMs
+                )
 
                 val trendingList = snapshot.documents.mapNotNull { doc ->
                     val mediaId = doc.getLong("mediaId")?.toInt() ?: return@mapNotNull null
@@ -1519,7 +1747,13 @@ class CommunityRepositoryImpl @Inject constructor(
                 cachedTrendingDiscussions = trendingList
                 lastTrendingDiscussionsFetchMs = now
                 emit(trendingList)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                val durationMs = System.currentTimeMillis() - queryStartTime
+                firestoreAuditTracker.trackFirestoreError(
+                    queryTag = "trending_discussions",
+                    throwable = e,
+                    durationMs = durationMs
+                )
                 emit(cachedTrendingDiscussions.orEmpty())
             }
         }.combine(remoteEnabledFlow) { trendingList, isRemotelyEnabled ->
@@ -1537,6 +1771,7 @@ class CommunityRepositoryImpl @Inject constructor(
         val orderTracker = StableListOrderTracker()
 
         return callbackFlow {
+            val queryStartTime = System.currentTimeMillis()
             val currentUserId = getEffectiveUserId()
             val upvotedSet = getCachedUpvotedListIds()
             val clonedSet = getCachedClonedListIds()
@@ -1545,9 +1780,25 @@ class CommunityRepositoryImpl @Inject constructor(
                 .limit(limit.toLong())
 
             val listener = collectionRef.addSnapshotListener { snapshot, error ->
+                val durationMs = System.currentTimeMillis() - queryStartTime
                 if (error != null) {
+                    firestoreAuditTracker.trackFirestoreError(
+                        queryTag = "curated_lists",
+                        throwable = error,
+                        durationMs = durationMs
+                    )
                     trySend(emptyList())
                     return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    firestoreAuditTracker.trackQuery(
+                        queryTag = "curated_lists",
+                        screenName = null,
+                        docsCount = snapshot.documents.size,
+                        isFromCache = snapshot.metadata.isFromCache,
+                        durationMs = durationMs
+                    )
                 }
 
                 val list = snapshot?.documents.orEmpty().mapNotNull { doc ->

@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(projects.sharedDomain)
     implementation(projects.coreAnalytics)
+    implementation(projects.coreCcm)
     implementation(projects.coreNetworking)
     testImplementation(projects.sharedTesting)
 }

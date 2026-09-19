@@ -95,4 +95,15 @@ object CommunityOptimizationConfig {
      * Remote Config key for overriding media reactions cache TTL (in minutes).
      */
     const val REMOTE_KEY_REACTIONS_CACHE_TTL_MINUTES = "remote_reactions_cache_ttl_minutes"
+
+    /**
+     * Default flag for enabling Firestore query telemetry and quota audit tracking.
+     * Enabled by default (true) to track production query metrics with zero UI/performance overhead.
+     */
+    const val DEFAULT_FIRESTORE_AUDIT_ENABLED = true
+
+    /**
+     * Remote Config key for dynamically enabling/disabling Firestore telemetry kill-switch.
+     */
+    const val REMOTE_KEY_FIRESTORE_AUDIT_ENABLED = "firestore_audit_enabled"
 }
