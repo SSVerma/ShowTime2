@@ -221,7 +221,7 @@ fun CommunityListCard(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
                         ) {
                             NetworkImage(
                                 url = posterUrl,
@@ -241,16 +241,16 @@ fun CommunityListCard(
                                 .clip(RoundedCornerShape(8.dp))
                                 .border(
                                     width = 1.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f),
                                     shape = RoundedCornerShape(8.dp)
                                 )
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Movie,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f),
-                                modifier = Modifier.size(18.dp)
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     }

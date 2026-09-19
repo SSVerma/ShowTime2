@@ -206,6 +206,9 @@ class CommunityRepositoryImpl @Inject constructor(
     private val latestCommunityListsCache =
         ConcurrentHashMap<String, CommunityCuratedList>()
 
+    private var cachedCommunityCuratedLists: List<CommunityCuratedList>? = null
+    private var lastCommunityListsFetchTimestamp: Long = 0L
+
     private val upvoteLocks = ConcurrentHashMap<String, Mutex>()
     private val listUpvoteLocks = ConcurrentHashMap<String, Mutex>()
 
@@ -1770,14 +1773,40 @@ class CommunityRepositoryImpl @Inject constructor(
 
         val orderTracker = StableListOrderTracker()
 
+        val now = System.currentTimeMillis()
+        val ttlMinutes = appConfigProvider.getLong(
+            CommunityOptimizationConfig.REMOTE_KEY_COMMUNITY_LISTS_CACHE_TTL_MINUTES,
+            TimeUnit.MILLISECONDS.toMinutes(CommunityOptimizationConfig.DEFAULT_COMMUNITY_LISTS_CACHE_TTL_MS)
+        )
+        val ttlMs = TimeUnit.MINUTES.toMillis(ttlMinutes)
+        val effectiveLimit = appConfigProvider.getLong(
+            CommunityOptimizationConfig.REMOTE_KEY_COMMUNITY_LISTS_LIMIT,
+            limit.toLong()
+        )
+        val isSessionValid = (lastCommunityListsFetchTimestamp > 0L)
+                && (now - lastCommunityListsFetchTimestamp < ttlMs)
+                && (cachedCommunityCuratedLists != null)
+
         return callbackFlow {
             val queryStartTime = System.currentTimeMillis()
             val currentUserId = getEffectiveUserId()
             val upvotedSet = getCachedUpvotedListIds()
             val clonedSet = getCachedClonedListIds()
+
+            if (isSessionValid) {
+                firestoreAuditTracker.trackQuery(
+                    queryTag = "curated_lists",
+                    screenName = null,
+                    docsCount = cachedCommunityCuratedLists?.size ?: 0,
+                    isFromCache = true,
+                    durationMs = 0L
+                )
+                trySend(cachedCommunityCuratedLists.orEmpty())
+            }
+
             val collectionRef = firestore.collection(colCommunityCuratedLists)
                 .whereEqualTo("isPublished", true)
-                .limit(limit.toLong())
+                .limit(effectiveLimit)
 
             val listener = collectionRef.addSnapshotListener { snapshot, error ->
                 val durationMs = System.currentTimeMillis() - queryStartTime
@@ -1787,7 +1816,7 @@ class CommunityRepositoryImpl @Inject constructor(
                         throwable = error,
                         durationMs = durationMs
                     )
-                    trySend(emptyList())
+                    trySend(cachedCommunityCuratedLists.orEmpty())
                     return@addSnapshotListener
                 }
 
@@ -1809,6 +1838,9 @@ class CommunityRepositoryImpl @Inject constructor(
                         isCloned = clonedSet.contains(listId)
                     )
                 }
+
+                cachedCommunityCuratedLists = list
+                lastCommunityListsFetchTimestamp = System.currentTimeMillis()
 
                 trySend(list)
             }
@@ -1872,22 +1904,50 @@ class CommunityRepositoryImpl @Inject constructor(
             appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_LISTS_ENABLED, true)
 
         return callbackFlow {
+            val queryStartTime = System.currentTimeMillis()
             val currentUserId = getEffectiveUserId()
             val upvotedSet = getCachedUpvotedListIds()
             val clonedSet = getCachedClonedListIds()
+
+            val cachedList = latestCommunityListsCache[listId]
+            if (cachedList != null) {
+                trySend(cachedList)
+            }
+
             val docRef = firestore.collection(colCommunityCuratedLists).document(listId)
             val listener = docRef.addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null || !snapshot.exists()) {
-                    trySend(null)
+                val durationMs = System.currentTimeMillis() - queryStartTime
+                if (error != null) {
+                    firestoreAuditTracker.trackFirestoreError(
+                        queryTag = "curated_list_details",
+                        throwable = error,
+                        durationMs = durationMs
+                    )
+                    trySend(cachedList)
                     return@addSnapshotListener
                 }
-                trySend(
-                    snapshot.toCommunityCuratedList(
-                        currentUserId = currentUserId,
-                        isUpvoted = upvotedSet.contains(listId),
-                        isCloned = clonedSet.contains(listId)
+                if (snapshot != null) {
+                    firestoreAuditTracker.trackQuery(
+                        queryTag = "curated_list_details",
+                        screenName = null,
+                        docsCount = if (snapshot.exists()) 1 else 0,
+                        isFromCache = snapshot.metadata.isFromCache,
+                        durationMs = durationMs
                     )
+                }
+                if (snapshot == null || !snapshot.exists()) {
+                    trySend(cachedList)
+                    return@addSnapshotListener
+                }
+                val item = snapshot.toCommunityCuratedList(
+                    currentUserId = currentUserId,
+                    isUpvoted = upvotedSet.contains(listId),
+                    isCloned = clonedSet.contains(listId)
                 )
+                if (item != null) {
+                    latestCommunityListsCache[listId] = item
+                }
+                trySend(item)
             }
             awaitClose { listener.remove() }
         }.combine(optimisticListOverrides) { rawList, overrides ->

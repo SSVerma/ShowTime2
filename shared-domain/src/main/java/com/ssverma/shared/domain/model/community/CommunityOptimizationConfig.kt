@@ -97,6 +97,28 @@ object CommunityOptimizationConfig {
     const val REMOTE_KEY_REACTIONS_CACHE_TTL_MINUTES = "remote_reactions_cache_ttl_minutes"
 
     /**
+     * Default maximum number of community curated lists fetched on initial query.
+     */
+    const val DEFAULT_COMMUNITY_LISTS_LIMIT = 50L
+
+    /**
+     * Remote Config key for overriding community curated lists limit dynamically.
+     */
+    const val REMOTE_KEY_COMMUNITY_LISTS_LIMIT = "remote_community_lists_limit"
+
+    /**
+     * Default Time-To-Live (TTL) for in-memory community curated lists cache (15 minutes).
+     * Eliminates redundant Firestore reads on rapid tab/filter switching.
+     */
+    val DEFAULT_COMMUNITY_LISTS_CACHE_TTL_MS = TimeUnit.MINUTES.toMillis(15)
+
+    /**
+     * Remote Config key for overriding community curated lists cache TTL (in minutes).
+     */
+    const val REMOTE_KEY_COMMUNITY_LISTS_CACHE_TTL_MINUTES =
+        "remote_community_lists_cache_ttl_minutes"
+
+    /**
      * Default flag for enabling Firestore query telemetry and quota audit tracking.
      * Enabled by default (true) to track production query metrics with zero UI/performance overhead.
      */
