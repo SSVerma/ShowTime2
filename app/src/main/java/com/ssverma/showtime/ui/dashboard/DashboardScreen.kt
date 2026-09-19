@@ -226,7 +226,7 @@ fun DashboardScreen(
                 cinephileHubShelf(
                     gameStats = uiState.gameStats,
                     isTodayGameCompleted = uiState.isTodayGameCompleted,
-                    isPollVoted = uiState.dailyPoll.hasVoted,
+                    isPollVoted = uiState.isTodayPollVoted || uiState.dailyPoll.hasVoted,
                     acknowledgedFeatures = uiState.acknowledgedFeatures,
                     onFeatureTapped = viewModel::onFeatureTapped,
                     onOpenMyLists = {

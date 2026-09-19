@@ -375,5 +375,17 @@ class DiscussionsTest {
             "remote_community_lists_enabled",
             CommunityRepositoryImpl.REMOTE_KEY_COMMUNITY_LISTS_ENABLED
         )
+        assertEquals(
+            "remote_trending_discussions_limit",
+            com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_TRENDING_DISCUSSIONS_LIMIT
+        )
+        assertEquals(
+            "remote_trending_discussions_cache_ttl_minutes",
+            com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_TRENDING_DISCUSSIONS_CACHE_TTL_MINUTES
+        )
+        assertEquals(
+            "remote_daily_poll_cache_ttl_minutes",
+            com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_DAILY_POLL_CACHE_TTL_MINUTES
+        )
     }
 }

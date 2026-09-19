@@ -180,18 +180,20 @@ sequenceDiagram
 
 ## 6. Cost, Performance & Security Specifications
 
-1. **Zero-Cost Scaling ($0.00 read overhead)**:
-    - The master catalog `/app_config/daily_polls_catalog` is cached in local `DataStore` for 24
-      hours.
-    - For an active user opening the app 10 times a day, Firestore reads for the catalog remain
-      capped at exactly **1 read/day**.
-2. **Deterministic Modulo Date Hashing**:
-    - Zero cron maintenance required. If network is completely offline, users still receive a new
-      daily question deterministically from the 30+ bundled offline bank.
-3. **Atomic Writes (`FieldValue.increment`)**:
-    - Voting uses Firestore `FieldValue.increment(1L)` and `FieldValue.increment(-1L)` during option
-      switches, preventing race conditions or overwritten counts across concurrent users.
-4. **Security & Validation Rules**:
-    - Users can only mutate their own `user_daily_poll_votes` document (`request.auth.uid == userId`
-      or client-scoped identifier).
-    - Global vote increments on `/daily_polls` enforce bounded integer values `[-1, 1]`.
+1. **Zero-Read Startup & On-Demand Sheet Loading**:
+    - Daily Poll is **never** pre-fetched during Home startup or `DashboardViewModel.init`.
+    - Firestore queries are dispatched **only on-demand** when the cinephile taps the Daily Poll tile to present `DailyPollBottomSheet` (`openDailyPollSheet()`).
+    - Home dashboard renders the Cinephile Hub habit badge (`isPollVoted`) via `IsTodayPollVotedUseCase` (`isTodayPollVotedFlow`), checking local `KeyValueStorage` with **0 network requests and 0 Firestore reads on launch**.
+2. **One-Shot Fetching & 60-Minute In-Memory TTL**:
+    - Converted from continuous snapshot streams to one-shot `.get().await()` reads.
+    - Cached in-memory with a 60-minute TTL (`DEFAULT_DAILY_POLL_CACHE_TTL_MS`, configurable via Remote Config `remote_daily_poll_cache_ttl_minutes`), completely preventing redundant reads when re-opening the sheet within the hour.
+3. **Zero-Cost Scaling ($0.00 read overhead)**:
+    - The master catalog `/app_config/daily_polls_catalog` is cached in local `DataStore` for 24 hours.
+    - For an active user opening the app 10 times a day, Firestore reads for the catalog remain capped at exactly **1 read/day**.
+4. **Deterministic Modulo Date Hashing**:
+    - Zero cron maintenance required. If network is completely offline, users still receive a new daily question deterministically from the 30+ bundled offline bank.
+5. **Atomic Writes (`FieldValue.increment`)**:
+    - Voting uses Firestore `FieldValue.increment(1L)` during option submission, preventing race conditions or overwritten counts across concurrent users.
+6. **Security & Validation Rules**:
+    - Users can only mutate their own `user_daily_poll_votes` document (`request.auth.uid == userId` or client-scoped identifier).
+    - Global vote increments on `/daily_polls` enforce bounded positive integer values.

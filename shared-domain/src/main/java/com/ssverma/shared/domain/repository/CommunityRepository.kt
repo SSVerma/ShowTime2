@@ -30,7 +30,8 @@ interface CommunityRepository {
         tag: MediaReactionTag
     ): Result<MediaReactions, Failure.CoreFailure>
 
-    fun getDailyPoll(date: LocalDate): Flow<DailyPoll>
+    fun getDailyPoll(date: LocalDate, forceRefresh: Boolean = false): Flow<DailyPoll>
+    fun isTodayPollVotedFlow(date: LocalDate = LocalDate.now()): Flow<Boolean>
     suspend fun voteDailyPoll(
         date: LocalDate,
         optionIndex: Int
@@ -48,7 +49,7 @@ interface CommunityRepository {
 
     suspend fun deleteComment(params: DeleteCommentParams): Result<Unit, Failure.CoreFailure>
 
-    fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>>
+    fun getTrendingDiscussions(forceRefresh: Boolean = false): Flow<List<TrendingDiscussion>>
 
     fun getCommunityCuratedLists(
         category: String? = null,

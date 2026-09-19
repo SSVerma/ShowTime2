@@ -18,6 +18,7 @@ import com.ssverma.core.ccm.AppConfigProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.core.storage.keyvalue.observe
 import com.ssverma.core.storage.keyvalue.read
 import com.ssverma.core.storage.keyvalue.write
 import com.ssverma.shared.domain.Result
@@ -28,6 +29,7 @@ import com.ssverma.shared.domain.model.community.CommunityCuratedList
 import com.ssverma.shared.domain.model.community.CommunityCuratedListItem
 import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.community.CommunityModerationConfig
+import com.ssverma.shared.domain.model.community.CommunityOptimizationConfig
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.DailyPollQuestion
 import com.ssverma.shared.domain.model.community.DailyPollQuestionBank
@@ -53,6 +55,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -154,6 +157,16 @@ class CommunityRepositoryImpl @Inject constructor(
 
     private val optimisticDailyPollCache =
         ConcurrentHashMap<String, MutableStateFlow<DailyPoll>>()
+
+    private val dailyPollFetchTimestamps =
+        ConcurrentHashMap<String, Long>()
+
+    private var cachedTrendingDiscussions: List<TrendingDiscussion>? = null
+    private var lastTrendingDiscussionsFetchMs: Long = 0L
+
+    private fun scopedPollVotedKey(userId: String, dateStr: String): Preferences.Key<Boolean> {
+        return booleanPreferencesKey("community_poll_voted_${userId}_$dateStr")
+    }
 
     private val optimisticDiscussionsCache =
         ConcurrentHashMap<String, MutableStateFlow<List<Comment>>>()
@@ -618,14 +631,38 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getDailyPoll(date: LocalDate): Flow<DailyPoll> {
+    override fun isTodayPollVotedFlow(date: LocalDate): Flow<Boolean> {
         val dateStr = date.toString()
+        val optimisticFlow = optimisticDailyPollCache.getOrPut(dateStr) {
+            MutableStateFlow(DailyPoll.empty(date))
+        }
+
+        return callbackFlow {
+            val userId = getEffectiveUserId()
+            val key = scopedPollVotedKey(userId = userId, dateStr = dateStr)
+            val storageFlow = storage.observe(key = key, default = false)
+
+            val job = repositoryScope.launch {
+                combine(storageFlow, optimisticFlow) { isStoredVoted, optimisticPoll ->
+                    isStoredVoted || optimisticPoll.hasVoted
+                }.collect { voted ->
+                    trySend(voted)
+                }
+            }
+            awaitClose { job.cancel() }
+        }
+    }
+
+    override fun getDailyPoll(date: LocalDate, forceRefresh: Boolean): Flow<DailyPoll> {
+        val dateStr = date.toString()
+        val remoteEnabledFlow =
+            appConfigProvider.observeBoolean(REMOTE_KEY_DAILY_POLLS_ENABLED, true)
 
         val optimisticFlow = optimisticDailyPollCache.getOrPut(dateStr) {
             MutableStateFlow(DailyPoll.empty(date))
         }
 
-        val aggregateFlow = callbackFlow {
+        return callbackFlow {
             val questions = getActiveQuestions()
             val resolvedQuestion = DailyPollQuestionBank.resolveQuestionForDate(
                 date = date,
@@ -634,103 +671,89 @@ class CommunityRepositoryImpl @Inject constructor(
             val isEnabled = storage.read(key = keyPollEnabled, default = true)
 
             if (resolvedQuestion == null || !isEnabled) {
-                trySend(Triple(null, emptyList<Int>(), 0))
+                trySend(DailyPoll.empty(date).copy(isEnabled = false))
                 awaitClose { }
                 return@callbackFlow
             }
 
-            val docRef = firestore.collection(colDailyPolls).document(dateStr)
-            val listener = docRef.addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    val rawVoteCounts = snapshot.get("voteCounts") as? Map<*, *>
-                    val optionsCount = resolvedQuestion.options.size
-                    val parsedVoteCounts = MutableList(optionsCount) { 0 }
-
-                    rawVoteCounts?.forEach { (k, v) ->
-                        val index = k.toString().toIntOrNull()
-                        val count = (v as? Number)?.toInt() ?: 0
-                        if (index != null && index in 0 until optionsCount) {
-                            parsedVoteCounts[index] = count.coerceAtLeast(0)
-                        }
-                    }
-
-                    // Also check for flat keys like "voteCounts.0"
-                    for (i in 0 until optionsCount) {
-                        val flatVal = snapshot.getLong("voteCounts.$i")?.toInt()
-                        if (flatVal != null && parsedVoteCounts[i] == 0) {
-                            parsedVoteCounts[i] = flatVal.coerceAtLeast(0)
-                        }
-                    }
-
-                    val totalVotes = snapshot.getLong("totalVotes")?.toInt()
-                        ?: parsedVoteCounts.sum()
-
-                    trySend(Triple(resolvedQuestion, parsedVoteCounts.toList(), totalVotes))
-                } else {
-                    val initialCounts = List(resolvedQuestion.options.size) { 0 }
-                    trySend(Triple(resolvedQuestion, initialCounts, 0))
-                }
-            }
-            awaitClose { listener.remove() }
-        }
-
-        val userVoteFlow = callbackFlow {
-            val userId = getEffectiveUserId()
-            val userVoteDocKey = "${userId}_$dateStr"
-            val docRef = firestore.collection(colUserDailyPollVotes).document(userVoteDocKey)
-
-            val listener = docRef.addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    val selectedIndex = snapshot.getLong("selectedOptionIndex")?.toInt()
-                    trySend(selectedIndex)
-                } else {
-                    trySend(null)
-                }
-            }
-            awaitClose { listener.remove() }
-        }
-
-        val remoteEnabledFlow =
-            appConfigProvider.observeBoolean(REMOTE_KEY_DAILY_POLLS_ENABLED, true)
-
-        return combine(
-            optimisticFlow,
-            aggregateFlow,
-            userVoteFlow,
-            remoteEnabledFlow
-        ) { optimistic, (resolvedQuestion, firestoreVoteCounts, firestoreTotal), firestoreUserSelection, isRemotelyEnabled ->
-            if (resolvedQuestion == null || !isRemotelyEnabled) {
-                return@combine DailyPoll.empty(date).copy(isEnabled = false)
-            }
-
-            val hasFirestoreCounts = firestoreVoteCounts.any { it > 0 }
-            val mergedCounts =
-                if (hasFirestoreCounts) firestoreVoteCounts else optimistic.voteCounts
-            val mergedTotal = if (hasFirestoreCounts || firestoreTotal > 0) {
-                maxOf(firestoreTotal, mergedCounts.sum())
-            } else {
-                optimistic.totalVotes
-            }
-            val mergedUserSelection = firestoreUserSelection ?: optimistic.selectedOptionIndex
-
-            DailyPoll(
-                dateString = dateStr,
-                questionId = resolvedQuestion.id,
-                question = resolvedQuestion.question,
-                options = resolvedQuestion.options,
-                voteCounts = if (mergedCounts.isEmpty()) List(resolvedQuestion.options.size) { 0 } else mergedCounts,
-                totalVotes = mergedTotal,
-                selectedOptionIndex = mergedUserSelection,
-                isEnabled = optimistic.isEnabled && isRemotelyEnabled
+            val ttlMinutes = appConfigProvider.getLong(
+                CommunityOptimizationConfig.REMOTE_KEY_DAILY_POLL_CACHE_TTL_MINUTES,
+                TimeUnit.MILLISECONDS.toMinutes(CommunityOptimizationConfig.DEFAULT_DAILY_POLL_CACHE_TTL_MS)
             )
+            val ttlMs = TimeUnit.MINUTES.toMillis(ttlMinutes)
+            val lastFetch = dailyPollFetchTimestamps[dateStr] ?: 0L
+            val now = System.currentTimeMillis()
+            val isCacheValid = !forceRefresh && (lastFetch > 0L) && (now - lastFetch < ttlMs)
+
+            if (isCacheValid) {
+                trySend(optimisticFlow.value)
+                awaitClose { }
+                return@callbackFlow
+            }
+
+            try {
+                val userId = getEffectiveUserId()
+                val userVoteDocKey = "${userId}_$dateStr"
+
+                // One-shot fetch aggregate poll doc
+                val pollDoc = firestore.collection(colDailyPolls).document(dateStr).get().await()
+
+                val rawVoteCounts = pollDoc?.get("voteCounts") as? Map<*, *>
+                val optionsCount = resolvedQuestion.options.size
+                val parsedVoteCounts = MutableList(optionsCount) { 0 }
+
+                rawVoteCounts?.forEach { (k, v) ->
+                    val index = k.toString().toIntOrNull()
+                    val count = (v as? Number)?.toInt() ?: 0
+                    if (index != null && index in 0 until optionsCount) {
+                        parsedVoteCounts[index] = count.coerceAtLeast(0)
+                    }
+                }
+
+                // Also check for flat keys like "voteCounts.0"
+                for (i in 0 until optionsCount) {
+                    val flatVal = pollDoc?.getLong("voteCounts.$i")?.toInt()
+                    if (flatVal != null && parsedVoteCounts[i] == 0) {
+                        parsedVoteCounts[i] = flatVal.coerceAtLeast(0)
+                    }
+                }
+
+                val totalVotes = pollDoc?.getLong("totalVotes")?.toInt() ?: parsedVoteCounts.sum()
+
+                // One-shot fetch user vote doc
+                val userDoc =
+                    firestore.collection(colUserDailyPollVotes).document(userVoteDocKey).get()
+                        .await()
+                val selectedIndex = userDoc?.getLong("selectedOptionIndex")?.toInt()
+
+                if (selectedIndex != null) {
+                    storage.write(
+                        key = scopedPollVotedKey(userId = userId, dateStr = dateStr),
+                        value = true
+                    )
+                }
+
+                val mergedDailyPoll = DailyPoll(
+                    dateString = dateStr,
+                    questionId = resolvedQuestion.id,
+                    question = resolvedQuestion.question,
+                    options = resolvedQuestion.options,
+                    voteCounts = parsedVoteCounts.toList(),
+                    totalVotes = totalVotes,
+                    selectedOptionIndex = selectedIndex ?: optimisticFlow.value.selectedOptionIndex,
+                    isEnabled = true
+                )
+
+                optimisticFlow.value = mergedDailyPoll
+                dailyPollFetchTimestamps[dateStr] = now
+                trySend(mergedDailyPoll)
+            } catch (_: Exception) {
+                trySend(optimisticFlow.value)
+            }
+
+            awaitClose { }
+        }.combine(remoteEnabledFlow) { poll, isRemotelyEnabled ->
+            poll.copy(isEnabled = poll.isEnabled && isRemotelyEnabled)
         }
     }
 
@@ -795,6 +818,12 @@ class CommunityRepositoryImpl @Inject constructor(
 
             // 0ms Optimistic local update
             optimisticFlow.value = optimisticUpdated
+
+            // Record vote locally in storage for instant offline resolution
+            storage.write(
+                key = scopedPollVotedKey(userId = userId, dateStr = dateStr),
+                value = true
+            )
 
             // Background Firestore Batch Write
             val batch = firestore.batch()
@@ -1267,53 +1296,73 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>> {
+    override fun getTrendingDiscussions(forceRefresh: Boolean): Flow<List<TrendingDiscussion>> {
         val remoteEnabledFlow =
             appConfigProvider.observeBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)
 
-        return callbackFlow {
-            val listener = firestore
-                .collection(colMediaDiscussions)
-                .whereGreaterThan("discussionCount", 0)
-                .orderBy(
-                    "discussionCount",
-                    com.google.firebase.firestore.Query.Direction.DESCENDING
-                )
-                .limit(10)
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) {
-                        return@addSnapshotListener
-                    }
+        return flow {
+            val ttlMinutes = appConfigProvider.getLong(
+                CommunityOptimizationConfig.REMOTE_KEY_TRENDING_DISCUSSIONS_CACHE_TTL_MINUTES,
+                TimeUnit.MILLISECONDS.toMinutes(CommunityOptimizationConfig.DEFAULT_TRENDING_DISCUSSIONS_CACHE_TTL_MS)
+            )
+            val ttlMs = TimeUnit.MINUTES.toMillis(ttlMinutes)
+            val now = System.currentTimeMillis()
 
-                    val trendingList = snapshot?.documents.orEmpty().mapNotNull { doc ->
-                        val mediaId = doc.getLong("mediaId")?.toInt() ?: return@mapNotNull null
-                        val mediaTypeStr = doc.getString("mediaType") ?: "movie"
-                        val mediaType = if (mediaTypeStr == "tv") MediaType.Tv else MediaType.Movie
-                        val title = doc.getString("title") ?: "Discussion"
-                        val backdropImageUrl = doc.getString("backdropImageUrl")
-                        val posterImageUrl = doc.getString("posterImageUrl")
-                        val discussionCount = doc.getLong("discussionCount")?.toInt() ?: 0
-                        val latestSnippet = doc.getString("latestCommentSnippet") ?: ""
-                        val seasonNumber = doc.getLong("seasonNumber")?.toInt()
-                        val episodeNumber = doc.getLong("episodeNumber")?.toInt()
+            if (!forceRefresh && cachedTrendingDiscussions != null && (now - lastTrendingDiscussionsFetchMs) < ttlMs) {
+                emit(cachedTrendingDiscussions.orEmpty())
+                return@flow
+            }
 
-                        if (discussionCount > 0) {
-                            TrendingDiscussion(
-                                mediaId = mediaId,
-                                mediaType = mediaType,
-                                title = title,
-                                backdropImageUrl = backdropImageUrl,
-                                posterImageUrl = posterImageUrl,
-                                discussionCount = discussionCount,
-                                latestCommentSnippet = latestSnippet,
-                                seasonNumber = seasonNumber,
-                                episodeNumber = episodeNumber
-                            )
-                        } else null
-                    }
-                    trySend(trendingList)
+            val limit = appConfigProvider.getLong(
+                CommunityOptimizationConfig.REMOTE_KEY_TRENDING_DISCUSSIONS_LIMIT,
+                CommunityOptimizationConfig.DEFAULT_TRENDING_DISCUSSIONS_LIMIT
+            )
+
+            try {
+                val snapshot = firestore
+                    .collection(colMediaDiscussions)
+                    .whereGreaterThan("discussionCount", 0)
+                    .orderBy(
+                        "discussionCount",
+                        com.google.firebase.firestore.Query.Direction.DESCENDING
+                    )
+                    .limit(limit)
+                    .get()
+                    .await()
+
+                val trendingList = snapshot.documents.mapNotNull { doc ->
+                    val mediaId = doc.getLong("mediaId")?.toInt() ?: return@mapNotNull null
+                    val mediaTypeStr = doc.getString("mediaType") ?: "movie"
+                    val mediaType = if (mediaTypeStr == "tv") MediaType.Tv else MediaType.Movie
+                    val title = doc.getString("title") ?: "Discussion"
+                    val backdropImageUrl = doc.getString("backdropImageUrl")
+                    val posterImageUrl = doc.getString("posterImageUrl")
+                    val discussionCount = doc.getLong("discussionCount")?.toInt() ?: 0
+                    val latestSnippet = doc.getString("latestCommentSnippet") ?: ""
+                    val seasonNumber = doc.getLong("seasonNumber")?.toInt()
+                    val episodeNumber = doc.getLong("episodeNumber")?.toInt()
+
+                    if (discussionCount > 0) {
+                        TrendingDiscussion(
+                            mediaId = mediaId,
+                            mediaType = mediaType,
+                            title = title,
+                            backdropImageUrl = backdropImageUrl,
+                            posterImageUrl = posterImageUrl,
+                            discussionCount = discussionCount,
+                            latestCommentSnippet = latestSnippet,
+                            seasonNumber = seasonNumber,
+                            episodeNumber = episodeNumber
+                        )
+                    } else null
                 }
-            awaitClose { listener.remove() }
+
+                cachedTrendingDiscussions = trendingList
+                lastTrendingDiscussionsFetchMs = now
+                emit(trendingList)
+            } catch (_: Exception) {
+                emit(cachedTrendingDiscussions.orEmpty())
+            }
         }.combine(remoteEnabledFlow) { trendingList, isRemotelyEnabled ->
             if (!isRemotelyEnabled) emptyList() else trendingList
         }

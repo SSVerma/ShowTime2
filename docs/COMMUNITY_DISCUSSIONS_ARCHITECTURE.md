@@ -204,15 +204,16 @@ Where:
 All trending parameters are centralized in `core-ccm` and can be adjusted in Firebase Remote Config
 anytime:
 
-| Remote Config Key              | Default | Description                                    |
-|:-------------------------------|:--------|:-----------------------------------------------|
-| `trending_discussions_limit`   | `10`    | Maximum cards on Home Trending shelf           |
-| `trending_min_participants`    | `1`     | Minimum distinct users before thread can trend |
-| `trending_weight_participants` | `3.0`   | Multiplier for unique user debate              |
-| `trending_weight_upvotes`      | `2.0`   | Multiplier for community appreciation          |
-| `trending_weight_comments`     | `1.0`   | Multiplier for raw conversation count          |
-| `trending_recency_hours`       | `48`    | Active time decay half-life                    |
-| `config_free_comments_daily_limit` | `3` | Daily free comments allowed before requiring Pro or rewarded ad pass |
+| Remote Config Key                              | Default | Description                                                          |
+|:-----------------------------------------------|:--------|:---------------------------------------------------------------------|
+| `remote_trending_discussions_limit`            | `5`     | Maximum cards on Home Trending shelf (tuned for Spark Free Tier)     |
+| `remote_trending_discussions_cache_ttl_minutes`| `60`    | In-memory TTL cache duration before querying Firestore on Home       |
+| `trending_min_participants`                    | `1`     | Minimum distinct users before thread can trend                       |
+| `trending_weight_participants`                 | `3.0`   | Multiplier for unique user debate                                    |
+| `trending_weight_upvotes`                      | `2.0`   | Multiplier for community appreciation                                |
+| `trending_weight_comments`                     | `1.0`   | Multiplier for raw conversation count                                |
+| `trending_recency_hours`                       | `48`    | Active time decay half-life                                          |
+| `config_free_comments_daily_limit`             | `3`     | Daily free comments allowed before requiring Pro or rewarded ad pass |
 
 ---
 
@@ -229,4 +230,15 @@ To preserve conversation quality, prevent spam, and deliver a fair, value-driven
 1. **Unlimited Discussions**: Active ShowTime Pro subscribers bypass all comment limits unconditionally.
 2. **Verified Pro Badge (⭐ `PRO`)**: Every thought posted by an active Pro member is stamped with `isProUser = true` in Firestore, rendering the elegant `ProBadge` (`tertiaryContainer` Material 3 badge) next to their author display name across all comment rows and preview cards.
 3. **Paywall Integration**: `ProPaywallBottomSheet` highlights "Unlimited Community Debates & Pro Cinephile Badge" alongside custom lists, unlimited reminders, and ad-free browsing.
+
+---
+
+## 7. Firebase Free Spark Plan & Read Optimization
+
+To guarantee that ShowTime stays strictly within the **Firebase Free Spark Plan** (50k reads/day) while supporting high daily active users (DAU):
+
+1. **One-Shot Home Shelf Reads**: The Home screen's trending discussions shelf uses a one-shot `.get().await()` read rather than a continuous snapshot listener, preventing remote write events from churning reads across connected clients.
+2. **60-Minute In-Memory TTL**: Governed by `CommunityOptimizationConfig.DEFAULT_TRENDING_DISCUSSIONS_CACHE_TTL_MS`, Home screen re-entries within 60 minutes resolve in 0ms from memory without initiating any network reads.
+3. **Halved Item Limit (5 items)**: Reduced default query limit from 10 to 5, immediately cutting Dashboard Firestore read cost by 50%.
+4. **Interactive Detail Streaming**: Real-time snapshot listeners are selectively reserved for the active Discussion screen where users participate in live debates.
 

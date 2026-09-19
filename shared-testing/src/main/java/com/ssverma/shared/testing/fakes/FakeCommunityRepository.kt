@@ -65,14 +65,29 @@ class FakeCommunityRepository : CommunityRepository {
         return Result.Success(updated)
     }
 
-    override fun getDailyPoll(date: LocalDate): Flow<DailyPoll> {
-        return MutableStateFlow(DailyPoll.empty(date))
+    private val userVotedDates = MutableStateFlow<Set<String>>(emptySet())
+
+    override fun getDailyPoll(date: LocalDate, forceRefresh: Boolean): Flow<DailyPoll> {
+        val dateStr = date.toString()
+        return userVotedDates.map { votedDates ->
+            val hasVoted = votedDates.contains(dateStr)
+            DailyPoll.empty(date).copy(
+                selectedOptionIndex = if (hasVoted) 0 else null
+            )
+        }
+    }
+
+    override fun isTodayPollVotedFlow(date: LocalDate): Flow<Boolean> {
+        val dateStr = date.toString()
+        return userVotedDates.map { it.contains(dateStr) }
     }
 
     override suspend fun voteDailyPoll(
         date: LocalDate,
         optionIndex: Int
     ): Result<DailyPoll, Failure.CoreFailure> {
+        val dateStr = date.toString()
+        userVotedDates.value = userVotedDates.value + dateStr
         return Result.Success(DailyPoll.empty(date).copy(selectedOptionIndex = optionIndex))
     }
 
@@ -139,7 +154,7 @@ class FakeCommunityRepository : CommunityRepository {
         return Result.Success(Unit)
     }
 
-    override fun getTrendingDiscussions(): Flow<List<TrendingDiscussion>> {
+    override fun getTrendingDiscussions(forceRefresh: Boolean): Flow<List<TrendingDiscussion>> {
         return MutableStateFlow(emptyList())
     }
 

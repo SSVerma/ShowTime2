@@ -46,6 +46,7 @@ data class DashboardUiState(
     val gameStats: CinemaGameStats = CinemaGameStats(),
     val isTodayGameCompleted: Boolean = false,
     val dailyPoll: DailyPoll = DailyPoll.empty(LocalDate.now()),
+    val isTodayPollVoted: Boolean = false,
     val isDailyPollLoading: Boolean = false,
     val dailyPollError: String? = null,
     val showDailyPollSheet: Boolean = false,

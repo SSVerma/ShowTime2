@@ -31,6 +31,7 @@ import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
 import com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
+import com.ssverma.shared.domain.usecase.community.IsTodayPollVotedUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
 import com.ssverma.shared.domain.usecase.library.GetCustomListsUseCase
@@ -42,6 +43,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -66,6 +68,7 @@ class DashboardViewModelTest {
     private val traktAuthManager: TraktAuthManager = mockk(relaxed = true)
     private val fakeTraktSyncRepository = FakeTraktSyncRepository()
     private val getDailyPollUseCase: GetDailyPollUseCase = mockk(relaxed = true)
+    private val isTodayPollVotedUseCase: IsTodayPollVotedUseCase = mockk(relaxed = true)
     private val voteDailyPollUseCase: VoteDailyPollUseCase = mockk(relaxed = true)
     private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase = mockk(relaxed = true)
     private val getCommunityListsUseCase: GetCommunityListsUseCase = mockk(relaxed = true)
@@ -79,6 +82,7 @@ class DashboardViewModelTest {
     private val billingRepository: BillingRepository = mockk(relaxed = true)
 
     private val isProActiveFlow = MutableStateFlow(false)
+    private val isTodayPollVotedFlow = MutableStateFlow(false)
     private val traktAuthFlow = MutableStateFlow<TraktAuthState>(TraktAuthState.Disconnected)
     private val notificationShelfDismissedFlow = MutableStateFlow(0L)
     private val acknowledgedFeaturesFlow = MutableStateFlow<Set<String>>(emptySet())
@@ -122,10 +126,11 @@ class DashboardViewModelTest {
         every { adConfigProvider.isAdsEnabled } returns false
 
         every { traktAuthManager.authState } returns traktAuthFlow
-        every { getDailyPollUseCase(any()) } returns MutableStateFlow(
+        every { isTodayPollVotedUseCase(any()) } returns isTodayPollVotedFlow
+        every { getDailyPollUseCase(any(), any()) } returns MutableStateFlow(
             DailyPoll.empty(LocalDate.now())
         )
-        every { getTrendingDiscussionsUseCase() } returns MutableStateFlow(emptyList())
+        every { getTrendingDiscussionsUseCase(any()) } returns MutableStateFlow(emptyList())
         every { getCommunityListsUseCase(any(), any()) } returns MutableStateFlow(emptyList())
         every { getCustomListsUseCase() } returns MutableStateFlow(emptyList())
 
@@ -156,6 +161,7 @@ class DashboardViewModelTest {
             traktAuthManager = traktAuthManager,
             traktSyncRepository = fakeTraktSyncRepository,
             getDailyPollUseCase = getDailyPollUseCase,
+            isTodayPollVotedUseCase = isTodayPollVotedUseCase,
             voteDailyPollUseCase = voteDailyPollUseCase,
             getTrendingDiscussionsUseCase = getTrendingDiscussionsUseCase,
             getCommunityListsUseCase = getCommunityListsUseCase,
@@ -252,14 +258,41 @@ class DashboardViewModelTest {
     }
 
     @Test
-    fun `openDailyPollSheet and dismissDailyPollSheet toggle sheet visibility`() {
-        assertThat(viewModel.uiState.value.showDailyPollSheet).isFalse()
+    fun `openDailyPollSheet and dismissDailyPollSheet toggle sheet visibility and trigger on demand poll fetch`() =
+        runTest {
+            assertThat(viewModel.uiState.value.showDailyPollSheet).isFalse()
 
-        viewModel.openDailyPollSheet()
-        assertThat(viewModel.uiState.value.showDailyPollSheet).isTrue()
+            val samplePoll = DailyPoll(
+                dateString = "2026-09-17",
+                questionId = 42,
+                question = "Which film is Nolan's masterpiece?",
+                options = listOf("Inception", "Interstellar", "Oppenheimer"),
+                voteCounts = listOf(10, 20, 30),
+                totalVotes = 60,
+                selectedOptionIndex = null,
+                isEnabled = true
+            )
+            val pollFlow = MutableStateFlow(samplePoll)
+            every { getDailyPollUseCase(any(), any()) } returns pollFlow
 
-        viewModel.dismissDailyPollSheet()
-        assertThat(viewModel.uiState.value.showDailyPollSheet).isFalse()
+            viewModel.openDailyPollSheet()
+            advanceUntilIdle()
+
+            assertThat(viewModel.uiState.value.showDailyPollSheet).isTrue()
+            assertThat(viewModel.uiState.value.dailyPoll.questionId).isEqualTo(42)
+
+            viewModel.dismissDailyPollSheet()
+            assertThat(viewModel.uiState.value.showDailyPollSheet).isFalse()
+        }
+
+    @Test
+    fun `isTodayPollVotedFlow updates isTodayPollVoted ui state`() = runTest {
+        assertThat(viewModel.uiState.value.isTodayPollVoted).isFalse()
+
+        isTodayPollVotedFlow.value = true
+        advanceUntilIdle()
+
+        assertThat(viewModel.uiState.value.isTodayPollVoted).isTrue()
     }
 
     @Test
@@ -502,7 +535,7 @@ class DashboardViewModelTest {
             isEnabled = true
         )
         val pollFlow = MutableStateFlow(DailyPoll.empty(LocalDate.now()))
-        every { getDailyPollUseCase(any()) } returns pollFlow
+        every { getDailyPollUseCase(any(), any()) } returns pollFlow
 
         viewModel.retryDailyPoll()
         pollFlow.value = samplePoll
@@ -513,6 +546,41 @@ class DashboardViewModelTest {
         assertThat(state.dailyPoll.questionId).isEqualTo(42)
         assertThat(state.dailyPoll.question).isEqualTo("Which film is Nolan's masterpiece?")
         assertThat(state.dailyPollError).isNull()
+    }
+
+    @Test
+    fun `voteDailyPoll updates poll state optimistically before network completes`() = runTest {
+        val initialPoll = DailyPoll(
+            dateString = "2026-09-17",
+            questionId = 42,
+            question = "Which film is Nolan's masterpiece?",
+            options = listOf("Inception", "Interstellar", "Oppenheimer"),
+            voteCounts = listOf(10, 20, 30),
+            totalVotes = 60,
+            selectedOptionIndex = null,
+            isEnabled = true
+        )
+        every {
+            getDailyPollUseCase(
+                date = any(),
+                forceRefresh = any()
+            )
+        } returns flowOf(initialPoll)
+        viewModel.openDailyPollSheet()
+
+        val stateBefore = viewModel.uiState.value
+        assertThat(stateBefore.dailyPoll.selectedOptionIndex).isNull()
+
+        // Call voteDailyPoll without advanceUntilIdle()
+        viewModel.voteDailyPoll(optionIndex = 1)
+
+        // Optimistic UI state must be updated immediately (0ms)
+        val optimisticState = viewModel.uiState.value
+        assertThat(optimisticState.dailyPoll.selectedOptionIndex).isEqualTo(1)
+        assertThat(optimisticState.dailyPoll.totalVotes).isEqualTo(61)
+        assertThat(optimisticState.dailyPoll.getVoteCount(1)).isEqualTo(21)
+        assertThat(optimisticState.dailyPoll.hasVoted).isTrue()
+        assertThat(optimisticState.isTodayPollVoted).isTrue()
     }
 
     @Test

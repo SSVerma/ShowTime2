@@ -8,7 +8,7 @@ import javax.inject.Inject
 class GetTrendingDiscussionsUseCase @Inject constructor(
     private val communityRepository: CommunityRepository
 ) {
-    operator fun invoke(): Flow<List<TrendingDiscussion>> {
-        return communityRepository.getTrendingDiscussions()
+    operator fun invoke(forceRefresh: Boolean = false): Flow<List<TrendingDiscussion>> {
+        return communityRepository.getTrendingDiscussions(forceRefresh = forceRefresh)
     }
 }

@@ -324,6 +324,7 @@
     <string name="discussion_badge_tv">TV SHOW</string>
     <string name="discussion_badge_movie">MOVIE</string>
     <string name="discussion_comment_quote">\"%1$s\"</string>
+    <string name="discussion_card_join_prompt">Join conversation</string>
 
     <!-- General Media Types -->
     <string name="media_type_movie">Movie</string>

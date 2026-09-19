@@ -9,7 +9,10 @@ import javax.inject.Inject
 class GetDailyPollUseCase @Inject constructor(
     private val communityRepository: CommunityRepository
 ) {
-    operator fun invoke(date: LocalDate = LocalDate.now()): Flow<DailyPoll> {
-        return communityRepository.getDailyPoll(date = date)
+    operator fun invoke(
+        date: LocalDate = LocalDate.now(),
+        forceRefresh: Boolean = false
+    ): Flow<DailyPoll> {
+        return communityRepository.getDailyPoll(date = date, forceRefresh = forceRefresh)
     }
 }

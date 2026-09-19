@@ -47,6 +47,7 @@ import com.ssverma.shared.domain.usecase.community.CloneCommunityListUseCase
 import com.ssverma.shared.domain.usecase.community.GetCommunityListsUseCase
 import com.ssverma.shared.domain.usecase.community.GetDailyPollUseCase
 import com.ssverma.shared.domain.usecase.community.GetTrendingDiscussionsUseCase
+import com.ssverma.shared.domain.usecase.community.IsTodayPollVotedUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommunityListUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.VoteDailyPollUseCase
 import com.ssverma.shared.domain.usecase.library.GetCustomListsUseCase
@@ -76,6 +77,7 @@ class DashboardViewModel @Inject constructor(
     private val traktAuthManager: TraktAuthManager,
     private val traktSyncRepository: TraktSyncRepository,
     private val getDailyPollUseCase: GetDailyPollUseCase,
+    private val isTodayPollVotedUseCase: IsTodayPollVotedUseCase,
     private val voteDailyPollUseCase: VoteDailyPollUseCase,
     private val getTrendingDiscussionsUseCase: GetTrendingDiscussionsUseCase,
     private val getCommunityListsUseCase: GetCommunityListsUseCase,
@@ -183,13 +185,13 @@ class DashboardViewModel @Inject constructor(
             }
         }
 
-        loadDailyPoll()
-
         viewModelScope.launch {
-            getTrendingDiscussionsUseCase().collect { discussions ->
-                _uiState.update { it.copy(trendingDiscussions = discussions) }
+            isTodayPollVotedUseCase().collect { isVoted ->
+                _uiState.update { it.copy(isTodayPollVoted = isVoted) }
             }
         }
+
+        fetchTrendingDiscussions()
 
         viewModelScope.launch {
             getCustomListsUseCase().collect { lists ->
@@ -292,11 +294,11 @@ class DashboardViewModel @Inject constructor(
 
     private var dailyPollJob: Job? = null
 
-    fun loadDailyPoll() {
+    fun loadDailyPoll(forceRefresh: Boolean = false) {
         dailyPollJob?.cancel()
         dailyPollJob = viewModelScope.launch {
             _uiState.update { it.copy(isDailyPollLoading = true, dailyPollError = null) }
-            getDailyPollUseCase()
+            getDailyPollUseCase(forceRefresh = forceRefresh)
                 .catch { throwable ->
                     _uiState.update {
                         it.copy(
@@ -309,6 +311,7 @@ class DashboardViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             dailyPoll = poll,
+                            isTodayPollVoted = it.isTodayPollVoted || poll.hasVoted,
                             isDailyPollLoading = false,
                             dailyPollError = null
                         )
@@ -318,18 +321,60 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun retryDailyPoll() {
-        loadDailyPoll()
+        loadDailyPoll(forceRefresh = true)
     }
 
-    fun voteDailyPoll(optionIndex: Int) = viewModelScope.launch {
-        when (val result = voteDailyPollUseCase(optionIndex = optionIndex)) {
-            is Result.Success -> {
-                _uiState.update { it.copy(dailyPoll = result.data, dailyPollError = null) }
-            }
+    fun voteDailyPoll(optionIndex: Int) {
+        val currentPoll = _uiState.value.dailyPoll
+        if (currentPoll.hasVoted) return
 
-            is Result.Error -> {
-                _uiState.update { it.copy(dailyPollError = null) }
+        // Instant 0ms Optimistic UI Update
+        val newVoteCounts = if (currentPoll.voteCounts.isNotEmpty()) {
+            currentPoll.voteCounts.toMutableList().also { counts ->
+                if (optionIndex in counts.indices) {
+                    counts[optionIndex] = counts[optionIndex] + 1
+                }
+            }.toList()
+        } else {
+            List(currentPoll.options.size) { if (it == optionIndex) 1 else 0 }
+        }
+
+        val optimisticPoll = currentPoll.copy(
+            voteCounts = newVoteCounts,
+            totalVotes = currentPoll.totalVotes + 1,
+            selectedOptionIndex = optionIndex
+        )
+
+        _uiState.update {
+            it.copy(
+                dailyPoll = optimisticPoll,
+                isTodayPollVoted = true,
+                dailyPollError = null
+            )
+        }
+
+        viewModelScope.launch {
+            when (val result = voteDailyPollUseCase(optionIndex = optionIndex)) {
+                is Result.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            dailyPoll = result.data,
+                            isTodayPollVoted = true,
+                            dailyPollError = null
+                        )
+                    }
+                }
+
+                is Result.Error -> {
+                    _uiState.update { it.copy(dailyPollError = null) }
+                }
             }
+        }
+    }
+
+    fun fetchTrendingDiscussions(forceRefresh: Boolean = false) = viewModelScope.launch {
+        getTrendingDiscussionsUseCase(forceRefresh = forceRefresh).collect { discussions ->
+            _uiState.update { it.copy(trendingDiscussions = discussions) }
         }
     }
 
@@ -343,6 +388,7 @@ class DashboardViewModel @Inject constructor(
         fetchWatchProviders()
         fetchMovieGenres()
         fetchTvGenres()
+        fetchTrendingDiscussions(forceRefresh = true)
     }
 
     fun fetchTrendingMedia() = viewModelScope.launch {
@@ -476,6 +522,9 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun openDailyPollSheet() {
+        if (uiState.value.dailyPoll.question.isEmpty()) {
+            loadDailyPoll()
+        }
         _uiState.update { it.copy(showDailyPollSheet = true) }
     }
 
