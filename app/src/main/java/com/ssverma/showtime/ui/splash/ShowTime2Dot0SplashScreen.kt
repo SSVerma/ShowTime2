@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.showtime.R
-import com.ssverma.showtime.ui.splash.illustration.ShowTime20MilestoneArt
+import com.ssverma.showtime.ui.splash.illustration.ShowTime2Dot0MilestoneArt
 import kotlinx.coroutines.launch
 
 /**
@@ -63,7 +63,7 @@ import kotlinx.coroutines.launch
  * 6. User can take their time to admire the art and tap "Let's Go" (or screen) to continue smoothly.
  */
 @Composable
-fun ShowTime20SplashScreen(
+fun ShowTime2Dot0SplashScreen(
     onSplashComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -204,14 +204,14 @@ fun ShowTime20SplashScreen(
                     .scale(artScale.value)
                     .alpha(artAlpha.value)
             ) {
-                ShowTime20MilestoneArt(
+                ShowTime2Dot0MilestoneArt(
                     badgeScale = badgeScale.value,
                     badgeAlpha = badgeAlpha.value,
                     shimmerSweep = shimmerSweep.value
                 )
             }
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
             // Brand Typography
             Column(
@@ -237,7 +237,7 @@ fun ShowTime20SplashScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraSmall))
 
             // Tagline
             Text(
@@ -247,7 +247,7 @@ fun ShowTime20SplashScreen(
                 modifier = Modifier.alpha(subtitleAlpha.value)
             )
 
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
             // "Let's Go" CTA Button
             Button(

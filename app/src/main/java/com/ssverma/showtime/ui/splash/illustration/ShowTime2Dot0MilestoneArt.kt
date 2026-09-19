@@ -44,13 +44,13 @@ import kotlin.math.sin
  * - Central illuminated 2.0 emblem badge with neon outline glow.
  */
 @Composable
-fun ShowTime20MilestoneArt(
+fun ShowTime2Dot0MilestoneArt(
     badgeScale: Float,
     badgeAlpha: Float,
     shimmerSweep: Float,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "showtime_2_0_art_motion")
+    val infiniteTransition = rememberInfiniteTransition(label = "showtime_2_dot_0_art_motion")
 
     val reelRotationFast by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -90,12 +90,12 @@ fun ShowTime20MilestoneArt(
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier.size(280.dp)
+        modifier = modifier.size(210.dp)
     ) {
         // Atmospheric radial nebula aura
         Box(
             modifier = Modifier
-                .size(270.dp)
+                .size(200.dp)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -110,17 +110,17 @@ fun ShowTime20MilestoneArt(
 
         // Vector Canvas Artwork
         Canvas(
-            modifier = Modifier.size(260.dp)
+            modifier = Modifier.size(190.dp)
         ) {
             val centerOffset = Offset(size.width / 2f, size.height / 2f)
             val baseRadius = size.minDimension * 0.42f
 
             // Projector Spotlight Beam
             val beamPath = Path().apply {
-                moveTo(centerOffset.x - 20.dp.toPx(), 0f)
-                lineTo(centerOffset.x - baseRadius * 1.35f, size.height)
-                lineTo(centerOffset.x + baseRadius * 1.35f, size.height)
-                lineTo(centerOffset.x + 20.dp.toPx(), 0f)
+                moveTo(centerOffset.x - 16.dp.toPx(), 0f)
+                lineTo(centerOffset.x - baseRadius * 1.3f, size.height)
+                lineTo(centerOffset.x + baseRadius * 1.3f, size.height)
+                lineTo(centerOffset.x + 16.dp.toPx(), 0f)
                 close()
             }
             drawPath(
@@ -150,7 +150,7 @@ fun ShowTime20MilestoneArt(
                 ),
                 radius = baseRadius * 0.98f,
                 center = centerOffset,
-                style = Stroke(width = 3.dp.toPx())
+                style = Stroke(width = 2.5.dp.toPx())
             )
 
             // Outer rotating sprockets
@@ -163,7 +163,7 @@ fun ShowTime20MilestoneArt(
 
                     drawCircle(
                         color = primaryColor.copy(alpha = 0.85f * badgeAlpha),
-                        radius = 3.5.dp.toPx(),
+                        radius = 2.5.dp.toPx(),
                         center = Offset(sprocketX, sprocketY)
                     )
                 }
@@ -174,7 +174,7 @@ fun ShowTime20MilestoneArt(
                 color = surfaceVariant.copy(alpha = 0.6f * badgeAlpha),
                 radius = baseRadius * 0.74f,
                 center = centerOffset,
-                style = Stroke(width = 1.5.dp.toPx())
+                style = Stroke(width = 1.2.dp.toPx())
             )
 
             rotate(degrees = reelRotationSlow, pivot = centerOffset) {
@@ -190,9 +190,9 @@ fun ShowTime20MilestoneArt(
 
                     drawLine(
                         color = tertiaryColor.copy(alpha = 0.5f * badgeAlpha),
-                        start = Offset(sprocketStartX(spokeStartX), spokeStartY),
+                        start = Offset(spokeStartX, spokeStartY),
                         end = Offset(spokeEndX, spokeEndY),
-                        strokeWidth = 1.5.dp.toPx()
+                        strokeWidth = 1.2.dp.toPx()
                     )
                 }
             }
@@ -213,15 +213,15 @@ fun ShowTime20MilestoneArt(
                             Color.Transparent
                         ),
                         center = Offset(sparkX, sparkY),
-                        radius = 8.dp.toPx()
+                        radius = 6.dp.toPx()
                     ),
-                    radius = 8.dp.toPx(),
+                    radius = 6.dp.toPx(),
                     center = Offset(sparkX, sparkY)
                 )
 
                 drawCircle(
                     color = Color.White.copy(alpha = 0.9f * badgeAlpha),
-                    radius = 2.dp.toPx(),
+                    radius = 1.5.dp.toPx(),
                     center = Offset(sparkX, sparkY)
                 )
             }
@@ -231,7 +231,7 @@ fun ShowTime20MilestoneArt(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(112.dp)
+                .size(84.dp)
                 .scale(badgeScale)
                 .clip(CircleShape)
                 .background(
@@ -244,7 +244,7 @@ fun ShowTime20MilestoneArt(
                 )
         ) {
             // Shimmer Sweep Ring
-            Canvas(modifier = Modifier.size(112.dp)) {
+            Canvas(modifier = Modifier.size(84.dp)) {
                 if (shimmerSweep > 0f && shimmerSweep < 1f) {
                     val sweepAngle = 360f * shimmerSweep
                     drawArc(
@@ -258,14 +258,14 @@ fun ShowTime20MilestoneArt(
                         startAngle = sweepAngle - 40f,
                         sweepAngle = 80f,
                         useCenter = false,
-                        style = Stroke(width = 4.dp.toPx())
+                        style = Stroke(width = 3.dp.toPx())
                     )
                 }
             }
 
             Text(
                 text = stringResource(id = R.string.version_2_0),
-                style = MaterialTheme.typography.displayMedium,
+                style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Black,
                 color = onPrimaryColor,
                 letterSpacing = (-1).sp
@@ -273,5 +273,3 @@ fun ShowTime20MilestoneArt(
         }
     }
 }
-
-private fun sprocketStartX(value: Float): Float = value

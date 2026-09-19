@@ -113,7 +113,7 @@ import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 import com.ssverma.showtime.navigation.WhatsNewNavKey
 import com.ssverma.showtime.ui.onboarding.OnboardingScreen
-import com.ssverma.showtime.ui.splash.ShowTime20SplashScreen
+import com.ssverma.showtime.ui.splash.ShowTime2Dot0SplashScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -183,7 +183,7 @@ fun ShowTime(
             }
 
             replaySplash -> {
-                ShowTime20SplashScreen(
+                ShowTime2Dot0SplashScreen(
                     onSplashComplete = {
                         replaySplash = false
                     }
@@ -192,7 +192,7 @@ fun ShowTime(
 
             isFreshInstall -> {
                 if (!hasStartedOnboardingJourney) {
-                    ShowTime20SplashScreen(
+                    ShowTime2Dot0SplashScreen(
                         onSplashComplete = {
                             hasStartedOnboardingJourney = true
                         }
