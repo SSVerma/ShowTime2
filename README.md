@@ -61,27 +61,80 @@ ShowTime consumes the [TMDB (The Movie Database)](https://www.themoviedb.org/) A
 
 ---
 
-## 🏛️ Architecture & Engineering Principles
+## 🏛️ Modular Architecture & Capability Taxonomy
 
-ShowTime adheres strictly to clean architectural separation across isolated Gradle modules:
+ShowTime is architected into **5 strictly decoupled tiers** with unidirectional dependency rules to guarantee build scalability, sub-second incremental builds, and zero circular dependencies. For the complete specification, read the [Modular Architecture & Capability Taxonomy Guide](docs/MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md).
 
 ```mermaid
 flowchart TD
-    App[":app"] --> Features[":feature-*"]
-    Features --> FeatureNav[":feature-*-navigation"]
-    Features --> CommonUI[":common-ui"]
-    Features --> SharedUI[":shared-ui"]
-    Features --> SharedDomain[":shared-domain"]
-    
-    SharedData[":shared-data"] --> SharedDomain
-    SharedData --> CoreStorage[":core-storage"]
-    SharedData --> CoreNetworking[":core-networking"]
-    SharedData --> CoreCCM[":core-ccm"]
-    
-    CommonUI --> CoreUI[":core-ui"]
+    subgraph AppTier ["1. App Orchestrator Tier"]
+        App[":app<br/>(Root Orchestration, Hilt Root Graph, Splash & Edge-to-Edge)"]
+    end
+
+    subgraph FeatureTier ["2. Vertical Feature Slices"]
+        FeatureImpl[":feature-*<br/>(movie, tv, person, library, search, filter, match, community, payment, account, auth)"]
+        FeatureNav[":feature-*-navigation<br/>(Type-safe NavKey contracts & Route arguments)"]
+    end
+
+    subgraph CommonUITier ["3. Stateful Plug-and-Play UI Tier"]
+        CommonUI[":common-ui<br/>(ThemeSheet, LanguageSheet, ProPaywallBottomSheet, ForceUpdateScreen, SoftUpdateBottomSheet)"]
+    end
+
+    subgraph SharedTier ["4. Application Capability & Domain Tier"]
+        SharedUI[":shared-ui<br/>(Stateless design atoms: MediaCard, Avatar, Chip)"]
+        SharedDomain[":shared-domain<br/>(Pure Kotlin Business Entities, UseCases, Repository Contracts)"]
+        SharedData[":shared-data<br/>(Room SQLite, DataStore, Repositories)"]
+        SharedTwins[":shared-* Application Engines<br/>(shared-ads, shared-analytics, shared-backup)"]
+    end
+
+    subgraph CoreTier ["5. Platform Infrastructure Tier (Feature-Agnostic)"]
+        CoreUI[":core-ui (Design system, tokens, spacing)"]
+        CoreNav[":core-navigation (Nav3 base abstractions)"]
+        CoreStorage[":core-storage (Room & KeyValueStorage)"]
+        CoreNet[":core-networking & :api-service:tmdb"]
+        CoreCCM[":core-ccm (Firebase Remote Config)"]
+        CoreTwins[":core-* Platform Wrappers<br/>(core-ads, core-billing, core-analytics, core-backup, core-image, core-notifications)"]
+    end
+
+    %% Dependency flow
+    App --> FeatureImpl
+    App --> FeatureNav
+    App --> CommonUI
+    App --> SharedData
+
+    FeatureImpl --> FeatureNav
+    FeatureImpl --> CommonUI
+    FeatureImpl --> SharedUI
+    FeatureImpl --> SharedDomain
+    FeatureImpl --> SharedTwins
+    FeatureImpl --> CoreNav
+
+    CommonUI --> SharedDomain
+    CommonUI --> SharedUI
+    CommonUI --> CoreUI
+
+    SharedData --> SharedDomain
+    SharedData --> CoreStorage
+    SharedData --> CoreNet
+    SharedData --> CoreCCM
+
+    SharedTwins --> CoreTwins
+    SharedTwins --> SharedDomain
+
     SharedUI --> CoreUI
-    Features --> CoreNavigation[":core-navigation"]
 ```
+
+### Module Tier Summary & Boundaries
+
+| Tier | Role | Allowed Dependencies | Strictly Forbidden Dependencies |
+| :--- | :--- | :--- | :--- |
+| **`core-*`** | Platform SDK wrappers (Billing, AdMob, Firebase, Storage, Network) with **zero ShowTime domain logic**. | External SDKs, Android OS | ❌ `shared-domain`, `shared-data`, `feature-*` |
+| **`shared-domain`** | Pure Kotlin domain models, repository interfaces, and use cases. | Standard Kotlin libraries | ❌ Android framework, UI, Ad SDKs |
+| **`shared-data`** | Room SQLite databases, DataStore preferences, and repository implementations. | `shared-domain`, `core-*` | ❌ UI modules, `feature-*` |
+| **`shared-ui`** | Stateless, reusable Compose building blocks (`MediaCard`, `Avatar`, `Chip`). | `core-ui`, Compose | ❌ Repositories, `core-ads`, ViewModels |
+| **`common-ui`** | Self-contained, stateful plug-and-play overlays (`ThemeSelectionBottomSheet`, `ForceUpdateScreen`). | `core-ui`, `shared-ui`, `shared-domain` | ❌ `shared-data`, `feature-*` implementation modules |
+| **`feature-*-navigation`** | Type-safe `NavKey` definitions and route parameters. | `core-navigation` | ❌ Screens, ViewModels, business logic |
+| **`feature-*`** | Full-screen destinations, ViewModels, and user journeys. | `*-navigation`, `common-ui`, `shared-*`, `core-*` | ❌ Direct dependencies on other `feature-*` modules |
 
 ### Core Tenets
 1. **Type-Safe Navigation 3**: Navigation routes are strictly modeled as compile-time checked `NavKey` objects isolated in `feature-*-navigation` modules.
