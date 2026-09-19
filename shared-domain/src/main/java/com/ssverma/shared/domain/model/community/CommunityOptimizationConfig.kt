@@ -75,6 +75,17 @@ object CommunityOptimizationConfig {
     const val REMOTE_KEY_DISCUSSION_PAGE_SIZE = "remote_discussion_page_size"
 
     /**
+     * Default maximum number of comments fetched for the preview section on media details screens.
+     * Keeps Details screen browsing reads minimal (max 2 comments per movie/show view).
+     */
+    const val DEFAULT_DISCUSSION_PREVIEW_LIMIT = 2L
+
+    /**
+     * Remote Config key for overriding discussion preview limit dynamically.
+     */
+    const val REMOTE_KEY_DISCUSSION_PREVIEW_LIMIT = "remote_discussion_preview_limit"
+
+    /**
      * Default Time-To-Live (TTL) for in-memory media reactions session cache (15 minutes).
      * Eliminates redundant Firestore reads on rapid media details re-opening.
      */

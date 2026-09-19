@@ -962,12 +962,18 @@ class CommunityRepositoryImpl @Inject constructor(
     }
 
     override fun getDiscussions(
-        target: DiscussionTarget
+        target: DiscussionTarget,
+        limit: Int?
     ): Flow<List<Comment>> {
         val pathKey = getDiscussionPathKey(target)
         val optimisticFlow = optimisticDiscussionsCache.getOrPut(pathKey) {
             MutableStateFlow(emptyList())
         }
+
+        val effectiveLimit = (limit?.toLong()) ?: appConfigProvider.getLong(
+            CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_COMMENTS_LIMIT,
+            CommunityOptimizationConfig.DEFAULT_DISCUSSION_COMMENTS_LIMIT
+        )
 
         val now = System.currentTimeMillis()
         val lastFetch = threadSessionTimestamps[pathKey] ?: 0L
@@ -976,10 +982,9 @@ class CommunityRepositoryImpl @Inject constructor(
             TimeUnit.MILLISECONDS.toMinutes(CommunityOptimizationConfig.DEFAULT_DISCUSSION_SESSION_CACHE_TTL_MS)
         )
         val ttlMs = TimeUnit.MINUTES.toMillis(ttlMinutes)
-        val isSessionValid =
-            (lastFetch > 0L) && (now - lastFetch < ttlMs) && cachedThreadComments.containsKey(
-                pathKey
-            )
+        val cached = cachedThreadComments[pathKey]
+        val isSessionValid = (lastFetch > 0L) && (now - lastFetch < ttlMs) && (cached != null) &&
+                (limit != null || cached.size >= effectiveLimit || cached.size < CommunityOptimizationConfig.DEFAULT_DISCUSSION_PREVIEW_LIMIT)
 
         if (isSessionValid) {
             optimisticFlow.value = cachedThreadComments[pathKey].orEmpty()
@@ -1007,10 +1012,6 @@ class CommunityRepositoryImpl @Inject constructor(
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                     )
             } else {
-                val limit = appConfigProvider.getLong(
-                    CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_COMMENTS_LIMIT,
-                    CommunityOptimizationConfig.DEFAULT_DISCUSSION_COMMENTS_LIMIT
-                )
                 firestore
                     .collection(colMediaDiscussions)
                     .document(pathKey)
@@ -1019,7 +1020,7 @@ class CommunityRepositoryImpl @Inject constructor(
                         "createdAtEpochMs",
                         com.google.firebase.firestore.Query.Direction.DESCENDING
                     )
-                    .limit(limit)
+                    .limit(effectiveLimit)
             }
 
             val listener = commentsCollection.addSnapshotListener { snapshot, error ->
@@ -1104,7 +1105,7 @@ class CommunityRepositoryImpl @Inject constructor(
                 return direct + direct.flatMap { getAllDescendants(it.id, visited + parentId) }
             }
 
-            roots.map { root ->
+            val mappedRoots = roots.map { root ->
                 val threadReplies =
                     getAllDescendants(root.id).distinctBy { it.id }.sortedBy { it.createdAtEpochMs }
                 root.copy(
@@ -1112,6 +1113,7 @@ class CommunityRepositoryImpl @Inject constructor(
                     repliesCount = if (threadReplies.isNotEmpty()) threadReplies.size else root.repliesCount
                 )
             }
+            if (limit != null) mappedRoots.take(limit) else mappedRoots
         }
     }
 

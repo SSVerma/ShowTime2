@@ -399,5 +399,9 @@ class DiscussionsTest {
             "remote_discussion_page_size",
             com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_PAGE_SIZE
         )
+        assertEquals(
+            "remote_discussion_preview_limit",
+            com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_PREVIEW_LIMIT
+        )
     }
 }

@@ -20,6 +20,7 @@ import com.ssverma.shared.domain.model.ImageShot
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.model.community.CommunityOptimizationConfig
 import com.ssverma.shared.domain.model.community.DeleteCommentParams
 import com.ssverma.shared.domain.model.community.DiscussionTarget
 import com.ssverma.shared.domain.model.community.EditCommentArgs
@@ -359,7 +360,10 @@ class TvShowDetailsViewModel @AssistedInject constructor(
     private val discussionTarget = DiscussionTarget.tvShow(tvShowId)
 
     val discussions: StateFlow<List<Comment>> =
-        getDiscussionsUseCase(discussionTarget).stateIn(
+        getDiscussionsUseCase(
+            target = discussionTarget,
+            limit = CommunityOptimizationConfig.DEFAULT_DISCUSSION_PREVIEW_LIMIT.toInt()
+        ).stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()

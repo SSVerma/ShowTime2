@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetDiscussionsUseCase @Inject constructor(
     private val communityRepository: CommunityRepository
 ) {
-    operator fun invoke(target: DiscussionTarget): Flow<List<Comment>> {
-        return communityRepository.getDiscussions(target)
+    operator fun invoke(target: DiscussionTarget, limit: Int? = null): Flow<List<Comment>> {
+        return communityRepository.getDiscussions(target, limit)
     }
 }

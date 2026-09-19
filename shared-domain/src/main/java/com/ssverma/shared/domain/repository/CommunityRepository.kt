@@ -37,7 +37,7 @@ interface CommunityRepository {
         optionIndex: Int
     ): Result<DailyPoll, Failure.CoreFailure>
 
-    fun getDiscussions(target: DiscussionTarget): Flow<List<Comment>>
+    fun getDiscussions(target: DiscussionTarget, limit: Int? = null): Flow<List<Comment>>
     suspend fun loadMoreDiscussions(
         target: DiscussionTarget,
         lastCommentEpochMs: Long

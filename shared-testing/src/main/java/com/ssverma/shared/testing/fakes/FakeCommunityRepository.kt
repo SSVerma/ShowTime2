@@ -91,9 +91,12 @@ class FakeCommunityRepository : CommunityRepository {
         return Result.Success(DailyPoll.empty(date).copy(selectedOptionIndex = optionIndex))
     }
 
-    override fun getDiscussions(target: DiscussionTarget): Flow<List<Comment>> {
+    override fun getDiscussions(target: DiscussionTarget, limit: Int?): Flow<List<Comment>> {
         val key = "${target.mediaType}_${target.mediaId}"
-        return discussions.map { it[key] ?: emptyList() }
+        return discussions.map {
+            val list = it[key] ?: emptyList()
+            if (limit != null) list.take(limit) else list
+        }
     }
 
     override suspend fun loadMoreDiscussions(

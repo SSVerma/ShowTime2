@@ -85,11 +85,7 @@ fun MediaDiscussionsSection(
             SectionHeader(
                 title = stringResource(id = R.string.discussions),
                 modifier = Modifier.padding(horizontal = 16.dp),
-                trailingActionLabel = if (discussions.isNotEmpty()) {
-                    stringResource(id = R.string.see_all_with_count, discussions.size)
-                } else {
-                    stringResource(id = R.string.see_all)
-                },
+                trailingActionLabel = stringResource(id = R.string.see_all),
                 onTrailingActionClicked = onDiscussionsViewAllClick,
                 hideTrailingAction = discussions.isEmpty()
             )
