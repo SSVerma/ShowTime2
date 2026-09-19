@@ -1,6 +1,6 @@
 package com.ssverma.feature.person.ui.details.content
 
-import android.content.Intent
+import com.ssverma.core.ui.util.shareText
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -95,16 +95,11 @@ fun PersonDetailsContent(
                 person.name,
                 "https://www.themoviedb.org/person/${person.id}"
             )
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(
-                    Intent.EXTRA_SUBJECT,
-                    context.getString(R.string.person_share_subject, person.name)
-                )
-                putExtra(Intent.EXTRA_TEXT, shareText)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            context.startActivity(Intent.createChooser(shareIntent, person.name))
+            context.shareText(
+                text = shareText,
+                title = person.name,
+                subject = context.getString(R.string.person_share_subject, person.name)
+            )
         }
     }
 

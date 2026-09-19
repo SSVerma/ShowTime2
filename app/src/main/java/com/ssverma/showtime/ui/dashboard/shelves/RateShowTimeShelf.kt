@@ -1,8 +1,5 @@
 package com.ssverma.showtime.ui.dashboard.shelves
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -23,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Favorite
@@ -51,11 +47,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ssverma.core.ui.util.openWebUrl
+import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.openPlayStore
+import com.ssverma.core.ui.util.sendEmail
+import com.ssverma.core.ui.util.shareText
 import com.ssverma.shared.domain.utils.AppConfigConstants
-import androidx.core.net.toUri
+import com.ssverma.showtime.R
 
 fun LazyListScope.rateShowTimeShelf(
     modifier: Modifier = Modifier
@@ -64,7 +64,7 @@ fun LazyListScope.rateShowTimeShelf(
         RateShowTimeCard(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = MaterialTheme.spacing.medium)
         )
     }
 }
@@ -80,7 +80,7 @@ fun RateShowTimeCard(
     if (isDismissed) return
 
     Card(
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
@@ -93,7 +93,7 @@ fun RateShowTimeCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(MaterialTheme.spacing.medium)
         ) {
             // Header Row
             Row(
@@ -120,17 +120,17 @@ fun RateShowTimeCard(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
 
                     Column {
                         Text(
-                            text = "Enjoying ShowTime?",
+                            text = stringResource(id = R.string.rate_shelf_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Rate your experience or share with friends",
+                            text = stringResource(id = R.string.rate_shelf_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -143,14 +143,14 @@ fun RateShowTimeCard(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = "Dismiss",
+                        contentDescription = stringResource(id = R.string.rate_shelf_dismiss_cd),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
             // 5 Star Rating Row
             Row(
@@ -162,11 +162,15 @@ fun RateShowTimeCard(
                     val isFilled = star <= selectedRating
                     Icon(
                         imageVector = if (isFilled) Icons.Rounded.Star else Icons.Rounded.StarOutline,
-                        contentDescription = "$star stars",
-                        tint = if (isFilled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                        contentDescription = stringResource(id = R.string.rate_shelf_star_cd, star),
+                        tint = if (isFilled) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant
+                        },
                         modifier = Modifier
                             .size(40.dp)
-                            .padding(4.dp)
+                            .padding(MaterialTheme.spacing.extraSmall)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = ripple(bounded = false, radius = 20.dp),
@@ -186,18 +190,21 @@ fun RateShowTimeCard(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 10.dp)
+                        .padding(top = MaterialTheme.spacing.small)
                 ) {
                     if (selectedRating >= 4) {
                         Text(
-                            text = "Thank you! Your rating helps fellow movie lovers find us.",
+                            text = stringResource(id = R.string.rate_shelf_high_rating_msg),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = MaterialTheme.spacing.small)
                         )
                         Button(
                             onClick = {
-                                openPlayStore(context)
+                                context.openPlayStore(
+                                    marketUri = AppConfigConstants.PLAY_STORE_MARKET_URI,
+                                    webFallbackUrl = AppConfigConstants.PLAY_STORE_URL
+                                )
                                 isDismissed = true
                             },
                             modifier = Modifier.fillMaxWidth()
@@ -207,33 +214,47 @@ fun RateShowTimeCard(
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Rate on Google Play")
+                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                            Text(text = stringResource(id = R.string.rate_shelf_rate_play_store))
                         }
                     } else {
                         Text(
-                            text = "We'd love to know how we can improve ShowTime for you.",
+                            text = stringResource(id = R.string.rate_shelf_low_rating_msg),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = MaterialTheme.spacing.small)
                         )
                         Button(
                             onClick = {
-                                sendFeedbackEmail(context)
+                                context.sendEmail(
+                                    toEmail = AppConfigConstants.CONTACT_EMAIL,
+                                    subject = context.getString(
+                                        R.string.rate_shelf_feedback_subject,
+                                        Build.VERSION.RELEASE
+                                    )
+                                )
                                 isDismissed = true
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(text = "Send Feedback")
+                            Text(text = stringResource(id = R.string.rate_shelf_send_feedback))
                         }
                     }
                 }
             }
 
             // Secondary Action: Share with Friends
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             OutlinedButton(
-                onClick = { shareAppWithFriends(context) },
+                onClick = {
+                    context.shareText(
+                        text = context.getString(
+                            R.string.rate_shelf_share_text,
+                            AppConfigConstants.PLAY_STORE_URL
+                        ),
+                        title = context.getString(R.string.rate_shelf_share_chooser_title)
+                    )
+                },
                 border = BorderStroke(
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
@@ -245,57 +266,12 @@ fun RateShowTimeCard(
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                 Text(
-                    text = "Share ShowTime with Friends",
+                    text = stringResource(id = R.string.rate_shelf_share_friends),
                     style = MaterialTheme.typography.labelMedium
                 )
             }
         }
-    }
-}
-
-private fun openPlayStore(context: Context) {
-    val packageName = context.packageName
-    val playStoreIntent = Intent(
-        Intent.ACTION_VIEW,
-        Uri.parse("market://details?id=$packageName")
-    ).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-
-    try {
-        context.startActivity(playStoreIntent)
-    } catch (_: Exception) {
-        context.openWebUrl(AppConfigConstants.PLAY_STORE_URL)
-    }
-}
-
-private fun sendFeedbackEmail(context: Context) {
-    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-        data = "mailto:".toUri()
-        putExtra(Intent.EXTRA_EMAIL, arrayOf("feedback@showtime.ssverma.in"))
-        putExtra(Intent.EXTRA_SUBJECT, "ShowTime App Feedback (Android ${Build.VERSION.RELEASE})")
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-    try {
-        context.startActivity(emailIntent)
-    } catch (_: Exception) {
-    }
-}
-
-private fun shareAppWithFriends(context: Context) {
-    val shareText =
-        "Track movies & TV shows, build curated lists, and play the Daily Cinema Challenge on ShowTime!\n\nDownload: ${AppConfigConstants.PLAY_STORE_URL}"
-    val sendIntent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, shareText)
-        type = "text/plain"
-    }
-    val shareIntent = Intent.createChooser(sendIntent, "Share ShowTime")
-    shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    try {
-        context.startActivity(shareIntent)
-    } catch (_: Exception) {
     }
 }

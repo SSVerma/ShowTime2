@@ -1,6 +1,5 @@
 package com.ssverma.feature.library.ui.wrapped
 
-import android.content.Intent
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.ui.component.ShowTimeTopAppBar
+import com.ssverma.core.ui.util.shareText
 import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
 import com.ssverma.feature.library.analytics.wrapped.WrappedAnalyticsEvent
 import com.ssverma.feature.library.ui.wrapped.component.MilestoneDetailBottomSheet
@@ -92,13 +92,10 @@ fun CinephileWrappedScreen(
 
     val handleShareMilestone = { milestone: CinephileMilestone ->
         val shareText = viewModel.generateMilestoneShareText(milestone)
-        val sendIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, shareText)
-            type = "text/plain"
-        }
-        val shareIntent = Intent.createChooser(sendIntent, "Share Milestone Achievement")
-        context.startActivity(shareIntent)
+        context.shareText(
+            text = shareText,
+            title = "Share Milestone Achievement"
+        )
     }
 
     Scaffold(

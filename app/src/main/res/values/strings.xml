@@ -361,4 +361,18 @@
     <string name="splash_lets_go">Let\'s Go</string>
     <string name="splash_tap_to_skip">Tap anywhere to skip</string>
     <string name="splash_replay">ShowTime 2.0 Intro</string>
+
+    <!-- Rate & Share Shelf -->
+    <string name="rate_shelf_title">Enjoying ShowTime?</string>
+    <string name="rate_shelf_subtitle">Rate your experience or share with friends</string>
+    <string name="rate_shelf_dismiss_cd">Dismiss rating card</string>
+    <string name="rate_shelf_star_cd">%1$d of 5 stars</string>
+    <string name="rate_shelf_high_rating_msg">Thank you! Your rating helps fellow movie lovers find us.</string>
+    <string name="rate_shelf_rate_play_store">Rate on Google Play</string>
+    <string name="rate_shelf_low_rating_msg">We\'d love to know how we can improve ShowTime for you.</string>
+    <string name="rate_shelf_send_feedback">Send Feedback</string>
+    <string name="rate_shelf_share_friends">Share ShowTime with Friends</string>
+    <string name="rate_shelf_feedback_subject">ShowTime App Feedback (Android %1$s)</string>
+    <string name="rate_shelf_share_text">Track movies &amp; TV shows, build curated lists, and play the Daily Cinema Challenge on ShowTime!\n\nDownload: %1$s</string>
+    <string name="rate_shelf_share_chooser_title">Share ShowTime</string>
 </resources>

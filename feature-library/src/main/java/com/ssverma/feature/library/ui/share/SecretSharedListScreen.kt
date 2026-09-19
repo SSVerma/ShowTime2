@@ -1,7 +1,7 @@
 package com.ssverma.feature.library.ui.share
 
-import android.content.Intent
 import android.widget.Toast
+import com.ssverma.core.ui.util.shareText
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -180,16 +180,10 @@ fun SecretSharedListScreen(
                                             shareCode = list.shareCode,
                                             itemTitlesWithRating = list.items.map { it.title to it.voteAvg }
                                         )
-                                    val sendIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, shareText)
-                                        type = "text/plain"
-                                    }
-                                    val chooser = Intent.createChooser(
-                                        sendIntent,
-                                        context.getString(R.string.secret_share_chooser_title)
+                                    context.shareText(
+                                        text = shareText,
+                                        title = context.getString(R.string.secret_share_chooser_title)
                                     )
-                                    context.startActivity(chooser)
                                 },
                                 onCloneClick = { showCloneConfirmDialog = true }
                             )

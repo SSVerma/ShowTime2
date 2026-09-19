@@ -1,7 +1,7 @@
 package com.ssverma.feature.match.ui
 
-import android.content.Intent
 import android.widget.Toast
+import com.ssverma.core.ui.util.shareText
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
@@ -254,16 +254,9 @@ fun MovieMatchRoomScreen(
                                     uiState.roomCode?.let { code ->
                                         val shareText =
                                             context.getString(R.string.match_room_invite_text, code)
-                                        val intent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(Intent.EXTRA_TEXT, shareText)
-                                            type = "text/plain"
-                                        }
-                                        context.startActivity(
-                                            Intent.createChooser(
-                                                intent,
-                                                context.getString(R.string.match_room_invite_friend)
-                                            )
+                                        context.shareText(
+                                            text = shareText,
+                                            title = context.getString(R.string.match_room_invite_friend)
                                         )
                                     }
                                 }

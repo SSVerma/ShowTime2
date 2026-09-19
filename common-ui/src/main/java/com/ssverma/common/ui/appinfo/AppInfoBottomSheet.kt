@@ -1,8 +1,5 @@
 package com.ssverma.common.ui.appinfo
 
-import android.content.Intent
-import android.net.Uri
-import com.ssverma.core.ui.util.openWebUrl
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,9 +44,11 @@ import com.ssverma.common.ui.R
 import com.ssverma.core.ui.component.ShowTimeLogo
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.core.ui.util.openPlayStore
+import com.ssverma.core.ui.util.openWebUrl
+import com.ssverma.core.ui.util.sendEmail
 import com.ssverma.shared.domain.utils.AppConfigConstants
 import com.ssverma.shared.ui.component.Avatar
-import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,18 +139,10 @@ fun AppInfoBottomSheet(
                         context.openWebUrl(AppConfigConstants.DEVELOPER_TWITTER_URL)
                     },
                     onSendFeedback = {
-                        try {
-                            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = "mailto:${AppConfigConstants.CONTACT_EMAIL}".toUri()
-                                putExtra(
-                                    Intent.EXTRA_SUBJECT,
-                                    "ShowTime Feedback (v$versionName)"
-                                )
-                            }
-                            context.startActivity(emailIntent)
-                        } catch (_: Exception) {
-                            // Silently handle
-                        }
+                        context.sendEmail(
+                            toEmail = AppConfigConstants.CONTACT_EMAIL,
+                            subject = "ShowTime Feedback (v$versionName)"
+                        )
                     }
                 )
 
@@ -180,15 +171,10 @@ fun AppInfoBottomSheet(
             // Rate on Play Store
             Button(
                 onClick = {
-                    try {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            AppConfigConstants.PLAY_STORE_MARKET_URI.toUri()
-                        )
-                        context.startActivity(intent)
-                    } catch (_: Exception) {
-                        context.openWebUrl(AppConfigConstants.PLAY_STORE_URL)
-                    }
+                    context.openPlayStore(
+                        marketUri = AppConfigConstants.PLAY_STORE_MARKET_URI,
+                        webFallbackUrl = AppConfigConstants.PLAY_STORE_URL
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
