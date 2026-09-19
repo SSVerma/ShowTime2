@@ -65,6 +65,7 @@ import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.layout.AdaptiveHorizontalCarousel
 import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.feature.tv.R
+import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.shared.domain.model.trakt.TraktUpNextEpisode
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 import kotlinx.coroutines.launch
@@ -72,7 +73,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun UpNextSection(
     upNextEpisodes: List<TraktUpNextEpisode>,
-    onUpNextEpisodeClick: (showTmdbId: Int, seasonNumber: Int) -> Unit,
+    onUpNextEpisodeClick: (seasonArgs: TvSeasonArgs) -> Unit,
     onMarkWatchedClick: (showTmdbId: Int, seasonNumber: Int, episodeNumber: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -125,8 +126,12 @@ fun UpNextSection(
                             ),
                         onClick = {
                             onUpNextEpisodeClick(
-                                episode.showTmdbId,
-                                episode.seasonNumber
+                                TvSeasonArgs(
+                                    tvShowId = episode.showTmdbId,
+                                    seasonNumber = episode.seasonNumber,
+                                    tvShowTitle = episode.showTitle,
+                                    tvShowPosterPath = episode.showPosterPath
+                                )
                             )
                         },
                         onMarkWatched = {

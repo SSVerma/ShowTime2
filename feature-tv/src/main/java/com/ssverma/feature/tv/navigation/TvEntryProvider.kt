@@ -81,8 +81,16 @@ fun EntryProviderScope<NavKey>.tvEntries(
                 )
             },
             openLibraryPage = openLibraryPage,
-            openTvSeasonDetails = { showTmdbId, seasonNumber ->
-                navigator.navigate(TvSeasonDetailNavKey(showTmdbId, seasonNumber))
+            openTvSeasonDetails = { seasonArgs ->
+                navigator.navigate(
+                    TvSeasonDetailNavKey(
+                        tvShowId = seasonArgs.tvShowId,
+                        seasonNumber = seasonArgs.seasonNumber,
+                        tvShowTitle = seasonArgs.tvShowTitle,
+                        tvShowPosterPath = seasonArgs.tvShowPosterPath,
+                        tvShowBackdropPath = seasonArgs.tvShowBackdropPath
+                    )
+                )
             }
         )
     }

@@ -50,11 +50,14 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             openTvShowDetails = { tvShowId ->
                 navigator.navigate(TvShowDetailNavKey(tvShowId))
             },
-            openTvSeasonDetails = { showTmdbId, seasonNumber ->
+            openTvSeasonDetails = { seasonArgs ->
                 navigator.navigate(
                     TvSeasonDetailNavKey(
-                        tvShowId = showTmdbId,
-                        seasonNumber = seasonNumber
+                        tvShowId = seasonArgs.tvShowId,
+                        seasonNumber = seasonArgs.seasonNumber,
+                        tvShowTitle = seasonArgs.tvShowTitle,
+                        tvShowPosterPath = seasonArgs.tvShowPosterPath,
+                        tvShowBackdropPath = seasonArgs.tvShowBackdropPath
                     )
                 )
             },

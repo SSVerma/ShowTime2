@@ -54,6 +54,7 @@ import com.ssverma.core.ui.layout.rememberFloatingBarsPadding
 import com.ssverma.core.ui.layout.rememberFloatingBottomBarHeight
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.ui.home.component.UpNextSection
 import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.domain.model.Genre
@@ -107,7 +108,7 @@ fun DashboardScreen(
     openTvGenreListing: (Genre) -> Unit = {},
     openProPaywall: () -> Unit = {},
     openWhatsNew: () -> Unit = {},
-    openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { _, _ -> },
+    openTvSeasonDetails: (TvSeasonArgs) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {

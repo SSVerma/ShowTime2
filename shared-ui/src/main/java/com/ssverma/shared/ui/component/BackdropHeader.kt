@@ -61,7 +61,7 @@ fun BackdropHeader(
             NetworkImage(
                 url = backdropImageUrl,
                 contentDescription = null,
-                contentScale = ContentScale.FillHeight,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
 

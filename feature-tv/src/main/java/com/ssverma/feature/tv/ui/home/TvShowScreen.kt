@@ -20,6 +20,7 @@ import com.ssverma.core.ui.layout.AppPage
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
+import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.ui.home.content.TvShowHomeContent
 import com.ssverma.shared.domain.model.ProviderInfo
@@ -34,11 +35,7 @@ fun TvShowScreen(
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
     openLibraryPage: (NavKey) -> Unit,
-    openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { id, _ ->
-        openTvShowDetails(
-            id
-        )
-    },
+    openTvSeasonDetails: (TvSeasonArgs) -> Unit = {},
     viewModel: HomeTvShowViewModel = hiltViewModel()
 ) {
     TrackScreenView(screenName = TvAnalyticsScreenName.TV_HOME)

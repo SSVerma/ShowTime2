@@ -44,6 +44,7 @@ import com.ssverma.feature.tv.analytics.TvAnalyticsEvent
 import com.ssverma.feature.tv.analytics.TvAnalyticsScreenName
 import com.ssverma.feature.tv.analytics.TvAnalyticsValues
 import com.ssverma.feature.tv.domain.model.TvShowListingConfig
+import com.ssverma.feature.tv.navigation.args.TvSeasonArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
 import com.ssverma.feature.tv.ui.home.HomeTvShowViewModel
@@ -77,9 +78,7 @@ fun TvShowHomeContent(
     openAccountPage: () -> Unit,
     openWatchProviderHub: (ProviderInfo) -> Unit,
     openLibraryPage: (NavKey) -> Unit,
-    openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { id, _ ->
-        openTvShowDetails(id)
-    },
+    openTvSeasonDetails: (TvSeasonArgs) -> Unit = {},
     modifier: Modifier = Modifier,
     onShowFeedback: ((ShowFeedbackArgs) -> Unit)? = null
 ) {
