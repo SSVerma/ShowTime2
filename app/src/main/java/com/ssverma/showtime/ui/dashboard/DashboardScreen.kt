@@ -107,6 +107,7 @@ fun DashboardScreen(
     openTvGenreListing: (Genre) -> Unit = {},
     openProPaywall: () -> Unit = {},
     openWhatsNew: () -> Unit = {},
+    openTvSeasonDetails: (showTmdbId: Int, seasonNumber: Int) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -284,9 +285,7 @@ fun DashboardScreen(
                     ) {
                         UpNextSection(
                             upNextEpisodes = uiState.upNextQueue,
-                            onUpNextEpisodeClick = { showTmdbId, _ ->
-                                openTvShowDetails(showTmdbId)
-                            },
+                            onUpNextEpisodeClick = openTvSeasonDetails,
                             onMarkWatchedClick = { showTmdbId, seasonNumber, episodeNumber ->
                                 viewModel.markEpisodeWatched(
                                     showTmdbId = showTmdbId,

@@ -23,6 +23,7 @@ import com.ssverma.feature.movie.navigation.args.MovieListingArgs
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
+import com.ssverma.feature.tv.navigation.TvSeasonDetailNavKey
 import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.feature.tv.navigation.args.TvShowListingArgs
 import com.ssverma.feature.tv.navigation.args.TvShowListingRoute
@@ -48,6 +49,14 @@ fun EntryProviderScope<NavKey>.dashboardEntries(
             },
             openTvShowDetails = { tvShowId ->
                 navigator.navigate(TvShowDetailNavKey(tvShowId))
+            },
+            openTvSeasonDetails = { showTmdbId, seasonNumber ->
+                navigator.navigate(
+                    TvSeasonDetailNavKey(
+                        tvShowId = showTmdbId,
+                        seasonNumber = seasonNumber
+                    )
+                )
             },
             openDiscussions = { args ->
                 val season = args.seasonNumber
