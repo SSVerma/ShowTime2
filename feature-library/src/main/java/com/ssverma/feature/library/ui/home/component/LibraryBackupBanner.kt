@@ -93,79 +93,80 @@ fun LibraryBackupBanner(
 
         Surface(
             onClick = onActionClick,
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            shape = RoundedCornerShape(12.dp),
+            color = accentColor.copy(alpha = 0.08f),
             border = BorderStroke(
                 width = 1.dp,
-                color = accentColor.copy(alpha = 0.35f)
+                color = accentColor.copy(alpha = 0.25f)
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(start = 10.dp, top = 6.dp, bottom = 6.dp, end = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left Icon with subtle badge glow
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
+                // Leading Icon in a subtle circle
+                Surface(
+                    shape = CircleShape,
+                    color = accentColor.copy(alpha = 0.15f),
+                    modifier = Modifier.size(28.dp)
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp))
 
-                // Title + Subtitle
+                // Title + Description
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Text(
                         text = desc,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
 
-                // CTA Button
-                Button(
+                // Mini CTA Pill
+                Surface(
                     onClick = onActionClick,
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = accentColor,
-                        contentColor = onAccentColor
-                    ),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                    modifier = Modifier.padding(end = 4.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    color = accentColor,
+                    contentColor = onAccentColor
                 ) {
                     Text(
                         text = ctaText,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
+
+                Spacer(modifier = Modifier.width(2.dp))
 
                 // Dismiss ✕ Button
                 IconButton(
@@ -175,7 +176,7 @@ fun LibraryBackupBanner(
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = stringResource(id = R.string.dismiss_banner_cd),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.size(16.dp)
                     )
                 }

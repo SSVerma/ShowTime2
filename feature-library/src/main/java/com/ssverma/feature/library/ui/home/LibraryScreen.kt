@@ -90,11 +90,13 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -106,6 +108,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -1853,69 +1856,90 @@ private fun MediaCollectionTabContent(
                             )
                         }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            if (onSecretShare != null && items.isNotEmpty()) {
-                                IconButton(
-                                    onClick = onSecretShare,
-                                    modifier = Modifier.size(36.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Share,
-                                        contentDescription = stringResource(R.string.secret_share_action),
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
+                        if ((onSecretShare != null && items.isNotEmpty()) || onClearAll != null) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(start = 8.dp)
+                            ) {
+                                VerticalDivider(
+                                    modifier = Modifier
+                                        .height(20.dp)
+                                        .padding(end = 2.dp),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                )
 
-                            if (onClearAll != null) {
-                                var showClearMenu by remember { mutableStateOf(false) }
-                                Box {
-                                    IconButton(
-                                        onClick = { showClearMenu = true },
-                                        modifier = Modifier.size(36.dp)
+                                if (onSecretShare != null && items.isNotEmpty()) {
+                                    FilledTonalIconButton(
+                                        onClick = onSecretShare,
+                                        modifier = Modifier.size(36.dp),
+                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                                alpha = 0.6f
+                                            ),
+                                            contentColor = MaterialTheme.colorScheme.primary
+                                        )
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Rounded.MoreVert,
-                                            contentDescription = stringResource(R.string.more_options),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                            imageVector = Icons.Rounded.Share,
+                                            contentDescription = stringResource(R.string.secret_share_action),
+                                            modifier = Modifier.size(18.dp)
                                         )
                                     }
-                                    DropdownMenu(
-                                        expanded = showClearMenu,
-                                        onDismissRequest = { showClearMenu = false },
-                                        shape = RoundedCornerShape(16.dp),
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                        tonalElevation = 3.dp,
-                                        shadowElevation = 6.dp,
-                                        border = BorderStroke(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                                        )
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    text = stringResource(R.string.clear_history),
-                                                    color = MaterialTheme.colorScheme.error,
-                                                    fontWeight = FontWeight.Medium
-                                                )
-                                            },
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.DeleteOutline,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.error
-                                                )
-                                            },
-                                            onClick = {
-                                                showClearMenu = false
-                                                onClearAll()
-                                            }
-                                        )
+                                }
+
+                                if (onClearAll != null) {
+                                    var showClearMenu by remember { mutableStateOf(false) }
+                                    Box {
+                                        FilledTonalIconButton(
+                                            onClick = { showClearMenu = true },
+                                            modifier = Modifier.size(36.dp),
+                                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                                    alpha = 0.6f
+                                                ),
+                                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.MoreVert,
+                                                contentDescription = stringResource(R.string.more_options),
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        DropdownMenu(
+                                            expanded = showClearMenu,
+                                            onDismissRequest = { showClearMenu = false },
+                                            shape = RoundedCornerShape(16.dp),
+                                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                            tonalElevation = 3.dp,
+                                            shadowElevation = 6.dp,
+                                            border = BorderStroke(
+                                                1.dp,
+                                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                            )
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(R.string.clear_history),
+                                                        color = MaterialTheme.colorScheme.error,
+                                                        fontWeight = FontWeight.Medium
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.DeleteOutline,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.error
+                                                    )
+                                                },
+                                                onClick = {
+                                                    showClearMenu = false
+                                                    onClearAll()
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -2053,11 +2077,11 @@ private fun MediaCollectionTabContent(
                         }
                     }
                 } else {
-                    itemsIndexed(
+                    items(
                         items = items,
-                        key = { index, item -> "${item.mediaType}_${item.mediaId}_$index" },
-                        contentType = { _, _ -> "saved_media" }
-                    ) { _, item ->
+                        key = { "${it.mediaType}_${it.mediaId}" },
+                        contentType = { "saved_media" }
+                    ) { item ->
                         val badgeScale = remember { Animatable(1f) }
                         val haptic = LocalHapticFeedback.current
                         val coroutineScope = rememberCoroutineScope()
@@ -2069,15 +2093,15 @@ private fun MediaCollectionTabContent(
                                 .fillMaxWidth()
                                 .animateItem(
                                     fadeInSpec = tween(
-                                        durationMillis = 220,
+                                        durationMillis = 250,
                                         easing = FastOutSlowInEasing
                                     ),
                                     fadeOutSpec = tween(
-                                        durationMillis = 180,
+                                        durationMillis = 220,
                                         easing = FastOutSlowInEasing
                                     ),
                                     placementSpec = spring(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        dampingRatio = Spring.DampingRatioLowBouncy,
                                         stiffness = Spring.StiffnessMediumLow
                                     )
                                 ),
@@ -2342,15 +2366,21 @@ private fun MyListsTabContent(
 
                                 if (onOpenSecretListClick != null) {
                                     var showListMenu by remember { mutableStateOf(false) }
-                                    Box {
-                                        IconButton(
+                                    Box(modifier = Modifier.padding(start = 4.dp)) {
+                                        FilledTonalIconButton(
                                             onClick = { showListMenu = true },
-                                            modifier = Modifier.size(36.dp)
+                                            modifier = Modifier.size(36.dp),
+                                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                                    alpha = 0.6f
+                                                ),
+                                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Rounded.MoreVert,
                                                 contentDescription = stringResource(R.string.more_options),
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                modifier = Modifier.size(18.dp)
                                             )
                                         }
 
@@ -3557,25 +3587,26 @@ private fun CustomListDetailSheet(
                         .weight(1f, fill = false)
                         .padding(bottom = 32.dp)
                 ) {
-                    itemsIndexed(
+                    items(
                         items = customList.items,
-                        key = { index, item -> "${item.mediaType}_${item.mediaId}_$index" }
-                    ) { _, item ->
+                        key = { "${it.mediaType}_${it.mediaId}" },
+                        contentType = { "custom_list_media" }
+                    ) { item ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .animateItem(
                                     fadeInSpec = tween(
-                                        durationMillis = 220,
+                                        durationMillis = 250,
                                         easing = FastOutSlowInEasing
                                     ),
                                     fadeOutSpec = tween(
-                                        durationMillis = 180,
+                                        durationMillis = 220,
                                         easing = FastOutSlowInEasing
                                     ),
                                     placementSpec = spring(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        dampingRatio = Spring.DampingRatioLowBouncy,
                                         stiffness = Spring.StiffnessMediumLow
                                     )
                                 )

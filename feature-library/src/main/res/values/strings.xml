@@ -122,7 +122,7 @@
     <string name="library_backup_banner_restore_desc">Restore your saved watchlist, favorites &amp; history</string>
     <string name="library_backup_banner_restore_cta">Restore</string>
     <string name="library_backup_banner_backup_title">Protect Your Collection</string>
-    <string name="library_backup_banner_backup_desc">Back up your library to Google Cloud</string>
+    <string name="library_backup_banner_backup_desc">Back up your library to the cloud</string>
     <string name="library_backup_banner_backup_cta">Back Up</string>
     <string name="dismiss_banner_cd">Dismiss banner</string>
 
