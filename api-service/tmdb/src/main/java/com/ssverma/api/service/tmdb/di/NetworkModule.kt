@@ -5,8 +5,11 @@ import com.ssverma.api.service.tmdb.interceptor.AuthInterceptor
 import com.ssverma.api.service.tmdb.interceptor.LanguageInterceptor
 import com.ssverma.api.service.tmdb.interceptor.RegionInterceptor
 import com.ssverma.core.networking.RestClient
+import com.ssverma.core.networking.cache.HttpCacheConfig
 import com.ssverma.core.networking.config.AdditionalServiceConfig
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
+import com.ssverma.core.networking.interceptor.NetworkInterceptor
+import com.ssverma.core.networking.interceptor.ResponseCacheControlNetworkInterceptor
 import com.ssverma.core.networking.service.ServiceEnvironment
 import dagger.Module
 import dagger.Provides
@@ -35,15 +38,27 @@ class NetworkModule {
 
     @Singleton
     @Provides
+    internal fun provideTmdbResponseCacheControlInterceptor(): ResponseCacheControlNetworkInterceptor {
+        return ResponseCacheControlNetworkInterceptor(
+            cacheConfig = HttpCacheConfig.Default
+        )
+    }
+
+    @Singleton
+    @Provides
     internal fun provideServiceConfig(
         authInterceptor: AuthInterceptor,
         regionInterceptor: RegionInterceptor,
         languageInterceptor: LanguageInterceptor,
-        @TmdbServiceCache cache: Cache?
+        @TmdbServiceCache cache: Cache?,
+        responseCacheControlInterceptor: ResponseCacheControlNetworkInterceptor
     ): AdditionalServiceConfig {
         return object : AdditionalServiceConfig() {
             override val applicationInterceptors: List<ApplicationInterceptor>
                 get() = listOf(authInterceptor, regionInterceptor, languageInterceptor)
+
+            override val networkInterceptors: List<NetworkInterceptor>
+                get() = listOf(responseCacheControlInterceptor)
 
             override val cache: Cache?
                 get() = cache

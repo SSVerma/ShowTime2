@@ -32,9 +32,11 @@ import com.ssverma.api.service.tmdb.response.TmdbErrorPayload
 import com.ssverma.api.service.tmdb.response.WatchProviderPayload
 import com.ssverma.api.service.tmdb.response.WatchProviderRegionPayload
 import com.ssverma.core.networking.adapter.ApiResponse
+import com.ssverma.core.networking.cache.HttpCacheConfig
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.HTTP
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -52,6 +54,7 @@ interface TmdbApiService {
         @QueryMap queryMap: Map<String, String>,
     ): TmdbApiResponse<RemoteMovie>
 
+    @Headers("${HttpCacheConfig.HEADER_SHOWTIME_CACHE_MAX_AGE}: 1800")
     @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.Movie}/{timeWindow}")
     suspend fun getTrendingMovies(
         @Path("timeWindow") timeWindow: String,
@@ -139,6 +142,7 @@ interface TmdbApiService {
         @Query("page", encoded = false) page: Int
     ): TmdbApiResponse<PagedPayload<RemoteTvShow>>
 
+    @Headers("${HttpCacheConfig.HEADER_SHOWTIME_CACHE_MAX_AGE}: 1800")
     @GET("3/trending/${TmdbApiTiedConstants.AvailableMediaTypes.Tv}/{timeWindow}")
     suspend fun getTrendingTvShows(
         @Path("timeWindow") timeWindow: String,

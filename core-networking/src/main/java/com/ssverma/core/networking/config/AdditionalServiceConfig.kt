@@ -24,8 +24,7 @@ abstract class AdditionalServiceConfig : ServiceConfig {
     override val applicationInterceptors: List<ApplicationInterceptor>
         get() = emptyList()
 
-    // Don't allow client to provide network interceptors.
-    final override val networkInterceptors: List<NetworkInterceptor>
+    override val networkInterceptors: List<NetworkInterceptor>
         get() = emptyList()
 
     override val cache: Cache?

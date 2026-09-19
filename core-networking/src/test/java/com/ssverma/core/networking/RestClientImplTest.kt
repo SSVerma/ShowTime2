@@ -8,6 +8,7 @@ import com.ssverma.core.networking.convertor.FakeMoshiConvertor
 import com.ssverma.core.networking.convertor.FakeMoshiUser
 import com.ssverma.core.networking.convertor.FakeUser
 import com.ssverma.core.networking.interceptor.ApplicationInterceptor
+import com.ssverma.core.networking.interceptor.NetworkInterceptor
 import com.ssverma.core.networking.service.FakeUserApiService
 import com.ssverma.core.networking.service.ServiceEnvironment
 import io.mockk.every
@@ -179,9 +180,41 @@ class RestClientImplTest {
         assertThat(fakeMoshiUser.id).isEqualTo(1232)
         assertThat(fakeMoshiUser.fullName).isEqualTo("SS Verma")
     }
+
+    @Test
+    fun `verify client applies network interceptors from additional config of service`() {
+        val fakeNetworkInterceptor = FakeNetworkInterceptor()
+
+        val serviceConfig = object : AdditionalServiceConfig() {
+            override val networkInterceptors: List<NetworkInterceptor>
+                get() = listOf(fakeNetworkInterceptor)
+        }
+
+        val mockedHttpClient = mockk<OkHttpClient>(relaxed = true)
+        val result = mutableListOf<Interceptor>()
+
+        every { mockedHttpClient.newBuilder().networkInterceptors() } returns result
+
+        val restClient = RestClientImpl(retrofitBuilder, mockedHttpClient)
+
+        val service = restClient.createService(
+            environment = fakeServiceEnvironment,
+            serviceConfig = serviceConfig
+        )
+
+        assertThat(service).isNotNull()
+        assertThat(result).isNotEmpty()
+        assertThat(result).contains(fakeNetworkInterceptor)
+    }
 }
 
 private class FakeAppInterceptor : ApplicationInterceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        return chain.proceed(chain.request())
+    }
+}
+
+private class FakeNetworkInterceptor : NetworkInterceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         return chain.proceed(chain.request())
     }
