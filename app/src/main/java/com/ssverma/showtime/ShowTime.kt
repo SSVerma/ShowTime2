@@ -74,12 +74,16 @@ import androidx.core.view.WindowCompat
 import com.ssverma.core.ui.util.findActivity
 import com.ssverma.core.ui.util.openWebUrl
 import androidx.navigation3.runtime.NavKey
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
 import com.ssverma.common.ui.appinfo.OpenSourceLicensesBottomSheet
 import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.common.ui.state.LocalAppInfoTrigger
 import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
+import com.ssverma.common.ui.update.ForceUpdateScreen
+import com.ssverma.common.ui.update.SoftUpdateBottomSheet
 import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.core.navigation.nav3.Navigator
@@ -98,7 +102,9 @@ import com.ssverma.feature.movie.navigation.CinemaGameNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.shared.domain.model.AppTheme
+import com.ssverma.shared.domain.model.AppUpdateStatus
 import com.ssverma.shared.domain.utils.AppConfigConstants
+import com.ssverma.showtime.ui.update.AppUpdateViewModel
 import com.ssverma.feature.match.navigation.MatchRoomNavKey
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.showtime.component.ShowTimeBottomBar
@@ -127,10 +133,23 @@ fun ShowTime(
     val isDynamicColorEnabled by appStateHolder.isDynamicColorEnabled.collectAsState(initial = false)
     val isProActive by appStateHolder.isProActive.collectAsState(initial = false)
 
+    val appUpdateViewModel: AppUpdateViewModel = hiltViewModel()
+    val updateUiState by appUpdateViewModel.uiState.collectAsStateWithLifecycle()
+
     ShowTimeTheme(
         appTheme = appTheme,
         dynamicColor = isDynamicColorEnabled
     ) {
+        // Hard-block user if a minimum supported version threshold is not met
+        if (updateUiState.status is AppUpdateStatus.ForceUpdate) {
+            val forceUpdate = updateUiState.status as AppUpdateStatus.ForceUpdate
+            ForceUpdateScreen(
+                title = forceUpdate.title,
+                message = forceUpdate.message
+            )
+            return@ShowTimeTheme
+        }
+
         val darkTheme = when (appTheme) {
             AppTheme.System -> isSystemInDarkTheme()
             AppTheme.Light -> false
@@ -173,6 +192,18 @@ fun ShowTime(
 
         val isFreshInstall =
             hasCompletedOnboarding == false && !isAppInfoDismissed && initialDeepLinkKey == null
+
+        // Soft update prompt (dismissible once per release version)
+        if (updateUiState.showSoftUpdatePrompt && updateUiState.status is AppUpdateStatus.SoftUpdate) {
+            val softUpdate = updateUiState.status as AppUpdateStatus.SoftUpdate
+            SoftUpdateBottomSheet(
+                title = softUpdate.title,
+                message = softUpdate.message,
+                onDismissRequest = {
+                    appUpdateViewModel.dismissSoftUpdate(versionCode = softUpdate.latestVersionCode)
+                }
+            )
+        }
 
         when {
             hasCompletedOnboarding == null -> {

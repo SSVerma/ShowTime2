@@ -16,4 +16,10 @@ object AppConfigConstants {
     const val DEVELOPER_AVATAR_URL =
         "https://pbs.twimg.com/profile_images/1807349302164934656/xELoSQEH_400x400.jpg"
     const val PLAY_STORE_MARKET_URI = "market://details?id=$APP_PACKAGE_NAME"
+
+    // Remote Config Keys: App Update
+    const val KEY_MIN_SUPPORTED_VERSION_CODE = "min_supported_version_code"
+    const val KEY_LATEST_VERSION_CODE = "latest_version_code"
+    const val KEY_UPDATE_TITLE = "update_title"
+    const val KEY_UPDATE_MESSAGE = "update_message"
 }

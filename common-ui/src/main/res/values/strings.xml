@@ -211,4 +211,13 @@
     <string name="widget_preview_watchlist_item_1_tag">Sci-Fi • 8.6</string>
     <string name="widget_preview_watchlist_item_2">Severance</string>
     <string name="widget_preview_watchlist_item_2_tag">Drama • 8.7</string>
+
+    <!-- App Updates -->
+    <string name="update_required_title">Update Required</string>
+    <string name="update_required_subtitle">A critical update is required to continue using ShowTime. Please update to the latest version on Google Play for the best experience.</string>
+    <string name="update_available_title">New Version Available</string>
+    <string name="update_available_subtitle">A new version of ShowTime is available on Google Play with new features and performance improvements.</string>
+    <string name="update_action_update_now">Update on Google Play</string>
+    <string name="update_action_later">Maybe Later</string>
+    <string name="update_icon_cd">App Update</string>
 </resources>

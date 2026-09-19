@@ -8,12 +8,14 @@ import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
 import com.ssverma.shared.data.debug.DebugProOverrideProvider
 import com.ssverma.shared.data.repository.AffiliateRepositoryImpl
+import com.ssverma.shared.data.repository.AppUpdateRepositoryImpl
 import com.ssverma.shared.data.repository.BackupRepositoryImpl
 import com.ssverma.shared.data.repository.DefaultAppConfigRepository
 import com.ssverma.shared.data.repository.DefaultDiaryRepository
 import com.ssverma.shared.data.repository.LibraryRepositoryImpl
 import com.ssverma.shared.domain.repository.AffiliateRepository
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.repository.AppUpdateRepository
 import com.ssverma.shared.domain.repository.DiaryRepository
 import com.ssverma.shared.domain.repository.LibraryRepository
 import dagger.Binds
@@ -33,6 +35,12 @@ abstract class AppConfigBindingModule {
     abstract fun bindAppConfigRepository(
         repository: DefaultAppConfigRepository
     ): AppConfigRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindAppUpdateRepository(
+        repository: AppUpdateRepositoryImpl
+    ): AppUpdateRepository
 
     @Singleton
     @Binds
