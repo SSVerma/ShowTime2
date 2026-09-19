@@ -1,117 +1,189 @@
 # (work-in-progress 👷🔧️👷‍♀️⛏)
 
-# ShowTime
+<div align="center">
 
-A Movie / TV Show information provider application built to demonstrate the use of Jetpack Compose
-with other Jetpack libraries and Architecture Components. ShowTime
-consumes [TMDB](https://www.themoviedb.org/documentation/api) API.
+# 🎬 ShowTime 2.0
 
-## Visuals
+### *The Ultimate Cinephile Companion & Movie Discovery App for Android*
 
-<table>
-  <tr>
-    <td>Home</td>
-    <td>People</td>
-    <td>Search</td>
-    <td>Library</td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/movie_home.png" width=270></td>
-    <td><img src="screenshots/people.png" width=270></td>
-    <td><img src="screenshots/search.png" width=270></td>
-    <td><img src="screenshots/library.png" width=270></td>
-  </tr>
- </table>
+Built with **Jetpack Compose**, **Material 3 Expressive Theming**, **Navigation 3**, and modern multi-module Android Architecture.
 
-<table>
-  <tr>
-    <td>Movie Details</td>
-    <td>Movie Details</td>
-    <td>Movie Details</td>
-    <td>Movie Details</td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/movie_details_1.png" width=270></td>
-    <td><img src="screenshots/movie_details_2.png" width=270></td>
-    <td><img src="screenshots/movie_details_3.png" width=270></td>
-    <td><img src="screenshots/movie_details_4.png" width=270></td>
-  </tr>
-</table>
+[![Kotlin Version](https://img.shields.io/badge/Kotlin-2.1.0-blue.svg?logo=kotlin)](https://kotlinlang.org)
+[![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=android)](https://developer.android.com/jetpack/compose)
+[![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20Modular-success.svg)](docs/MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md)
+[![License](https://img.shields.io/badge/License-Source--Available-orange.svg)](LICENSE)
 
-<table>
-  <tr>
-    <td>Movie Details</td>
-    <td>Home</td>
-    <td>People</td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/movie_details_1_dark.png" width=270></td>
-    <td><img src="screenshots/movie_home_dark.png" width=270></td>
-    <td><img src="screenshots/people_dark.png" width=270></td>
-  </tr>
-</table>
+</div>
 
-## Features & Cinephile Suite
+---
 
-- **Universal Discover & Browse Hub**: Faceted discovery with mood vibes, streaming providers,
-  decades, boutique studio hubs, and Cinema Roulette surprise picker.
-- **Personal Cinema Diary**: Chronological timeline log for watched films/shows, star ratings,
-  custom written reviews, and viewing velocity.
-- **Cinephile Taste Profile**: On-device taste analysis, viewing archetype identification, and
-  personalized recommendation engine.
-- **Cinema Wrapped & Milestones**: Annual year-in-review visual story with achievement badges and
-  shareable graphics.
-- **Backlog & Blindspot Challenges**: 52-Film challenge, Criterion quests, and automated watchlist
-  resurfacing.
-- **Cloud Backup & Restore**: Optional encrypted Firestore backup linked via Google Sign-In with
-  full local-first offline support.
-- **Deep Linking & Sharing**: Universal App Links (`https://showtime.ssverma.in/...`) with rich
-  OpenGraph sharing.
+## 🌟 Overview
 
-## Documentation & Architecture Guides
+**ShowTime** is a movie and TV show exploration application designed for film lovers, cinephiles, and TV enthusiasts. It demonstrates modern Android engineering practices, including 100% Jetpack Compose UI, type-safe multi-module navigation, local-first offline storage, cloud backup synchronization, and in-app subscriptions.
 
-- **Core Suite Overview
-  **: [Cinephile Suite & Discovery Master Architecture](docs/CINEPHILE_SUITE_AND_DISCOVERY_ARCHITECTURE.md)
-- **Feature Guides (What, Why, How & Security)**:
-    - [Universal Discover & Browse Hub](docs/features/UNIVERSAL_DISCOVER_AND_BROWSE_ARCHITECTURE.md)
-    - [Personal Cinema Diary & Review Log](docs/features/CINEMA_DIARY_AND_REVIEW_LOG_ARCHITECTURE.md)
-    - [Cinephile Taste Profile & Recommendations](docs/features/CINEPHILE_TASTE_PROFILE_AND_RECOMMENDATIONS_ARCHITECTURE.md)
-    - [Annual Cinema Wrapped & Milestones](docs/features/CINEMA_WRAPPED_AND_MILESTONES_ARCHITECTURE.md)
-    - [Cinephile Backlog & Blindspot Challenges](docs/features/CINEPHILE_BACKLOG_AND_BLINDSPOT_CHALLENGES_ARCHITECTURE.md)
-    - [Cloud Backup, Auth & Pro Gating](docs/features/CLOUD_BACKUP_AUTH_AND_PRO_GATING_ARCHITECTURE.md)
-- **Standards & Guides**:
-    - [Code Quality, Design System & Security Standards](docs/CODE_QUALITY_AND_SECURITY_GUIDE.md)
-    - [Modular Architecture & Capability Taxonomy Guide](docs/MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md)
-    - [Jetpack Compose Performance & Stability Guide](docs/COMPOSE_PERFORMANCE_AND_STABILITY_GUIDE.md)
-    - [Deep Linking & Social Sharing Guide](docs/DEEP_LINKING_AND_SHARING_GUIDE.md)
-    - [Firebase Anonymous Auth & Google Linking](docs/FIREBASE_ANONYMOUS_AUTH_AND_GOOGLE_LINKING_ARCHITECTURE.md)
+ShowTime consumes the [TMDB (The Movie Database)](https://www.themoviedb.org/) API.
 
-## Tech Stack
+---
 
-- [Kotlin](https://kotlinlang.org/) - Modern programming language for Android.
-- [Jetpack Compose & Material 3](https://developer.android.com/jetpack/compose) - Modern declarative
-  UI with dynamic theming and expressive components.
-- [Navigation 3 (Nav3)](https://developer.android.com/guide/navigation) - Type-safe multi-module
-  navigation with compile-time checked NavKeys.
-- [Coroutines & Flow](https://kotlinlang.org/docs/reference/coroutines-overview.html) - Reactive,
-  asynchronous concurrency and StateFlow.
-- [Android Architecture Components](https://developer.android.com/topic/libraries/architecture) -
-  ViewModel, Room SQLite database, Lifecycle, and Paging 3.
-- [Coil](https://coil-kt.github.io/coil/compose/) - Asynchronous image loading with placeholder and
-  memory caching.
-- [Dagger Hilt](https://developer.android.com/training/dependency-injection/hilt-android) -
-  Dependency injection.
-- [Retrofit & OkHttp](https://square.github.io/retrofit/) - Resilient REST networking with client
-  rate-limiting.
+## 📸 Screenshots & Visuals
 
-## Security & Open-Source Principles
+<div align="center">
 
-- **Local-First & Zero PII**: All personal data is stored on-device in Room SQLite. No tracking or
-  telemetry.
-- **Secret Isolation**: No API keys or private tokens in git. Build configurations injected via
-  `local.properties`.
-- **Open-Source Reproducibility**: Builds in offline/mock mode without requiring private Firebase or
-  Trakt credentials.
-- **Strict Firestore Rules**: All cloud backup documents are locked strictly to the authenticated
-  user UID (`request.auth.uid == userId`).
+### Light & Dark Themes
 
+| Movie Home | Movie Details | Search & Filter | Library & Diary |
+| :---: | :---: | :---: | :---: |
+| <img src="screenshots/movie_home.png" width="220" /> | <img src="screenshots/movie_details_1.png" width="220" /> | <img src="screenshots/search.png" width="220" /> | <img src="screenshots/library.png" width="220" /> |
+| <img src="screenshots/movie_home_dark.png" width="220" /> | <img src="screenshots/movie_details_1_dark.png" width="220" /> | <img src="screenshots/people_dark.png" width="220" /> | <img src="screenshots/movie_details_2.png" width="220" /> |
+
+</div>
+
+---
+
+## ✨ Feature Highlights
+
+### 🎞️ The Cinephile Suite
+* **Personal Cinema Diary**: Chronological timeline log for watched films and shows, star ratings, custom written reviews, rewatch tracking, and viewing velocity analytics.
+* **Cinephile Taste Profile**: On-device taste analysis, viewing archetype detection, decade affinities, and personalized recommendations.
+* **Annual Cinema Wrapped & Milestones**: Interactive year-in-review visual story with achievement badges and shareable graphics.
+* **Vintage Cinema Receipt**: Generates aesthetic retro thermal-style receipts summarizing watch sessions and viewing stats.
+* **Backlog & Blindspot Challenges**: 52-Film challenge, Criterion collection quests, and automated watchlist resurfacing.
+
+### 🔍 Discovery & Social
+* **Universal Discover & Filter Hub**: Multi-faceted discovery engine with mood vibes, streaming providers, release decades, boutique studio hubs, and Cinema Roulette surprise picker.
+* **Interactive Movie Match**: Real-time room-based movie swiping with friends to decide what to watch together.
+* **Deep Linking & Rich Sharing**: Universal App Links (`https://showtime.ssverma.in/...`) with rich OpenGraph sharing preview cards.
+
+### 🛡️ Reliability & Cloud
+* **Smart Cloud Backup & Sync**: Optional end-to-end encrypted Firestore backup linked via Google Sign-In with complete offline-first Room SQLite fallback.
+* **Centralized Config & In-App Updates**: Firebase Remote Config-driven feature flags, dynamic maintenance mode, and non-intrusive soft/force app update prompts.
+* **Pro Subscriptions & Dynamic Theming**: Google Play In-App Billing integration, custom dynamic Material You color extraction, and OLED Midnight theme.
+
+---
+
+## 🏛️ Architecture & Engineering Principles
+
+ShowTime adheres strictly to clean architectural separation across isolated Gradle modules:
+
+```mermaid
+flowchart TD
+    App[":app"] --> Features[":feature-*"]
+    Features --> FeatureNav[":feature-*-navigation"]
+    Features --> CommonUI[":common-ui"]
+    Features --> SharedUI[":shared-ui"]
+    Features --> SharedDomain[":shared-domain"]
+    
+    SharedData[":shared-data"] --> SharedDomain
+    SharedData --> CoreStorage[":core-storage"]
+    SharedData --> CoreNetworking[":core-networking"]
+    SharedData --> CoreCCM[":core-ccm"]
+    
+    CommonUI --> CoreUI[":core-ui"]
+    SharedUI --> CoreUI
+    Features --> CoreNavigation[":core-navigation"]
+```
+
+### Core Tenets
+1. **Type-Safe Navigation 3**: Navigation routes are strictly modeled as compile-time checked `NavKey` objects isolated in `feature-*-navigation` modules.
+2. **Deterministic UI State**: All UI state models are annotated with `@Immutable` for skip-safe Jetpack Compose recomposition.
+3. **Dumb UI Principle**: Composables are purely declarative renderers; all sorting, filtering, and data transformations execute on `Dispatchers.Default` within ViewModels and UseCases.
+4. **Local-First & Zero PII**: All user data resides locally in Room SQLite by default. Cloud backup is opt-in, strictly authenticated, and user-isolated.
+5. **BYOK (Bring Your Own Keys)**: Zero secrets or API keys are committed to version control.
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Language** | [Kotlin 2.1](https://kotlinlang.org/) (Coroutines, Flow, Serialization) |
+| **UI & Design System** | [Jetpack Compose](https://developer.android.com/jetpack/compose), [Material 3](https://m3.material.io/), Glance App Widgets |
+| **Navigation** | [Navigation 3 (Nav3)](https://developer.android.com/guide/navigation) (Type-safe multi-module `NavKey`) |
+| **Dependency Injection** | [Dagger Hilt](https://dagger.dev/hilt/) |
+| **Local Persistence** | [Room SQLite](https://developer.android.com/training/data-storage/room), [DataStore](https://developer.android.com/topic/libraries/architecture/datastore) |
+| **Networking & Images** | [Retrofit](https://square.github.io/retrofit/), [OkHttp](https://square.github.io/okhttp/), [Coil](https://coil-kt.github.io/coil/) |
+| **Cloud & Monetization** | Firebase (Auth, Firestore, Remote Config, Crashlytics), Google Play Billing |
+| **Paging & Concurrency** | AndroidX Paging 3, Kotlinx Coroutines StateFlow |
+
+---
+
+## 🚀 Getting Started (BYOK Setup)
+
+### 1. Prerequisites
+- **Android Studio Ladybug (or newer)**
+- **JDK 21**
+- Android SDK 35 (`compileSdk = 35`, `minSdk = 26`)
+
+### 2. Clone & Configure Secrets
+```bash
+git clone https://github.com/SSVerma/ShowTime2.git
+cd ShowTime2
+```
+
+Create `core.properties` in the project root by copying the template:
+```bash
+cp core.properties.example core.properties
+```
+
+Edit `core.properties` with your free [TMDB API Read Access Token](https://www.themoviedb.org/settings/api):
+```properties
+tmdbApiReadAccessToken="YOUR_TMDB_READ_ACCESS_TOKEN_HERE"
+traktClientId="YOUR_TRAKT_CLIENT_ID_HERE"
+```
+
+Create `debug.properties` in the project root:
+```properties
+baseUrl="https://api.themoviedb.org/"
+```
+
+### 3. Build & Run
+```bash
+./gradlew assembleDebug
+```
+
+Run unit tests across all modules:
+```bash
+./gradlew testDebugUnitTest
+```
+
+---
+
+## 🌿 Branching & Release Cycle
+
+ShowTime utilizes a structured GitFlow model:
+* **`main`**: Golden branch representing code **live in Production on Google Play**.
+* **`development`**: Main integration branch for active feature development.
+* **`release/*`**: Hardening branches for QA and Google Play testing tracks.
+* **`hotfix/*`**: Emergency production patches branched directly off `main`.
+
+For the full specification, read the [Branching & Release Strategy Guide](docs/BRANCHING_AND_RELEASE_STRATEGY.md).
+
+---
+
+## 📚 Architectural Guides & Specifications
+
+* **System Design & Governance**:
+  * [Modular Architecture & Capability Taxonomy](docs/MODULAR_ARCHITECTURE_AND_CAPABILITY_TAXONOMY.md)
+  * [Compose Performance & Stability Guide](docs/COMPOSE_PERFORMANCE_AND_STABILITY_GUIDE.md)
+  * [Code Quality, Design System & Security Guide](docs/CODE_QUALITY_AND_SECURITY_GUIDE.md)
+  * [Branching & Release Strategy](docs/BRANCHING_AND_RELEASE_STRATEGY.md)
+  * [Centralized Config Management (CCM)](docs/CENTRALIZED_CONFIG_MANAGEMENT_CCM.md)
+  * [Telemetry & Observability Guide](docs/TELEMETRY_AND_OBSERVABILITY_GUIDE.md)
+* **Feature Architecture Deep Dives**:
+  * [Cinephile Suite Master Architecture](docs/CINEPHILE_SUITE_AND_DISCOVERY_ARCHITECTURE.md)
+  * [Personal Cinema Diary & Review Log](docs/features/CINEMA_DIARY_AND_REVIEW_LOG_ARCHITECTURE.md)
+  * [Cinephile Taste Profile & Recommendations](docs/features/CINEPHILE_TASTE_PROFILE_AND_RECOMMENDATIONS_ARCHITECTURE.md)
+  * [Annual Cinema Wrapped & Milestones](docs/features/CINEMA_WRAPPED_AND_MILESTONES_ARCHITECTURE.md)
+  * [Vintage Cinema Receipt](docs/features/VINTAGE_CINEMA_RECEIPT_ARCHITECTURE.md)
+  * [Backlog & Blindspot Challenges](docs/features/CINEPHILE_BACKLOG_AND_BLINDSPOT_CHALLENGES_ARCHITECTURE.md)
+  * [Universal Discover & Browse Engine](docs/features/UNIVERSAL_DISCOVER_AND_BROWSE_ARCHITECTURE.md)
+  * [Cloud Backup, Auth & Pro Gating](docs/features/CLOUD_BACKUP_AUTH_AND_PRO_GATING_ARCHITECTURE.md)
+  * [Google Play Billing & Subscriptions](docs/GOOGLE_PLAY_BILLING_AND_SUBSCRIPTIONS_GUIDE.md)
+
+---
+
+## 📄 License
+
+ShowTime is source-available software provided for personal, educational, and non-commercial evaluation. Commercial use, redistribution, and publishing to application stores (such as Google Play or Apple App Store) are strictly prohibited without written authorization.
+
+See the full [LICENSE](LICENSE) file for terms and conditions.
