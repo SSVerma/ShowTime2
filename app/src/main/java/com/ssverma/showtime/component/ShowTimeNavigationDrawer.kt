@@ -1,5 +1,6 @@
 package com.ssverma.showtime.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -68,6 +70,7 @@ fun ShowTimeDrawerContent(
     onOpenLicenses: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenWhatsNew: () -> Unit = {},
+    onReplaySplash: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     ModalDrawerSheet(
@@ -82,13 +85,18 @@ fun ShowTimeDrawerContent(
                 .statusBarsPadding()
                 .padding(bottom = 24.dp)
         ) {
-            // Hero Brand Header
+            // Hero Brand Header (tap to replay 2.0 intro)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onReplaySplash() }
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
                 ShowTimeLogo(
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(40.dp)
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))

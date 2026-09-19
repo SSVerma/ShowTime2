@@ -353,4 +353,12 @@
     <string name="custom_lists_shelf_single_item">1 title</string>
 
     <string name="press_back_again_to_exit">Press back again to exit</string>
+
+    <!-- ShowTime 2.0 Splash -->
+    <string name="version_2_0">2.0</string>
+    <string name="splash_version_label">VERSION 2.0 PREMIERE</string>
+    <string name="splash_tagline">Your ultimate cinematic companion</string>
+    <string name="splash_lets_go">Let\'s Go</string>
+    <string name="splash_tap_to_skip">Tap anywhere to skip</string>
+    <string name="splash_replay">ShowTime 2.0 Intro</string>
 </resources>

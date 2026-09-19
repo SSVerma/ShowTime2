@@ -113,6 +113,7 @@ import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 import com.ssverma.showtime.navigation.WhatsNewNavKey
 import com.ssverma.showtime.ui.onboarding.OnboardingScreen
+import com.ssverma.showtime.ui.splash.ShowTime20SplashScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -166,6 +167,8 @@ fun ShowTime(
 
         val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
         val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
+        var hasStartedOnboardingJourney by rememberSaveable { mutableStateOf(false) }
+        var replaySplash by remember { mutableStateOf(false) }
 
         val isFreshInstall =
             hasCompletedOnboarding == false && !isAppInfoDismissed && initialDeepLinkKey == null
@@ -179,15 +182,31 @@ fun ShowTime(
                 )
             }
 
-            isFreshInstall -> {
-                OnboardingScreen(
-                    onCompleteOnboarding = { streamingProviders, genres ->
-                        appStateHolder.onCompleteOnboarding(
-                            streamingSubscriptions = streamingProviders,
-                            seededGenres = genres
-                        )
+            replaySplash -> {
+                ShowTime20SplashScreen(
+                    onSplashComplete = {
+                        replaySplash = false
                     }
                 )
+            }
+
+            isFreshInstall -> {
+                if (!hasStartedOnboardingJourney) {
+                    ShowTime20SplashScreen(
+                        onSplashComplete = {
+                            hasStartedOnboardingJourney = true
+                        }
+                    )
+                } else {
+                    OnboardingScreen(
+                        onCompleteOnboarding = { streamingProviders, genres ->
+                            appStateHolder.onCompleteOnboarding(
+                                streamingSubscriptions = streamingProviders,
+                                seededGenres = genres
+                            )
+                        }
+                    )
+                }
             }
 
             else -> {
@@ -195,7 +214,8 @@ fun ShowTime(
                     appTheme = appTheme,
                     isDynamicColorEnabled = isDynamicColorEnabled,
                     isProActive = isProActive,
-                    initialDeepLinkKey = initialDeepLinkKey
+                    initialDeepLinkKey = initialDeepLinkKey,
+                    onReplaySplash = { replaySplash = true }
                 )
             }
         }
@@ -208,7 +228,8 @@ private fun MainDashboardContent(
     appTheme: AppTheme,
     isDynamicColorEnabled: Boolean,
     isProActive: Boolean,
-    initialDeepLinkKey: NavKey? = null
+    initialDeepLinkKey: NavKey? = null,
+    onReplaySplash: () -> Unit = {}
 ) {
     val appStateHolder = LocalAppStateHolder.current
     val googleUser by appStateHolder.googleUser.collectAsState(initial = null)
@@ -429,6 +450,10 @@ private fun MainDashboardContent(
                     onOpenWhatsNew = {
                         coroutineScope.launch { drawerState.close() }
                         navigator.navigate(WhatsNewNavKey)
+                    },
+                    onReplaySplash = {
+                        coroutineScope.launch { drawerState.close() }
+                        onReplaySplash()
                     }
                 )
             }
