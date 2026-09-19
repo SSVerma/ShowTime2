@@ -10,13 +10,15 @@ import com.ssverma.shared.ui.component.section.MediaReactionsSection
 fun LazyListScope.movieReactionsSection(
     mediaReactions: MediaReactions,
     onReactionTagClicked: (MediaReactionTag) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isUpcoming: Boolean = false
 ) {
     item(key = "movie_reactions", contentType = "reactions") {
         MediaReactionsSection(
             reactions = mediaReactions,
             onTagClick = onReactionTagClicked,
-            modifier = modifier
+            modifier = modifier,
+            isUpcoming = isUpcoming
         )
     }
 }

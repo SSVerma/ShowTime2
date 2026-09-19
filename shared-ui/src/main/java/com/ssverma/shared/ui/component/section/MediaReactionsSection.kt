@@ -39,11 +39,18 @@ import com.ssverma.shared.ui.R
 fun MediaReactionsSection(
     reactions: MediaReactions,
     onTagClick: (MediaReactionTag) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isUpcoming: Boolean = false
 ) {
     if (!reactions.isEnabled) return
 
     val haptic = LocalHapticFeedback.current
+    val headerTitle = if (isUpcoming) {
+        stringResource(id = R.string.community_pre_release_vibes_title)
+    } else {
+        stringResource(id = R.string.community_vibes_title)
+    }
+    val displayedTags = MediaReactionTag.tagsFor(isUpcoming = isUpcoming)
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -56,7 +63,7 @@ fun MediaReactionsSection(
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.community_vibes_title),
+                text = headerTitle,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -91,7 +98,7 @@ fun MediaReactionsSection(
             modifier = Modifier.fillMaxWidth()
         ) {
             items(
-                items = MediaReactionTag.entries,
+                items = displayedTags,
                 key = { it.tagKey },
                 contentType = { "reaction_pill" }
             ) { tag ->
@@ -162,6 +169,11 @@ private fun ReactionPill(
         MediaReactionTag.IMAX_ESSENTIAL -> "🎬"
         MediaReactionTag.EMOTIONAL_TEARJERKER -> "😭"
         MediaReactionTag.OVERRATED -> "⚠️"
+        MediaReactionTag.HYPED -> "🍿"
+        MediaReactionTag.DAY_ONE_CINEMA -> "🎟️"
+        MediaReactionTag.SKEPTICAL -> "❓"
+        MediaReactionTag.MOST_ANTICIPATED -> "🌟"
+        MediaReactionTag.TRAILER_HOOKED -> "🎬"
     }
 
     val labelRes = when (tag) {
@@ -171,6 +183,11 @@ private fun ReactionPill(
         MediaReactionTag.IMAX_ESSENTIAL -> R.string.tag_imax_essential
         MediaReactionTag.EMOTIONAL_TEARJERKER -> R.string.tag_cried_eyes_out
         MediaReactionTag.OVERRATED -> R.string.tag_overrated
+        MediaReactionTag.HYPED -> R.string.tag_hyped
+        MediaReactionTag.DAY_ONE_CINEMA -> R.string.tag_day_one_cinema
+        MediaReactionTag.SKEPTICAL -> R.string.tag_skeptical
+        MediaReactionTag.MOST_ANTICIPATED -> R.string.tag_most_anticipated
+        MediaReactionTag.TRAILER_HOOKED -> R.string.tag_trailer_hooked
     }
 
     Surface(

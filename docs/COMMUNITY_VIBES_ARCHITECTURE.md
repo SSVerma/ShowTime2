@@ -168,3 +168,25 @@ $$\text{Percentage}(tag) = \begin{cases} \left( \frac{\text{tagCount}}{\text{tot
   ensuring all previously fetched reaction maps remain readable offline.
 * **Network Reconnection**: Any pending writes made while offline are queued locally by Firestore
   SQLite engine and synced automatically once internet connectivity is restored.
+
+---
+
+## 8. Context-Aware Reaction Tag Sets (Pre-Release vs. Post-Release)
+
+To ensure reactions reflect reality for upcoming unreleased titles vs. released cinema:
+
+| Media State | Header Title | Reaction Tags | Purpose |
+|:---|:---|:---|:---|
+| **Upcoming / Pre-Release** (`isUpcoming == true`) | **Pre-Release Buzz** | 🍿 `HYPED` (Hype is Real)<br/>🎟️ `DAY_ONE_CINEMA` (Day One in Cinema)<br/>❓ `SKEPTICAL` (Skeptical)<br/>🌟 `MOST_ANTICIPATED` (Most Anticipated)<br/>🎬 `TRAILER_HOOKED` (Trailer Hooked Me) | Captures anticipation, trailer hype, and box-office excitement before premiere. |
+| **Released** (`isUpcoming == false`) | **Community Vibes** | 🧠 `MIND_BENDING` (Mind-Bending)<br/>☕ `COMFORT_WATCH` (Comfort Watch)<br/>🌀 `PLOT_TWIST` (Plot Twist King)<br/>🎬 `IMAX_ESSENTIAL` (Must Watch in IMAX)<br/>😭 `EMOTIONAL_TEARJERKER` (Cried My Eyes Out)<br/>⚠️ `OVERRATED` (Overrated) | Post-watch emotional resonance, viewing format, and review sentiment. |
+
+---
+
+## 9. 15-Minute In-Memory Session Cache (Spark Tier Optimization)
+
+To eliminate redundant Firestore reads when users repeatedly open and close movie/TV details:
+
+1. **Session TTL Window**: Governed by `CommunityOptimizationConfig.DEFAULT_REACTIONS_CACHE_TTL_MS` (15 minutes) and configurable via Firebase Remote Config (`remote_reactions_cache_ttl_minutes`).
+2. **0ms Immediate Emission**: If a user revisits a title within 15 minutes, `CommunityRepositoryImpl` immediately emits `cachedAggregateReactions` and `cachedUserReactions` at 0ms.
+3. **Zero Read Surge**: Rapid navigation in and out of the details screen incurs **0 Firestore reads** during the active session window.
+

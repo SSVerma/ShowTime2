@@ -296,7 +296,8 @@ private fun TvShowContent(
             tvReactionsSection(
                 mediaReactions = mediaReactions,
                 onReactionTagClicked = viewModel::onReactionTagClicked,
-                modifier = Modifier.topSectionSpacing()
+                modifier = Modifier.topSectionSpacing(),
+                isUpcoming = tvShow.isUpcoming
             )
 
             tvOverviewSection(

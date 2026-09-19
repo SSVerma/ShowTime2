@@ -110,6 +110,7 @@
 
     <!-- Community Vibe Reactions -->
     <string name="community_vibes_title">Community Vibes</string>
+    <string name="community_pre_release_vibes_title">Pre-Release Buzz</string>
     <string name="community_reactions_count">%1$d reactions</string>
     <string name="tag_mind_bending">Mind-Bending</string>
     <string name="tag_comfort_watch">Comfort Watch</string>
@@ -117,6 +118,11 @@
     <string name="tag_imax_essential">Must Watch in IMAX</string>
     <string name="tag_cried_eyes_out">Cried My Eyes Out</string>
     <string name="tag_overrated">Overrated</string>
+    <string name="tag_hyped">Hype is Real</string>
+    <string name="tag_day_one_cinema">Day One in Cinema</string>
+    <string name="tag_skeptical">Skeptical</string>
+    <string name="tag_most_anticipated">Most Anticipated</string>
+    <string name="tag_trailer_hooked">Trailer Hooked Me</string>
 
     <!-- Daily Community Poll -->
     <string name="daily_poll_badge">DAILY DEBATE</string>

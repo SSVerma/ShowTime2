@@ -155,6 +155,15 @@ class CommunityRepositoryImpl @Inject constructor(
     private val optimisticReactionsCache =
         ConcurrentHashMap<String, MutableStateFlow<MediaReactions>>()
 
+    private val reactionsFetchTimestamps =
+        ConcurrentHashMap<String, Long>()
+
+    private val cachedAggregateReactions =
+        ConcurrentHashMap<String, Pair<Map<MediaReactionTag, Int>, Int>>()
+
+    private val cachedUserReactions =
+        ConcurrentHashMap<String, Set<MediaReactionTag>>()
+
     private val optimisticDailyPollCache =
         ConcurrentHashMap<String, MutableStateFlow<DailyPoll>>()
 
@@ -440,7 +449,23 @@ class CommunityRepositoryImpl @Inject constructor(
             )
         }
 
+        val now = System.currentTimeMillis()
+        val lastFetch = reactionsFetchTimestamps[mediaKey] ?: 0L
+        val ttlMinutes = appConfigProvider.getLong(
+            CommunityOptimizationConfig.REMOTE_KEY_REACTIONS_CACHE_TTL_MINUTES,
+            TimeUnit.MILLISECONDS.toMinutes(CommunityOptimizationConfig.DEFAULT_REACTIONS_CACHE_TTL_MS)
+        )
+        val ttlMs = TimeUnit.MINUTES.toMillis(ttlMinutes)
+        val isSessionValid =
+            (lastFetch > 0L) && (now - lastFetch < ttlMs) && cachedAggregateReactions.containsKey(
+                mediaKey
+            )
+
         val aggregateFlow = callbackFlow {
+            if (isSessionValid) {
+                trySend(cachedAggregateReactions[mediaKey] ?: Pair(emptyMap(), 0))
+            }
+
             val docRef = firestore.collection(colMediaReactions).document(mediaKey)
             val listener = docRef.addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -462,9 +487,15 @@ class CommunityRepositoryImpl @Inject constructor(
                     val totalReactions = (snapshot.getLong("totalReactions"))?.toInt()
                         ?: parsedTagCounts.values.sum()
 
-                    trySend(Pair(parsedTagCounts, totalReactions))
+                    val result = Pair(parsedTagCounts, totalReactions)
+                    cachedAggregateReactions[mediaKey] = result
+                    reactionsFetchTimestamps[mediaKey] = System.currentTimeMillis()
+                    trySend(result)
                 } else {
-                    trySend(Pair(emptyMap<MediaReactionTag, Int>(), 0))
+                    val result = Pair(emptyMap<MediaReactionTag, Int>(), 0)
+                    cachedAggregateReactions[mediaKey] = result
+                    reactionsFetchTimestamps[mediaKey] = System.currentTimeMillis()
+                    trySend(result)
                 }
             }
             awaitClose { listener.remove() }
@@ -474,6 +505,11 @@ class CommunityRepositoryImpl @Inject constructor(
             val userId = getEffectiveUserId()
             val userDocKey =
                 getUserDocKey(userId = userId, mediaType = mediaType, mediaId = mediaId)
+
+            if (isSessionValid) {
+                trySend(cachedUserReactions[userDocKey] ?: emptySet())
+            }
+
             val docRef = firestore.collection(colUserMediaReactions).document(userDocKey)
 
             val listener = docRef.addSnapshotListener { snapshot, error ->
@@ -487,8 +523,10 @@ class CommunityRepositoryImpl @Inject constructor(
                         MediaReactionTag.fromTagKey(it.toString())
                     }?.toSet() ?: emptySet()
 
+                    cachedUserReactions[userDocKey] = selectedTags
                     trySend(selectedTags)
                 } else {
+                    cachedUserReactions[userDocKey] = emptySet()
                     trySend(emptySet())
                 }
             }
@@ -595,6 +633,11 @@ class CommunityRepositoryImpl @Inject constructor(
 
             // Emit instant 0ms local state update
             optimisticFlow.value = optimisticUpdated
+
+            // Update in-memory session cache
+            cachedAggregateReactions[mediaKey] = Pair(newTagCounts, newTotal)
+            cachedUserReactions[userDocKey] = newSelectedTags
+            reactionsFetchTimestamps[mediaKey] = System.currentTimeMillis()
 
             // Background Firestore Batch Update
             val batch = firestore.batch()

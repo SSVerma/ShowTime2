@@ -64,7 +64,42 @@ class CommunityReactionsTest {
         assertThat(MediaReactionTag.fromTagKey("imax_essential")).isEqualTo(MediaReactionTag.IMAX_ESSENTIAL)
         assertThat(MediaReactionTag.fromTagKey("cried_eyes_out")).isEqualTo(MediaReactionTag.EMOTIONAL_TEARJERKER)
         assertThat(MediaReactionTag.fromTagKey("overrated")).isEqualTo(MediaReactionTag.OVERRATED)
+        assertThat(MediaReactionTag.fromTagKey("hyped")).isEqualTo(MediaReactionTag.HYPED)
+        assertThat(MediaReactionTag.fromTagKey("day_one_cinema")).isEqualTo(MediaReactionTag.DAY_ONE_CINEMA)
+        assertThat(MediaReactionTag.fromTagKey("skeptical")).isEqualTo(MediaReactionTag.SKEPTICAL)
+        assertThat(MediaReactionTag.fromTagKey("most_anticipated")).isEqualTo(MediaReactionTag.MOST_ANTICIPATED)
+        assertThat(MediaReactionTag.fromTagKey("trailer_hooked")).isEqualTo(MediaReactionTag.TRAILER_HOOKED)
         assertThat(MediaReactionTag.fromTagKey("non_existent")).isNull()
+    }
+
+    @Test
+    fun `MediaReactionTag tagsFor returns pre-release tags for upcoming and post-release tags for released`() {
+        val preRelease = MediaReactionTag.tagsFor(isUpcoming = true)
+        assertThat(preRelease).containsExactly(
+            MediaReactionTag.HYPED,
+            MediaReactionTag.DAY_ONE_CINEMA,
+            MediaReactionTag.SKEPTICAL,
+            MediaReactionTag.MOST_ANTICIPATED,
+            MediaReactionTag.TRAILER_HOOKED
+        ).inOrder()
+
+        val postRelease = MediaReactionTag.tagsFor(isUpcoming = false)
+        assertThat(postRelease).containsExactly(
+            MediaReactionTag.MIND_BENDING,
+            MediaReactionTag.COMFORT_WATCH,
+            MediaReactionTag.PLOT_TWIST,
+            MediaReactionTag.IMAX_ESSENTIAL,
+            MediaReactionTag.EMOTIONAL_TEARJERKER,
+            MediaReactionTag.OVERRATED
+        ).inOrder()
+    }
+
+    @Test
+    fun `CommunityOptimizationConfig has valid reactions cache TTL constants`() {
+        assertThat(com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_REACTIONS_CACHE_TTL_MINUTES)
+            .isEqualTo("remote_reactions_cache_ttl_minutes")
+        assertThat(com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.DEFAULT_REACTIONS_CACHE_TTL_MS)
+            .isEqualTo(java.util.concurrent.TimeUnit.MINUTES.toMillis(15))
     }
 
     @Test

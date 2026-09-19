@@ -290,7 +290,8 @@ private fun MovieContent(
             movieReactionsSection(
                 mediaReactions = mediaReactions,
                 onReactionTagClicked = viewModel::onReactionTagClicked,
-                modifier = Modifier.topSectionSpacing()
+                modifier = Modifier.topSectionSpacing(),
+                isUpcoming = movie.isUpcoming
             )
 
             movieOverviewSection(

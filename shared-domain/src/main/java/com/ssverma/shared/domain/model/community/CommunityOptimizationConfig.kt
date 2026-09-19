@@ -73,4 +73,15 @@ object CommunityOptimizationConfig {
      * Remote Config key for overriding discussion pagination page size.
      */
     const val REMOTE_KEY_DISCUSSION_PAGE_SIZE = "remote_discussion_page_size"
+
+    /**
+     * Default Time-To-Live (TTL) for in-memory media reactions session cache (15 minutes).
+     * Eliminates redundant Firestore reads on rapid media details re-opening.
+     */
+    val DEFAULT_REACTIONS_CACHE_TTL_MS = TimeUnit.MINUTES.toMillis(15)
+
+    /**
+     * Remote Config key for overriding media reactions cache TTL (in minutes).
+     */
+    const val REMOTE_KEY_REACTIONS_CACHE_TTL_MINUTES = "remote_reactions_cache_ttl_minutes"
 }
