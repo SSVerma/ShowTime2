@@ -383,11 +383,13 @@ fun CommunityListCard(
                         }
 
                         if (communityList.isMine) {
-                            // Owner overflow menu
-                            OwnerOverflowMenu(
-                                onMakePrivate = onMakePrivate,
-                                onDeleteFromCommunity = onDeleteFromCommunity
-                            )
+                            if (onMakePrivate != null || onDeleteFromCommunity != null) {
+                                // Owner overflow menu
+                                OwnerOverflowMenu(
+                                    onMakePrivate = onMakePrivate,
+                                    onDeleteFromCommunity = onDeleteFromCommunity
+                                )
+                            }
                         } else {
                             if (communityList.isClonedByMe) {
                                 // Cloned badge (static)
@@ -474,6 +476,7 @@ private fun OwnerOverflowMenu(
     onMakePrivate: (() -> Unit)?,
     onDeleteFromCommunity: (() -> Unit)?
 ) {
+    if (onMakePrivate == null && onDeleteFromCommunity == null) return
     var expanded by remember { mutableStateOf(false) }
 
     Box {
@@ -546,6 +549,7 @@ internal fun CommunityListNonOwnerOverflowMenu(
     onReport: (() -> Unit)?,
     onBlockAuthor: (() -> Unit)?
 ) {
+    if (onReport == null && onBlockAuthor == null) return
     var expanded by remember { mutableStateOf(false) }
 
     Box {
