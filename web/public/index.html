@@ -7,25 +7,29 @@
 
     <!-- Primary Meta Tags -->
     <meta content="ShowTime — Discover Movies & TV Shows" name="title">
-    <meta content="Discover movies, TV shows, explore curated community collections, generate cinema receipts, and sync your watch history. Built with Jetpack Compose."
+    <meta content="Discover movies, TV shows, explore curated community collections, log your cinema diary, generate cinema receipts, and sync seamlessly. Built with Jetpack Compose."
           name="description">
-    <meta content="#0d1117" name="theme-color">
+    <meta content="#0B0F19" name="theme-color">
+
+    <!-- Favicon & Touch Icon -->
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo.png">
 
     <!-- Open Graph / Facebook -->
     <meta content="website" property="og:type">
     <meta content="https://showtime.ssverma.in/" property="og:url">
     <meta content="ShowTime — The Ultimate Cinema Companion" property="og:title">
-    <meta content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, and sync with Trakt.tv."
+    <meta content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, track your cinema diary, and sync with Trakt.tv."
           property="og:description">
-    <meta content="https://showtime.ssverma.in/assets/og-cover.png" property="og:image">
+    <meta content="https://showtime.ssverma.in/assets/logo.png" property="og:image">
 
     <!-- Twitter -->
     <meta content="summary_large_image" property="twitter:card">
     <meta content="https://showtime.ssverma.in/" property="twitter:url">
     <meta content="ShowTime — The Ultimate Cinema Companion" property="twitter:title">
-    <meta content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, and sync with Trakt.tv."
+    <meta content="Discover movies & TV shows, explore curated community lists, generate stylish cinema receipts, track your cinema diary, and sync with Trakt.tv."
           property="twitter:description">
-    <meta content="https://showtime.ssverma.in/assets/og-cover.png" property="twitter:image">
+    <meta content="https://showtime.ssverma.in/assets/logo.png" property="twitter:image">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -41,7 +45,7 @@
           --border: rgba(255, 255, 255, 0.08);
           --primary: #6366F1;
           --primary-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
-          --accent-glow: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.25) 0%, rgba(11, 15, 25, 0) 70%);
+          --accent-glow: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.28) 0%, rgba(11, 15, 25, 0) 70%);
           --text: #F8FAFC;
           --text-muted: #94A3B8;
         }
@@ -145,16 +149,17 @@
           color: white;
         }
 
-        .logo-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          background: var(--primary-gradient);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
-          font-size: 20px;
+        .logo-img {
+          width: 42px;
+          height: 42px;
+          border-radius: 11px;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+          object-fit: cover;
+          transition: transform 0.2s ease;
+        }
+
+        .logo-container:hover .logo-img {
+          transform: scale(1.05);
         }
 
         .logo-title {
@@ -172,6 +177,9 @@
           border: 1px solid var(--border);
           border-radius: 20px;
           transition: all 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
         }
 
         .github-link:hover {
@@ -183,8 +191,8 @@
         /* Hero Section */
         .hero {
           text-align: center;
-          max-width: 720px;
-          margin-bottom: 56px;
+          max-width: 760px;
+          margin-bottom: 64px;
         }
 
         .hero-badge {
@@ -202,7 +210,7 @@
         }
 
         .hero h1 {
-          font-size: 46px;
+          font-size: 48px;
           font-weight: 800;
           line-height: 1.15;
           letter-spacing: -1px;
@@ -226,33 +234,117 @@
           display: flex;
           gap: 16px;
           justify-content: center;
+          align-items: center;
           flex-wrap: wrap;
         }
 
+        /* Official Google Play Button */
         .btn-playstore {
-          background: var(--primary-gradient);
+          background: #000000;
           color: white;
           text-decoration: none;
-          padding: 14px 28px;
+          padding: 10px 22px;
           border-radius: 14px;
-          font-size: 15px;
-          font-weight: 700;
+          border: 1px solid rgba(255, 255, 255, 0.16);
           display: inline-flex;
           align-items: center;
-          gap: 10px;
-          box-shadow: 0 12px 28px rgba(99, 102, 241, 0.35);
-          transition: all 0.2s;
+          gap: 12px;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-playstore:hover {
           transform: translateY(-2px);
-          box-shadow: 0 16px 36px rgba(99, 102, 241, 0.45);
+          border-color: rgba(255, 255, 255, 0.35);
+          box-shadow: 0 14px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-playstore-icon {
+          width: 28px;
+          height: 28px;
+          flex-shrink: 0;
+        }
+
+        .btn-playstore-content {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          line-height: 1.15;
+        }
+
+        .btn-playstore-sub {
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.6px;
+          text-transform: uppercase;
+          color: #94A3B8;
+        }
+
+        .btn-playstore-main {
+          font-size: 17px;
+          font-weight: 700;
+          color: #FFFFFF;
+          letter-spacing: -0.2px;
+        }
+
+        .btn-github-hero {
+          background: rgba(255, 255, 255, 0.05);
+          color: #F8FAFC;
+          text-decoration: none;
+          padding: 14px 24px;
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 15px;
+          font-weight: 600;
+          transition: all 0.25s ease;
+          backdrop-filter: blur(8px);
+        }
+
+        .btn-github-hero:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+        }
+
+        /* Section Title Header */
+        .section-header {
+          text-align: center;
+          margin-bottom: 40px;
+        }
+
+        .section-badge {
+          display: inline-flex;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+          color: #A5B4FC;
+          margin-bottom: 8px;
+        }
+
+        .section-title {
+          font-size: 30px;
+          font-weight: 800;
+          color: #F8FAFC;
+          letter-spacing: -0.5px;
+          margin-bottom: 12px;
+        }
+
+        .section-subtitle {
+          font-size: 15px;
+          color: var(--text-muted);
+          max-width: 600px;
+          margin: 0 auto;
+          line-height: 1.6;
         }
 
         /* Features Grid */
         .features-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
           gap: 20px;
           width: 100%;
           margin-bottom: 64px;
@@ -274,7 +366,7 @@
         }
 
         .feature-icon {
-          font-size: 28px;
+          font-size: 30px;
           margin-bottom: 16px;
         }
 
@@ -288,7 +380,7 @@
         .feature-card p {
           font-size: 14px;
           color: var(--text-muted);
-          line-height: 1.55;
+          line-height: 1.6;
         }
 
         /* Developer Profile Section */
@@ -404,6 +496,8 @@
           #deep-link-banner { flex-direction: column; gap: 12px; text-align: center; }
           .developer-card { flex-direction: column; text-align: center; align-items: center; }
           .dev-links { justify-content: center; }
+          .cta-group { flex-direction: column; width: 100%; }
+          .btn-playstore, .btn-github-hero { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -421,72 +515,123 @@
 
     <header>
         <a class="logo-container" href="/">
-            <div class="logo-icon">🎬</div>
+            <img src="/assets/logo.png" alt="ShowTime Logo" class="logo-img">
             <span class="logo-title">ShowTime</span>
         </a>
-        <a class="github-link" href="https://github.com/SSVerma/ShowTime" target="_blank">
-            GitHub ★
+        <a class="github-link" href="https://github.com/SSVerma/ShowTime2" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            <span>GitHub</span>
         </a>
     </header>
 
     <main class="hero">
-        <div class="hero-badge">✨ 100% Jetpack Compose • Open Source</div>
+        <div class="hero-badge">✨ 100% Jetpack Compose • ShowTime 2.0 • Open Source</div>
         <h1>The Ultimate <span>Cinema Companion</span> & Movie Tracker</h1>
         <p>
-            Explore movies & TV shows, curate custom community lists, generate stylish cinema
-            receipts, and sync seamlessly with Trakt.tv.
+            Explore movies & TV shows, curate community collections, track your cinema diary,
+            generate vintage receipts, and sync seamlessly across devices.
         </p>
 
         <div class="cta-group">
             <a class="btn-playstore"
                href="https://play.google.com/store/apps/details?id=com.ssverma.showtime"
-               id="main-download-btn">
-                <span>📲 Get on Google Play</span>
+               id="main-download-btn"
+               target="_blank"
+               rel="noopener noreferrer">
+                <svg class="btn-playstore-icon" viewBox="0 0 512 512">
+                    <path fill="#4285F4" d="M32.6,18.4C26.1,25.3,22,35.6,22,48.2v415.6c0,12.6,4.1,22.9,10.6,29.8l1.6,1.5L261.5,267.8v-5.6L34.2,16.9L32.6,18.4z"/>
+                    <path fill="#FBBC04" d="M337.3,343.6l-75.8-75.8v-5.6l75.8-75.8l1.7,1l89.9,51.1c25.7,14.6,25.7,38.5,0,53.1l-89.9,51.1L337.3,343.6z"/>
+                    <path fill="#EA4335" d="M339,342.6L261.5,265L32.6,493.6c8.4,8.9,22.4,10,38.2,1.1L339,342.6"/>
+                    <path fill="#34A853" d="M339,169.4L70.8,17.3c-15.8-8.9-29.8-7.8-38.2,1.1L261.5,247L339,169.4"/>
+                </svg>
+                <div class="btn-playstore-content">
+                    <span class="btn-playstore-sub">GET IT ON</span>
+                    <span class="btn-playstore-main">Google Play</span>
+                </div>
+            </a>
+
+            <a class="btn-github-hero"
+               href="https://github.com/SSVerma/ShowTime2"
+               target="_blank"
+               rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                <span>View on GitHub</span>
             </a>
         </div>
     </main>
 
-    <section class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon">🍿</div>
-            <h3>Community Collections</h3>
-            <p>Curate themed movie & TV collections, publish them to the community, and clone
-                curated lists created by fellow cinephiles.</p>
+    <!-- Features Section -->
+    <section style="width: 100%;">
+        <div class="section-header">
+            <span class="section-badge">✨ Everything You Need</span>
+            <h2 class="section-title">Engineered for Cinephiles & Film Lovers</h2>
+            <p class="section-subtitle">ShowTime 2.0 combines lightning-fast movie exploration with personal cinema journaling, community curation, and aesthetic social sharing.</p>
         </div>
 
-        <div class="feature-card">
-            <div class="feature-icon">🧾</div>
-            <h3>Cinema Receipts</h3>
-            <p>Generate retro styled cinema receipts for your watched movies, favorite gems, and
-                custom curated collections.</p>
-        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <h3>Explore & Discover</h3>
+                <p>Browse trending, top-rated, and upcoming releases. View cast filmographies, trailers, seasons, episodes, and streaming availability powered by JustWatch.</p>
+            </div>
 
-        <div class="feature-card">
-            <div class="feature-icon">☁️</div>
-            <h3>Trakt & Cloud Backup</h3>
-            <p>Two-way sync with Trakt.tv and encrypted cloud backup keeps your watch
-                history preserved across devices.</p>
-        </div>
+            <div class="feature-card">
+                <div class="feature-icon">📖</div>
+                <h3>Cinema Diary & Journal</h3>
+                <p>Log watch dates, rewatch counts, half-star ratings, private reviews, and custom tags. Track your cinephile journey with rich viewing statistics.</p>
+            </div>
 
-        <div class="feature-card">
-            <div class="feature-icon">🎮</div>
-            <h3>Daily Cinema Challenges</h3>
-            <p>Test your film knowledge with daily movie trivia puzzles, streak tracking, and
-                shareable score grids.</p>
-        </div>
+            <div class="feature-card">
+                <div class="feature-icon">🍿</div>
+                <h3>Curated Community Lists</h3>
+                <p>Curate themed collections, share them with the cinephile community, clone lists created by fellow movie lovers, and vote in daily community polls.</p>
+            </div>
 
-        <div class="feature-card">
-            <div class="feature-icon">🎨</div>
-            <h3>Material You & OLED Dark</h3>
-            <p>Stunning dynamic theming adapting to your wallpaper palette with pure AMOLED OLED
-                Midnight black mode.</p>
-        </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧾</div>
+                <h3>Vintage Cinema Receipts</h3>
+                <p>Generate aesthetic retro thermal receipts for your watch history, favorites, or custom lists to share directly on Instagram and Twitter.</p>
+            </div>
 
-        <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3>Blazing Fast & Fluid</h3>
-            <p>Engineered with Compose multiplatform architecture, Navigation3 backstacks, and
-                offline-first Room database.</p>
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>Daily Cinema Challenge</h3>
+                <p>Test your film knowledge with daily guess-the-movie trivia puzzles, track your guessing streaks, and share spoiler-free score grids.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Smart Multi-Facet Search</h3>
+                <p>Instant search across millions of titles, actors, and directors. Filter in real-time by streaming platform, release year, genres, and ratings.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">☁️</div>
+                <h3>Trakt & Cloud Backup</h3>
+                <p>Automatic two-way scrobbling with Trakt.tv and encrypted Google Cloud Firestore snapshots to safeguard your entire movie library across devices.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Calendar Sync & Alerts</h3>
+                <p>Export upcoming release dates directly to your device calendar (.ics) with one tap, and get alerts when new episodes and movie premieres air.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Material You & OLED Dark</h3>
+                <p>Dynamic wallpaper theming adapting to your color palette, high-frame-rate Compose animations, and a pure pitch-black AMOLED Midnight mode.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Privacy-First & Open Source</h3>
+                <p>100% offline-first local SQLite Room database. No data selling, transparent Apache-2.0 code, and completely free of invasive popups.</p>
+            </div>
         </div>
     </section>
 
@@ -502,13 +647,13 @@
                 <p class="dev-bio">Android & System Software Engineer. Building beautiful, fluid,
                     high-performance apps and open-source software.</p>
                 <div class="dev-links">
-                    <a class="dev-link" href="https://x.com/ssverma1916" target="_blank">
+                    <a class="dev-link" href="https://x.com/ssverma1916" target="_blank" rel="noopener noreferrer">
                         <span>𝕏 @ssverma1916</span>
                     </a>
-                    <a class="dev-link" href="https://github.com/SSVerma" target="_blank">
+                    <a class="dev-link" href="https://github.com/SSVerma" target="_blank" rel="noopener noreferrer">
                         <span>GitHub</span>
                     </a>
-                    <a class="dev-link" href="https://ssverma.in" target="_blank">
+                    <a class="dev-link" href="https://ssverma.in" target="_blank" rel="noopener noreferrer">
                         <span>ssverma.in ↗</span>
                     </a>
                 </div>
@@ -525,7 +670,12 @@
                style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;">Privacy
                 Policy</a>
             <span style="color: var(--border);">•</span>
-            <a href="https://github.com/SSVerma/ShowTime"
+            <a href="/terms"
+               onmouseout="this.style.color='var(--text-muted)'"
+               onmouseover="this.style.color='#818CF8'"
+               style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;">Terms of Service</a>
+            <span style="color: var(--border);">•</span>
+            <a href="https://github.com/SSVerma/ShowTime2"
                onmouseout="this.style.color='var(--text-muted)'"
                onmouseover="this.style.color='#818CF8'"
                rel="noopener noreferrer"
@@ -538,8 +688,7 @@
                style="color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s;">Contact
                 Us</a>
         </div>
-        <p class="tmdb-notice">This product uses the TMDB API but is not endorsed or certified by
-            TMDB.</p>
+        <p class="tmdb-notice">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
     </footer>
 
 </div>
@@ -552,7 +701,16 @@
       const bannerMsg = document.getElementById('banner-msg');
       const actionBtn = document.getElementById('banner-action-btn');
 
-      if (path && path !== '/' && path !== '/index.html') {
+      // Only handle recognized app deep link patterns
+      const isDeepLink = path.startsWith('/lists/') ||
+                         path.startsWith('/community/') ||
+                         path.startsWith('/movie/') ||
+                         path.startsWith('/tv/') ||
+                         path.startsWith('/receipt') ||
+                         path.startsWith('/challenge') ||
+                         path.startsWith('/match');
+
+      if (isDeepLink) {
         banner.classList.add('active');
 
         // Formulate custom scheme URI for in-app jump
@@ -569,6 +727,8 @@
           bannerMsg.textContent = '🧾 Viewing a shared Cinema Receipt. Tap to open in ShowTime:';
         } else if (path.startsWith('/challenge')) {
           bannerMsg.textContent = '🎮 Viewing Daily Cinema Challenge. Tap to play in ShowTime:';
+        } else if (path.startsWith('/match')) {
+          bannerMsg.textContent = '❤️ Viewing Movie Match Room. Tap to join in ShowTime:';
         }
 
         // Attempt automatic deep link launch on mobile browsers

@@ -10,6 +10,10 @@
           name="description">
     <meta content="#0B0F19" name="theme-color">
 
+    <!-- Favicon & Touch Icon -->
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <link rel="apple-touch-icon" href="/assets/logo.png">
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
@@ -70,16 +74,12 @@
           color: var(--text);
         }
 
-        .logo-icon {
-          width: 36px;
-          height: 36px;
-          background: var(--primary-gradient);
+        .logo-img {
+          width: 38px;
+          height: 38px;
           border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 800;
-          font-size: 18px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          object-fit: cover;
         }
 
         h1 {
@@ -158,123 +158,83 @@
 <div class="container">
     <div class="header">
         <a class="brand" href="/">
-            <div class="logo-icon">🎬</div>
+            <img src="/assets/logo.png" alt="ShowTime Logo" class="logo-img">
             <span style="font-weight: 700; font-size: 18px;">ShowTime</span>
         </a>
         <h1>Privacy Policy</h1>
-        <div class="meta">Effective Date: September 1, 2026 • Last Updated: September 1, 2026</div>
+        <div class="meta">Effective Date: September 1, 2026 • Last Updated: September 19, 2026</div>
     </div>
 
-    <p>ShowTime ("we", "our", or "the app") is an open-source movie and TV show exploration
-        application. We are committed to transparency and protecting your privacy. This Privacy
-        Policy outlines what information ShowTime collects, how it is used, and the choices you have
-        concerning your data.</p>
+    <p>ShowTime ("we", "our", or "the app") is a privacy-first, open-source movie and TV show exploration application. We are committed to transparency and protecting your privacy. This Privacy Policy outlines what information ShowTime collects, how it is used, and the choices you have concerning your data.</p>
 
     <h2>1. Information We Collect and How We Use It</h2>
 
     <h3>A. Local Device Data (Default Behavior)</h3>
-    <p>By default, ShowTime functions completely locally on your device without requiring an account
-        or login:</p>
+    <p>By default, ShowTime functions completely locally on your device without requiring an account or login:</p>
     <ul>
-        <li>Your <strong>Watchlist</strong>, <strong>Favorites</strong>, <strong>Watch
-            History</strong>, and <strong>Custom Lists</strong> are stored securely in a local
-            SQLite database (Room) on your phone.
-        </li>
-        <li>This data remains strictly on your device unless you voluntarily choose to use our Cloud
-            Backup & Sync service.
-        </li>
+        <li>Your <strong>Watchlist</strong>, <strong>Favorites</strong>, <strong>Watch History</strong>, <strong>Custom Collections</strong>, and <strong>Cinema Diary</strong> (including custom ratings, reviews, tags, and watch dates) are stored securely in a local SQLite database (Room) on your device.</li>
+        <li>This data remains strictly on your device unless you voluntarily choose to use our Cloud Backup & Sync service.</li>
     </ul>
 
     <h3>B. Cloud Backup & Sync (Optional Google Sign-In)</h3>
-    <p>If you optionally choose to enable <strong>Cloud Backup & Sync</strong> by signing in with
-        your Google Account:</p>
+    <p>If you optionally choose to enable <strong>Cloud Backup & Sync</strong> by signing in with your Google Account:</p>
     <ul>
-        <li><strong>Account Identity:</strong> We store your Google Account email address, display
-            name, and avatar URL.
-        </li>
-        <li><strong>Library Snapshot:</strong> We store an encrypted, compressed snapshot of your
-            movie/TV watchlist, favorites, custom lists, and watch history in our secure Google
-            Cloud Firestore database.
-        </li>
-        <li><strong>Informational Device Identifier:</strong> We store an informational device model
-            label (e.g. <em>"Pixel 8"</em>) solely to help you identify which device created a
-            particular backup snapshot.
-        </li>
-        <li><strong>Purpose:</strong> Solely to authenticate your identity and restore your personal
-            movie collection across your devices or after reinstalling the app.
-        </li>
+        <li><strong>Account Identity:</strong> We receive and store your Google Account email address, display name, and avatar URL via Google Sign-In.</li>
+        <li><strong>Library Snapshot:</strong> We store an encrypted, compressed snapshot of your movie/TV watchlist, favorites, custom lists, cinema diary, and watch history in our secure Google Cloud Firestore database.</li>
+        <li><strong>Informational Device Identifier:</strong> We store an informational device model label (e.g., <em>"Pixel 8"</em> or <em>"Galaxy S24"</em>) solely to help you identify which device created a particular backup snapshot.</li>
+        <li><strong>Purpose:</strong> Exclusively to authenticate your identity and restore your personal movie collection across your devices or after reinstalling the app. We do not use your backup data for profiling or third-party tracking.</li>
     </ul>
 
-    <h3>C. Community Features & Daily Polls (Optional)</h3>
-    <p>ShowTime offers community interactive features (daily polls, vibe reactions, and
-        discussions):</p>
+    <h3>C. Community Interactive Features & Daily Polls (Optional)</h3>
+    <p>ShowTime offers interactive cinephile community features (daily polls, community curated lists, and discussions):</p>
     <ul>
-        <li>Guest users receive a randomized anonymous session ID to participate in polls and
-            discussions without registration.
-        </li>
-        <li>If signed in with Google, your comments will display your verified Google display name
-            and avatar.
-        </li>
+        <li>Guest users receive a randomized anonymous session ID to participate in polls and discussions without registration.</li>
+        <li>If signed in with Google, your comments and shared collections will display your verified Google display name and avatar.</li>
+    </ul>
+
+    <h3>D. Calendar Integration & Airing Reminders</h3>
+    <ul>
+        <li><strong>Calendar Export (.ics):</strong> When exporting release reminders, ShowTime generates the standard <code>.ics</code> calendar file entirely locally on your device. ShowTime does not read, access, or sync your private calendar events.</li>
+        <li><strong>Airing Notifications:</strong> Release alerts use Android WorkManager and Firebase Cloud Messaging (FCM). You can toggle alerts on or off at any time in Android Notification Settings.</li>
     </ul>
 
     <h2>2. Third-Party Services & Integrations</h2>
     <p>ShowTime integrates with trusted third-party services to deliver app functionality:</p>
     <ul>
-        <li><strong>The Movie Database (TMDB):</strong> Used for movie and TV show metadata, cast
-            information, and artwork. TMDB does not receive your personal data from ShowTime.
-        </li>
-        <li><strong>Trakt.tv (Optional):</strong> If connected, your watchlist and scrobble history
-            sync directly with your personal Trakt account.
-        </li>
-        <li><strong>Google Firebase:</strong> Used for secure cloud database storage (Firestore) and
-            anonymous crash diagnostics.
-        </li>
-        <li><strong>Google AdMob:</strong> Used to display rewarded video ads for optional free
-            feature passes.
-        </li>
-        <li><strong>Google Play In-App Billing:</strong> All payments for ShowTime Pro are processed
-            directly by Google Play. ShowTime never sees or stores your credit card details.
-        </li>
+        <li><strong>The Movie Database (TMDB):</strong> Used for movie and TV show metadata, cast information, and artwork. TMDB does not receive your personal library or diary data.</li>
+        <li><strong>JustWatch:</strong> Streaming availability information is powered by JustWatch via TMDB without sharing your personal watch history.</li>
+        <li><strong>Google Play In-App Billing (ShowTime Pro):</strong> All transactions for ShowTime Pro (monthly, yearly subscriptions, and lifetime access) are processed directly and exclusively by <strong>Google Play</strong>. ShowTime never sees, collects, or stores your credit card or financial billing information.</li>
+        <li><strong>Google Firebase:</strong> Used for secure cloud database storage (Firestore) and anonymous crash diagnostics (Crashlytics).</li>
+        <li><strong>Google AdMob (Free Tier Only):</strong> Used to display non-intrusive native or rewarded video ads for free-tier users. ShowTime Pro members enjoy a 100% ad-free experience.</li>
     </ul>
 
     <h2>3. Data Sharing & Disclosure</h2>
     <ul>
-        <li><strong>We never sell, rent, or trade your personal data.</strong></li>
+        <li><strong>We DO NOT sell, rent, or trade your personal data.</strong></li>
         <li>Your data is never shared with third-party data brokers or advertisers.</li>
-        <li>Cloud backups are strictly private and accessible only when authenticated under your
-            personal Google account.
-        </li>
+        <li>Cloud backups are strictly private and accessible only when authenticated under your personal Google account.</li>
     </ul>
 
     <h2>4. Data Retention and Deletion</h2>
     <p>You have full control over your data at all times:</p>
     <ul>
-        <li><strong>Local Data:</strong> You can clear all local data at any time via Android
-            Settings or by uninstalling the app.
-        </li>
-        <li><strong>Cloud Backup:</strong> You can delete your cloud snapshot and sign out directly
-            within the app's <strong>Cloud Backup & Sync</strong> screen.
-        </li>
-        <li><strong>Manual Deletion Requests:</strong> You can open an issue on our GitHub
-            repository to request manual account data deletion.
-        </li>
+        <li><strong>Local Data:</strong> You can clear all local data at any time via Android Settings > Apps > ShowTime > Clear Data or by uninstalling the app.</li>
+        <li><strong>Cloud Backup Deletion:</strong> You can delete your cloud backup snapshot directly within the app's <strong>Settings > Cloud Backup & Restore</strong> screen.</li>
+        <li><strong>Account Deletion Requests:</strong> You can request permanent server-side deletion of any associated Google Account data by emailing <a href="mailto:ssvermahmh@gmail.com">ssvermahmh@gmail.com</a>.</li>
     </ul>
 
-    <h2>5. Open Source & Transparency</h2>
-    <p>ShowTime is open-source software. You can inspect our source code, security rules, and data
-        practices at any time:</p>
-    <p><a href="https://github.com/SSVerma/ShowTime" rel="noopener noreferrer" target="_blank">GitHub
-        Repository — SSVerma/ShowTime</a></p>
+    <h2>5. Children's Privacy</h2>
+    <p>ShowTime is designed for general audiences and does not knowingly collect or solicit personal information from children under the age of 13 (or 16 in the EEA).</p>
 
-    <h2>6. Contact Us</h2>
-    <p>If you have any questions, feedback, or privacy-related requests regarding ShowTime, please
-        contact us directly:</p>
+    <h2>6. Open Source & Transparency</h2>
+    <p>ShowTime is open-source software. You can inspect our source code, security rules, and data practices at any time:</p>
+    <p><a href="https://github.com/SSVerma/ShowTime2" rel="noopener noreferrer" target="_blank">GitHub Repository — SSVerma/ShowTime2</a></p>
+
+    <h2>7. Contact Us</h2>
+    <p>If you have any questions, feedback, or privacy-related requests regarding ShowTime, please contact us directly:</p>
     <ul>
-        <li><strong>Email:</strong> <a href="mailto:ssvermahmh@gmail.com">ssvermahmh@gmail.com</a>
-        </li>
-        <li><strong>GitHub Issues:</strong> <a href="https://github.com/SSVerma/ShowTime/issues"
-                                               rel="noopener noreferrer" target="_blank">https://github.com/SSVerma/ShowTime/issues</a>
-        </li>
+        <li><strong>Email:</strong> <a href="mailto:ssvermahmh@gmail.com">ssvermahmh@gmail.com</a></li>
+        <li><strong>GitHub Issues:</strong> <a href="https://github.com/SSVerma/ShowTime2/issues" rel="noopener noreferrer" target="_blank">https://github.com/SSVerma/ShowTime2/issues</a></li>
     </ul>
 </div>
 

@@ -2,6 +2,7 @@ package com.ssverma.common.ui.appinfo
 
 import android.content.Intent
 import android.net.Uri
+import com.ssverma.core.ui.util.openWebUrl
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +24,6 @@ import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -47,7 +47,9 @@ import com.ssverma.common.ui.R
 import com.ssverma.core.ui.component.ShowTimeLogo
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
+import com.ssverma.shared.domain.utils.AppConfigConstants
 import com.ssverma.shared.ui.component.Avatar
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,20 +137,12 @@ fun AppInfoBottomSheet(
                 // Developer Spotlight
                 DeveloperSpotlight(
                     onFollowOnTwitter = {
-                        try {
-                            val intent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("https://x.com/ssverma1916")
-                            )
-                            context.startActivity(intent)
-                        } catch (_: Exception) {
-                            // Silently handle
-                        }
+                        context.openWebUrl(AppConfigConstants.DEVELOPER_TWITTER_URL)
                     },
                     onSendFeedback = {
                         try {
                             val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("mailto:ssvermahmh@gmail.com")
+                                data = "mailto:${AppConfigConstants.CONTACT_EMAIL}".toUri()
                                 putExtra(
                                     Intent.EXTRA_SUBJECT,
                                     "ShowTime Feedback (v$versionName)"
@@ -189,21 +183,11 @@ fun AppInfoBottomSheet(
                     try {
                         val intent = Intent(
                             Intent.ACTION_VIEW,
-                            Uri.parse("market://details?id=${context.packageName}")
+                            AppConfigConstants.PLAY_STORE_MARKET_URI.toUri()
                         )
                         context.startActivity(intent)
                     } catch (_: Exception) {
-                        try {
-                            val webIntent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(
-                                    "https://play.google.com/store/apps/details?id=${context.packageName}"
-                                )
-                            )
-                            context.startActivity(webIntent)
-                        } catch (_: Exception) {
-                            // Silently handle
-                        }
+                        context.openWebUrl(AppConfigConstants.PLAY_STORE_URL)
                     }
                 },
                 modifier = Modifier
@@ -221,26 +205,6 @@ fun AppInfoBottomSheet(
                     text = stringResource(R.string.app_info_rate_action),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            // Close
-            FilledTonalButton(
-                onClick = { onDismissRequest(showDontShowAgain) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = MaterialTheme.shapes.large,
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
-            ) {
-                Text(
-                    text = stringResource(R.string.app_info_close),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -289,7 +253,7 @@ private fun DeveloperSpotlight(
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
     ) {
         Avatar(
-            imageUrl = "https://pbs.twimg.com/profile_images/1807349302164934656/xELoSQEH_400x400.jpg",
+            imageUrl = AppConfigConstants.DEVELOPER_AVATAR_URL,
             onClick = onFollowOnTwitter,
             size = 64.dp
         )

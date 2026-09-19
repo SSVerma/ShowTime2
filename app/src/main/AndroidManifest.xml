@@ -43,14 +43,142 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
+                    android:scheme="https"
                     android:host="showtime.ssverma.in"
-                    android:scheme="https" />
+                    android:pathPrefix="/movie" />
                 <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/tv" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/person" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/people" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/lists" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/list" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/l" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/community" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/library" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/discover" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/discovery" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/browse" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/diary" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/taste" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/recommendations" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/wrapped" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/milestones" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/challenges" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/challenge" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/backlog" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/blindspot" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/blindspots" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/receipt" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/receipts" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/game" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/puzzle" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/match" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/matchroom" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/swipenight" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/home" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/dashboard" />
+                <data
+                    android:scheme="https"
+                    android:host="showtime.ssverma.in"
+                    android:pathPrefix="/search" />
+
+                <data
+                    android:scheme="https"
                     android:host="www.ssverma.in"
-                    android:scheme="https" />
+                    android:pathPrefix="/showtime" />
                 <data
+                    android:scheme="https"
                     android:host="ssverma.in"
-                    android:scheme="https" />
+                    android:pathPrefix="/showtime" />
             </intent-filter>
         </activity>
 

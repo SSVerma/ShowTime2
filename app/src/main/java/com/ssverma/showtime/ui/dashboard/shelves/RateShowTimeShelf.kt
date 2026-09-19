@@ -53,7 +53,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.util.openWebUrl
 import com.ssverma.shared.domain.utils.AppConfigConstants
+import androidx.core.net.toUri
 
 fun LazyListScope.rateShowTimeShelf(
     modifier: Modifier = Modifier
@@ -265,22 +267,13 @@ private fun openPlayStore(context: Context) {
     try {
         context.startActivity(playStoreIntent)
     } catch (_: Exception) {
-        val webIntent = Intent(
-            Intent.ACTION_VIEW,
-            Uri.parse(AppConfigConstants.PLAY_STORE_URL)
-        ).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        try {
-            context.startActivity(webIntent)
-        } catch (_: Exception) {
-        }
+        context.openWebUrl(AppConfigConstants.PLAY_STORE_URL)
     }
 }
 
 private fun sendFeedbackEmail(context: Context) {
     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-        data = Uri.parse("mailto:")
+        data = "mailto:".toUri()
         putExtra(Intent.EXTRA_EMAIL, arrayOf("feedback@showtime.ssverma.in"))
         putExtra(Intent.EXTRA_SUBJECT, "ShowTime App Feedback (Android ${Build.VERSION.RELEASE})")
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

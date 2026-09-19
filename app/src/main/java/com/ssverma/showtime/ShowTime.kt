@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import com.ssverma.core.ui.util.findActivity
+import com.ssverma.core.ui.util.openWebUrl
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
 import com.ssverma.common.ui.appinfo.OpenSourceLicensesBottomSheet
@@ -429,15 +430,17 @@ private fun MainDashboardContent(
                     },
                     onOpenPrivacy = {
                         coroutineScope.launch { drawerState.close() }
-                        try {
-                            val intent = Intent(
-                                Intent.ACTION_VIEW,
-                                AppConfigConstants.PRIVACY_POLICY_URL.toUri()
-                            )
-                            context.startActivity(intent)
-                        } catch (_: Exception) {
-                            showManualAppInfoSheet = true
-                        }
+                        context.openWebUrl(
+                            url = AppConfigConstants.PRIVACY_POLICY_URL,
+                            onError = { showManualAppInfoSheet = true }
+                        )
+                    },
+                    onOpenTerms = {
+                        coroutineScope.launch { drawerState.close() }
+                        context.openWebUrl(
+                            url = AppConfigConstants.TERMS_OF_SERVICE_URL,
+                            onError = { showManualAppInfoSheet = true }
+                        )
                     },
                     onOpenLicenses = {
                         coroutineScope.launch { drawerState.close() }

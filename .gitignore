@@ -39,6 +39,9 @@ feature-search-navigation/build
 **/service-account*.json
 **/.firebaserc
 **/.firebase/
+firebase-debug.log
+firebase-debug.*.log
+*.log
 
 **/.DS_Store
 build/

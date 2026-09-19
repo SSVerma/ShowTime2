@@ -67,6 +67,7 @@ fun ShowTimeDrawerContent(
     onOpenTheme: () -> Unit,
     onOpenLocalization: () -> Unit,
     onOpenPrivacy: () -> Unit,
+    onOpenTerms: () -> Unit = {},
     onOpenLicenses: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenWhatsNew: () -> Unit = {},
@@ -228,8 +229,13 @@ fun ShowTimeDrawerContent(
                 onClick = onOpenPrivacy
             )
             DrawerItem(
-                label = stringResource(id = R.string.open_source_licenses),
+                label = stringResource(id = R.string.terms_of_service),
                 icon = Icons.Rounded.Description,
+                onClick = onOpenTerms
+            )
+            DrawerItem(
+                label = stringResource(id = R.string.open_source_licenses),
+                icon = Icons.Rounded.Extension,
                 onClick = onOpenLicenses
             )
         }
