@@ -186,6 +186,12 @@ class CommunityRepositoryImpl @Inject constructor(
     private val latestCommentsCache =
         ConcurrentHashMap<String, Map<String, Comment>>()
 
+    private val threadSessionTimestamps =
+        ConcurrentHashMap<String, Long>()
+
+    private val cachedThreadComments =
+        ConcurrentHashMap<String, List<Comment>>()
+
     private val latestCommunityListsCache =
         ConcurrentHashMap<String, CommunityCuratedList>()
 
@@ -865,6 +871,53 @@ class CommunityRepositoryImpl @Inject constructor(
         }
     }
 
+    private fun parseCommentDocument(
+        doc: DocumentSnapshot,
+        userId: String,
+        maxReportThreshold: Int
+    ): Comment? {
+        val id = doc.id
+        val authorId = doc.getString("authorId") ?: return null
+        val authorName = doc.getString("authorName") ?: "Cinephile"
+        val authorAvatarUrl = doc.getString("authorAvatarUrl")
+        val content = doc.getString("content") ?: return null
+        val isSpoiler = doc.getBoolean("isSpoiler") ?: false
+        val upvotesCount = doc.getLong("upvotesCount")?.toInt() ?: 0
+        val upvoterIds = doc.get("upvoterIds") as? List<*> ?: emptyList<Any>()
+        val isUpvotedByMe = upvoterIds.any { it.toString() == userId }
+        val isOwner = authorId == userId
+        val isEdited = doc.getBoolean("isEdited") ?: false
+        val isProUser = doc.getBoolean("isProUser") ?: false
+        val parentId = doc.getString("parentId")
+        val replyToAuthorName = doc.getString("replyToAuthorName")
+        val repliesCount = doc.getLong("repliesCount")?.toInt() ?: 0
+        val reportCount = doc.getLong("reportCount")?.toInt() ?: 0
+        val createdAtEpochMs = doc.getLong("createdAtEpochMs")
+            ?: doc.getTimestamp("createdAt")?.toDate()?.time
+            ?: System.currentTimeMillis()
+
+        return if (reportCount < maxReportThreshold) {
+            Comment(
+                id = id,
+                authorId = authorId,
+                authorName = authorName,
+                authorAvatarUrl = authorAvatarUrl,
+                content = content,
+                isSpoiler = isSpoiler,
+                upvotesCount = upvotesCount,
+                isUpvotedByMe = isUpvotedByMe,
+                isOwner = isOwner,
+                isEdited = isEdited,
+                isProUser = isProUser,
+                parentId = parentId,
+                replyToAuthorName = replyToAuthorName,
+                repliesCount = repliesCount,
+                reportCount = reportCount,
+                createdAtEpochMs = createdAtEpochMs
+            )
+        } else null
+    }
+
     override fun getDiscussions(
         target: DiscussionTarget
     ): Flow<List<Comment>> {
@@ -873,17 +926,58 @@ class CommunityRepositoryImpl @Inject constructor(
             MutableStateFlow(emptyList())
         }
 
+        val now = System.currentTimeMillis()
+        val lastFetch = threadSessionTimestamps[pathKey] ?: 0L
+        val ttlMinutes = appConfigProvider.getLong(
+            CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_SESSION_CACHE_TTL_MINUTES,
+            TimeUnit.MILLISECONDS.toMinutes(CommunityOptimizationConfig.DEFAULT_DISCUSSION_SESSION_CACHE_TTL_MS)
+        )
+        val ttlMs = TimeUnit.MINUTES.toMillis(ttlMinutes)
+        val isSessionValid =
+            (lastFetch > 0L) && (now - lastFetch < ttlMs) && cachedThreadComments.containsKey(
+                pathKey
+            )
+
+        if (isSessionValid) {
+            optimisticFlow.value = cachedThreadComments[pathKey].orEmpty()
+        }
+
         val firestoreFlow = callbackFlow {
+            if (isSessionValid) {
+                trySend(cachedThreadComments[pathKey].orEmpty())
+            }
+
             val userId = getEffectiveUserId()
-            val commentsCollection = firestore
-                .collection(colMediaDiscussions)
-                .document(pathKey)
-                .collection("comments")
-                .orderBy(
-                    "createdAtEpochMs",
-                    com.google.firebase.firestore.Query.Direction.DESCENDING
+            val maxReportThreshold = appConfigProvider.getLong(
+                REMOTE_KEY_COMMUNITY_MAX_REPORT_THRESHOLD,
+                CommunityModerationConfig.DEFAULT_MAX_REPORT_THRESHOLD
+            ).toInt()
+
+            val commentsCollection = if (isSessionValid) {
+                firestore
+                    .collection(colMediaDiscussions)
+                    .document(pathKey)
+                    .collection("comments")
+                    .whereGreaterThan("createdAtEpochMs", lastFetch)
+                    .orderBy(
+                        "createdAtEpochMs",
+                        com.google.firebase.firestore.Query.Direction.DESCENDING
+                    )
+            } else {
+                val limit = appConfigProvider.getLong(
+                    CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_COMMENTS_LIMIT,
+                    CommunityOptimizationConfig.DEFAULT_DISCUSSION_COMMENTS_LIMIT
                 )
-                .limit(50)
+                firestore
+                    .collection(colMediaDiscussions)
+                    .document(pathKey)
+                    .collection("comments")
+                    .orderBy(
+                        "createdAtEpochMs",
+                        com.google.firebase.firestore.Query.Direction.DESCENDING
+                    )
+                    .limit(limit)
+            }
 
             val listener = commentsCollection.addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -891,54 +985,22 @@ class CommunityRepositoryImpl @Inject constructor(
                 }
 
                 if (snapshot != null) {
-                    val comments = snapshot.documents.mapNotNull { doc ->
-                        val id = doc.id
-                        val authorId = doc.getString("authorId") ?: return@mapNotNull null
-                        val authorName = doc.getString("authorName") ?: "Cinephile"
-                        val authorAvatarUrl = doc.getString("authorAvatarUrl")
-                        val content = doc.getString("content") ?: return@mapNotNull null
-                        val isSpoiler = doc.getBoolean("isSpoiler") ?: false
-                        val upvotesCount = doc.getLong("upvotesCount")?.toInt() ?: 0
-                        val upvoterIds = doc.get("upvoterIds") as? List<*> ?: emptyList<Any>()
-                        val isUpvotedByMe = upvoterIds.any { it.toString() == userId }
-                        val isOwner = authorId == userId
-                        val isEdited = doc.getBoolean("isEdited") ?: false
-                        val isProUser = doc.getBoolean("isProUser") ?: false
-                        val parentId = doc.getString("parentId")
-                        val replyToAuthorName = doc.getString("replyToAuthorName")
-                        val repliesCount = doc.getLong("repliesCount")?.toInt() ?: 0
-                        val reportCount = doc.getLong("reportCount")?.toInt() ?: 0
-                        val createdAtEpochMs = doc.getLong("createdAtEpochMs")
-                            ?: doc.getTimestamp("createdAt")?.toDate()?.time
-                            ?: System.currentTimeMillis()
-
-                        // Filter out reported content if report count >= maxReportThreshold (configurable via Remote Config)
-                        val maxReportThreshold = appConfigProvider.getLong(
-                            REMOTE_KEY_COMMUNITY_MAX_REPORT_THRESHOLD,
-                            CommunityModerationConfig.DEFAULT_MAX_REPORT_THRESHOLD
-                        ).toInt()
-                        if (reportCount < maxReportThreshold) {
-                            Comment(
-                                id = id,
-                                authorId = authorId,
-                                authorName = authorName,
-                                authorAvatarUrl = authorAvatarUrl,
-                                content = content,
-                                isSpoiler = isSpoiler,
-                                upvotesCount = upvotesCount,
-                                isUpvotedByMe = isUpvotedByMe,
-                                isOwner = isOwner,
-                                isEdited = isEdited,
-                                isProUser = isProUser,
-                                parentId = parentId,
-                                replyToAuthorName = replyToAuthorName,
-                                repliesCount = repliesCount,
-                                reportCount = reportCount,
-                                createdAtEpochMs = createdAtEpochMs
-                            )
-                        } else null
+                    val parsedComments = snapshot.documents.mapNotNull { doc ->
+                        parseCommentDocument(doc, userId, maxReportThreshold)
                     }
-                    trySend(comments)
+
+                    if (isSessionValid) {
+                        val currentCached = cachedThreadComments[pathKey].orEmpty()
+                        val merged = (parsedComments + currentCached).distinctBy { it.id }
+                            .sortedByDescending { it.createdAtEpochMs }
+                        cachedThreadComments[pathKey] = merged
+                        threadSessionTimestamps[pathKey] = System.currentTimeMillis()
+                        trySend(merged)
+                    } else {
+                        cachedThreadComments[pathKey] = parsedComments
+                        threadSessionTimestamps[pathKey] = System.currentTimeMillis()
+                        trySend(parsedComments)
+                    }
                 }
             }
             awaitClose { listener.remove() }
@@ -1007,6 +1069,58 @@ class CommunityRepositoryImpl @Inject constructor(
                     repliesCount = if (threadReplies.isNotEmpty()) threadReplies.size else root.repliesCount
                 )
             }
+        }
+    }
+
+    override suspend fun loadMoreDiscussions(
+        target: DiscussionTarget,
+        lastCommentEpochMs: Long
+    ): Result<List<Comment>, Failure.CoreFailure> {
+        if (!appConfigProvider.getBoolean(REMOTE_KEY_COMMUNITY_DISCUSSIONS_ENABLED, true)) {
+            return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+        }
+        return try {
+            val pathKey = getDiscussionPathKey(target)
+            val userId = getEffectiveUserId()
+            val pageSize = appConfigProvider.getLong(
+                CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_PAGE_SIZE,
+                CommunityOptimizationConfig.DEFAULT_DISCUSSION_PAGE_SIZE
+            )
+            val maxReportThreshold = appConfigProvider.getLong(
+                REMOTE_KEY_COMMUNITY_MAX_REPORT_THRESHOLD,
+                CommunityModerationConfig.DEFAULT_MAX_REPORT_THRESHOLD
+            ).toInt()
+
+            val snapshot = firestore
+                .collection(colMediaDiscussions)
+                .document(pathKey)
+                .collection("comments")
+                .whereLessThan("createdAtEpochMs", lastCommentEpochMs)
+                .orderBy(
+                    "createdAtEpochMs",
+                    com.google.firebase.firestore.Query.Direction.DESCENDING
+                )
+                .limit(pageSize)
+                .get()
+                .await()
+
+            val olderComments = snapshot.documents.mapNotNull { doc ->
+                parseCommentDocument(doc, userId, maxReportThreshold)
+            }
+
+            val currentCached = cachedThreadComments[pathKey].orEmpty()
+            val merged = (currentCached + olderComments).distinctBy { it.id }
+                .sortedByDescending { it.createdAtEpochMs }
+            cachedThreadComments[pathKey] = merged
+
+            val optimisticFlow = optimisticDiscussionsCache.getOrPut(pathKey) {
+                MutableStateFlow(emptyList())
+            }
+            optimisticFlow.value = merged
+
+            Result.Success(olderComments)
+        } catch (e: Exception) {
+            Result.Error(Failure.CoreFailure.UnexpectedFailure)
         }
     }
 

@@ -208,6 +208,9 @@ anytime:
 |:-----------------------------------------------|:--------|:---------------------------------------------------------------------|
 | `remote_trending_discussions_limit`            | `5`     | Maximum cards on Home Trending shelf (tuned for Spark Free Tier)     |
 | `remote_trending_discussions_cache_ttl_minutes`| `60`    | In-memory TTL cache duration before querying Firestore on Home       |
+| `remote_discussion_comments_limit`             | `30`    | Initial comments fetched on Discussion screen (tuned from 50 to 30)  |
+| `remote_discussion_session_cache_ttl_minutes`  | `5`     | In-memory TTL thread session cache to prevent rapid re-open read spam|
+| `remote_discussion_page_size`                  | `25`    | Older comments fetched per page on "Load earlier thoughts" tap       |
 | `trending_min_participants`                    | `1`     | Minimum distinct users before thread can trend                       |
 | `trending_weight_participants`                 | `3.0`   | Multiplier for unique user debate                                    |
 | `trending_weight_upvotes`                      | `2.0`   | Multiplier for community appreciation                                |
@@ -241,4 +244,20 @@ To guarantee that ShowTime stays strictly within the **Firebase Free Spark Plan*
 2. **60-Minute In-Memory TTL**: Governed by `CommunityOptimizationConfig.DEFAULT_TRENDING_DISCUSSIONS_CACHE_TTL_MS`, Home screen re-entries within 60 minutes resolve in 0ms from memory without initiating any network reads.
 3. **Halved Item Limit (5 items)**: Reduced default query limit from 10 to 5, immediately cutting Dashboard Firestore read cost by 50%.
 4. **Interactive Detail Streaming**: Real-time snapshot listeners are selectively reserved for the active Discussion screen where users participate in live debates.
+
+---
+
+## 8. Discussion Screen Session Caching & On-Demand Cursor Pagination
+
+To prevent read surges when users rapidly switch screens or spam open discussions, and to keep initial load lightweight:
+
+1. **5-Minute Thread Session Cache**:
+   - When a discussion screen is first opened, it performs an initial query bounded by `remote_discussion_comments_limit` (30 comments) and records `threadSessionTimestamps[targetKey]`.
+   - If the user closes and re-opens the screen within 5 minutes (`remote_discussion_session_cache_ttl_minutes`), the cached comments are emitted immediately at 0ms.
+   - The snapshot listener uses a delta query `.whereGreaterThan("createdAtEpochMs", lastFetchTimestamp)`, incurring **0 reads** if no new comments were posted and only **1 read per newly arrived comment**.
+2. **On-Demand Cursor Pagination ("Load earlier thoughts")**:
+   - Initial read is capped at 30 comments (down from 50), saving 40% on every thread open.
+   - If a thread has $\ge 30$ thoughts, a "Load earlier thoughts" button is rendered at the top of the conversation list.
+   - Tapping it triggers `LoadMoreDiscussionsUseCase`, which fetches older comments via `.whereLessThan("createdAtEpochMs", oldestCommentEpochMs).limit(25)` without reloading already-cached comments.
+
 

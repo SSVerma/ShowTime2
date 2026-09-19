@@ -153,6 +153,8 @@
     <string name="filter_spoiler_free">Spoiler-Free</string>
     <string name="filter_top_upvoted">Top Upvoted</string>
     <string name="no_discussions_yet">No discussions yet. Be the first to share your thoughts!</string>
+    <string name="load_earlier_thoughts">Load earlier thoughts</string>
+    <string name="loading_earlier_thoughts">Loading earlier thoughts…</string>
     <string name="delete_comment_cd">Delete thought</string>
     <string name="upvote_cd">Upvote thought</string>
     <string name="view_all_discussions">View all %1$d discussions</string>

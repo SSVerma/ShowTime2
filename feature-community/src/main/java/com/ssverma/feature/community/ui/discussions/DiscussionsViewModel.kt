@@ -17,6 +17,8 @@ import com.ssverma.feature.community.analytics.DiscussionAnalyticsEvent
 import com.ssverma.shared.analytics.asAnalyticsValue
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.model.community.Comment
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.community.CommunityOptimizationConfig
 import com.ssverma.shared.domain.model.community.DeleteCommentParams
 import com.ssverma.shared.domain.model.community.DiscussionTarget
 import com.ssverma.shared.domain.model.community.EditCommentArgs
@@ -31,6 +33,7 @@ import com.ssverma.shared.domain.usecase.community.DeleteCommentUseCase
 import com.ssverma.shared.domain.usecase.community.EditCommentUseCase
 import com.ssverma.shared.domain.usecase.community.FilterAndSortCommentsUseCase
 import com.ssverma.shared.domain.usecase.community.GetDiscussionsUseCase
+import com.ssverma.shared.domain.usecase.community.LoadMoreDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.PostCommentResult
 import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
@@ -56,6 +59,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = DiscussionsViewModel.Factory::class)
 class DiscussionsViewModel @AssistedInject constructor(
     private val getDiscussionsUseCase: GetDiscussionsUseCase,
+    private val loadMoreDiscussionsUseCase: LoadMoreDiscussionsUseCase,
     private val postCommentUseCase: PostCommentUseCase,
     private val editCommentUseCase: EditCommentUseCase,
     private val reportCommentUseCase: ReportCommentUseCase,
@@ -159,19 +163,49 @@ class DiscussionsViewModel @AssistedInject constructor(
                 _selectedFilter,
                 _locallyReportedCommentIds
             ) { rawComments, filter, reportedIds ->
-                filterAndSortCommentsUseCase(
+                val models = filterAndSortCommentsUseCase(
                     comments = rawComments,
                     filter = filter,
                     excludedCommentIds = reportedIds
                 ).map { comment ->
                     comment.toUiModel(context = context)
                 }
-            }.collectLatest { models ->
+                rawComments to models
+            }.collectLatest { (rawComments, models) ->
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        comments = models
+                        comments = models,
+                        canLoadMore = rawComments.size >= CommunityOptimizationConfig.DEFAULT_DISCUSSION_COMMENTS_LIMIT
                     )
+                }
+            }
+        }
+    }
+
+    fun loadMoreComments() {
+        if (_uiState.value.isLoadingMore || !_uiState.value.canLoadMore) return
+
+        val currentComments = _uiState.value.comments
+        val oldestTimestamp = currentComments.minOfOrNull { it.createdAtEpochMs } ?: return
+
+        _uiState.update { it.copy(isLoadingMore = true) }
+
+        viewModelScope.launch {
+            when (val result = loadMoreDiscussionsUseCase(discussionTarget, oldestTimestamp)) {
+                is Result.Success -> {
+                    val hasMore =
+                        result.data.size >= CommunityOptimizationConfig.DEFAULT_DISCUSSION_PAGE_SIZE
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            canLoadMore = hasMore
+                        )
+                    }
+                }
+
+                is Result.Error -> {
+                    _uiState.update { it.copy(isLoadingMore = false) }
                 }
             }
         }

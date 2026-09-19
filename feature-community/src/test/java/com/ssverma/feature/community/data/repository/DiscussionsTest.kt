@@ -387,5 +387,17 @@ class DiscussionsTest {
             "remote_daily_poll_cache_ttl_minutes",
             com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_DAILY_POLL_CACHE_TTL_MINUTES
         )
+        assertEquals(
+            "remote_discussion_comments_limit",
+            com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_COMMENTS_LIMIT
+        )
+        assertEquals(
+            "remote_discussion_session_cache_ttl_minutes",
+            com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_SESSION_CACHE_TTL_MINUTES
+        )
+        assertEquals(
+            "remote_discussion_page_size",
+            com.ssverma.shared.domain.model.community.CommunityOptimizationConfig.REMOTE_KEY_DISCUSSION_PAGE_SIZE
+        )
     }
 }

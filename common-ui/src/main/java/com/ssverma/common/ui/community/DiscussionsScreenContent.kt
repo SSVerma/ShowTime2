@@ -1,6 +1,7 @@
 package com.ssverma.common.ui.community
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -82,7 +83,10 @@ fun DiscussionsScreenContent(
     onDeleteComment: (commentId: String) -> Unit,
     modifier: Modifier = Modifier,
     posterImageUrl: String? = null,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    isLoadingMore: Boolean = false,
+    canLoadMore: Boolean = false,
+    onLoadMore: () -> Unit = {}
 ) {
     var inputContent by remember { mutableStateOf("") }
     var isSpoiler by remember { mutableStateOf(false) }
@@ -418,6 +422,53 @@ fun DiscussionsScreenContent(
                             }
                         }
                     )
+                }
+
+                if (canLoadMore) {
+                    item(contentType = "load_more_section") {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp)
+                        ) {
+                            if (isLoadingMore) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    ShowTimeLoadingIndicator(modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = stringResource(id = R.string.loading_earlier_thoughts),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            } else {
+                                Surface(
+                                    onClick = onLoadMore,
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    border = BorderStroke(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                    )
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.load_earlier_thoughts),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(
+                                            horizontal = 16.dp,
+                                            vertical = 8.dp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 item(contentType = "bottom_spacer") {

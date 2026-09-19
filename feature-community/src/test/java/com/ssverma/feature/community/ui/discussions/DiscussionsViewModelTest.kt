@@ -16,6 +16,7 @@ import com.ssverma.shared.domain.usecase.community.DeleteCommentUseCase
 import com.ssverma.shared.domain.usecase.community.EditCommentUseCase
 import com.ssverma.shared.domain.usecase.community.FilterAndSortCommentsUseCase
 import com.ssverma.shared.domain.usecase.community.GetDiscussionsUseCase
+import com.ssverma.shared.domain.usecase.community.LoadMoreDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
@@ -49,6 +50,7 @@ class DiscussionsViewModelTest {
     private val target = DiscussionTarget.movie(999)
 
     private lateinit var getDiscussionsUseCase: GetDiscussionsUseCase
+    private lateinit var loadMoreDiscussionsUseCase: LoadMoreDiscussionsUseCase
     private lateinit var postCommentUseCase: PostCommentUseCase
     private lateinit var editCommentUseCase: EditCommentUseCase
     private lateinit var reportCommentUseCase: ReportCommentUseCase
@@ -61,6 +63,7 @@ class DiscussionsViewModelTest {
     @Before
     fun setUp() {
         getDiscussionsUseCase = GetDiscussionsUseCase(fakeCommunityRepository)
+        loadMoreDiscussionsUseCase = LoadMoreDiscussionsUseCase(fakeCommunityRepository)
         postCommentUseCase = PostCommentUseCase(
             communityRepository = fakeCommunityRepository,
             commentQuotaManager = fakeCommentQuotaManager
@@ -73,6 +76,7 @@ class DiscussionsViewModelTest {
 
         viewModel = DiscussionsViewModel(
             getDiscussionsUseCase = getDiscussionsUseCase,
+            loadMoreDiscussionsUseCase = loadMoreDiscussionsUseCase,
             postCommentUseCase = postCommentUseCase,
             editCommentUseCase = editCommentUseCase,
             reportCommentUseCase = reportCommentUseCase,
@@ -184,5 +188,57 @@ class DiscussionsViewModelTest {
     fun `onFilterSelected updates filter state`() = runTest {
         viewModel.onFilterSelected(ThreadFilter.TOP_UPVOTED)
         assertThat(viewModel.selectedFilter.value).isEqualTo(ThreadFilter.TOP_UPVOTED)
+    }
+
+    private fun createViewModel(): DiscussionsViewModel {
+        return DiscussionsViewModel(
+            getDiscussionsUseCase = getDiscussionsUseCase,
+            loadMoreDiscussionsUseCase = loadMoreDiscussionsUseCase,
+            postCommentUseCase = postCommentUseCase,
+            editCommentUseCase = editCommentUseCase,
+            reportCommentUseCase = reportCommentUseCase,
+            toggleCommentUpvoteUseCase = toggleCommentUpvoteUseCase,
+            deleteCommentUseCase = deleteCommentUseCase,
+            filterAndSortCommentsUseCase = filterAndSortCommentsUseCase,
+            billingRepository = fakeBillingRepository,
+            rewardManager = mockRewardManager,
+            rewardedAdManager = mockRewardedAdManager,
+            analytics = mockAnalytics,
+            context = mockContext,
+            discussionTarget = target,
+            mediaTitle = "Oppenheimer",
+            posterImageUrl = "/oppenheimer.jpg",
+            backdropImageUrl = null
+        )
+    }
+
+    @Test
+    fun `loadMoreComments triggers loadMoreDiscussionsUseCase and updates state`() = runTest {
+        // Pre-populate repository with 30 comments to satisfy initial limit
+        for (i in 1..30) {
+            fakeCommunityRepository.postComment(
+                com.ssverma.shared.domain.model.community.PostCommentParams(
+                    target = target,
+                    content = "Comment $i",
+                    isSpoiler = false
+                )
+            )
+        }
+
+        val testViewModel = createViewModel()
+
+        testViewModel.uiState.test {
+            val initialState = awaitItem()
+            assertThat(initialState.canLoadMore).isTrue()
+            assertThat(initialState.comments).hasSize(30)
+
+            testViewModel.loadMoreComments()
+
+            val loadingState = awaitItem()
+            assertThat(loadingState.isLoadingMore).isTrue()
+
+            val stateAfterLoad = awaitItem()
+            assertThat(stateAfterLoad.isLoadingMore).isFalse()
+        }
     }
 }

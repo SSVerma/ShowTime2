@@ -53,6 +53,9 @@ fun DiscussionsScreen(
     DiscussionsScreenContent(
         comments = uiState.comments,
         isLoading = uiState.isLoading,
+        isLoadingMore = uiState.isLoadingMore,
+        canLoadMore = uiState.canLoadMore,
+        onLoadMore = viewModel::loadMoreComments,
         selectedFilter = selectedFilter,
         onFilterSelected = viewModel::onFilterSelected,
         mediaTitle = viewModel.title,

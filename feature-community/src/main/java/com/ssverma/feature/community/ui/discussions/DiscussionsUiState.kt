@@ -17,5 +17,7 @@ data class DiscussionsUiState(
     val isRestoringPurchases: Boolean = false,
     val paywallErrorMessage: UiText? = null,
     val availableProducts: List<BillingProduct> = emptyList(),
-    val isProActive: Boolean = false
+    val isProActive: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val canLoadMore: Boolean = false
 )

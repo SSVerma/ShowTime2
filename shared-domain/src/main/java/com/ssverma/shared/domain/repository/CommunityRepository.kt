@@ -38,6 +38,10 @@ interface CommunityRepository {
     ): Result<DailyPoll, Failure.CoreFailure>
 
     fun getDiscussions(target: DiscussionTarget): Flow<List<Comment>>
+    suspend fun loadMoreDiscussions(
+        target: DiscussionTarget,
+        lastCommentEpochMs: Long
+    ): Result<List<Comment>, Failure.CoreFailure>
 
     suspend fun postComment(params: PostCommentParams): Result<Comment, Failure.CoreFailure>
 

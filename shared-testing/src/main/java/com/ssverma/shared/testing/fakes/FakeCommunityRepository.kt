@@ -96,6 +96,16 @@ class FakeCommunityRepository : CommunityRepository {
         return discussions.map { it[key] ?: emptyList() }
     }
 
+    override suspend fun loadMoreDiscussions(
+        target: DiscussionTarget,
+        lastCommentEpochMs: Long
+    ): Result<List<Comment>, Failure.CoreFailure> {
+        val key = "${target.mediaType}_${target.mediaId}"
+        val currentList = discussions.value[key] ?: emptyList()
+        val older = currentList.filter { it.createdAtEpochMs < lastCommentEpochMs }
+        return Result.Success(older)
+    }
+
     override suspend fun postComment(params: PostCommentParams): Result<Comment, Failure.CoreFailure> {
         val key = "${params.target.mediaType}_${params.target.mediaId}"
         val newComment = Comment(
