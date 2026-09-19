@@ -29,12 +29,17 @@ ShowTime consumes the [TMDB (The Movie Database)](https://www.themoviedb.org/) A
 
 <div align="center">
 
-### Light & Dark Themes
+### Discovery & Home Experience
 
-| Movie Home | Movie Details | Search & Filter | Library & Diary |
+| Home (Light) | Home (OLED Dark) | Cinephile Hub (Expanded) | Discover & Browse |
 | :---: | :---: | :---: | :---: |
-| <img src="screenshots/movie_home.png" width="220" /> | <img src="screenshots/movie_details_1.png" width="220" /> | <img src="screenshots/search.png" width="220" /> | <img src="screenshots/library.png" width="220" /> |
-| <img src="screenshots/movie_home_dark.png" width="220" /> | <img src="screenshots/movie_details_1_dark.png" width="220" /> | <img src="screenshots/people_dark.png" width="220" /> | <img src="screenshots/movie_details_2.png" width="220" /> |
+| <img src="art/home_dashboard_light.png" width="220" alt="ShowTime 2.0 Home Light" /> | <img src="art/home_dashboard_dark.png" width="220" alt="ShowTime 2.0 Home Dark" /> | <img src="art/cinephile_hub_dark.png" width="220" alt="Cinephile Hub Tools" /> | <img src="art/discover_browse.png" width="220" alt="Discover and Browse Hub" /> |
+
+### Rich Details & Cinephile Features
+
+| Movie Details (Buzz) | Streaming Options (JustWatch) | Movie & Show Match | Library & Collections |
+| :---: | :---: | :---: | :---: |
+| <img src="art/movie_details_buzz.png" width="220" alt="Movie Details Pre-Release Buzz" /> | <img src="art/movie_details_streaming.png" width="220" alt="Streaming Providers JustWatch" /> | <img src="art/movie_match.png" width="220" alt="Interactive Movie Match" /> | <img src="art/library_collections_dark.png" width="220" alt="Library Collections OLED" /> |
 
 </div>
 
