@@ -369,17 +369,21 @@ class CommunityRepositoryImpl @Inject constructor(
             try {
                 val type = object : TypeToken<List<DailyPollQuestion>>() {}.type
                 val parsed: List<DailyPollQuestion>? = gson.fromJson(cachedJson, type)
-                if (!parsed.isNullOrEmpty()) {
-                    return parsed
+                val sanitized =
+                    parsed?.filter { !it.question.isNullOrBlank() && !it.options.isNullOrEmpty() }
+                if (!sanitized.isNullOrEmpty()) {
+                    return sanitized
                 }
             } catch (_: Exception) {
                 // Ignore error, fallback to asset
             }
         }
         val assetQuestions = loadQuestionsFromAsset()
-        if (assetQuestions.isNotEmpty()) {
-            storage.write(key = keyPollCatalogJson, value = gson.toJson(assetQuestions))
-            return assetQuestions
+        val validAssetQuestions =
+            assetQuestions.filter { !it.question.isNullOrBlank() && !it.options.isNullOrEmpty() }
+        if (validAssetQuestions.isNotEmpty()) {
+            storage.write(key = keyPollCatalogJson, value = gson.toJson(validAssetQuestions))
+            return validAssetQuestions
         }
         return emptyList()
     }
@@ -772,7 +776,7 @@ class CommunityRepositoryImpl @Inject constructor(
             )
             val isEnabled = storage.read(key = keyPollEnabled, default = true)
 
-            if (resolvedQuestion == null || !isEnabled) {
+            if (resolvedQuestion == null || resolvedQuestion.options.isEmpty() || !isEnabled) {
                 trySend(DailyPoll.empty(date).copy(isEnabled = false))
                 awaitClose { }
                 return@callbackFlow
@@ -901,7 +905,10 @@ class CommunityRepositoryImpl @Inject constructor(
             val resolvedQuestion = DailyPollQuestionBank.resolveQuestionForDate(
                 date = date,
                 questions = questions
-            ) ?: return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+            )
+            if (resolvedQuestion == null || resolvedQuestion.options.isEmpty() || optionIndex !in resolvedQuestion.options.indices) {
+                return Result.Error(Failure.CoreFailure.UnexpectedFailure)
+            }
 
             val optimisticFlow = optimisticDailyPollCache.getOrPut(dateStr) {
                 MutableStateFlow(

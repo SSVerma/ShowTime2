@@ -6,11 +6,14 @@ import kotlin.math.abs
 
 data class DailyPollQuestion(
     @SerializedName("id")
-    val id: Int,
+    val id: Int = 0,
+
     @SerializedName("question")
-    val question: String,
+    val question: String = "",
+
     @SerializedName("options")
-    val options: List<String>,
+    val options: List<String> = emptyList(),
+
     @SerializedName("scheduledDate")
     val scheduledDate: String? = null
 )
@@ -21,19 +24,22 @@ object DailyPollQuestionBank {
         date: LocalDate,
         questions: List<DailyPollQuestion>
     ): DailyPollQuestion? {
-        if (questions.isEmpty()) return null
+        val validQuestions = questions.filter {
+            it.question.isNotBlank() && it.options.isNotEmpty()
+        }
+        if (validQuestions.isEmpty()) return null
         val dateString = date.toString()
 
         // 1. Check for explicit scheduled date override
-        val scheduledQuestion = questions.find { it.scheduledDate == dateString }
+        val scheduledQuestion = validQuestions.find { it.scheduledDate == dateString }
         if (scheduledQuestion != null) {
             return scheduledQuestion
         }
 
         // 2. Filter questions eligible for general rotation (those without future scheduled dates)
         val rotatingQuestions =
-            questions.filter { it.scheduledDate == null || it.scheduledDate == dateString }
-        val pool = if (rotatingQuestions.isNotEmpty()) rotatingQuestions else questions
+            validQuestions.filter { it.scheduledDate == null || it.scheduledDate == dateString }
+        val pool = rotatingQuestions.ifEmpty { validQuestions }
 
         // 3. Deterministic date hash calculation
         val epochDay = date.toEpochDay()
