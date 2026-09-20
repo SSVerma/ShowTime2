@@ -51,8 +51,8 @@ android {
         applicationId = "com.ssverma.showtime"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 20
-        versionName = "2.0.0"
+        versionCode = 21
+        versionName = "2.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -180,6 +180,9 @@ dependencies {
     // Glance Widgets
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
+
+    // WorkManager
+    implementation(libs.workmanager.ktx)
 
     implementation(libs.dagger.hilt.android)
     kapt(libs.dagger.hilt.compiler)

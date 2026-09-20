@@ -1,6 +1,8 @@
 package com.ssverma.showtime
 
 import android.app.Application
+import android.util.Log
+import androidx.work.Configuration
 import com.ssverma.core.ads.AdInitializer
 import com.ssverma.core.ads.manager.AppOpenAdManager
 import com.ssverma.core.ccm.AppConfigProvider
@@ -11,7 +13,7 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class ShowTimeApp : Application() {
+class ShowTimeApp : Application(), Configuration.Provider {
     @Inject
     lateinit var appConfigProvider: AppConfigProvider
 
@@ -26,6 +28,11 @@ class ShowTimeApp : Application() {
 
     @Inject
     lateinit var appOpenAdManager: AppOpenAdManager
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
