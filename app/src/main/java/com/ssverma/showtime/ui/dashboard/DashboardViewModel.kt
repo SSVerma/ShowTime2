@@ -22,12 +22,17 @@ import com.ssverma.shared.ads.injection.AdInjectionConfig
 import com.ssverma.shared.ads.injection.AdPlacement
 import com.ssverma.shared.ads.injection.InjectableAd
 import com.ssverma.shared.ads.injection.injectAds
+import com.ssverma.shared.ads.injection.removeNativeAd
+import com.ssverma.shared.ads.injection.updateNativeAd
 import com.ssverma.shared.ads.ui.NativeAdStyle
 import com.ssverma.shared.domain.Result
 import com.ssverma.shared.domain.TimeWindow
 import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.community.CloneCommunityListParams
+import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.model.feature.CinephileFeature
 import com.ssverma.shared.domain.model.movie.MoviePreview
 import com.ssverma.shared.domain.model.movie.asMoviePreview
@@ -37,9 +42,6 @@ import com.ssverma.shared.domain.model.tv.TvShowPreview
 import com.ssverma.shared.domain.model.tv.asTvShowPreview
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.CinemaGameRepository
-import com.ssverma.shared.domain.model.community.CloneCommunityListParams
-import com.ssverma.shared.domain.model.community.CommunityCuratedList
-import com.ssverma.shared.domain.model.community.ToggleListUpvoteParams
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.repository.TraktSyncRepository
 import com.ssverma.shared.domain.usecase.FetchAllWatchProvidersUseCase
@@ -118,7 +120,7 @@ class DashboardViewModel @Inject constructor(
 
         if (rawSpotlightItems.isNotEmpty()) {
             val injected = rawSpotlightItems.injectAds(
-                config = homeSpotlightAdConfig,
+                config = homeSpotlightAdConfig.copy(sectionTag = "dashboard_spotlight"),
                 isAdsEnabled = adsEnabled
             )
             _uiState.update { it.copy(trendingMedia = UiState.Success(injected)) }
@@ -126,7 +128,7 @@ class DashboardViewModel @Inject constructor(
 
         if (rawPopularMovies.isNotEmpty()) {
             val injected = rawPopularMovies.injectAds(
-                config = popularCarouselAdConfig,
+                config = popularCarouselAdConfig.copy(sectionTag = "dashboard_popular_movies"),
                 isAdsEnabled = adsEnabled
             )
             _uiState.update { it.copy(popularMovies = UiState.Success(injected)) }
@@ -134,7 +136,7 @@ class DashboardViewModel @Inject constructor(
 
         if (rawPopularTvShows.isNotEmpty()) {
             val injected = rawPopularTvShows.injectAds(
-                config = popularCarouselAdConfig,
+                config = popularCarouselAdConfig.copy(sectionTag = "dashboard_popular_tv"),
                 isAdsEnabled = adsEnabled
             )
             _uiState.update { it.copy(popularTvShows = UiState.Success(injected)) }
@@ -436,7 +438,7 @@ class DashboardViewModel @Inject constructor(
         if (spotlightItems.isNotEmpty()) {
             rawSpotlightItems = spotlightItems
             val injected = spotlightItems.injectAds(
-                config = homeSpotlightAdConfig,
+                config = homeSpotlightAdConfig.copy(sectionTag = "dashboard_spotlight"),
                 isAdsEnabled = isAdsCurrentlyEnabled()
             )
             _uiState.update { it.copy(trendingMedia = UiState.Success(injected)) }
@@ -456,7 +458,7 @@ class DashboardViewModel @Inject constructor(
                     val previews = movies.map { movie -> movie.asMoviePreview() }
                     rawPopularMovies = previews
                     previews.injectAds(
-                        config = popularCarouselAdConfig,
+                        config = popularCarouselAdConfig.copy(sectionTag = "dashboard_popular_movies"),
                         isAdsEnabled = isAdsCurrentlyEnabled()
                     )
                 }
@@ -473,7 +475,7 @@ class DashboardViewModel @Inject constructor(
                     val previews = tvShows.map { tvShow -> tvShow.asTvShowPreview() }
                     rawPopularTvShows = previews
                     previews.injectAds(
-                        config = popularCarouselAdConfig,
+                        config = popularCarouselAdConfig.copy(sectionTag = "dashboard_popular_tv"),
                         isAdsEnabled = isAdsCurrentlyEnabled()
                     )
                 }
@@ -541,77 +543,37 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun onCarouselNativeAdLoaded(injectableAd: InjectableAd, nativeAd: NativeAd) {
+        if (injectableAd.ad === nativeAd) return
         _uiState.update { currentState ->
-            val updatedTrending =
-                (currentState.trendingMedia as? UiState.Success)?.data?.map { item ->
-                    if (item is InjectableAd && item.id == injectableAd.id) {
-                        item.copy(ad = nativeAd)
-                    } else {
-                        item
-                    }
-                }
             currentState.copy(
-                trendingMedia = updatedTrending?.let { UiState.Success(it) }
-                    ?: currentState.trendingMedia
+                trendingMedia = currentState.trendingMedia.updateNativeAd(injectableAd, nativeAd)
             )
         }
     }
 
     fun onCarouselNativeAdFailed(injectableAd: InjectableAd) {
         _uiState.update { currentState ->
-            val updatedTrending =
-                (currentState.trendingMedia as? UiState.Success)?.data?.filterNot { item ->
-                    item is InjectableAd && item.id == injectableAd.id
-                }
             currentState.copy(
-                trendingMedia = updatedTrending?.let { UiState.Success(it) }
-                    ?: currentState.trendingMedia
+                trendingMedia = currentState.trendingMedia.removeNativeAd(injectableAd)
             )
         }
     }
 
     fun onPopularAdLoaded(injectableAd: InjectableAd, nativeAd: NativeAd) {
+        if (injectableAd.ad === nativeAd) return
         _uiState.update { currentState ->
-            val updatedMovies =
-                (currentState.popularMovies as? UiState.Success)?.data?.map { item ->
-                    if (item is InjectableAd && item.id == injectableAd.id) {
-                        item.copy(ad = nativeAd)
-                    } else {
-                        item
-                    }
-                }
-            val updatedTv =
-                (currentState.popularTvShows as? UiState.Success)?.data?.map { item ->
-                    if (item is InjectableAd && item.id == injectableAd.id) {
-                        item.copy(ad = nativeAd)
-                    } else {
-                        item
-                    }
-                }
             currentState.copy(
-                popularMovies = updatedMovies?.let { UiState.Success(it) }
-                    ?: currentState.popularMovies,
-                popularTvShows = updatedTv?.let { UiState.Success(it) }
-                    ?: currentState.popularTvShows
+                popularMovies = currentState.popularMovies.updateNativeAd(injectableAd, nativeAd),
+                popularTvShows = currentState.popularTvShows.updateNativeAd(injectableAd, nativeAd)
             )
         }
     }
 
     fun onPopularAdFailed(injectableAd: InjectableAd) {
         _uiState.update { currentState ->
-            val updatedMovies =
-                (currentState.popularMovies as? UiState.Success)?.data?.filterNot { item ->
-                    item is InjectableAd && item.id == injectableAd.id
-                }
-            val updatedTv =
-                (currentState.popularTvShows as? UiState.Success)?.data?.filterNot { item ->
-                    item is InjectableAd && item.id == injectableAd.id
-                }
             currentState.copy(
-                popularMovies = updatedMovies?.let { UiState.Success(it) }
-                    ?: currentState.popularMovies,
-                popularTvShows = updatedTv?.let { UiState.Success(it) }
-                    ?: currentState.popularTvShows
+                popularMovies = currentState.popularMovies.removeNativeAd(injectableAd),
+                popularTvShows = currentState.popularTvShows.removeNativeAd(injectableAd)
             )
         }
     }

@@ -140,7 +140,7 @@ fun TvShowHomeContent(
             contentPadding = rememberFloatingBarsPadding(includeBottomBarPadding = false),
             modifier = Modifier.fillMaxSize()
         ) {
-            item {
+            item(key = "tv_home_hero") {
                 HeroSection(
                     trendingTvShowsState = uiState.trendingTvShows,
                     carouselState = carouselState,
@@ -187,8 +187,7 @@ fun TvShowHomeContent(
                 }
             }
 
-
-            item {
+            item(key = "tv_home_genres") {
                 TvGenres(
                     genresUiState = uiState.genres,
                     modifier = Modifier.padding(top = MaterialTheme.spacing.medium),
@@ -212,7 +211,7 @@ fun TvShowHomeContent(
                 )
             }
 
-            item {
+            item(key = "tv_home_watch_providers") {
                 WatchProviderHubSection(
                     providersUiState = uiState.watchProviders,
                     onProviderClick = { provider ->
@@ -244,24 +243,40 @@ fun TvShowHomeContent(
                 )
             }
 
-            if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank() && !uiState.isFeedInlineAdFailed) {
-                item {
-                    ShowTimeNativeAd(
-                        ad = uiState.feedInlineAd,
-                        loadInternally = uiState.feedInlineAd == null,
-                        onAdLoaded = viewModel::onFeedInlineAdLoaded,
-                        onAdFailed = viewModel::onFeedInlineAdFailed,
-                        style = NativeAdStyle.List,
-                        analyticsEventPrefix = "tv_home_feed_inline_native",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = MaterialTheme.spacing.medium)
-                            .padding(horizontal = MaterialTheme.spacing.medium)
-                    )
+            if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank()) {
+                item(key = "tv_home_feed_inline_ad") {
+                    AnimatedVisibility(
+                        visible = !uiState.isFeedInlineAdFailed,
+                        enter = fadeIn(animationSpec = tween(300)) + expandVertically(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        ),
+                        exit = fadeOut(animationSpec = tween(250)) + shrinkVertically(
+                            animationSpec = tween(
+                                durationMillis = 250,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    ) {
+                        ShowTimeNativeAd(
+                            ad = uiState.feedInlineAd,
+                            loadInternally = uiState.feedInlineAd == null,
+                            onAdLoaded = viewModel::onFeedInlineAdLoaded,
+                            onAdFailed = viewModel::onFeedInlineAdFailed,
+                            style = NativeAdStyle.List,
+                            analyticsEventPrefix = "tv_home_feed_inline_native",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = MaterialTheme.spacing.medium)
+                                .padding(horizontal = MaterialTheme.spacing.medium)
+                        )
+                    }
                 }
             }
 
-            item {
+            item(key = "tv_home_discovery") {
                 DiscoverySection(
                     popularTvShowsState = uiState.popularTvShows,
                     topRatedTvShowsState = uiState.topRatedTvShows,
@@ -296,7 +311,7 @@ fun TvShowHomeContent(
                 )
             }
 
-            item {
+            item(key = "tv_home_today_airing") {
                 AppSection(
                     title = stringResource(R.string.airing_today),
                     leadingIcon = Icons.Rounded.CalendarToday,
@@ -371,7 +386,7 @@ fun TvShowHomeContent(
                 )
             }
 
-            item {
+            item(key = "tv_home_now_airing") {
                 AppSection(
                     title = stringResource(R.string.now_airing),
                     leadingIcon = Icons.Rounded.LiveTv,
@@ -446,8 +461,7 @@ fun TvShowHomeContent(
                 )
             }
 
-
-            item {
+            item(key = "tv_home_footer") {
                 AttributionFooter(
                     bottomPadding = bottomBarHeight,
                     modifier = Modifier.padding(top = MaterialTheme.spacing.large)

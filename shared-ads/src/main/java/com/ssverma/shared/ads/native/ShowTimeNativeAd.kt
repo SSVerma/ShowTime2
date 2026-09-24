@@ -130,14 +130,14 @@ fun ShowTimeNativeAd(
     // Use whichever ad is available
     val activeAd = ad ?: internallyLoadedAd
 
-    if (activeAd == null && state.isFailed) return
-    if (!loadInternally && activeAd == null) return
-
     val rootModifier = when (style) {
         NativeAdStyle.Carousel -> modifier.fillMaxSize()
         NativeAdStyle.CircularLogo -> modifier
-        else -> modifier.fillMaxWidth()
+        NativeAdStyle.Grid -> modifier.width(MediaItemDefaults.PosterWidth)
+        NativeAdStyle.List -> modifier.fillMaxWidth().height(MediaItemDefaults.ListItemHeight)
     }
+
+    if (!loadInternally && activeAd == null) return
 
     Box(modifier = rootModifier) {
         // The actual ad Container - Only renders when an ad payload is ready
@@ -157,7 +157,9 @@ fun ShowTimeNativeAd(
             modifier = when (style) {
                 NativeAdStyle.Carousel -> Modifier.fillMaxSize()
                 NativeAdStyle.CircularLogo -> Modifier.fillMaxSize()
-                else -> Modifier.fillMaxWidth()
+                NativeAdStyle.Grid -> Modifier.width(MediaItemDefaults.PosterWidth)
+                NativeAdStyle.List -> Modifier.fillMaxWidth()
+                    .height(MediaItemDefaults.ListItemHeight)
             }
         ) {
             NativeAdPlaceholder(style = style)
@@ -177,7 +179,8 @@ private fun NativeAdContainer(
     val containerModifier = when (style) {
         NativeAdStyle.Carousel -> Modifier.fillMaxSize()
         NativeAdStyle.CircularLogo -> Modifier.fillMaxSize()
-        else -> Modifier.fillMaxWidth()
+        NativeAdStyle.Grid -> Modifier.width(MediaItemDefaults.PosterWidth)
+        NativeAdStyle.List -> Modifier.fillMaxWidth().height(MediaItemDefaults.ListItemHeight)
     }
 
     AndroidView(
@@ -186,20 +189,27 @@ private fun NativeAdContainer(
             NativeAdView(ctx).apply {
                 // We create ONE ComposeView to hold all our beautiful UI
                 val composeView = ComposeView(ctx).apply {
-                    layoutParams = when (style) {
-                        NativeAdStyle.Carousel,
-                        NativeAdStyle.CircularLogo -> ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-
-                        else -> ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                    }
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
                 }
                 addView(composeView)
+
+                // Dedicated AdChoices container with safe corner margins so it's never clipped by rounded corners
+                val adChoices = com.google.android.gms.ads.nativead.AdChoicesView(ctx).apply {
+                    layoutParams = android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        gravity = android.view.Gravity.TOP or android.view.Gravity.END
+                        val margin = (10 * ctx.resources.displayMetrics.density).toInt()
+                        topMargin = margin
+                        rightMargin = margin
+                    }
+                }
+                addView(adChoices)
+                this.adChoicesView = adChoices
 
                 // Transparent overlay to securely capture native touches for AdMob
                 val clickOverlay = android.view.View(ctx).apply {
@@ -215,7 +225,6 @@ private fun NativeAdContainer(
                 this.headlineView = clickOverlay
                 this.bodyView = clickOverlay
                 this.iconView = clickOverlay
-                // Note: AdMob automatically injects the "AdChoices" icon into the top-right corner.
             }
         },
         update = { view ->

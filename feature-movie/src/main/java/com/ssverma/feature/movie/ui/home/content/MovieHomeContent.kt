@@ -1,5 +1,12 @@
 package com.ssverma.feature.movie.ui.home.content
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -133,7 +140,7 @@ fun MovieHomeContent(
             contentPadding = rememberFloatingBarsPadding(includeBottomBarPadding = false),
             modifier = Modifier.fillMaxSize()
         ) {
-            item {
+            item(key = "movie_home_hero") {
                 HeroSection(
                     trendingMoviesState = uiState.trendingMovies,
                     carouselState = carouselState,
@@ -159,8 +166,7 @@ fun MovieHomeContent(
                 )
             }
 
-
-            item {
+            item(key = "movie_home_genres") {
                 MovieGenres(
                     genresUiState = uiState.genres,
                     onGenreClicked = { genre ->
@@ -182,7 +188,7 @@ fun MovieHomeContent(
                 )
             }
 
-            item {
+            item(key = "movie_home_watch_providers") {
                 WatchProviderHubSection(
                     providersUiState = uiState.watchProviders,
                     onProviderClick = { provider ->
@@ -214,24 +220,40 @@ fun MovieHomeContent(
                 )
             }
 
-            if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank() && !uiState.isFeedInlineAdFailed) {
-                item {
-                    ShowTimeNativeAd(
-                        ad = uiState.feedInlineAd,
-                        loadInternally = uiState.feedInlineAd == null,
-                        onAdLoaded = viewModel::onFeedInlineAdLoaded,
-                        onAdFailed = viewModel::onFeedInlineAdFailed,
-                        style = NativeAdStyle.List,
-                        analyticsEventPrefix = "movie_home_feed_inline_native",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = MaterialTheme.spacing.medium)
-                            .padding(horizontal = MaterialTheme.spacing.medium)
-                    )
+            if (adConfigProvider.isAdsEnabled && adConfigProvider.nativeAdId.isNotBlank()) {
+                item(key = "movie_home_feed_inline_ad") {
+                    AnimatedVisibility(
+                        visible = !uiState.isFeedInlineAdFailed,
+                        enter = fadeIn(tween(300)) + expandVertically(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            )
+                        ),
+                        exit = fadeOut(tween(250)) + shrinkVertically(
+                            animationSpec = tween(
+                                durationMillis = 250,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    ) {
+                        ShowTimeNativeAd(
+                            ad = uiState.feedInlineAd,
+                            loadInternally = uiState.feedInlineAd == null,
+                            onAdLoaded = viewModel::onFeedInlineAdLoaded,
+                            onAdFailed = viewModel::onFeedInlineAdFailed,
+                            style = NativeAdStyle.List,
+                            analyticsEventPrefix = "movie_home_feed_inline_native",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = MaterialTheme.spacing.medium)
+                                .padding(horizontal = MaterialTheme.spacing.medium)
+                        )
+                    }
                 }
             }
 
-            item {
+            item(key = "movie_home_discovery") {
                 DiscoverySection(
                     popularMoviesState = uiState.popularMovies,
                     topRatedMoviesState = uiState.topRatedMovies,
@@ -266,7 +288,7 @@ fun MovieHomeContent(
                 )
             }
 
-            item {
+            item(key = "movie_home_in_cinemas") {
                 AppSection(
                     title = stringResource(R.string.now_in_cinemas),
                     leadingIcon = Icons.Rounded.Theaters,
@@ -341,7 +363,7 @@ fun MovieHomeContent(
                 )
             }
 
-            item {
+            item(key = "movie_home_footer") {
                 AttributionFooter(
                     bottomPadding = bottomBarHeight,
                     modifier = Modifier.padding(top = MaterialTheme.spacing.large)

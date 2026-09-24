@@ -69,7 +69,13 @@ fun DiscoverySection(
         categories = categories,
         onSeeAllClicked = onSeeAllClicked,
         modifier = modifier,
-        showHeader = showHeader
+        showHeader = showHeader,
+        key = { item ->
+            when (item) {
+                is InjectableAd -> item.id
+                is InjectableContent<*> -> (item.item as MoviePreview).id
+            }
+        }
     ) { categoryPayload, injectableItem ->
         when (injectableItem) {
             is InjectableAd -> {

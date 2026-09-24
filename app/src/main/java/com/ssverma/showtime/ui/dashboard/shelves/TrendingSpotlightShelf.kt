@@ -60,6 +60,12 @@ fun LazyListScope.trendingSpotlightShelf(
                 onRetry = onRetry,
                 itemHeight = 220.dp,
                 contentPadding = PaddingValues(horizontal = 16.dp),
+                key = { item ->
+                    when (item) {
+                        is InjectableAd -> item.id
+                        is InjectableContent<*> -> (item.item as TrendingSpotlightItem).id
+                    }
+                }
             ) { injectableItem: AdInjectable<TrendingSpotlightItem> ->
                 when (injectableItem) {
                     is InjectableAd -> {

@@ -173,6 +173,12 @@ fun HeroSection(
                     maxItemWidth = maxItemWidth,
                     itemHeight = itemHeight,
                     contentPadding = contentPadding,
+                    key = { item ->
+                        when (item) {
+                            is InjectableAd -> item.id
+                            is InjectableContent<*> -> (item.item as TvShowPreview).id
+                        }
+                    }
                 ) { injectableItem: AdInjectable<TvShowPreview> ->
                     when (injectableItem) {
                         is InjectableAd -> {

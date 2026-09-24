@@ -86,7 +86,13 @@ fun DiscoverySection(
             onSeeAllClicked(TvShowListingRoute(args = args))
         },
         modifier = modifier,
-        showHeader = showHeader
+        showHeader = showHeader,
+        key = { item ->
+            when (item) {
+                is InjectableAd -> item.id
+                is InjectableContent<*> -> (item.item as TvShowPreview).id
+            }
+        }
     ) { config, injectableItem ->
         when (injectableItem) {
             is InjectableAd -> {
