@@ -231,6 +231,7 @@ fun TvShowHomeContent(
                             ShowTimeNativeAd(
                                 ad = uiState.watchProviderAd,
                                 loadInternally = uiState.watchProviderAd == null,
+                                loadDelayMillis = 350L,
                                 onAdLoaded = viewModel::onWatchProviderAdLoaded,
                                 onAdFailed = viewModel::onWatchProviderAdFailed,
                                 style = NativeAdStyle.CircularLogo,
@@ -263,6 +264,7 @@ fun TvShowHomeContent(
                         ShowTimeNativeAd(
                             ad = uiState.feedInlineAd,
                             loadInternally = uiState.feedInlineAd == null,
+                            loadDelayMillis = 0L,
                             onAdLoaded = viewModel::onFeedInlineAdLoaded,
                             onAdFailed = viewModel::onFeedInlineAdFailed,
                             style = NativeAdStyle.List,
@@ -342,6 +344,7 @@ fun TvShowHomeContent(
                             is InjectableAd -> {
                                 ShowTimeNativeAd(
                                     ad = injectableItem.ad,
+                                    loadDelayMillis = 650L,
                                     onAdLoaded = { ad ->
                                         viewModel.onNativeAdLoaded(
                                             injectableItem,
@@ -417,6 +420,7 @@ fun TvShowHomeContent(
                             is InjectableAd -> {
                                 ShowTimeNativeAd(
                                     ad = injectableItem.ad,
+                                    loadDelayMillis = 800L,
                                     onAdLoaded = { ad ->
                                         viewModel.onNativeAdLoaded(
                                             injectableItem,

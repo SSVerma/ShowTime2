@@ -185,6 +185,7 @@ fun HeroSection(
                             ShowTimeNativeAd(
                                 modifier = Modifier.fillMaxSize(),
                                 ad = injectableItem.ad,
+                                loadDelayMillis = 200L,
                                 onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
                                 onAdFailed = { onAdFailed(injectableItem) },
                                 style = injectableItem.style

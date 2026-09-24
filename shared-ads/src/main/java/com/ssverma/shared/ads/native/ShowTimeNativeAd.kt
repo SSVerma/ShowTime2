@@ -88,6 +88,7 @@ fun ShowTimeNativeAd(
     modifier: Modifier = Modifier,
     ad: NativeAd? = null,
     loadInternally: Boolean = ad == null,
+    loadDelayMillis: Long = 0L,
     onAdLoaded: (NativeAd) -> Unit = {},
     onAdFailed: () -> Unit = {},
     state: NativeAdState = rememberNativeAdState(initialLoaded = ad != null),
@@ -114,6 +115,7 @@ fun ShowTimeNativeAd(
     // Load a new ad internally if one wasn't provided
     val internallyLoadedAd = rememberNativeAd(
         loadAd = loadInternally,
+        loadDelayMillis = loadDelayMillis,
         analyticsEventPrefix = analyticsEventPrefix,
         onAdLoaded = {
             state.isLoaded = true

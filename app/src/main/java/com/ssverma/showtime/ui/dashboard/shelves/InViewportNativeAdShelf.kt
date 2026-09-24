@@ -43,6 +43,7 @@ fun LazyListScope.inViewportNativeAdShelf(
         ) {
             ShowTimeNativeAd(
                 ad = nativeAd,
+                loadDelayMillis = 350L,
                 onAdLoaded = onAdLoaded,
                 onAdFailed = onAdFailed,
                 style = NativeAdStyle.List,

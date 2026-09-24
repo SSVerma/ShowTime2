@@ -81,6 +81,7 @@ fun DiscoverySection(
             is InjectableAd -> {
                 ShowTimeNativeAd(
                     ad = injectableItem.ad,
+                    loadDelayMillis = 400L,
                     onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
                     onAdFailed = { onAdFailed(injectableItem) },
                     style = injectableItem.style

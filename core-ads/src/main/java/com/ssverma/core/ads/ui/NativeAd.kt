@@ -2,6 +2,7 @@ package com.ssverma.core.ads.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +19,7 @@ import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.ssverma.core.ads.analytics.AdAnalyticsEvent
 import com.ssverma.core.analytics.to
 import com.ssverma.core.analytics.ui.LocalAnalytics
+import kotlinx.coroutines.delay
 
 /**
  * Purely fetches the AdMob NativeAd data payload. No UI rendering.
@@ -25,6 +27,7 @@ import com.ssverma.core.analytics.ui.LocalAnalytics
 @Composable
 fun rememberNativeAd(
     loadAd: Boolean = true,
+    loadDelayMillis: Long = 0L,
     analyticsEventPrefix: String = "native_ad",
     onAdLoaded: (NativeAd) -> Unit = {},
     onAdFailedToLoad: (LoadAdError) -> Unit = {}
@@ -58,9 +61,13 @@ fun rememberNativeAd(
         }
     }
 
-    DisposableEffect(loadAd) {
-        if (!loadAd) return@DisposableEffect onDispose {}
+    LaunchedEffect(loadAd, loadDelayMillis) {
+        if (!loadAd) return@LaunchedEffect
         isDelegated = false
+
+        if (loadDelayMillis > 0L) {
+            delay(loadDelayMillis)
+        }
 
         val adLoader = AdLoader.Builder(context, adConfigProvider.nativeAdId)
             .forNativeAd { ad ->
@@ -89,12 +96,17 @@ fun rememberNativeAd(
                     analytics.logEvent(AdAnalyticsEvent("${analyticsEventPrefix}_impression"))
                 }
             })
-            .withNativeAdOptions(NativeAdOptions.Builder().build())
+            .withNativeAdOptions(
+                NativeAdOptions.Builder()
+                    .setMediaAspectRatio(NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_ANY)
+                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+                    .setRequestMultipleImages(false)
+                    .setReturnUrlsForImageAssets(false)
+                    .build()
+            )
             .build()
 
         adLoader.loadAd(AdRequest.Builder().build())
-
-        onDispose {}
     }
 
     return nativeAd
