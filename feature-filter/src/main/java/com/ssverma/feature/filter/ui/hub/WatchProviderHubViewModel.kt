@@ -14,6 +14,7 @@ import com.ssverma.shared.ads.injection.AdInjectable
 import com.ssverma.shared.ads.injection.AdInjectionConfig
 import com.ssverma.shared.ads.injection.AdPlacement
 import com.ssverma.shared.ads.injection.InjectableAd
+import com.ssverma.shared.ads.injection.InjectableContent
 import com.ssverma.shared.ads.injection.injectAds
 import com.ssverma.shared.ads.injection.removeNativeAd
 import com.ssverma.shared.ads.injection.updateNativeAd
@@ -115,10 +116,7 @@ class WatchProviderHubViewModel @AssistedInject constructor(
                 ?: return@update currentState
 
             val updatedContent = content.copy(
-                heroItems = content.heroItems.updateNativeAd(injectableAd, nativeAd),
-                newItems = content.newItems.updateNativeAd(injectableAd, nativeAd),
-                upcomingItems = content.upcomingItems.updateNativeAd(injectableAd, nativeAd),
-                topRatedItems = content.topRatedItems.updateNativeAd(injectableAd, nativeAd)
+                heroItems = content.heroItems.updateNativeAd(injectableAd, nativeAd)
             )
 
             if (currentState.isMovieMode) {
@@ -137,10 +135,7 @@ class WatchProviderHubViewModel @AssistedInject constructor(
                 ?: return@update currentState
 
             val updatedContent = content.copy(
-                heroItems = content.heroItems.removeNativeAd(injectableAd),
-                newItems = content.newItems.removeNativeAd(injectableAd),
-                upcomingItems = content.upcomingItems.removeNativeAd(injectableAd),
-                topRatedItems = content.topRatedItems.removeNativeAd(injectableAd)
+                heroItems = content.heroItems.removeNativeAd(injectableAd)
             )
 
             if (currentState.isMovieMode) {
@@ -206,18 +201,9 @@ class WatchProviderHubViewModel @AssistedInject constructor(
             ),
             isAdsEnabled = isAds
         )
-        val newItems = rawNew.injectAds(
-            config = hubCarouselAdConfig.copy(sectionTag = "hub_movie_new"),
-            isAdsEnabled = isAds
-        )
-        val upcomingItems = rawUpcoming.injectAds(
-            config = hubCarouselAdConfig.copy(sectionTag = "hub_movie_upcoming"),
-            isAdsEnabled = isAds
-        )
-        val ratedItems = rawRated.injectAds(
-            config = hubCarouselAdConfig.copy(sectionTag = "hub_movie_top_rated"),
-            isAdsEnabled = isAds
-        )
+        val newItems = rawNew.map { InjectableContent(it) }
+        val upcomingItems = rawUpcoming.map { InjectableContent(it) }
+        val ratedItems = rawRated.map { InjectableContent(it) }
 
         val genres = genresResult.getOrDefault(emptyList())
 
@@ -297,18 +283,9 @@ class WatchProviderHubViewModel @AssistedInject constructor(
             ),
             isAdsEnabled = isAds
         )
-        val newItems = rawNew.injectAds(
-            config = hubCarouselAdConfig.copy(sectionTag = "hub_tv_new"),
-            isAdsEnabled = isAds
-        )
-        val upcomingItems = rawUpcoming.injectAds(
-            config = hubCarouselAdConfig.copy(sectionTag = "hub_tv_upcoming"),
-            isAdsEnabled = isAds
-        )
-        val ratedItems = rawRated.injectAds(
-            config = hubCarouselAdConfig.copy(sectionTag = "hub_tv_top_rated"),
-            isAdsEnabled = isAds
-        )
+        val newItems = rawNew.map { InjectableContent(it) }
+        val upcomingItems = rawUpcoming.map { InjectableContent(it) }
+        val ratedItems = rawRated.map { InjectableContent(it) }
 
         val genres = genresResult.getOrDefault(emptyList())
 

@@ -26,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
-import com.ssverma.core.ads.ui.rememberNativeAd
+
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
 import com.ssverma.core.navigation.dispatcher.IntentDispatcher.dispatchShareTextIntent
@@ -161,7 +161,7 @@ private fun MovieContent(
     val isCollectionLoading by viewModel.isCollectionLoading.collectAsStateWithLifecycle()
     var showLogDialog by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
-    val watchProviderAd = rememberNativeAd(analyticsEventPrefix = "movie_details_watch_provider")
+    val watchProviderAd = null // Disabled: screen-eager ad with near-zero impression yield
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 

@@ -1,6 +1,7 @@
 package com.ssverma.shared.ads.native
 
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -57,6 +58,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.gms.ads.nativead.MediaView
 import com.ssverma.core.ads.ui.LocalAdConfigProvider
 import com.ssverma.core.ads.ui.rememberNativeAd
 import com.ssverma.core.image.DefaultImagePlaceHolder
@@ -189,8 +191,31 @@ private fun NativeAdContainer(
         modifier = containerModifier,
         factory = { ctx ->
             NativeAdView(ctx).apply {
-                // We create ONE ComposeView to hold all our beautiful UI
+                // MediaView registered for GMA SDK rich-media impression validation.
+                // Kept at 1x1px with zero alpha — SDK validates its presence in the hierarchy
+                // via setNativeAd(), but it renders nothing visible to the user.
+                val mediaView = MediaView(ctx).apply {
+                    layoutParams = android.widget.FrameLayout.LayoutParams(1, 1)
+                    alpha = 0f
+                }
+                addView(mediaView)
+                this.mediaView = mediaView
+
+                // Real headline TextView for GMA SDK asset validation.
+                // SDK requires headlineView to be a TextView instance to count impressions.
+                val headlineTextView = TextView(ctx).apply {
+                    layoutParams = android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    visibility = android.view.View.INVISIBLE
+                }
+                addView(headlineTextView)
+                this.headlineView = headlineTextView
+
+                // ComposeView holds all custom ShowTime ad UI
                 val composeView = ComposeView(ctx).apply {
+                    tag = "compose_content"
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
@@ -222,19 +247,21 @@ private fun NativeAdContainer(
                 }
                 addView(clickOverlay)
 
-                // THE MAGIC BULLET: Register the transparent overlay for clicks!
+                // Register the transparent overlay for click attribution
                 this.callToActionView = clickOverlay
-                this.headlineView = clickOverlay
                 this.bodyView = clickOverlay
                 this.iconView = clickOverlay
             }
         },
         update = { view ->
-            // Must set the ad before rendering content to register impressions
+            // Populate headline for GMA SDK asset validation
+            (view.headlineView as? TextView)?.text = ad.headline ?: ""
+
+            // Register the ad — SDK auto-validates registered asset views for impressions
             view.setNativeAd(ad)
 
-            val composeView = view.getChildAt(0) as ComposeView
-            composeView.setContent {
+            val composeView = view.findViewWithTag<ComposeView>("compose_content")
+            composeView?.setContent {
                 NativeAdViewContent(
                     nativeAd = ad,
                     style = style,

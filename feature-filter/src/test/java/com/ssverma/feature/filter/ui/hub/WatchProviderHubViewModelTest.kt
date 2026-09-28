@@ -68,63 +68,54 @@ class WatchProviderHubViewModelTest {
     }
 
     @Test
-    fun `watch provider hub injects separate unique IDs for all 4 horizontal sections`() = runTest {
+    fun `hub injects ad only in hero section and no ads in secondary sections`() = runTest {
         advanceUntilIdle()
 
         val hubContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
 
-        val heroAd = hubContent.heroItems.filterIsInstance<InjectableAd>().first()
-        val newAd = hubContent.newItems.filterIsInstance<InjectableAd>().first()
-        val upcomingAd = hubContent.upcomingItems.filterIsInstance<InjectableAd>().first()
-        val topRatedAd = hubContent.topRatedItems.filterIsInstance<InjectableAd>().first()
+        val heroAds = hubContent.heroItems.filterIsInstance<InjectableAd>()
+        val newAds = hubContent.newItems.filterIsInstance<InjectableAd>()
+        val upcomingAds = hubContent.upcomingItems.filterIsInstance<InjectableAd>()
+        val topRatedAds = hubContent.topRatedItems.filterIsInstance<InjectableAd>()
 
-        // Verify distinct IDs across all 4 horizontal sections
-        assertThat(heroAd.id).isEqualTo("hub_movie_hero_ad_Carousel_1")
-        assertThat(newAd.id).isEqualTo("hub_movie_new_ad_Grid_1")
-        assertThat(upcomingAd.id).isEqualTo("hub_movie_upcoming_ad_Grid_1")
-        assertThat(topRatedAd.id).isEqualTo("hub_movie_top_rated_ad_Grid_1")
+        // Only hero carousel gets an ad slot
+        assertThat(heroAds).hasSize(1)
+        assertThat(heroAds.first().id).isEqualTo("hub_movie_hero_ad_Carousel_1")
+
+        // Secondary sections have zero ad slots to avoid phantom over-requesting
+        assertThat(newAds).isEmpty()
+        assertThat(upcomingAds).isEmpty()
+        assertThat(topRatedAds).isEmpty()
     }
 
     @Test
-    fun `onCarouselNativeAdLoaded updates matching ad in specific section without affecting others`() =
-        runTest {
-            advanceUntilIdle()
+    fun `onCarouselNativeAdLoaded updates hero ad`() = runTest {
+        advanceUntilIdle()
 
-            val initialContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
-            val newAd = initialContent.newItems.filterIsInstance<InjectableAd>().first()
+        val initialContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
+        val heroAd = initialContent.heroItems.filterIsInstance<InjectableAd>().first()
 
-            val mockNativeAd = mockk<NativeAd>()
-            viewModel.onCarouselNativeAdLoaded(newAd, mockNativeAd)
+        val mockNativeAd = mockk<NativeAd>()
+        viewModel.onCarouselNativeAdLoaded(injectableAd = heroAd, nativeAd = mockNativeAd)
 
-            val updatedContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
+        val updatedContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
+        val updatedHeroAd = updatedContent.heroItems.filterIsInstance<InjectableAd>().first()
 
-            val updatedNewAd = updatedContent.newItems.filterIsInstance<InjectableAd>().first()
-            val untouchedUpcomingAd =
-                updatedContent.upcomingItems.filterIsInstance<InjectableAd>().first()
-            val untouchedTopRatedAd =
-                updatedContent.topRatedItems.filterIsInstance<InjectableAd>().first()
-
-            assertThat(updatedNewAd.ad).isEqualTo(mockNativeAd)
-            assertThat(untouchedUpcomingAd.ad).isNull()
-            assertThat(untouchedTopRatedAd.ad).isNull()
-        }
+        assertThat(updatedHeroAd.ad).isEqualTo(mockNativeAd)
+    }
 
     @Test
-    fun `onCarouselNativeAdFailed removes matching ad in specific section without removing others`() =
-        runTest {
-            advanceUntilIdle()
+    fun `onCarouselNativeAdFailed removes hero ad slot`() = runTest {
+        advanceUntilIdle()
 
-            val initialContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
-            val newAd = initialContent.newItems.filterIsInstance<InjectableAd>().first()
+        val initialContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
+        val heroAd = initialContent.heroItems.filterIsInstance<InjectableAd>().first()
 
-            viewModel.onCarouselNativeAdFailed(newAd)
+        viewModel.onCarouselNativeAdFailed(injectableAd = heroAd)
 
-            val updatedContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
+        val updatedContent = (viewModel.uiState.value.hubContentState as UiState.Success).data
 
-            // New Items ad slot is removed
-            assertThat(updatedContent.newItems.any { it is InjectableAd }).isFalse()
-            // Upcoming and Top Rated keep their ad slots!
-            assertThat(updatedContent.upcomingItems.any { it is InjectableAd }).isTrue()
-            assertThat(updatedContent.topRatedItems.any { it is InjectableAd }).isTrue()
-        }
+        // Hero ad slot is removed on failure
+        assertThat(updatedContent.heroItems.any { it is InjectableAd }).isFalse()
+    }
 }
