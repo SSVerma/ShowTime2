@@ -250,11 +250,12 @@ fun DashboardScreen(
                 )
 
                 // 3. In-Viewport Native Ad Showcase (Guaranteed initial viewport viewability & high CPM)
-                if (isAdsEnabled && !uiState.isNativeAdFailed) {
+                if (isAdsEnabled) {
                     inViewportNativeAdShelf(
                         nativeAd = uiState.nativeAd,
                         onAdLoaded = viewModel::onNativeAdLoaded,
                         onAdFailed = viewModel::onNativeAdFailed,
+                        isFailed = uiState.isNativeAdFailed,
                         isAdsEnabled = isAdsEnabled,
                         modifier = Modifier.dashboardSectionSpacing()
                     )

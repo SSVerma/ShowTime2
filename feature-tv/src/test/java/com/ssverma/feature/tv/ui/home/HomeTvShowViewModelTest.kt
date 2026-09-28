@@ -212,4 +212,76 @@ class HomeTvShowViewModelTest {
         val state = viewModel.uiState.value
         assertThat(state.trendingTvShows).isInstanceOf(UiState.Success::class.java)
     }
+
+    @Test
+    fun `onNativeAdLoaded updates matching ad in specific section without touching other sections`() =
+        runTest {
+            every { adConfigProvider.isAdsEnabled } returns true
+            val show1 = mockk<TvShow>(relaxed = true) { every { id } returns 101 }
+            val show2 = mockk<TvShow>(relaxed = true) { every { id } returns 102 }
+
+            coEvery { popularTvShowsUseCase() } returns Result.Success(listOf(show1, show2))
+            coEvery { topRatedTvShowsUseCase() } returns Result.Success(listOf(show1, show2))
+
+            viewModel.fetchPopularTvShows()
+            viewModel.fetchTopRatedTvShows()
+            advanceUntilIdle()
+
+            val popularWithAds = (viewModel.uiState.value.popularTvShows as UiState.Success).data
+            val topRatedWithAds = (viewModel.uiState.value.topRatedTvShows as UiState.Success).data
+
+            val popularAd =
+                popularWithAds.filterIsInstance<com.ssverma.shared.ads.injection.InjectableAd>()
+                    .first()
+            val topRatedAd =
+                topRatedWithAds.filterIsInstance<com.ssverma.shared.ads.injection.InjectableAd>()
+                    .first()
+
+            assertThat(popularAd.id).isEqualTo("tv_popular_ad_Grid_1")
+            assertThat(topRatedAd.id).isEqualTo("tv_top_rated_ad_Grid_1")
+
+            val mockNativeAd = mockk<com.google.android.gms.ads.nativead.NativeAd>()
+            viewModel.onNativeAdLoaded(popularAd, mockNativeAd)
+
+            val updatedPopular = (viewModel.uiState.value.popularTvShows as UiState.Success).data
+            val updatedTopRated = (viewModel.uiState.value.topRatedTvShows as UiState.Success).data
+
+            val updatedPopularAd =
+                updatedPopular.filterIsInstance<com.ssverma.shared.ads.injection.InjectableAd>()
+                    .first()
+            val untouchedTopRatedAd =
+                updatedTopRated.filterIsInstance<com.ssverma.shared.ads.injection.InjectableAd>()
+                    .first()
+
+            assertThat(updatedPopularAd.ad).isEqualTo(mockNativeAd)
+            assertThat(untouchedTopRatedAd.ad).isNull()
+        }
+
+    @Test
+    fun `onNativeAdFailed removes matching ad in specific section without touching other sections`() =
+        runTest {
+            every { adConfigProvider.isAdsEnabled } returns true
+            val show1 = mockk<TvShow>(relaxed = true) { every { id } returns 101 }
+            val show2 = mockk<TvShow>(relaxed = true) { every { id } returns 102 }
+
+            coEvery { popularTvShowsUseCase() } returns Result.Success(listOf(show1, show2))
+            coEvery { topRatedTvShowsUseCase() } returns Result.Success(listOf(show1, show2))
+
+            viewModel.fetchPopularTvShows()
+            viewModel.fetchTopRatedTvShows()
+            advanceUntilIdle()
+
+            val popularWithAds = (viewModel.uiState.value.popularTvShows as UiState.Success).data
+            val popularAd =
+                popularWithAds.filterIsInstance<com.ssverma.shared.ads.injection.InjectableAd>()
+                    .first()
+
+            viewModel.onNativeAdFailed(popularAd)
+
+            val updatedPopular = (viewModel.uiState.value.popularTvShows as UiState.Success).data
+            val updatedTopRated = (viewModel.uiState.value.topRatedTvShows as UiState.Success).data
+
+            assertThat(updatedPopular.any { it is com.ssverma.shared.ads.injection.InjectableAd }).isFalse()
+            assertThat(updatedTopRated.any { it is com.ssverma.shared.ads.injection.InjectableAd }).isTrue()
+        }
 }

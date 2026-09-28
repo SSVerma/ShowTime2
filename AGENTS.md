@@ -73,7 +73,27 @@ Before planning, creating, or modifying any code in this repository, you **MUST*
 
 ---
 
-## 2. Environment & Tooling Constraints
+## 2. Production Safeguards & Live Customer Invariants
+
+ShowTime is a live application on Google Play (`com.ssverma.showtime`) with active real-world cinephile customers. All administrative tooling, Firestore rule updates, and client releases must strictly observe these safety rules:
+
+1. **Zero Customer Impact / Non-Breaking Guarantee**:
+   - Any modification to Firestore security rules, schemas, or remote configurations MUST maintain 100% backward compatibility for live installed clients on versions `2.0.x` and above.
+   - Dynamic capabilities (categories, polls, wordles) must have built-in client fallbacks so clients never crash or see empty screens during network transitions.
+
+2. **Push Notification Broadcast Safety Gate**:
+   - Broadcast pushes to `all_users` or production topics will wake up thousands of live customer devices.
+   - All test pushes MUST default to `dev_test_devices` or direct test device registration tokens.
+   - Broadcasting to `all_users` MUST always require an explicit, high-visibility confirmation modal with live payload preview to prevent accidental test dispatches to real customers.
+
+3. **Non-Destructive Content Moderation**:
+   - Quarantining reported user lists hides them from public discovery feeds without deleting the creator's personal cloud backup data (`user_backups`).
+   - Permanent deletion must be strictly reserved for confirmed severe TOS violations.
+
+---
+
+## 3. Environment & Tooling Constraints
 
 1. **NO ADB Commands**: Never execute `adb` or attempt to connect to Android emulators/devices directly.
 2. **Deterministic Quality Verification**: Always run `git add -A && ./.githooks/pre-commit` before presenting completed code to the user.
+

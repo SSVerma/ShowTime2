@@ -185,6 +185,7 @@ fun LazyListScope.trendingWorldwideShelf(
                                     is InjectableAd -> {
                                         ShowTimeNativeAd(
                                             ad = injectableItem.ad,
+                                            loadDelayMillis = 250L,
                                             onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
                                             onAdFailed = { onAdFailed(injectableItem) },
                                             style = injectableItem.style
@@ -251,6 +252,7 @@ fun LazyListScope.trendingWorldwideShelf(
                                     is InjectableAd -> {
                                         ShowTimeNativeAd(
                                             ad = injectableItem.ad,
+                                            loadDelayMillis = 250L,
                                             onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
                                             onAdFailed = { onAdFailed(injectableItem) },
                                             style = injectableItem.style

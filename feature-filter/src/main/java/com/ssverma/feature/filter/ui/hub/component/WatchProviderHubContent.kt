@@ -682,7 +682,13 @@ private fun HeroPagerSection(
                 items = items,
                 carouselState = carouselState,
                 itemHeight = 220.dp,
-                contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium)
+                contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
+                key = { item ->
+                    when (item) {
+                        is InjectableAd -> item.id
+                        is InjectableContent<MediaPreview> -> item.item.id
+                    }
+                }
             ) { injectableItem ->
                 when (injectableItem) {
                     is InjectableAd -> {

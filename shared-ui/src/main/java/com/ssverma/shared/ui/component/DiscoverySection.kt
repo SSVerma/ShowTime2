@@ -68,6 +68,7 @@ fun <T, R> DiscoverySection(
     modifier: Modifier = Modifier,
     showHeader: Boolean = false,
     headerTitle: String = stringResource(id = R.string.discover),
+    key: ((T) -> Any)? = null,
     itemContent: @Composable (categoryPayload: R, item: T) -> Unit
 ) {
     if (categories.isEmpty()) return
@@ -234,7 +235,10 @@ fun <T, R> DiscoverySection(
                     contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.smallMedium),
                 ) {
-                    items(items) { item ->
+                    items(
+                        items = items,
+                        key = { item -> key?.invoke(item) ?: item.hashCode() }
+                    ) { item ->
                         itemContent(category.payload, item)
                     }
 

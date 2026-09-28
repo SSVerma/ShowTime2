@@ -173,12 +173,19 @@ fun HeroSection(
                     maxItemWidth = maxItemWidth,
                     itemHeight = itemHeight,
                     contentPadding = contentPadding,
+                    key = { item ->
+                        when (item) {
+                            is InjectableAd -> item.id
+                            is InjectableContent<*> -> (item.item as TvShowPreview).id
+                        }
+                    }
                 ) { injectableItem: AdInjectable<TvShowPreview> ->
                     when (injectableItem) {
                         is InjectableAd -> {
                             ShowTimeNativeAd(
                                 modifier = Modifier.fillMaxSize(),
                                 ad = injectableItem.ad,
+                                loadDelayMillis = 200L,
                                 onAdLoaded = { ad -> onAdLoaded(injectableItem, ad) },
                                 onAdFailed = { onAdFailed(injectableItem) },
                                 style = injectableItem.style

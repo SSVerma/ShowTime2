@@ -9,5 +9,6 @@ import com.ssverma.shared.ads.ui.NativeAdStyle
  */
 data class AdInjectionConfig(
     val placement: AdPlacement = AdPlacement.None,
-    val style: NativeAdStyle = NativeAdStyle.List
+    val style: NativeAdStyle = NativeAdStyle.List,
+    val sectionTag: String = ""
 )
