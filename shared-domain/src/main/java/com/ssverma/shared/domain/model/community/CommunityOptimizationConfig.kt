@@ -120,9 +120,10 @@ object CommunityOptimizationConfig {
 
     /**
      * Default flag for enabling Firestore query telemetry and quota audit tracking.
-     * Enabled by default (true) to track production query metrics with zero UI/performance overhead.
+     * Disabled by default (false) in production to avoid cluttering analytics with ~26,000+ events/month.
+     * Can be enabled remotely on demand via Firebase Remote Config.
      */
-    const val DEFAULT_FIRESTORE_AUDIT_ENABLED = true
+    const val DEFAULT_FIRESTORE_AUDIT_ENABLED = false
 
     /**
      * Remote Config key for dynamically enabling/disabling Firestore telemetry kill-switch.
