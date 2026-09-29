@@ -3,6 +3,7 @@
     "public": "public",
     "ignore": [
       "firebase.json",
+      "!**/.well-known/**",
       "**/.*",
       "**/node_modules/**"
     ],

@@ -96,14 +96,7 @@ fun rememberNativeAd(
                     analytics.logEvent(AdAnalyticsEvent("${analyticsEventPrefix}_impression"))
                 }
             })
-            .withNativeAdOptions(
-                NativeAdOptions.Builder()
-                    .setMediaAspectRatio(NativeAdOptions.NATIVE_MEDIA_ASPECT_RATIO_ANY)
-                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
-                    .setRequestMultipleImages(false)
-                    .setReturnUrlsForImageAssets(false)
-                    .build()
-            )
+            .withNativeAdOptions(NativeAdOptions.Builder().build())
             .build()
 
         adLoader.loadAd(AdRequest.Builder().build())

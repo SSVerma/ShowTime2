@@ -6,8 +6,9 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.ssverma.showtime",
-      "sha256_cert_fingerprint_list": [
-        "69:78:9D:9B:BE:FA:DD:96:4F:25:91:74:14:4A:0C:5D:F1:8E:75:60:41:6B:38:38:2F:FA:81:95:01:18:3E:D4"
+      "sha256_cert_fingerprints": [
+        "69:78:9D:9B:BE:FA:DD:96:4F:25:91:74:14:4A:0C:5D:F1:8E:75:60:41:6B:38:38:2F:FA:81:95:01:18:3E:D4",
+        "F1:29:51:F1:DE:E4:77:EB:11:E8:CB:E0:20:CC:74:4E:C6:FE:00:5D:B8:70:7D:0A:84:50:CA:FD:8F:E6:DD:E4"
       ]
     }
   },
@@ -18,7 +19,7 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.ssverma.showtime.debug",
-      "sha256_cert_fingerprint_list": [
+      "sha256_cert_fingerprints": [
         "88:DD:C2:BE:9D:E6:6A:C7:13:06:1B:FA:62:E5:AB:BA:BA:96:AB:27:F9:FF:69:22:BF:B8:7E:F8:CB:6F:02:9F"
       ]
     }
