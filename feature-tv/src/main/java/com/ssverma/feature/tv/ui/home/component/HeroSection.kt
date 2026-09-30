@@ -80,6 +80,7 @@ fun HeroSection(
             backdropImageUrl = tvShow.backdropImageUrl,
             voteAvg = tvShow.voteAvg,
             releaseDate = tvShow.displayFirstAirDate.orEmpty(),
+            overview = tvShow.overview,
             onShowFeedback = onShowFeedback
         )
     }

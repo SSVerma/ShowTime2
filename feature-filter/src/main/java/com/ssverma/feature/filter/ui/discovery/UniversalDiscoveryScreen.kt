@@ -506,15 +506,6 @@ fun UniversalDiscoveryScreen(
                                     )
                                 }
                             },
-                            onShare = {
-                                val tmdbType =
-                                    if (item.mediaType == MediaType.Movie) "movie" else "tv"
-                                with(IntentDispatcher) {
-                                    context.dispatchShareTextIntent(
-                                        "${item.title}\nhttps://www.themoviedb.org/$tmdbType/${item.id}"
-                                    )
-                                }
-                            },
                             onShowFeedback = { args ->
                                 coroutineScope.launch {
                                     val result = snackbarHostState.showImmediateSnackbar(

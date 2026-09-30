@@ -415,7 +415,8 @@ class DashboardViewModel @Inject constructor(
                         backdropImageUrl = m.backdropImageUrl,
                         voteAvg = m.voteAvg,
                         displayDate = m.displayReleaseDate,
-                        mediaType = MediaType.Movie
+                        mediaType = MediaType.Movie,
+                        overview = m.overview
                     )
                 )
             }
@@ -429,7 +430,8 @@ class DashboardViewModel @Inject constructor(
                         backdropImageUrl = t.backdropImageUrl,
                         voteAvg = t.voteAvg,
                         displayDate = t.displayFirstAirDate,
-                        mediaType = MediaType.Tv
+                        mediaType = MediaType.Tv,
+                        overview = t.overview
                     )
                 )
             }

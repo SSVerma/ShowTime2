@@ -30,6 +30,7 @@ sealed interface MediaPreview {
     val backdropImageUrl: String
     val voteAvg: Float
     val displayDate: String?
+    val overview: String
 
     data class Movie(val movie: MoviePreview) : MediaPreview {
         override val id: Int get() = movie.id
@@ -38,6 +39,7 @@ sealed interface MediaPreview {
         override val backdropImageUrl: String get() = movie.backdropImageUrl
         override val voteAvg: Float get() = movie.voteAvg
         override val displayDate: String? get() = movie.displayReleaseDate
+        override val overview: String get() = movie.overview
     }
 
     data class TvShow(val tvShow: TvShowPreview) : MediaPreview {
@@ -47,5 +49,6 @@ sealed interface MediaPreview {
         override val backdropImageUrl: String get() = tvShow.backdropImageUrl
         override val voteAvg: Float get() = tvShow.voteAvg
         override val displayDate: String? get() = tvShow.displayFirstAirDate
+        override val overview: String get() = tvShow.overview
     }
 }

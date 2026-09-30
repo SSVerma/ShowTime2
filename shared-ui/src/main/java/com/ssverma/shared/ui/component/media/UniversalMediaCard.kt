@@ -149,6 +149,7 @@ fun UniversalMediaCard(
             backdropImageUrl = item.backdropImageUrl,
             voteAvg = item.voteAvg,
             releaseDate = item.releaseDate,
+            overview = item.overview,
             isActionActive = effectiveActionActive,
             isInWatchlist = effectiveInWatchlist,
             isWatched = effectiveIsWatched,

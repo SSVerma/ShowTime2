@@ -80,6 +80,7 @@ fun HeroSection(
             backdropImageUrl = movie.backdropImageUrl,
             voteAvg = movie.voteAvg,
             releaseDate = movie.displayReleaseDate.orEmpty(),
+            overview = movie.overview,
             onShowFeedback = onShowFeedback
         )
     }

@@ -48,4 +48,59 @@ class ShareMediaUtilsSecurityTest {
         assertEquals("SL-4821", ShareMediaUtils.normalizeSecretShareCode("sl-4821"))
         assertEquals("SL-4821", ShareMediaUtils.normalizeSecretShareCode("SL-4821"))
     }
+
+    @Test
+    fun `buildMediaUrl generates canonical universal url for movies and tv shows`() {
+        assertEquals(
+            "https://showtime.ssverma.in/movie/550",
+            ShareMediaUtils.buildMediaUrl("movie", 550)
+        )
+        assertEquals(
+            "https://showtime.ssverma.in/tv/1399",
+            ShareMediaUtils.buildMediaUrl("tv", 1399)
+        )
+        assertEquals(
+            "https://showtime.ssverma.in/person/287",
+            ShareMediaUtils.buildMediaUrl("person", 287)
+        )
+    }
+
+    @Test
+    fun `buildShareableMediaText formats title tagline overview and url cleanly`() {
+        val fullText = ShareMediaUtils.buildShareableMediaText(
+            mediaTitle = "Inception",
+            mediaTagline = "Your mind is the scene of the crime.",
+            mediaOverview = "A thief who steals corporate secrets through dream-sharing technology.",
+            appPackageName = "com.ssverma.showtime",
+            mediaType = "movie",
+            mediaId = 27205
+        )
+
+        val expectedFull = """
+            Inception
+            Your mind is the scene of the crime.
+
+            A thief who steals corporate secrets through dream-sharing technology.
+
+            https://showtime.ssverma.in/movie/27205
+        """.trimIndent()
+        assertEquals(expectedFull, fullText)
+    }
+
+    @Test
+    fun `buildShareableMediaText formats title and url cleanly when overview and tagline are blank`() {
+        val minimalText = ShareMediaUtils.buildShareableMediaText(
+            mediaTitle = "Fight Club",
+            appPackageName = "com.ssverma.showtime",
+            mediaType = "movie",
+            mediaId = 550
+        )
+
+        val expectedMinimal = """
+            Fight Club
+
+            https://showtime.ssverma.in/movie/550
+        """.trimIndent()
+        assertEquals(expectedMinimal, minimalText)
+    }
 }

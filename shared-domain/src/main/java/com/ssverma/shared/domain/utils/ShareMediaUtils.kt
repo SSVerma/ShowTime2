@@ -19,8 +19,8 @@ object ShareMediaUtils {
 
     fun buildShareableMediaText(
         mediaTitle: String,
-        mediaTagline: String?,
-        mediaOverview: String,
+        mediaTagline: String? = null,
+        mediaOverview: String = "",
         appPackageName: String,
         mediaType: String? = null,
         mediaId: Int? = null
@@ -33,8 +33,10 @@ object ShareMediaUtils {
                 .append(mediaTagline)
         }
 
-        builder.append("\n\n")
-            .append(mediaOverview)
+        if (mediaOverview.isNotBlank()) {
+            builder.append("\n\n")
+                .append(mediaOverview)
+        }
 
         val targetUrl = if (mediaType != null && mediaId != null) {
             buildMediaUrl(mediaType, mediaId)
@@ -42,7 +44,7 @@ object ShareMediaUtils {
             PlayStoreUrlPrefix + appPackageName
         }
 
-        builder.append("\n\n\n")
+        builder.append("\n\n")
             .append(targetUrl)
 
         return builder.toString()

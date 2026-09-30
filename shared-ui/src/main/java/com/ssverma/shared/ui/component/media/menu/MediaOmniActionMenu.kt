@@ -69,6 +69,7 @@ import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.repository.ReminderToggleResult
 import com.ssverma.shared.domain.usecase.reminder.ScheduleReminderResult
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaActionParticleType
@@ -95,6 +96,8 @@ fun MediaOmniActionMenu(
     backdropImageUrl: String = "",
     voteAvg: Float = 0f,
     releaseDate: String = "",
+    overview: String = "",
+    tagline: String? = null,
     isActionActive: Boolean? = null,
     isInWatchlist: Boolean? = null,
     isWatched: Boolean? = null,
@@ -294,11 +297,16 @@ fun MediaOmniActionMenu(
                         if (onShare != null) {
                             onShare()
                         } else {
-                            val tmdbType = if (mediaType == MediaType.Movie) "movie" else "tv"
+                            val shareableText = ShareMediaUtils.buildShareableMediaText(
+                                mediaTitle = title,
+                                mediaTagline = tagline,
+                                mediaOverview = overview,
+                                appPackageName = context.packageName,
+                                mediaType = if (mediaType == MediaType.Movie) "movie" else "tv",
+                                mediaId = mediaId
+                            )
                             with(IntentDispatcher) {
-                                context.dispatchShareTextIntent(
-                                    "$title\nhttps://www.themoviedb.org/$tmdbType/$mediaId"
-                                )
+                                context.dispatchShareTextIntent(text = shareableText)
                             }
                         }
                     }

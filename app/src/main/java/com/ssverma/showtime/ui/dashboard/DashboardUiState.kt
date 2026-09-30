@@ -30,7 +30,8 @@ data class TrendingSpotlightItem(
     val backdropImageUrl: String,
     val voteAvg: Float,
     val displayDate: String?,
-    val mediaType: MediaType
+    val mediaType: MediaType,
+    val overview: String = ""
 )
 
 @Immutable

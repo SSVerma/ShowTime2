@@ -726,6 +726,7 @@ private fun HeroPagerSection(
                                     backdropImageUrl = media.backdropImageUrl,
                                     voteAvg = media.voteAvg,
                                     releaseDate = media.displayDate.orEmpty(),
+                                    overview = media.overview,
                                     onShowFeedback = onShowFeedback
                                 )
                             }

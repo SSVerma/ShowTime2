@@ -1,6 +1,7 @@
 package com.ssverma.feature.person.ui.details.content
 
 import com.ssverma.core.ui.util.shareText
+import com.ssverma.shared.domain.utils.ShareMediaUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -93,7 +94,7 @@ fun PersonDetailsContent(
             val shareText = context.getString(
                 R.string.person_share_text,
                 person.name,
-                "https://www.themoviedb.org/person/${person.id}"
+                ShareMediaUtils.buildMediaUrl("person", person.id)
             )
             context.shareText(
                 text = shareText,
