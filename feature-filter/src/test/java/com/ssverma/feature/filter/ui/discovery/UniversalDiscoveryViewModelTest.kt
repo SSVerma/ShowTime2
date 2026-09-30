@@ -104,8 +104,9 @@ class UniversalDiscoveryViewModelTest {
         assertThat(state.filter.mediaType).isEqualTo(MediaType.Movie)
         assertThat(state.filter.vibePreset).isEqualTo(DiscoveryVibePreset.ALL)
         assertThat(state.filter.watchRegion).isEqualTo("US")
-        // Free user with multiple subscriptions only has first service active
-        assertThat(state.filter.selectedProviderIds).containsExactly(8)
+        // User streaming subscriptions are loaded but NOT pre-selected by default
+        assertThat(state.userStreamingSubscriptions).containsExactly(8, 9)
+        assertThat(state.filter.selectedProviderIds).isEmpty()
     }
 
     @Test
@@ -245,7 +246,9 @@ class UniversalDiscoveryViewModelTest {
         )
         advanceUntilIdle()
 
-        // 8 is already selected for free user
+        // Select first provider 8
+        viewModel.toggleStreamingProvider(8)
+        advanceUntilIdle()
         assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(8)
 
         // Attempt to select second provider 119
@@ -259,6 +262,8 @@ class UniversalDiscoveryViewModelTest {
 
     @Test
     fun `switchToProvider replaces single provider and dismisses gate`() = runTest {
+        advanceUntilIdle()
+        viewModel.toggleStreamingProvider(8)
         advanceUntilIdle()
         viewModel.toggleStreamingProvider(119)
         advanceUntilIdle()
@@ -293,7 +298,12 @@ class UniversalDiscoveryViewModelTest {
         )
         advanceUntilIdle()
 
-        // Pro user gets all configured subscriptions by default
+        // Initial providers empty by default
+        assertThat(proVm.uiState.value.filter.selectedProviderIds).isEmpty()
+
+        // Toggle My Services on
+        proVm.toggleMyServicesFilter()
+        advanceUntilIdle()
         assertThat(proVm.uiState.value.filter.selectedProviderIds).containsExactly(8, 9)
 
         // Select 3rd provider 337
@@ -307,9 +317,6 @@ class UniversalDiscoveryViewModelTest {
 
     @Test
     fun `toggleMyServicesFilter toggles subscriptions on and off`() = runTest {
-        advanceUntilIdle()
-        // Reset providers
-        viewModel.toggleStreamingProvider(8)
         advanceUntilIdle()
         assertThat(viewModel.uiState.value.filter.selectedProviderIds).isEmpty()
 
@@ -328,6 +335,8 @@ class UniversalDiscoveryViewModelTest {
     fun `updating streaming subscriptions while My Services is active automatically updates filter`() =
         runTest {
             advanceUntilIdle()
+            viewModel.toggleMyServicesFilter()
+            advanceUntilIdle()
             assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(8)
 
             streamingSubscriptionsFlow.value = setOf(119, 337)
@@ -338,6 +347,8 @@ class UniversalDiscoveryViewModelTest {
 
     @Test
     fun `clearing streaming subscriptions while My Services is active clears filter`() = runTest {
+        advanceUntilIdle()
+        viewModel.toggleMyServicesFilter()
         advanceUntilIdle()
         assertThat(viewModel.uiState.value.filter.selectedProviderIds).containsExactly(8)
 

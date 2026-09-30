@@ -171,7 +171,6 @@ class UniversalDiscoveryViewModel @Inject constructor(
             }
         }
 
-        var isInitialSubscriptionsApplied = false
         viewModelScope.launch {
             appConfigRepository.userStreamingSubscriptions.collectLatest { subscriptions ->
                 val previousSubscriptions = _uiState.value.userStreamingSubscriptions
@@ -184,21 +183,7 @@ class UniversalDiscoveryViewModel @Inject constructor(
 
                 _uiState.update { it.copy(userStreamingSubscriptions = subscriptions) }
 
-                if (!isInitialSubscriptionsApplied) {
-                    isInitialSubscriptionsApplied = true
-                    if (initialProviders.isEmpty() && subscriptions.isNotEmpty()) {
-                        val allowed =
-                            if (_uiState.value.isProActive || _uiState.value.isPassActive) {
-                                subscriptions
-                            } else {
-                                subscriptions.take(1).toSet()
-                            }
-                        _uiState.update {
-                            it.copy(filter = it.filter.copy(selectedProviderIds = allowed))
-                        }
-                        scheduleQuery(debounceMs = 150)
-                    }
-                } else if (isCurrentlyFilteringMyServices) {
+                if (isCurrentlyFilteringMyServices) {
                     val allowed = if (subscriptions.isEmpty()) {
                         emptySet()
                     } else if (_uiState.value.isProActive || _uiState.value.isPassActive) {
