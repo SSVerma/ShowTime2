@@ -1,5 +1,6 @@
 package com.ssverma.core.navigation.dispatcher
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -11,8 +12,15 @@ fun Context.dispatchImplicitIntent(
     onDestinationNotFound: () -> Unit = {}
 ) {
     try {
+        if (this !is Activity) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
         startActivity(intent)
     } catch (_: ActivityNotFoundException) {
+        onDestinationNotFound()
+    } catch (_: SecurityException) {
+        onDestinationNotFound()
+    } catch (_: Exception) {
         onDestinationNotFound()
     }
 }
@@ -118,6 +126,8 @@ object CommonIntent {
             type = "text/plain"
         }
 
-        return Intent.createChooser(sendIntent, null)
+        return Intent.createChooser(sendIntent, null).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
     }
 }
