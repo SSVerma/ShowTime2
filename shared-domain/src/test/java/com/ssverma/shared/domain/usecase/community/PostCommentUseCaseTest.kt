@@ -2,6 +2,7 @@ package com.ssverma.shared.domain.usecase.community
 
 import com.google.common.truth.Truth.assertThat
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.DiscussionTarget
 import com.ssverma.shared.domain.model.community.PostCommentParams
@@ -18,7 +19,6 @@ class PostCommentUseCaseTest {
 
     private val communityRepository: CommunityRepository = mockk(relaxed = true)
     private val commentQuotaManager: CommentQuotaManager = mockk(relaxed = true)
-    private val validateCommunityContentUseCase = ValidateCommunityContentUseCase()
 
     private lateinit var useCase: PostCommentUseCase
 
@@ -28,8 +28,7 @@ class PostCommentUseCaseTest {
     fun setUp() {
         useCase = PostCommentUseCase(
             communityRepository = communityRepository,
-            commentQuotaManager = commentQuotaManager,
-            validateCommunityContentUseCase = validateCommunityContentUseCase
+            commentQuotaManager = commentQuotaManager
         )
     }
 
@@ -52,19 +51,20 @@ class PostCommentUseCaseTest {
     }
 
     @Test
-    fun `invoke returns Error when validation fails`() = runTest {
+    fun `invoke returns Error when repository returns error`() = runTest {
         coEvery { commentQuotaManager.canPostComment(any()) } returns true
+        coEvery { communityRepository.postComment(any()) } returns Result.Error(Failure.CoreFailure.UnexpectedFailure)
 
         val params = PostCommentParams(
             target = sampleTarget,
-            content = "   ",
+            content = "This movie is awesome!",
             isSpoiler = false
         )
 
         val result = useCase(params)
 
         assertThat(result).isInstanceOf(PostCommentResult.Error::class.java)
-        coVerify(exactly = 0) { communityRepository.postComment(any()) }
+        coVerify(exactly = 1) { communityRepository.postComment(any()) }
         coVerify(exactly = 0) { commentQuotaManager.recordCommentPosted() }
     }
 
@@ -118,7 +118,7 @@ class PostCommentUseCaseTest {
             isProUser = true
         )
 
-        val result = useCase(params)
+        val result = useCase(params, isProActive = true)
 
         assertThat(result).isInstanceOf(PostCommentResult.Success::class.java)
         assertThat((result as PostCommentResult.Success).comment.isProUser).isTrue()

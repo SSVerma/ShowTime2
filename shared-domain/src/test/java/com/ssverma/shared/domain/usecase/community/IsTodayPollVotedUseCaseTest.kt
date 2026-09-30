@@ -1,8 +1,11 @@
 package com.ssverma.shared.domain.usecase.community
 
 import com.ssverma.shared.domain.model.community.CommunityOptimizationConfig
-import com.ssverma.shared.testing.fakes.FakeCommunityRepository
+import com.ssverma.shared.domain.repository.CommunityRepository
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -12,21 +15,20 @@ import java.time.LocalDate
 
 class IsTodayPollVotedUseCaseTest {
 
-    private val fakeRepo = FakeCommunityRepository()
-    private val useCase = IsTodayPollVotedUseCase(communityRepository = fakeRepo)
+    private val communityRepository: CommunityRepository = mockk()
+    private val useCase = IsTodayPollVotedUseCase(communityRepository = communityRepository)
 
     @Test
     fun `isTodayPollVoted returns false initially and true after voting`() = runTest {
         val today = LocalDate.now()
 
         // Initially not voted
+        every { communityRepository.isTodayPollVotedFlow(date = today) } returns flowOf(false)
         val initialStatus = useCase(today).first()
         assertFalse(initialStatus)
 
-        // Vote in daily poll
-        fakeRepo.voteDailyPoll(date = today, optionIndex = 0)
-
         // Status is updated to true
+        every { communityRepository.isTodayPollVotedFlow(date = today) } returns flowOf(true)
         val updatedStatus = useCase(today).first()
         assertTrue(updatedStatus)
     }
