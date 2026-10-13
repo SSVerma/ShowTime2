@@ -60,6 +60,7 @@ Before planning, creating, or modifying any code in this repository, you **MUST*
   - **Code Hygiene (Section 4)**:
     - Zero wildcard imports (`import foo.bar.*` is forbidden).
     - Zero inline fully qualified class names (must use top-level imports).
+    - Zero single-character or cryptic variable names (`g`, `x`, `y`, `w`, `h`, `i`, `c` are strictly forbidden; use `graphics`, `offsetX`, `offsetY`, `contentWidth`, `contentHeight`, `layerIndex`, etc.).
     - Use named arguments for multi-parameter calls.
     - Encapsulate callbacks with >1 parameter into dedicated `*Args` data classes.
   - **Dumb UI Principle (Section 5.E)**:

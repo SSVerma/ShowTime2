@@ -244,7 +244,35 @@ the checklist in this guide before being merged into development or release bran
       val episodeNumber: Int? = null
   )
 
-### D. Automated Code Reformatting (`Cmd + Option + L` / `format.sh`)
+### D. Descriptive Variable Naming (Zero Single-Character or Cryptic Variables)
+
+* **Strict Prohibition**: Single-letter and cryptic abbreviations (e.g. `g: Graphics2D`, `x`, `y`, `w`, `h`, `i`, `c`, `fw`, `cx`, `cy`) are strictly forbidden across production code, rendering engines, generators, math calculations, and tests.
+* **Mandatory Standard**: Always use expressive, self-describing identifiers that make the logic instantly understandable without reverse-engineering:
+  ```kotlin
+  // ❌ FORBIDDEN
+  fun render(g: Graphics2D, x: Int, y: Int, w: Int, h: Int) {
+      for (i in 0..10) { ... }
+  }
+
+  // ✅ CORRECT
+  fun render(
+      graphics: Graphics2D,
+      originX: Int,
+      originY: Int,
+      width: Int,
+      height: Int
+  ) {
+      for (layerIndex in 0..10) { ... }
+  }
+  ```
+* **Common Replacements**:
+  - `g` / `g2d` $\rightarrow$ `graphics`
+  - `x` / `y` $\rightarrow$ `originX`, `originY`, `offsetX`, `offsetY`, `startX`, `startY`
+  - `w` / `h` $\rightarrow$ `width`, `height`, `contentWidth`, `contentHeight`
+  - `i` / `idx` $\rightarrow$ `index`, `layerIndex`, `itemIndex`
+  - `c` $\rightarrow$ `char`, `color`, `count`
+
+### E. Automated Code Reformatting (`Cmd + Option + L` / `format.sh`)
 
 * **Rule**: All Kotlin, Java, and XML source files must be reformatted according to the official
   Android Studio style guide before committing.
