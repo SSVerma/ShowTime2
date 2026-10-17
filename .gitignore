@@ -58,3 +58,6 @@ buildSrc/.kotlin
 # Private Development, Strategy, & Milestone Docs
 private/
 .private/
+
+# Play Store Listing & Marketing Media
+/play-store-listing/
