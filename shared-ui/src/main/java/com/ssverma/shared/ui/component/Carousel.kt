@@ -143,7 +143,7 @@ fun <T> AppHeroCarousel(
     ) {
         HorizontalCenteredHeroCarousel(
             state = carouselState,
-            maxItemWidth = maxItemWidth,
+            preferredItemWidth = maxItemWidth,
             itemSpacing = itemSpacing,
             contentPadding = contentPadding,
             modifier = Modifier.fillMaxSize()
