@@ -8,50 +8,74 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
+sealed interface DiscussionNavTarget : Parcelable {
+    val mediaId: Int
+
+    fun toDiscussionTarget(): DiscussionTarget
+
+    @Serializable
+    @Parcelize
+    data class Movie(val movieId: Int) : DiscussionNavTarget {
+        override val mediaId: Int get() = movieId
+        override fun toDiscussionTarget(): DiscussionTarget = DiscussionTarget.movie(movieId)
+    }
+
+    @Serializable
+    @Parcelize
+    data class TvShow(val tvShowId: Int) : DiscussionNavTarget {
+        override val mediaId: Int get() = tvShowId
+        override fun toDiscussionTarget(): DiscussionTarget = DiscussionTarget.tvShow(tvShowId)
+    }
+
+    @Serializable
+    @Parcelize
+    data class TvEpisode(
+        val tvShowId: Int,
+        val seasonNumber: Int,
+        val episodeNumber: Int,
+    ) : DiscussionNavTarget {
+        override val mediaId: Int get() = tvShowId
+        override fun toDiscussionTarget(): DiscussionTarget =
+            DiscussionTarget.tvEpisode(tvShowId, seasonNumber, episodeNumber)
+    }
+}
+
+@Serializable
+@Parcelize
 data class CommunityDiscussionsNavKey(
-    val mediaType: String,
-    val mediaId: Int,
-    val seasonNumber: Int? = null,
-    val episodeNumber: Int? = null,
+    val target: DiscussionNavTarget,
     val mediaTitle: String? = null,
     val posterImageUrl: String? = null,
-    val backdropImageUrl: String? = null
+    val backdropImageUrl: String? = null,
 ) : NavKey, Parcelable {
 
-    fun toDiscussionTarget(): DiscussionTarget =
-        if (seasonNumber != null && episodeNumber != null) {
-            DiscussionTarget.tvEpisode(mediaId, seasonNumber, episodeNumber)
-        } else if (mediaType.equals("tv", ignoreCase = true)) {
-            DiscussionTarget.tvShow(mediaId)
-        } else {
-            DiscussionTarget.movie(mediaId)
-        }
+    val mediaId: Int get() = target.mediaId
+
+    fun toDiscussionTarget(): DiscussionTarget = target.toDiscussionTarget()
 
     companion object {
         fun movie(
             movieId: Int,
             movieTitle: String? = null,
             posterImageUrl: String? = null,
-            backdropImageUrl: String? = null
+            backdropImageUrl: String? = null,
         ) = CommunityDiscussionsNavKey(
-            mediaType = "movie",
-            mediaId = movieId,
+            target = DiscussionNavTarget.Movie(movieId = movieId),
             mediaTitle = movieTitle,
             posterImageUrl = posterImageUrl,
-            backdropImageUrl = backdropImageUrl
+            backdropImageUrl = backdropImageUrl,
         )
 
         fun tvShow(
             tvShowId: Int,
             tvShowTitle: String? = null,
             posterImageUrl: String? = null,
-            backdropImageUrl: String? = null
+            backdropImageUrl: String? = null,
         ) = CommunityDiscussionsNavKey(
-            mediaType = "tv",
-            mediaId = tvShowId,
+            target = DiscussionNavTarget.TvShow(tvShowId = tvShowId),
             mediaTitle = tvShowTitle,
             posterImageUrl = posterImageUrl,
-            backdropImageUrl = backdropImageUrl
+            backdropImageUrl = backdropImageUrl,
         )
 
         fun tvEpisode(
@@ -60,15 +84,16 @@ data class CommunityDiscussionsNavKey(
             episodeNumber: Int,
             episodeTitle: String? = null,
             posterImageUrl: String? = null,
-            backdropImageUrl: String? = null
+            backdropImageUrl: String? = null,
         ) = CommunityDiscussionsNavKey(
-            mediaType = "tv",
-            mediaId = tvShowId,
-            seasonNumber = seasonNumber,
-            episodeNumber = episodeNumber,
+            target = DiscussionNavTarget.TvEpisode(
+                tvShowId = tvShowId,
+                seasonNumber = seasonNumber,
+                episodeNumber = episodeNumber,
+            ),
             mediaTitle = episodeTitle,
             posterImageUrl = posterImageUrl,
-            backdropImageUrl = backdropImageUrl
+            backdropImageUrl = backdropImageUrl,
         )
     }
 }

@@ -40,7 +40,8 @@ private val CommunityCommentsGateConfig = FeatureGateConfig(
 fun DiscussionsScreen(
     viewModel: DiscussionsViewModel,
     onBackPressed: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onMediaClick: (() -> Unit)? = null,
 ) {
     TrackScreenView(screenName = CommunityAnalyticsScreenName.COMMUNITY_DISCUSSIONS)
 
@@ -61,6 +62,7 @@ fun DiscussionsScreen(
         mediaTitle = viewModel.title,
         posterImageUrl = viewModel.poster,
         onBackPressed = onBackPressed,
+        onMediaClick = onMediaClick,
         onPostComment = viewModel::postComment,
         onToggleUpvote = viewModel::toggleCommentUpvote,
         onEditComment = viewModel::editComment,

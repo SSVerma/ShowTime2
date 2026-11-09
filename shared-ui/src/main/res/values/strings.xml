@@ -212,6 +212,7 @@
     <string name="spoiler_alert_title">Spoiler Alert</string>
     <string name="media_context_thoughts_count">%1$d thoughts shared</string>
     <string name="media_context_tagline">Join the cinephile conversation</string>
+    <string name="media_context_cd_open_details">View media details</string>
     <string name="view_all_replies_cta">View all %1$d replies in Discussions →</string>
     <string name="discussions_section_empty">No thoughts shared yet. Be the first to start the discussion!</string>
     <string name="view_thread_cta">View thread →</string>

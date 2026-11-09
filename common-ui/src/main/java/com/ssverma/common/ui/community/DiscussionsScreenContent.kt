@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -83,6 +84,7 @@ fun DiscussionsScreenContent(
     onDeleteComment: (commentId: String) -> Unit,
     modifier: Modifier = Modifier,
     posterImageUrl: String? = null,
+    onMediaClick: (() -> Unit)? = null,
     isLoading: Boolean = false,
     isLoadingMore: Boolean = false,
     canLoadMore: Boolean = false,
@@ -256,6 +258,8 @@ fun DiscussionsScreenContent(
             if (!mediaTitle.isNullOrBlank() || !posterImageUrl.isNullOrBlank()) {
                 item(contentType = "media_context_header") {
                     Surface(
+                        onClick = onMediaClick ?: {},
+                        enabled = onMediaClick != null,
                         shape = RoundedCornerShape(size = 16.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
                         border = BorderStroke(
@@ -310,6 +314,16 @@ fun DiscussionsScreenContent(
                                     text = stringResource(id = R.string.media_context_tagline),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                                )
+                            }
+
+                            if (onMediaClick != null) {
+                                Spacer(modifier = Modifier.width(width = 8.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                    contentDescription = stringResource(id = R.string.media_context_cd_open_details),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(size = 18.dp)
                                 )
                             }
                         }
