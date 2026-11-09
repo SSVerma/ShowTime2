@@ -1,15 +1,10 @@
 package com.ssverma.showtime.ui.dashboard.shelves
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,23 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Bookmarks
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Diversity3
-import androidx.compose.material.icons.rounded.EmojiEvents
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.LocalFireDepartment
-import androidx.compose.material.icons.rounded.People
-import androidx.compose.material.icons.rounded.Poll
-import androidx.compose.material.icons.rounded.SportsEsports
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -49,17 +36,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssverma.core.ui.layout.SectionHeader
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.shared.domain.model.feature.CinephileFeature
 import com.ssverma.shared.domain.model.game.CinemaGameStats
 import com.ssverma.showtime.R
+import com.ssverma.core.ui.R as CoreUiR
+
+private object CinephileHubDefaults {
+    val GridHeight = 126.dp
+    val TileWidth = 188.dp
+    val TileCornerRadius = 14.dp
+    val IconContainerRadius = 10.dp
+    val IconContainerSize = 34.dp
+    val IconSize = 18.dp
+}
 
 fun LazyListScope.cinephileHubShelf(
     gameStats: CinemaGameStats,
@@ -78,7 +74,7 @@ fun LazyListScope.cinephileHubShelf(
     onOpenReceipt: () -> Unit,
     onOpenPeople: () -> Unit,
     onOpenDiscovery: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     item(key = "cinephile_hub_shelf", contentType = "cinephile_hub_shelf") {
         CinephileHubShelf(
@@ -98,7 +94,7 @@ fun LazyListScope.cinephileHubShelf(
             onOpenReceipt = onOpenReceipt,
             onOpenPeople = onOpenPeople,
             onOpenDiscovery = onOpenDiscovery,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
         )
     }
 }
@@ -121,303 +117,144 @@ fun CinephileHubShelf(
     onOpenReceipt: () -> Unit,
     onOpenPeople: () -> Unit,
     onOpenDiscovery: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    var showHubSheet by rememberSaveable { mutableStateOf(value = false) }
+
+    val hubData = rememberCinephileHubData(
+        gameStats = gameStats,
+        isTodayGameCompleted = isTodayGameCompleted,
+        isPollVoted = isPollVoted,
+        acknowledgedFeatures = acknowledgedFeatures,
+        onFeatureTapped = onFeatureTapped,
+        onOpenMyLists = onOpenMyLists,
+        onOpenCommunityLists = onOpenCommunityLists,
+        onOpenCinemaDiary = onOpenCinemaDiary,
+        onOpenCinemaGame = onOpenCinemaGame,
+        onOpenDailyPoll = onOpenDailyPoll,
+        onOpenMovieMatch = onOpenMovieMatch,
+        onOpenTasteProfile = onOpenTasteProfile,
+        onOpenBacklogChallenges = onOpenBacklogChallenges,
+        onOpenReceipt = onOpenReceipt,
+        onOpenPeople = onOpenPeople,
+        onOpenDiscovery = onOpenDiscovery,
+    )
 
     Column(modifier = modifier) {
-        // Section Header
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.spacing.medium)
-        ) {
-            Text(
-                text = stringResource(R.string.cinephile_hub_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-        // 4 Primary Habit Tiles (2x2 Grid) - Unified styling preserving vertical space
-        Column(
+        // Section Header matching TV & Movie home page style
+        SectionHeader(
+            title = stringResource(R.string.cinephile_hub_title),
+            onTrailingActionClicked = { showHubSheet = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = MaterialTheme.spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-        ) {
-            // Row 1: My Lists & Community Lists
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-            ) {
-                HubTile(
-                    title = stringResource(R.string.hub_my_lists_title),
-                    subtitle = stringResource(R.string.hub_my_lists_desc),
-                    icon = Icons.AutoMirrored.Rounded.List,
-                    iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    iconTint = MaterialTheme.colorScheme.primary,
-                    onClick = {
-                        onFeatureTapped(CinephileFeature.MY_LISTS)
-                        onOpenMyLists()
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-
-                HubTile(
-                    title = stringResource(R.string.hub_community_title),
-                    subtitle = stringResource(R.string.hub_community_desc),
-                    icon = Icons.Rounded.Diversity3,
-                    iconContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    iconTint = MaterialTheme.colorScheme.secondary,
-                    badge = if (CinephileFeature.COMMUNITY_LISTS.isNew(acknowledgedFeatures)) {
-                        { NewBadge() }
-                    } else null,
-                    onClick = {
-                        onFeatureTapped(CinephileFeature.COMMUNITY_LISTS)
-                        onOpenCommunityLists()
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            // Row 2: Cinema Diary & Daily Game
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-            ) {
-                HubTile(
-                    title = stringResource(R.string.hub_diary_title),
-                    subtitle = stringResource(R.string.hub_diary_desc),
-                    icon = Icons.Rounded.Star,
-                    iconContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    iconTint = MaterialTheme.colorScheme.tertiary,
-                    badge = if (CinephileFeature.CINEMA_DIARY.isNew(acknowledgedFeatures)) {
-                        { NewBadge() }
-                    } else null,
-                    onClick = {
-                        onFeatureTapped(CinephileFeature.CINEMA_DIARY)
-                        onOpenCinemaDiary()
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-
-                val isGameNew = CinephileFeature.DAILY_GAME.isNew(acknowledgedFeatures)
-                HubTile(
-                    title = stringResource(R.string.hub_game_title),
-                    subtitle = stringResource(R.string.hub_game_desc),
-                    icon = Icons.Rounded.SportsEsports,
-                    iconContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
-                    iconTint = MaterialTheme.colorScheme.primary,
-                    badge = {
-                        when {
-                            gameStats.currentStreak > 0 -> StreakBadge(streak = gameStats.currentStreak)
-                            isTodayGameCompleted -> CompletedBadge(label = stringResource(R.string.badge_done))
-                            isGameNew -> NewBadge()
-                            else -> ActionBadge(label = stringResource(R.string.badge_play))
-                        }
-                    },
-                    onClick = {
-                        onFeatureTapped(CinephileFeature.DAILY_GAME)
-                        onOpenCinemaGame()
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // In-Feed Animated Expansion for Remaining 7 Tools
-        AnimatedVisibility(
-            visible = isExpanded,
-            enter = fadeIn(animationSpec = tween(250)) + expandVertically(animationSpec = tween(250)),
-            exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = MaterialTheme.spacing.medium)
-                    .padding(top = MaterialTheme.spacing.small),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-            ) {
-                // Expanded Row 1: Daily Poll & Movie Match
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-                ) {
-                    val isPollNew = CinephileFeature.DAILY_POLL.isNew(acknowledgedFeatures)
-                    HubTile(
-                        title = stringResource(R.string.hub_poll_title),
-                        subtitle = stringResource(R.string.hub_poll_desc),
-                        icon = Icons.Rounded.Poll,
-                        iconContainerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f),
-                        iconTint = MaterialTheme.colorScheme.secondary,
-                        badge = {
-                            when {
-                                isPollVoted -> CompletedBadge(label = stringResource(R.string.badge_voted))
-                                isPollNew -> NewBadge()
-                                else -> ActionBadge(label = stringResource(R.string.badge_vote))
-                            }
-                        },
-                        onClick = {
-                            onFeatureTapped(CinephileFeature.DAILY_POLL)
-                            onOpenDailyPoll()
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    HubTile(
-                        title = stringResource(R.string.hub_match_title),
-                        subtitle = stringResource(R.string.hub_match_desc),
-                        icon = Icons.Rounded.Favorite,
-                        iconContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
-                        iconTint = MaterialTheme.colorScheme.primary,
-                        badge = if (CinephileFeature.MOVIE_MATCH.isNew(acknowledgedFeatures)) {
-                            { NewBadge() }
-                        } else null,
-                        onClick = {
-                            onFeatureTapped(CinephileFeature.MOVIE_MATCH)
-                            onOpenMovieMatch()
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Expanded Row 2: Taste Profile & Challenges
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-                ) {
-                    HubTile(
-                        title = stringResource(R.string.hub_taste_title),
-                        subtitle = stringResource(R.string.hub_taste_desc),
-                        icon = Icons.Rounded.Bookmarks,
-                        iconContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        iconTint = MaterialTheme.colorScheme.tertiary,
-                        badge = if (CinephileFeature.TASTE_PROFILE.isNew(acknowledgedFeatures)) {
-                            { NewBadge() }
-                        } else null,
-                        onClick = {
-                            onFeatureTapped(CinephileFeature.TASTE_PROFILE)
-                            onOpenTasteProfile()
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    HubTile(
-                        title = stringResource(R.string.hub_challenges_title),
-                        subtitle = stringResource(R.string.hub_challenges_desc),
-                        icon = Icons.Rounded.EmojiEvents,
-                        iconContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        iconTint = MaterialTheme.colorScheme.secondary,
-                        badge = if (CinephileFeature.BACKLOG_CHALLENGES.isNew(acknowledgedFeatures)) {
-                            { NewBadge() }
-                        } else null,
-                        onClick = {
-                            onFeatureTapped(CinephileFeature.BACKLOG_CHALLENGES)
-                            onOpenBacklogChallenges()
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Expanded Row 3: Cinema Receipt & Discover
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small)
-                ) {
-                    HubTile(
-                        title = stringResource(R.string.hub_receipt_title),
-                        subtitle = stringResource(R.string.hub_receipt_desc),
-                        icon = Icons.AutoMirrored.Rounded.ReceiptLong,
-                        iconContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        badge = if (CinephileFeature.CINEMA_RECEIPT.isNew(acknowledgedFeatures)) {
-                            { NewBadge() }
-                        } else null,
-                        onClick = {
-                            onFeatureTapped(CinephileFeature.CINEMA_RECEIPT)
-                            onOpenReceipt()
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    HubTile(
-                        title = stringResource(R.string.hub_discover_title),
-                        subtitle = stringResource(R.string.hub_discover_desc),
-                        icon = Icons.Rounded.AutoAwesome,
-                        iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        iconTint = MaterialTheme.colorScheme.primary,
-                        badge = if (CinephileFeature.DISCOVERY.isNew(acknowledgedFeatures)) {
-                            { NewBadge() }
-                        } else null,
-                        onClick = {
-                            onFeatureTapped(CinephileFeature.DISCOVERY)
-                            onOpenDiscovery()
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Expanded Row 4: People (Actors & Crew) - full width anchor tile
-                HubTile(
-                    title = stringResource(R.string.hub_people_title),
-                    subtitle = stringResource(R.string.hub_people_desc),
-                    icon = Icons.Rounded.People,
-                    iconContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    onClick = {
-                        onFeatureTapped(CinephileFeature.PEOPLE)
-                        onOpenPeople()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
+        )
 
         Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
-        // Toggle Expansion Button
-        Surface(
-            onClick = { isExpanded = !isExpanded },
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-            border = BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-            ),
+        // Fixed-height 2-row horizontal staggered grid (zero vertical layout shift)
+        LazyHorizontalStaggeredGrid(
+            rows = StaggeredGridCells.Fixed(2),
+            horizontalItemSpacing = MaterialTheme.spacing.small,
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
+            contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.medium),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = MaterialTheme.spacing.medium)
+                .height(CinephileHubDefaults.GridHeight),
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = MaterialTheme.spacing.small)
+            items(
+                items = hubData.carouselItems,
+                key = { it.feature.id },
+                contentType = { "cinephile_hub_tile" }
+            ) { item ->
+                HubTile(
+                    item = item,
+                    modifier = Modifier.width(CinephileHubDefaults.TileWidth)
+                )
+            }
+
+            item(
+                key = "cinephile_hub_see_all_tile",
+                contentType = "see_all_tile"
+            ) {
+                SeeAllHubTile(
+                    onClick = { showHubSheet = true },
+                    modifier = Modifier.width(CinephileHubDefaults.TileWidth)
+                )
+            }
+        }
+    }
+
+    if (showHubSheet) {
+        CinephileHubBottomSheet(
+            hubCategories = hubData.categories,
+            onDismiss = { showHubSheet = false }
+        )
+    }
+}
+
+@Composable
+fun SeeAllHubTile(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(CinephileHubDefaults.TileCornerRadius),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+        ),
+        modifier = modifier,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(CinephileHubDefaults.IconContainerSize),
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = stringResource(CoreUiR.string.see_all),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(CinephileHubDefaults.IconSize),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    text = if (isExpanded) {
-                        stringResource(R.string.hub_show_less_tools)
-                    } else {
-                        stringResource(R.string.hub_show_all_tools, 7)
-                    },
+                    text = stringResource(CoreUiR.string.see_all),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
-                Icon(
-                    imageVector = if (isExpanded) {
-                        Icons.Rounded.KeyboardArrowUp
-                    } else {
-                        Icons.Rounded.KeyboardArrowDown
-                    },
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp)
+
+                Text(
+                    text = stringResource(R.string.hub_sheet_subtitle),
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -425,19 +262,13 @@ fun CinephileHubShelf(
 }
 
 @Composable
-private fun HubTile(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    iconContainerColor: Color,
-    iconTint: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    badge: (@Composable () -> Unit)? = null
+fun HubTile(
+    item: CinephileHubItem,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = onClick,
-        shape = RoundedCornerShape(14.dp),
+        onClick = item.onClick,
+        shape = RoundedCornerShape(CinephileHubDefaults.TileCornerRadius),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
@@ -445,7 +276,7 @@ private fun HubTile(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
-        modifier = modifier.height(52.dp)
+        modifier = modifier
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -455,19 +286,19 @@ private fun HubTile(
         ) {
             // Icon Container
             Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = iconContainerColor,
-                modifier = Modifier.size(34.dp)
+                shape = RoundedCornerShape(CinephileHubDefaults.IconContainerRadius),
+                color = item.containerColor,
+                modifier = Modifier.size(CinephileHubDefaults.IconContainerSize)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
-                        imageVector = icon,
+                        imageVector = item.icon,
                         contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier.size(18.dp)
+                        tint = item.iconTint,
+                        modifier = Modifier.size(CinephileHubDefaults.IconSize)
                     )
                 }
             }
@@ -484,7 +315,7 @@ private fun HubTile(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = title,
+                        text = stringResource(item.titleRes),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -493,14 +324,14 @@ private fun HubTile(
                         modifier = Modifier.weight(1f, fill = false)
                     )
 
-                    if (badge != null) {
+                    if (item.badge != null) {
                         Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraSmall))
-                        badge()
+                        HubBadgeView(badge = item.badge)
                     }
                 }
 
                 Text(
-                    text = subtitle,
+                    text = stringResource(item.subtitleRes),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                     maxLines = 1,
@@ -508,6 +339,27 @@ private fun HubTile(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun HubBadgeView(
+    badge: HubBadge,
+    modifier: Modifier = Modifier
+) {
+    when (badge) {
+        is HubBadge.Streak -> StreakBadge(streak = badge.streak, modifier = modifier)
+        is HubBadge.Completed -> CompletedBadge(
+            label = stringResource(badge.labelRes),
+            modifier = modifier
+        )
+
+        is HubBadge.Action -> ActionBadge(
+            label = stringResource(badge.labelRes),
+            modifier = modifier
+        )
+
+        is HubBadge.New -> NewBadge(modifier = modifier)
     }
 }
 

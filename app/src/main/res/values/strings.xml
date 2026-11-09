@@ -221,6 +221,13 @@
     <string name="hub_people_desc">Actors &amp; Crew</string>
     <string name="hub_show_all_tools">Show all cinephile tools (%1$d)</string>
     <string name="hub_show_less_tools">Show less</string>
+    <string name="hub_see_all">See all (%1$d)</string>
+    <string name="hub_cd_see_all">See all cinephile tools</string>
+    <string name="hub_sheet_title">Cinephile Hub</string>
+    <string name="hub_sheet_subtitle">Explore daily challenges, film tracking, and discovery tools</string>
+    <string name="hub_category_daily_habits">Daily Habits</string>
+    <string name="hub_category_my_cinema">My Cinema &amp; Stats</string>
+    <string name="hub_category_community_explore">Community &amp; Exploration</string>
     <string name="badge_new">NEW</string>
     <string name="badge_done">Done</string>
     <string name="badge_voted">Voted</string>
