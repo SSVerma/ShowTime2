@@ -14,6 +14,7 @@ import com.ssverma.core.storage.keyvalue.write
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
 import com.ssverma.shared.domain.repository.AppConfigRepository
+import com.ssverma.shared.domain.utils.AppConfigConstants
 import com.ssverma.shared.domain.utils.ReminderTimeCalculator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -252,11 +253,29 @@ class DefaultAppConfigRepository @Inject constructor(
         keyValueStorage.write(UserSeededGenresKey, raw)
     }
 
+    override val isCinephileAiEnabled: Flow<Boolean>
+        get() = combine(
+            keyValueStorage.observe(CinephileAiEnabledKey, true),
+            appConfigProvider.observeBoolean(
+                AppConfigConstants.KEY_CINEPHILE_AI_ENABLED,
+                true
+            )
+        ) { isLocallyEnabled, isRemotelyEnabled ->
+            isLocallyEnabled && isRemotelyEnabled
+        }
+
+    override suspend fun updateCinephileAiEnabled(enabled: Boolean) {
+        keyValueStorage.write(CinephileAiEnabledKey, enabled)
+    }
+
     companion object {
         const val DEFAULT_WHATS_NEW_CAMPAIGN_ID = "2.0.0"
 
         private val HasCompletedOnboardingKey =
             booleanPreferencesKey("has_completed_onboarding")
+
+        private val CinephileAiEnabledKey =
+            booleanPreferencesKey("cinephile_ai_enabled")
 
         private val UserSeededGenresKey =
             stringPreferencesKey("user_seeded_genres")

@@ -224,6 +224,7 @@ data class UniversalDiscoveryFilter(
     val selectedGenreIds: Set<Int> = emptySet(),
     val selectedProviderIds: Set<Int> = emptySet(),
     val watchRegion: String = "US",
+    val originCountry: String? = null,
     val minRating: Float? = null,
     val hideWatched: Boolean = true
 ) {
@@ -238,6 +239,7 @@ data class UniversalDiscoveryFilter(
         if (mediaType == MediaType.Movie && runtimeRange != DiscoveryRuntimeRange.ALL) count++
         if (monetizationTypes.isNotEmpty()) count += monetizationTypes.size
         if (language != DiscoveryLanguage.ALL) count++
+        if (!originCountry.isNullOrBlank()) count++
         if (!certification.isNullOrBlank()) count++
         if (selectedGenreIds.isNotEmpty()) count += selectedGenreIds.size
         if (selectedProviderIds.isNotEmpty()) count += selectedProviderIds.size

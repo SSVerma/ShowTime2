@@ -22,4 +22,7 @@ object AppConfigConstants {
     const val KEY_LATEST_VERSION_CODE = "latest_version_code"
     const val KEY_UPDATE_TITLE = "update_title"
     const val KEY_UPDATE_MESSAGE = "update_message"
+
+    // Remote Config Keys: Cinephile AI
+    const val KEY_CINEPHILE_AI_ENABLED = "cinephile_ai_enabled"
 }

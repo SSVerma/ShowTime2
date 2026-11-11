@@ -1,7 +1,5 @@
 package com.ssverma.showtime
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -9,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -18,32 +15,19 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -58,26 +42,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
-import com.ssverma.core.ui.util.findActivity
-import com.ssverma.core.ui.util.openWebUrl
-import androidx.navigation3.runtime.NavKey
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
 import com.ssverma.common.ui.appinfo.OpenSourceLicensesBottomSheet
+import com.ssverma.common.ui.assistant.CinephileAssistantBottomSheet
+import com.ssverma.common.ui.assistant.CinephileAssistantViewModel
 import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
 import com.ssverma.common.ui.state.LocalAppInfoTrigger
 import com.ssverma.common.ui.state.LocalAppStateHolder
@@ -91,6 +70,8 @@ import com.ssverma.core.navigation.nav3.rememberNavigationState
 import com.ssverma.core.ui.component.ShowTimeSnackbarHost
 import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
 import com.ssverma.core.ui.theme.ShowTimeTheme
+import com.ssverma.core.ui.util.findActivity
+import com.ssverma.core.ui.util.openWebUrl
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
@@ -98,14 +79,16 @@ import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
 import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
 import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
 import com.ssverma.feature.library.navigation.TasteProfileNavKey
+import com.ssverma.feature.match.navigation.MatchRoomNavKey
 import com.ssverma.feature.movie.navigation.CinemaGameNavKey
+import com.ssverma.feature.movie.navigation.MovieDetailNavKey
+import com.ssverma.feature.person.navigation.PersonDetailNavKey
 import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
+import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.AppUpdateStatus
 import com.ssverma.shared.domain.utils.AppConfigConstants
-import com.ssverma.showtime.ui.update.AppUpdateViewModel
-import com.ssverma.feature.match.navigation.MatchRoomNavKey
 import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
 import com.ssverma.showtime.component.ShowTimeBottomBar
 import com.ssverma.showtime.component.ShowTimeDrawerContent
@@ -114,16 +97,14 @@ import com.ssverma.showtime.component.ShowTimeTopSearchBar
 import com.ssverma.showtime.component.isHomePage
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.navigation.DashboardHomeNavKey
-import com.ssverma.showtime.navigation.OnboardingNavKey
 import com.ssverma.showtime.navigation.ShowTimeNavDisplay
-import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 import com.ssverma.showtime.navigation.WhatsNewNavKey
 import com.ssverma.showtime.ui.onboarding.OnboardingScreen
 import com.ssverma.showtime.ui.splash.ShowTime2Dot0SplashScreen
+import com.ssverma.showtime.ui.update.AppUpdateViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ShowTime(
     initialDeepLinkKey: NavKey? = null
@@ -289,11 +270,15 @@ private fun MainDashboardContent(
 
     val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
     val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
+    val cinephileViewModel: CinephileAssistantViewModel = hiltViewModel()
+    val cinephileUiState by cinephileViewModel.uiState.collectAsStateWithLifecycle()
     var showManualAppInfoSheet by remember { mutableStateOf(false) }
     var showLicensesSheet by remember { mutableStateOf(false) }
     var showThemeSelectionSheet by remember { mutableStateOf(false) }
     var showLocalizationSettingsSheet by remember { mutableStateOf(false) }
     var showProPaywallSheet by remember { mutableStateOf(false) }
+    var showAiAssistantSheet by rememberSaveable { mutableStateOf(false) }
+    var restoreAiSheetOnReturn by rememberSaveable { mutableStateOf(false) }
 
     if (showManualAppInfoSheet) {
         AppInfoBottomSheet(
@@ -369,6 +354,39 @@ private fun MainDashboardContent(
         )
     }
 
+    val currentDestination =
+        navigationState.backStacks[navigationState.topLevelRoute]?.lastOrNull()
+
+    LaunchedEffect(currentDestination) {
+        if (restoreAiSheetOnReturn &&
+            currentDestination !is MovieDetailNavKey &&
+            currentDestination !is TvShowDetailNavKey &&
+            currentDestination !is PersonDetailNavKey
+        ) {
+            restoreAiSheetOnReturn = false
+            showAiAssistantSheet = true
+        }
+    }
+
+    if (showAiAssistantSheet) {
+        CinephileAssistantBottomSheet(
+            onDismissRequest = {
+                showAiAssistantSheet = false
+                restoreAiSheetOnReturn = false
+            },
+            onOpenMedia = { tmdbId, mediaType ->
+                showAiAssistantSheet = false
+                restoreAiSheetOnReturn = true
+                if (mediaType.equals("tv", ignoreCase = true)) {
+                    navigator.navigate(TvShowDetailNavKey(tmdbId))
+                } else {
+                    navigator.navigate(MovieDetailNavKey(tmdbId))
+                }
+            },
+            viewModel = cinephileViewModel
+        )
+    }
+
     LaunchedEffect(
         hasCompletedOnboarding,
         isAppInfoDismissed
@@ -380,9 +398,6 @@ private fun MainDashboardContent(
         }
     }
 
-    val currentDestination =
-        navigationState.backStacks[navigationState.topLevelRoute]?.lastOrNull()
-
     CompositionLocalProvider(
         LocalAppInfoTrigger provides { showManualAppInfoSheet = true }
     ) {
@@ -391,7 +406,8 @@ private fun MainDashboardContent(
             bottomNavDestinations = ShowTimeTopLevelNavItems
         )
         val isAnySheetOpen = showManualAppInfoSheet || showLicensesSheet ||
-                showThemeSelectionSheet || showLocalizationSettingsSheet || showProPaywallSheet
+                showThemeSelectionSheet || showLocalizationSettingsSheet ||
+                showProPaywallSheet || showAiAssistantSheet
 
         ShowTimeHomeBackHandler(
             drawerState = drawerState,
@@ -669,7 +685,11 @@ private fun MainDashboardContent(
                                     topLevelNavKey = navigationState.topLevelRoute,
                                     onTopLevelNavItemSelected = { navItem ->
                                         navigator.navigate(navItem.navKey)
-                                    }
+                                    },
+                                    onAiAssistantClick = {
+                                        showAiAssistantSheet = true
+                                    },
+                                    isAiAvailable = cinephileUiState.isModelAvailable
                                 )
                             }
                         }

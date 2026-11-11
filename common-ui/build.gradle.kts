@@ -22,6 +22,8 @@ dependencies {
     implementation(projects.coreBackup)
     implementation(projects.coreNavigation)
     implementation(projects.sharedAds)
+    implementation(projects.coreAi)
+    implementation(projects.sharedAi)
 
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)

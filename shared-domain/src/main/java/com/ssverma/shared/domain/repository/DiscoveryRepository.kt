@@ -25,6 +25,11 @@ interface DiscoveryRepository {
         page: Int
     ): Result<List<UniversalMediaItem>, Failure.CoreFailure>
 
+    suspend fun searchUniversal(
+        query: String,
+        page: Int = 1,
+    ): Result<List<UniversalMediaItem>, Failure.CoreFailure> = Result.Success(emptyList())
+
     suspend fun fetchMovieGenre(): Result<List<Genre>, Failure.CoreFailure>
 
     suspend fun fetchTvShowGenre(): Result<List<Genre>, Failure.CoreFailure>

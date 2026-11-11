@@ -104,6 +104,23 @@ Payment illustrates when a capability spans both a full destination and an overl
 
 ---
 
+### Case Study E: On-Device AI & Dynamic A2UI (`core-ai` vs `shared-ai` vs `common-ui`)
+
+* **`core-ai` (Platform Infrastructure Tier)**:
+  - Low-level wrapper around Google Play Services ML Kit GenAI Agent API (`play-services-mlkit-genai-agent`) and AICore.
+  - Exposes domain-agnostic interfaces: `OnDeviceAgentEngine`, `OnDeviceAgentSession`, `AiModelAvailability`, and streaming `AiAgentEvent` (tokens, tool lifecycle events, errors).
+  - Completely feature-agnostic: knows zero TMDB API schemas, zero film entities, and zero Compose UI.
+* **`shared-ai` (Application Engine & Intelligence Tier)**:
+  - Defines the ShowTime Cinephile Agent: system instructions, temperature, top-K sampling, and autonomous AppFunctions tools (`CinephileMovieTools`).
+  - Defines the Agent-to-UI (A2UI) streaming JSON protocol, models (`A2UiDocument`, `A2UiComponent`, `A2UiAction`), and fault-tolerant bracket-balancing parser (`A2UiParser`).
+  - Houses catalog grounding: query-to-filter resolution, dynamic TMDB search execution, and programmatic poster path hydration to prevent hallucinated URLs.
+  - Manages multi-turn conversation sessions, thread branching, and local Room persistence (`cinephile_ai_chat.db`).
+* **`common-ui` (Stateful Dynamic UI Composite Tier)**:
+  - Houses `CinephileAssistantBottomSheet`, `CinephileAssistantViewModel`, and dynamic Compose component renderers for A2UI documents (`A2UiComposeRenderer`, `A2UiMediaCardRenderer`, `A2UiCarouselRenderer`, `A2UiChipGroupRenderer`).
+  - Directly handles action callbacks (e.g. adding media to Watchlist via `LibraryRepository` or navigating to media details).
+
+---
+
 ## 4. Guidelines for Module Protection (Zero Bloat Invariant)
 
 To maintain long-term codebase health and prevent architectural decay:

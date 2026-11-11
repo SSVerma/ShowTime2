@@ -177,4 +177,15 @@ class FakeAppConfigRepository(
     override suspend fun updateSeededGenres(genreIds: Set<Int>) {
         _userSeededGenres.value = genreIds
     }
+
+    private val _isCinephileAiEnabled = MutableStateFlow(true)
+    override val isCinephileAiEnabled: Flow<Boolean> = _isCinephileAiEnabled.asStateFlow()
+
+    override suspend fun updateCinephileAiEnabled(enabled: Boolean) {
+        _isCinephileAiEnabled.value = enabled
+    }
+
+    fun setCinephileAiEnabled(enabled: Boolean) {
+        _isCinephileAiEnabled.value = enabled
+    }
 }

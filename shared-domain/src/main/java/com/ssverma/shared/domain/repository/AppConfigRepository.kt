@@ -103,4 +103,10 @@ interface AppConfigRepository {
 
     /** Save seeded genre IDs chosen by the user. */
     suspend fun updateSeededGenres(genreIds: Set<Int>)
+
+    /** Remote kill-switch / feature flag for on-device Cinephile AI. */
+    val isCinephileAiEnabled: Flow<Boolean>
+
+    /** Update local Cinephile AI enablement flag. */
+    suspend fun updateCinephileAiEnabled(enabled: Boolean)
 }

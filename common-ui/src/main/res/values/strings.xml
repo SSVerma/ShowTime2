@@ -220,4 +220,21 @@
     <string name="update_action_update_now">Update on Google Play</string>
     <string name="update_action_later">Maybe Later</string>
     <string name="update_icon_cd">App Update</string>
+
+    <!-- Cinephile AI Assistant & A2UI -->
+    <string name="cinephile_ai_title">Cinephile AI Concierge</string>
+    <string name="cinephile_ai_subtitle">On-device AI film discovery</string>
+    <string name="cinephile_ai_prompt_hint">Ask about films, directors, eras, or vibes…</string>
+    <string name="cinephile_ai_send">Send query to AI assistant</string>
+    <string name="cinephile_ai_thinking">Cinephile Concierge is thinking…</string>
+    <string name="cinephile_ai_generating_picks">Curating film recommendations…</string>
+    <string name="cinephile_ai_executing_tool">Consulting film database: %s</string>
+    <string name="cinephile_ai_offline_ready">On-device intelligence active</string>
+    <string name="cinephile_ai_unavailable">On-device AI is currently unavailable on this device.</string>
+    <string name="cinephile_ai_retry">Retry</string>
+    <string name="cinephile_ai_add_watchlist">Add to Watchlist</string>
+    <string name="cinephile_ai_open_movie">View Details</string>
+    <string name="cinephile_ai_delete_dialog_title">Delete Conversation?</string>
+    <string name="cinephile_ai_delete_dialog_message">Are you sure you want to delete \"%1$s\"? This conversation history cannot be recovered.</string>
+    <string name="cinephile_ai_delete_confirm">Delete</string>
 </resources>

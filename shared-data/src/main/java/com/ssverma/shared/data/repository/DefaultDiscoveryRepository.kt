@@ -17,6 +17,7 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.Genre
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.ProviderInfo
+import com.ssverma.shared.domain.model.discovery.DiscoveryLanguage
 import com.ssverma.shared.domain.model.discovery.DiscoveryVibePreset
 import com.ssverma.shared.domain.model.discovery.UniversalDiscoveryFilter
 import com.ssverma.shared.domain.model.discovery.UniversalMediaItem
@@ -67,11 +68,14 @@ class DefaultDiscoveryRepository @Inject constructor(
             queryMap["vote_average.gte"] = effectiveMinRating.toString()
         }
 
-        val minVoteCount = if (filter.vibePreset == DiscoveryVibePreset.ALL) {
-            if (effectiveMinRating != null && effectiveMinRating > 0f) 50 else 20
-        } else {
-            filter.vibePreset.minVoteCount
-        }
+        val minVoteCount =
+            if (filter.originCountry != null || filter.language != DiscoveryLanguage.ALL) {
+                10
+            } else if (filter.vibePreset == DiscoveryVibePreset.ALL) {
+                if (effectiveMinRating != null && effectiveMinRating > 0f) 50 else 20
+            } else {
+                filter.vibePreset.minVoteCount
+            }
         queryMap["vote_count.gte"] = minVoteCount.toString()
 
         val combinedGenreIds = if (filter.mediaType == MediaType.Movie) {
@@ -135,6 +139,10 @@ class DefaultDiscoveryRepository @Inject constructor(
             queryMap["with_original_language"] = langIso
         }
 
+        filter.originCountry?.let { country ->
+            queryMap["with_origin_country"] = country
+        }
+
         filter.certification?.let { cert ->
             queryMap["certification_country"] = filter.watchRegion
             queryMap["certification"] = cert
@@ -174,6 +182,33 @@ class DefaultDiscoveryRepository @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    override suspend fun searchUniversal(
+        query: String,
+        page: Int,
+    ): Result<List<UniversalMediaItem>, Failure.CoreFailure> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return Result.Success(emptyList())
+
+        return tmdbApiService.multiSearch(trimmed).asDomainResult { response ->
+            response.body.results.orEmpty()
+                .filter { it.mediaType == "movie" || it.mediaType == "tv" }
+                .map { remote ->
+                    UniversalMediaItem(
+                        id = remote.id,
+                        mediaType = if (remote.mediaType == "tv") MediaType.Tv else MediaType.Movie,
+                        title = remote.name.orEmpty(),
+                        overview = remote.overview.orEmpty(),
+                        posterImageUrl = remote.posterPath.convertToTmdbPosterUrl(),
+                        backdropImageUrl = remote.backdropPath.convertToTmdbBackdropUrl(),
+                        voteAvg = remote.voteAvg,
+                        voteCount = remote.voteCount,
+                        releaseDate = remote.releaseDate ?: remote.firstAirDate.orEmpty(),
+                        displayYear = (remote.releaseDate ?: remote.firstAirDate.orEmpty()).take(4),
+                    )
+                }
         }
     }
 

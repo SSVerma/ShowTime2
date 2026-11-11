@@ -1,6 +1,6 @@
 [versions]
 compileSdk = "37"
-minSdk = "24"
+minSdk = "26"
 targetSdk = "37"
 java = "21"
 
@@ -68,6 +68,9 @@ googleid = "1.2.1"
 workmanager = "2.12.0"
 gson = "2.15.0"
 glance = "1.2.0"
+mlkit-agent = "1.0.0-alpha1"
+mlkit-prompt = "1.0.0-beta5"
+appfunctions = "1.0.0-rc01"
 
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core" }
@@ -168,6 +171,12 @@ workmanager-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "wo
 
 # Gson
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+# On-Device AI & AppFunctions
+mlkit-genai-agent = { module = "com.google.mlkit:genai-agent", version.ref = "mlkit-agent" }
+mlkit-genai-prompt = { module = "com.google.mlkit:genai-prompt", version.ref = "mlkit-prompt" }
+appfunctions = { module = "androidx.appfunctions:appfunctions", version.ref = "appfunctions" }
+appfunctions-compiler = { module = "androidx.appfunctions:appfunctions-compiler", version.ref = "appfunctions" }
 
 [plugins]
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }

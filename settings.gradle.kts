@@ -68,4 +68,6 @@ include(":feature-community")
 include(":feature-community-navigation")
 include(":feature-match")
 include(":feature-match-navigation")
+include(":core-ai")
+include(":shared-ai")
 

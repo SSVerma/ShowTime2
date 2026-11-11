@@ -13,6 +13,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.VideoLibrary
@@ -33,18 +34,24 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.ssverma.common.ui.R as CommonUiR
+import com.ssverma.common.ui.assistant.CinephileAssistantBottomSheet
 import com.ssverma.common.ui.state.LocalAppInfoTrigger
 import com.ssverma.common.ui.state.LocalAppStateHolder
 import com.ssverma.shared.domain.model.AppTheme
@@ -58,11 +65,28 @@ fun HomePageAppBar(
     onAccountIconPressed: () -> Unit,
     modifier: Modifier = Modifier,
     onLibraryIconPressed: (() -> Unit)? = null,
+    onOpenMedia: ((tmdbId: Int, mediaType: String) -> Unit)? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors()
 ) {
     var extendedMenuExpanded by remember { mutableStateOf(false) }
     var showThemeMenu by remember { mutableStateOf(false) }
+    var showAiAssistant by rememberSaveable { mutableStateOf(false) }
+    var restoreAiSheetOnReturn by rememberSaveable { mutableStateOf(false) }
     val triggerAppInfo = LocalAppInfoTrigger.current
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && restoreAiSheetOnReturn) {
+                restoreAiSheetOnReturn = false
+                showAiAssistant = true
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     TopAppBar(
         title = {
@@ -81,6 +105,14 @@ fun HomePageAppBar(
             }
         },
         actions = {
+            IconButton(onClick = { showAiAssistant = true }) {
+                Icon(
+                    imageVector = Icons.Rounded.AutoAwesome,
+                    contentDescription = stringResource(id = CommonUiR.string.cinephile_ai_title),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
             LocalizationSelector()
 
             Box {
@@ -96,6 +128,21 @@ fun HomePageAppBar(
                     onDismissRequest = { extendedMenuExpanded = false },
                     modifier = Modifier.width(200.dp)
                 ) {
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Rounded.AutoAwesome,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        text = { Text(stringResource(CommonUiR.string.cinephile_ai_title)) },
+                        onClick = {
+                            extendedMenuExpanded = false
+                            showAiAssistant = true
+                        }
+                    )
                     onLibraryIconPressed?.let { onLibraryClick ->
                         DropdownMenuItem(
                             leadingIcon = {
@@ -166,6 +213,20 @@ fun HomePageAppBar(
                     }
                 )
             }
+
+            if (showAiAssistant) {
+                CinephileAssistantBottomSheet(
+                    onDismissRequest = {
+                        showAiAssistant = false
+                        restoreAiSheetOnReturn = false
+                    },
+                    onOpenMedia = { tmdbId, mediaType ->
+                        showAiAssistant = false
+                        restoreAiSheetOnReturn = true
+                        onOpenMedia?.invoke(tmdbId, mediaType)
+                    }
+                )
+            }
         },
         colors = colors,
         modifier = modifier
@@ -229,13 +290,13 @@ fun AppThemeDialog(
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
                                 shape = MaterialTheme.shapes.extraSmall,
-                                color = Color(0xFFFF9800)
+                                color = MaterialTheme.colorScheme.tertiaryContainer
                             ) {
                                 Text(
                                     text = "PRO",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }

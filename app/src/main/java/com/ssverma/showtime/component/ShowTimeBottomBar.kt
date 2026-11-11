@@ -1,7 +1,14 @@
 package com.ssverma.showtime.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +26,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,12 +48,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.common.ui.R as CommonUiR
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
 
 fun isHomePage(
     currentNavKey: NavKey?,
-    bottomNavDestinations: List<ShowTimeTopLevelNavItem>
+    bottomNavDestinations: List<ShowTimeTopLevelNavItem>,
 ): Boolean {
     return bottomNavDestinations.any {
         it.navKey == currentNavKey || (currentNavKey != null && it.navKey::class == currentNavKey::class)
@@ -57,7 +67,7 @@ fun ShowTimeToolbarTab(
     titleResId: Int,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
     val activeContentColor = MaterialTheme.colorScheme.primary
@@ -65,14 +75,14 @@ fun ShowTimeToolbarTab(
 
     val animatedColor by animateColorAsState(
         targetValue = if (selected) activeContentColor else inactiveContentColor,
-        animationSpec = tween(durationMillis = 200),
-        label = "TabColor"
+        animationSpec = tween(durationMillis = 220),
+        label = "TabColor",
     )
 
     val capsuleColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent,
-        animationSpec = tween(durationMillis = 200),
-        label = "CapsuleColor"
+        animationSpec = tween(durationMillis = 220),
+        label = "CapsuleColor",
     )
 
     Box(
@@ -82,32 +92,47 @@ fun ShowTimeToolbarTab(
             .background(capsuleColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(bounded = true)
+                indication = ripple(bounded = true),
             ) {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
             },
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 6.dp),
         ) {
             Icon(
                 painter = painterResource(id = iconResId),
                 contentDescription = stringResource(id = titleResId),
                 tint = animatedColor,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(20.dp),
             )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = stringResource(id = titleResId),
-                color = animatedColor,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                maxLines = 1
-            )
+            AnimatedVisibility(
+                visible = selected,
+                enter = fadeIn(animationSpec = tween(180)) + expandHorizontally(
+                    animationSpec = tween(220, easing = FastOutSlowInEasing),
+                    expandFrom = Alignment.Start,
+                ),
+                exit = fadeOut(animationSpec = tween(140)) + shrinkHorizontally(
+                    animationSpec = tween(180, easing = FastOutSlowInEasing),
+                    shrinkTowards = Alignment.Start,
+                ),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(id = titleResId),
+                        color = animatedColor,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
+            }
         }
     }
 }
@@ -118,54 +143,113 @@ fun ShowTimeBottomBar(
     topLevelNavKey: NavKey,
     onTopLevelNavItemSelected: (ShowTimeTopLevelNavItem) -> Unit,
     modifier: Modifier = Modifier,
+    onAiAssistantClick: () -> Unit = {},
+    isAiAvailable: Boolean = false,
     bottomNavItems: List<ShowTimeTopLevelNavItem> = ShowTimeTopLevelNavItems,
 ) {
     if (!isHomePage(currentNavKey, bottomNavItems)) {
         return
     }
 
-    Box(
+    val haptic = LocalHapticFeedback.current
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
-            .shadow(
-                elevation = 5.dp,
-                shape = CircleShape,
-                ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.10f),
-                spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.18f),
-                clip = false
-            ),
-        contentAlignment = Alignment.Center
+            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        // Navigation Pill
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 0.dp,
             border = BorderStroke(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
             ),
             modifier = Modifier
-                .fillMaxWidth()
+                .then(
+                    if (isAiAvailable) {
+                        Modifier.weight(1f)
+                    } else {
+                        Modifier.fillMaxWidth()
+                    }
+                )
                 .height(56.dp)
+                .shadow(
+                    elevation = 5.dp,
+                    shape = CircleShape,
+                    ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.10f),
+                    spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.18f),
+                    clip = false,
+                ),
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 6.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 bottomNavItems.forEach { item ->
+                    val isSelected =
+                        item.navKey == topLevelNavKey || item.navKey::class == topLevelNavKey::class
+                    val animatedWeight by animateFloatAsState(
+                        targetValue = if (isSelected) 1.6f else 1f,
+                        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
+                        label = "TabWeight",
+                    )
                     ShowTimeToolbarTab(
                         iconResId = item.iconResId,
                         titleResId = item.titleResId,
-                        selected = item.navKey == topLevelNavKey || item.navKey::class == topLevelNavKey::class,
+                        selected = isSelected,
                         onClick = { onTopLevelNavItemSelected(item) },
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
+                            .weight(animatedWeight)
+                            .fillMaxHeight(),
+                    )
+                }
+            }
+        }
+
+        // Circular AI Search Button (Google Photos floating style)
+        if (isAiAvailable) {
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Surface(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onAiAssistantClick()
+                },
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 0.dp,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+                ),
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(
+                        elevation = 5.dp,
+                        shape = CircleShape,
+                        ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.10f),
+                        spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.18f),
+                        clip = false,
+                    ),
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = stringResource(id = CommonUiR.string.cinephile_ai_title),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp),
                     )
                 }
             }
