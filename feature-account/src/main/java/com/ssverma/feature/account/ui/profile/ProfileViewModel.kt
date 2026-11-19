@@ -21,6 +21,7 @@ import com.ssverma.shared.domain.auth.TmdbAuthProvider
 import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.auth.AuthState
+import com.ssverma.shared.domain.model.community.DebugRatingOverride
 import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.ConfigurationRepository
@@ -78,6 +79,18 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             debugConfigManager.isAdsDisabled.collectLatest { disabled ->
                 _uiState.update { it.copy(isAdsDisabled = disabled) }
+            }
+        }
+
+        viewModelScope.launch {
+            debugConfigManager.ratingOverride.collectLatest { override ->
+                _uiState.update { it.copy(ratingOverride = override) }
+            }
+        }
+
+        viewModelScope.launch {
+            debugConfigManager.ratingThreshold.collectLatest { threshold ->
+                _uiState.update { it.copy(ratingThreshold = threshold) }
             }
         }
 
@@ -496,6 +509,18 @@ class ProfileViewModel @Inject constructor(
     fun setDebugAdsDisabled(disabled: Boolean) {
         viewModelScope.launch {
             debugConfigManager.setAdsDisabled(disabled = disabled)
+        }
+    }
+
+    fun setDebugRatingOverride(override: DebugRatingOverride) {
+        viewModelScope.launch {
+            debugConfigManager.setRatingOverride(override = override)
+        }
+    }
+
+    fun setDebugRatingThreshold(threshold: Int) {
+        viewModelScope.launch {
+            debugConfigManager.setRatingThreshold(threshold = threshold)
         }
     }
 

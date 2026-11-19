@@ -27,7 +27,9 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.feature.community.data.datasource.CommunityRatingDataSource
 import com.ssverma.shared.domain.model.community.CommunityCuratedListItem
+import com.ssverma.shared.domain.model.community.CommunityRating
 import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.community.CommunityModerationConfig
 import com.ssverma.shared.domain.model.community.CommunityOptimizationConfig
@@ -77,6 +79,7 @@ class CommunityRepositoryImpl @Inject constructor(
     private val googleAuthClient: GoogleAuthClient,
     private val appConfigProvider: AppConfigProvider,
     private val firestoreAuditTracker: FirestoreAuditTracker,
+    private val communityRatingDataSource: CommunityRatingDataSource,
     keyValueStorageClient: KeyValueStorageClient
 ) : CommunityRepository {
 
@@ -2425,6 +2428,35 @@ class CommunityRepositoryImpl @Inject constructor(
             }
             "${typeStr}_${target.mediaId}"
         }
+    }
+
+    override fun getCommunityRating(mediaType: MediaType, mediaId: Int): Flow<CommunityRating> {
+        return communityRatingDataSource.getCommunityRating(
+            mediaType = mediaType,
+            mediaId = mediaId
+        )
+    }
+
+    override suspend fun submitCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int,
+        rating: Float
+    ): Result<CommunityRating, Failure.CoreFailure> {
+        return communityRatingDataSource.submitRating(
+            mediaType = mediaType,
+            mediaId = mediaId,
+            rating = rating
+        )
+    }
+
+    override suspend fun removeCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int
+    ): Result<CommunityRating, Failure.CoreFailure> {
+        return communityRatingDataSource.removeRating(
+            mediaType = mediaType,
+            mediaId = mediaId
+        )
     }
 
     companion object {

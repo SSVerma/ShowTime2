@@ -7,11 +7,17 @@ import com.ssverma.core.testing.dispatcher.MainDispatcherRule
 import com.ssverma.core.testing.fakes.FakeBillingRepository
 import com.ssverma.feature.movie.domain.usecase.MovieCollectionUseCase
 import com.ssverma.feature.movie.domain.usecase.MovieDetailsUseCase
+import com.ssverma.feature.movie.ui.details.component.CommunityCommentsGateConfig
 import com.ssverma.shared.ads.quota.RewardManager
 import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeReminderRepository
+import com.ssverma.shared.domain.usecase.community.PostCommentResult
+import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
+import com.ssverma.shared.domain.usecase.community.RemoveCommunityRatingUseCase
+import com.ssverma.shared.domain.usecase.community.SubmitCommunityRatingUseCase
 import com.ssverma.shared.domain.usecase.reminder.RemoveAiringReminderUseCase
 import com.ssverma.shared.domain.usecase.reminder.ScheduleAiringReminderUseCase
 import io.mockk.coEvery
@@ -85,6 +91,9 @@ class MovieDetailsViewModelReminderTest {
             movieCollectionUseCase = movieCollectionUseCase,
             getMediaReactionsUseCase = mockk(relaxed = true),
             toggleMediaReactionUseCase = mockk(relaxed = true),
+            getCommunityRatingUseCase = mockk(relaxed = true),
+            submitCommunityRatingUseCase = mockk(relaxed = true),
+            removeCommunityRatingUseCase = mockk(relaxed = true),
             getDiscussionsUseCase = mockk(relaxed = true),
             postCommentUseCase = mockk(relaxed = true),
             editCommentUseCase = mockk(relaxed = true),
@@ -193,7 +202,7 @@ class MovieDetailsViewModelReminderTest {
     @Test
     fun `postComment when quota exceeded shows community quota gate and watching ad submits pending comment`() =
         runTest {
-            val postCommentUseCase: com.ssverma.shared.domain.usecase.community.PostCommentUseCase =
+            val postCommentUseCase: PostCommentUseCase =
                 mockk(relaxed = true)
             val vm = MovieDetailsViewModel(
                 application = mockk(relaxed = true),
@@ -202,6 +211,9 @@ class MovieDetailsViewModelReminderTest {
                 movieCollectionUseCase = movieCollectionUseCase,
                 getMediaReactionsUseCase = mockk(relaxed = true),
                 toggleMediaReactionUseCase = mockk(relaxed = true),
+                getCommunityRatingUseCase = mockk(relaxed = true),
+                submitCommunityRatingUseCase = mockk(relaxed = true),
+                removeCommunityRatingUseCase = mockk(relaxed = true),
                 getDiscussionsUseCase = mockk(relaxed = true),
                 postCommentUseCase = postCommentUseCase,
                 editCommentUseCase = mockk(relaxed = true),
@@ -221,8 +233,8 @@ class MovieDetailsViewModelReminderTest {
             )
 
             coEvery { postCommentUseCase(any()) } returnsMany listOf(
-                com.ssverma.shared.domain.usecase.community.PostCommentResult.QuotaExceeded,
-                com.ssverma.shared.domain.usecase.community.PostCommentResult.Success(
+                PostCommentResult.QuotaExceeded,
+                PostCommentResult.Success(
                     mockk(relaxed = true)
                 )
             )
@@ -232,7 +244,7 @@ class MovieDetailsViewModelReminderTest {
 
             assertTrue(vm.isQuotaGateVisible.value)
             assertEquals(
-                com.ssverma.feature.movie.ui.details.component.CommunityCommentsGateConfig,
+                CommunityCommentsGateConfig,
                 vm.activeGateConfig.value
             )
 
@@ -254,4 +266,89 @@ class MovieDetailsViewModelReminderTest {
             assertFalse(vm.isQuotaGateVisible.value)
             coVerify(exactly = 2) { postCommentUseCase(any()) }
         }
+
+    @Test
+    fun `submitCommunityRating delegates to submitCommunityRatingUseCase`() = runTest {
+        val submitUseCase: SubmitCommunityRatingUseCase = mockk(relaxed = true)
+        val vm = MovieDetailsViewModel(
+            application = mockk(relaxed = true),
+            movieId = 101,
+            movieDetailsUseCase = movieDetailsUseCase,
+            movieCollectionUseCase = movieCollectionUseCase,
+            getMediaReactionsUseCase = mockk(relaxed = true),
+            toggleMediaReactionUseCase = mockk(relaxed = true),
+            getCommunityRatingUseCase = mockk(relaxed = true),
+            submitCommunityRatingUseCase = submitUseCase,
+            removeCommunityRatingUseCase = mockk(relaxed = true),
+            getDiscussionsUseCase = mockk(relaxed = true),
+            postCommentUseCase = mockk(relaxed = true),
+            editCommentUseCase = mockk(relaxed = true),
+            reportCommentUseCase = mockk(relaxed = true),
+            toggleCommentUpvoteUseCase = mockk(relaxed = true),
+            deleteCommentUseCase = mockk(relaxed = true),
+            getDiaryEntriesUseCase = mockk(relaxed = true),
+            saveDiaryEntryUseCase = mockk(relaxed = true),
+            appConfigRepository = appConfigRepository,
+            affiliateRepository = mockk(relaxed = true),
+            reminderRepository = fakeReminderRepository,
+            scheduleAiringReminderUseCase = scheduleAiringReminderUseCase,
+            removeAiringReminderUseCase = removeAiringReminderUseCase,
+            billingRepository = fakeBillingRepository,
+            rewardManager = rewardManager,
+            rewardedAdManager = rewardedAdManager
+        )
+
+        vm.submitCommunityRating(4.5f)
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            submitUseCase(
+                mediaType = MediaType.Movie,
+                mediaId = 101,
+                rating = 4.5f
+            )
+        }
+    }
+
+    @Test
+    fun `removeCommunityRating delegates to removeCommunityRatingUseCase`() = runTest {
+        val removeUseCase: RemoveCommunityRatingUseCase = mockk(relaxed = true)
+        val vm = MovieDetailsViewModel(
+            application = mockk(relaxed = true),
+            movieId = 101,
+            movieDetailsUseCase = movieDetailsUseCase,
+            movieCollectionUseCase = movieCollectionUseCase,
+            getMediaReactionsUseCase = mockk(relaxed = true),
+            toggleMediaReactionUseCase = mockk(relaxed = true),
+            getCommunityRatingUseCase = mockk(relaxed = true),
+            submitCommunityRatingUseCase = mockk(relaxed = true),
+            removeCommunityRatingUseCase = removeUseCase,
+            getDiscussionsUseCase = mockk(relaxed = true),
+            postCommentUseCase = mockk(relaxed = true),
+            editCommentUseCase = mockk(relaxed = true),
+            reportCommentUseCase = mockk(relaxed = true),
+            toggleCommentUpvoteUseCase = mockk(relaxed = true),
+            deleteCommentUseCase = mockk(relaxed = true),
+            getDiaryEntriesUseCase = mockk(relaxed = true),
+            saveDiaryEntryUseCase = mockk(relaxed = true),
+            appConfigRepository = appConfigRepository,
+            affiliateRepository = mockk(relaxed = true),
+            reminderRepository = fakeReminderRepository,
+            scheduleAiringReminderUseCase = scheduleAiringReminderUseCase,
+            removeAiringReminderUseCase = removeAiringReminderUseCase,
+            billingRepository = fakeBillingRepository,
+            rewardManager = rewardManager,
+            rewardedAdManager = rewardedAdManager
+        )
+
+        vm.removeCommunityRating()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) {
+            removeUseCase(
+                mediaType = MediaType.Movie,
+                mediaId = 101
+            )
+        }
+    }
 }

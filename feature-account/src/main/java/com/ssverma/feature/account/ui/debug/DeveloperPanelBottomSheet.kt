@@ -58,6 +58,7 @@ import com.ssverma.core.billing.model.DebugProOverride
 import com.ssverma.core.ui.layout.ShowTimeBottomSheet
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.account.R
+import com.ssverma.shared.domain.model.community.DebugRatingOverride
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,10 +69,14 @@ fun DeveloperPanelBottomSheet(
     customTraktClientId: String,
     isAdsDisabled: Boolean,
     isTraktConnected: Boolean,
+    ratingOverride: DebugRatingOverride = DebugRatingOverride.AUTO,
+    ratingThreshold: Int = 5,
     onProOverrideSelected: (DebugProOverride) -> Unit,
     onMockTraktToggled: (Boolean) -> Unit,
     onSaveCustomTraktClientId: (String) -> Unit,
     onAdsDisabledToggled: (Boolean) -> Unit,
+    onRatingOverrideSelected: (DebugRatingOverride) -> Unit = {},
+    onRatingThresholdSelected: (Int) -> Unit = {},
     onInstantMockConnectTrakt: () -> Unit,
     onDisconnectTrakt: () -> Unit,
     onSeedFavorites: () -> Unit,
@@ -206,6 +211,16 @@ fun DeveloperPanelBottomSheet(
                             )
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+                    // --- SECTION: SHOWTIME RATINGS & HISTOGRAM SANDBOX ---
+                    RatingSandboxSection(
+                        ratingOverride = ratingOverride,
+                        ratingThreshold = ratingThreshold,
+                        onRatingOverrideSelected = onRatingOverrideSelected,
+                        onRatingThresholdSelected = onRatingThresholdSelected
+                    )
 
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 

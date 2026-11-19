@@ -5,6 +5,7 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.CommunityRating
 import com.ssverma.shared.domain.model.community.DailyPoll
 import com.ssverma.shared.domain.model.community.DeleteCommentParams
 import com.ssverma.shared.domain.model.community.DiscussionTarget
@@ -89,4 +90,17 @@ interface CommunityRepository {
     fun hasAcceptedCommunityGuidelinesFlow(): Flow<Boolean>
 
     suspend fun setCommunityGuidelinesAccepted(accepted: Boolean = true)
+
+    fun getCommunityRating(mediaType: MediaType, mediaId: Int): Flow<CommunityRating>
+
+    suspend fun submitCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int,
+        rating: Float
+    ): Result<CommunityRating, Failure.CoreFailure>
+
+    suspend fun removeCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int
+    ): Result<CommunityRating, Failure.CoreFailure>
 }

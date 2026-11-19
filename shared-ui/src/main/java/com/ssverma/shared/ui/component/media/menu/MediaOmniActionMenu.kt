@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.FolderSpecial
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,6 +72,7 @@ import com.ssverma.shared.domain.repository.ReminderToggleResult
 import com.ssverma.shared.domain.usecase.reminder.ScheduleReminderResult
 import com.ssverma.shared.domain.utils.ShareMediaUtils
 import com.ssverma.shared.ui.R
+import com.ssverma.shared.ui.component.community.CommunityRatingBottomSheet
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.media.MediaActionParticleType
 import com.ssverma.shared.ui.component.media.MediaCardOverflowAction
@@ -109,6 +111,7 @@ fun MediaOmniActionMenu(
     onToggleFavorite: (() -> Unit)? = null,
     onToggleReminder: (() -> Unit)? = null,
     onLogToDiary: (() -> Unit)? = null,
+    onRateClick: (() -> Unit)? = null,
     onCustomListClick: (() -> Unit)? = null,
     onOpenDiscussions: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
@@ -124,6 +127,7 @@ fun MediaOmniActionMenu(
     val navigator = LocalNavigator.current
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showLogDialog by remember { mutableStateOf(false) }
+    var showCommunityRatingSheet by remember { mutableStateOf(false) }
     var showReminderSheet by remember { mutableStateOf(false) }
     var showQuotaGate by remember { mutableStateOf(false) }
     var particleType by remember { mutableStateOf(MediaActionParticleType.NONE) }
@@ -161,6 +165,7 @@ fun MediaOmniActionMenu(
         hasActiveReminder = effectiveHasReminder,
         isFutureDate = isDateInFuture
     )
+    val canRate = config.effectiveShowRate && !isDateInFuture
     val canOpenDiscussions =
         config.showDiscussions && (onOpenDiscussions != null || navigator != null)
     val canLogToDiary = config.effectiveShowDiaryLog
@@ -169,7 +174,8 @@ fun MediaOmniActionMenu(
     val hasTrackingSection =
         config.showWatchlist || config.effectiveShowWatched || config.showFavorite
     val hasCustomListSection = config.showCustomList
-    val hasQuickActionsSection = canRemind || canOpenDiscussions || canLogToDiary || canShare
+    val hasQuickActionsSection =
+        canRemind || canRate || canOpenDiscussions || canLogToDiary || canShare
 
     if (!hasTrackingSection && !hasCustomListSection && !hasQuickActionsSection) return
 
@@ -257,6 +263,25 @@ fun MediaOmniActionMenu(
                             )
                         }
                     }
+                )
+            )
+        }
+
+        if (canRate) {
+            add(
+                QuickActionItem(
+                    label = stringResource(R.string.rate_action_label),
+                    icon = Icons.Rounded.Star,
+                    tint = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    onClick = {
+                        isMenuExpanded = false
+                        if (onRateClick != null) {
+                            onRateClick.invoke()
+                        } else {
+                            showCommunityRatingSheet = true
+                        }
+                    },
                 )
             )
         }
@@ -719,6 +744,49 @@ fun MediaOmniActionMenu(
                     )
                 )
             }
+        )
+    }
+
+    if (showCommunityRatingSheet) {
+        val communityRating by remember(mediaId, mediaType) {
+            viewModel.getCommunityRatingUiModel(mediaType = mediaType, mediaId = mediaId)
+        }.collectAsStateWithLifecycle(initialValue = null)
+
+        CommunityRatingBottomSheet(
+            rating = communityRating,
+            mediaTitle = title,
+            onRatingSubmitted = { newRating ->
+                showCommunityRatingSheet = false
+                viewModel.submitCommunityRating(
+                    mediaType = mediaType,
+                    mediaId = mediaId,
+                    rating = newRating
+                )
+                onShowFeedback?.invoke(
+                    ShowFeedbackArgs(
+                        message = context.getString(
+                            R.string.community_rating_submitted_snackbar,
+                            title
+                        )
+                    )
+                )
+            },
+            onRatingRemoved = {
+                showCommunityRatingSheet = false
+                viewModel.removeCommunityRating(
+                    mediaType = mediaType,
+                    mediaId = mediaId
+                )
+                onShowFeedback?.invoke(
+                    ShowFeedbackArgs(
+                        message = context.getString(
+                            R.string.community_rating_removed_snackbar,
+                            title
+                        )
+                    )
+                )
+            },
+            onDismissRequest = { showCommunityRatingSheet = false }
         )
     }
 }

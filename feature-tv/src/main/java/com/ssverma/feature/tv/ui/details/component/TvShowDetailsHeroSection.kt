@@ -7,8 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.NotificationsNone
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
@@ -16,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.ssverma.core.ui.foundation.Emphasize
+import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.tv.R
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.DiscussionNavArgs
@@ -27,6 +25,8 @@ import com.ssverma.shared.ui.component.BackdropActionButton
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.community.CommunityRatingBadge
+import com.ssverma.shared.ui.component.community.CommunityRatingUiModel
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
@@ -38,14 +38,15 @@ fun LazyListScope.tvShowDetailsHeroSection(
     tvShow: TvShow,
     hasReminder: Boolean,
     existingDiaryEntry: DiaryEntry?,
-    hasDiaryEntries: Boolean,
     onBackPressed: () -> Unit,
     onPlayTrailer: () -> Unit,
     onOpenLogDialog: () -> Unit,
     onReminderClick: () -> Unit,
     onOpenDiscussions: (DiscussionNavArgs) -> Unit,
     onShare: () -> Unit,
-    onShowFeedback: (ShowFeedbackArgs) -> Unit
+    onShowFeedback: (ShowFeedbackArgs) -> Unit,
+    communityRating: CommunityRatingUiModel? = null,
+    onCommunityRatingClick: () -> Unit = {},
 ) {
     item(key = "tv_hero_header", contentType = "hero_header") {
         BackdropHeader(
@@ -53,14 +54,15 @@ fun LazyListScope.tvShowDetailsHeroSection(
             onCloseIconClick = onBackPressed,
             showTrailerFab = tvShow.primaryTrailer != null,
             onTrailerFabClick = onPlayTrailer,
-            secondaryActions = {
+            topTrailingContent = {
                 if (!tvShow.isUpcoming) {
-                    BackdropActionButton(
-                        onClick = onOpenLogDialog,
-                        icon = if (hasDiaryEntries) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                        contentDescription = stringResource(id = SharedR.string.log_and_rate_cd)
+                    CommunityRatingBadge(
+                        rating = communityRating,
+                        onClick = onCommunityRatingClick,
                     )
                 }
+            },
+            secondaryActions = {
                 MediaOmniActionMenu(
                     mediaId = tvShow.id,
                     mediaType = MediaType.Tv,
@@ -71,10 +73,11 @@ fun LazyListScope.tvShowDetailsHeroSection(
                     releaseDate = tvShow.firstAirDate?.toString().orEmpty(),
                     config = MediaOmniMenuConfig(
                         isUpcoming = tvShow.isUpcoming,
-                        showReminder = false
+                        showReminder = false,
                     ),
                     existingDiaryEntry = existingDiaryEntry,
                     onLogToDiary = onOpenLogDialog,
+                    onRateClick = onCommunityRatingClick,
                     onOpenDiscussions = {
                         onOpenDiscussions(
                             DiscussionNavArgs(
@@ -82,8 +85,8 @@ fun LazyListScope.tvShowDetailsHeroSection(
                                 mediaId = tvShow.id,
                                 title = tvShow.title,
                                 posterImageUrl = tvShow.posterImageUrl,
-                                backdropImageUrl = tvShow.backdropImageUrl
-                            )
+                                backdropImageUrl = tvShow.backdropImageUrl,
+                            ),
                         )
                     },
                     onShare = onShare,
@@ -92,9 +95,9 @@ fun LazyListScope.tvShowDetailsHeroSection(
                         BackdropActionButton(
                             onClick = onClick,
                             icon = Icons.Rounded.Add,
-                            contentDescription = stringResource(id = SharedR.string.more_options_cd)
+                            contentDescription = stringResource(id = SharedR.string.more_options_cd),
                         )
-                    }
+                    },
                 )
                 if (tvShow.hasUpcomingEpisodes || hasReminder) {
                     BackdropActionButton(
@@ -102,10 +105,10 @@ fun LazyListScope.tvShowDetailsHeroSection(
                         icon = if (hasReminder) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
                         containerColor = if (hasReminder) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                         contentColor = if (hasReminder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                        contentDescription = stringResource(id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me)
+                        contentDescription = stringResource(id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me),
                     )
                 }
-            }
+            },
         )
     }
 
@@ -116,8 +119,8 @@ fun LazyListScope.tvShowDetailsHeroSection(
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 24.dp)
+                .padding(horizontal = MaterialTheme.spacing.medium)
+                .padding(top = MaterialTheme.spacing.large),
         )
     }
 
@@ -131,8 +134,8 @@ fun LazyListScope.tvShowDetailsHeroSection(
                     fontStyle = FontStyle.Italic,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 4.dp)
+                        .padding(horizontal = MaterialTheme.spacing.medium)
+                        .padding(top = MaterialTheme.spacing.extraSmall),
                 )
             }
         }
@@ -141,7 +144,7 @@ fun LazyListScope.tvShowDetailsHeroSection(
     item(key = "tv_highlights", contentType = "highlights") {
         Highlights(
             highlights = remember(tvShow) { tvShow.highlightedItems() },
-            modifier = Modifier.padding(top = SectionVerticalSpacing)
+            modifier = Modifier.padding(top = SectionVerticalSpacing),
         )
     }
 }
@@ -150,7 +153,7 @@ private fun TvShow.highlightedItems(): List<Highlight> {
     return listOf(
         Highlight(
             labelRes = R.string.rating,
-            value = voteAvg.emptyIfAbsent()
+            value = voteAvg.emptyIfAbsent(),
         ),
         Highlight(
             labelRes = R.string.first_air_date,
@@ -158,19 +161,19 @@ private fun TvShow.highlightedItems(): List<Highlight> {
         ),
         Highlight(
             labelRes = R.string.status,
-            value = status
+            value = status,
         ),
         Highlight(
             labelRes = R.string.language,
-            value = originalLanguage
+            value = originalLanguage,
         ),
         Highlight(
             labelRes = R.string.seasons,
-            value = seasonCount.toString()
+            value = seasonCount.toString(),
         ),
         Highlight(
             labelRes = R.string.episode_number,
-            value = episodeCount.toString()
-        )
+            value = episodeCount.toString(),
+        ),
     )
 }

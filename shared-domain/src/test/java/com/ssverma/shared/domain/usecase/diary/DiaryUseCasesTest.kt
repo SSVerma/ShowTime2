@@ -4,6 +4,10 @@ import com.ssverma.shared.domain.fakes.FakeDiaryRepository
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.diary.DiaryFilterType
+import com.ssverma.shared.domain.usecase.community.SubmitCommunityRatingUseCase
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -153,4 +157,62 @@ class DiaryUseCasesTest {
             assertEquals(5.0f, allEntries.first().userRating, 0.01f)
             assertTrue(allEntries.first().isRewatch)
         }
+
+    @Test
+    fun `saveDiaryEntry invokes submitCommunityRatingUseCase when rating is positive`() = runTest {
+        val mockSubmitRatingUseCase: SubmitCommunityRatingUseCase = mockk(relaxed = true)
+        val useCaseWithBridge = SaveDiaryEntryUseCase(
+            diaryRepository = fakeRepository,
+            submitCommunityRatingUseCase = mockSubmitRatingUseCase
+        )
+
+        val entry = DiaryEntry(
+            mediaId = 550,
+            mediaType = MediaType.Movie,
+            title = "Fight Club",
+            posterImageUrl = "/fc.jpg",
+            userRating = 4.5f
+        )
+
+        useCaseWithBridge(entry)
+
+        coVerify(exactly = 1) {
+            mockSubmitRatingUseCase(
+                mediaType = MediaType.Movie,
+                mediaId = 550,
+                rating = 4.5f
+            )
+        }
+    }
+
+    @Test
+    fun `saveDiaryEntry still succeeds when community rating sync throws`() = runTest {
+        val mockSubmitRatingUseCase: SubmitCommunityRatingUseCase = mockk()
+        coEvery {
+            mockSubmitRatingUseCase(
+                mediaType = MediaType.Movie,
+                mediaId = 550,
+                rating = 4.5f
+            )
+        } throws RuntimeException("Network unavailable")
+
+        val useCaseWithBridge = SaveDiaryEntryUseCase(
+            diaryRepository = fakeRepository,
+            submitCommunityRatingUseCase = mockSubmitRatingUseCase
+        )
+
+        val entry = DiaryEntry(
+            mediaId = 550,
+            mediaType = MediaType.Movie,
+            title = "Fight Club",
+            posterImageUrl = "/fc.jpg",
+            userRating = 4.5f
+        )
+
+        val savedId = useCaseWithBridge(entry)
+
+        assertTrue(savedId > 0L)
+        val allEntries = getDiaryEntriesUseCase(DiaryFilterType.ALL).first()
+        assertEquals(1, allEntries.size)
+    }
 }

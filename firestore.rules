@@ -86,6 +86,270 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
+    // ===============================================================
+    // Community Media Ratings & Histograms - Assumed Data Model
+    // ===============================================================
+    //
+    // Collections: media_ratings/{mediaId}, dev_media_ratings/{mediaId}
+    // Document ID: (movie|tv)_[0-9]+ (e.g., movie_550, tv_1399)
+    // Fields:
+    //   - ratingCount: int (required, >= 0; == 1 on create; delta in [-1, 1] on update)
+    //   - ratingSum: number (required, >= 0; in [0.5, 5.0] on create; delta in [-5.0, 5.0] on update)
+    //   - averageRating: number (required, in [0, 5]; 0 when ratingCount == 0; matches ratingSum/ratingCount)
+    //   - histogram: map (required, keys subset of ['0.5'..'5.0'], size <= 10, int values >= 0, sum == ratingCount)
+    //   - updatedAt: timestamp (required, == request.time)
+    //
+    // Collections: user_media_ratings/{userRatingId}, dev_user_media_ratings/{userRatingId}
+    // Document ID: {firebaseUid}_{mediaType}_{mediaId} (e.g., {uid}_movie_550)
+    // Fields:
+    //   - firebaseUid: string (required, == request.auth.uid, immutable)
+    //   - mediaId: int (required, > 0, immutable)
+    //   - mediaType: string (required, 'movie' or 'tv', immutable)
+    //   - rating: number (required, half-step in [0.5, 1.0, ..., 5.0])
+    //   - updatedAt: timestamp (required, == request.time)
+    // ===============================================================
+
+    function isRatingAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidRatingMediaDocId(mediaId) {
+      return mediaId.size() <= 32 && mediaId.matches('^(movie|tv)_[0-9]+$');
+    }
+
+    function isValidUserRatingDocId(userRatingId) {
+      return isRatingAuthenticated()
+        && userRatingId.size() <= 160
+        && userRatingId.matches('^' + request.auth.uid + '_(movie|tv)_[0-9]+$');
+    }
+
+    function isValidHalfStepRating(value) {
+      return (value is int || value is float)
+        && value in [0.5, 1, 1.0, 1.5, 2, 2.0, 2.5, 3, 3.0, 3.5, 4, 4.0, 4.5, 5, 5.0];
+    }
+
+    function isValidHistogramBucket(hist, key) {
+      return !(key in hist) || (hist[key] is int && hist[key] >= 0);
+    }
+
+    function histogramBucketValue(hist, key) {
+      return key in hist ? hist[key] : 0;
+    }
+
+    function histogramTotalCount(hist) {
+      return histogramBucketValue(hist, '0.5')
+        + histogramBucketValue(hist, '1.0')
+        + histogramBucketValue(hist, '1.5')
+        + histogramBucketValue(hist, '2.0')
+        + histogramBucketValue(hist, '2.5')
+        + histogramBucketValue(hist, '3.0')
+        + histogramBucketValue(hist, '3.5')
+        + histogramBucketValue(hist, '4.0')
+        + histogramBucketValue(hist, '4.5')
+        + histogramBucketValue(hist, '5.0');
+    }
+
+    function histogramWeightedSum(hist) {
+      return histogramBucketValue(hist, '0.5') * 0.5
+        + histogramBucketValue(hist, '1.0') * 1.0
+        + histogramBucketValue(hist, '1.5') * 1.5
+        + histogramBucketValue(hist, '2.0') * 2.0
+        + histogramBucketValue(hist, '2.5') * 2.5
+        + histogramBucketValue(hist, '3.0') * 3.0
+        + histogramBucketValue(hist, '3.5') * 3.5
+        + histogramBucketValue(hist, '4.0') * 4.0
+        + histogramBucketValue(hist, '4.5') * 4.5
+        + histogramBucketValue(hist, '5.0') * 5.0;
+    }
+
+    function isHistogramBucketDeltaValid(newHist, oldHist, key) {
+      return math.abs(histogramBucketValue(newHist, key) - histogramBucketValue(oldHist, key)) <= 1;
+    }
+
+    function isHistogramDeltaValid(newHist, oldHist) {
+      return oldHist is map
+        && isHistogramBucketDeltaValid(newHist, oldHist, '0.5')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '1.0')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '1.5')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '2.0')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '2.5')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '3.0')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '3.5')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '4.0')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '4.5')
+        && isHistogramBucketDeltaValid(newHist, oldHist, '5.0');
+    }
+
+    function isValidRatingHistogram(hist) {
+      return hist is map
+        && hist.keys().hasOnly(['0.5', '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0'])
+        && hist.size() <= 10
+        && isValidHistogramBucket(hist, '0.5')
+        && isValidHistogramBucket(hist, '1.0')
+        && isValidHistogramBucket(hist, '1.5')
+        && isValidHistogramBucket(hist, '2.0')
+        && isValidHistogramBucket(hist, '2.5')
+        && isValidHistogramBucket(hist, '3.0')
+        && isValidHistogramBucket(hist, '3.5')
+        && isValidHistogramBucket(hist, '4.0')
+        && isValidHistogramBucket(hist, '4.5')
+        && isValidHistogramBucket(hist, '5.0');
+    }
+
+    function isValidMediaRatingPayload(data) {
+      return data.keys().hasOnly(['ratingCount', 'ratingSum', 'averageRating', 'histogram', 'updatedAt'])
+        && data.keys().hasAll(['ratingCount', 'ratingSum', 'averageRating', 'histogram', 'updatedAt'])
+        && data.ratingCount is int && data.ratingCount >= 0
+        && (data.ratingSum is int || data.ratingSum is float)
+        && data.ratingSum >= 0
+        && data.ratingSum <= data.ratingCount * 5.0
+        && (data.averageRating is int || data.averageRating is float)
+        && data.averageRating >= 0 && data.averageRating <= 5
+        && (
+          (data.ratingCount == 0 && data.ratingSum == 0 && data.averageRating == 0) ||
+          (data.ratingCount > 0
+            && data.ratingSum >= data.ratingCount * 0.5
+            && data.averageRating >= 0.5
+            && math.abs(data.averageRating - (float(data.ratingSum) / float(data.ratingCount))) <= 0.01)
+        )
+        && isValidRatingHistogram(data.histogram)
+        && histogramTotalCount(data.histogram) == data.ratingCount
+        && math.abs(histogramWeightedSum(data.histogram) - data.ratingSum) < 0.001
+        && data.updatedAt is timestamp && data.updatedAt == request.time;
+    }
+
+    function isLinkedUserRatingCreated(userRatingsCollection, mediaId, ratingSum) {
+      let userPath = /databases/$(database)/documents/$(userRatingsCollection)/$(request.auth.uid + '_' + mediaId);
+      return !exists(userPath)
+        && existsAfter(userPath)
+        && math.abs(ratingSum - getAfter(userPath).data.rating) < 0.001;
+    }
+
+    function isLinkedUserRatingTransitionValid(userRatingsCollection, mediaId, data, existing) {
+      let userPath = /databases/$(database)/documents/$(userRatingsCollection)/$(request.auth.uid + '_' + mediaId);
+      return (
+        // New rating submitted by this user (+1 count)
+        (data.ratingCount == existing.ratingCount + 1
+          && !exists(userPath)
+          && existsAfter(userPath)
+          && math.abs((data.ratingSum - existing.ratingSum) - getAfter(userPath).data.rating) < 0.001)
+        ||
+        // Existing user updated their rating (0 count delta)
+        (data.ratingCount == existing.ratingCount
+          && exists(userPath)
+          && existsAfter(userPath)
+          && math.abs((data.ratingSum - existing.ratingSum) - (getAfter(userPath).data.rating - get(userPath).data.rating)) < 0.001)
+        ||
+        // Existing user removed their rating (-1 count)
+        (data.ratingCount == existing.ratingCount - 1
+          && exists(userPath)
+          && !existsAfter(userPath)
+          && (
+            (data.ratingCount == 0 && data.ratingSum == 0) ||
+            math.abs((existing.ratingSum - data.ratingSum) - get(userPath).data.rating) < 0.001
+          ))
+      );
+    }
+
+    function isValidMediaRatingCreate(mediaId, userRatingsCollection) {
+      let data = request.resource.data;
+      return isRatingAuthenticated()
+        && isValidRatingMediaDocId(mediaId)
+        && isValidMediaRatingPayload(data)
+        && data.ratingCount == 1
+        && data.ratingSum >= 0.5 && data.ratingSum <= 5.0
+        && data.averageRating >= 0.5 && data.averageRating <= 5.0
+        && isLinkedUserRatingCreated(userRatingsCollection, mediaId, data.ratingSum);
+    }
+
+    function isValidMediaRatingUpdate(mediaId, userRatingsCollection) {
+      let data = request.resource.data;
+      let existing = resource.data;
+      return isRatingAuthenticated()
+        && isValidRatingMediaDocId(mediaId)
+        && isValidMediaRatingPayload(data)
+        && existing.ratingCount is int
+        && (existing.ratingSum is int || existing.ratingSum is float)
+        && data.ratingCount >= existing.ratingCount - 1
+        && data.ratingCount <= existing.ratingCount + 1
+        && data.ratingSum >= existing.ratingSum - 5.0
+        && data.ratingSum <= existing.ratingSum + 5.0
+        && isHistogramDeltaValid(data.histogram, existing.histogram)
+        && isLinkedUserRatingTransitionValid(userRatingsCollection, mediaId, data, existing);
+    }
+
+    function isLinkedMediaRatingUpdated(mediaRatingsCollection, mediaDocId) {
+      let mediaPath = /databases/$(database)/documents/$(mediaRatingsCollection)/$(mediaDocId);
+      return existsAfter(mediaPath)
+        && getAfter(mediaPath).data.updatedAt == request.time;
+    }
+
+    function isValidUserMediaRatingPayload(userRatingId, mediaRatingsCollection) {
+      let data = request.resource.data;
+      return isRatingAuthenticated()
+        && data.keys().hasOnly(['firebaseUid', 'mediaId', 'mediaType', 'rating', 'updatedAt'])
+        && data.keys().hasAll(['firebaseUid', 'mediaId', 'mediaType', 'rating', 'updatedAt'])
+        && data.firebaseUid is string && data.firebaseUid == request.auth.uid
+        && data.mediaId is int && data.mediaId > 0
+        && data.mediaType is string && data.mediaType in ['movie', 'tv']
+        && isValidHalfStepRating(data.rating)
+        && data.updatedAt is timestamp && data.updatedAt == request.time
+        && userRatingId == request.auth.uid + '_' + data.mediaType + '_' + string(data.mediaId)
+        && isLinkedMediaRatingUpdated(mediaRatingsCollection, data.mediaType + '_' + string(data.mediaId));
+    }
+
+    function isValidUserMediaRatingUpdate(userRatingId, mediaRatingsCollection) {
+      let data = request.resource.data;
+      let existing = resource.data;
+      return isValidUserMediaRatingPayload(userRatingId, mediaRatingsCollection)
+        && existing.firebaseUid == request.auth.uid
+        && data.firebaseUid == existing.firebaseUid
+        && data.mediaId == existing.mediaId
+        && data.mediaType == existing.mediaType;
+    }
+
+    function isValidUserMediaRatingDelete(userRatingId, mediaRatingsCollection) {
+      let existing = resource.data;
+      return isValidUserRatingDocId(userRatingId)
+        && existing.firebaseUid == request.auth.uid
+        && existing.mediaType is string && existing.mediaType in ['movie', 'tv']
+        && existing.mediaId is int && existing.mediaId > 0
+        && userRatingId == request.auth.uid + '_' + existing.mediaType + '_' + string(existing.mediaId)
+        && isLinkedMediaRatingUpdated(mediaRatingsCollection, existing.mediaType + '_' + string(existing.mediaId));
+    }
+
+    // Community Media Ratings & Histograms
+    match /media_ratings/{mediaId} {
+      allow read: if true;
+      allow create: if isValidMediaRatingCreate(mediaId, 'user_media_ratings');
+      allow update: if isValidMediaRatingUpdate(mediaId, 'user_media_ratings');
+      allow delete: if false;
+    }
+    match /dev_media_ratings/{mediaId} {
+      allow read: if true;
+      allow create: if isValidMediaRatingCreate(mediaId, 'dev_user_media_ratings');
+      allow update: if isValidMediaRatingUpdate(mediaId, 'dev_user_media_ratings');
+      allow delete: if false;
+    }
+
+    // User Community Ratings
+    match /user_media_ratings/{userRatingId} {
+      allow get: if isValidUserRatingDocId(userRatingId)
+        && (resource == null || resource.data.firebaseUid == request.auth.uid);
+      allow list: if false;
+      allow create: if isValidUserMediaRatingPayload(userRatingId, 'media_ratings');
+      allow update: if isValidUserMediaRatingUpdate(userRatingId, 'media_ratings');
+      allow delete: if isValidUserMediaRatingDelete(userRatingId, 'media_ratings');
+    }
+    match /dev_user_media_ratings/{userRatingId} {
+      allow get: if isValidUserRatingDocId(userRatingId)
+        && (resource == null || resource.data.firebaseUid == request.auth.uid);
+      allow list: if false;
+      allow create: if isValidUserMediaRatingPayload(userRatingId, 'dev_media_ratings');
+      allow update: if isValidUserMediaRatingUpdate(userRatingId, 'dev_media_ratings');
+      allow delete: if isValidUserMediaRatingDelete(userRatingId, 'dev_media_ratings');
+    }
+
     // Daily Polls & Catalog
     match /daily_polls/{pollId} {
       allow read: if true;

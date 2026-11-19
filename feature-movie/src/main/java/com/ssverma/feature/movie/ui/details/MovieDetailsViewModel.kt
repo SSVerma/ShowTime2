@@ -44,11 +44,14 @@ import com.ssverma.shared.domain.repository.AppConfigRepository
 import com.ssverma.shared.domain.repository.ReminderRepository
 import com.ssverma.shared.domain.usecase.community.DeleteCommentUseCase
 import com.ssverma.shared.domain.usecase.community.EditCommentUseCase
+import com.ssverma.shared.domain.usecase.community.GetCommunityRatingUseCase
 import com.ssverma.shared.domain.usecase.community.GetDiscussionsUseCase
 import com.ssverma.shared.domain.usecase.community.GetMediaReactionsUseCase
 import com.ssverma.shared.domain.usecase.community.PostCommentResult
 import com.ssverma.shared.domain.usecase.community.PostCommentUseCase
+import com.ssverma.shared.domain.usecase.community.RemoveCommunityRatingUseCase
 import com.ssverma.shared.domain.usecase.community.ReportCommentUseCase
+import com.ssverma.shared.domain.usecase.community.SubmitCommunityRatingUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleCommentUpvoteUseCase
 import com.ssverma.shared.domain.usecase.community.ToggleMediaReactionUseCase
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
@@ -58,15 +61,19 @@ import com.ssverma.shared.domain.usecase.reminder.ScheduleAiringReminderUseCase
 import com.ssverma.shared.domain.usecase.reminder.ScheduleReminderResult
 import com.ssverma.shared.domain.utils.ReminderTimeCalculator
 import com.ssverma.shared.domain.utils.formatLocally
+import com.ssverma.shared.ui.component.community.CommunityRatingUiModel
+import com.ssverma.shared.ui.component.community.toUiModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -90,6 +97,9 @@ class MovieDetailsViewModel @AssistedInject constructor(
     private val movieCollectionUseCase: MovieCollectionUseCase,
     private val getMediaReactionsUseCase: GetMediaReactionsUseCase,
     private val toggleMediaReactionUseCase: ToggleMediaReactionUseCase,
+    private val getCommunityRatingUseCase: GetCommunityRatingUseCase,
+    private val submitCommunityRatingUseCase: SubmitCommunityRatingUseCase,
+    private val removeCommunityRatingUseCase: RemoveCommunityRatingUseCase,
     private val getDiscussionsUseCase: GetDiscussionsUseCase,
     private val postCommentUseCase: PostCommentUseCase,
     private val editCommentUseCase: EditCommentUseCase,
@@ -328,6 +338,37 @@ class MovieDetailsViewModel @AssistedInject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = MediaReactions.empty(mediaType = MediaType.Movie, mediaId = movieId)
     )
+
+    val communityRating: StateFlow<CommunityRatingUiModel> = getCommunityRatingUseCase(
+        mediaType = MediaType.Movie,
+        mediaId = movieId
+    )
+        .map { rating -> rating.toUiModel() }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = CommunityRatingUiModel()
+        )
+
+    fun submitCommunityRating(rating: Float) {
+        viewModelScope.launch {
+            submitCommunityRatingUseCase(
+                mediaType = MediaType.Movie,
+                mediaId = movieId,
+                rating = rating
+            )
+        }
+    }
+
+    fun removeCommunityRating() {
+        viewModelScope.launch {
+            removeCommunityRatingUseCase(
+                mediaType = MediaType.Movie,
+                mediaId = movieId
+            )
+        }
+    }
 
     private val discussionTarget = DiscussionTarget.movie(movieId)
 

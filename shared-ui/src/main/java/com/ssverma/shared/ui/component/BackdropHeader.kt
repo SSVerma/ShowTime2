@@ -11,9 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,11 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.icon.AppIcons
+import com.ssverma.core.ui.theme.ShowTimeTheme
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 
@@ -41,7 +48,8 @@ fun BackdropHeader(
     onCloseIconClick: () -> Unit,
     onTrailerFabClick: () -> Unit,
     showTrailerFab: Boolean = true,
-    secondaryActions: @Composable RowScope.() -> Unit = {}
+    topTrailingContent: @Composable RowScope.() -> Unit = {},
+    secondaryActions: @Composable RowScope.() -> Unit = {},
 ) {
     ConstraintLayout(modifier) {
         val (refBackdrop, refRoundedSurface, refTrailerFab, refSecondaryActions) = createRefs()
@@ -54,7 +62,7 @@ fun BackdropHeader(
                     top.linkTo(parent.top)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                }
+                },
         ) {
 
             /*Backdrop*/
@@ -62,11 +70,24 @@ fun BackdropHeader(
                 url = backdropImageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
 
             /*Navigation action*/
             BackdropNavigationAction(onIconClick = onCloseIconClick)
+
+            /*Top Trailing Actions (Top-Right of Hero)*/
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(end = 16.dp, top = 8.dp)
+                    .height(ActionSize),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                topTrailingContent()
+            }
         }
 
         /*Rounded surface*/
@@ -80,14 +101,14 @@ fun BackdropHeader(
                         topStart = CornerSize(SurfaceCornerRoundSize),
                         topEnd = CornerSize(SurfaceCornerRoundSize),
                         bottomStart = CornerSize(0.dp),
-                        bottomEnd = CornerSize(0.dp)
+                        bottomEnd = CornerSize(0.dp),
                     ),
                 )
                 .constrainAs(refRoundedSurface) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                }
+                },
         )
 
         /*Trailer Action*/
@@ -184,3 +205,53 @@ fun BackdropActionButton(
         }
     }
 }
+
+@Preview
+@Composable
+private fun BackdropHeaderPreview() {
+    ShowTimeTheme {
+        BackdropHeader(
+            backdropImageUrl = "",
+            onCloseIconClick = {},
+            onTrailerFabClick = {},
+            topTrailingContent = {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.70f),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    ) {
+                        Text(
+                            text = "ShowTime",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(13.dp),
+                        )
+                        Text(
+                            text = "4.4 (42)",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            },
+            secondaryActions = {
+                BackdropActionButton(
+                    onClick = {},
+                    icon = Icons.Default.Add,
+                    contentDescription = null
+                )
+            }
+        )
+    }
+}
+

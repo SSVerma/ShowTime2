@@ -7,8 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.NotificationsNone
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
@@ -20,7 +18,6 @@ import com.ssverma.core.ui.foundation.Emphasize
 import com.ssverma.core.ui.theme.spacing
 import com.ssverma.feature.movie.R
 import com.ssverma.shared.domain.model.MediaType
-import com.ssverma.shared.domain.model.community.DiscussionNavArgs
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.utils.DateUtils
@@ -28,6 +25,8 @@ import com.ssverma.shared.ui.component.BackdropActionButton
 import com.ssverma.shared.ui.component.BackdropHeader
 import com.ssverma.shared.ui.component.Highlight
 import com.ssverma.shared.ui.component.Highlights
+import com.ssverma.shared.ui.component.community.CommunityRatingBadge
+import com.ssverma.shared.ui.component.community.CommunityRatingUiModel
 import com.ssverma.shared.ui.component.media.ShowFeedbackArgs
 import com.ssverma.shared.ui.component.media.menu.MediaOmniActionMenu
 import com.ssverma.shared.ui.component.media.menu.MediaOmniMenuConfig
@@ -39,7 +38,6 @@ fun LazyListScope.movieDetailsHeroSection(
     movie: Movie,
     hasReminder: Boolean,
     existingDiaryEntry: DiaryEntry?,
-    hasDiaryEntries: Boolean,
     onBackPressed: () -> Unit,
     onPlayTrailer: (Movie) -> Unit,
     onOpenLogDialog: () -> Unit,
@@ -47,7 +45,9 @@ fun LazyListScope.movieDetailsHeroSection(
     onOpenDiscussions: () -> Unit,
     onShare: () -> Unit,
     onShowFeedback: (ShowFeedbackArgs) -> Unit,
-    modifier: Modifier = Modifier
+    communityRating: CommunityRatingUiModel? = null,
+    onCommunityRatingClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     item(key = "movie_details_backdrop_header", contentType = "backdrop_header") {
         BackdropHeader(
@@ -55,14 +55,15 @@ fun LazyListScope.movieDetailsHeroSection(
             onCloseIconClick = onBackPressed,
             showTrailerFab = movie.primaryTrailer != null,
             onTrailerFabClick = { onPlayTrailer(movie) },
-            secondaryActions = {
+            topTrailingContent = {
                 if (!movie.isUpcoming) {
-                    BackdropActionButton(
-                        onClick = onOpenLogDialog,
-                        icon = if (hasDiaryEntries) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                        contentDescription = stringResource(id = SharedR.string.log_and_rate_cd)
+                    CommunityRatingBadge(
+                        rating = communityRating,
+                        onClick = onCommunityRatingClick,
                     )
                 }
+            },
+            secondaryActions = {
                 MediaOmniActionMenu(
                     mediaId = movie.id,
                     mediaType = MediaType.Movie,
@@ -73,10 +74,11 @@ fun LazyListScope.movieDetailsHeroSection(
                     releaseDate = movie.releaseDate?.toString().orEmpty(),
                     config = MediaOmniMenuConfig(
                         isUpcoming = movie.isUpcoming,
-                        showReminder = false
+                        showReminder = false,
                     ),
                     existingDiaryEntry = existingDiaryEntry,
                     onLogToDiary = onOpenLogDialog,
+                    onRateClick = onCommunityRatingClick,
                     onOpenDiscussions = onOpenDiscussions,
                     onShare = onShare,
                     onShowFeedback = onShowFeedback,
@@ -84,9 +86,9 @@ fun LazyListScope.movieDetailsHeroSection(
                         BackdropActionButton(
                             onClick = onClick,
                             icon = Icons.Rounded.Add,
-                            contentDescription = stringResource(id = SharedR.string.more_options_cd)
+                            contentDescription = stringResource(id = SharedR.string.more_options_cd),
                         )
-                    }
+                    },
                 )
                 if (movie.isUpcoming || hasReminder) {
                     BackdropActionButton(
@@ -95,12 +97,12 @@ fun LazyListScope.movieDetailsHeroSection(
                         containerColor = if (hasReminder) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                         contentColor = if (hasReminder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                         contentDescription = stringResource(
-                            id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me
-                        )
+                            id = if (hasReminder) SharedR.string.reminder_set else SharedR.string.remind_me,
+                        ),
                     )
                 }
             },
-            modifier = modifier
+            modifier = modifier,
         )
     }
 
@@ -112,7 +114,7 @@ fun LazyListScope.movieDetailsHeroSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = MaterialTheme.spacing.medium)
-                .padding(top = MaterialTheme.spacing.large)
+                .padding(top = MaterialTheme.spacing.large),
         )
     }
 
@@ -127,7 +129,7 @@ fun LazyListScope.movieDetailsHeroSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = MaterialTheme.spacing.medium)
-                        .padding(top = MaterialTheme.spacing.extraSmall)
+                        .padding(top = MaterialTheme.spacing.extraSmall),
                 )
             }
         }
@@ -136,7 +138,7 @@ fun LazyListScope.movieDetailsHeroSection(
     item(key = "movie_details_highlights", contentType = "movie_highlights") {
         Highlights(
             highlights = remember(movie) { movie.highlightedItems() },
-            modifier = Modifier.padding(top = SectionVerticalSpacing)
+            modifier = Modifier.padding(top = SectionVerticalSpacing),
         )
     }
 }
@@ -145,27 +147,27 @@ private fun Movie.highlightedItems(): List<Highlight> {
     return listOf(
         Highlight(
             labelRes = R.string.rating,
-            value = voteAvg.emptyIfAbsent()
+            value = voteAvg.emptyIfAbsent(),
         ),
         Highlight(
             labelRes = R.string.release_date,
-            value = displayReleaseDate.orEmpty()
+            value = displayReleaseDate.orEmpty(),
         ),
         Highlight(
             labelRes = R.string.status,
-            value = status
+            value = status,
         ),
         Highlight(
             labelRes = R.string.language,
-            value = originalLanguage
+            value = originalLanguage,
         ),
         Highlight(
             labelRes = R.string.runtime,
-            value = if (runtime == 0) 0.emptyIfAbsent() else DateUtils.formatMinutes(runtime)
+            value = if (runtime == 0) 0.emptyIfAbsent() else DateUtils.formatMinutes(runtime),
         ),
         Highlight(
             labelRes = R.string.revenue,
-            value = if (revenue == 0L) 0.emptyIfAbsent() else "$$revenue"
-        )
+            value = if (revenue == 0L) 0.emptyIfAbsent() else "$$revenue",
+        ),
     )
 }

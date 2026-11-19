@@ -6,7 +6,9 @@ import com.ssverma.core.billing.model.ProOverrideProvider
 import com.ssverma.core.storage.keyvalue.KeyValueStorage
 import com.ssverma.core.storage.keyvalue.KeyValueStorageClient
 import com.ssverma.core.storage.keyvalue.KeyValueStorageConfig
+import com.ssverma.shared.data.debug.DebugConfigManager
 import com.ssverma.shared.data.debug.DebugProOverrideProvider
+import com.ssverma.shared.domain.model.community.RatingOverrideProvider
 import com.ssverma.shared.data.repository.AffiliateRepositoryImpl
 import com.ssverma.shared.data.repository.AppUpdateRepositoryImpl
 import com.ssverma.shared.data.repository.BackupRepositoryImpl
@@ -71,6 +73,12 @@ abstract class AppConfigBindingModule {
     abstract fun bindProOverrideProvider(
         provider: DebugProOverrideProvider
     ): ProOverrideProvider
+
+    @Singleton
+    @Binds
+    abstract fun bindRatingOverrideProvider(
+        debugConfigManager: DebugConfigManager
+    ): RatingOverrideProvider
 }
 
 @Module

@@ -135,6 +135,21 @@
     <string name="dev_ads_section">Ads &amp; Features</string>
     <string name="dev_disable_all_ads">Force Disable All Ads</string>
     <string name="dev_reset_all">Reset All Debug Overrides</string>
+
+    <!-- Ratings & Histogram Sandbox -->
+    <string name="dev_ratings_sandbox">ShowTime Ratings Sandbox</string>
+    <string name="dev_ratings_sandbox_desc">Test ratings threshold and mock community states</string>
+    <string name="dev_ratings_threshold">Threshold to Show Score</string>
+    <string name="dev_ratings_threshold_1">1 (Instant)</string>
+    <string name="dev_ratings_threshold_5">5 (Default)</string>
+    <string name="dev_ratings_threshold_10">10 (Strict)</string>
+    <string name="dev_ratings_state">Mock Community State</string>
+    <string name="dev_ratings_state_auto">Auto (Firestore)</string>
+    <string name="dev_ratings_state_cold">Cold Start (0)</string>
+    <string name="dev_ratings_state_below">Below Threshold (3)</string>
+    <string name="dev_ratings_state_active">Active (42)</string>
+    <string name="dev_ratings_state_user">User Rated (4.5 Stars)</string>
+
     <string name="dev_seeded_favorites_msg">Seeded 5 favorites into library</string>
     <string name="dev_seeded_watchlist_msg">Seeded 5 items into watchlist</string>
     <string name="dev_seeded_history_msg">Seeded 5 items into watch history</string>

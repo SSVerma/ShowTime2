@@ -2,6 +2,7 @@ package com.ssverma.feature.movie.ui.details.component
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import com.ssverma.shared.ads.gate.FeatureGateConfig
 import com.ssverma.shared.ads.gate.FeaturePassPolicy
@@ -13,6 +14,8 @@ import com.ssverma.shared.domain.model.ProviderInfo
 import com.ssverma.shared.domain.model.diary.DiaryEntry
 import com.ssverma.shared.domain.model.movie.Movie
 import com.ssverma.shared.domain.repository.AffiliateRepository
+import com.ssverma.shared.ui.component.community.CommunityRatingBottomSheet
+import com.ssverma.shared.ui.component.community.CommunityRatingUiModel
 import com.ssverma.shared.ui.component.diary.LogAndRateDialog
 import com.ssverma.shared.ui.component.notification.NotificationPermissionDialogs
 import com.ssverma.shared.ui.component.notification.NotificationPermissionHandler
@@ -49,6 +52,7 @@ val CommunityCommentsGateConfig = FeatureGateConfig(
     )
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieDetailsOverlays(
     movie: Movie,
@@ -75,7 +79,12 @@ fun MovieDetailsOverlays(
     reminderNotificationMinute: Int,
     onScheduleReminder: (leadDays: Int, hour: Int, minute: Int) -> Unit,
     onRemoveReminder: () -> Unit,
-    onDismissReminderSheet: () -> Unit
+    onDismissReminderSheet: () -> Unit,
+    showCommunityRatingSheet: Boolean = false,
+    communityRating: CommunityRatingUiModel? = null,
+    onRatingSubmitted: (Float) -> Unit = {},
+    onRatingRemoved: () -> Unit = {},
+    onDismissCommunityRatingSheet: () -> Unit = {}
 ) {
     NotificationPermissionDialogs(handler = notificationPermissionHandler)
 
@@ -135,5 +144,15 @@ fun MovieDetailsOverlays(
                 onDismissRequest = onDismissReminderSheet
             )
         }
+    }
+
+    if (showCommunityRatingSheet) {
+        CommunityRatingBottomSheet(
+            rating = communityRating,
+            mediaTitle = movie.title,
+            onRatingSubmitted = onRatingSubmitted,
+            onRatingRemoved = onRatingRemoved,
+            onDismissRequest = onDismissCommunityRatingSheet
+        )
     }
 }

@@ -9,6 +9,7 @@ data class MediaOmniMenuConfig(
     val showDiscussions: Boolean = true,
     val showShare: Boolean = true,
     val showReminder: Boolean = true,
+    val showRate: Boolean = true,
     val isUpcoming: Boolean = false,
     val isOverPoster: Boolean = true
 ) {
@@ -17,6 +18,9 @@ data class MediaOmniMenuConfig(
 
     val effectiveShowDiaryLog: Boolean
         get() = showDiaryLog && !isUpcoming
+
+    val effectiveShowRate: Boolean
+        get() = showRate && !isUpcoming
 
     fun isEligibleForReminder(hasActiveReminder: Boolean, isFutureDate: Boolean = false): Boolean =
         showReminder && (isUpcoming || isFutureDate || hasActiveReminder)

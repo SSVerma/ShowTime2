@@ -11,6 +11,7 @@ import com.ssverma.shared.domain.model.reminder.ReminderType
 import com.ssverma.shared.domain.usecase.diary.GetDiaryEntriesUseCase
 import com.ssverma.shared.domain.usecase.diary.SaveDiaryEntryUseCase
 import com.ssverma.shared.domain.repository.ReminderToggleResult
+import com.ssverma.shared.testing.fakes.FakeCommunityRepository
 import com.ssverma.shared.testing.fakes.FakeDiaryRepository
 import com.ssverma.shared.testing.fakes.FakeLibraryRepository
 import com.ssverma.shared.testing.fakes.FakeReminderQuotaManager
@@ -46,6 +47,7 @@ class MediaOmniMenuViewModelTest {
     private lateinit var fakeDiaryRepository: FakeDiaryRepository
     private lateinit var fakeReminderRepository: FakeReminderRepository
     private lateinit var fakeReminderQuotaManager: FakeReminderQuotaManager
+    private lateinit var fakeCommunityRepository: FakeCommunityRepository
     private val appConfigRepository: AppConfigRepository = mockk(relaxed = true)
     private val rewardedAdManager: RewardedAdManager = mockk(relaxed = true)
     private val fakeBillingRepository = FakeBillingRepository()
@@ -59,6 +61,7 @@ class MediaOmniMenuViewModelTest {
         fakeDiaryRepository = FakeDiaryRepository()
         fakeReminderRepository = FakeReminderRepository()
         fakeReminderQuotaManager = FakeReminderQuotaManager()
+        fakeCommunityRepository = FakeCommunityRepository()
         every { appConfigRepository.reminderNotificationHour } returns flowOf(9)
         every { appConfigRepository.reminderNotificationMinute } returns flowOf(0)
         every { appConfigRepository.reminderLeadDays } returns flowOf(0)
@@ -82,6 +85,15 @@ class MediaOmniMenuViewModelTest {
             reminderQuotaManager = fakeReminderQuotaManager,
             scheduleAiringReminderUseCase = scheduleAiringReminderUseCase,
             removeAiringReminderUseCase = removeAiringReminderUseCase,
+            getCommunityRatingUseCase = com.ssverma.shared.domain.usecase.community.GetCommunityRatingUseCase(
+                fakeCommunityRepository
+            ),
+            submitCommunityRatingUseCase = com.ssverma.shared.domain.usecase.community.SubmitCommunityRatingUseCase(
+                fakeCommunityRepository
+            ),
+            removeCommunityRatingUseCase = com.ssverma.shared.domain.usecase.community.RemoveCommunityRatingUseCase(
+                fakeCommunityRepository
+            ),
             appConfigRepository = appConfigRepository,
             rewardedAdManager = rewardedAdManager,
             billingRepository = fakeBillingRepository
@@ -316,5 +328,35 @@ class MediaOmniMenuViewModelTest {
             viewModel.hasReminder(mediaId = 55, mediaType = MediaType.Movie).first()
         assertFalse(afterRemoveReminder)
     }
+
+    @Test
+    fun `getCommunityRating returns empty rating initially and updates when submitted and removed`() =
+        runTest {
+            val initialRating = viewModel.getCommunityRating(MediaType.Movie, 42).first()
+            assertEquals(0, initialRating.ratingCount)
+            assertEquals(null, initialRating.userRating)
+
+            viewModel.submitCommunityRating(
+                mediaType = MediaType.Movie,
+                mediaId = 42,
+                rating = 4.5f
+            )
+            advanceUntilIdle()
+
+            val updatedRating = viewModel.getCommunityRating(MediaType.Movie, 42).first()
+            assertEquals(1, updatedRating.ratingCount)
+            assertEquals(4.5f, updatedRating.userRating)
+            assertEquals(4.5f, updatedRating.averageRating)
+
+            viewModel.removeCommunityRating(
+                mediaType = MediaType.Movie,
+                mediaId = 42
+            )
+            advanceUntilIdle()
+
+            val afterRemoveRating = viewModel.getCommunityRating(MediaType.Movie, 42).first()
+            assertEquals(0, afterRemoveRating.ratingCount)
+            assertEquals(null, afterRemoveRating.userRating)
+        }
 }
 

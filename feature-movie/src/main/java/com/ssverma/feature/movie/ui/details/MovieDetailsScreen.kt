@@ -147,6 +147,7 @@ private fun MovieContent(
     val watchProviderRegion by viewModel.watchProviderRegion.collectAsStateWithLifecycle()
     val selectedProviderPayload by viewModel.selectedProviderForAction.collectAsStateWithLifecycle()
     val mediaReactions by viewModel.mediaReactions.collectAsStateWithLifecycle()
+    val communityRating by viewModel.communityRating.collectAsStateWithLifecycle()
     val discussions by viewModel.discussions.collectAsStateWithLifecycle()
     val diaryEntries by viewModel.diaryEntries.collectAsStateWithLifecycle()
     val hasReminder by viewModel.hasReminder.collectAsStateWithLifecycle()
@@ -160,6 +161,7 @@ private fun MovieContent(
     val movieCollection by viewModel.movieCollection.collectAsStateWithLifecycle()
     val isCollectionLoading by viewModel.isCollectionLoading.collectAsStateWithLifecycle()
     var showLogDialog by remember { mutableStateOf(false) }
+    var showCommunityRatingSheet by remember { mutableStateOf(false) }
     val analytics = LocalAnalytics.current
     val watchProviderAd = null // Disabled: screen-eager ad with near-zero impression yield
     val snackbarHostState = remember { SnackbarHostState() }
@@ -211,7 +213,6 @@ private fun MovieContent(
                 movie = movie,
                 hasReminder = hasReminder,
                 existingDiaryEntry = diaryEntries.firstOrNull(),
-                hasDiaryEntries = diaryEntries.isNotEmpty(),
                 onBackPressed = onBackPressed,
                 onPlayTrailer = {
                     analytics.logEvent(
@@ -252,7 +253,9 @@ private fun MovieContent(
                     )
                     context.dispatchShareTextIntent(text = shareableText)
                 },
-                onShowFeedback = handleShowFeedback
+                onShowFeedback = handleShowFeedback,
+                communityRating = communityRating,
+                onCommunityRatingClick = { showCommunityRatingSheet = true }
             )
 
             movieWatchProvidersSection(
@@ -532,7 +535,12 @@ private fun MovieContent(
             onRemoveReminder = {
                 viewModel.removeReminder(movie)
             },
-            onDismissReminderSheet = viewModel::dismissReminderSheet
+            onDismissReminderSheet = viewModel::dismissReminderSheet,
+            showCommunityRatingSheet = showCommunityRatingSheet,
+            communityRating = communityRating,
+            onRatingSubmitted = viewModel::submitCommunityRating,
+            onRatingRemoved = viewModel::removeCommunityRating,
+            onDismissCommunityRatingSheet = { showCommunityRatingSheet = false }
         )
     }
 }

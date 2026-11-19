@@ -14,6 +14,8 @@ import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.Language
 import com.ssverma.shared.domain.model.WatchProviderRegion
 import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.community.CommunityRating
+import com.ssverma.shared.domain.model.community.DebugRatingOverride
 
 @Immutable
 data class ProfileScreenState(
@@ -52,6 +54,8 @@ data class ProfileScreenState(
     val isMockTraktEnabled: Boolean = false,
     val customTraktClientId: String = "",
     val isAdsDisabled: Boolean = false,
+    val ratingOverride: DebugRatingOverride = DebugRatingOverride.AUTO,
+    val ratingThreshold: Int = CommunityRating.MIN_SUFFICIENT_RATINGS_THRESHOLD,
     val paywallErrorMessage: UiText? = null,
     val message: UiText? = null
 )

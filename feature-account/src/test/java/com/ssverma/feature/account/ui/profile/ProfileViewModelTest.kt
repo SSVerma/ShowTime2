@@ -21,6 +21,7 @@ import com.ssverma.shared.domain.auth.TraktAuthProvider
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.auth.AuthState
 import com.ssverma.shared.domain.model.auth.TraktAuthState
+import com.ssverma.shared.domain.model.community.DebugRatingOverride
 import com.ssverma.shared.domain.model.release.ReleaseRadarConfig
 import com.ssverma.shared.testing.fakes.FakeAppConfigRepository
 import com.ssverma.shared.testing.fakes.FakeBackupRepository
@@ -68,6 +69,8 @@ class ProfileViewModelTest {
         every { mockDebugConfigManager.isMockTraktEnabled } returns MutableStateFlow(true)
         every { mockDebugConfigManager.customTraktClientId } returns MutableStateFlow("")
         every { mockDebugConfigManager.isAdsDisabled } returns MutableStateFlow(false)
+        every { mockDebugConfigManager.ratingOverride } returns MutableStateFlow(DebugRatingOverride.AUTO)
+        every { mockDebugConfigManager.ratingThreshold } returns MutableStateFlow(5)
 
         viewModel = ProfileViewModel(
             accountRepository = mockAccountRepository,
@@ -371,5 +374,21 @@ class ProfileViewModelTest {
     fun `userSeededGenres reflects repository updates`() = runTest {
         fakeAppConfigRepository.updateSeededGenres(setOf(28, 12, 878))
         assertThat(viewModel.uiState.value.userSeededGenres).containsExactly(28, 12, 878)
+    }
+
+    @Test
+    fun `setDebugRatingOverride delegates to debugConfigManager`() = runTest {
+        viewModel.setDebugRatingOverride(DebugRatingOverride.FORCE_ACTIVE_HIGH)
+        coVerify(exactly = 1) {
+            mockDebugConfigManager.setRatingOverride(DebugRatingOverride.FORCE_ACTIVE_HIGH)
+        }
+    }
+
+    @Test
+    fun `setDebugRatingThreshold delegates to debugConfigManager`() = runTest {
+        viewModel.setDebugRatingThreshold(10)
+        coVerify(exactly = 1) {
+            mockDebugConfigManager.setRatingThreshold(10)
+        }
     }
 }

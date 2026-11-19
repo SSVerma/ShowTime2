@@ -17,6 +17,7 @@
     <string name="add_to_watchlist">Add to watchlist</string>
     <string name="remove_from_favorite">Remove from favorite</string>
     <string name="remove_from_watchlist">Remove from watchlist</string>
+    <string name="rate_action_label">Rate</string>
     <string name="rating_icon_cd">Rating</string>
     <string name="date_icon_cd">Release Date</string>
     <string name="more_options_cd">More Options</string>
@@ -481,5 +482,27 @@
     <string name="read_more">Read more</string>
     <string name="show_less">Show less</string>
     <string name="play_video_cd">Play video</string>
+
+    <!-- ShowTime Community Rating -->
+    <string name="community_rating_brand">ShowTime</string>
+    <string name="community_rating_title">ShowTime Rating</string>
+    <string name="community_rating_subtitle">Based on %1$d cinephile ratings</string>
+    <string name="community_rating_gathering_title">%1$d of %2$d ratings</string>
+    <string name="community_rating_gathering_desc">Needs %1$d ratings to unlock the ShowTime Community Score.</string>
+    <string name="community_rating_no_ratings_title">No ratings yet</string>
+    <string name="community_rating_no_ratings_desc">Be the first cinephile to rate this title on ShowTime!</string>
+    <string name="community_rating_distribution">Rating Distribution</string>
+    <string name="community_rating_your_rating">Your Rating</string>
+    <string name="community_rating_rate_now">Rate</string>
+    <string name="community_rating_clear">Clear Rating</string>
+    <string name="community_rating_your_rating_hint">Your rating contributes to the ShowTime Community Score</string>
+    <string name="community_rating_histogram_bar_cd">%1$.1f stars: %2$d ratings (%3$d percent)</string>
+    <string name="community_rating_badge_cd">ShowTime community rating: %1$s out of 5 stars from %2$d cinephiles</string>
+    <string name="community_rating_user_rated_badge_cd">Your ShowTime rating: %1$s out of 5 stars</string>
+    <string name="community_rating_axis_min">0.5</string>
+    <string name="community_rating_axis_mid">2.5</string>
+    <string name="community_rating_axis_max">5.0</string>
+    <string name="community_rating_submitted_snackbar">Rating submitted for %1$s</string>
+    <string name="community_rating_removed_snackbar">Rating removed for %1$s</string>
 </resources>
 

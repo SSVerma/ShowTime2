@@ -5,6 +5,7 @@ import com.ssverma.shared.domain.failure.Failure
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.Comment
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
+import com.ssverma.shared.domain.model.community.CommunityRating
 import com.ssverma.shared.domain.model.community.CommunityCuratedListItem
 import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.community.CommunityModerationConfig
@@ -308,6 +309,76 @@ class FakeCommunityRepository : CommunityRepository {
 
     override suspend fun setCommunityGuidelinesAccepted(accepted: Boolean) {
         acceptedGuidelinesFlow.value = accepted
+    }
+
+    private val ratings = MutableStateFlow<Map<String, CommunityRating>>(emptyMap())
+
+    override fun getCommunityRating(mediaType: MediaType, mediaId: Int): Flow<CommunityRating> {
+        val key = "${mediaType}_$mediaId"
+        return ratings.map { it[key] ?: CommunityRating.empty(mediaType, mediaId) }
+    }
+
+    override suspend fun submitCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int,
+        rating: Float
+    ): Result<CommunityRating, Failure.CoreFailure> {
+        val key = "${mediaType}_$mediaId"
+        val current = ratings.value[key] ?: CommunityRating.empty(mediaType, mediaId)
+        val oldRating = current.userRating
+        val updatedHistogram = current.histogram.toMutableMap()
+        var updatedSum = current.ratingSum
+        var updatedCount = current.ratingCount
+
+        if (oldRating != null) {
+            val oldBucketCount = updatedHistogram[oldRating] ?: 0
+            updatedHistogram[oldRating] = (oldBucketCount - 1).coerceAtLeast(0)
+            updatedSum -= oldRating
+        } else {
+            updatedCount += 1
+        }
+
+        val newBucketCount = updatedHistogram[rating] ?: 0
+        updatedHistogram[rating] = newBucketCount + 1
+        updatedSum += rating
+
+        val newAverage = if (updatedCount > 0) (updatedSum / updatedCount).toFloat() else 0f
+
+        val updated = current.copy(
+            ratingCount = updatedCount,
+            ratingSum = updatedSum,
+            averageRating = newAverage,
+            histogram = updatedHistogram,
+            userRating = rating
+        )
+        ratings.value = ratings.value + (key to updated)
+        return Result.Success(updated)
+    }
+
+    override suspend fun removeCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int
+    ): Result<CommunityRating, Failure.CoreFailure> {
+        val key = "${mediaType}_$mediaId"
+        val current = ratings.value[key] ?: CommunityRating.empty(mediaType, mediaId)
+        val oldRating = current.userRating ?: return Result.Success(current)
+
+        val updatedHistogram = current.histogram.toMutableMap()
+        val oldBucketCount = updatedHistogram[oldRating] ?: 0
+        updatedHistogram[oldRating] = (oldBucketCount - 1).coerceAtLeast(0)
+        val updatedSum = (current.ratingSum - oldRating).coerceAtLeast(0.0)
+        val updatedCount = (current.ratingCount - 1).coerceAtLeast(0)
+        val newAverage = if (updatedCount > 0) (updatedSum / updatedCount).toFloat() else 0f
+
+        val updated = current.copy(
+            ratingCount = updatedCount,
+            ratingSum = updatedSum,
+            averageRating = newAverage,
+            histogram = updatedHistogram,
+            userRating = null
+        )
+        ratings.value = ratings.value + (key to updated)
+        return Result.Success(updated)
     }
 
     fun setCommunityLists(lists: List<CommunityCuratedList>) {

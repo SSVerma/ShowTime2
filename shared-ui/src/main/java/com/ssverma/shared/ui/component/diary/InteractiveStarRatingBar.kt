@@ -43,6 +43,7 @@ fun InteractiveStarRatingBar(
     rating: Float,
     onRatingChanged: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    onRatingConfirmed: ((Float) -> Unit)? = null,
     maxStars: Int = 5,
     starSize: Dp = 38.dp,
     starSpacing: Dp = 6.dp
@@ -50,6 +51,7 @@ fun InteractiveStarRatingBar(
     var barWidthPx by remember { mutableFloatStateOf(0f) }
     val haptic = LocalHapticFeedback.current
     val currentOnRatingChanged by rememberUpdatedState(onRatingChanged)
+    val currentOnRatingConfirmed by rememberUpdatedState(onRatingConfirmed)
     val currentRating by rememberUpdatedState(rating)
 
     fun calculateRating(touchX: Float): Float {
@@ -60,12 +62,13 @@ fun InteractiveStarRatingBar(
         return (round(rawValue * 2f) / 2f).coerceIn(0.5f, maxStars.toFloat())
     }
 
-    fun handleTouch(touchX: Float) {
+    fun handleTouch(touchX: Float): Float {
         val newRating = calculateRating(touchX)
         if (newRating != currentRating) {
             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             currentOnRatingChanged(newRating)
         }
+        return newRating
     }
 
     val cd = stringResource(R.string.diary_dialog_star_cd, rating.toInt())
@@ -78,14 +81,29 @@ fun InteractiveStarRatingBar(
             .onSizeChanged { barWidthPx = it.width.toFloat() }
             .pointerInput(Unit) {
                 awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
-                    handleTouch(down.position.x)
+                    val down = awaitFirstDown(requireUnconsumed = true)
+                    val initialRating = currentRating
+                    var latestRating = handleTouch(down.position.x)
+                    var isCancelled = false
                     while (true) {
                         val event = awaitPointerEvent()
-                        val change = event.changes.firstOrNull() ?: break
-                        if (!change.pressed) break
+                        val change = event.changes.firstOrNull { it.id == down.id }
+                        if (change == null || change.isConsumed) {
+                            isCancelled = true
+                            break
+                        }
+                        if (!change.pressed) {
+                            break
+                        }
                         change.consume()
-                        handleTouch(change.position.x)
+                        latestRating = handleTouch(change.position.x)
+                    }
+                    if (isCancelled) {
+                        if (latestRating != initialRating) {
+                            currentOnRatingChanged(initialRating)
+                        }
+                    } else if (latestRating > 0f) {
+                        currentOnRatingConfirmed?.invoke(latestRating)
                     }
                 }
             }
@@ -107,10 +125,10 @@ fun InteractiveStarRatingBar(
             }
 
             val starScale by animateFloatAsState(
-                targetValue = if (isFull || isHalf) 1.12f else 1.0f,
+                targetValue = if (isFull || isHalf) 1.08f else 1.0f,
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMedium
                 ),
                 label = "star_scale_$i"
             )

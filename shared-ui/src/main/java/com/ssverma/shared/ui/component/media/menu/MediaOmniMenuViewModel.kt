@@ -22,7 +22,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.ssverma.shared.domain.Result
+import com.ssverma.shared.domain.failure.Failure
+import com.ssverma.shared.domain.model.community.CommunityRating
+import com.ssverma.shared.domain.usecase.community.GetCommunityRatingUseCase
+import com.ssverma.shared.domain.usecase.community.RemoveCommunityRatingUseCase
+import com.ssverma.shared.domain.usecase.community.SubmitCommunityRatingUseCase
+import com.ssverma.shared.ui.component.community.CommunityRatingUiModel
+import com.ssverma.shared.ui.component.community.toUiModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -37,6 +47,9 @@ class MediaOmniMenuViewModel @Inject constructor(
     private val reminderQuotaManager: ReminderQuotaManager,
     private val scheduleAiringReminderUseCase: ScheduleAiringReminderUseCase,
     private val removeAiringReminderUseCase: RemoveAiringReminderUseCase,
+    private val getCommunityRatingUseCase: GetCommunityRatingUseCase,
+    private val submitCommunityRatingUseCase: SubmitCommunityRatingUseCase,
+    private val removeCommunityRatingUseCase: RemoveCommunityRatingUseCase,
     val appConfigRepository: AppConfigRepository,
     private val rewardedAdManager: RewardedAdManager,
     private val billingRepository: BillingRepository
@@ -260,6 +273,49 @@ class MediaOmniMenuViewModel @Inject constructor(
         viewModelScope.launch {
             saveDiaryEntryUseCase(entry)
             onComplete?.invoke()
+        }
+    }
+
+    fun getCommunityRating(mediaType: MediaType, mediaId: Int): Flow<CommunityRating> {
+        return getCommunityRatingUseCase(mediaType = mediaType, mediaId = mediaId)
+    }
+
+    fun getCommunityRatingUiModel(
+        mediaType: MediaType,
+        mediaId: Int
+    ): Flow<CommunityRatingUiModel> {
+        return getCommunityRatingUseCase(mediaType = mediaType, mediaId = mediaId)
+            .map { rating -> rating.toUiModel() }
+            .flowOn(Dispatchers.Default)
+    }
+
+    fun submitCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int,
+        rating: Float,
+        onComplete: ((Result<CommunityRating, Failure.CoreFailure>) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val result = submitCommunityRatingUseCase(
+                mediaType = mediaType,
+                mediaId = mediaId,
+                rating = rating
+            )
+            onComplete?.invoke(result)
+        }
+    }
+
+    fun removeCommunityRating(
+        mediaType: MediaType,
+        mediaId: Int,
+        onComplete: ((Result<CommunityRating, Failure.CoreFailure>) -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            val result = removeCommunityRatingUseCase(
+                mediaType = mediaType,
+                mediaId = mediaId
+            )
+            onComplete?.invoke(result)
         }
     }
 }
