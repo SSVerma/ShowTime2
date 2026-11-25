@@ -15,6 +15,8 @@ dependencies {
     api(libs.compose.ui)
     api(libs.compose.foundation)
     api(libs.compose.material3)
+    api(libs.compose.material3.adaptive)
+    api(libs.compose.material3.adaptive.layout)
     api(libs.compose.tooling)
     api(libs.compose.material.icons.core)
     api(libs.compose.material.icons.extended)
@@ -23,5 +25,6 @@ dependencies {
     api(libs.androidx.navigationevent.android)
 
     testImplementation(libs.junit)
+    testImplementation(libs.truth)
     androidTestImplementation(libs.androidx.junit)
 }

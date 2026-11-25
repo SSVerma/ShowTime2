@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
+import com.ssverma.core.ui.adaptive.AdaptiveGridDefaults
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 import com.ssverma.feature.library.R
 import com.ssverma.feature.library.analytics.LibraryAnalyticsScreenName
@@ -149,7 +150,7 @@ fun SecretSharedListScreen(
                     val list = uiState.secretSharedList!!
                     LazyVerticalGrid(
                         state = gridState,
-                        columns = GridCells.Fixed(2),
+                        columns = AdaptiveGridDefaults.PosterGridCells,
                         contentPadding = PaddingValues(
                             start = 16.dp,
                             end = 16.dp,

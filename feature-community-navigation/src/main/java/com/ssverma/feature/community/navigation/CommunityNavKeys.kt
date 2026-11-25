@@ -1,7 +1,7 @@
 package com.ssverma.feature.community.navigation
 
 import android.os.Parcelable
-import androidx.navigation3.runtime.NavKey
+import com.ssverma.core.navigation.nav3.AdaptiveExtraNavKey
 import com.ssverma.shared.domain.model.community.DiscussionTarget
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -47,7 +47,7 @@ data class CommunityDiscussionsNavKey(
     val mediaTitle: String? = null,
     val posterImageUrl: String? = null,
     val backdropImageUrl: String? = null,
-) : NavKey, Parcelable {
+) : AdaptiveExtraNavKey, Parcelable {
 
     val mediaId: Int get() = target.mediaId
 

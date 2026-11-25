@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssverma.core.analytics.ui.LocalAnalytics
 import com.ssverma.core.analytics.ui.TrackScreenView
+import com.ssverma.core.ui.layout.windowTopBarInsetsPadding
 import com.ssverma.feature.search.R
 import com.ssverma.feature.search.analytics.SearchAnalyticsEvent
 import com.ssverma.feature.search.analytics.SearchAnalyticsScreenName
@@ -79,7 +79,7 @@ fun SearchSuggestionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
+                .windowTopBarInsetsPadding()
                 .navigationBarsPadding()
         ) {
             SearchBar(

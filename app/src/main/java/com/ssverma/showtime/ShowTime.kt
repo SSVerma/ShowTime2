@@ -1,49 +1,15 @@
 package com.ssverma.showtime
 
-import android.app.Activity
-import android.content.Intent
-import android.os.Build
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -56,74 +22,45 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
-import androidx.core.view.WindowCompat
-import com.ssverma.core.ui.util.findActivity
-import com.ssverma.core.ui.util.openWebUrl
-import androidx.navigation3.runtime.NavKey
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ssverma.common.ui.appinfo.AppInfoBottomSheet
-import com.ssverma.common.ui.appinfo.OpenSourceLicensesBottomSheet
-import com.ssverma.common.ui.paywall.ProPaywallBottomSheet
+import androidx.navigation3.runtime.NavKey
 import com.ssverma.common.ui.state.LocalAppInfoTrigger
 import com.ssverma.common.ui.state.LocalAppStateHolder
-import com.ssverma.common.ui.theme.ThemeSelectionBottomSheet
 import com.ssverma.common.ui.update.ForceUpdateScreen
 import com.ssverma.common.ui.update.SoftUpdateBottomSheet
-import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
-import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.rememberNavigationState
-import com.ssverma.core.ui.component.ShowTimeSnackbarHost
-import com.ssverma.core.ui.layout.LocalFloatingBarsVisible
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.adaptive.NavigationChromeType
 import com.ssverma.core.ui.theme.ShowTimeTheme
-import com.ssverma.feature.account.navigation.BackupSyncNavKey
-import com.ssverma.feature.account.navigation.ProfileNavKey
-import com.ssverma.feature.library.navigation.BacklogChallengeNavKey
+import com.ssverma.core.ui.util.findActivity
 import com.ssverma.feature.library.navigation.CinemaDiaryNavKey
-import com.ssverma.feature.library.navigation.CinemaReceiptNavKey
-import com.ssverma.feature.library.navigation.CinephileWrappedNavKey
-import com.ssverma.feature.library.navigation.TasteProfileNavKey
-import com.ssverma.feature.movie.navigation.CinemaGameNavKey
-import com.ssverma.feature.person.navigation.PersonHomeNavKey
 import com.ssverma.feature.search.navigation.SearchNavKey
 import com.ssverma.shared.domain.model.AppTheme
 import com.ssverma.shared.domain.model.AppUpdateStatus
-import com.ssverma.shared.domain.utils.AppConfigConstants
-import com.ssverma.showtime.ui.update.AppUpdateViewModel
-import com.ssverma.feature.match.navigation.MatchRoomNavKey
-import com.ssverma.shared.ui.component.LocalizationSettingsBottomSheet
-import com.ssverma.showtime.component.ShowTimeBottomBar
-import com.ssverma.showtime.component.ShowTimeDrawerContent
+import com.ssverma.showtime.component.ShowTimeAdaptiveShell
+import com.ssverma.showtime.component.ShowTimeGlobalSheetsHost
 import com.ssverma.showtime.component.ShowTimeHomeBackHandler
-import com.ssverma.showtime.component.ShowTimeTopSearchBar
+import com.ssverma.showtime.component.ShowTimeShortcutActions
 import com.ssverma.showtime.component.isHomePage
+import com.ssverma.showtime.component.rememberShowTimeGlobalSheetState
+import com.ssverma.showtime.component.rememberShowTimeMenuActions
+import com.ssverma.showtime.component.showTimeGlobalShortcuts
 import com.ssverma.showtime.feature.filter.navigation.UniversalDiscoveryNavKey
 import com.ssverma.showtime.navigation.DashboardHomeNavKey
-import com.ssverma.showtime.navigation.OnboardingNavKey
-import com.ssverma.showtime.navigation.ShowTimeNavDisplay
-import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItem
+import com.ssverma.showtime.navigation.ShowTimeRailNavItems
 import com.ssverma.showtime.navigation.ShowTimeTopLevelNavItems
-import com.ssverma.showtime.navigation.WhatsNewNavKey
 import com.ssverma.showtime.ui.onboarding.OnboardingScreen
 import com.ssverma.showtime.ui.splash.ShowTime2Dot0SplashScreen
+import com.ssverma.showtime.ui.update.AppUpdateViewModel
+import com.ssverma.showtime.util.applyShowTimeSystemBars
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ShowTime(
     initialDeepLinkKey: NavKey? = null
@@ -140,7 +77,6 @@ fun ShowTime(
         appTheme = appTheme,
         dynamicColor = isDynamicColorEnabled
     ) {
-        // Hard-block user if a minimum supported version threshold is not met
         if (updateUiState.status is AppUpdateStatus.ForceUpdate) {
             val forceUpdate = updateUiState.status as AppUpdateStatus.ForceUpdate
             ForceUpdateScreen(
@@ -158,28 +94,18 @@ fun ShowTime(
         }
 
         val context = LocalContext.current
+        val density = LocalDensity.current
         val view = LocalView.current
+        val hasCaptionBarInset = WindowInsets.captionBar.getTop(density) > 0
         if (!view.isInEditMode) {
-            DisposableEffect(darkTheme) {
+            DisposableEffect(darkTheme, hasCaptionBarInset) {
                 val activity = context.findActivity() as? ComponentActivity
-                val barStyle = SystemBarStyle.auto(
-                    lightScrim = android.graphics.Color.TRANSPARENT,
-                    darkScrim = android.graphics.Color.TRANSPARENT,
-                    detectDarkMode = { _ -> darkTheme }
-                )
-                activity?.enableEdgeToEdge(
-                    statusBarStyle = barStyle,
-                    navigationBarStyle = barStyle
-                )
-                val window = activity?.window ?: context.findActivity()?.window
-                if (window != null) {
-                    val insetsController =
-                        WindowCompat.getInsetsController(window, window.decorView)
-                    insetsController.isAppearanceLightStatusBars = !darkTheme
-                    insetsController.isAppearanceLightNavigationBars = !darkTheme
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        window.isNavigationBarContrastEnforced = false
-                    }
+                if (activity != null) {
+                    applyShowTimeSystemBars(
+                        activity = activity,
+                        isDarkTheme = darkTheme,
+                        hasCaptionBarInset = hasCaptionBarInset
+                    )
                 }
                 onDispose {}
             }
@@ -193,7 +119,6 @@ fun ShowTime(
         val isFreshInstall =
             hasCompletedOnboarding == false && !isAppInfoDismissed && initialDeepLinkKey == null
 
-        // Soft update prompt (dismissible once per release version)
         if (updateUiState.showSoftUpdatePrompt && updateUiState.status is AppUpdateStatus.SoftUpdate) {
             val softUpdate = updateUiState.status as AppUpdateStatus.SoftUpdate
             SoftUpdateBottomSheet(
@@ -216,18 +141,14 @@ fun ShowTime(
 
             replaySplash -> {
                 ShowTime2Dot0SplashScreen(
-                    onSplashComplete = {
-                        replaySplash = false
-                    }
+                    onSplashComplete = { replaySplash = false }
                 )
             }
 
             isFreshInstall -> {
                 if (!hasStartedOnboardingJourney) {
                     ShowTime2Dot0SplashScreen(
-                        onSplashComplete = {
-                            hasStartedOnboardingJourney = true
-                        }
+                        onSplashComplete = { hasStartedOnboardingJourney = true }
                     )
                 } else {
                     OnboardingScreen(
@@ -254,7 +175,6 @@ fun ShowTime(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 private fun MainDashboardContent(
     appTheme: AppTheme,
@@ -269,8 +189,9 @@ private fun MainDashboardContent(
     val preferredOriginalLanguage by appStateHolder.preferredOriginalLanguage.collectAsState()
     val context = LocalContext.current
 
+    // Register all 5 rail routes so resizing from Large/Medium down to Compact preserves Person tab stack
     val topLevelRoutes = remember {
-        ShowTimeTopLevelNavItems.map { it.navKey }.toSet()
+        ShowTimeRailNavItems.map { it.navKey }.toSet()
     }
 
     val navigationState = rememberNavigationState(
@@ -282,6 +203,7 @@ private fun MainDashboardContent(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val homeSnackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val globalSheetState = rememberShowTimeGlobalSheetState()
 
     LaunchedEffect(initialDeepLinkKey) {
         initialDeepLinkKey?.let { navigator.navigate(it) }
@@ -289,109 +211,56 @@ private fun MainDashboardContent(
 
     val hasCompletedOnboarding by appStateHolder.hasCompletedOnboarding.collectAsState()
     val isAppInfoDismissed by appStateHolder.isAppInfoDismissed.collectAsState()
-    var showManualAppInfoSheet by remember { mutableStateOf(false) }
-    var showLicensesSheet by remember { mutableStateOf(false) }
-    var showThemeSelectionSheet by remember { mutableStateOf(false) }
-    var showLocalizationSettingsSheet by remember { mutableStateOf(false) }
-    var showProPaywallSheet by remember { mutableStateOf(false) }
 
-    if (showManualAppInfoSheet) {
-        AppInfoBottomSheet(
-            showDontShowAgain = false,
-            onDismissRequest = {
-                showManualAppInfoSheet = false
-            },
-            onOpenLicenses = {
-                showManualAppInfoSheet = false
-                showLicensesSheet = true
-            }
-        )
-    }
-
-    if (showLicensesSheet) {
-        OpenSourceLicensesBottomSheet(
-            onDismissRequest = {
-                showLicensesSheet = false
-            }
-        )
-    }
-
-    if (showThemeSelectionSheet) {
-        ThemeSelectionBottomSheet(
-            currentTheme = appTheme,
-            isDynamicColorEnabled = isDynamicColorEnabled,
-            isProActive = isProActive,
-            onThemeSelected = { newTheme ->
-                appStateHolder.updateAppTheme(newTheme)
-            },
-            onDynamicColorToggled = { enabled ->
-                appStateHolder.updateDynamicColor(enabled)
-            },
-            onUpgradeToPro = {
-                showThemeSelectionSheet = false
-                showProPaywallSheet = true
-            },
-            onDismissRequest = {
-                showThemeSelectionSheet = false
-            }
-        )
-    }
-
-    if (showLocalizationSettingsSheet) {
-        LocalizationSettingsBottomSheet(
-            onDismissRequest = {
-                showLocalizationSettingsSheet = false
-            }
-        )
-    }
-
-    if (showProPaywallSheet) {
-        val availableProducts by appStateHolder.availableProducts.collectAsState()
-        var isRestoring by remember { mutableStateOf(false) }
-
-        ProPaywallBottomSheet(
-            products = availableProducts,
-            isProActive = isProActive,
-            isRestoring = isRestoring,
-            onPurchaseClick = { act, product ->
-                appStateHolder.purchaseProduct(activity = act, product = product)
-            },
-            onRestoreClick = {
-                coroutineScope.launch {
-                    isRestoring = true
-                    appStateHolder.restorePurchases()
-                    isRestoring = false
-                }
-            },
-            onDismissRequest = {
-                showProPaywallSheet = false
-            }
-        )
-    }
-
-    LaunchedEffect(
-        hasCompletedOnboarding,
-        isAppInfoDismissed
-    ) {
+    LaunchedEffect(hasCompletedOnboarding, isAppInfoDismissed) {
         val completed = hasCompletedOnboarding ?: return@LaunchedEffect
         if (!completed && isAppInfoDismissed) {
-            // Upgraded 1.x user who previously dismissed AppInfo: mark onboarding completed
             appStateHolder.markOnboardingCompleted()
         }
     }
 
+    ShowTimeGlobalSheetsHost(
+        sheetState = globalSheetState,
+        appStateHolder = appStateHolder,
+        appTheme = appTheme,
+        isDynamicColorEnabled = isDynamicColorEnabled,
+        isProActive = isProActive
+    )
+
     val currentDestination =
         navigationState.backStacks[navigationState.topLevelRoute]?.lastOrNull()
 
+    val chromeType = LocalAdaptiveLayoutInfo.current.navigationChromeType
+    val topLevelNavItemsForViewport = if (chromeType == NavigationChromeType.FloatingBottomBar) {
+        ShowTimeTopLevelNavItems
+    } else {
+        ShowTimeRailNavItems
+    }
+
+    val closeDrawerBeforeNavigate = remember(drawerState, coroutineScope) {
+        {
+            if (drawerState.isOpen) {
+                coroutineScope.launch { drawerState.close() }
+            }
+            Unit
+        }
+    }
+
+    val menuActions = rememberShowTimeMenuActions(
+        navigator = navigator,
+        context = context,
+        sheetState = globalSheetState,
+        onReplaySplash = onReplaySplash,
+        onBeforeNavigate = closeDrawerBeforeNavigate
+    )
+
     CompositionLocalProvider(
-        LocalAppInfoTrigger provides { showManualAppInfoSheet = true }
+        LocalAppInfoTrigger provides { globalSheetState.showManualAppInfoSheet = true }
     ) {
         val isHomePage = isHomePage(
             currentNavKey = currentDestination,
-            bottomNavDestinations = ShowTimeTopLevelNavItems
+            bottomNavDestinations = topLevelNavItemsForViewport
         )
-        val isAnySheetOpen = showManualAppInfoSheet || showLicensesSheet ||
-                showThemeSelectionSheet || showLocalizationSettingsSheet || showProPaywallSheet
 
         ShowTimeHomeBackHandler(
             drawerState = drawerState,
@@ -399,283 +268,55 @@ private fun MainDashboardContent(
             navigator = navigator,
             snackbarHostState = homeSnackbarHostState,
             isHomePage = isHomePage,
-            isAnySheetOpen = isAnySheetOpen
+            isAnySheetOpen = globalSheetState.isAnyOverlayOpen
         )
 
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            gesturesEnabled = isHomePage,
-            drawerContent = {
-                ShowTimeDrawerContent(
-                    onOpenDiscovery = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(UniversalDiscoveryNavKey())
-                    },
-                    onOpenMovieMatch = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(MatchRoomNavKey())
-                    },
-                    onOpenCinemaDiary = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(CinemaDiaryNavKey)
-                    },
-                    onOpenTasteProfile = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(TasteProfileNavKey)
-                    },
-                    onOpenWrapped = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(CinephileWrappedNavKey)
-                    },
-                    onOpenBacklogChallenges = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(BacklogChallengeNavKey)
-                    },
-                    onOpenPeople = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(PersonHomeNavKey)
-                    },
-                    onOpenCinemaGame = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(CinemaGameNavKey)
-                    },
-                    onOpenReceipt = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(CinemaReceiptNavKey)
-                    },
-                    onOpenBackup = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(BackupSyncNavKey)
-                    },
-                    onOpenPro = {
-                        coroutineScope.launch { drawerState.close() }
-                        showProPaywallSheet = true
-                    },
-                    onOpenTheme = {
-                        coroutineScope.launch { drawerState.close() }
-                        showThemeSelectionSheet = true
-                    },
-                    onOpenLocalization = {
-                        coroutineScope.launch { drawerState.close() }
-                        showLocalizationSettingsSheet = true
-                    },
-                    onOpenPrivacy = {
-                        coroutineScope.launch { drawerState.close() }
-                        context.openWebUrl(
-                            url = AppConfigConstants.PRIVACY_POLICY_URL,
-                            onError = { showManualAppInfoSheet = true }
-                        )
-                    },
-                    onOpenTerms = {
-                        coroutineScope.launch { drawerState.close() }
-                        context.openWebUrl(
-                            url = AppConfigConstants.TERMS_OF_SERVICE_URL,
-                            onError = { showManualAppInfoSheet = true }
-                        )
-                    },
-                    onOpenLicenses = {
-                        coroutineScope.launch { drawerState.close() }
-                        showLicensesSheet = true
-                    },
-                    onOpenAbout = {
-                        coroutineScope.launch { drawerState.close() }
-                        showManualAppInfoSheet = true
-                    },
-                    onOpenWhatsNew = {
-                        coroutineScope.launch { drawerState.close() }
-                        navigator.navigate(WhatsNewNavKey)
-                    },
-                    onReplaySplash = {
-                        coroutineScope.launch { drawerState.close() }
-                        onReplaySplash()
+        val shortcutActions =
+            remember(navigator, globalSheetState, drawerState, isHomePage, coroutineScope) {
+                ShowTimeShortcutActions(
+                    onOpenSearch = { navigator.navigate(SearchNavKey) },
+                    onSelectTopLevelTab = { navItem -> navigator.navigate(navItem.navKey) },
+                    onOpenCinemaDiary = { navigator.navigate(CinemaDiaryNavKey) },
+                    onOpenDiscovery = { navigator.navigate(UniversalDiscoveryNavKey()) },
+                    onOpenShortcutsHelp = { globalSheetState.showKeyboardShortcutsDialog = true },
+                    onEscape = {
+                        when {
+                            globalSheetState.dismissAll() -> true
+                            drawerState.isOpen -> {
+                                coroutineScope.launch { drawerState.close() }
+                                true
+                            }
+
+                            !isHomePage -> {
+                                navigator.goBack()
+                                true
+                            }
+
+                            else -> false
+                        }
                     }
                 )
             }
-        ) {
-            var isBottomBarVisible by rememberSaveable { mutableStateOf(true) }
 
-            LaunchedEffect(currentDestination) {
-                isBottomBarVisible = true
-            }
-
-            Scaffold(
-                contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                snackbarHost = {
-                    ShowTimeSnackbarHost(
-                        hostState = homeSnackbarHostState,
-                        floatingBottomBar = isHomePage && isBottomBarVisible
-                    )
-                }
-            ) { innerPaddingModifier ->
-
-                val bottomBarNestedScrollConnection = remember {
-                    object : NestedScrollConnection {
-                        private var accumulatedScroll = 0f
-
-                        override fun onPreScroll(
-                            available: Offset,
-                            source: NestedScrollSource
-                        ): Offset {
-                            accumulatedScroll += available.y
-                            if (accumulatedScroll < -40f) {
-                                if (isBottomBarVisible) {
-                                    isBottomBarVisible = false
-                                }
-                                accumulatedScroll = 0f
-                            } else if (accumulatedScroll > 40f) {
-                                if (!isBottomBarVisible) {
-                                    isBottomBarVisible = true
-                                }
-                                accumulatedScroll = 0f
-                            }
-                            return Offset.Zero
-                        }
-                    }
-                }
-
-                SharedTransitionLayout(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .nestedScroll(bottomBarNestedScrollConnection)
-                ) {
-                    CompositionLocalProvider(
-                        LocalFloatingBarsVisible provides isBottomBarVisible,
-                        LocalSharedTransitionScope provides this
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            ShowTimeNavDisplay(
-                                navigationState = navigationState,
-                                navigator = navigator,
-                                openLibraryPage = { navKey ->
-                                    navigator.navigate(navKey)
-                                },
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(
-                                        start = innerPaddingModifier.calculateStartPadding(
-                                            LayoutDirection.Ltr
-                                        ),
-                                        end = innerPaddingModifier.calculateEndPadding(
-                                            LayoutDirection.Ltr
-                                        )
-                                    )
-                            )
-
-                            AnimatedVisibility(
-                                visible = isHomePage && isBottomBarVisible,
-                                enter = if (isHomePage) {
-                                    slideInVertically(
-                                        initialOffsetY = { -it },
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    ) + fadeIn(animationSpec = tween(220))
-                                } else {
-                                    fadeIn(
-                                        animationSpec = tween(
-                                            280,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    )
-                                },
-                                exit = if (isHomePage) {
-                                    slideOutVertically(
-                                        targetOffsetY = { -it },
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    ) + fadeOut(animationSpec = tween(220))
-                                } else {
-                                    fadeOut(
-                                        animationSpec = tween(
-                                            280,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    )
-                                },
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .statusBarsPadding()
-                            ) {
-                                CompositionLocalProvider(
-                                    LocalNavAnimatedVisibilityScope provides this
-                                ) {
-                                    ShowTimeTopSearchBar(
-                                        googleUser = googleUser,
-                                        isProActive = isProActive,
-                                        watchProviderRegion = watchProviderRegion,
-                                        preferredOriginalLanguage = preferredOriginalLanguage,
-                                        onLocalizationClick = {
-                                            showLocalizationSettingsSheet = true
-                                        },
-                                        onResetLanguageFilter = {
-                                            appStateHolder.resetPreferredOriginalLanguage()
-                                        },
-                                        onMenuClick = {
-                                            coroutineScope.launch { drawerState.open() }
-                                        },
-                                        onSearchClick = {
-                                            navigator.navigate(SearchNavKey)
-                                        },
-                                        onProfileClick = {
-                                            navigator.navigate(ProfileNavKey)
-                                        }
-                                    )
-                                }
-                            }
-
-                            AnimatedVisibility(
-                                visible = isHomePage && isBottomBarVisible,
-                                enter = if (isHomePage) {
-                                    slideInVertically(
-                                        initialOffsetY = { it },
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    ) + fadeIn(animationSpec = tween(220))
-                                } else {
-                                    fadeIn(
-                                        animationSpec = tween(
-                                            280,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    )
-                                },
-                                exit = if (isHomePage) {
-                                    slideOutVertically(
-                                        targetOffsetY = { it },
-                                        animationSpec = tween(
-                                            durationMillis = 300,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    ) + fadeOut(animationSpec = tween(220))
-                                } else {
-                                    fadeOut(
-                                        animationSpec = tween(
-                                            280,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    )
-                                },
-                                modifier = Modifier.align(Alignment.BottomCenter)
-                            ) {
-                                ShowTimeBottomBar(
-                                    currentNavKey = currentDestination,
-                                    topLevelNavKey = navigationState.topLevelRoute,
-                                    onTopLevelNavItemSelected = { navItem ->
-                                        navigator.navigate(navItem.navKey)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        ShowTimeAdaptiveShell(
+            drawerState = drawerState,
+            navigationState = navigationState,
+            navigator = navigator,
+            currentDestination = currentDestination,
+            isHomePage = isHomePage,
+            googleUser = googleUser,
+            isProActive = isProActive,
+            watchProviderRegion = watchProviderRegion,
+            preferredOriginalLanguage = preferredOriginalLanguage,
+            snackbarHostState = homeSnackbarHostState,
+            menuActions = menuActions,
+            onOpenDrawer = { coroutineScope.launch { drawerState.open() } },
+            onOpenLocalization = { globalSheetState.showLocalizationSettingsSheet = true },
+            onResetLanguageFilter = { appStateHolder.resetPreferredOriginalLanguage() },
+            modifier = Modifier.showTimeGlobalShortcuts(
+                actions = shortcutActions,
+                currentDestinationKey = currentDestination
+            )
+        )
     }
 }

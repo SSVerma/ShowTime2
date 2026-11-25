@@ -138,7 +138,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ssverma.common.ui.community.BlockAuthorConfirmationDialog
 import com.ssverma.common.ui.community.CommunityGuidelinesAgreementDialog
-import com.ssverma.common.ui.community.CommunityListCard
 import com.ssverma.common.ui.community.CommunityListDetailSheet
 import com.ssverma.common.ui.community.PublishListBottomSheet
 import com.ssverma.common.ui.community.ReportCommunityListDialog
@@ -166,6 +165,7 @@ import com.ssverma.feature.library.domain.model.ReceiptItem
 import com.ssverma.feature.library.domain.model.ReceiptSource
 import com.ssverma.feature.library.domain.model.ReceiptStyle
 import com.ssverma.feature.library.navigation.LibraryTabDestination
+import com.ssverma.feature.library.ui.home.component.CommunityTabContent
 import com.ssverma.feature.library.ui.home.component.LibraryBackupBanner
 import com.ssverma.feature.library.ui.home.component.LibraryTab
 import com.ssverma.feature.library.ui.home.component.LibraryTabType
@@ -175,7 +175,6 @@ import com.ssverma.feature.library.ui.share.ListShareExportBottomSheet
 import com.ssverma.feature.library.ui.share.SecretShareInfoBottomSheet
 import com.ssverma.shared.domain.model.MediaType
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
-import com.ssverma.shared.domain.model.community.CommunityListCategories
 import com.ssverma.shared.domain.model.library.CustomList
 import com.ssverma.shared.domain.model.library.CustomListItem
 import com.ssverma.shared.domain.model.library.JoinedSecretList
@@ -2745,107 +2744,6 @@ private fun JoinedSecretListCard(
 }
 
 @Composable
-private fun CommunityTabContent(
-    communityLists: List<CommunityCuratedList>,
-    selectedCategory: String,
-    onCategorySelect: (String) -> Unit,
-    onCommunityListClick: (CommunityCuratedList) -> Unit,
-    onToggleCommunityListUpvote: (String) -> Unit,
-    onCloneCommunityList: (CommunityCuratedList) -> Unit,
-    onCreateListClick: () -> Unit,
-    onMakePrivate: (CommunityCuratedList) -> Unit,
-    onDeleteFromCommunity: (CommunityCuratedList) -> Unit,
-    onReportCommunityList: (CommunityCuratedList) -> Unit,
-    onBlockAuthor: (authorId: String, authorName: String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val contentPadding = rememberFloatingBottomBarPadding(
-        start = MaterialTheme.spacing.medium,
-        top = MaterialTheme.spacing.medium,
-        end = MaterialTheme.spacing.medium,
-        extraSpacing = MaterialTheme.spacing.large
-    )
-
-    Column(modifier = modifier.fillMaxSize()) {
-        // Category Filter Chips
-        androidx.compose.foundation.lazy.LazyRow(
-            contentPadding = PaddingValues(
-                horizontal = MaterialTheme.spacing.medium,
-                vertical = 4.dp
-            ),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            items(CommunityListCategories.DEFAULT_CATEGORIES) { category ->
-                val isSelected = (selectedCategory == category)
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onCategorySelect(category) },
-                    label = {
-                        Text(
-                            text = category,
-                            maxLines = 1,
-                            softWrap = false
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                )
-            }
-        }
-
-        if (communityLists.isEmpty()) {
-            ExpressiveEmptyState(
-                title = stringResource(SharedR.string.empty_community_lists_title),
-                subtitle = if (selectedCategory == CommunityListCategories.ALL) {
-                    stringResource(SharedR.string.empty_community_lists_subtitle)
-                } else {
-                    stringResource(SharedR.string.no_community_lists_found)
-                },
-                icon = Icons.Rounded.Public,
-                actionButtonText = stringResource(SharedR.string.publish_first_collection),
-                onActionClick = onCreateListClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            )
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
-                contentPadding = contentPadding,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(communityLists, key = { it.listId }) { item ->
-                    CommunityListCard(
-                        communityList = item,
-                        onClick = { onCommunityListClick(item) },
-                        onToggleUpvote = { onToggleCommunityListUpvote(item.listId) },
-                        onCloneList = { onCloneCommunityList(item) },
-                        onMakePrivate = if (item.isMine) {
-                            { onMakePrivate(item) }
-                        } else null,
-                        onDeleteFromCommunity = if (item.isMine) {
-                            { onDeleteFromCommunity(item) }
-                        } else null,
-                        onReport = if (!item.isMine) {
-                            { onReportCommunityList(item) }
-                        } else null,
-                        onBlockAuthor = if (!item.isMine) {
-                            { onBlockAuthor(item.authorId, item.authorName) }
-                        } else null,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun CustomListCard(
     customList: CustomList,
     onClick: () -> Unit,
@@ -3897,7 +3795,7 @@ private fun EditCustomListDialog(
 }
 
 @Composable
-private fun ExpressiveEmptyState(
+internal fun ExpressiveEmptyState(
     title: String,
     subtitle: String,
     icon: ImageVector,

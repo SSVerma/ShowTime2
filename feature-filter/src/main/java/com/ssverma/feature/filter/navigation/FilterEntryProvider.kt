@@ -4,7 +4,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
+import com.ssverma.core.navigation.nav3.adaptiveListPaneMetadata
 import com.ssverma.core.navigation.nav3.showTimeEntry
+import com.ssverma.shared.ui.component.illustration.DetailPaneEmptyState
 import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.filter.ui.discovery.UniversalDiscoveryScreen
 import com.ssverma.feature.filter.ui.hub.WatchProviderHubScreen
@@ -24,7 +26,13 @@ import com.ssverma.showtime.feature.filter.navigation.WatchProviderHubNavKey
 fun EntryProviderScope<NavKey>.filterEntries(
     navigator: Navigator
 ) {
-    showTimeEntry<WatchProviderHubNavKey> { key ->
+    showTimeEntry<WatchProviderHubNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { key ->
         WatchProviderHubScreen(
             viewModel = hiltViewModel<WatchProviderHubViewModel, WatchProviderHubViewModel.Factory> { factory ->
                 factory.create(
@@ -36,13 +44,13 @@ fun EntryProviderScope<NavKey>.filterEntries(
             },
             source = key.source,
             onMovieClick = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
+                navigator.navigateFromListToDetail(MovieDetailNavKey(movieId))
             },
             onTvShowClick = { tvShowId ->
-                navigator.navigate(TvShowDetailNavKey(tvShowId))
+                navigator.navigateFromListToDetail(TvShowDetailNavKey(tvShowId))
             },
             onBackClick = {
-                navigator.goBack()
+                navigator.navigateUpFromListPane()
             },
             onGenreClick = { genre, isMovie ->
                 if (isMovie) {
@@ -91,12 +99,28 @@ fun EntryProviderScope<NavKey>.filterEntries(
         )
     }
 
-    showTimeEntry<UniversalDiscoveryNavKey> { key ->
+    showTimeEntry<UniversalDiscoveryNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { key ->
         UniversalDiscoveryScreen(
             navKey = key,
-            onBackClick = { navigator.goBack() },
-            onOpenMovieDetails = { movieId -> navigator.navigate(MovieDetailNavKey(movieId)) },
-            onOpenTvShowDetails = { tvShowId -> navigator.navigate(TvShowDetailNavKey(tvShowId)) },
+            onBackClick = { navigator.navigateUpFromListPane() },
+            onOpenMovieDetails = { movieId ->
+                navigator.navigateFromListToDetail(
+                    MovieDetailNavKey(
+                        movieId
+                    )
+                )
+            },
+            onOpenTvShowDetails = { tvShowId ->
+                navigator.navigateFromListToDetail(
+                    TvShowDetailNavKey(tvShowId)
+                )
+            },
             openDiscussions = { args ->
                 if (args.mediaType == MediaType.Movie) {
                     navigator.navigate(

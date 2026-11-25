@@ -5,7 +5,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
+import com.ssverma.core.navigation.nav3.adaptiveDetailPaneMetadata
+import com.ssverma.core.navigation.nav3.adaptiveExtraPaneMetadata
+import com.ssverma.core.navigation.nav3.adaptiveListPaneMetadata
 import com.ssverma.core.navigation.nav3.showTimeEntry
+import com.ssverma.shared.ui.component.illustration.DetailPaneEmptyState
 import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.payment.navigation.ProPaywallNavKey
@@ -31,14 +35,20 @@ fun EntryProviderScope<NavKey>.tvEntries(
     navigator: Navigator,
     openLibraryPage: (NavKey) -> Unit
 ) {
-    showTimeEntry<TvShowListingRoute> { key ->
+    showTimeEntry<TvShowListingRoute>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { key ->
         TvShowListScreen(
             viewModel = hiltViewModel<TvShowListViewModel, TvShowListViewModel.Factory> { factory ->
                 factory.create(key.args)
             },
-            onBackPressed = { navigator.goBack() },
+            onBackPressed = { navigator.navigateUpFromListPane() },
             openTvShowDetails = { tvShowId ->
-                navigator.navigate(TvShowDetailNavKey(tvShowId))
+                navigator.navigateFromListToDetail(TvShowDetailNavKey(tvShowId))
             },
             openWatchHub = { provider ->
                 navigator.navigate(
@@ -95,7 +105,9 @@ fun EntryProviderScope<NavKey>.tvEntries(
         )
     }
 
-    showTimeEntry<TvShowDetailNavKey> { key ->
+    showTimeEntry<TvShowDetailNavKey>(
+        metadata = { adaptiveDetailPaneMetadata() }
+    ) { key ->
         TvShowDetailsScreen(
             viewModel = hiltViewModel<TvShowDetailsViewModel, TvShowDetailsViewModel.Factory> { factory ->
                 factory.create(key.tvShowId)
@@ -159,11 +171,14 @@ fun EntryProviderScope<NavKey>.tvEntries(
                 )
             },
             openLibraryPage = openLibraryPage,
-            openProPaywall = { navigator.navigate(ProPaywallNavKey) }
+            openProPaywall = { navigator.navigate(ProPaywallNavKey) },
+            isSideBySideRootDetail = navigator.isSideBySideDetailRoot(key)
         )
     }
 
-    showTimeEntry<TvShowReviewsNavKey> { key ->
+    showTimeEntry<TvShowReviewsNavKey>(
+        metadata = { adaptiveExtraPaneMetadata() }
+    ) { key ->
         TvShowReviewsScreen(
             viewModel = hiltViewModel<TvShowReviewsViewModel, TvShowReviewsViewModel.Factory> { factory ->
                 factory.create(key.tvShowId)
@@ -194,7 +209,9 @@ fun EntryProviderScope<NavKey>.tvEntries(
         )
     }
 
-    showTimeEntry<TvSeasonDetailNavKey> { key ->
+    showTimeEntry<TvSeasonDetailNavKey>(
+        metadata = { adaptiveExtraPaneMetadata() }
+    ) { key ->
         TvSeasonDetailsScreen(
             viewModel = hiltViewModel<TvSeasonDetailsViewModel, TvSeasonDetailsViewModel.Factory> { factory ->
                 factory.create(
@@ -232,7 +249,9 @@ fun EntryProviderScope<NavKey>.tvEntries(
         )
     }
 
-    showTimeEntry<TvEpisodeDetailNavKey> { key ->
+    showTimeEntry<TvEpisodeDetailNavKey>(
+        metadata = { adaptiveExtraPaneMetadata() }
+    ) { key ->
         TvEpisodeDetailsScreen(
             viewModel = hiltViewModel<TvEpisodeDetailsViewModel, TvEpisodeDetailsViewModel.Factory> { factory ->
                 factory.create(

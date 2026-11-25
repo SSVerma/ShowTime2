@@ -41,6 +41,8 @@ import androidx.navigationevent.OnBackInvokedDefaultInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.layout.component.ShowTimeModalCardDialog
 import com.ssverma.core.ui.modifier.preventSheetFluctuation
 import kotlinx.coroutines.launch
 
@@ -80,8 +82,25 @@ fun ShowTimeBottomSheet(
         shouldDismissOnBackPress = false
     ),
     isBackEnabled: Boolean = true,
+    allowAdaptiveDialog: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val useFloatingModalCard = LocalAdaptiveLayoutInfo.current.useFloatingModalSheets &&
+            allowAdaptiveDialog
+
+    if (useFloatingModalCard) {
+        ShowTimeModalCardDialog(
+            onDismissRequest = onDismissRequest,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            tonalElevation = tonalElevation,
+            isBackEnabled = isBackEnabled,
+            modifier = modifier,
+            content = content
+        )
+        return
+    }
+
     val coroutineScope = rememberCoroutineScope()
     var isClosing by remember { mutableStateOf(false) }
 

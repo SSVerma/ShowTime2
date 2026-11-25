@@ -80,6 +80,7 @@ fun MovieDetailsScreen(
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     openLibraryPage: (NavKey) -> Unit = {},
     openProPaywall: () -> Unit = {},
+    isSideBySideRootDetail: Boolean = false,
     viewModel: MovieDetailsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -117,7 +118,8 @@ fun MovieDetailsScreen(
                 openMovieList = openMovieList,
                 openWatchHub = openWatchHub,
                 openLibraryPage = openLibraryPage,
-                openProPaywall = openProPaywall
+                openProPaywall = openProPaywall,
+                isSideBySideRootDetail = isSideBySideRootDetail
             )
         }
     }
@@ -140,6 +142,7 @@ private fun MovieContent(
     openWatchHub: (providerInfo: ProviderInfo) -> Unit,
     openLibraryPage: (NavKey) -> Unit = {},
     openProPaywall: () -> Unit = {},
+    isSideBySideRootDetail: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val movie = data.movie
@@ -252,7 +255,8 @@ private fun MovieContent(
                     )
                     context.dispatchShareTextIntent(text = shareableText)
                 },
-                onShowFeedback = handleShowFeedback
+                onShowFeedback = handleShowFeedback,
+                isSideBySideRootDetail = isSideBySideRootDetail
             )
 
             movieWatchProvidersSection(

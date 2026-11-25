@@ -31,7 +31,8 @@ fun PersonDetailsScreen(
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openPersonAllImages: (personId: Int) -> Unit,
     viewModel: PersonDetailsViewModel,
-    source: String = "default"
+    source: String = "default",
+    isSideBySideRootDetail: Boolean = false
 ) {
     TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_DETAILS)
 
@@ -60,6 +61,7 @@ fun PersonDetailsScreen(
             openTvShowDetails = openTvShowDetails,
             openPersonAllImages = openPersonAllImages,
             source = source,
+            isSideBySideRootDetail = isSideBySideRootDetail,
             modifier = Modifier.fillMaxSize()
         )
 
@@ -69,6 +71,7 @@ fun PersonDetailsScreen(
                 sheetState = sheetState,
                 containerColor = MaterialTheme.colorScheme.background,
                 dragHandle = null,
+                allowAdaptiveDialog = false,
                 modifier = Modifier.fillMaxSize()
             ) {
                 ImagePagerContent(

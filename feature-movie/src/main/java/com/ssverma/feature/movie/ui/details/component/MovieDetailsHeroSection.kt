@@ -47,13 +47,15 @@ fun LazyListScope.movieDetailsHeroSection(
     onOpenDiscussions: () -> Unit,
     onShare: () -> Unit,
     onShowFeedback: (ShowFeedbackArgs) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSideBySideRootDetail: Boolean = false
 ) {
     item(key = "movie_details_backdrop_header", contentType = "backdrop_header") {
         BackdropHeader(
             backdropImageUrl = movie.backdropImageUrl,
             onCloseIconClick = onBackPressed,
             showTrailerFab = movie.primaryTrailer != null,
+            isCloseAction = isSideBySideRootDetail,
             onTrailerFabClick = { onPlayTrailer(movie) },
             secondaryActions = {
                 if (!movie.isUpcoming) {

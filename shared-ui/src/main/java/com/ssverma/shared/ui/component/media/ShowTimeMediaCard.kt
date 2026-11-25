@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.modifier.desktopCardHover
 import com.ssverma.shared.ui.TmdbPosterAspectRatio
 
 @Composable
@@ -66,7 +67,9 @@ fun ShowTimeMediaGridCard(
             1.dp,
             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         ),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .desktopCardHover()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(
@@ -229,6 +232,7 @@ fun ShowTimeMediaListCard(
         modifier = modifier
             .fillMaxWidth()
             .height(cardHeight)
+            .desktopCardHover(hoverScale = 1.01f)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             // Left Poster Thumbnail

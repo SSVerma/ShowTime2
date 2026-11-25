@@ -23,7 +23,8 @@ fun PersonScreen(
     openPersonDetailsScreen: (Person) -> Unit,
     openMovieDetailsScreen: (movieId: Int) -> Unit,
     openTvShowDetailsScreen: (tvShowId: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isTopLevel: Boolean = false
 ) {
     TrackScreenView(screenName = PersonAnalyticsScreenName.PERSON_LISTING)
 
@@ -32,6 +33,7 @@ fun PersonScreen(
     Screen(
         title = stringResource(id = R.string.popular_people),
         onBackPressed = onBackPressed,
+        showNavigationIcon = !isTopLevel,
         scrollBehavior = scrollBehavior,
         modifier = modifier
     ) { innerPadding ->

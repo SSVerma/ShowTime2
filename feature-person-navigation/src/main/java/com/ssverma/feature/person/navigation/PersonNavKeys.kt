@@ -2,6 +2,7 @@ package com.ssverma.feature.person.navigation
 
 import android.os.Parcelable
 import androidx.navigation3.runtime.NavKey
+import com.ssverma.core.navigation.nav3.AdaptiveDetailNavKey
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -16,7 +17,7 @@ data class PersonDetailNavKey(
     val personName: String? = null,
     val personImageUrl: String? = null,
     val source: String = "default"
-) : NavKey, Parcelable
+) : AdaptiveDetailNavKey, Parcelable
 
 @Serializable
 @Parcelize

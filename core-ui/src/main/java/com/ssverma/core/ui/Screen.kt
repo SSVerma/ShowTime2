@@ -36,6 +36,7 @@ fun Screen(
     title: String,
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
+    showNavigationIcon: Boolean = true,
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
     snackbarHostState: SnackbarHostState? = null,
     content: @Composable (PaddingValues) -> Unit
@@ -48,6 +49,7 @@ fun Screen(
             ShowTimeTopAppBar(
                 title = title,
                 onBackPressed = onBackPressed,
+                showNavigationIcon = showNavigationIcon,
                 scrollBehavior = scrollBehavior
             )
         },

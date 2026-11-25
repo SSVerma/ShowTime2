@@ -118,11 +118,18 @@ fun MediaOmniActionMenu(
     customLists: List<CustomListOption>? = null,
     onToggleCustomList: ((CustomListOption) -> Unit)? = null,
     actionContent: (@Composable (onClick: () -> Unit) -> Unit)? = null,
+    externalExpanded: Boolean = false,
+    onExternalDismiss: () -> Unit = {},
     viewModel: MediaOmniMenuViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val navigator = LocalNavigator.current
     var isMenuExpanded by remember { mutableStateOf(false) }
+    val effectiveMenuExpanded = isMenuExpanded || externalExpanded
+    val dismissMenu: () -> Unit = {
+        isMenuExpanded = false
+        onExternalDismiss()
+    }
     var showLogDialog by remember { mutableStateOf(false) }
     var showReminderSheet by remember { mutableStateOf(false) }
     var showQuotaGate by remember { mutableStateOf(false) }
@@ -201,7 +208,7 @@ fun MediaOmniActionMenu(
                     label = remindLabel,
                     icon = remindIcon,
                     onClick = {
-                        isMenuExpanded = false
+                        dismissMenu()
                         if (onToggleReminder != null) {
                             if (effectiveHasReminder) {
                                 onToggleReminder()
@@ -234,7 +241,7 @@ fun MediaOmniActionMenu(
                     tint = MaterialTheme.colorScheme.primary,
                     containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                     onClick = {
-                        isMenuExpanded = false
+                        dismissMenu()
                         if (onOpenDiscussions != null) {
                             onOpenDiscussions()
                         } else if (navigator != null) {
@@ -274,7 +281,7 @@ fun MediaOmniActionMenu(
                     tint = MaterialTheme.colorScheme.tertiary,
                     containerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f),
                     onClick = {
-                        isMenuExpanded = false
+                        dismissMenu()
                         if (onLogToDiary != null) {
                             onLogToDiary()
                         } else {
@@ -293,7 +300,7 @@ fun MediaOmniActionMenu(
                     tint = MaterialTheme.colorScheme.secondary,
                     containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
                     onClick = {
-                        isMenuExpanded = false
+                        dismissMenu()
                         if (onShare != null) {
                             onShare()
                         } else {
@@ -316,9 +323,15 @@ fun MediaOmniActionMenu(
     }
 
     MediaCardOverflowAction(
-        expanded = isMenuExpanded,
-        onToggleExpand = { isMenuExpanded = !isMenuExpanded },
-        onDismissRequest = { isMenuExpanded = false },
+        expanded = effectiveMenuExpanded,
+        onToggleExpand = {
+            if (effectiveMenuExpanded) {
+                dismissMenu()
+            } else {
+                isMenuExpanded = true
+            }
+        },
+        onDismissRequest = dismissMenu,
         showActiveDot = effectiveActionActive || effectiveHasReminder,
         isOverPoster = config.isOverPoster,
         particleType = particleType,
@@ -390,7 +403,7 @@ fun MediaOmniActionMenu(
                     iconTint = MaterialTheme.colorScheme.primary,
                     isActive = effectiveInWatchlist,
                     onClick = {
-                        isMenuExpanded = false
+                        dismissMenu()
                         if (onToggleWatchlist != null) {
                             if (!effectiveInWatchlist) {
                                 particleType = MediaActionParticleType.WATCHLIST
@@ -444,7 +457,7 @@ fun MediaOmniActionMenu(
                     iconTint = MaterialTheme.colorScheme.tertiary,
                     isActive = effectiveIsWatched,
                     onClick = {
-                        isMenuExpanded = false
+                        dismissMenu()
                         if (onToggleWatched != null) {
                             if (!effectiveIsWatched) {
                                 particleType = MediaActionParticleType.WATCHED
@@ -496,7 +509,7 @@ fun MediaOmniActionMenu(
                     iconTint = MaterialTheme.colorScheme.error,
                     isActive = effectiveIsFavorite,
                     onClick = {
-                        isMenuExpanded = false
+                        dismissMenu()
                         if (onToggleFavorite != null) {
                             if (!effectiveIsFavorite) {
                                 particleType = MediaActionParticleType.FAVORITE
@@ -560,7 +573,7 @@ fun MediaOmniActionMenu(
                 customListsOverride = customLists,
                 onToggleCustomListOverride = onToggleCustomList,
                 onCustomListClick = onCustomListClick,
-                onDismissMenu = { isMenuExpanded = false },
+                onDismissMenu = dismissMenu,
                 onTriggerParticle = { type ->
                     particleType = type
                     particleTriggerKey = System.currentTimeMillis()

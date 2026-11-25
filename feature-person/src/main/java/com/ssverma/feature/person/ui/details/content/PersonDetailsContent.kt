@@ -75,7 +75,8 @@ fun PersonDetailsContent(
     openTvShowDetails: (tvShowId: Int) -> Unit,
     openPersonAllImages: (personId: Int) -> Unit,
     modifier: Modifier = Modifier,
-    source: String = "default"
+    source: String = "default",
+    isSideBySideRootDetail: Boolean = false
 ) {
     val context = LocalContext.current
     val analytics = LocalAnalytics.current
@@ -139,7 +140,8 @@ fun PersonDetailsContent(
                 profileImageUrl = displayProfileUrl,
                 onBackPress = onBackPress,
                 onShareClick = onSharePerson,
-                source = source
+                source = source,
+                isSideBySideRootDetail = isSideBySideRootDetail
             )
         }
 

@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +33,16 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.ssverma.core.image.NetworkImage
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.adaptive.ShowTimeWidthClass
 import com.ssverma.core.ui.icon.AppIcons
 import com.ssverma.shared.ui.R
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
+import com.ssverma.core.ui.R as CoreUiR
+
+private object BackdropHeaderDefaults {
+    val DesktopHeight = 320.dp
+}
 
 @Composable
 fun BackdropHeader(
@@ -41,15 +51,23 @@ fun BackdropHeader(
     onCloseIconClick: () -> Unit,
     onTrailerFabClick: () -> Unit,
     showTrailerFab: Boolean = true,
+    isCloseAction: Boolean = false,
     secondaryActions: @Composable RowScope.() -> Unit = {}
 ) {
+    val isCompactWidth = LocalAdaptiveLayoutInfo.current.widthClass == ShowTimeWidthClass.Compact
+    val backdropHeightModifier = if (isCompactWidth) {
+        Modifier.aspectRatio(TmdbBackdropAspectRatio)
+    } else {
+        Modifier.height(BackdropHeaderDefaults.DesktopHeight)
+    }
+
     ConstraintLayout(modifier) {
         val (refBackdrop, refRoundedSurface, refTrailerFab, refSecondaryActions) = createRefs()
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(TmdbBackdropAspectRatio)
+                .then(backdropHeightModifier)
                 .constrainAs(refBackdrop) {
                     top.linkTo(parent.top)
                     start.linkTo(parent.start)
@@ -66,7 +84,13 @@ fun BackdropHeader(
             )
 
             /*Navigation action*/
-            BackdropNavigationAction(onIconClick = onCloseIconClick)
+            BackdropNavigationAction(
+                onIconClick = onCloseIconClick,
+                icon = if (isCloseAction) Icons.Rounded.Close else Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = stringResource(
+                    id = if (isCloseAction) CoreUiR.string.close_details else CoreUiR.string.back
+                )
+            )
         }
 
         /*Rounded surface*/

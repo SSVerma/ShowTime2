@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -17,15 +18,22 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.get
 import androidx.navigation3.scene.Scene
+import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import com.ssverma.core.navigation.nav3.LocalNavEntries
 import com.ssverma.core.navigation.nav3.LocalNavigationState
@@ -37,9 +45,11 @@ import com.ssverma.core.navigation.nav3.NavigationState
 import com.ssverma.core.navigation.nav3.Navigator
 import com.ssverma.core.navigation.nav3.SequentialNavKey
 import com.ssverma.core.navigation.nav3.TopRevealNavKey
+import com.ssverma.core.navigation.nav3.rememberShowTimeListDetailSceneStrategy
 import com.ssverma.core.navigation.nav3.toEntries
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun ShowTimeNavDisplay(
     navigationState: NavigationState,
@@ -55,42 +65,47 @@ fun ShowTimeNavDisplay(
     val entries = navigationState.toEntries(entryProvider)
 
     val topLevelOrder = remember {
-        ShowTimeTopLevelNavItems.map { it.navKey }
+        ShowTimeRailNavItems.map { it.navKey }
+    }
+
+    val adaptiveLayoutInfo = LocalAdaptiveLayoutInfo.current
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+    val directive = remember(windowAdaptiveInfo) {
+        calculatePaneScaffoldDirective(windowAdaptiveInfo).copy(
+            horizontalPartitionSpacerSize = 1.dp
+        )
+    }
+    val listDetailSceneStrategy = rememberShowTimeListDetailSceneStrategy(directive = directive)
+    val sceneStrategies = remember(listDetailSceneStrategy) {
+        listOf(listDetailSceneStrategy)
+    }
+
+    SideEffect {
+        navigator.isMultiPaneActive = adaptiveLayoutInfo.isMultiPaneEligible
     }
 
     val outerSharedScope = LocalSharedTransitionScope.current
 
     if (outerSharedScope != null) {
-        CompositionLocalProvider(
-            LocalNavigator provides navigator,
-            LocalNavigationState provides navigationState,
-            LocalNavEntries provides entries
-        ) {
-            NavDisplay(
-                entries = entries,
-                onBack = { navigator.goBack() },
-                sharedTransitionScope = outerSharedScope,
-                transitionSpec = { showTimeForwardTransition(topLevelOrder) },
-                popTransitionSpec = { showTimePopTransition(topLevelOrder) },
-                predictivePopTransitionSpec = { showTimePredictivePopTransition(topLevelOrder) },
-                modifier = modifier.fillMaxSize()
-            )
-        }
+        ShowTimeNavDisplayHost(
+            entries = entries,
+            navigationState = navigationState,
+            navigator = navigator,
+            sharedTransitionScope = outerSharedScope,
+            sceneStrategies = sceneStrategies,
+            topLevelOrder = topLevelOrder,
+            modifier = modifier.fillMaxSize()
+        )
     } else {
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
-            CompositionLocalProvider(
-                LocalNavigator provides navigator,
-                LocalNavigationState provides navigationState,
-                LocalNavEntries provides entries,
-                LocalSharedTransitionScope provides this
-            ) {
-                NavDisplay(
+            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                ShowTimeNavDisplayHost(
                     entries = entries,
-                    onBack = { navigator.goBack() },
+                    navigationState = navigationState,
+                    navigator = navigator,
                     sharedTransitionScope = this,
-                    transitionSpec = { showTimeForwardTransition(topLevelOrder) },
-                    popTransitionSpec = { showTimePopTransition(topLevelOrder) },
-                    predictivePopTransitionSpec = { showTimePredictivePopTransition(topLevelOrder) },
+                    sceneStrategies = sceneStrategies,
+                    topLevelOrder = topLevelOrder,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -98,9 +113,42 @@ fun ShowTimeNavDisplay(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ShowTimeNavDisplayHost(
+    entries: List<NavEntry<NavKey>>,
+    navigationState: NavigationState,
+    navigator: Navigator,
+    sharedTransitionScope: SharedTransitionScope,
+    sceneStrategies: List<SceneStrategy<NavKey>>,
+    topLevelOrder: List<NavKey>,
+    modifier: Modifier = Modifier
+) {
+    CompositionLocalProvider(
+        LocalNavigator provides navigator,
+        LocalNavigationState provides navigationState,
+        LocalNavEntries provides entries
+    ) {
+        NavDisplay(
+            entries = entries,
+            onBack = { navigator.goBack() },
+            sceneStrategies = sceneStrategies,
+            sharedTransitionScope = sharedTransitionScope,
+            transitionSpec = { showTimeForwardTransition(topLevelOrder) },
+            popTransitionSpec = { showTimePopTransition(topLevelOrder) },
+            predictivePopTransitionSpec = { showTimePredictivePopTransition(topLevelOrder) },
+            modifier = modifier
+        )
+    }
+}
+
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimeForwardTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    if (isSameListMultiPaneTransition(initialState = initialState, targetState = targetState)) {
+        return createMultiPaneDetailTransition()
+    }
+
     val initialNavKey = initialState.resolveNavKey()
     val targetNavKey = targetState.resolveNavKey()
 
@@ -129,6 +177,10 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimeForwardTr
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    if (isSameListMultiPaneTransition(initialState = initialState, targetState = targetState)) {
+        return createMultiPaneDetailTransition()
+    }
+
     val initialNavKey = initialState.resolveNavKey()
     val targetNavKey = targetState.resolveNavKey()
 
@@ -157,6 +209,10 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePopTransi
 private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.showTimePredictivePopTransition(
     topLevelOrder: List<NavKey>
 ): ContentTransform {
+    if (isSameListMultiPaneTransition(initialState = initialState, targetState = targetState)) {
+        return createMultiPaneDetailTransition()
+    }
+
     val initialNavKey = initialState.resolveNavKey()
     val targetNavKey = targetState.resolveNavKey()
 
@@ -329,6 +385,21 @@ private fun <T : Any> AnimatedContentTransitionScope<Scene<T>>.createPeerSlideTr
             targetAlpha = 0.8f
         )
     )
+}
+
+private fun <T : Any> isSameListMultiPaneTransition(
+    initialState: Scene<T>,
+    targetState: Scene<T>
+): Boolean {
+    val initialPrimaryKey = initialState.entries.firstOrNull()?.contentKey ?: return false
+    val targetPrimaryKey = targetState.entries.firstOrNull()?.contentKey ?: return false
+    return initialPrimaryKey == targetPrimaryKey &&
+            (initialState.entries.size > 1 || targetState.entries.size > 1)
+}
+
+private fun createMultiPaneDetailTransition(): ContentTransform {
+    return fadeIn(animationSpec = tween(durationMillis = 200)) togetherWith
+            fadeOut(animationSpec = tween(durationMillis = 160))
 }
 
 private fun <T : Any> Scene<T>.isTopReveal(): Boolean {

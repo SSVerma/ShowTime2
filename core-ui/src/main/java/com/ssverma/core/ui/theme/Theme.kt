@@ -9,6 +9,8 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.adaptive.rememberAdaptiveLayoutInfo
 import com.ssverma.shared.domain.model.AppTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -37,10 +39,12 @@ fun ShowTimeTheme(
     }
 
     val images = if (darkTheme) DarkImages else LightImages
+    val adaptiveLayoutInfo = rememberAdaptiveLayoutInfo()
 
     CompositionLocalProvider(
         LocalImages provides images,
         LocalSpacing provides Spacing(),
+        LocalAdaptiveLayoutInfo provides adaptiveLayoutInfo,
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorScheme,

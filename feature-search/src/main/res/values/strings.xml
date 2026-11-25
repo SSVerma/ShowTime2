@@ -5,4 +5,6 @@
     <string name="search">Search</string>
     <string name="cd_back">Back</string>
     <string name="cd_clear_search">Clear search</string>
+    <string name="search_detail_placeholder_title">Select a title or person</string>
+    <string name="search_detail_placeholder_subtitle">Pick any movie, TV show, or cast member from your results to inspect details side by side.</string>
 </resources>

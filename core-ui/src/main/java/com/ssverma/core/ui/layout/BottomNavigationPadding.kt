@@ -3,13 +3,17 @@ package com.ssverma.core.ui.layout
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.adaptive.NavigationChromeType
 
 val LocalFloatingBarsVisible = compositionLocalOf { true }
 
@@ -36,15 +40,21 @@ fun rememberFloatingBottomBarPadding(
     top: Dp = 0.dp,
     end: Dp = 0.dp
 ): PaddingValues {
+    val chromeType = LocalAdaptiveLayoutInfo.current.navigationChromeType
     val navBarsPadding = WindowInsets.navigationBars.asPaddingValues()
     val bottomInset = navBarsPadding.calculateBottomPadding()
 
-    return remember(bottomInset, extraSpacing, start, top, end) {
+    return remember(chromeType, bottomInset, extraSpacing, start, top, end) {
+        val bottomPadding = if (chromeType == NavigationChromeType.FloatingBottomBar) {
+            FloatingBottomBarDefaults.Height + FloatingBottomBarDefaults.BottomMargin + extraSpacing + bottomInset
+        } else {
+            extraSpacing + bottomInset
+        }
         PaddingValues(
             start = start,
             top = top,
             end = end,
-            bottom = FloatingBottomBarDefaults.Height + FloatingBottomBarDefaults.BottomMargin + extraSpacing + bottomInset
+            bottom = bottomPadding
         )
     }
 }
@@ -56,11 +66,16 @@ fun rememberFloatingBottomBarPadding(
 fun rememberFloatingBottomBarHeight(
     extraSpacing: Dp = FloatingBottomBarDefaults.ContentClearance
 ): Dp {
+    val chromeType = LocalAdaptiveLayoutInfo.current.navigationChromeType
     val navBarsPadding = WindowInsets.navigationBars.asPaddingValues()
     val bottomInset = navBarsPadding.calculateBottomPadding()
 
-    return remember(bottomInset, extraSpacing) {
-        FloatingBottomBarDefaults.Height + FloatingBottomBarDefaults.BottomMargin + extraSpacing + bottomInset
+    return remember(chromeType, bottomInset, extraSpacing) {
+        if (chromeType == NavigationChromeType.FloatingBottomBar) {
+            FloatingBottomBarDefaults.Height + FloatingBottomBarDefaults.BottomMargin + extraSpacing + bottomInset
+        } else {
+            extraSpacing + bottomInset
+        }
     }
 }
 
@@ -76,12 +91,15 @@ fun rememberFloatingBarsPadding(
     start: Dp = 0.dp,
     end: Dp = 0.dp
 ): PaddingValues {
+    val chromeType = LocalAdaptiveLayoutInfo.current.navigationChromeType
     val navBarsPadding = WindowInsets.navigationBars.asPaddingValues()
-    val statusBarsPadding = WindowInsets.statusBars.asPaddingValues()
+    val topBarInsetsPadding =
+        WindowInsets.statusBars.union(WindowInsets.captionBar).asPaddingValues()
     val bottomInset = navBarsPadding.calculateBottomPadding()
-    val topInset = statusBarsPadding.calculateTopPadding()
+    val topInset = topBarInsetsPadding.calculateTopPadding()
 
     return remember(
+        chromeType,
         bottomInset,
         topInset,
         includeBottomBarPadding,
@@ -90,12 +108,21 @@ fun rememberFloatingBarsPadding(
         start,
         end
     ) {
+        val isFloatingChrome = chromeType == NavigationChromeType.FloatingBottomBar
         PaddingValues(
             start = start,
-            top = FloatingTopSearchBarDefaults.Height + (FloatingTopSearchBarDefaults.VerticalMargin * 2) + extraTopSpacing + topInset,
+            top = if (isFloatingChrome) {
+                FloatingTopSearchBarDefaults.Height + (FloatingTopSearchBarDefaults.VerticalMargin * 2) + extraTopSpacing + topInset
+            } else {
+                extraTopSpacing
+            },
             end = end,
             bottom = if (includeBottomBarPadding) {
-                FloatingBottomBarDefaults.Height + FloatingBottomBarDefaults.BottomMargin + extraBottomSpacing + bottomInset
+                if (isFloatingChrome) {
+                    FloatingBottomBarDefaults.Height + FloatingBottomBarDefaults.BottomMargin + extraBottomSpacing + bottomInset
+                } else {
+                    extraBottomSpacing + bottomInset
+                }
             } else {
                 0.dp
             }

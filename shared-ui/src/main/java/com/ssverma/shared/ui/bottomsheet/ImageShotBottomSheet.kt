@@ -43,6 +43,7 @@ fun ImageShotBottomSheet(
                 sheetState = sheetState.modalBottomSheetState,
                 containerColor = MaterialTheme.colorScheme.background,
                 dragHandle = null,
+                allowAdaptiveDialog = false,
                 modifier = Modifier.fillMaxSize()
             ) {
                 ImageSheetContent(

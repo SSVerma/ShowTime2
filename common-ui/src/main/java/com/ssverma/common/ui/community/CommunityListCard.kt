@@ -57,12 +57,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.shared.domain.model.community.CommunityCuratedList
@@ -75,6 +78,7 @@ fun CommunityListCard(
     onToggleUpvote: () -> Unit,
     onCloneList: () -> Unit,
     modifier: Modifier = Modifier,
+    posterHeight: Dp = 90.dp,
     onMakePrivate: (() -> Unit)? = null,
     onDeleteFromCommunity: (() -> Unit)? = null,
     onReport: (() -> Unit)? = null,
@@ -126,7 +130,9 @@ fun CommunityListCard(
             }
         ),
         elevation = CardDefaults.outlinedCardElevation(defaultElevation = 0.dp),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerHoverIcon(PointerIcon.Hand)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -212,7 +218,7 @@ fun CommunityListCard(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(90.dp)
+                        .height(posterHeight)
                 ) {
                     val posters = communityList.previewPosters.take(4)
                     posters.forEach { posterUrl ->

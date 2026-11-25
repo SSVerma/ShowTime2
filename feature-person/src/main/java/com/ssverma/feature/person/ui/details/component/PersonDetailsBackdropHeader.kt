@@ -13,11 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +25,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.navigation.nav3.LocalNavAnimatedVisibilityScope
 import com.ssverma.core.navigation.nav3.LocalSharedTransitionScope
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.adaptive.ShowTimeWidthClass
+import com.ssverma.core.ui.layout.windowTopBarInsetsPadding
 import com.ssverma.feature.person.R
 import com.ssverma.shared.ui.TmdbBackdropAspectRatio
 import com.ssverma.shared.ui.component.personSharedContentKey
@@ -47,7 +52,8 @@ fun PersonDetailsBackdropHeader(
     onShareClick: () -> Unit,
     modifier: Modifier = Modifier,
     source: String = "default",
-    enableSharedTransition: Boolean = true
+    enableSharedTransition: Boolean = true,
+    isSideBySideRootDetail: Boolean = false
 ) {
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalNavAnimatedVisibilityScope.current
@@ -77,6 +83,13 @@ fun PersonDetailsBackdropHeader(
             Modifier
         }
 
+    val isCompactWidth = LocalAdaptiveLayoutInfo.current.widthClass == ShowTimeWidthClass.Compact
+    val backdropHeightModifier = if (isCompactWidth) {
+        Modifier.aspectRatio(TmdbBackdropAspectRatio)
+    } else {
+        Modifier.height(300.dp)
+    }
+
     ConstraintLayout(modifier) {
         val (refBackdrop, refProfile, refRoundedSurface) = createRefs()
 
@@ -84,7 +97,7 @@ fun PersonDetailsBackdropHeader(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(TmdbBackdropAspectRatio)
+                .then(backdropHeightModifier)
                 .constrainAs(refBackdrop) {
                     top.linkTo(parent.top)
                     start.linkTo(parent.start)
@@ -104,18 +117,30 @@ fun PersonDetailsBackdropHeader(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding()
+                    .windowTopBarInsetsPadding()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier
+                        .size(40.dp)
+                        .pointerHoverIcon(PointerIcon.Hand)
                 ) {
                     IconButton(onClick = onBackPress) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = stringResource(id = CoreUiR.string.back),
+                            imageVector = if (isSideBySideRootDetail) {
+                                Icons.Rounded.Close
+                            } else {
+                                Icons.AutoMirrored.Rounded.ArrowBack
+                            },
+                            contentDescription = stringResource(
+                                id = if (isSideBySideRootDetail) {
+                                    CoreUiR.string.close_details
+                                } else {
+                                    CoreUiR.string.back
+                                }
+                            ),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -124,7 +149,9 @@ fun PersonDetailsBackdropHeader(
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier
+                        .size(40.dp)
+                        .pointerHoverIcon(PointerIcon.Hand)
                 ) {
                     IconButton(onClick = onShareClick) {
                         Icon(

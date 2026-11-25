@@ -4,7 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
+import com.ssverma.core.navigation.nav3.adaptiveListPaneMetadata
 import com.ssverma.core.navigation.nav3.showTimeEntry
+import com.ssverma.shared.ui.component.illustration.DetailPaneEmptyState
 import com.ssverma.feature.account.navigation.BackupSyncNavKey
 import com.ssverma.feature.library.ui.backlog.BacklogChallengeScreen
 import com.ssverma.feature.library.ui.backlog.detail.ChallengeDetailScreen
@@ -22,7 +24,13 @@ import com.ssverma.feature.tv.navigation.TvShowDetailNavKey
 fun EntryProviderScope<NavKey>.libraryEntries(
     navigator: Navigator
 ) {
-    showTimeEntry<LibraryHomeNavKey> { navKey ->
+    showTimeEntry<LibraryHomeNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { navKey ->
         LibraryNavScreen(
             args = navKey,
             onBackPressed = null,
@@ -31,11 +39,17 @@ fun EntryProviderScope<NavKey>.libraryEntries(
         )
     }
 
-    showTimeEntry<StandaloneLibraryNavKey> { navKey ->
+    showTimeEntry<StandaloneLibraryNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { navKey ->
         LibraryNavScreen(
             args = navKey,
             onBackPressed = {
-                navigator.goBack()
+                navigator.navigateUpFromListPane()
             },
             isTopLevel = false,
             navigator = navigator
@@ -53,16 +67,22 @@ fun EntryProviderScope<NavKey>.libraryEntries(
         )
     }
 
-    showTimeEntry<CinemaDiaryNavKey> {
+    showTimeEntry<CinemaDiaryNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) {
         CinemaDiaryScreen(
             onBackClick = {
-                navigator.goBack()
+                navigator.navigateUpFromListPane()
             },
             onOpenMovieDetails = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
+                navigator.navigateFromListToDetail(MovieDetailNavKey(movieId))
             },
             onOpenTvShowDetails = { tvShowId ->
-                navigator.navigate(TvShowDetailNavKey(tvShowId))
+                navigator.navigateFromListToDetail(TvShowDetailNavKey(tvShowId))
             },
             onOpenTasteProfile = {
                 navigator.navigate(TasteProfileNavKey)
@@ -76,16 +96,22 @@ fun EntryProviderScope<NavKey>.libraryEntries(
         )
     }
 
-    showTimeEntry<TasteProfileNavKey> {
+    showTimeEntry<TasteProfileNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) {
         TasteProfileScreen(
             onBackClick = {
-                navigator.goBack()
+                navigator.navigateUpFromListPane()
             },
             onOpenMovieDetails = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
+                navigator.navigateFromListToDetail(MovieDetailNavKey(movieId))
             },
             onOpenTvShowDetails = { tvShowId ->
-                navigator.navigate(TvShowDetailNavKey(tvShowId))
+                navigator.navigateFromListToDetail(TvShowDetailNavKey(tvShowId))
             },
             onOpenProPaywall = {
                 navigator.navigate(ProPaywallNavKey)
@@ -139,32 +165,44 @@ fun EntryProviderScope<NavKey>.libraryEntries(
         )
     }
 
-    showTimeEntry<ChallengeDetailNavKey> { navKey ->
+    showTimeEntry<ChallengeDetailNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { navKey ->
         ChallengeDetailScreen(
             challengeId = navKey.challengeId,
             onBackClick = {
-                navigator.goBack()
+                navigator.navigateUpFromListPane()
             },
             onOpenMovieDetails = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
+                navigator.navigateFromListToDetail(MovieDetailNavKey(movieId))
             },
             onOpenTvShowDetails = { tvShowId ->
-                navigator.navigate(TvShowDetailNavKey(tvShowId))
+                navigator.navigateFromListToDetail(TvShowDetailNavKey(tvShowId))
             }
         )
     }
 
-    showTimeEntry<SecretSharedListNavKey> { navKey ->
+    showTimeEntry<SecretSharedListNavKey>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { navKey ->
         SecretSharedListScreen(
             shareCode = navKey.shareCode,
             onBackClick = {
-                navigator.goBack()
+                navigator.navigateUpFromListPane()
             },
             onOpenMovieDetails = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
+                navigator.navigateFromListToDetail(MovieDetailNavKey(movieId))
             },
             onOpenTvShowDetails = { tvShowId ->
-                navigator.navigate(TvShowDetailNavKey(tvShowId))
+                navigator.navigateFromListToDetail(TvShowDetailNavKey(tvShowId))
             }
         )
     }
@@ -181,10 +219,10 @@ private fun LibraryNavScreen(
         onBackPressed = onBackPressed,
         isTopLevel = isTopLevel,
         onMovieClicked = { movieId ->
-            navigator.navigate(MovieDetailNavKey(movieId))
+            navigator.navigateFromListToDetail(MovieDetailNavKey(movieId))
         },
         onTvShowClicked = { tvShowId ->
-            navigator.navigate(TvShowDetailNavKey(tvShowId))
+            navigator.navigateFromListToDetail(TvShowDetailNavKey(tvShowId))
         },
         openSearchPage = {
             navigator.navigate(SearchNavKey)

@@ -14,6 +14,14 @@ object Nav3MetadataKeys {
     object TransitionStyle : NavMetadataKey<NavTransitionStyle> {
         override fun toString(): String = "Nav3MetadataKeys.TransitionStyle"
     }
+
+    object AlwaysShowSplit : NavMetadataKey<Boolean> {
+        override fun toString(): String = "Nav3MetadataKeys.AlwaysShowSplit"
+    }
+
+    object ListDetailParticipant : NavMetadataKey<Boolean> {
+        override fun toString(): String = "Nav3MetadataKeys.ListDetailParticipant"
+    }
 }
 
 enum class NavTransitionStyle {

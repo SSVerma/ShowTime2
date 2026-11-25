@@ -41,6 +41,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import com.ssverma.core.ui.adaptive.AdaptiveGridDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -381,10 +382,14 @@ fun UniversalDiscoveryScreen(
                     Spacer(modifier = Modifier.weight(1f))
                 }
             } else {
-                val columns = if (uiState.isGridView) 2 else 1
+                val gridCells = if (uiState.isGridView) {
+                    AdaptiveGridDefaults.PosterGridCells
+                } else {
+                    GridCells.Fixed(count = 1)
+                }
 
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(columns),
+                    columns = gridCells,
                     state = gridState,
                     contentPadding = PaddingValues(
                         start = 16.dp,

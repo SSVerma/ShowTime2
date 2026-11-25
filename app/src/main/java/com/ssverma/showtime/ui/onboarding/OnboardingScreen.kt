@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
@@ -20,6 +21,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.ssverma.core.ui.adaptive.AdaptiveGridDefaults
+import com.ssverma.core.ui.adaptive.adaptiveReadableWidth
 import com.ssverma.showtime.ui.onboarding.component.OnboardingBottomBar
 import com.ssverma.showtime.ui.onboarding.component.OnboardingTopBar
 import com.ssverma.showtime.ui.onboarding.step.OnboardingCloudStep
@@ -67,12 +70,16 @@ fun OnboardingScreen(
     }
 
     Box(
+        contentAlignment = Alignment.TopCenter,
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth()
+                .adaptiveReadableWidth(maxWidth = AdaptiveGridDefaults.OnboardingContentMaxWidth)
         ) {
             OnboardingTopBar(
                 currentStep = currentStep,

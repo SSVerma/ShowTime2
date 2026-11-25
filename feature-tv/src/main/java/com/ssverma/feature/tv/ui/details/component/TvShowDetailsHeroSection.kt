@@ -45,13 +45,15 @@ fun LazyListScope.tvShowDetailsHeroSection(
     onReminderClick: () -> Unit,
     onOpenDiscussions: (DiscussionNavArgs) -> Unit,
     onShare: () -> Unit,
-    onShowFeedback: (ShowFeedbackArgs) -> Unit
+    onShowFeedback: (ShowFeedbackArgs) -> Unit,
+    isSideBySideRootDetail: Boolean = false
 ) {
     item(key = "tv_hero_header", contentType = "hero_header") {
         BackdropHeader(
             backdropImageUrl = tvShow.backdropImageUrl,
             onCloseIconClick = onBackPressed,
             showTrailerFab = tvShow.primaryTrailer != null,
+            isCloseAction = isSideBySideRootDetail,
             onTrailerFabClick = onPlayTrailer,
             secondaryActions = {
                 if (!tvShow.isUpcoming) {

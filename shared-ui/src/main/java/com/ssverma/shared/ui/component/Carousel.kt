@@ -34,12 +34,16 @@ import androidx.compose.ui.unit.dp
 import com.ssverma.core.image.NetworkImage
 import com.ssverma.core.ui.DriveCompose
 import com.ssverma.core.ui.UiState
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.adaptive.ShowTimeWidthClass
 import com.ssverma.core.ui.component.ShimmerPlaceholder
 import com.ssverma.core.ui.theme.spacing
 
 object CarouselDefaults {
     val HeroMaxItemWidth = Dp.Unspecified
+    val DesktopHeroMaxItemWidth = 480.dp
     val HeroItemHeight = 220.dp
+    val DesktopHeroItemHeight = 260.dp
     val SmallItemMaskWidth = 56.dp
 }
 
@@ -136,14 +140,32 @@ fun <T> AppHeroCarousel(
     key: ((T) -> Any)? = null,
     itemContent: @Composable (T) -> Unit
 ) {
+    val widthClass = LocalAdaptiveLayoutInfo.current.widthClass
+    val resolvedMaxItemWidth = if (
+        maxItemWidth == CarouselDefaults.HeroMaxItemWidth &&
+        widthClass != ShowTimeWidthClass.Compact
+    ) {
+        CarouselDefaults.DesktopHeroMaxItemWidth
+    } else {
+        maxItemWidth
+    }
+    val resolvedItemHeight = if (
+        itemHeight == CarouselDefaults.HeroItemHeight &&
+        widthClass != ShowTimeWidthClass.Compact
+    ) {
+        CarouselDefaults.DesktopHeroItemHeight
+    } else {
+        itemHeight
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(itemHeight)
+            .height(resolvedItemHeight)
     ) {
         HorizontalCenteredHeroCarousel(
             state = carouselState,
-            preferredItemWidth = maxItemWidth,
+            preferredItemWidth = resolvedMaxItemWidth,
             itemSpacing = itemSpacing,
             contentPadding = contentPadding,
             modifier = Modifier.fillMaxSize()

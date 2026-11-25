@@ -7,12 +7,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.ssverma.core.ui.modifier.desktopSecondaryClick
 import com.ssverma.feature.library.navigation.LibraryHomeNavKey
 import com.ssverma.feature.library.navigation.LibraryTabDestination
 import com.ssverma.shared.domain.model.MediaType
@@ -138,6 +143,7 @@ fun UniversalMediaCard(
     }
 
     val isItemUpcoming = menuConfig.isUpcoming || item.isUpcoming
+    var isContextMenuExpanded by remember { mutableStateOf(false) }
 
     @Composable
     fun RenderOmniAction(isOverPoster: Boolean) {
@@ -169,6 +175,8 @@ fun UniversalMediaCard(
                 isUpcoming = isItemUpcoming,
                 isOverPoster = isOverPoster
             ),
+            externalExpanded = isContextMenuExpanded,
+            onExternalDismiss = { isContextMenuExpanded = false },
             viewModel = viewModel
         )
     }
@@ -226,6 +234,10 @@ fun UniversalMediaCard(
         BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
     }
 
+    val cardModifier = modifier.desktopSecondaryClick {
+        isContextMenuExpanded = true
+    }
+
     if (isGridView) {
         val resolvedTrailingAction: (@Composable () -> Unit)? = when {
             trailingActionSlot != null -> trailingActionSlot
@@ -245,7 +257,7 @@ fun UniversalMediaCard(
             title = item.title,
             posterImageUrl = item.posterImageUrl,
             onClick = onClick,
-            modifier = modifier,
+            modifier = cardModifier,
             topStartBadge = resolvedTopStartBadge,
             topEndAction = resolvedTopEndAction,
             bottomStartBadge = resolvedBottomStartBadge,
@@ -258,7 +270,7 @@ fun UniversalMediaCard(
             title = item.title,
             posterImageUrl = item.posterImageUrl,
             onClick = onClick,
-            modifier = modifier,
+            modifier = cardModifier,
             topStartBadge = resolvedTopStartBadge,
             bottomStartBadge = resolvedBottomStartBadge,
             subtitle = resolvedSubtitle,

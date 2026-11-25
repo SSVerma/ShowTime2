@@ -4,6 +4,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.type.pc"
+        android:required="false" />
+
     <application
         android:name=".ShowTimeApp"
         android:allowBackup="false"
@@ -16,9 +23,18 @@
         tools:targetApi="33">
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
             android:exported="true"
+            android:resizeableActivity="true"
             android:theme="@style/Theme.ShowTime.Starting"
             android:windowSoftInputMode="adjustResize">
+            <layout
+                android:defaultHeight="800dp"
+                android:defaultWidth="1280dp"
+                android:gravity="center"
+                android:minHeight="560dp"
+                android:minWidth="380dp" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

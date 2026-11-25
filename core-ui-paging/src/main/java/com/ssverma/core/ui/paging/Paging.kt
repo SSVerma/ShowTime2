@@ -30,6 +30,7 @@ import com.ssverma.core.ui.R
 import com.ssverma.core.ui.ScreenEmptyIndicator
 import com.ssverma.core.ui.ScreenErrorIndicator
 import com.ssverma.core.ui.ScreenLoadingIndicator
+import com.ssverma.core.ui.adaptive.AdaptiveGridDefaults
 import com.ssverma.core.ui.component.ShowTimeLoadingIndicator
 
 @Composable
@@ -116,7 +117,7 @@ fun <T : Any> PagedListIndexed(
 fun <T : Any> PagedGrid(
     pagingItems: LazyPagingItems<T>,
     modifier: Modifier = Modifier,
-    cells: GridCells = GridCells.Fixed(count = 2),
+    cells: GridCells = AdaptiveGridDefaults.PosterGridCells,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     verticalArrangement: Arrangement.Vertical =
@@ -126,6 +127,8 @@ fun <T : Any> PagedGrid(
     pagingErrorIndicator: @Composable (pagingItems: LazyPagingItems<T>) -> Unit = { DefaultPagingErrorIndicator { it.retry() } },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
     header: (@Composable () -> Unit)? = null,
+    key: ((index: Int) -> Any)? = null,
+    contentType: (index: Int) -> Any? = { "paged_grid_item" },
     itemContent: @Composable (item: T) -> Unit
 ) {
     PagedGridIndexed(
@@ -139,7 +142,9 @@ fun <T : Any> PagedGrid(
         pagingLoadingIndicator = pagingLoadingIndicator,
         pagingErrorIndicator = pagingErrorIndicator,
         placeholderItemContent = placeholderItemContent,
-        header = header
+        header = header,
+        key = key,
+        contentType = contentType
     ) { _, item ->
         itemContent(item)
     }
@@ -150,7 +155,7 @@ fun <T : Any> PagedGrid(
 fun <T : Any> PagedGridIndexed(
     pagingItems: LazyPagingItems<T>,
     modifier: Modifier = Modifier,
-    cells: GridCells = GridCells.Fixed(count = 2),
+    cells: GridCells = AdaptiveGridDefaults.PosterGridCells,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
     verticalArrangement: Arrangement.Vertical =
@@ -160,6 +165,8 @@ fun <T : Any> PagedGridIndexed(
     pagingErrorIndicator: @Composable (pagingItems: LazyPagingItems<T>) -> Unit = { DefaultPagingErrorIndicator { it.retry() } },
     placeholderItemContent: @Composable () -> Unit = { DefaultPagingPlaceholder() },
     header: (@Composable () -> Unit)? = null,
+    key: ((index: Int) -> Any)? = null,
+    contentType: (index: Int) -> Any? = { "paged_grid_item" },
     itemContent: @Composable (index: Int, item: T) -> Unit
 ) {
     LazyVerticalGrid(
@@ -173,7 +180,11 @@ fun <T : Any> PagedGridIndexed(
             item(span = { GridItemSpan(maxLineSpan) }) { it() }
         }
 
-        items(pagingItems.itemCount) { index ->
+        items(
+            count = pagingItems.itemCount,
+            key = key,
+            contentType = contentType
+        ) { index ->
             val pagingItem = pagingItems[index]
             if (pagingItem == null) {
                 placeholderItemContent()

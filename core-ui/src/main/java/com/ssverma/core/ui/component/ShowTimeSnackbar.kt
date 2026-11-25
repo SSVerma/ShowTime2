@@ -15,6 +15,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ssverma.core.ui.adaptive.LocalAdaptiveLayoutInfo
+import com.ssverma.core.ui.adaptive.NavigationChromeType
 import com.ssverma.core.ui.layout.FloatingBottomBarDefaults
 
 @Composable
@@ -23,8 +25,11 @@ fun ShowTimeSnackbarHost(
     modifier: Modifier = Modifier,
     floatingBottomBar: Boolean = false
 ) {
+    val chromeType = LocalAdaptiveLayoutInfo.current.navigationChromeType
+    val showFloatingOffset =
+        floatingBottomBar && chromeType == NavigationChromeType.FloatingBottomBar
     val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val bottomPadding = if (floatingBottomBar) {
+    val bottomPadding = if (showFloatingOffset) {
         FloatingBottomBarDefaults.Height + FloatingBottomBarDefaults.BottomMargin + 8.dp + bottomInset
     } else {
         16.dp

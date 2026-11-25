@@ -5,7 +5,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.ssverma.core.navigation.nav3.Navigator
+import com.ssverma.core.navigation.nav3.adaptiveDetailPaneMetadata
+import com.ssverma.core.navigation.nav3.adaptiveExtraPaneMetadata
+import com.ssverma.core.navigation.nav3.adaptiveListPaneMetadata
 import com.ssverma.core.navigation.nav3.showTimeEntry
+import com.ssverma.shared.ui.component.illustration.DetailPaneEmptyState
 import com.ssverma.feature.account.navigation.ProfileNavKey
 import com.ssverma.feature.community.navigation.CommunityDiscussionsNavKey
 import com.ssverma.feature.movie.navigation.args.MovieListingRoute
@@ -28,14 +32,20 @@ fun EntryProviderScope<NavKey>.movieEntries(
     navigator: Navigator,
     openLibraryPage: (NavKey) -> Unit
 ) {
-    showTimeEntry<MovieListingRoute> { key ->
+    showTimeEntry<MovieListingRoute>(
+        metadata = {
+            adaptiveListPaneMetadata(
+                detailPlaceholder = { DetailPaneEmptyState() }
+            )
+        }
+    ) { key ->
         MovieListScreen(
             viewModel = hiltViewModel<MovieListViewModel, MovieListViewModel.Factory> { factory ->
                 factory.create(key.args)
             },
-            onBackPressed = { navigator.goBack() },
+            onBackPressed = { navigator.navigateUpFromListPane() },
             openMovieDetails = { movieId ->
-                navigator.navigate(MovieDetailNavKey(movieId))
+                navigator.navigateFromListToDetail(MovieDetailNavKey(movieId))
             },
             openWatchHub = { provider ->
                 navigator.navigate(
@@ -91,7 +101,9 @@ fun EntryProviderScope<NavKey>.movieEntries(
         )
     }
 
-    showTimeEntry<MovieDetailNavKey> { key ->
+    showTimeEntry<MovieDetailNavKey>(
+        metadata = { adaptiveDetailPaneMetadata() }
+    ) { key ->
         MovieDetailsScreen(
             viewModel = hiltViewModel<MovieDetailsViewModel, MovieDetailsViewModel.Factory> { factory ->
                 factory.create(key.movieId)
@@ -144,11 +156,14 @@ fun EntryProviderScope<NavKey>.movieEntries(
                 )
             },
             openLibraryPage = openLibraryPage,
-            openProPaywall = { navigator.navigate(ProPaywallNavKey) }
+            openProPaywall = { navigator.navigate(ProPaywallNavKey) },
+            isSideBySideRootDetail = navigator.isSideBySideDetailRoot(key)
         )
     }
 
-    showTimeEntry<MovieReviewsNavKey> { key ->
+    showTimeEntry<MovieReviewsNavKey>(
+        metadata = { adaptiveExtraPaneMetadata() }
+    ) { key ->
         MovieReviewsScreen(
             viewModel = hiltViewModel<MovieReviewsViewModel, MovieReviewsViewModel.Factory> { factory ->
                 factory.create(key.movieId)

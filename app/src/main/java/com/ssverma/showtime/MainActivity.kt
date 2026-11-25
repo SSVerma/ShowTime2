@@ -7,14 +7,11 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AccelerateInterpolator
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.ssverma.shared.domain.model.AppTheme
 import androidx.compose.runtime.CompositionLocalProvider
@@ -38,6 +35,7 @@ import com.ssverma.core.di.AppScoped
 import com.ssverma.core.notifications.LocalNotificationManager
 import com.ssverma.core.notifications.ShowTimeNotificationManager
 import com.ssverma.showtime.navigation.ShowTimeDeepLinkHandler
+import com.ssverma.showtime.util.applyShowTimeSystemBars
 import com.ssverma.showtime.widget.WidgetUpdateHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -81,19 +79,12 @@ class MainActivity : AppCompatActivity() {
             AppTheme.Light -> false
             AppTheme.Dark, AppTheme.OledMidnight -> true
         }
-        val barStyle = SystemBarStyle.auto(
-            lightScrim = android.graphics.Color.TRANSPARENT,
-            darkScrim = android.graphics.Color.TRANSPARENT,
-            detectDarkMode = { _ -> isDark }
-        )
-        enableEdgeToEdge(
-            statusBarStyle = barStyle,
-            navigationBarStyle = barStyle
-        )
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = !isDark
-            isAppearanceLightNavigationBars = !isDark
-        }
+        applyShowTimeSystemBars(activity = this, isDarkTheme = isDark)
+    }
+
+    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
+        updateSystemBars(appStateHolder.appTheme.value)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

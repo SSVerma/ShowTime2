@@ -6,6 +6,8 @@ import androidx.navigation3.runtime.NavKey
  * Handles navigation events (forward and back) by updating the navigation state.
  */
 class Navigator(val state: NavigationState) {
+    var isMultiPaneActive: Boolean = false
+
     fun navigate(route: NavKey) {
         val matchingTopLevel =
             state.backStacks.keys.firstOrNull { it == route || it::class == route::class }
@@ -49,6 +51,61 @@ class Navigator(val state: NavigationState) {
                 state.topLevelRoute = state.startRoute
             }
         }
+    }
+
+    /**
+     * Navigates from a list pane to a detail destination. When an adjacent multi-pane detail pane
+     * is already visible on wide displays, replaces the trailing detail/extra chain in-place so
+     * clicking consecutive list items updates the detail pane cleanly without stacking entries.
+     */
+    fun navigateFromListToDetail(route: NavKey) {
+        val currentStack = state.backStacks[state.topLevelRoute]
+        if (isMultiPaneActive &&
+            currentStack != null &&
+            currentStack.size >= 2 &&
+            (currentStack.last() is AdaptiveDetailNavKey || currentStack.last() is AdaptiveExtraNavKey)
+        ) {
+            while (
+                currentStack.size >= 2 &&
+                (currentStack.last() is AdaptiveDetailNavKey || currentStack.last() is AdaptiveExtraNavKey)
+            ) {
+                currentStack.removeLastOrNull()
+            }
+            currentStack.add(route)
+        } else {
+            navigate(route)
+        }
+    }
+
+    /**
+     * Returns true when [detailKey] is the primary side-by-side detail pane rendered right beside
+     * a list pane on wide viewports, so its header button can present a close affordance rather
+     * than a redundant back arrow next to the list pane's back button.
+     */
+    fun isSideBySideDetailRoot(detailKey: NavKey): Boolean {
+        if (!isMultiPaneActive) return false
+        val currentStack = state.backStacks[state.topLevelRoute] ?: return false
+        if (currentStack.size < 2 || currentStack.lastOrNull() != detailKey) return false
+        val previousKey = currentStack[currentStack.lastIndex - 1]
+        return previousKey !is AdaptiveDetailNavKey && previousKey !is AdaptiveExtraNavKey
+    }
+
+    /**
+     * Navigates up from a list pane's own toolbar back button. When an adjacent detail or extra
+     * chain is open alongside the list pane on wide viewports, clears that trailing chain first so
+     * pressing back on the list pane itself exits cleanly in a single tap.
+     */
+    fun navigateUpFromListPane() {
+        val currentStack = state.backStacks[state.topLevelRoute] ?: return
+        if (isMultiPaneActive) {
+            while (
+                currentStack.size >= 2 &&
+                (currentStack.last() is AdaptiveDetailNavKey || currentStack.last() is AdaptiveExtraNavKey)
+            ) {
+                currentStack.removeLastOrNull()
+            }
+        }
+        goBack()
     }
 
     /**

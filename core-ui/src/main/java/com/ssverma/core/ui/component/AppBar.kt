@@ -6,7 +6,12 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.union
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -90,6 +95,7 @@ fun ShowTimeTopAppBar(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
     navIcon: ImageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+    showNavigationIcon: Boolean = true,
     actions: @Composable RowScope.() -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showBottomShadow: Boolean = true,
@@ -107,6 +113,10 @@ fun ShowTimeTopAppBar(
         } ?: false
     } else false
 
+    val topBarWindowInsets = TopAppBarDefaults.windowInsets.union(
+        WindowInsets.captionBar.only(WindowInsetsSides.Top)
+    )
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -115,14 +125,17 @@ fun ShowTimeTopAppBar(
         CenterAlignedTopAppBar(
             title = title,
             navigationIcon = {
-                IconButton(onClick = onBackPressed) {
-                    Icon(
-                        painter = rememberVectorPainter(image = navIcon),
-                        contentDescription = stringResource(id = R.string.back)
-                    )
+                if (showNavigationIcon) {
+                    IconButton(onClick = onBackPressed) {
+                        Icon(
+                            painter = rememberVectorPainter(image = navIcon),
+                            contentDescription = stringResource(id = R.string.back)
+                        )
+                    }
                 }
             },
             actions = actions,
+            windowInsets = topBarWindowInsets,
             colors = colors,
             scrollBehavior = scrollBehavior
         )
@@ -136,6 +149,7 @@ fun ShowTimeTopAppBar(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
     navIcon: ImageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+    showNavigationIcon: Boolean = true,
     actions: @Composable RowScope.() -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showBottomShadow: Boolean = true,
@@ -160,6 +174,7 @@ fun ShowTimeTopAppBar(
         onBackPressed = onBackPressed,
         modifier = modifier,
         navIcon = navIcon,
+        showNavigationIcon = showNavigationIcon,
         actions = actions,
         scrollBehavior = scrollBehavior,
         showBottomShadow = showBottomShadow,

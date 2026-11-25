@@ -382,4 +382,22 @@
     <string name="rate_shelf_feedback_subject">ShowTime App Feedback (Android %1$s)</string>
     <string name="rate_shelf_share_text">Track movies &amp; TV shows, build curated lists, and play the Daily Cinema Challenge on ShowTime!\n\nDownload: %1$s</string>
     <string name="rate_shelf_share_chooser_title">Share ShowTime</string>
+
+    <!-- Adaptive & Desktop Navigation Chrome -->
+    <string name="search_shortcut_hint">Ctrl+K</string>
+    <string name="close">Close</string>
+    <string name="keyboard_shortcuts_title">Keyboard shortcuts</string>
+    <string name="keyboard_shortcuts_subtitle">Navigate ShowTime faster with keyboard and mouse</string>
+    <string name="shortcut_open_search">Search movies, TV shows, and people</string>
+    <string name="shortcut_switch_tabs">Switch top-level tabs (Home to People)</string>
+    <string name="shortcut_open_diary">Open Cinema Diary</string>
+    <string name="shortcut_open_discover">Open Universal Discover</string>
+    <string name="shortcut_show_help">Show keyboard shortcuts</string>
+    <string name="shortcut_go_back">Close overlay or go back</string>
+    <string name="shortcut_key_ctrl_k">Ctrl+K or /</string>
+    <string name="shortcut_key_alt_digits">Alt+1–5</string>
+    <string name="shortcut_key_alt_d">Alt+D</string>
+    <string name="shortcut_key_alt_u">Alt+U</string>
+    <string name="shortcut_key_help">?</string>
+    <string name="shortcut_key_esc">Esc</string>
 </resources>

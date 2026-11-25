@@ -5,6 +5,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,12 +29,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
@@ -71,9 +80,62 @@ fun MovieSwipeDeck(
 
     val likeScale = (1f + (0.22f * likeAlpha) - (0.05f * nopeAlpha)).coerceIn(0.85f, 1.25f)
     val nopeScale = (1f + (0.22f * nopeAlpha) - (0.05f * likeAlpha)).coerceIn(0.85f, 1.25f)
+    val deckFocusRequester = remember { FocusRequester() }
+
+    val triggerProgrammaticSwipe: (SwipeDirection) -> Unit = { direction ->
+        topCard?.let { activeCard ->
+            coroutineScope.launch {
+                val targetOffset = if (direction == SwipeDirection.LIKE) 1600f else -1600f
+                offsetX.animateTo(targetOffset, tween(220))
+                onSwipe(activeCard, direction)
+            }
+        }
+    }
+
+    LaunchedEffect(topCard?.id) {
+        if (topCard != null) {
+            runCatching { deckFocusRequester.requestFocus() }
+        }
+    }
 
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .focusRequester(deckFocusRequester)
+            .focusable()
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type != KeyEventType.KeyDown || topCard == null) {
+                    return@onKeyEvent false
+                }
+                when (keyEvent.key) {
+                    Key.DirectionLeft -> {
+                        triggerProgrammaticSwipe(SwipeDirection.PASS)
+                        true
+                    }
+
+                    Key.DirectionRight -> {
+                        triggerProgrammaticSwipe(SwipeDirection.LIKE)
+                        true
+                    }
+
+                    Key.DirectionUp,
+                    Key.Enter -> {
+                        onOpenDetails(topCard)
+                        true
+                    }
+
+                    Key.Backspace -> {
+                        if (canRewind) {
+                            onRewind()
+                        } else {
+                            onRewindProPrompt()
+                        }
+                        true
+                    }
+
+                    else -> false
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Swipeable Cards Deck Area
@@ -241,12 +303,7 @@ fun MovieSwipeDeck(
 
                 // Pass Button (Dislike)
                 Surface(
-                    onClick = {
-                        coroutineScope.launch {
-                            offsetX.animateTo(-1600f, tween(220))
-                            onSwipe(topCard, SwipeDirection.PASS)
-                        }
-                    },
+                    onClick = { triggerProgrammaticSwipe(SwipeDirection.PASS) },
                     shape = CircleShape,
                     color = MovieMatchColor.PassRed.copy(
                         alpha = (0.12f + 0.25f * nopeAlpha).coerceIn(
@@ -309,12 +366,7 @@ fun MovieSwipeDeck(
 
                 // Like Button (Heart)
                 Surface(
-                    onClick = {
-                        coroutineScope.launch {
-                            offsetX.animateTo(1600f, tween(220))
-                            onSwipe(topCard, SwipeDirection.LIKE)
-                        }
-                    },
+                    onClick = { triggerProgrammaticSwipe(SwipeDirection.LIKE) },
                     shape = CircleShape,
                     color = MovieMatchColor.LikeGreen.copy(
                         alpha = (0.12f + 0.25f * likeAlpha).coerceIn(

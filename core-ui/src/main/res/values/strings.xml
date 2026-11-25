@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="back">Back</string>
+    <string name="close_details">Close details</string>
     <string name="retry">Retry</string>
     <string name="no_data">No data!</string>
     <string name="see_all">See All</string>
@@ -10,4 +11,6 @@
     <string name="service_error">Our servers are taking a quick break. We\'ll be right back!</string>
     <string name="loading">Loading</string>
     <string name="app_logo_desc">App Logo</string>
+    <string name="cd_scroll_backward">Scroll left</string>
+    <string name="cd_scroll_forward">Scroll right</string>
 </resources>

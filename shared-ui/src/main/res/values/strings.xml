@@ -481,5 +481,10 @@
     <string name="read_more">Read more</string>
     <string name="show_less">Show less</string>
     <string name="play_video_cd">Play video</string>
+
+    <!-- Adaptive Detail Pane Empty State -->
+    <string name="detail_pane_empty_title">Select a Title to Explore</string>
+    <string name="detail_pane_empty_subtitle">Choose any movie, series, or person from the list to inspect cast, streaming options, ratings, and trailers side by side.</string>
+    <string name="detail_pane_preview_badge">Spotlight Preview</string>
 </resources>
 
