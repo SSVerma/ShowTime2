@@ -39,10 +39,10 @@
         },
         {
           "inputFile": "05_desktop_diary_dark.png",
-          "outputFile": "desktop_05_diary_dark.png",
-          "badge": "CINEPHILE ARCHIVE",
-          "headline": "Your Personal *Cinema Archive*",
-          "subtitle": "Track logs, taste radar & challenges in Dark or OLED themes"
+          "outputFile": "desktop_05_community_dark.png",
+          "badge": "COMMUNITY COLLECTIONS",
+          "headline": "Curated Lists, *Built for Big Screens*",
+          "subtitle": "Explore, clone & share cinephile collections in Dark theme"
         }
       ]
     },
