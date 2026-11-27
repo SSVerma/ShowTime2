@@ -1,0 +1,168 @@
+{
+  "theme": "EDITORIAL_LILAC",
+  "font": "GOOGLE_SANS",
+  "decks": {
+    "desktop": {
+      "widthPx": 1920,
+      "heightPx": 1080,
+      "inputDir": "play-store-listing/raw-desktop-screenshots",
+      "outputDir": "play-store-listing/play-desktop-screenshots",
+      "deviceKind": "DESKTOP",
+      "slides": [
+        {
+          "inputFile": "01_desktop_home.png",
+          "outputFile": "desktop_01_home.png",
+          "badge": "DESKTOP & CHROMEBOOK",
+          "headline": "Cinema, Reimagined for *Big Screens*",
+          "subtitle": "Persistent sidebar, quick search bar & responsive carousels"
+        },
+        {
+          "inputFile": "02_desktop_search_split.png",
+          "outputFile": "desktop_02_search_split.png",
+          "badge": "TWO-PANE INSPECTOR",
+          "headline": "Search & Inspect *Side by Side*",
+          "subtitle": "Keep results visible while diving into trailers, cast & streaming"
+        },
+        {
+          "inputFile": "03_desktop_discover.png",
+          "outputFile": "desktop_03_discover.png",
+          "badge": "ADAPTIVE GRIDS",
+          "headline": "Endless Discovery, *Zero Clutter*",
+          "subtitle": "Multi-column grids, vibe presets & curated community lists"
+        },
+        {
+          "inputFile": "04_desktop_shortcuts_or_details.png",
+          "outputFile": "desktop_04_shortcuts.png",
+          "badge": "POWER WORKFLOWS",
+          "headline": "Built for *Keyboard & Mouse*",
+          "subtitle": "Ctrl+K instant search, context menus & trackpad navigation"
+        },
+        {
+          "inputFile": "05_desktop_diary_dark.png",
+          "outputFile": "desktop_05_diary_dark.png",
+          "badge": "CINEPHILE ARCHIVE",
+          "headline": "Your Personal *Cinema Archive*",
+          "subtitle": "Track logs, taste radar & challenges in Dark or OLED themes"
+        }
+      ]
+    },
+    "tablet": {
+      "widthPx": 2560,
+      "heightPx": 1600,
+      "inputDir": "play-store-listing/raw-tablet-screenshots",
+      "outputDir": "play-store-listing/play-tablet-screenshots",
+      "deviceKind": "TABLET",
+      "slides": [
+        {
+          "inputFile": "01_tablet_home.png",
+          "outputFile": "tablet_01_home.png",
+          "badge": "SHOWTIME FOR TABLETS",
+          "headline": "Crafted for *Tablets & Foldables*",
+          "subtitle": "Ergonomic navigation rail built for effortless browsing"
+        },
+        {
+          "inputFile": "02_tablet_discover.png",
+          "outputFile": "tablet_02_discover.png",
+          "badge": "VIBE DISCOVERY",
+          "headline": "Filter by *Mood & Streaming*",
+          "subtitle": "Multi-column discovery grids tailored to wider displays"
+        },
+        {
+          "inputFile": "03_tablet_community.png",
+          "outputFile": "tablet_03_community.png",
+          "badge": "COMMUNITY LISTS",
+          "headline": "Curated Lists & *Live Polls*",
+          "subtitle": "Explore collections from fellow cinephiles side by side"
+        },
+        {
+          "inputFile": "04_tablet_details.png",
+          "outputFile": "tablet_04_details.png",
+          "badge": "DEEP DIVES",
+          "headline": "Trailers, Cast & *Where to Watch*",
+          "subtitle": "Rich detail sheets that adapt cleanly to every window size"
+        }
+      ]
+    },
+    "phone": {
+      "widthPx": 1080,
+      "heightPx": 2400,
+      "inputDir": "play-store-listing/raw-screenshots",
+      "outputDir": "play-store-listing/play-phone-screenshots",
+      "deviceKind": "PHONE",
+      "slides": [
+        {
+          "inputFile": "01_home_discovery.png",
+          "outputFile": "phone_01_home_discovery.png",
+          "badge": "SHOWTIME",
+          "headline": "Your Ultimate *Cinema Companion*",
+          "subtitle": "",
+          "placement": "BLEED_BOTTOM",
+          "tilt": "TILT_LEFT_MILD"
+        },
+        {
+          "inputFile": "02_movie_details.png",
+          "outputFile": "phone_02_movie_details.png",
+          "badge": "STREAMING GUIDE",
+          "headline": "Deep Dives & *Where to Stream*",
+          "subtitle": "",
+          "placement": "BLEED_BOTTOM",
+          "tilt": "TILT_LEFT_MILD"
+        },
+        {
+          "inputFile": "03_movie_match.png",
+          "outputFile": "phone_03_movie_match.png",
+          "badge": "MOVIE MATCH",
+          "headline": "Swipe Together & *Match Picks*",
+          "subtitle": "Never argue over movie night again. Swipe together for instant picks.",
+          "placement": "BLEED_BOTTOM",
+          "tilt": "NONE"
+        },
+        {
+          "inputFile": "04_cinema_receipt.png",
+          "outputFile": "phone_04_cinema_receipt.png",
+          "badge": "CINEMA RECEIPT",
+          "headline": "Print & Share Your *Cinema Receipt*",
+          "subtitle": "Turn your watch history into aesthetic printable receipts.",
+          "placement": "BLEED_BOTTOM",
+          "tilt": "NONE"
+        },
+        {
+          "inputFile": "05_streaming_hub.png",
+          "outputFile": "phone_05_streaming_hub.png",
+          "badge": "STREAMING UNIVERSE",
+          "headline": "Every *Streaming Platform*, Unified",
+          "subtitle": "Jump straight to what is streaming on Netflix, Prime, Disney+ & more.",
+          "placement": "BLEED_BOTTOM",
+          "tilt": "NONE"
+        },
+        {
+          "inputFile": "06_cinema_diary.png",
+          "outputFile": "phone_06_cinema_diary.png",
+          "badge": "CINEMA DIARY",
+          "headline": "Log Every Watch & *Taste Radar*",
+          "subtitle": "Journal ratings, reviews & personal film milestones.",
+          "placement": "FULL_DEVICE",
+          "tilt": "NONE"
+        },
+        {
+          "inputFile": "07_backlog_challenges.png",
+          "outputFile": "phone_07_backlog_challenges.png",
+          "badge": "BACKLOG GOALS",
+          "headline": "Conquer Your *Watchlist Challenges*",
+          "subtitle": "Track marathon progress rings and blindspot film goals.",
+          "placement": "BLEED_BOTTOM",
+          "tilt": "TILT_RIGHT_MILD"
+        },
+        {
+          "inputFile": "08_daily_games.png",
+          "outputFile": "phone_08_daily_games.png",
+          "badge": "DAILY DEBATES & GAMES",
+          "headline": "Play Daily *Cinema Puzzles & Polls*",
+          "subtitle": "Vote in community debates and test your film trivia every day.",
+          "placement": "BLEED_BOTTOM",
+          "tilt": "TILT_LEFT_MILD"
+        }
+      ]
+    }
+  }
+}
